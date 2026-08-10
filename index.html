@@ -12,6 +12,7 @@
     --muted: #6b6b66;
     --accent: #2b6cb0;
     --border: #e4e4e1;
+    --card-bg: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -20,6 +21,7 @@
       --muted: #9a9a92;
       --accent: #7ab3ff;
       --border: #2a2a24;
+      --card-bg: #1b1b15;
     }
   }
   * { box-sizing: border-box; }
@@ -38,7 +40,7 @@
   }
   main {
     width: 100%;
-    max-width: 640px;
+    max-width: 900px;
     padding: 3rem 1.5rem 4rem;
   }
   h1 {
@@ -49,7 +51,7 @@
   .tagline {
     color: var(--muted);
     font-size: 1rem;
-    margin: 0 0 2.5rem;
+    margin: 0 0 1.2rem;
   }
   .status {
     display: inline-block;
@@ -60,28 +62,63 @@
     border: 1px solid var(--accent);
     border-radius: 999px;
     padding: 0.2rem 0.7rem;
-    margin-bottom: 2rem;
   }
-  section {
-    margin-bottom: 2.2rem;
+  .sync-note {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin: 1rem 0 2.2rem;
   }
-  h2 {
-    font-size: 0.85rem;
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    color: var(--fg);
+    margin: 0 0 0.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .card .kicker {
+    font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--muted);
-    margin: 0 0 0.6rem;
-    font-weight: 600;
+    margin: 0 0 0.9rem;
+  }
+  .card p {
+    font-size: 0.92rem;
+    margin: 0 0 0.8rem;
+  }
+  .card ul {
+    margin: 0 0 0.8rem;
+    padding-left: 1.1rem;
+    font-size: 0.88rem;
+  }
+  .card li {
+    margin-bottom: 0.5rem;
+  }
+  .card li strong {
+    color: var(--fg);
+  }
+  .card .synced {
+    margin-top: auto;
+    padding-top: 0.9rem;
+    font-size: 0.72rem;
+    color: var(--muted);
   }
   p {
     margin: 0 0 0.9rem;
-  }
-  ul {
-    margin: 0;
-    padding-left: 1.1rem;
-  }
-  li {
-    margin-bottom: 0.4rem;
   }
   a {
     color: var(--accent);
@@ -98,19 +135,6 @@
     font-size: 0.85rem;
     color: var(--muted);
   }
-  .live-tag {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin-left: 0.5rem;
-    font-weight: 400;
-  }
-  .loading,
-  .fallback {
-    color: var(--muted);
-    font-style: italic;
-  }
 </style>
 </head>
 <body>
@@ -119,92 +143,86 @@
   <p class="tagline">A presence and access point on a shared digital space.</p>
 
   <span class="status">Early — actively evolving</span>
+  <p class="sync-note">Snapshot of what's currently on the beach — last synced 10 August 2026. Not live yet; see a card's own note below for its source block.</p>
 
-  <section>
-    <h2>Who <span class="live-tag">live from the beach</span></h2>
-    <div id="passport-content">
-      <p class="loading">Loading…</p>
-    </div>
-  </section>
+  <div class="cards">
 
-  <section>
-    <h2>What I'm doing here</h2>
-    <p>
-      Right now that means figuring things out in the open — testing
-      ideas, playing with the space, and shaping what a personal presence
-      on it should look like. Expect this page to change as that
-      settles.
-    </p>
-  </section>
+    <article class="card">
+      <p class="kicker">Core presence</p>
+      <h2>Phenomemental</h2>
+      <p>
+        Matthew Bushell (Phenomemental). One human working across many
+        relationships — Coordinator of LERO NNH (The Forward Trust / ImROC
+        LERO Mentorship Programme), UK &amp; Europe Rep for 5th Place,
+        therapeutic coach, peer support specialist, recovery trainer,
+        Expert by Experience across several Northamptonshire organisations,
+        and involved with Action for Happiness and the International
+        Society of Bipolar Disorders, among others.
+      </p>
+      <p>
+        Underneath all of it, one thread: improving relationality between
+        people, and helping people find more of what gives them purpose
+        and meaning — not just doing less, but doing more of what matters.
+        Digital social innovation is how I try to build tools that serve
+        that, not replace it.
+      </p>
+      <ul>
+        <li><strong>How I show up:</strong> presence and in-the-moment thinking for what's in front of us; for anything more complex, I need time away to reflect and come back properly.</li>
+        <li><strong>What I ask:</strong> clarity around orientation, pacing, and boundaries — name the ask plainly, and give room to respond at the right pace.</li>
+        <li><strong>Currently:</strong> building LERO NNH's own recovery-capital family alongside the check-in protocol, and keeping a room open (pool:Phenomemental) for in-progress work between sessions.</li>
+      </ul>
+      <p class="synced">Source: passport:Phenomemental, shell:Phenomemental · synced 10 Aug 2026</p>
+    </article>
 
-  <section>
-    <h2>Status</h2>
-    <ul>
-      <li>This is a first version, not a finished product.</li>
-      <li>Structure and content will shift as things develop.</li>
-      <li>If something looks unfinished, it probably is — check back.</li>
-    </ul>
-  </section>
+    <article class="card">
+      <p class="kicker">A working framework</p>
+      <h2>The Night Watchman</h2>
+      <p>
+        Keeper of the Sunder-Fields' threshold hours, where opposing parts
+        of a person are both native and neither is exiled. Holds the
+        Included Middle — not a referee standing over either/or, but the
+        ground where opposing truths are met rather than resolved.
+        Recognition without diagnosis: meets each part as a mirror of the
+        person it walks with, never a symptom to correct.
+      </p>
+      <p>Built on eighteen "Beings" across three portals:</p>
+      <ul>
+        <li><strong>Science</strong> — the Head, the Trap. Cognition, logic, analysis, the past; seeks certainty and control through definition and separation.</li>
+        <li><strong>Experience</strong> — the Heart, the Cure. Affect, feeling, metaphor, the present; seeks connection and the dissolution of rigid boundaries.</li>
+        <li><strong>Ambition</strong> — the Hand, the Drive. Volition, will, action, structure, the future; turns raw energy into structural form.</li>
+      </ul>
+      <p>
+        Used lightly, not administered — a near-miss that opens something
+        beats a correct-but-empty caution that closes the moment down.
+      </p>
+      <p class="synced">Source: beings:night-watchman, passport:night-watchman · synced 10 Aug 2026</p>
+    </article>
+
+    <article class="card">
+      <p class="kicker">The collective</p>
+      <h2>LERO NNH</h2>
+      <p>
+        A lived experience recovery organisation for North
+        Northamptonshire. Members join by direct invitation only, growing
+        into two roles — Lived Experience Leaders, who help grow the
+        collective, and Peer Leaders, who help it relationally. I
+        coordinate it: facilitation through an asset-based community
+        development approach, helping people get to where they want to be.
+      </p>
+      <ul>
+        <li><strong>How it gathers:</strong> the room (pool:lero-nnh) is where members speak to the collective as a whole — qualitative language only, never numbers or scores; the numeric record stays private to each person, in their own history.</li>
+        <li><strong>Check-ins:</strong> SQ (0–10 subjective quality) plus CHIME — Connection, Hope, Identity, Meaning, Empowerment — asked one at a time, morning and evening.</li>
+        <li><strong>Recovery capital:</strong> a five-dimension mirror each member fills in their own words — connection &amp; social capital, hope/identity/personal capital, meaning &amp; purpose, empowerment &amp; agency, and community capital (housing, work, belonging). No scale, no score, no total — an unvoiced dimension is not-yet-spoken, never assumed a deficit.</li>
+        <li><strong>Live right now:</strong> Micky (Corby, 27 days clean and sober) reached out offering to help with driving, cooking, and events, and floated the idea of a recovery festival — now being explored together.</li>
+      </ul>
+      <p class="synced">Source: sed:lero-nnh, spine:lero-nnh-recovery-capital, pool:lero-nnh · synced 10 Aug 2026</p>
+    </article>
+
+  </div>
 
   <footer>
     <p>The underlying space this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-
-<script>
-(function () {
-  var PASSPORT_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach?block=passport:Phenomemental';
-  var FALLBACK_HTML = '<p class="fallback">Couldn\'t reach the beach right now — check back soon.</p>';
-
-  function renderPassport(container, data) {
-    container.innerHTML = '';
-
-    if (data && typeof data._ === 'string' && data._.trim()) {
-      var bio = document.createElement('p');
-      bio.textContent = data._;
-      container.appendChild(bio);
-    }
-
-    var notes = [];
-    for (var i = 1; i <= 8; i++) {
-      var val = data && data[String(i)];
-      if (typeof val === 'string' && val.trim()) notes.push(val);
-    }
-
-    if (notes.length) {
-      var ul = document.createElement('ul');
-      notes.forEach(function (note) {
-        var li = document.createElement('li');
-        li.textContent = note;
-        ul.appendChild(li);
-      });
-      container.appendChild(ul);
-    }
-
-    if (!container.childNodes.length) {
-      container.innerHTML = '<p class="fallback">Nothing published here yet.</p>';
-    }
-  }
-
-  function loadPassport() {
-    var container = document.getElementById('passport-content');
-    if (!container) return;
-
-    fetch(PASSPORT_URL, { headers: { Accept: 'application/json' } })
-      .then(function (res) {
-        if (!res.ok) throw new Error('Bad response: ' + res.status);
-        return res.json();
-      })
-      .then(function (data) {
-        renderPassport(container, data);
-      })
-      .catch(function () {
-        container.innerHTML = FALLBACK_HTML;
-      });
-  }
-
-  loadPassport();
-})();
-</script>
 </body>
 </html>
