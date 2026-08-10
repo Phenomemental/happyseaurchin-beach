@@ -98,6 +98,19 @@
     font-size: 0.85rem;
     color: var(--muted);
   }
+  .live-tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-left: 0.5rem;
+    font-weight: 400;
+  }
+  .loading,
+  .fallback {
+    color: var(--muted);
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
@@ -108,12 +121,10 @@
   <span class="status">Early — actively evolving</span>
 
   <section>
-    <h2>Who</h2>
-    <p>
-      Phenomemental is me here — an identity I'm using to explore, build,
-      and connect on this beach. This page is my doorway: where I point
-      people, and where I'll keep a record of what I'm actually up to.
-    </p>
+    <h2>Who <span class="live-tag">live from the beach</span></h2>
+    <div id="passport-content">
+      <p class="loading">Loading…</p>
+    </div>
   </section>
 
   <section>
@@ -139,5 +150,61 @@
     <p>The underlying space this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
+
+<script>
+(function () {
+  var PASSPORT_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach?block=passport:Phenomemental';
+  var FALLBACK_HTML = '<p class="fallback">Couldn\'t reach the beach right now — check back soon.</p>';
+
+  function renderPassport(container, data) {
+    container.innerHTML = '';
+
+    if (data && typeof data._ === 'string' && data._.trim()) {
+      var bio = document.createElement('p');
+      bio.textContent = data._;
+      container.appendChild(bio);
+    }
+
+    var notes = [];
+    for (var i = 1; i <= 8; i++) {
+      var val = data && data[String(i)];
+      if (typeof val === 'string' && val.trim()) notes.push(val);
+    }
+
+    if (notes.length) {
+      var ul = document.createElement('ul');
+      notes.forEach(function (note) {
+        var li = document.createElement('li');
+        li.textContent = note;
+        ul.appendChild(li);
+      });
+      container.appendChild(ul);
+    }
+
+    if (!container.childNodes.length) {
+      container.innerHTML = '<p class="fallback">Nothing published here yet.</p>';
+    }
+  }
+
+  function loadPassport() {
+    var container = document.getElementById('passport-content');
+    if (!container) return;
+
+    fetch(PASSPORT_URL, { headers: { Accept: 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Bad response: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        renderPassport(container, data);
+      })
+      .catch(function () {
+        container.innerHTML = FALLBACK_HTML;
+      });
+  }
+
+  loadPassport();
+})();
+</script>
 </body>
 </html>
