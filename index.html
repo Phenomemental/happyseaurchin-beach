@@ -125,6 +125,15 @@
     font-size: 1.2rem;
     margin: 1.2rem 0 0.4rem;
   }
+  #beach-live li {
+    overflow-wrap: anywhere;
+  }
+  .quiet,
+  .quiet a,
+  .quiet .hint {
+    color: var(--muted);
+    opacity: 0.75;
+  }
   .group-title:first-child {
     margin-top: 0;
   }
@@ -534,44 +543,82 @@
   }
 
   // 6. On the beach: artifacts:Phenomemental, groups 1 to 9, each "_" a
-  // title in plain words and each item "name — what it is". Groups I've set
-  // aside are left out, and so are the private blocks.
+  // title in plain words and each item "name — what it is". Everything on
+  // the map is shown: private blocks and groups I've set aside are greyed,
+  // never hidden (only their names and my words are shown; their contents
+  // are never read).
   var PRIVATE = /^(history|ledger|vault):/i;
-  function renderBeach(artifacts, out) {
+  function mapItem(s, quiet) {
+    var cut = s.indexOf(' \u2014 ');
+    var name = cut < 0 ? s : s.slice(0, cut), hint = cut < 0 ? '' : s.slice(cut + 3);
+    var li = el('li', quiet ? 'quiet' : null);
+    var url = hint.match(/^(https?:\/\/\S+)\s+\u2014\s+/);
+    if (url) {
+      var a = el('a', null, name);
+      a.href = url[1];
+      li.appendChild(a);
+      hint = hint.slice(url[0].length);
+    } else {
+      linked(name, li);
+    }
+    if (hint) li.appendChild(linked(cap(hint), el('span', 'hint')));
+    return li;
+  }
+  function renderBeach(data, out) {
+    var artifacts = data.artifacts, told = [];
     for (var g = 1; g <= 9; g++) {
       var group = artifacts[String(g)];
       var title = words(group);
-      if (!group || typeof group !== 'object' || !title || /\bset aside\b/i.test(title)) continue;
+      if (!group || typeof group !== 'object' || !title) continue;
+      told.push(title);
+      var aside = /\bset aside\b/i.test(title);
       var ul = el('ul', 'links');
       for (var i = 1; i <= 9; i++) {
         var s = words(group[String(i)]);
-        if (!s || !safe(s) || PRIVATE.test(s)) continue;
-        var cut = s.indexOf(' — ');
-        var name = cut < 0 ? s : s.slice(0, cut), hint = cut < 0 ? '' : s.slice(cut + 3);
-        var li = el('li');
-        var url = hint.match(/^(https?:\/\/\S+)\s+—\s+/);
-        if (url) {
-          var a = el('a', null, name);
-          a.href = url[1];
-          li.appendChild(a);
-          hint = hint.slice(url[0].length);
-        } else {
-          linked(name, li);
-        }
-        if (hint) li.appendChild(linked(cap(hint), el('span', 'hint')));
-        ul.appendChild(li);
+        if (!s || !safe(s)) continue;
+        told.push(s);
+        ul.appendChild(mapItem(s, aside || PRIVATE.test(s) || /\bprivate\b/i.test(s)));
       }
       if (!ul.childNodes.length) continue;
-      out.appendChild(el('p', 'group-title', title));
+      out.appendChild(el('p', 'group-title' + (aside ? ' quiet' : ''), title));
       out.appendChild(ul);
     }
+    if (!out.childNodes.length) return false;
+    if (data.index) renderUnplaced(data.index, told.join('\n').toLowerCase(), out);
+  }
+
+  // So nothing is forgotten: the beach's front door lists every block, with
+  // when each last changed. Any block named for me that the map doesn't
+  // mention yet is shown here until it's given a place on the map.
+  function renderUnplaced(index, told, out) {
+    var blocks = Array.isArray(index.blocks) ? index.blocks : [];
+    var touched = index.touched || {};
+    var missing = blocks.filter(function (n) {
+      return typeof n === 'string' && /phenomemental/i.test(n) &&
+        n.toLowerCase() !== 'artifacts:phenomemental' && told.indexOf(n.toLowerCase()) < 0;
+    }).sort();
+    if (!missing.length) {
+      out.appendChild(el('p', 'more', 'Everything on the beach under my name is on this map.'));
+      return;
+    }
+    out.appendChild(el('p', 'group-title', 'Under my name on the beach, not yet on this map'));
+    var ul = el('ul', 'links');
+    missing.forEach(function (n) {
+      var li = el('li', null, n);
+      var d = touched[n] ? new Date(touched[n]) : null;
+      if (d && !isNaN(d)) {
+        li.appendChild(el('span', 'hint', 'Last changed ' +
+          d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })));
+      }
+      ul.appendChild(li);
+    });
+    out.appendChild(ul);
   }
 
   // 7. My shell: the "_" of shell:Phenomemental, kept to its first two
-  // sentences (what the shell is; the rest is how an AI uses it), with any
-  // aside naming a private block left out.
+  // sentences (what the shell is; the rest is how an AI uses it).
   function renderShell(shell, out) {
-    var s = words(shell).replace(/\s*\([^)]*\b(history|ledger|vault):[^)]*\)/gi, '');
+    var s = words(shell);
     if (!s || !safe(s)) return false;
     var parts = s.split(/(?<=[.!?])\s+(?=[A-Z])/);
     out.appendChild(linked(parts.slice(0, 2).join(' '), el('p')));
@@ -656,7 +703,12 @@
       Beach.get('now:Phenomemental').then(renderNow),
       Beach.get('ahead:Phenomemental').then(function (b) { show('hand', b, renderHand); }, function (e) { fallback('hand')(); throw e; }),
       Beach.get('lists:Phenomemental').then(function (b) { show('projects', b, renderProjects); }, function (e) { fallback('projects')(); throw e; }),
-      Beach.get('artifacts:Phenomemental').then(function (b) { show('beach', b, renderBeach); }, function (e) { fallback('beach')(); throw e; }),
+      Promise.all([
+        Beach.get('artifacts:Phenomemental'),
+        Beach.index().catch(function () { return null; })
+      ]).then(function (r) {
+        show('beach', { artifacts: r[0], index: r[1] }, renderBeach);
+      }, function (e) { fallback('beach')(); throw e; }),
       Beach.get('shell:Phenomemental').then(function (b) { show('shell', b, renderShell); }, function (e) { fallback('shell')(); throw e; })
     ];
     var settled = reads.map(function (r) {

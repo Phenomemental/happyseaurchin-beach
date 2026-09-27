@@ -14,6 +14,15 @@
       });
   }
 
+  // The beach's front door: every block's name ("blocks"), and when each
+  // last changed ("touched").
+  function index() {
+    return fetch(BEACH, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
   // Every beach response carries the shared clock as
   // "ISO | ten-digit sundial address | voicing", e.g.
   // "2026-09-27T10:04:23Z | 2026334647 | Sunday 27 September 2026, morning (beat 7)".
@@ -161,6 +170,7 @@
 
   window.Beach = {
     get: get,
+    index: index,
     clock: function () { return clock; },
     text: text,
     renderThread: renderThread,
