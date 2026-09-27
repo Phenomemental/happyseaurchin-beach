@@ -8,64 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css">
 <style>
-  :root {
-    --paper: #efe7d8;
-    --page: #f6f0e4;
-    --ink: #1d1a17;
-    --muted: #6a6158;
-    --rule: #a8323a;
-    --frame: #b9ad9a;
-    --crimson: #c21d4e;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #16130f;
-      --page: #1d1914;
-      --ink: #ede4d3;
-      --muted: #a79c8b;
-      --rule: #d0525a;
-      --frame: #4a4237;
-      --crimson: #ef5d85;
-    }
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    padding: 0;
-  }
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
-    font-size: 1.2rem;
-    line-height: 1.55;
-    display: flex;
-    justify-content: center;
-    min-height: 100vh;
-  }
-  main {
-    width: 100%;
-    max-width: 620px;
-    padding: 1.5rem 1rem 3rem;
-  }
-  a {
-    color: var(--crimson);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-  }
-  a:hover {
-    border-bottom-color: currentColor;
-  }
-  .sheet {
-    background: var(--page);
-    border: 1px solid var(--frame);
-    outline: 1px solid var(--frame);
-    outline-offset: 6px;
-    margin: 6px;
-    padding: 2.5rem 1.5rem 2rem;
-    text-align: center;
-  }
   h1 {
     font-weight: 400;
     font-size: 2.6rem;
@@ -78,13 +22,6 @@
     letter-spacing: 0.3em;
     margin: 0.7rem 0 0;
   }
-  .rule {
-    width: 5rem;
-    height: 0;
-    border: 0;
-    border-top: 1.5px solid var(--rule);
-    margin: 1.3rem auto;
-  }
   .lede {
     font-style: italic;
     font-size: 1.35rem;
@@ -92,49 +29,12 @@
     margin: 0 auto 0.5rem;
     max-width: 28rem;
   }
-  section {
-    text-align: left;
-    margin: 0 auto;
-    max-width: 30rem;
-  }
-  h2 {
-    font-weight: 500;
-    font-size: 1rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    text-align: center;
-    color: var(--muted);
-    margin: 0 0 0.8rem;
-  }
   h3 {
     font-weight: 400;
     font-style: italic;
     font-size: 1.5rem;
     line-height: 1.2;
     margin: 0 0 0.3rem;
-  }
-  p {
-    margin: 0 0 0.9rem;
-  }
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0.9rem;
-  }
-  li {
-    padding-left: 1.4rem;
-    position: relative;
-    margin-bottom: 0.35rem;
-  }
-  li::before {
-    content: "";
-    position: absolute;
-    left: 0.2rem;
-    top: 0.62em;
-    width: 0.5rem;
-    height: 0.36rem;
-    border-radius: 50%;
-    background: var(--crimson);
   }
   .project {
     margin-bottom: 1.8rem;
@@ -163,34 +63,22 @@
   .more {
     font-style: italic;
   }
-  code {
-    font-family: "Cormorant Garamond", Garamond, serif;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .closing {
-    font-style: italic;
-    text-align: center;
-    margin: 0;
-  }
-  footer {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.95rem;
-    font-style: italic;
-    margin-top: 2rem;
-  }
-  footer p {
-    margin: 0 0 0.3rem;
+  ul {
+    margin-bottom: 0.9rem;
   }
   @media (min-width: 560px) {
-    .sheet { padding: 3rem 3rem 2.5rem; }
     h1 { font-size: 3rem; }
   }
 </style>
 </head>
 <body>
 <main>
+  <nav class="site-nav" aria-label="Pages">
+    <a href="index.html" aria-current="page">Phenomemental</a>
+    <a href="wholeless-nights.html">Wholeless Nights</a>
+    <a href="#on-the-beach">On the beach</a>
+  </nav>
+
   <div class="sheet">
     <h1>Phenomemental</h1>
     <p class="name">Matthew Bushell</p>
@@ -267,6 +155,30 @@
 
     <hr class="rule">
 
+    <section id="on-the-beach">
+      <h2>On the beach</h2>
+      <ul class="links">
+        <li>
+          <a href="https://happyseaurchin.com/now/Phenomemental">My now</a>
+          <span class="hint">Where I am on the beach's shared clock: my year, month and today.</span>
+        </li>
+        <li>
+          <a href="https://happyseaurchin.com/walk/wholeless-nights/Phenomemental">Walk Wholeless Nights</a>
+          <span class="hint">The book's project on the beach, position by position.</span>
+        </li>
+        <li>
+          <a href="https://happyseaurchin.com/render?block=pool:Phenomemental">My room</a>
+          <span class="hint">The notes people have left me in <code>pool:Phenomemental</code>.</span>
+        </li>
+        <li>
+          <a href="https://happyseaurchin.com/">happyseaurchin</a>
+          <span class="hint">David Pinto's beach, where all of this lives.</span>
+        </li>
+      </ul>
+    </section>
+
+    <hr class="rule">
+
     <section>
       <h2>Meet me</h2>
       <p>
@@ -274,14 +186,39 @@
         complex I need time away to reflect and come back properly: name the
         ask plainly, and give me room to respond at the right pace.
       </p>
-      <p class="closing">Leave a note in <code>pool:Phenomemental</code> on the beach. I'm in Northampton.</p>
+
+      <form id="note-form" hidden>
+        <label for="n-name">Your name (optional)</label>
+        <input id="n-name" name="who" maxlength="40" autocomplete="name">
+        <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
+        <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label for="n-text">Your note</label>
+        <textarea id="n-text" name="note" maxlength="2000" required></textarea>
+        <button type="submit">Leave me a note</button>
+        <p class="form-status" role="status"></p>
+        <p class="form-foot">Notes are public: they go into my room on the beach, <code>pool:Phenomemental</code>. I'm in Northampton.</p>
+      </form>
+
+      <p class="closing" id="closing">Leave a note in <code>pool:Phenomemental</code> on the beach. I'm in Northampton.</p>
     </section>
   </div>
 
-  <footer>
+  <footer class="site-footer">
     <p>A snapshot of what's on the beach, 27 September 2026.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
+<script src="beach.js"></script>
+<script>
+(function () {
+  var form = document.getElementById('note-form');
+  // Show the note form only once the beach has answered.
+  Beach.get('pool:Phenomemental').then(function () {
+    form.hidden = false;
+    document.getElementById('closing').hidden = true;
+  }, function () {});
+  Beach.wireNoteForm(form, 'pool:Phenomemental');
+})();
+</script>
 </body>
 </html>
