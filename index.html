@@ -120,23 +120,6 @@
   .pile ul {
     margin: 0.2rem 0 0;
   }
-  .group-title {
-    font-style: italic;
-    font-size: 1.2rem;
-    margin: 1.2rem 0 0.4rem;
-  }
-  #beach-live li {
-    overflow-wrap: anywhere;
-  }
-  .quiet,
-  .quiet a,
-  .quiet .hint {
-    color: var(--muted);
-    opacity: 0.75;
-  }
-  .group-title:first-child {
-    margin-top: 0;
-  }
   @keyframes settle {
     from { opacity: 0; transform: translateY(0.5rem); }
     to { opacity: 1; transform: none; }
@@ -163,7 +146,7 @@
     <a href="index.html" aria-current="page">Phenomemental</a>
     <a href="community-recovery.html">Community Recovery</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
-    <a href="#on-the-beach">On the beach</a>
+    <a href="map.html">My map</a>
   </nav>
 
   <div class="sheet">
@@ -289,27 +272,11 @@
 
     <section id="on-the-beach">
       <h2>On the beach</h2>
-      <div id="beach-live">
-        <ul class="links">
-          <li>
-            <a href="https://happyseaurchin.com/now/Phenomemental">My now</a>
-            <span class="hint">Where I am on the beach's shared clock: my year, month and today.</span>
-          </li>
-          <li>
-            <a href="https://happyseaurchin.com/walk/wholeless-nights/Phenomemental">Walk Wholeless Nights</a>
-            <span class="hint">The book's project on the beach, position by position.</span>
-          </li>
-          <li>
-            <a href="https://happyseaurchin.com/render?block=pool:Phenomemental">My room</a>
-            <span class="hint">The notes people have left me in <code>pool:Phenomemental</code>.</span>
-          </li>
-          <li>
-            <a href="https://happyseaurchin.com/">happyseaurchin</a>
-            <span class="hint">David Pinto's beach, where all of this lives.</span>
-          </li>
-        </ul>
-      </div>
-      <p class="live-note section-live" data-live="beach"></p>
+      <p>
+        Everything I&rsquo;ve made or take part in on the beach, drawn in one
+        place and read live, so nothing is forgotten.
+      </p>
+      <p class="more"><a href="map.html">See my map &rarr;</a></p>
     </section>
 
     <hr class="rule">
@@ -406,7 +373,7 @@
   // Each live section keeps its saved HTML, so a failed read, or a shape
   // that doesn't render, puts the saved version back.
   var sections = {};
-  ['who', 'hand', 'projects', 'beach', 'shell', 'meet'].forEach(function (k) {
+  ['who', 'hand', 'projects', 'shell', 'meet'].forEach(function (k) {
     var box = document.getElementById(k + '-live');
     sections[k] = { box: box, saved: box.innerHTML, note: document.querySelector('[data-live="' + k + '"]') };
   });
@@ -542,80 +509,6 @@
     });
   }
 
-  // 6. On the beach: artifacts:Phenomemental, groups 1 to 9, each "_" a
-  // title in plain words and each item "name — what it is". Everything on
-  // the map is shown: private blocks and groups I've set aside are greyed,
-  // never hidden (only their names and my words are shown; their contents
-  // are never read).
-  var PRIVATE = /^(history|ledger|vault):/i;
-  function mapItem(s, quiet) {
-    var cut = s.indexOf(' \u2014 ');
-    var name = cut < 0 ? s : s.slice(0, cut), hint = cut < 0 ? '' : s.slice(cut + 3);
-    var li = el('li', quiet ? 'quiet' : null);
-    var url = hint.match(/^(https?:\/\/\S+)\s+\u2014\s+/);
-    if (url) {
-      var a = el('a', null, name);
-      a.href = url[1];
-      li.appendChild(a);
-      hint = hint.slice(url[0].length);
-    } else {
-      linked(name, li);
-    }
-    if (hint) li.appendChild(linked(cap(hint), el('span', 'hint')));
-    return li;
-  }
-  function renderBeach(data, out) {
-    var artifacts = data.artifacts, told = [];
-    for (var g = 1; g <= 9; g++) {
-      var group = artifacts[String(g)];
-      var title = words(group);
-      if (!group || typeof group !== 'object' || !title) continue;
-      told.push(title);
-      var aside = /\bset aside\b/i.test(title);
-      var ul = el('ul', 'links');
-      for (var i = 1; i <= 9; i++) {
-        var s = words(group[String(i)]);
-        if (!s || !safe(s)) continue;
-        told.push(s);
-        ul.appendChild(mapItem(s, aside || PRIVATE.test(s) || /\bprivate\b/i.test(s)));
-      }
-      if (!ul.childNodes.length) continue;
-      out.appendChild(el('p', 'group-title' + (aside ? ' quiet' : ''), title));
-      out.appendChild(ul);
-    }
-    if (!out.childNodes.length) return false;
-    if (data.index) renderUnplaced(data.index, told.join('\n').toLowerCase(), out);
-  }
-
-  // So nothing is forgotten: the beach's front door lists every block, with
-  // when each last changed. Any block named for me (or for a drifted spelling
-  // of my name) that the map doesn't mention yet is shown here until it's
-  // given a place on the map.
-  function renderUnplaced(index, told, out) {
-    var blocks = Array.isArray(index.blocks) ? index.blocks : [];
-    var touched = index.touched || {};
-    var missing = blocks.filter(function (n) {
-      return typeof n === 'string' && /phenom[ei]m[ei]ntal/i.test(n) &&
-        n.toLowerCase() !== 'artifacts:phenomemental' && told.indexOf(n.toLowerCase()) < 0;
-    }).sort();
-    if (!missing.length) {
-      out.appendChild(el('p', 'more', 'Everything on the beach under my name is on this map.'));
-      return;
-    }
-    out.appendChild(el('p', 'group-title', 'Under my name on the beach, not yet on this map'));
-    var ul = el('ul', 'links');
-    missing.forEach(function (n) {
-      var li = el('li', null, n);
-      var d = touched[n] ? new Date(touched[n]) : null;
-      if (d && !isNaN(d)) {
-        li.appendChild(el('span', 'hint', 'Last changed ' +
-          d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })));
-      }
-      ul.appendChild(li);
-    });
-    out.appendChild(ul);
-  }
-
   // 7. My shell: the "_" of shell:Phenomemental, kept to its first two
   // sentences (what the shell is; the rest is how an AI uses it).
   function renderShell(shell, out) {
@@ -704,12 +597,6 @@
       Beach.get('now:Phenomemental').then(renderNow),
       Beach.get('ahead:Phenomemental').then(function (b) { show('hand', b, renderHand); }, function (e) { fallback('hand')(); throw e; }),
       Beach.get('lists:Phenomemental').then(function (b) { show('projects', b, renderProjects); }, function (e) { fallback('projects')(); throw e; }),
-      Promise.all([
-        Beach.get('artifacts:Phenomemental'),
-        Beach.index().catch(function () { return null; })
-      ]).then(function (r) {
-        show('beach', { artifacts: r[0], index: r[1] }, renderBeach);
-      }, function (e) { fallback('beach')(); throw e; }),
       Beach.get('shell:Phenomemental').then(function (b) { show('shell', b, renderShell); }, function (e) { fallback('shell')(); throw e; })
     ];
     var settled = reads.map(function (r) {
