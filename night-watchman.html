@@ -85,7 +85,11 @@
   }
   .f-portal { fill: var(--muted); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; letter-spacing: 2.4px; text-transform: uppercase; }
   .f-name { fill: var(--muted); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11.5px; font-style: italic; }
-  .f-who { fill: var(--crimson); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; font-style: italic; }
+  .f-fig { fill: var(--ink); font-family: "Cormorant Garamond", Garamond, serif; font-size: 16px; font-style: italic; }
+  .f-pole-name { fill: var(--crimson); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; }
+  .f-pole { fill: var(--crimson); }
+  .f-halo { fill: var(--crimson); opacity: 0.18; }
+  .f-beam { pointer-events: none; }
   .field-caption {
     font-style: italic;
     color: var(--muted);
@@ -94,7 +98,6 @@
   }
   .f-path { stroke: var(--frame); stroke-width: 1; fill: none; stroke-dasharray: 2 4; }
   .f-ring { fill: var(--page); stroke: var(--frame); stroke-width: 1.4; }
-  .f-native .f-ring { stroke: var(--crimson); }
   .f-glow { fill: var(--lamp); opacity: 0; transition: opacity 0.9s ease; }
   .f-flame { fill: var(--lamp); opacity: 0; transition: opacity 0.6s ease; }
   .f-lamp { cursor: pointer; outline: none; }
@@ -130,12 +133,6 @@
     font-style: italic;
     color: var(--lamp);
     margin: 0 0 0.8rem;
-  }
-  #being .b-who {
-    text-align: center;
-    font-style: italic;
-    color: var(--crimson);
-    margin: -0.6rem 0 0.8rem;
   }
   #being .b-anchor {
     font-style: italic;
@@ -200,7 +197,7 @@
 
   <div class="sheet">
     <h1>The Night Watchman</h1>
-    <p class="name">Keeper of the threshold hours</p>
+    <p class="name">An agent in waiting</p>
 
     <hr class="rule">
 
@@ -226,9 +223,9 @@
     <hr class="rule">
 
     <section id="sunder-fields">
-      <h2>The Sunder-Fields</h2>
-      <div id="field" aria-label="The eighteen Beings, as lamps in three rows"></div>
-      <p class="field-caption">Crimson marks the Beings that Silas and Ada invoke.</p>
+      <h2>The included middle</h2>
+      <div id="field" aria-label="Silas and Ada, the two binaries, shining on the included middle, where the eighteen Beings are lamps in three rows"></div>
+      <p class="field-caption">Silas and Ada, the binaries, shine a light on the included middle, where the Beings can be seen at play.</p>
       <div id="being" aria-live="polite"><p class="b-hint">Touch a lamp.</p></div>
       <details class="all-beings">
         <summary>All eighteen, by name</summary>
@@ -404,10 +401,10 @@
     var em = rest.split(/\s*Emerges:\s*/);
     b.profile = em[0].trim();
     b.emerges = em[1] ? cap(em[1].trim()) : '';
-    // Ada and Silas are characters, not Beings: each invokes one. The block
-    // names Ada in place of her Being ("Ada — the Feeling Being, the
-    // Phoenix") and Silas among his Being's epithets ("the Guardian, the
-    // Dragon, Silas"); both are set apart here as the character who invokes.
+    // Ada and Silas are not Beings: they are the mythical figures, the two
+    // binaries, drawn above the field. Until the block is reworded it still
+    // names Ada in place of the Feeling Being and Silas among the Compulsive
+    // Being's epithets, so both names are taken off the Being here.
     var parts = b.arch.split(/,\s*/);
     if (!/^The \S+ Being$/.test(b.name) && /^the \S+ Being$/i.test(parts[0])) {
       b.character = b.name;
@@ -451,29 +448,46 @@
   }
 
   var current = [], visited = {}, chosen = null;
-  // The Beings that Silas and Ada invoke are rimmed in crimson.
-  function native(b) {
-    return !!b.character;
-  }
 
   function drawField(list) {
     var box = document.getElementById('field');
-    var ROWS = 110, H = 30 + list.length * ROWS;
+    var ROWS = 100, TOP = 78, H = TOP + list.length * ROWS;
     var s = svg('svg', { viewBox: '0 0 340 ' + H, role: 'group' });
+
+    // Silas and Ada: the two binaries, one at each upper corner, each
+    // shining inward. Where their light overlaps is the included middle.
+    var defs = svg('defs');
+    [['beam-silas', '0%', '0%', '100%', '100%'], ['beam-ada', '100%', '0%', '0%', '100%']].forEach(function (g) {
+      var lg = svg('linearGradient', { id: g[0], x1: g[1], y1: g[2], x2: g[3], y2: g[4] });
+      lg.appendChild(svg('stop', { offset: '0%', 'stop-color': 'var(--lamp)', 'stop-opacity': '0.11' }));
+      lg.appendChild(svg('stop', { offset: '100%', 'stop-color': 'var(--lamp)', 'stop-opacity': '0.01' }));
+      defs.appendChild(lg);
+    });
+    s.appendChild(defs);
+    s.appendChild(svg('polygon', { 'class': 'f-beam f-step', style: '--d:0.5s', fill: 'url(#beam-silas)', points: '26,30 340,' + (H * 0.42).toFixed(0) + ' 340,' + H + ' 120,' + H }));
+    s.appendChild(svg('polygon', { 'class': 'f-beam f-step', style: '--d:0.7s', fill: 'url(#beam-ada)', points: '314,30 0,' + (H * 0.42).toFixed(0) + ' 0,' + H + ' 220,' + H }));
+    [['Silas', 'mania', 26, 'start'], ['Ada', 'depression', 314, 'end']].forEach(function (f, i) {
+      var g = svg('g', { 'class': 'f-figure f-step', style: '--d:' + (i * 0.2).toFixed(2) + 's' });
+      g.appendChild(svg('circle', { 'class': 'f-halo', cx: f[2], cy: 30, r: 14 }));
+      g.appendChild(svg('circle', { 'class': 'f-pole', cx: f[2], cy: 30, r: 6 }));
+      var tx = f[3] === 'start' ? f[2] + 17 : f[2] - 20;
+      g.appendChild(svg('text', { 'class': 'f-fig', x: tx, y: 28, 'text-anchor': f[3] }, f[0]));
+      g.appendChild(svg('text', { 'class': 'f-pole-name', x: tx, y: 42, 'text-anchor': f[3] }, f[1]));
+      s.appendChild(g);
+    });
     list.forEach(function (portal, r) {
-      var y0 = 26 + r * ROWS, ly = y0 + 40;
-      s.appendChild(svg('text', { 'class': 'f-portal f-step', style: '--d:' + (r * 0.9).toFixed(2) + 's', x: 170, y: y0, 'text-anchor': 'middle' }, portal.label));
+      var y0 = TOP + 12 + r * ROWS, ly = y0 + 34;
+      s.appendChild(svg('text', { 'class': 'f-portal f-step', style: '--d:' + (1 + r * 0.9).toFixed(2) + 's', x: 170, y: y0, 'text-anchor': 'middle' }, portal.label));
       var n = portal.beings.length, step = n > 1 ? 270 / (n - 1) : 0;
-      s.appendChild(svg('path', { 'class': 'f-path f-step', style: '--d:' + (r * 0.9 + 0.1).toFixed(2) + 's', d: 'M20 ' + ly + ' H320' }));
+      s.appendChild(svg('path', { 'class': 'f-path f-step', style: '--d:' + (1 + r * 0.9 + 0.1).toFixed(2) + 's', d: 'M20 ' + ly + ' H320' }));
       portal.beings.forEach(function (b, i) {
         var x = n > 1 ? 35 + i * step : 170, key = r + '.' + i;
-        var g = svg('g', { 'class': 'f-lamp f-step' + (native(b) ? ' f-native' : '') + (visited[key] ? ' visited' : '') + (chosen === key ? ' lit' : ''),
-          style: '--d:' + (r * 0.9 + 0.25 + i * 0.1).toFixed(2) + 's', tabindex: 0, role: 'button', 'aria-label': b.name + ', ' + b.arch, 'data-key': key });
+        var g = svg('g', { 'class': 'f-lamp f-step' + (visited[key] ? ' visited' : '') + (chosen === key ? ' lit' : ''),
+          style: '--d:' + (1 + r * 0.9 + 0.25 + i * 0.1).toFixed(2) + 's', tabindex: 0, role: 'button', 'aria-label': b.name + ', ' + b.arch, 'data-key': key });
         g.appendChild(svg('circle', { 'class': 'f-glow', cx: x, cy: ly, r: 20 }));
         g.appendChild(svg('circle', { 'class': 'f-ring', cx: x, cy: ly, r: 9 }));
         g.appendChild(svg('circle', { 'class': 'f-flame', cx: x, cy: ly, r: 3.6 }));
         g.appendChild(svg('text', { 'class': 'f-name', x: x, y: ly + 28, 'text-anchor': 'middle' }, b.short));
-        if (b.character) g.appendChild(svg('text', { 'class': 'f-who', x: x, y: ly + 41, 'text-anchor': 'middle' }, b.character));
         g.appendChild(svg('circle', { cx: x, cy: ly + 6, r: 24, fill: 'transparent' }));
         s.appendChild(g);
       });
@@ -507,7 +521,6 @@
     box.appendChild(el('p', 'b-portal', portal.title));
     box.appendChild(el('h3', null, b.name));
     if (b.arch) box.appendChild(el('p', 'b-arch', cap(b.arch)));
-    if (b.character) box.appendChild(el('p', 'b-who', 'Invoked by ' + b.character));
     if (b.anchor) box.appendChild(el('p', 'b-anchor', b.anchor));
     if (b.profile) box.appendChild(el('p', null, b.profile));
     if (b.emerges) {
@@ -530,8 +543,7 @@
       portal.beings.forEach(function (b) {
         var li = el('li');
         li.appendChild(el('strong', null, b.name));
-        li.appendChild(document.createTextNode((b.arch ? ' — ' + b.arch : '') +
-          (b.character ? ' (invoked by ' + b.character + ')' : '') + '.'));
+        li.appendChild(document.createTextNode((b.arch ? ' — ' + b.arch : '') + '.'));
         ul.appendChild(li);
       });
       out.appendChild(ul);
@@ -566,7 +578,7 @@
       if (!seen[0].isIntersecting) return;
       io.disconnect();
       box.classList.add('play');
-      setTimeout(function () { box.classList.remove('ready', 'play'); }, 4200);
+      setTimeout(function () { box.classList.remove('ready', 'play'); }, 5200);
     }, { threshold: 0.25 });
     io.observe(box);
   }
