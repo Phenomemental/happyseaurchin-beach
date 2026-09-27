@@ -588,13 +588,14 @@
   }
 
   // So nothing is forgotten: the beach's front door lists every block, with
-  // when each last changed. Any block named for me that the map doesn't
-  // mention yet is shown here until it's given a place on the map.
+  // when each last changed. Any block named for me (or for a drifted spelling
+  // of my name) that the map doesn't mention yet is shown here until it's
+  // given a place on the map.
   function renderUnplaced(index, told, out) {
     var blocks = Array.isArray(index.blocks) ? index.blocks : [];
     var touched = index.touched || {};
     var missing = blocks.filter(function (n) {
-      return typeof n === 'string' && /phenomemental/i.test(n) &&
+      return typeof n === 'string' && /phenom[ei]m[ei]ntal/i.test(n) &&
         n.toLowerCase() !== 'artifacts:phenomemental' && told.indexOf(n.toLowerCase()) < 0;
     }).sort();
     if (!missing.length) {
