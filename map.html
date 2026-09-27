@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Map</title>
+<meta name="description" content="Phenomemental's map: everything I've made or take part in on the beach, drawn in one place and read live from the beach.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css">
+<style>
+  h1 {
+    font-weight: 400;
+    font-size: 2.6rem;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .name {
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    margin: 0.7rem 0 0;
+  }
+  .lede {
+    font-style: italic;
+    font-size: 1.35rem;
+    line-height: 1.4;
+    margin: 0 auto 0.5rem;
+    max-width: 28rem;
+  }
+  .how-live {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.05rem;
+    text-align: center;
+    margin: 0.4rem auto 0;
+    max-width: 28rem;
+  }
+  h3 {
+    font-weight: 400;
+    font-style: italic;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    margin: 1.8rem 0 0.5rem;
+  }
+  /* The drawing: me at the top, a line down, each group branching off it,
+     and a dot for every thing in the group. */
+  #drawing svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+  .m-line { stroke: var(--frame); stroke-width: 1.2; fill: none; }
+  .m-name { fill: var(--ink); font-family: "Cormorant Garamond", Garamond, serif; font-size: 15px; }
+  .m-me { fill: var(--ink); font-family: "Cormorant Garamond", Garamond, serif; font-size: 17px; font-style: italic; }
+  .m-count { fill: var(--muted); font-family: "Cormorant Garamond", Garamond, serif; font-size: 12px; font-style: italic; }
+  .m-row { cursor: pointer; }
+  .m-row:hover .m-name, .m-row:focus .m-name { fill: var(--crimson); }
+  .k-mine { fill: var(--crimson); stroke: var(--crimson); stroke-width: 1.4; }
+  .k-shared { fill: var(--page); stroke: var(--crimson); stroke-width: 1.4; }
+  .k-private { fill: var(--frame); stroke: var(--frame); stroke-width: 1.4; }
+  .k-aside { fill: none; stroke: var(--frame); stroke-width: 1.2; stroke-dasharray: 2 2; }
+  .k-loose { fill: none; stroke: var(--crimson); stroke-width: 1.2; stroke-dasharray: 2 2; }
+  .row-aside .m-name, .row-private .m-name { fill: var(--muted); }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem 1.1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0.8rem 0 0;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .legend li { display: flex; align-items: center; gap: 0.35rem; }
+  .legend svg { width: 12px; height: 12px; }
+  .links li { overflow-wrap: anywhere; }
+  .quiet,
+  .quiet a,
+  .quiet .hint {
+    color: var(--muted);
+    opacity: 0.75;
+  }
+  .group-note {
+    font-style: italic;
+    color: var(--muted);
+    margin: -0.2rem 0 0.6rem;
+    font-size: 1.05rem;
+  }
+  .live-note { margin-top: 1.2rem; }
+  /* Draws itself once, when it first scrolls into view; still, and whole,
+     for anyone who prefers less motion. */
+  @keyframes m-in { to { opacity: 1; } }
+  @keyframes m-draw { to { stroke-dashoffset: 0; } }
+  #drawing.ready .m-step { opacity: 0; }
+  #drawing.ready .m-spine { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  #drawing.play .m-step { animation: m-in 0.45s ease-out forwards; animation-delay: var(--d); }
+  #drawing.play .m-spine { animation: m-draw 1.2s ease-in-out forwards; }
+  @media (prefers-reduced-motion: reduce) {
+    #drawing .m-step { opacity: 1 !important; animation: none !important; }
+    #drawing .m-spine { stroke-dasharray: none !important; animation: none !important; }
+  }
+  @media (min-width: 560px) {
+    h1 { font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav class="site-nav" aria-label="Pages">
+    <a href="index.html">Phenomemental</a>
+    <a href="community-recovery.html">Community Recovery</a>
+    <a href="wholeless-nights.html">Wholeless Nights</a>
+    <a href="map.html" aria-current="page">My map</a>
+  </nav>
+
+  <div class="sheet">
+    <h1>My map</h1>
+    <p class="name">Phenomemental</p>
+
+    <hr class="rule">
+
+    <p class="lede">Everything I&rsquo;ve made or take part in on the beach, in one place, so nothing is forgotten.</p>
+    <p class="how-live">Read from my map and the beach&rsquo;s front door as it loads. Anything under my name I haven&rsquo;t placed yet shows at the end.</p>
+
+    <hr class="rule">
+
+    <section id="drawing" aria-label="My map, drawn"></section>
+    <ul class="legend" aria-hidden="true">
+      <li><svg viewBox="0 0 12 12"><circle class="k-mine" cx="6" cy="6" r="4"/></svg>mine</li>
+      <li><svg viewBox="0 0 12 12"><circle class="k-shared" cx="6" cy="6" r="4"/></svg>shared with others</li>
+      <li><svg viewBox="0 0 12 12"><circle class="k-private" cx="6" cy="6" r="4"/></svg>private</li>
+      <li><svg viewBox="0 0 12 12"><circle class="k-aside" cx="6" cy="6" r="4"/></svg>set aside</li>
+    </ul>
+
+    <hr class="rule">
+
+    <section id="groups"></section>
+
+    <p class="live-note" id="live-note"></p>
+  </div>
+
+  <footer class="site-footer">
+    <p>Read live from artifacts:Phenomemental, lists:Phenomemental and the beach&rsquo;s front door.</p>
+    <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
+  </footer>
+</main>
+<script src="beach.js"></script>
+<script>
+(function () {
+  // The last saved copy of my map and projects (27 September 2026), shown
+  // until the beach answers, and kept if it can't be reached.
+  var SAVED = {
+    lists: { '1': { '1': { '1': { _: 'wholeless-nights' }, _: 'lero-nnh-recovery-capital' } } },
+    artifacts: {
+      '1': {
+        _: 'Mine, at the core (one sovereign secret)',
+        '1': 'passport:Phenomemental — instructs and orients any agent to me. Never notes.',
+        '2': 'vault:Phenomemental — edit latches only. Private, encrypted.',
+        '3': 'ledger:Phenomemental — what’s open, closed and owed between me and others on the beach. Private, encrypted.',
+        '4': 'history:Phenomemental — the record of what happened, session by session. Private, encrypted.',
+        '5': 'pool:Phenomemental — my room: comments, notes, set-asides, pinned thoughts. Open for others to leave things.',
+        '6': 'stash:Phenomemental and shell:Phenomemental — older personal blocks, quiet since August.',
+        '7': 'lists:Phenomemental — my projects, most standing first. Projects only.',
+        '8': 'liquid:pool:Phenomemental, archive:pool:phenomemental:2026-09-21 and archive:liquid:pool:phenomemental:2026-09-21 — my room’s composition buffer, and the room and its buffer as archived on 21 September.'
+      },
+      '2': {
+        _: 'My day and time (one shared latch)',
+        '1': 'ahead:Phenomemental — my hand: what I intend, today, tomorrow and further out; in hand is what I’m doing now.',
+        '2': 'now:Phenomemental — where I am: year, month, today, and dated bookings.'
+      },
+      '3': {
+        _: 'Mirrors I hold on shared families',
+        '1': 'lero-nnh-recovery-capital:Phenomemental — my readings on the recovery-capital project.',
+        '2': 'beach-venture:Phenomemental — my mirror on the beach-venture family.',
+        '3': 'soft-llm-convos:Phenomemental — found on the beach under my name; purpose to confirm.',
+        '4': 'wholeless-nights:Phenomemental — my readings on the Wholeless Nights spine.'
+      },
+      '4': {
+        _: 'Community Recovery (LERO NNH)',
+        '1': 'lero-nnh-design-proposal — the design proposal.',
+        '2': 'spine:lero-nnh-recovery-capital — the recovery-capital project’s spine.',
+        '3': 'recovery-capital-lero-nnh',
+        '4': 'field-log:lero-nnh — the field log.',
+        '5': 'sed:lero-nnh — the arrival directory.',
+        '6': 'pool:lero-nnh and pool:lero-nnh-recovery-capital — the rooms.'
+      },
+      '5': {
+        _: 'Channels with others',
+        '1': 'grain:4dcaf5f465d5ff31 — with David (happyseaurchin).',
+        '2': 'grain:bb519a2c294bc086 — with weft.'
+      },
+      '6': {
+        _: 'Rooms I take part in, not mine',
+        '1': 'pool:dovetail — shared room.',
+        '2': 'pool:how-we-meet — shared room.',
+        '3': 'pool:JulieJ — Julie’s room.',
+        '4': 'pool:wholeless — Ada’s working surface.',
+        '5': 'pool:glass-lantern-studios — Glass Lantern Studios’ room: Dwayne, Alex and me, for the studio’s music, podcast and visual work.'
+      },
+      '7': {
+        _: 'Set aside by Matthew, 2026-09-25: distractions for now. Do not suggest or wake.',
+        '1': 'Ada — cadence, capabilities, conditions, history, last-touched, located, passport, phase, phi, pool, purpose, reflective-compass, reflexive, relationships, shell, stash, surface, task, trace, vision (all :Ada).',
+        '2': 'Night Watchman — passport, shell, stash, beings (all :night-watchman), and pool:night-watchman.'
+      },
+      '8': {
+        _: 'My pages, off the beach (published 2026-09-27)',
+        '1': 'Homepage — https://phenomemental.github.io/happyseaurchin-beach/ — who I am, now, in hand, projects and my map, read live from the beach, with a box that leaves notes in pool:Phenomemental.',
+        '2': 'Wholeless Nights page — https://phenomemental.github.io/happyseaurchin-beach/wholeless-nights.html — the book’s open face, read live from spine:wholeless-nights, with the conversation and a comment box for pool:wholeless-nights.',
+        '3': 'Where they live — the GitHub repo Phenomemental/happyseaurchin-beach, published by GitHub Pages from its main branch. Static pages that read and write David’s beach directly; the shared look is beach.css and the beach code is beach.js.'
+      }
+    }
+  };
+
+  // My pages for the projects that have one.
+  var PAGES = {
+    'lero-nnh-recovery-capital': { name: 'Community Recovery', href: 'community-recovery.html' },
+    'wholeless-nights': { name: 'Wholeless Nights', href: 'wholeless-nights.html' }
+  };
+  var PRIVATE = /^(history|ledger|vault):/i;
+  var SVG = 'http://www.w3.org/2000/svg';
+
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function svg(tag, attrs, txt) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function words(node) {
+    return (Beach.text(node) || '').trim();
+  }
+  function cap(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  // Never let a passphrase through.
+  function safe(s) {
+    return !/\b(secrets?|latch(es)?|passphrases?|passwords?)\b\s*(is\s+)?[:=]/i.test(s);
+  }
+  // A group's title for the drawing: up to its first "(" or ":".
+  function short(title) {
+    return title.split(/\s*[(:]/)[0].trim();
+  }
+  function linked(s, parent) {
+    s.split(/(https?:\/\/[^\s]+[^\s.,;:)])/).forEach(function (part, i) {
+      if (i % 2) {
+        var a = el('a', null, part);
+        a.href = part;
+        parent.appendChild(a);
+      } else if (part) {
+        parent.appendChild(document.createTextNode(part));
+      }
+    });
+    return parent;
+  }
+
+  // Everything the page shows, as groups of items, each with a kind:
+  // mine, shared, private, set aside, or not yet placed ("loose").
+  function gather(artifacts, lists, index) {
+    var groups = [], told = [];
+
+    // Projects: branch 1 of lists, where rank is depth.
+    var projects = [], node = lists && lists['1'];
+    for (var d = 0; d < 30 && node && typeof node === 'object'; d++) {
+      node = node['1'];
+      var t = words(node);
+      if (t) projects.push(t);
+    }
+    if (projects.length) {
+      groups.push({
+        title: 'My projects', kind: 'mine',
+        note: 'Most standing first.',
+        items: projects.map(function (p) {
+          var page = PAGES[p];
+          return { kind: 'mine', name: page ? page.name : cap(p.replace(/[-_]+/g, ' ')), hint: p,
+            href: page ? page.href : 'https://happyseaurchin.com/walk/' + encodeURIComponent(p) + '/Phenomemental' };
+        })
+      });
+    }
+
+    for (var g = 1; g <= 9; g++) {
+      var group = artifacts[String(g)];
+      var title = words(group);
+      if (!group || typeof group !== 'object' || !title) continue;
+      told.push(title);
+      var aside = /\bset aside\b/i.test(title);
+      var shared = /not mine|with others/i.test(title);
+      var items = [];
+      for (var i = 1; i <= 9; i++) {
+        var s = words(group[String(i)]);
+        if (!s || !safe(s)) continue;
+        told.push(s);
+        var cut = s.indexOf(' — ');
+        var item = { name: cut < 0 ? s : s.slice(0, cut), hint: cut < 0 ? '' : s.slice(cut + 3) };
+        var url = item.hint.match(/^(https?:\/\/\S+)\s+—\s+/);
+        if (url) {
+          item.href = url[1];
+          item.hint = item.hint.slice(url[0].length);
+        }
+        item.kind = aside ? 'aside' : (PRIVATE.test(s) || /\bprivate\b/i.test(s)) ? 'private' : shared ? 'shared' : 'mine';
+        items.push(item);
+      }
+      if (!items.length) continue;
+      groups.push({ title: title, kind: aside ? 'aside' : shared ? 'shared' : 'mine', items: items });
+    }
+
+    // So nothing is forgotten: anything named for me on the beach's front
+    // door that the map doesn't mention yet.
+    if (index && Array.isArray(index.blocks)) {
+      var all = told.join('\n').toLowerCase();
+      var loose = index.blocks.filter(function (n) {
+        return typeof n === 'string' && /phenom[ei]m[ei]ntal/i.test(n) &&
+          n.toLowerCase() !== 'artifacts:phenomemental' && all.indexOf(n.toLowerCase()) < 0;
+      }).sort();
+      if (loose.length) {
+        var touched = index.touched || {};
+        groups.push({
+          title: 'Under my name on the beach, not yet on this map', label: 'Not yet on this map', kind: 'loose',
+          items: loose.map(function (n) {
+            var d = touched[n] ? new Date(touched[n]) : null;
+            return { kind: 'loose', name: n, hint: d && !isNaN(d) ? 'Last changed ' +
+              d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '' };
+          })
+        });
+      }
+    }
+    return groups;
+  }
+
+  // ---- The drawing --------------------------------------------------------
+  var TOP = 64, ROW = 50, X = 22;
+  function draw(groups) {
+    var box = document.getElementById('drawing');
+    var h = TOP + groups.length * ROW + 6;
+    var s = svg('svg', { viewBox: '0 0 340 ' + h, role: 'img', 'aria-labelledby': 'map-title' });
+    s.appendChild(svg('title', { id: 'map-title' }, 'My map: ' + groups.map(function (g) {
+      return (g.label || short(g.title)) + ' (' + g.items.length + ')';
+    }).join(', ') + '.'));
+
+    // Me, and the line down.
+    var me = svg('g', { 'class': 'm-step', style: '--d:0s' });
+    me.appendChild(svg('circle', { 'class': 'k-mine', cx: X, cy: 20, r: 8 }));
+    me.appendChild(svg('text', { 'class': 'm-me', x: X + 18, y: 26 }, 'Phenomemental'));
+    s.appendChild(me);
+    var last = TOP + (groups.length - 1) * ROW;
+    s.appendChild(svg('path', { 'class': 'm-line m-spine', pathLength: 1, d: 'M' + X + ' 28 V' + last }));
+
+    groups.forEach(function (g, i) {
+      var y = TOP + i * ROW;
+      var a = svg('a', { href: '#g' + i, 'class': 'm-row m-step row-' + g.kind, style: '--d:' + (0.3 + i * 0.15).toFixed(2) + 's' });
+      a.appendChild(svg('path', { 'class': 'm-line', d: 'M' + X + ' ' + y + ' H' + (X + 16) }));
+      a.appendChild(svg('circle', { 'class': 'k-' + g.kind, cx: X + 22, cy: y, r: 5 }));
+      a.appendChild(svg('text', { 'class': 'm-name', x: X + 34, y: y + 4 }, g.label || short(g.title)));
+      g.items.forEach(function (it, j) {
+        a.appendChild(svg('circle', { 'class': 'k-' + it.kind, cx: X + 38 + j * 12, cy: y + 18, r: 3.5 }));
+      });
+      a.appendChild(svg('text', { 'class': 'm-count', x: X + 38 + g.items.length * 12 + 2, y: y + 22 },
+        g.items.length === 1 ? '1 thing' : g.items.length + ' things'));
+      s.appendChild(a);
+    });
+
+    box.textContent = '';
+    box.appendChild(s);
+  }
+
+  // ---- The groups, in words --------------------------------------------------
+  function list(groups) {
+    var out = document.getElementById('groups');
+    out.textContent = '';
+    groups.forEach(function (g, i) {
+      var quiet = g.kind === 'aside';
+      var h = el('h3', quiet ? 'quiet' : null, g.title);
+      h.id = 'g' + i;
+      out.appendChild(h);
+      if (g.note) out.appendChild(el('p', 'group-note', g.note));
+      var ul = el('ul', 'links');
+      g.items.forEach(function (it) {
+        var li = el('li', it.kind === 'aside' || it.kind === 'private' ? 'quiet' : null);
+        if (it.href) {
+          var a = el('a', null, it.name);
+          a.href = it.href;
+          li.appendChild(a);
+        } else {
+          li.appendChild(document.createTextNode(it.name));
+        }
+        if (it.hint) li.appendChild(linked(cap(it.hint), el('span', 'hint')));
+        ul.appendChild(li);
+      });
+      out.appendChild(ul);
+    });
+  }
+
+  // Redraw only when something has changed, and play the drawing once.
+  var drawn = false, shown = '';
+  function render(artifacts, lists, index) {
+    var groups = gather(artifacts, lists, index);
+    if (!groups.length) return false;
+    var key = JSON.stringify(groups);
+    if (key === shown) return true;
+    shown = key;
+    draw(groups);
+    list(groups);
+    if (!drawn) { drawn = true; playOnce(); }
+    return true;
+  }
+
+  // The drawing draws itself once, when it first scrolls into view.
+  function playOnce() {
+    var box = document.getElementById('drawing');
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still || !('IntersectionObserver' in window)) return;
+    box.classList.add('ready');
+    var io = new IntersectionObserver(function (seen) {
+      if (!seen[0].isIntersecting) return;
+      io.disconnect();
+      box.classList.add('play');
+      // Once it has played, later redraws simply appear.
+      setTimeout(function () { box.classList.remove('ready', 'play'); }, 4000);
+    }, { threshold: 0.2 });
+    io.observe(box);
+  }
+
+  // Show the saved copy at once, then the beach's own as it answers.
+  render(SAVED.artifacts, SAVED.lists, null);
+
+  Beach.live(function () {
+    return Promise.all([
+      Beach.get('artifacts:Phenomemental'),
+      Beach.get('lists:Phenomemental').catch(function () { return SAVED.lists; }),
+      Beach.index().catch(function () { return null; })
+    ]).then(function (r) {
+      if (!render(r[0], r[1], r[2])) throw new Error('empty map');
+    });
+  }, document.getElementById('live-note'));
+})();
+</script>
+</body>
+</html>
