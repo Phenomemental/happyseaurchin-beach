@@ -66,6 +66,33 @@
   ul {
     margin-bottom: 0.9rem;
   }
+  .rungs {
+    margin: 0;
+  }
+  .rung {
+    margin: 0 0 1rem;
+  }
+  .rung dt {
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rung dd {
+    margin: 0;
+  }
+  .done {
+    margin-top: 0.4rem;
+    font-size: 1.05rem;
+  }
+  .now-checked {
+    margin: 0 0 0.4rem;
+  }
+  .now-link {
+    text-align: center;
+    font-style: italic;
+    margin: 0;
+  }
   @media (min-width: 560px) {
     h1 { font-size: 3rem; }
   }
@@ -88,6 +115,15 @@
     <p class="lede">A writer and a builder: I think in stories and mountains, and I tinker with the architecture of how people meet.</p>
 
     <hr class="rule">
+
+    <section id="now" hidden>
+      <h2>Now</h2>
+      <dl class="rungs" id="rungs"></dl>
+      <p class="live-note now-checked" id="now-checked"></p>
+      <p class="now-link"><a href="https://happyseaurchin.com/now/Phenomemental">My now on the beach's clock &rarr;</a></p>
+    </section>
+
+    <hr class="rule" id="now-rule" hidden>
 
     <section>
       <h2>Where I stand</h2>
@@ -218,6 +254,75 @@
     document.getElementById('closing').hidden = true;
   }, function () {});
   Beach.wireNoteForm(form, 'pool:Phenomemental');
+
+  // now:Phenomemental mirrors the beach's clock: the sundial address is the
+  // date written digit by digit (millennium, century, decade, year, season,
+  // month, week, day, gathering, beat), and a 0 digit is the "_" branch.
+  // Each rung's own words are that node's "_" text; silence is skipped.
+  var RUNGS = [null, null, null, 'This year', 'This season', 'This month', 'This week', 'Today'];
+
+  function renderNow(block) {
+    var c = Beach.clock();
+    if (!c) return;
+    var digits = c.address.split('');
+    var dl = document.getElementById('rungs');
+    dl.textContent = '';
+    var node = block, day = null, shown = 0;
+    for (var i = 0; i < RUNGS.length && node && typeof node === 'object'; i++) {
+      node = node[digits[i] === '0' ? '_' : digits[i]];
+      if (!node || typeof node !== 'object') break;
+      var words = typeof node._ === 'string' ? node._.trim() : '';
+      if (RUNGS[i] && words) {
+        var div = document.createElement('div');
+        div.className = 'rung';
+        var dt = document.createElement('dt');
+        dt.textContent = RUNGS[i] === 'Today' ? 'Today \u00b7 ' + c.voicing.split(',')[0] : RUNGS[i];
+        var dd = document.createElement('dd');
+        dd.textContent = words;
+        div.appendChild(dt);
+        div.appendChild(dd);
+        dl.appendChild(div);
+        shown++;
+      }
+      if (RUNGS[i] === 'Today') day = node;
+    }
+    if (day) renderDone(day, dl);
+    var any = shown > 0;
+    document.getElementById('now').hidden = !any;
+    document.getElementById('now-rule').hidden = !any;
+  }
+
+  // What was marked done today: entries anywhere under today's node
+  // shaped {_: what, 4: "done"}.
+  function renderDone(day, dl) {
+    var done = [];
+    (function walk(n) {
+      if (!n || typeof n !== 'object') return;
+      if (n['4'] === 'done' && typeof n._ === 'string') done.push(n._);
+      Object.keys(n).forEach(function (k) { if (k !== '_') walk(n[k]); });
+    })(day);
+    if (!done.length) return;
+    var div = document.createElement('div');
+    div.className = 'rung';
+    var dt = document.createElement('dt');
+    dt.textContent = 'Done today';
+    var dd = document.createElement('dd');
+    var ul = document.createElement('ul');
+    ul.className = 'done';
+    done.forEach(function (t) {
+      var li = document.createElement('li');
+      li.textContent = t;
+      ul.appendChild(li);
+    });
+    dd.appendChild(ul);
+    div.appendChild(dt);
+    div.appendChild(dd);
+    dl.appendChild(div);
+  }
+
+  Beach.live(function () {
+    return Beach.get('now:Phenomemental').then(renderNow);
+  }, document.getElementById('now-checked'));
 })();
 </script>
 </body>

@@ -3,13 +3,25 @@
 (function () {
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
   var REFRESH_MS = 30000;
+  var clock = null;
 
   function get(block) {
     return fetch(BEACH + '?block=' + encodeURIComponent(block), { cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
+        readClock(r.headers.get('X-Pscale-Now'));
         return r.json();
       });
+  }
+
+  // Every beach response carries the shared clock as
+  // "ISO | ten-digit sundial address | voicing", e.g.
+  // "2026-09-27T10:04:23Z | 2026334647 | Sunday 27 September 2026, morning (beat 7)".
+  function readClock(header) {
+    var parts = (header || '').split('|').map(function (x) { return x.trim(); });
+    if (parts.length === 3 && /^\d{10}$/.test(parts[1])) {
+      clock = { iso: parts[0], address: parts[1], voicing: parts[2] };
+    }
   }
 
   // A position's own text: a string leaf, or the "_" of a node.
@@ -149,6 +161,7 @@
 
   window.Beach = {
     get: get,
+    clock: function () { return clock; },
     text: text,
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
