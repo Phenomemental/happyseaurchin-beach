@@ -150,7 +150,7 @@
     text-align: center;
     margin: 0;
   }
-  .closing code {
+  code {
     font-family: "Cormorant Garamond", Garamond, serif;
     font-style: normal;
     font-weight: 600;
@@ -206,6 +206,64 @@
     overflow-wrap: anywhere;
     margin: 0;
   }
+  form label {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0 0 0.25rem;
+  }
+  form input,
+  form textarea {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 1.1rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    padding: 0.5rem 0.65rem;
+    margin: 0 0 0.9rem;
+  }
+  form textarea {
+    min-height: 7rem;
+    resize: vertical;
+  }
+  form input:focus,
+  form textarea:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+  }
+  .trap {
+    position: absolute;
+    left: -9999px;
+  }
+  form button {
+    font: inherit;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--page);
+    background: var(--crimson);
+    border: 0;
+    border-radius: 2px;
+    padding: 0.5rem 1.4rem;
+    cursor: pointer;
+  }
+  form button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .form-status {
+    font-size: 1rem;
+    margin: 0.6rem 0 0;
+    min-height: 1.5em;
+  }
+  .form-foot {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0.4rem 0 0;
+  }
   @media (min-width: 560px) {
     .sheet { padding: 3rem 3rem 2.5rem; }
   }
@@ -258,7 +316,20 @@
     <section>
       <h2>Conversation</h2>
       <div class="thread" id="thread" aria-live="polite"></div>
-      <p class="closing">Comments welcome at <code>pool:wholeless-nights</code> on the beach.</p>
+
+      <form id="comment-form" hidden>
+        <label for="c-name">Your name (optional)</label>
+        <input id="c-name" name="who" maxlength="40" autocomplete="name">
+        <label class="trap" for="c-web" aria-hidden="true">Leave this empty</label>
+        <input class="trap" id="c-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label for="c-text">Your note</label>
+        <textarea id="c-text" name="note" maxlength="2000" required></textarea>
+        <button type="submit">Leave a note</button>
+        <p class="form-status" id="c-status" role="status"></p>
+        <p class="form-foot">Notes are public: they go into the book's room on the beach, <code>pool:wholeless-nights</code>.</p>
+      </form>
+
+      <p class="closing" id="closing">Comments welcome at <code>pool:wholeless-nights</code> on the beach.</p>
     </section>
 
     <p class="live-note" id="live-note"></p>
@@ -397,8 +468,47 @@
     return Promise.all([
       get(SPINE).then(renderSpine),
       get(POOL).then(renderPool)
-    ]).then(function () { stamp(true); }, function () { stamp(false); });
+    ]).then(function () {
+      // The form only makes sense once we know the beach is reachable.
+      document.getElementById('comment-form').hidden = false;
+      document.getElementById('closing').hidden = true;
+      stamp(true);
+    }, function () {
+      stamp(false);
+    });
   }
+
+  document.getElementById('comment-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var form = ev.target;
+    var status = document.getElementById('c-status');
+    var button = form.querySelector('button');
+    var note = form.note.value.trim();
+    if (form.web.value || !note) return;
+    var who = form.who.value.trim().slice(0, 40) || 'a visitor';
+    button.disabled = true;
+    status.textContent = 'Sending\u2026';
+    fetch(BEACH + '?block=' + encodeURIComponent(POOL), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        append: true,
+        content: { _: note, 1: who, 2: '', 3: new Date().toISOString() }
+      })
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      });
+    }).then(function () {
+      form.note.value = '';
+      status.textContent = 'Thank you. Your note is on the beach.';
+      return refresh();
+    }).catch(function () {
+      status.textContent = 'That didn\u2019t reach the beach. Please try again in a moment.';
+    }).then(function () {
+      button.disabled = false;
+    });
+  });
 
   refresh();
   setInterval(function () {
