@@ -1,0 +1,250 @@
+/* Shared look for the Phenomemental pages, taken from the Wholeless Nights cover. */
+
+:root {
+  --paper: #efe7d8;
+  --page: #f6f0e4;
+  --ink: #1d1a17;
+  --muted: #6a6158;
+  --rule: #a8323a;
+  --frame: #b9ad9a;
+  --crimson: #c21d4e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #16130f;
+    --page: #1d1914;
+    --ink: #ede4d3;
+    --muted: #a79c8b;
+    --rule: #d0525a;
+    --frame: #4a4237;
+    --crimson: #ef5d85;
+  }
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  font-size: 1.2rem;
+  line-height: 1.55;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+main {
+  width: 100%;
+  max-width: 620px;
+  padding: 1.5rem 1rem 3rem;
+}
+a {
+  color: var(--crimson);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+a:hover {
+  border-bottom-color: currentColor;
+}
+.sheet {
+  background: var(--page);
+  border: 1px solid var(--frame);
+  outline: 1px solid var(--frame);
+  outline-offset: 6px;
+  margin: 6px;
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.rule {
+  width: 5rem;
+  height: 0;
+  border: 0;
+  border-top: 1.5px solid var(--rule);
+  margin: 1.3rem auto;
+}
+section {
+  text-align: left;
+  margin: 0 auto;
+  max-width: 30rem;
+}
+h2 {
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--muted);
+  margin: 0 0 0.8rem;
+}
+p {
+  margin: 0 0 0.9rem;
+}
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+li {
+  padding-left: 1.4rem;
+  position: relative;
+  margin-bottom: 0.35rem;
+}
+li::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.62em;
+  width: 0.5rem;
+  height: 0.36rem;
+  border-radius: 50%;
+  background: var(--crimson);
+}
+.closing {
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+}
+code {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-style: normal;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.live-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 1.8rem 0 0;
+}
+.thread {
+  margin: 0 0 1.2rem;
+}
+.thread-empty {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+}
+.comment {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--frame);
+}
+.comment:first-child {
+  padding-top: 0;
+}
+.comment-meta {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 0.2rem;
+}
+.comment-meta strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.comment-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+form label {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+form input,
+form textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 1.1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  padding: 0.5rem 0.65rem;
+  margin: 0 0 0.9rem;
+}
+form textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+form input:focus,
+form textarea:focus {
+  outline: 2px solid var(--crimson);
+  outline-offset: 1px;
+}
+.trap {
+  position: absolute;
+  left: -9999px;
+}
+form button {
+  font: inherit;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--page);
+  background: var(--crimson);
+  border: 0;
+  border-radius: 2px;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+}
+form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.form-status {
+  font-size: 1rem;
+  margin: 0.6rem 0 0;
+  min-height: 1.5em;
+}
+.form-foot {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  margin: 0.4rem 0 0;
+}
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 1.4rem;
+  font-size: 1rem;
+  font-style: italic;
+  margin: 0 0 1.5rem;
+}
+.site-nav a[aria-current="page"] {
+  color: var(--ink);
+}
+.links li {
+  margin-bottom: 0.6rem;
+}
+.links .hint {
+  display: block;
+  color: var(--muted);
+  font-size: 1rem;
+  font-style: italic;
+}
+.site-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-style: italic;
+  margin-top: 2rem;
+}
+.site-footer p {
+  margin: 0 0 0.3rem;
+}
+@media (min-width: 560px) {
+  .sheet { padding: 3rem 3rem 2.5rem; }
+}
