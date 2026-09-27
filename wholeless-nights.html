@@ -5,23 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wholeless Nights</title>
 <meta name="description" content="Wholeless Nights: Bipolar &amp; the included middle, a book in progress by Mathew Pay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fafaf9;
-    --fg: #1c1c1a;
-    --muted: #6b6b66;
-    --accent: #2b6cb0;
-    --border: #e4e4e1;
-    --card-bg: #ffffff;
+    --paper: #efe7d8;
+    --page: #f6f0e4;
+    --ink: #1d1a17;
+    --muted: #6a6158;
+    --rule: #a8323a;
+    --frame: #b9ad9a;
+    --crimson: #c21d4e;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14140f;
-      --fg: #eeeee8;
-      --muted: #9a9a92;
-      --accent: #7ab3ff;
-      --border: #2a2a24;
-      --card-bg: #1b1b15;
+      --paper: #16130f;
+      --page: #1d1914;
+      --ink: #ede4d3;
+      --muted: #a79c8b;
+      --rule: #d0525a;
+      --frame: #4a4237;
+      --crimson: #ef5d85;
     }
   }
   * { box-sizing: border-box; }
@@ -30,121 +35,128 @@
     padding: 0;
   }
   body {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    line-height: 1.6;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    font-size: 1.2rem;
+    line-height: 1.55;
     display: flex;
     justify-content: center;
     min-height: 100vh;
   }
   main {
     width: 100%;
-    max-width: 640px;
-    padding: 2rem 1rem 4rem;
-  }
-  .back {
-    display: inline-block;
-    font-size: 0.85rem;
-    margin-bottom: 1.8rem;
-  }
-  .cover {
-    display: block;
-    width: 100%;
-    max-width: 320px;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    margin: 0 auto 2rem;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--muted);
-    font-size: 0.85rem;
-    text-align: center;
-  }
-  h1 {
-    font-size: 1.9rem;
-    margin: 0 0 0.25rem;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
-  .tagline {
-    color: var(--muted);
-    font-size: 1rem;
-    margin: 0 0 1.2rem;
-  }
-  .status {
-    display: inline-block;
-    font-size: 0.8rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 999px;
-    padding: 0.2rem 0.7rem;
-    margin-bottom: 2rem;
-  }
-  blockquote {
-    margin: 0 0 2rem;
-    padding: 0.2rem 0 0.2rem 1rem;
-    border-left: 3px solid var(--accent);
-    font-style: italic;
-    font-size: 1.05rem;
-  }
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.4rem 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-  .card h2 {
-    font-size: 1.05rem;
-    color: var(--fg);
-    margin: 0 0 0.2rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .card .kicker {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin: 0 0 0.9rem;
-  }
-  .card p {
-    font-size: 0.92rem;
-    margin: 0 0 0.8rem;
-  }
-  .card p:last-child,
-  .card ul:last-child {
-    margin-bottom: 0;
-  }
-  .card ul {
-    margin: 0 0 0.8rem;
-    padding-left: 1.1rem;
-    font-size: 0.88rem;
-  }
-  .card li {
-    margin-bottom: 0.5rem;
+    max-width: 620px;
+    padding: 1.5rem 1rem 3rem;
   }
   a {
-    color: var(--accent);
+    color: var(--crimson);
     text-decoration: none;
     border-bottom: 1px solid transparent;
   }
   a:hover {
     border-bottom-color: currentColor;
   }
-  code {
-    font-size: 0.9em;
+  .back {
+    display: inline-block;
+    font-size: 1rem;
+    font-style: italic;
+    margin-bottom: 1.5rem;
   }
-  footer {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
+  .cover {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    aspect-ratio: 1040 / 1599;
+    margin: 0 auto 2.5rem;
+    border-radius: 2px;
+    box-shadow: 0 12px 30px rgba(40, 30, 15, 0.18);
+  }
+  .sheet {
+    background: var(--page);
+    border: 1px solid var(--frame);
+    outline: 1px solid var(--frame);
+    outline-offset: 6px;
+    margin: 6px;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .rule {
+    width: 5rem;
+    height: 0;
+    border: 0;
+    border-top: 1.5px solid var(--rule);
+    margin: 1.3rem auto;
+  }
+  blockquote {
+    font-style: italic;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    margin: 0 auto 0.5rem;
+    max-width: 26rem;
+  }
+  section {
+    text-align: left;
+    margin: 0 auto;
+    max-width: 30rem;
+  }
+  h2 {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-align: center;
     color: var(--muted);
+    margin: 0 0 0.8rem;
+  }
+  p {
+    margin: 0 0 0.9rem;
+  }
+  .plan {
+    text-align: center;
+    font-size: 1.3rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    padding-left: 1.4rem;
+    position: relative;
+    margin-bottom: 0.35rem;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0.2rem;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 0.36rem;
+    border-radius: 50%;
+    background: var(--crimson);
+  }
+  .closing {
+    font-style: italic;
+    margin: 0;
+  }
+  .closing code {
+    font-family: "Cormorant Garamond", Garamond, serif;
+    font-style: normal;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  @media (min-width: 560px) {
+    .sheet { padding: 3rem 3rem 2.5rem; }
   }
 </style>
 </head>
@@ -152,43 +164,46 @@
 <main>
   <a class="back" href="index.html">&larr; Phenomemental</a>
 
-  <img class="cover" src="wholeless-nights-cover.jpg" alt="Front cover of Wholeless Nights: Bipolar &amp; the included middle by Mathew Pay">
+  <img class="cover" src="wholeless-nights-cover.jpg" width="1040" height="1599" alt="Front cover of Wholeless Nights: Bipolar &amp; the included middle by Mathew Pay">
 
-  <h1>Wholeless Nights</h1>
-  <p class="tagline">Bipolar &amp; the included middle · Mathew Pay</p>
+  <div class="sheet">
+    <h1 class="visually-hidden">Wholeless Nights: Bipolar &amp; the included middle, by Mathew Pay</h1>
 
-  <span class="status">In progress</span>
+    <blockquote>The soldier who does not know himself, who does not have his own house</blockquote>
 
-  <blockquote>The soldier who does not know himself, who does not have his own house</blockquote>
+    <hr class="rule">
 
-  <section class="card">
-    <p class="kicker">The book</p>
-    <h2>What it's about</h2>
-    <p>
-      A soldier's night watch, told across 27 watches. The nights are
-      spent restoring old memories, so that they survive.
-    </p>
-  </section>
+    <section>
+      <h2>The book</h2>
+      <p>
+        A soldier's night watch, told across 27 watches. The nights are
+        spent restoring old memories, so that they survive.
+      </p>
+    </section>
 
-  <section class="card">
-    <p class="kicker">The plan</p>
-    <h2>A complete first draft before Christmas 2026</h2>
-  </section>
+    <hr class="rule">
 
-  <section class="card">
-    <p class="kicker">Progress</p>
-    <h2>Where it stands</h2>
-    <ul>
-      <li>Eight watches drafted</li>
-      <li>A plan for all 27</li>
-      <li>A list of sources</li>
-      <li>Covers done</li>
-    </ul>
-  </section>
+    <section>
+      <h2>The plan</h2>
+      <p class="plan">A complete first draft before Christmas 2026.</p>
+    </section>
 
-  <footer>
-    <p>Comments welcome at <code>pool:wholeless-nights</code> on the beach.</p>
-  </footer>
+    <hr class="rule">
+
+    <section>
+      <h2>Progress</h2>
+      <ul>
+        <li>Eight watches drafted</li>
+        <li>A plan for all 27</li>
+        <li>A list of sources</li>
+        <li>Covers done</li>
+      </ul>
+    </section>
+
+    <hr class="rule">
+
+    <p class="closing">Comments welcome at <code>pool:wholeless-nights</code> on the beach.</p>
+  </div>
 </main>
 </body>
 </html>
