@@ -165,6 +165,57 @@
     color: var(--muted);
     font-size: 1.05rem;
   }
+  /* The pitch: six frames, each drawing itself as it scrolls into view,
+     then its words settling in. Still, and whole, for less motion. */
+  .pitch {
+    list-style: none;
+    padding: 0;
+    margin: 1.4rem 0 0;
+  }
+  .pitch-frame {
+    display: grid;
+    grid-template-columns: 3.6rem 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin: 0 0 1.5rem;
+  }
+  .pitch-frame svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .pitch-frame h3 {
+    font-size: 1.3rem;
+    margin: 0 0 0.2rem;
+  }
+  .pitch-frame p {
+    margin: 0;
+  }
+  .pitch-closing {
+    text-align: center;
+    font-style: italic;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    color: var(--crimson);
+    margin: 0.4rem auto 0;
+    max-width: 24rem;
+  }
+  .pp-line { stroke: var(--frame); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-key { stroke: var(--rule); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-faint { stroke: var(--frame); stroke-width: 2; fill: none; stroke-dasharray: 3 4; stroke-linecap: round; }
+  .pp-dot { fill: var(--crimson); }
+  @keyframes pp-draw { to { stroke-dashoffset: 0; } }
+  @keyframes pp-in { to { opacity: 1; transform: none; } }
+  #pitch.ready .pp-draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  #pitch.ready .pp-dot,
+  #pitch.ready .pitch-words,
+  #pitch.ready .pitch-closing { opacity: 0; }
+  #pitch.ready .pitch-words,
+  #pitch.ready .pitch-closing { transform: translateY(0.5rem); }
+  #pitch.ready .seen .pp-draw { animation: pp-draw 0.7s ease-in-out forwards; animation-delay: var(--d, 0s); }
+  #pitch.ready .seen .pp-dot { animation: pp-in 0.35s ease-out forwards; animation-delay: var(--d, 0.6s); }
+  #pitch.ready .seen .pitch-words,
+  #pitch.ready .pitch-closing.seen { animation: pp-in 0.6s ease-out forwards; animation-delay: 0.5s; }
   /* The beach answering: a live section settles in as it arrives, and
      its mark lands in crimson. The family drawing draws itself once. */
   @keyframes settle {
@@ -243,6 +294,89 @@
 
     <hr class="rule">
 
+    <section id="pitch">
+      <h2>The pitch</h2>
+      <ol class="pitch" id="pitch-frames">
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
+            <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
+            <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>Value nobody can see</h3>
+            <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
+          </div>
+        </li>
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
+            <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
+            <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>What&rsquo;s theirs stays theirs</h3>
+            <p>Each member keeps their own account, in their own words, under their own key.</p>
+          </div>
+        </li>
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
+            <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
+            <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
+            <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
+            <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>What happens together is ours</h3>
+            <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
+          </div>
+        </li>
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
+            <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
+            <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
+            <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
+            <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>Growth, seen over time</h3>
+            <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
+          </div>
+        </li>
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
+            <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
+            <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
+            <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
+            <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>Evidence, in members&rsquo; own words</h3>
+            <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture commissioners are missing.</p>
+          </div>
+        </li>
+        <li class="pitch-frame">
+          <svg viewBox="0 0 60 60" aria-hidden="true">
+            <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
+            <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
+            <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
+            <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
+            <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
+          </svg>
+          <div class="pitch-words">
+            <h3>It travels by recognition</h3>
+            <p>A working example in Community Recovery, offered to other LEROs: pull, not push.</p>
+          </div>
+        </li>
+      </ol>
+      <p class="pitch-closing">A LERO that can show itself, in its members&rsquo; own words.</p>
+    </section>
+
+    <hr class="rule">
+
     <section id="who">
       <h2>Who's behind this</h2>
       <div id="who-live">
@@ -275,6 +409,7 @@
       <h2>Contents</h2>
       <ol class="contents">
         <li><a href="#intro">Introduction</a></li>
+        <li><a href="#pitch">The pitch</a></li>
         <li><a href="#who">Who's behind this</a></li>
         <li><a href="#vision">The vision</a></li>
         <li><a href="#offer">The offer in plain words</a></li>
@@ -1613,6 +1748,26 @@
       list.appendChild(li);
     });
   }
+
+  // The pitch plays frame by frame: each draws itself, then its words
+  // settle in, as it scrolls into view, once. Still, and whole, for anyone
+  // who prefers less motion.
+  (function () {
+    var list = document.getElementById('pitch-frames');
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!list || still || !('IntersectionObserver' in window)) return;
+    var pitch = document.getElementById('pitch');
+    var parts = Array.prototype.slice.call(pitch.querySelectorAll('.pitch-frame, .pitch-closing'));
+    pitch.classList.add('ready');
+    var io = new IntersectionObserver(function (seen) {
+      seen.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('seen');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.6 });
+    parts.forEach(function (p) { io.observe(p); });
+  })();
 
   // The family drawing draws itself once, when it first scrolls into view:
   // spine, then the mirrors one by one, then the lines down into the fold,
