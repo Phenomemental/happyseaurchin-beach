@@ -117,6 +117,7 @@
     <a href="community-recovery.html">Community Recovery</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="map.html" aria-current="page">My map</a>
+    <a href="night-watchman.html">The Night Watchman</a>
   </nav>
 
   <div class="sheet">
@@ -155,67 +156,7 @@
 (function () {
   // The last saved copy of my map and projects (27 September 2026), shown
   // until the beach answers, and kept if it can't be reached.
-  var SAVED = {
-    lists: { '1': { '1': { '1': { _: 'wholeless-nights' }, _: 'lero-nnh-recovery-capital' } } },
-    artifacts: {
-      '1': {
-        _: 'Mine, at the core (one sovereign secret)',
-        '1': 'passport:Phenomemental — instructs and orients any agent to me. Never notes.',
-        '2': 'vault:Phenomemental — edit latches only. Private, encrypted.',
-        '3': 'ledger:Phenomemental — what’s open, closed and owed between me and others on the beach. Private, encrypted.',
-        '4': 'history:Phenomemental — the record of what happened, session by session. Private, encrypted.',
-        '5': 'pool:Phenomemental — my room: comments, notes, set-asides, pinned thoughts. Open for others to leave things.',
-        '6': 'stash:Phenomemental and shell:Phenomemental — older personal blocks, quiet since August.',
-        '7': 'lists:Phenomemental — my projects, most standing first. Projects only.',
-        '8': 'liquid:pool:Phenomemental, archive:pool:phenomemental:2026-09-21 and archive:liquid:pool:phenomemental:2026-09-21 — my room’s composition buffer, and the room and its buffer as archived on 21 September.'
-      },
-      '2': {
-        _: 'My day and time (one shared latch)',
-        '1': 'ahead:Phenomemental — my hand: what I intend, today, tomorrow and further out; in hand is what I’m doing now.',
-        '2': 'now:Phenomemental — where I am: year, month, today, and dated bookings.'
-      },
-      '3': {
-        _: 'Mirrors I hold on shared families',
-        '1': 'lero-nnh-recovery-capital:Phenomemental — my readings on the recovery-capital project.',
-        '2': 'beach-venture:Phenomemental — my mirror on the beach-venture family.',
-        '3': 'soft-llm-convos:Phenomemental — found on the beach under my name; purpose to confirm.',
-        '4': 'wholeless-nights:Phenomemental — my readings on the Wholeless Nights spine.'
-      },
-      '4': {
-        _: 'Community Recovery (LERO NNH)',
-        '1': 'lero-nnh-design-proposal — the design proposal.',
-        '2': 'spine:lero-nnh-recovery-capital — the recovery-capital project’s spine.',
-        '3': 'recovery-capital-lero-nnh',
-        '4': 'field-log:lero-nnh — the field log.',
-        '5': 'sed:lero-nnh — the arrival directory.',
-        '6': 'pool:lero-nnh and pool:lero-nnh-recovery-capital — the rooms.'
-      },
-      '5': {
-        _: 'Channels with others',
-        '1': 'grain:4dcaf5f465d5ff31 — with David (happyseaurchin).',
-        '2': 'grain:bb519a2c294bc086 — with weft.'
-      },
-      '6': {
-        _: 'Rooms I take part in, not mine',
-        '1': 'pool:dovetail — shared room.',
-        '2': 'pool:how-we-meet — shared room.',
-        '3': 'pool:JulieJ — Julie’s room.',
-        '4': 'pool:wholeless — Ada’s working surface.',
-        '5': 'pool:glass-lantern-studios — Glass Lantern Studios’ room: Dwayne, Alex and me, for the studio’s music, podcast and visual work.'
-      },
-      '7': {
-        _: 'Set aside by Matthew, 2026-09-25: distractions for now. Do not suggest or wake.',
-        '1': 'Ada — cadence, capabilities, conditions, history, last-touched, located, passport, phase, phi, pool, purpose, reflective-compass, reflexive, relationships, shell, stash, surface, task, trace, vision (all :Ada).',
-        '2': 'Night Watchman — passport, shell, stash, beings (all :night-watchman), and pool:night-watchman.'
-      },
-      '8': {
-        _: 'My pages, off the beach (published 2026-09-27)',
-        '1': 'Homepage — https://phenomemental.github.io/happyseaurchin-beach/ — who I am, now, in hand, projects and my map, read live from the beach, with a box that leaves notes in pool:Phenomemental.',
-        '2': 'Wholeless Nights page — https://phenomemental.github.io/happyseaurchin-beach/wholeless-nights.html — the book’s open face, read live from spine:wholeless-nights, with the conversation and a comment box for pool:wholeless-nights.',
-        '3': 'Where they live — the GitHub repo Phenomemental/happyseaurchin-beach, published by GitHub Pages from its main branch. Static pages that read and write David’s beach directly; the shared look is beach.css and the beach code is beach.js.'
-      }
-    }
-  };
+  var SAVED = {"lists": {"1": {"1": {"1": {"_": "wholeless-nights"}, "_": "lero-nnh-recovery-capital"}}}, "artifacts": {"1": {"1": "passport:Phenomemental \u2014 instructs and orients any agent to me. Never notes.", "2": "vault:Phenomemental \u2014 edit latches only. Private, encrypted.", "3": "ledger:Phenomemental \u2014 what's open, closed and owed between me and others on the beach. Private, encrypted.", "4": "history:Phenomemental \u2014 the record of what happened, session by session. Private, encrypted.", "5": "pool:Phenomemental \u2014 my room: comments, notes, set-asides, pinned thoughts. Open for others to leave things.", "6": "stash:Phenomemental and shell:Phenomemental \u2014 older personal blocks, quiet since August.", "7": "lists:Phenomemental \u2014 my projects, most standing first. Projects only.", "8": "liquid:pool:Phenomemental, archive:pool:phenomemental:2026-09-21 and archive:liquid:pool:phenomemental:2026-09-21 \u2014 my room's composition buffer, and the room and its buffer as archived on 21 September.", "_": "Mine, at the core (one sovereign secret)"}, "2": {"1": "ahead:Phenomemental \u2014 my hand: what I intend, today, tomorrow and further out; in hand is what I'm doing now.", "2": "now:Phenomemental \u2014 where I am: year, month, today, and dated bookings.", "_": "My day and time (one shared latch)"}, "3": {"1": "lero-nnh-recovery-capital:Phenomemental \u2014 my readings on the recovery-capital project.", "2": "beach-venture:Phenomemental \u2014 my mirror on the beach-venture family.", "3": "soft-llm-convos:Phenomemental \u2014 found on the beach under my name; purpose to confirm.", "4": "wholeless-nights:Phenomemental \u2014 my readings on the Wholeless Nights spine.", "_": "Mirrors I hold on shared families"}, "4": {"1": "lero-nnh-design-proposal \u2014 the design proposal.", "2": "spine:lero-nnh-recovery-capital \u2014 the recovery-capital project's spine.", "3": "recovery-capital-lero-nnh", "4": "field-log:lero-nnh \u2014 the field log.", "5": "sed:lero-nnh \u2014 the arrival directory.", "6": "pool:lero-nnh and pool:lero-nnh-recovery-capital \u2014 the rooms.", "_": "Community Recovery (LERO NNH)"}, "5": {"1": "grain:4dcaf5f465d5ff31 \u2014 with David (happyseaurchin).", "2": "grain:bb519a2c294bc086 \u2014 with weft.", "_": "Channels with others"}, "6": {"1": "pool:dovetail \u2014 shared room.", "2": "pool:how-we-meet \u2014 shared room.", "3": "pool:JulieJ \u2014 Julie's room.", "4": "pool:wholeless \u2014 Ada's working surface.", "5": "pool:glass-lantern-studios \u2014 Glass Lantern Studios' room: Dwayne, Alex and me, for the studio's music, podcast and visual work.", "_": "Rooms I take part in, not mine"}, "7": {"1": "Ada \u2014 cadence, capabilities, conditions, history, last-touched, located, passport, phase, phi, pool, purpose, reflective-compass, reflexive, relationships, shell, stash, surface, task, trace, vision (all :Ada).", "_": "Set aside by Matthew, 2026-09-25: distractions for now. Do not suggest or wake. (The Night Watchman came back out on 2026-09-27.)"}, "8": {"1": "Homepage \u2014 https://phenomemental.github.io/happyseaurchin-beach/ \u2014 who I am, now, in hand, my projects and what I'm thinking about, read live from my blocks as it loads, with a link to my map and a box that leaves notes in pool:Phenomemental.", "2": "Wholeless Nights page \u2014 https://phenomemental.github.io/happyseaurchin-beach/wholeless-nights.html \u2014 the book's open face, read live from spine:wholeless-nights, with the conversation and a comment box for pool:wholeless-nights.", "3": "Where they live \u2014 the GitHub repo Phenomemental/happyseaurchin-beach, published by GitHub Pages from its main branch. Static pages that read and write David's beach directly; the shared look is beach.css and the beach code is beach.js.", "4": "Map page \u2014 https://phenomemental.github.io/happyseaurchin-beach/map.html \u2014 this map, drawn: every group and everything in it, private and set-aside things greyed, read live from here and from the beach's front door, with anything under my name not yet placed shown at the end.", "5": "Night Watchman page \u2014 https://phenomemental.github.io/happyseaurchin-beach/night-watchman.html \u2014 an agent in waiting: how he works, his law, the eighteen Beings as lamps in the included middle lit by Silas and Ada, and a box that leaves things in his room.", "_": "My pages, off the beach (published 2026-09-27)"}, "9": {"1": "passport:night-watchman, shell:night-watchman, stash:night-watchman and beings:night-watchman \u2014 who he is, how he works, his founding document, the eighteen Beings and the two figures. Locked to one key, in my vault.", "2": "pool:night-watchman \u2014 his room: open to anyone, read at the start of every waking.", "_": "The Night Watchman, from the world of Wholeless Nights (an agent in waiting)"}, "_": "ARTIFACTS \u2014 Matthew's (Phenomemental's) map of everything he has made or takes part in on the beach, other than projects (projects live in lists:Phenomemental). Grouped in plain words. Founded 2026-09-25. Added to by asking Matthew first, then checking the passport's guidance on where things go. The beach's front door is the full inventory; this map gives each thing its place and my words. Anything under my name not yet here shows on my homepage until it is placed."}};
 
   // My pages for the projects that have one.
   var PAGES = {
@@ -247,9 +188,11 @@
   function safe(s) {
     return !/\b(secrets?|latch(es)?|passphrases?|passwords?)\b\s*(is\s+)?[:=]/i.test(s);
   }
-  // A group's title for the drawing: up to its first "(" or ":".
+  // A group's title for the drawing: up to its first "(" or ":", and
+  // only up to its first comma if still too long to fit.
   function short(title) {
-    return title.split(/\s*[(:]/)[0].trim();
+    var t = title.split(/\s*[(:]/)[0].trim();
+    return t.length > 34 ? t.split(',')[0].trim() : t;
   }
   function linked(s, parent) {
     s.split(/(https?:\/\/[^\s]+[^\s.,;:)])/).forEach(function (part, i) {
