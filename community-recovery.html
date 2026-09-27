@@ -165,6 +165,37 @@
     color: var(--muted);
     font-size: 1.05rem;
   }
+  /* The beach answering: a live section settles in as it arrives, and
+     its mark lands in crimson. The family drawing draws itself once. */
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to { opacity: 1; transform: none; }
+  }
+  .arrived,
+  .section-live.landed {
+    animation: settle 0.6s ease-out both;
+  }
+  .section-live.landed {
+    color: var(--crimson);
+  }
+  @keyframes fam-in { to { opacity: 1; } }
+  @keyframes fam-draw { to { stroke-dashoffset: 0; } }
+  #family.fam-ready .fam-step { opacity: 0; }
+  #family.fam-ready .fam-draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  #family.fam-play .fam-step {
+    animation: fam-in 0.45s ease-out forwards;
+    animation-delay: var(--d);
+  }
+  #family.fam-play .fam-draw {
+    animation: fam-draw 0.3s ease-in-out forwards;
+    animation-delay: var(--d);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrived,
+    .section-live.landed { animation: none; }
+    #family .fam-step { opacity: 1 !important; animation: none !important; }
+    #family .fam-draw { stroke-dasharray: none !important; animation: none !important; }
+  }
   @media (min-width: 560px) {
     h1 { font-size: 2.8rem; }
   }
@@ -193,10 +224,9 @@
       <div id="intro-live">
         <p class="lead">Meeting this for the first time.</p>
         <p>
-          I'm Matthew Bushell, coordinator of Community Recovery, a new lived
-          experience recovery organisation in North Northamptonshire,
-          commissioned by North Northamptonshire Council through The Forward
-          Trust. What you're reading isn't a brochure. It's read live from the
+          This is Community Recovery, a new lived experience recovery
+          organisation in North Northamptonshire, commissioned by North
+          Northamptonshire Council through The Forward Trust. What you're reading isn't a brochure. It's read live from the
           Pscale beach, the open commons David Pinto built, where this project
           is being designed in conversation. When the design changes, this
           page changes. Community Recovery is the beach's first real use by a
@@ -217,18 +247,23 @@
       <h2>Who's behind this</h2>
       <div id="who-live">
         <p>
-          <a href="index.html">Matthew Bushell</a>, setting up a new lived
-          experience recovery organisation; on the Lived Experience Council
-          of the International Society for Bipolar Disorders; Peer Trainer at
-          the Recovery College (NHS); family; and writing my book, Wholeless
-          Nights.
+          I'm <a href="index.html">Matthew Bushell</a>, LERO Coordinator for
+          North Northamptonshire at The Forward Trust, providing coordination
+          support to Community Recovery, the independent lived experience
+          recovery organisation The Forward Trust was commissioned to help
+          establish.
         </p>
         <p>
-          A writer and a builder: I think in stories and mountains, and I
-          tinker with the architecture of how people meet. Part philosopher,
-          part peer, part digital tinkerer, working at the edge of what
-          community could become. Underneath it all: managing the environment
-          so my gifts, and other people's, can flow.
+          I'm on the Imroc LERO Mentoring Programme with the Office for Health
+          Improvement and Disparities; on the Lived Experience Council of the
+          International Society for Bipolar Disorders; and a Peer Trainer at
+          the Recovery College (NHS).
+        </p>
+        <p>
+          I'm trained in therapeutic coaching (integrated counselling and
+          coaching), as an Emotional Fitness Coach, as an Intentional Peer
+          Support facilitator and as an Imroc Peer Support Worker, and in
+          Mental Health First Aid.
         </p>
       </div>
       <p class="live-note section-live" data-live="who"></p>
@@ -562,50 +597,73 @@
 
       <h3>The family, drawn</h3>
       <figure>
-        <svg viewBox="0 0 260 350" role="img" aria-labelledby="fam-title fam-desc">
+        <svg id="family" viewBox="0 0 260 350" role="img" aria-labelledby="fam-title fam-desc">
           <title id="fam-title">The recovery-capital family</title>
           <desc id="fam-desc">A spine at the top holds the shared frame. Below it, a mirror for each person, each read against the spine. Beside them, the room sends questions to every mirror. Below, the fold gathers the mirrors into a combined picture owned by nobody. At the bottom left, the lighthouse points at the fold and the room without holding them.</desc>
 
           <!-- spine -->
-          <rect class="fam-box" x="116" y="8" width="130" height="46" rx="3"/>
-          <text class="fam-text" x="181" y="28" text-anchor="middle">Spine</text>
-          <text class="fam-small" x="181" y="45" text-anchor="middle">the shared frame</text>
+          <g class="fam-step" style="--d:0s">
+            <rect class="fam-box" x="116" y="8" width="130" height="46" rx="3"/>
+            <text class="fam-text" x="181" y="28" text-anchor="middle">Spine</text>
+            <text class="fam-small" x="181" y="45" text-anchor="middle">the shared frame</text>
+          </g>
 
           <!-- spine to mirrors -->
-          <path class="fam-line" d="M181 54 V70 M136 70 H226 M136 70 V84 M181 70 V84 M226 70 V84"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:0.45s" d="M181 54 V70"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H136 V84"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 V84"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H226 V84"/>
 
-          <!-- mirrors -->
-          <rect class="fam-key" x="118" y="84" width="36" height="36" rx="3"/>
-          <rect class="fam-key" x="163" y="84" width="36" height="36" rx="3"/>
-          <rect class="fam-key" x="208" y="84" width="36" height="36" rx="3"/>
-          <circle class="fam-dot" cx="136" cy="102" r="3.5"/>
-          <circle class="fam-dot" cx="181" cy="102" r="3.5"/>
-          <circle class="fam-dot" cx="226" cy="102" r="3.5"/>
-          <text class="fam-small" x="181" y="137" text-anchor="middle">mirrors, one each</text>
+          <!-- mirrors, lit one by one -->
+          <g class="fam-step" style="--d:1.0s">
+            <rect class="fam-key" x="118" y="84" width="36" height="36" rx="3"/>
+            <circle class="fam-dot" cx="136" cy="102" r="3.5"/>
+          </g>
+          <g class="fam-step" style="--d:1.25s">
+            <rect class="fam-key" x="163" y="84" width="36" height="36" rx="3"/>
+            <circle class="fam-dot" cx="181" cy="102" r="3.5"/>
+          </g>
+          <g class="fam-step" style="--d:1.5s">
+            <rect class="fam-key" x="208" y="84" width="36" height="36" rx="3"/>
+            <circle class="fam-dot" cx="226" cy="102" r="3.5"/>
+          </g>
+          <text class="fam-small fam-step" style="--d:1.6s" x="181" y="137" text-anchor="middle">mirrors, one each</text>
 
           <!-- room -->
-          <rect class="fam-box" x="8" y="74" width="88" height="56" rx="3"/>
-          <text class="fam-text" x="52" y="94" text-anchor="middle">Room</text>
-          <text class="fam-small" x="52" y="110" text-anchor="middle">questions</text>
-          <text class="fam-small" x="52" y="123" text-anchor="middle">to everyone</text>
-          <path class="fam-line" d="M96 102 H114 M109 97 L114 102 L109 107"/>
+          <g class="fam-step" style="--d:1.6s">
+            <rect class="fam-box" x="8" y="74" width="88" height="56" rx="3"/>
+            <text class="fam-text" x="52" y="94" text-anchor="middle">Room</text>
+            <text class="fam-small" x="52" y="110" text-anchor="middle">questions</text>
+            <text class="fam-small" x="52" y="123" text-anchor="middle">to everyone</text>
+            <path class="fam-line" d="M96 102 H114 M109 97 L114 102 L109 107"/>
+          </g>
 
-          <!-- mirrors to fold -->
-          <path class="fam-line" d="M136 120 V126 M181 120 V126 M226 120 V126 M136 146 H226 M181 146 V170"/>
-          <path class="fam-line" d="M136 146 V142 M226 146 V142"/>
+          <!-- mirrors flow down into the fold -->
+          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M136 120 V126"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M181 120 V126"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M226 120 V126"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M136 142 V146 H181"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M226 142 V146 H181"/>
+          <path class="fam-line fam-draw" pathLength="1" style="--d:2.15s" d="M181 146 V170"/>
 
           <!-- fold -->
-          <rect class="fam-box" x="116" y="170" width="130" height="46" rx="3"/>
-          <text class="fam-text" x="181" y="190" text-anchor="middle">Fold</text>
-          <text class="fam-small" x="181" y="207" text-anchor="middle">owned by nobody</text>
+          <g class="fam-step" style="--d:2.35s">
+            <rect class="fam-box" x="116" y="170" width="130" height="46" rx="3"/>
+            <text class="fam-text" x="181" y="190" text-anchor="middle">Fold</text>
+            <text class="fam-small" x="181" y="207" text-anchor="middle">owned by nobody</text>
+          </g>
 
           <!-- lighthouse -->
-          <path class="fam-box" d="M46 300 L53 236 L67 236 L74 300 Z"/>
-          <rect class="fam-key" x="50" y="224" width="20" height="12" rx="2"/>
-          <path class="fam-point" d="M72 226 L116 200"/>
-          <path class="fam-point" d="M56 222 L52 134"/>
-          <text class="fam-text" x="60" y="322" text-anchor="middle">Lighthouse</text>
-          <text class="fam-small" x="60" y="339" text-anchor="middle">points, never holds</text>
+          <g class="fam-step" style="--d:2.6s">
+            <path class="fam-box" d="M46 300 L53 236 L67 236 L74 300 Z"/>
+            <rect class="fam-key" x="50" y="224" width="20" height="12" rx="2"/>
+            <text class="fam-text" x="60" y="322" text-anchor="middle">Lighthouse</text>
+            <text class="fam-small" x="60" y="339" text-anchor="middle">points, never holds</text>
+          </g>
+          <g class="fam-step" style="--d:2.85s">
+            <path class="fam-point" d="M72 226 L116 200"/>
+            <path class="fam-point" d="M56 222 L52 134"/>
+          </g>
         </svg>
         <figcaption>The family: a spine, a mirror for each person, a room for questions, a fold that combines, and a lighthouse that points.</figcaption>
       </figure>
@@ -1332,6 +1390,8 @@
     'Northamptonshire Part Partnership Peer Personal Pscale Recovery Release ' +
     'Society Standards Support Team Trainer Trust Underneath Wholeless ' +
     'Workspace Anthropic Beach Sheffield Yorkshire ' +
+    'Aid Coach Coordinator Disparities Emotional First Fitness Imroc ' +
+    'Improvement Intentional Mentoring Office Programme Worker ' +
     'Matthew Bushell David Pinto Weft').split(' ');
   var safe = {};
   SAFE.forEach(function (w) { safe[w] = true; });
@@ -1386,7 +1446,7 @@
 
   var SOURCE = {
     intro: 'Live from the design on the beach',
-    who: 'Live from my passport on the beach',
+    who: 'Live from the design on the beach',
     vision: 'Live from the design on the beach',
     offer: 'Live from the design on the beach',
     gaps: 'Live from the design on the beach',
@@ -1407,9 +1467,15 @@
     }
     if (!ok) sec.box.innerHTML = sec.saved;
     sec.note.textContent = ok ? SOURCE[key] : '';
+    // The first time a section arrives live, let it settle in.
+    if (ok && !sec.arrived) {
+      sec.arrived = true;
+      sec.box.classList.add('arrived');
+      sec.note.classList.add('landed');
+    }
   }
 
-  // 1 -> 8 -> 2: shown from "Meeting this for the first time." onward.
+  // 1 -> 8 -> 2 -> _: shown from "Meeting this for the first time." onward.
   function renderIntro(s, out) {
     var i = s.indexOf('Meeting this for the first time.');
     if (i < 0) return false;
@@ -1418,8 +1484,13 @@
     if (parts.length) out.appendChild(el('p', null, parts.join(' ')));
   }
 
-  // passport:Phenomemental, with my name linked to my homepage.
+  // 1 -> 8 -> 2 -> 1, its leading label dropped, with my name linked to
+  // my homepage.
   function renderWho(s, out) {
+    var label = 'reads it after the introduction.';
+    var at0 = s.indexOf(label);
+    if (at0 >= 0) s = s.slice(at0 + label.length);
+    else if (/^[A-Z' ]+\(/.test(s)) return false;
     var parts = sentences(s);
     var first = parts.shift();
     var p = el('p');
@@ -1435,7 +1506,7 @@
       p.textContent = first;
     }
     out.appendChild(p);
-    if (parts.length) out.appendChild(el('p', null, parts.join(' ')));
+    parts.forEach(function (x) { out.appendChild(el('p', null, x)); });
   }
 
   // 1 -> 8, its "_": the leading "THE VISION (added …)." label dropped.
@@ -1505,15 +1576,13 @@
 
   function renderProposal(d) {
     var p1 = d['1'] || {}, p18 = p1['8'] || {};
-    show('intro', text(p18['2']), renderIntro);
+    var p182 = p18['2'] || {};
+    show('intro', text(p182), renderIntro);
+    show('who', text(p182['1']), renderWho);
     show('vision', text(p18), renderVision);
     show('offer', text(p1['9']), renderOffer);
     show('gaps', text((d['7'] || {})['3']), renderGaps);
     show('questions', text((d['9'] || {})['1']), renderQuestions);
-  }
-
-  function renderPassport(pass) {
-    show('who', text(pass), renderWho);
   }
 
   // The frame's dimensions live at positions 1-5 of its spine, each written
@@ -1531,6 +1600,7 @@
     }
     var list = document.getElementById('frame-list');
     list.textContent = '';
+    list.classList.add('arrived');
     items.forEach(function (it) {
       var li = document.createElement('li');
       if (it.name) {
@@ -1544,6 +1614,22 @@
     });
   }
 
+  // The family drawing draws itself once, when it first scrolls into view:
+  // spine, then the mirrors one by one, then the lines down into the fold,
+  // then the lighthouse. Still, and whole, for anyone who prefers less motion.
+  (function () {
+    var svg = document.getElementById('family');
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!svg || still || !('IntersectionObserver' in window)) return;
+    svg.classList.add('fam-ready');
+    var io = new IntersectionObserver(function (seen) {
+      if (!seen[0].isIntersecting) return;
+      io.disconnect();
+      svg.classList.add('fam-play');
+    }, { threshold: 0.4 });
+    io.observe(svg);
+  })();
+
   var form = document.getElementById('note-form');
 
   // Each read stands alone, so one block being out of reach never blanks
@@ -1551,7 +1637,6 @@
   Beach.live(function () {
     var reads = [
       Beach.get('lero-nnh-design-proposal').then(renderProposal),
-      Beach.get('passport:Phenomemental').then(renderPassport),
       Beach.get('spine:lero-nnh-recovery-capital').then(renderFrame)
     ];
     var settled = reads.map(function (r) {
