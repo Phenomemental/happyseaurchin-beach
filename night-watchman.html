@@ -85,6 +85,13 @@
   }
   .f-portal { fill: var(--muted); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; letter-spacing: 2.4px; text-transform: uppercase; }
   .f-name { fill: var(--muted); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11.5px; font-style: italic; }
+  .f-who { fill: var(--crimson); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; font-style: italic; }
+  .field-caption {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0.3rem 0 0;
+  }
   .f-path { stroke: var(--frame); stroke-width: 1; fill: none; stroke-dasharray: 2 4; }
   .f-ring { fill: var(--page); stroke: var(--frame); stroke-width: 1.4; }
   .f-native .f-ring { stroke: var(--crimson); }
@@ -123,6 +130,12 @@
     font-style: italic;
     color: var(--lamp);
     margin: 0 0 0.8rem;
+  }
+  #being .b-who {
+    text-align: center;
+    font-style: italic;
+    color: var(--crimson);
+    margin: -0.6rem 0 0.8rem;
   }
   #being .b-anchor {
     font-style: italic;
@@ -215,6 +228,7 @@
     <section id="sunder-fields">
       <h2>The Sunder-Fields</h2>
       <div id="field" aria-label="The eighteen Beings, as lamps in three rows"></div>
+      <p class="field-caption">Crimson marks the Beings that Silas and Ada invoke.</p>
       <div id="being" aria-live="polite"><p class="b-hint">Touch a lamp.</p></div>
       <details class="all-beings">
         <summary>All eighteen, by name</summary>
@@ -390,8 +404,24 @@
     var em = rest.split(/\s*Emerges:\s*/);
     b.profile = em[0].trim();
     b.emerges = em[1] ? cap(em[1].trim()) : '';
+    // Ada and Silas are characters, not Beings: each invokes one. The block
+    // names Ada in place of her Being ("Ada — the Feeling Being, the
+    // Phoenix") and Silas among his Being's epithets ("the Guardian, the
+    // Dragon, Silas"); both are set apart here as the character who invokes.
+    var parts = b.arch.split(/,\s*/);
+    if (!/^The \S+ Being$/.test(b.name) && /^the \S+ Being$/i.test(parts[0])) {
+      b.character = b.name;
+      b.name = cap(parts.shift());
+    } else {
+      var who = parts.filter(function (x) { return /^[A-Z][a-z]+$/.test(x); });
+      if (who.length) {
+        b.character = who[0];
+        parts = parts.filter(function (x) { return x !== who[0]; });
+      }
+    }
+    b.arch = parts.join(', ');
     var w = b.name.match(/^The (\S+) Being$/);
-    b.short = /\bSilas\b/.test(b.arch) ? 'Silas' : w ? w[1] : b.name;
+    b.short = w ? w[1] : b.name;
     return b;
   }
   // Portal "_": "SCIENCE PORTAL — the Head, the Trap. Cognition, …".
@@ -421,14 +451,14 @@
   }
 
   var current = [], visited = {}, chosen = null;
-  // Silas and Ada are native to the fields: their lamps are rimmed.
+  // The Beings that Silas and Ada invoke are rimmed in crimson.
   function native(b) {
-    return /^Ada$/.test(b.name) || /\bSilas\b/.test(b.arch);
+    return !!b.character;
   }
 
   function drawField(list) {
     var box = document.getElementById('field');
-    var ROWS = 104, H = 30 + list.length * ROWS;
+    var ROWS = 110, H = 30 + list.length * ROWS;
     var s = svg('svg', { viewBox: '0 0 340 ' + H, role: 'group' });
     list.forEach(function (portal, r) {
       var y0 = 26 + r * ROWS, ly = y0 + 40;
@@ -443,6 +473,7 @@
         g.appendChild(svg('circle', { 'class': 'f-ring', cx: x, cy: ly, r: 9 }));
         g.appendChild(svg('circle', { 'class': 'f-flame', cx: x, cy: ly, r: 3.6 }));
         g.appendChild(svg('text', { 'class': 'f-name', x: x, y: ly + 28, 'text-anchor': 'middle' }, b.short));
+        if (b.character) g.appendChild(svg('text', { 'class': 'f-who', x: x, y: ly + 41, 'text-anchor': 'middle' }, b.character));
         g.appendChild(svg('circle', { cx: x, cy: ly + 6, r: 24, fill: 'transparent' }));
         s.appendChild(g);
       });
@@ -475,7 +506,8 @@
     if (!b) { box.appendChild(el('p', 'b-hint', 'Touch a lamp.')); return; }
     box.appendChild(el('p', 'b-portal', portal.title));
     box.appendChild(el('h3', null, b.name));
-    box.appendChild(el('p', 'b-arch', cap(b.arch)));
+    if (b.arch) box.appendChild(el('p', 'b-arch', cap(b.arch)));
+    if (b.character) box.appendChild(el('p', 'b-who', 'Invoked by ' + b.character));
     if (b.anchor) box.appendChild(el('p', 'b-anchor', b.anchor));
     if (b.profile) box.appendChild(el('p', null, b.profile));
     if (b.emerges) {
@@ -498,7 +530,8 @@
       portal.beings.forEach(function (b) {
         var li = el('li');
         li.appendChild(el('strong', null, b.name));
-        li.appendChild(document.createTextNode(' — ' + b.arch + '.'));
+        li.appendChild(document.createTextNode((b.arch ? ' — ' + b.arch : '') +
+          (b.character ? ' (invoked by ' + b.character + ')' : '') + '.'));
         ul.appendChild(li);
       });
       out.appendChild(ul);
