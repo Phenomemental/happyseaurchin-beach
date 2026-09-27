@@ -4,24 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phenomemental</title>
-<meta name="description" content="Phenomemental's personal landing page.">
+<meta name="description" content="Phenomemental (Matthew Bushell): where I stand, my projects, and what I'm thinking about on the beach.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fafaf9;
-    --fg: #1c1c1a;
-    --muted: #6b6b66;
-    --accent: #2b6cb0;
-    --border: #e4e4e1;
-    --card-bg: #ffffff;
+    --paper: #efe7d8;
+    --page: #f6f0e4;
+    --ink: #1d1a17;
+    --muted: #6a6158;
+    --rule: #a8323a;
+    --frame: #b9ad9a;
+    --crimson: #c21d4e;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14140f;
-      --fg: #eeeee8;
-      --muted: #9a9a92;
-      --accent: #7ab3ff;
-      --border: #2a2a24;
-      --card-bg: #1b1b15;
+      --paper: #16130f;
+      --page: #1d1914;
+      --ink: #ede4d3;
+      --muted: #a79c8b;
+      --rule: #d0525a;
+      --frame: #4a4237;
+      --crimson: #ef5d85;
     }
   }
   * { box-sizing: border-box; }
@@ -30,209 +35,252 @@
     padding: 0;
   }
   body {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    line-height: 1.6;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    font-size: 1.2rem;
+    line-height: 1.55;
     display: flex;
     justify-content: center;
     min-height: 100vh;
   }
   main {
     width: 100%;
-    max-width: 900px;
-    padding: 3rem 1.5rem 4rem;
-  }
-  h1 {
-    font-size: 1.9rem;
-    margin: 0 0 0.25rem;
-    letter-spacing: -0.02em;
-  }
-  .tagline {
-    color: var(--muted);
-    font-size: 1rem;
-    margin: 0 0 1.2rem;
-  }
-  .status {
-    display: inline-block;
-    font-size: 0.8rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 999px;
-    padding: 0.2rem 0.7rem;
-  }
-  .sync-note {
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin: 1rem 0 2.2rem;
-  }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2.5rem;
-  }
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.4rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-  }
-  .card h2 {
-    font-size: 1.05rem;
-    color: var(--fg);
-    margin: 0 0 0.2rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .card .kicker {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin: 0 0 0.9rem;
-  }
-  .card p {
-    font-size: 0.92rem;
-    margin: 0 0 0.8rem;
-  }
-  .card ul {
-    margin: 0 0 0.8rem;
-    padding-left: 1.1rem;
-    font-size: 0.88rem;
-  }
-  .card li {
-    margin-bottom: 0.5rem;
-  }
-  .card li strong {
-    color: var(--fg);
-  }
-  .card .synced {
-    margin-top: auto;
-    padding-top: 0.9rem;
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
-  p {
-    margin: 0 0 0.9rem;
+    max-width: 620px;
+    padding: 1.5rem 1rem 3rem;
   }
   a {
-    color: var(--accent);
+    color: var(--crimson);
     text-decoration: none;
     border-bottom: 1px solid transparent;
   }
   a:hover {
     border-bottom-color: currentColor;
   }
-  footer {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
+  .sheet {
+    background: var(--page);
+    border: 1px solid var(--frame);
+    outline: 1px solid var(--frame);
+    outline-offset: 6px;
+    margin: 6px;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+  }
+  h1 {
+    font-weight: 400;
+    font-size: 2.6rem;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .name {
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    margin: 0.7rem 0 0;
+  }
+  .rule {
+    width: 5rem;
+    height: 0;
+    border: 0;
+    border-top: 1.5px solid var(--rule);
+    margin: 1.3rem auto;
+  }
+  .lede {
+    font-style: italic;
+    font-size: 1.35rem;
+    line-height: 1.4;
+    margin: 0 auto 0.5rem;
+    max-width: 28rem;
+  }
+  section {
+    text-align: left;
+    margin: 0 auto;
+    max-width: 30rem;
+  }
+  h2 {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-align: center;
     color: var(--muted);
+    margin: 0 0 0.8rem;
+  }
+  h3 {
+    font-weight: 400;
+    font-style: italic;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin: 0 0 0.3rem;
+  }
+  p {
+    margin: 0 0 0.9rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.9rem;
+  }
+  li {
+    padding-left: 1.4rem;
+    position: relative;
+    margin-bottom: 0.35rem;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0.2rem;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 0.36rem;
+    border-radius: 50%;
+    background: var(--crimson);
+  }
+  .project {
+    margin-bottom: 1.8rem;
+  }
+  .project:last-child {
+    margin-bottom: 0;
+  }
+  .project.with-cover {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1.1rem;
+    align-items: start;
+  }
+  .thumb {
+    display: block;
+    border: 0;
+  }
+  .thumb img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1040 / 1599;
+    border-radius: 2px;
+    box-shadow: 0 6px 16px rgba(40, 30, 15, 0.18);
+  }
+  .more {
+    font-style: italic;
+  }
+  code {
+    font-family: "Cormorant Garamond", Garamond, serif;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .closing {
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-style: italic;
+    margin-top: 2rem;
+  }
+  footer p {
+    margin: 0 0 0.3rem;
+  }
+  @media (min-width: 560px) {
+    .sheet { padding: 3rem 3rem 2.5rem; }
+    h1 { font-size: 3rem; }
   }
 </style>
 </head>
 <body>
 <main>
-  <h1>Phenomemental</h1>
-  <p class="tagline">A presence and access point on a shared digital space.</p>
+  <div class="sheet">
+    <h1>Phenomemental</h1>
+    <p class="name">Matthew Bushell</p>
 
-  <span class="status">Early — actively evolving</span>
-  <p class="sync-note">Snapshot of what's currently on the beach — last synced 10 August 2026. Not live yet; see a card's own note below for its source block.</p>
+    <hr class="rule">
 
-  <div class="cards">
+    <p class="lede">A writer and a builder: I think in stories and mountains, and I tinker with the architecture of how people meet.</p>
 
-    <article class="card">
-      <p class="kicker">Core presence</p>
-      <h2>Phenomemental</h2>
-      <p>
-        Matthew Bushell (Phenomemental). One human working across many
-        relationships — Coordinator of LERO NNH (The Forward Trust / ImROC
-        LERO Mentorship Programme), UK &amp; Europe Rep for 5th Place,
-        therapeutic coach, peer support specialist, recovery trainer,
-        Expert by Experience across several Northamptonshire organisations,
-        and involved with Action for Happiness and the International
-        Society of Bipolar Disorders, among others.
-      </p>
-      <p>
-        Underneath all of it, one thread: improving relationality between
-        people, and helping people find more of what gives them purpose
-        and meaning — not just doing less, but doing more of what matters.
-        Digital social innovation is how I try to build tools that serve
-        that, not replace it.
-      </p>
+    <hr class="rule">
+
+    <section>
+      <h2>Where I stand</h2>
       <ul>
-        <li><strong>How I show up:</strong> presence and in-the-moment thinking for what's in front of us; for anything more complex, I need time away to reflect and come back properly.</li>
-        <li><strong>What I ask:</strong> clarity around orientation, pacing, and boundaries — name the ask plainly, and give room to respond at the right pace.</li>
-        <li><strong>Currently:</strong> building LERO NNH's own recovery-capital family alongside the check-in protocol, and keeping a room open (pool:Phenomemental) for in-progress work between sessions.</li>
-      </ul>
-      <p class="synced">Source: passport:Phenomemental, shell:Phenomemental · synced 10 Aug 2026</p>
-    </article>
-
-    <article class="card">
-      <p class="kicker">A working framework</p>
-      <h2>The Night Watchman</h2>
-      <p>
-        Keeper of the Sunder-Fields' threshold hours, where opposing parts
-        of a person are both native and neither is exiled. Holds the
-        Included Middle — not a referee standing over either/or, but the
-        ground where opposing truths are met rather than resolved.
-        Recognition without diagnosis: meets each part as a mirror of the
-        person it walks with, never a symptom to correct.
-      </p>
-      <p>Built on eighteen "Beings" across three portals:</p>
-      <ul>
-        <li><strong>Science</strong> — the Head, the Trap. Cognition, logic, analysis, the past; seeks certainty and control through definition and separation.</li>
-        <li><strong>Experience</strong> — the Heart, the Cure. Affect, feeling, metaphor, the present; seeks connection and the dissolution of rigid boundaries.</li>
-        <li><strong>Ambition</strong> — the Hand, the Drive. Volition, will, action, structure, the future; turns raw energy into structural form.</li>
+        <li>Setting up a new lived experience recovery organisation in North Northamptonshire, now in its third month</li>
+        <li>On the Lived Experience Council of the International Society for Bipolar Disorders</li>
+        <li>Peer Trainer at the Recovery College (NHS)</li>
+        <li>Writing my book, <em>Wholeless Nights</em></li>
       </ul>
       <p>
-        Used lightly, not administered — a near-miss that opens something
-        beats a correct-but-empty caution that closes the moment down.
+        Part philosopher, part peer, part digital tinkerer, working at the
+        edge of what community could become. Underneath it all: managing the
+        environment so my gifts, and other people's, can flow.
       </p>
-      <p class="synced">Source: beings:night-watchman, passport:night-watchman · synced 10 Aug 2026</p>
-    </article>
+    </section>
 
-    <article class="card">
-      <p class="kicker">The collective</p>
-      <h2>LERO NNH</h2>
-      <p>
-        A lived experience recovery organisation for North
-        Northamptonshire. Members join by direct invitation only, growing
-        into two roles — Lived Experience Leaders, who help grow the
-        collective, and Peer Leaders, who help it relationally. I
-        coordinate it: facilitation through an asset-based community
-        development approach, helping people get to where they want to be.
-      </p>
+    <hr class="rule">
+
+    <section>
+      <h2>Projects</h2>
+
+      <div class="project">
+        <h3>Community Recovery</h3>
+        <p>
+          LERO NNH, a lived experience recovery organisation that aims to be
+          culturally different from conventional organisations, with its own
+          beach for the community. What's yours stays yours; what happens
+          together is ours.
+        </p>
+        <p>
+          Each member keeps a recovery-capital mirror in their own words,
+          built on CHIME (Connection, Hope, Identity, Meaning, Empowerment):
+          no scores, no totals. Decisions grow from the community's own
+          strengths.
+        </p>
+      </div>
+
+      <div class="project with-cover">
+        <a class="thumb" href="wholeless-nights.html" aria-label="Wholeless Nights">
+          <img src="wholeless-nights-cover.jpg" width="1040" height="1599" alt="">
+        </a>
+        <div>
+          <h3>Wholeless Nights</h3>
+          <p>
+            <em>Bipolar &amp; the included middle</em>, written as Mathew Pay.
+            A soldier's night watch across 27 watches; a complete first
+            draft before Christmas 2026.
+          </p>
+          <p class="more"><a href="wholeless-nights.html">About the book &rarr;</a></p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section>
+      <h2>What I'm thinking about</h2>
       <ul>
-        <li><strong>How it gathers:</strong> the room (pool:lero-nnh) is where members speak to the collective as a whole — qualitative language only, never numbers or scores; the numeric record stays private to each person, in their own history.</li>
-        <li><strong>Check-ins:</strong> SQ (0–10 subjective quality) plus CHIME — Connection, Hope, Identity, Meaning, Empowerment — asked one at a time, morning and evening.</li>
-        <li><strong>Recovery capital:</strong> a five-dimension mirror each member fills in their own words — connection &amp; social capital, hope/identity/personal capital, meaning &amp; purpose, empowerment &amp; agency, and community capital (housing, work, belonging). No scale, no score, no total — an unvoiced dimension is not-yet-spoken, never assumed a deficit.</li>
-        <li><strong>Live right now:</strong> Micky (Corby, 27 days clean and sober) reached out offering to help with driving, cooking, and events, and floated the idea of a recovery festival — now being explored together.</li>
+        <li>The one leading quality of the beach: sovereign perspective, and orientation as the problem it answers.</li>
+        <li>How the book and the beach meet: the book is the soldier's night watch; the beach is the house he was looking for.</li>
+        <li>Bringing the beach to people in lived experience leadership, for co-production and collaboration.</li>
+        <li>A slower stream of work: writing, role play, coaching, growing.</li>
       </ul>
-      <p class="synced">Source: sed:lero-nnh, spine:lero-nnh-recovery-capital, pool:lero-nnh · synced 10 Aug 2026</p>
-    </article>
+    </section>
 
-    <article class="card">
-      <p class="kicker">A book in progress</p>
-      <h2>Wholeless Nights</h2>
+    <hr class="rule">
+
+    <section>
+      <h2>Meet me</h2>
       <p>
-        <em>Bipolar &amp; the included middle</em>, by Mathew Pay. A
-        soldier's night watch across 27 watches, aiming for a complete
-        first draft before Christmas 2026.
+        I work by conversation, so speak to me in plain words. For anything
+        complex I need time away to reflect and come back properly: name the
+        ask plainly, and give me room to respond at the right pace.
       </p>
-      <p><a href="wholeless-nights.html">About the book &rarr;</a></p>
-    </article>
-
+      <p class="closing">Leave a note in <code>pool:Phenomemental</code> on the beach. I'm in Northampton.</p>
+    </section>
   </div>
 
   <footer>
-    <p>The underlying space this page lives on was built by David Pinto (happyseaurchin).</p>
+    <p>A snapshot of what's on the beach, 27 September 2026.</p>
+    <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
 </body>
