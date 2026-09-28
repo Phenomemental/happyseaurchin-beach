@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Recovery — a proposal</title>
+<meta name="description" content="Community Recovery, a proposal on the Pscale beach: read it chapter by chapter, with everyone's reflections and the room's conversation beside each chapter, live from the beach.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css">
+<style>
+  h1 {
+    font-weight: 400;
+    font-size: 2.3rem;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .sub {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    margin: 0.7rem 0 0;
+  }
+  h3 {
+    font-weight: 400;
+    font-style: italic;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    margin: 1.4rem 0 0.4rem;
+  }
+  /* Block names can be long; let them wrap on a phone. */
+  code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .lead {
+    font-size: 1.3rem;
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .prose p {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .calm {
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+  }
+  .contents {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.9rem;
+    counter-reset: step;
+  }
+  .contents > li {
+    counter-increment: step;
+    padding-left: 1.8rem;
+    margin-bottom: 0.2rem;
+  }
+  .contents > li::before {
+    content: counter(step);
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    top: 0;
+    left: 0;
+    color: var(--crimson);
+    font-weight: 600;
+  }
+  .how {
+    border-left: 2px solid var(--rule);
+    padding-left: 0.9rem;
+    margin: 1rem 0 0;
+  }
+  .how-label,
+  .part-label {
+    display: block;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.3rem;
+  }
+  /* A chapter: a card of its own, the proposal first, then what people
+     made of it. */
+  .chapter {
+    border: 1px solid var(--frame);
+    background: var(--paper);
+    padding: 1.3rem 1rem 1rem;
+    margin: 0 0 1.6rem;
+    text-align: left;
+    scroll-margin-top: 1rem;
+  }
+  .chapter-num {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rule);
+    margin: 0 0 0.2rem;
+  }
+  .chapter h3 {
+    text-align: center;
+    margin: 0 0 0.9rem;
+  }
+  .part {
+    border-top: 1px solid var(--frame);
+    padding-top: 0.8rem;
+    margin-top: 1rem;
+  }
+  .reflection {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--frame);
+  }
+  .reflection:last-child {
+    border-bottom: 0;
+  }
+  .reflection-who {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0 0 0.2rem;
+  }
+  .reflection-who strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .reflection-text {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    margin: 0;
+  }
+  .private {
+    font-style: italic;
+    color: var(--muted);
+    margin: 0;
+  }
+  .none {
+    font-style: italic;
+    color: var(--muted);
+    margin: 0;
+  }
+  .comment:last-child {
+    border-bottom: 0;
+  }
+  .more {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0.3rem 0 0;
+    font: inherit;
+    font-style: italic;
+    color: var(--crimson);
+    cursor: pointer;
+  }
+  .page-links {
+    text-align: center;
+    font-style: italic;
+    margin: 0;
+  }
+  .page-links a {
+    display: inline-block;
+    margin: 0 0.5rem 0.3rem;
+  }
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to { opacity: 1; transform: none; }
+  }
+  .arrived {
+    animation: settle 0.6s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrived { animation: none; }
+  }
+  @media (min-width: 560px) {
+    h1 { font-size: 2.8rem; }
+    .chapter { padding: 1.6rem 1.6rem 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav class="site-nav" aria-label="Pages">
+    <a href="index.html">Phenomemental</a>
+    <a href="community-recovery.html">Community Recovery</a>
+    <a href="wholeless-nights.html">Wholeless Nights</a>
+    <a href="map.html">My map</a>
+    <a href="night-watchman.html">The Night Watchman</a>
+  </nav>
+
+  <div class="sheet">
+    <h1>Community Recovery — a proposal</h1>
+    <p class="sub">Read together, chapter by chapter</p>
+
+    <hr class="rule">
+
+    <section id="intro" class="prose" aria-live="polite">
+      <p class="calm">Opening the proposal on the beach&hellip;</p>
+    </section>
+
+    <section id="spine" class="prose"></section>
+
+    <hr class="rule">
+
+    <section id="contents-wrap" hidden>
+      <h2>Chapters</h2>
+      <ol class="contents" id="contents"></ol>
+    </section>
+
+    <div id="chapters"></div>
+
+    <section id="room-wrap" hidden>
+      <hr class="rule">
+      <h2>In the room</h2>
+      <p class="calm" id="room-intro">The latest from <code>pool:community-recovery-design</code> that isn&rsquo;t tied to one chapter.</p>
+      <div class="thread" id="room"></div>
+    </section>
+
+    <section id="provenance-wrap" class="prose" hidden>
+      <hr class="rule">
+      <h2>Provenance</h2>
+      <div id="provenance"></div>
+    </section>
+
+    <hr class="rule">
+
+    <p class="page-links">
+      <a href="community-recovery.html">The earlier Community Recovery page</a>
+      <a href="https://happyseaurchin.com/tree/community-recovery-design">The design, as a tree on happyseaurchin.com</a>
+    </p>
+
+    <p class="live-note" id="live-note"></p>
+  </div>
+
+  <footer class="site-footer">
+    <p>Read live from the beach as the page opens. This page only reads; it never writes.</p>
+    <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
+  </footer>
+</main>
+<script src="beach.js"></script>
+<script>
+(function () {
+  var BOOK = 'proposal:community-recovery';
+  var SPINE = 'spine:community-recovery-design';
+  var POOL = 'pool:community-recovery-design';
+  var FAMILY = 'community-recovery-design:';
+  var CHAPTERS = 8;
+  var ROOM_RECENT = 8;   // untagged messages shown at the end
+  var LONG = 700;        // longer than this opens with "Read all"
+
+  var text = Beach.text;
+
+  function el(tag, cls, t) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (t != null) e.textContent = t;
+    return e;
+  }
+  function $(id) { return document.getElementById(id); }
+
+  // A read that never throws: the block, or null if it couldn't be had.
+  function read(block) {
+    return Beach.get(block).then(function (b) {
+      return b && typeof b === 'object' ? b : null;
+    }, function () { return null; });
+  }
+
+  // ---- Sealed content ------------------------------------------------------
+  // Encrypted ("gray") text is never shown. We can't know every shape it
+  // takes, so anything that looks like ciphertext, or a node marked as
+  // sealed, is treated as private.
+  var SEAL_KEYS = /^(gray|grey|cipher|ciphertext|ct|iv|nonce|salt|encrypted|sealed|enc)$/i;
+  function sealed(v) {
+    if (v && typeof v === 'object') {
+      return Object.keys(v).some(function (k) { return SEAL_KEYS.test(k); }) ||
+        (typeof v._ === 'string' && sealed(v._));
+    }
+    if (typeof v !== 'string') return false;
+    var s = v.trim();
+    if (!s) return false;
+    if (/^(gray|grey|enc|encrypted|sealed|cipher)\s*[:|{]/i.test(s)) return true;
+    if (/^-----BEGIN /.test(s)) return true;
+    if (s.charAt(0) === '{' && /"(ct|ciphertext|iv|nonce|gray)"\s*:/.test(s)) return true;
+    // A long run with no spaces made only of base64 or hex characters.
+    return s.length >= 40 && !/\s/.test(s) && /^[A-Za-z0-9+\/=_\-.:]+$/.test(s);
+  }
+
+  // A position's words: its own text, then any plain words beneath it.
+  function words(node) {
+    var out = [];
+    var own = text(node).trim();
+    if (own) out.push(own);
+    if (node && typeof node === 'object') {
+      for (var i = 1; i <= 9; i++) {
+        var t = text(node[String(i)]).trim();
+        if (t && !sealed(node[String(i)])) out.push(t);
+      }
+    }
+    return out;
+  }
+
+  // Paragraphs, with a very long piece opening on its first part.
+  function prose(box, parts, cls) {
+    var full = parts.join('\n\n');
+    if (full.length <= LONG * 2) {
+      parts.forEach(function (p, i) { box.appendChild(el('p', i === 0 && cls ? cls : null, p)); });
+      return;
+    }
+    var shown = el('div');
+    var cut = full.lastIndexOf(' ', LONG);
+    var p = el('p', cls, full.slice(0, cut > 400 ? cut : LONG) + '\u2026');
+    shown.appendChild(p);
+    var more = el('button', 'more', 'Read all');
+    more.type = 'button';
+    more.addEventListener('click', function () {
+      shown.textContent = '';
+      parts.forEach(function (x) { shown.appendChild(el('p', null, x)); });
+      more.remove();
+    });
+    box.appendChild(shown);
+    box.appendChild(more);
+  }
+
+  function when(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  // ---- The room ------------------------------------------------------------
+  // A pool entry is {_: text, 1: who, 2: address, 3: time}; older entries
+  // nest under "_" as the pool grows, so walk "_" first, then 1-9, to read
+  // oldest to newest. Replies sit beneath the entry they answer.
+  function isEntry(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
+  }
+  function who(v) {
+    return typeof v === 'string' && v.length <= 60 ? v : '';
+  }
+  function repliesOf(e) {
+    var out = [];
+    for (var i = 1; i <= 9; i++) {
+      var r = e[String(i)];
+      if (r && typeof r === 'object' && typeof r._ === 'string' && r._.trim()) {
+        out.push({ who: who(r['1']), when: typeof r['3'] === 'string' ? r['3'] : '', text: r._ });
+      }
+    }
+    return out;
+  }
+  function entries(node, out) {
+    out = out || [];
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') entries(node._, out);
+    for (var i = 1; i <= 9; i++) {
+      var e = node[String(i)];
+      if (isEntry(e)) {
+        if (e._.trim()) out.push({
+          who: who(e['1']),
+          where: typeof e['2'] === 'string' ? e['2'] : (typeof e['2'] === 'number' ? String(e['2']) : ''),
+          when: e['3'],
+          text: e._,
+          replies: repliesOf(e)
+        });
+      } else if (typeof e === 'string') {
+        if (e.trim()) out.push({ who: '', where: '', when: '', text: e, replies: [] });
+      } else {
+        entries(e, out);
+      }
+    }
+    return out;
+  }
+
+  // Which chapter (1-8) a message's address points at, or 0. Addresses may
+  // be bare ("3", "3.1", "0.3") or name a block first
+  // ("proposal:community-recovery 3", "community-recovery-design:x/3").
+  function chapterOf(addr) {
+    if (!addr) return 0;
+    var s = String(addr).trim();
+    var m = s.match(/(?:^|[\s:\/#@,])(\d+(?:\.\d+)*)\s*$/) || s.match(/^(\d+(?:\.\d+)*)$/);
+    if (!m) {
+      var c = s.match(/chapter\s+(\d)/i);
+      return c && +c[1] >= 1 && +c[1] <= CHAPTERS ? +c[1] : 0;
+    }
+    var digits = m[1].replace(/^(0\.)+/, '').replace(/\./g, '');
+    var n = parseInt(digits.charAt(0), 10);
+    return n >= 1 && n <= CHAPTERS ? n : 0;
+  }
+
+  function note(c, cls) {
+    var div = el('div', cls);
+    var meta = el('p', 'comment-meta');
+    if (c.who) meta.appendChild(el('strong', null, c.who));
+    var w = when(c.when);
+    if (w) meta.appendChild(document.createTextNode((c.who ? ' · ' : '') + w));
+    if (meta.childNodes.length) div.appendChild(meta);
+    if (sealed(c.text)) {
+      div.appendChild(el('p', 'private', 'A private message'));
+      return div;
+    }
+    var full = c.text.trim();
+    var t = el('p', 'comment-text');
+    div.appendChild(t);
+    if (full.length > LONG) {
+      var cut = full.lastIndexOf(' ', 500);
+      t.textContent = full.slice(0, cut > 300 ? cut : 500) + '\u2026';
+      var more = el('button', 'more', 'Read all');
+      more.type = 'button';
+      more.addEventListener('click', function () { t.textContent = full; more.remove(); });
+      div.appendChild(more);
+    } else {
+      t.textContent = full;
+    }
+    if (c.replies && c.replies.length) {
+      var rs = el('div', 'replies');
+      c.replies.forEach(function (r) { rs.appendChild(note(r, 'comment reply')); });
+      div.appendChild(rs);
+    }
+    return div;
+  }
+
+  // ---- Mirrors -------------------------------------------------------------
+  // The family's mirrors are found by name on the beach's front door.
+  function mirrorNames(index) {
+    var names = [];
+    var blocks = index && index.blocks;
+    if (Array.isArray(blocks)) names = blocks;
+    else if (blocks && typeof blocks === 'object') names = Object.keys(blocks);
+    return names
+      .map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; })
+      .filter(function (n) { return n.indexOf(FAMILY) === 0 && n.length > FAMILY.length; })
+      .sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  }
+
+  // One person's reading at one chapter: their words, "private" when sealed,
+  // or null when they haven't written there.
+  function reflectionAt(mirror, i) {
+    if (!mirror) return null;
+    if (sealed(mirror) && !mirror[String(i)]) return { private: true };
+    var node = mirror[String(i)];
+    if (node == null) return null;
+    if (sealed(node)) return { private: true };
+    var parts = words(node);
+    if (!parts.length) {
+      // Something is there but none of it reads as words.
+      return node && typeof node === 'object' && Object.keys(node).length ? { private: true } : null;
+    }
+    return { parts: parts };
+  }
+
+  // ---- Rendering -----------------------------------------------------------
+  function renderIntro(book) {
+    var box = $('intro');
+    box.textContent = '';
+    var parts = book ? words({ _: text(book) }) : [];
+    if (!parts.length) {
+      box.appendChild(el('p', 'calm', book
+        ? 'The proposal has no introduction yet.'
+        : 'The proposal can\u2019t be reached on the beach just now. Please try again in a little while.'));
+      return;
+    }
+    prose(box, parts, 'lead');
+    box.classList.add('arrived');
+  }
+
+  function renderSpine(spine) {
+    var box = $('spine');
+    box.textContent = '';
+    if (!spine) return;
+    var open = text(spine).trim();
+    if (open) {
+      box.appendChild(el('hr', 'rule'));
+      box.appendChild(el('h2', null, 'The chapters, and how they’re read'));
+      prose(box, [open]);
+    }
+    var how = spine['9'];
+    var parts = how ? words(how) : [];
+    if (parts.length) {
+      var aside = el('div', 'how');
+      aside.appendChild(el('span', 'how-label', 'How to take part'));
+      prose(aside, parts);
+      box.appendChild(aside);
+    }
+    box.classList.add('arrived');
+  }
+
+  function renderChapters(book, mirrors, room) {
+    var list = $('chapters');
+    var contents = $('contents');
+    list.textContent = '';
+    contents.textContent = '';
+    if (!book) return;
+
+    for (var i = 1; i <= CHAPTERS; i++) {
+      var node = book[String(i)];
+      if (node == null) continue;
+      var title = text(node).trim() || ('Chapter ' + i);
+      var body = node && typeof node === 'object' ? node['1'] : null;
+      // A chapter written as a bare line has its words there, not beneath.
+      if (typeof node === 'string') { body = node; title = 'Chapter ' + i; }
+
+      var card = el('article', 'chapter');
+      card.id = 'chapter-' + i;
+      card.appendChild(el('span', 'chapter-num', 'Chapter ' + i));
+      card.appendChild(el('h3', null, title));
+
+      var text1 = el('div', 'prose');
+      var parts = body != null && !sealed(body) ? words(body) : [];
+      if (parts.length) prose(text1, parts);
+      else text1.appendChild(el('p', 'none', 'The proposal text for this chapter isn\u2019t written yet.'));
+      card.appendChild(text1);
+
+      // Reflections, one per person who has written at this chapter.
+      var refl = el('div', 'part');
+      refl.appendChild(el('span', 'part-label', 'Reflections'));
+      var any = false;
+      mirrors.forEach(function (m) {
+        var r = reflectionAt(m.block, i);
+        if (!r) return;
+        any = true;
+        var div = el('div', 'reflection');
+        var head = el('p', 'reflection-who');
+        head.appendChild(el('strong', null, m.handle));
+        div.appendChild(head);
+        if (r.private) {
+          div.appendChild(el('p', 'private', 'A private reflection'));
+        } else {
+          var box = el('div');
+          prose(box, r.parts);
+          Array.prototype.forEach.call(box.querySelectorAll('p'), function (p) {
+            p.className = 'reflection-text';
+          });
+          div.appendChild(box);
+        }
+        refl.appendChild(div);
+      });
+      if (!any) refl.appendChild(el('p', 'none', mirrors.unreadable
+        ? 'The reflections can\u2019t be reached just now.'
+        : 'No reflections yet.'));
+      card.appendChild(refl);
+
+      // The room's messages tied to this chapter.
+      var here = room.byChapter[i] || [];
+      if (here.length) {
+        var talk = el('div', 'part');
+        talk.appendChild(el('span', 'part-label', 'From the room'));
+        var thread = el('div', 'thread');
+        here.forEach(function (c) { thread.appendChild(note(c, 'comment')); });
+        talk.appendChild(thread);
+        card.appendChild(talk);
+      }
+
+      list.appendChild(card);
+
+      var li = el('li');
+      var a = el('a', null, title);
+      a.href = '#chapter-' + i;
+      li.appendChild(a);
+      contents.appendChild(li);
+    }
+    if (contents.childNodes.length) {
+      $('contents-wrap').hidden = false;
+    } else {
+      list.appendChild(el('p', 'calm', 'The chapters haven\u2019t been written yet.'));
+    }
+    list.classList.add('arrived');
+  }
+
+  function renderRoom(room, reached) {
+    var box = $('room');
+    box.textContent = '';
+    if (!reached) {
+      box.appendChild(el('p', 'thread-empty', 'The room can\u2019t be reached just now.'));
+    } else if (!room.loose.length) {
+      box.appendChild(el('p', 'thread-empty', 'Nothing in the room yet beyond the chapters.'));
+    } else {
+      room.loose.forEach(function (c) { box.appendChild(note(c, 'comment')); });
+    }
+    $('room-wrap').hidden = false;
+  }
+
+  function renderProvenance(book) {
+    var box = $('provenance');
+    box.textContent = '';
+    var parts = book && book['9'] != null ? words(book['9']) : [];
+    if (!parts.length) return;
+    prose(box, parts);
+    $('provenance-wrap').hidden = false;
+  }
+
+  // Sort the room: tagged messages go to their chapter; of the rest, only
+  // the most recent few are kept.
+  function sortRoom(pool) {
+    var all = entries(pool);
+    var byChapter = {}, loose = [];
+    all.forEach(function (c) {
+      var n = chapterOf(c.where);
+      if (n) (byChapter[n] = byChapter[n] || []).push(c);
+      else loose.push(c);
+    });
+    return { byChapter: byChapter, loose: loose.slice(-ROOM_RECENT) };
+  }
+
+  // ---- Load ----------------------------------------------------------------
+  // Each read stands alone, so one block being out of reach never blanks
+  // the rest of the page.
+  function load() {
+    var mirrorsP = Beach.index().then(function (idx) {
+      var names = mirrorNames(idx);
+      return Promise.all(names.map(function (n) {
+        return Beach.get(n).then(function (b) {
+          // A whole block that comes back as one sealed string is private.
+          if (typeof b === 'string') b = sealed(b) ? { gray: b } : { _: b };
+          return { handle: n.slice(FAMILY.length), block: b && typeof b === 'object' ? b : null, name: n };
+        }, function () { return { handle: n.slice(FAMILY.length), block: null, name: n }; });
+      }));
+    }).then(function (list) {
+      // A mirror that couldn't be read at all is left out quietly.
+      return list.filter(function (m) { return m.block; });
+    }, function () {
+      var none = [];
+      none.unreadable = true;
+      return none;
+    });
+
+    return Promise.all([read(BOOK), read(SPINE), mirrorsP, read(POOL)]).then(function (r) {
+      var book = r[0], spine = r[1], mirrors = r[2], pool = r[3];
+      var room = pool ? sortRoom(pool) : { byChapter: {}, loose: [] };
+
+      renderIntro(book);
+      renderSpine(spine);
+      renderChapters(book, mirrors, room);
+      if (book) renderRoom(room, !!pool);
+      renderProvenance(book);
+
+      var reached = book || spine || pool || !mirrors.unreadable;
+      var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      $('live-note').textContent = reached
+        ? 'Read live from the beach · ' + t +
+          (mirrors.length ? ' · ' + mirrors.length + (mirrors.length === 1 ? ' mirror' : ' mirrors') : '')
+        : 'The beach is out of reach just now. Please try again in a little while.';
+    });
+  }
+
+  load().catch(function () {
+    $('intro').textContent = '';
+    $('intro').appendChild(el('p', 'calm', 'Something went wrong reading the beach. Please try again in a little while.'));
+  });
+})();
+</script>
+</body>
+</html>
