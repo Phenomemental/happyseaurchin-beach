@@ -62,6 +62,30 @@
     return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
   }
 
+  // Position 1 of an entry is who left it. A few older entries keep words
+  // of their own there instead, so only a name-length string counts.
+  function name(v) {
+    return typeof v === 'string' && v.length <= 60 ? v : '';
+  }
+
+  // A reply sits beneath the entry it answers, at the entry's next free
+  // position: {_: text, 1: who, 3: time}, alongside the entry's own
+  // who/where/when strings.
+  function replies(e) {
+    var out = [];
+    for (var i = 1; i <= 9; i++) {
+      var r = e[String(i)];
+      if (r && typeof r === 'object' && typeof r._ === 'string' && r._.trim()) {
+        out.push({
+          who: name(r['1']),
+          when: typeof r['3'] === 'string' ? r['3'] : '',
+          text: r._
+        });
+      }
+    }
+    return out;
+  }
+
   function entries(node, out) {
     out = out || [];
     if (!node || typeof node !== 'object') return out;
@@ -69,7 +93,7 @@
     for (var i = 1; i <= 9; i++) {
       var e = node[String(i)];
       if (isEntry(e)) {
-        if (e._.trim()) out.push({ who: e['1'] || '', when: e['3'], text: e._ });
+        if (e._.trim()) out.push({ who: name(e['1']), when: e['3'], text: e._, replies: replies(e) });
       } else if (typeof e === 'string') {
         if (e.trim()) out.push({ who: '', when: '', text: e });
       } else {
@@ -96,24 +120,54 @@
       return;
     }
     list.forEach(function (c) {
-      var div = document.createElement('div');
-      div.className = 'comment';
-      var meta = document.createElement('p');
-      meta.className = 'comment-meta';
-      if (c.who) {
-        var b = document.createElement('strong');
-        b.textContent = c.who;
-        meta.appendChild(b);
+      var div = comment(c, 'comment');
+      if (c.replies && c.replies.length) {
+        var rs = document.createElement('div');
+        rs.className = 'replies';
+        c.replies.forEach(function (r) { rs.appendChild(comment(r, 'comment reply')); });
+        div.appendChild(rs);
       }
-      var w = when(c.when);
-      if (w) meta.appendChild(document.createTextNode((c.who ? ' · ' : '') + w));
-      if (meta.childNodes.length) div.appendChild(meta);
-      var t = document.createElement('p');
-      t.className = 'comment-text';
-      t.textContent = c.text;
-      div.appendChild(t);
       el.appendChild(div);
     });
+  }
+
+  // One note: who and when, then its words. A very long note shows its
+  // opening, with the rest a tap away.
+  var LONG = 700;
+  function comment(c, cls) {
+    var div = document.createElement('div');
+    div.className = cls;
+    var meta = document.createElement('p');
+    meta.className = 'comment-meta';
+    if (c.who) {
+      var b = document.createElement('strong');
+      b.textContent = c.who;
+      meta.appendChild(b);
+    }
+    var w = when(c.when);
+    if (w) meta.appendChild(document.createTextNode((c.who ? ' · ' : '') + w));
+    if (meta.childNodes.length) div.appendChild(meta);
+    var t = document.createElement('p');
+    t.className = 'comment-text';
+    var full = c.text.trim();
+    if (full.length > LONG) {
+      var cut = full.lastIndexOf(' ', 500);
+      t.textContent = full.slice(0, cut > 300 ? cut : 500) + '\u2026';
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'comment-more';
+      more.textContent = 'Read all';
+      more.addEventListener('click', function () {
+        t.textContent = full;
+        more.remove();
+      });
+      div.appendChild(t);
+      div.appendChild(more);
+    } else {
+      t.textContent = full;
+      div.appendChild(t);
+    }
+    return div;
   }
 
   // Append a note to a pool, in the same shape an assistant would write it.

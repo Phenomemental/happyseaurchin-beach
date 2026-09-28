@@ -175,6 +175,7 @@
   .failure { text-align: left; }
   .failure p { margin: 0 0 0.9rem; }
   .wake { text-align: left; }
+  #room { text-align: left; margin-top: 1rem; }
   .wake ul { margin: 0 0 0.9rem; }
   .wake .caps {
     font-size: 0.85rem;
@@ -274,8 +275,9 @@
     <hr class="rule">
 
     <section>
-      <h2>Leave something in his room</h2>
-      <p class="quietly">Whatever is left here is read at the start of every waking.</p>
+      <h2>His room</h2>
+      <p class="quietly">Whatever is left here is read at the start of every waking. His replies, when he is woken, appear beneath what they answer.</p>
+      <div class="thread" id="room" aria-live="polite" hidden></div>
       <form id="note-form" hidden>
         <label for="n-name">Your name (optional; shown as &ldquo;your name, a visitor&rdquo;)</label>
         <input id="n-name" name="who" maxlength="40" autocomplete="name">
@@ -644,7 +646,7 @@
   playOnce();
 
   var form = document.getElementById('note-form');
-  Beach.live(function () {
+  var refresh = Beach.live(function () {
     var reads = [
       Beach.get('passport:night-watchman').then(function (p) {
         show('who', p, renderWho, true);
@@ -656,6 +658,9 @@
       Beach.get('pool:night-watchman').then(function (pool) {
         var slot = pool && pool['4'];
         show('wake', words(slot), renderWake, true);
+        var room = document.getElementById('room');
+        Beach.renderThread(room, pool);
+        room.hidden = false;
       })
     ];
     var settled = reads.map(function (r) {
@@ -668,7 +673,8 @@
     form.hidden = false;
     document.getElementById('closing').hidden = true;
   });
-  Beach.wireNoteForm(form, 'pool:night-watchman');
+  // After a note is sent, read the room again so it appears at once.
+  Beach.wireNoteForm(form, 'pool:night-watchman', refresh);
 })();
 </script>
 </body>
