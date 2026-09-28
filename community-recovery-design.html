@@ -161,7 +161,17 @@
     margin-top: 0.9rem;
   }
   .comment-form .notice {
+    margin: 0 0 0.3rem;
+  }
+  .comment-form .mirror-link {
     margin: 0 0 0.7rem;
+  }
+  .reflection-who a strong {
+    color: var(--crimson);
+  }
+  .comment-form .mirror-link a,
+  .reflection-who a {
+    overflow-wrap: anywhere;
   }
   .comment-form textarea {
     min-height: 5rem;
@@ -286,6 +296,8 @@
   var SPINE = 'spine:community-recovery-design';
   var POOL = 'pool:community-recovery-design';
   var FAMILY = 'community-recovery-design:';
+  // The mirror's own page: everyone's mirrors, and a place to write in yours.
+  var WALK = 'https://happyseaurchin.com/walk/community-recovery-design';
   var CHAPTERS = 8;
   var ROOM_RECENT = 8;   // untagged messages shown at the end
   var LONG = 700;        // longer than this opens with "Read all"
@@ -299,6 +311,16 @@
     return e;
   }
   function $(id) { return document.getElementById(id); }
+
+  // "text <link>." with the link showing its own address.
+  function withLink(cls, before, href, after) {
+    var p = el('p', cls, before);
+    var a = el('a', null, href.replace(/^https:\/\//, ''));
+    a.href = href;
+    p.appendChild(a);
+    if (after) p.appendChild(document.createTextNode(after));
+    return p;
+  }
 
   // A read that never throws: the block, or null if it couldn't be had.
   function read(block) {
@@ -521,6 +543,7 @@
       aside.appendChild(el('span', 'how-label', 'How to take part'));
       prose(aside, parts);
       aside.appendChild(el('p', null, 'For a considered reflection, ask your AI to write in your own mirror, community-recovery-design:<your handle>, at that chapter.'));
+      aside.appendChild(withLink(null, 'Or open the mirrors and write in yours at ', WALK, '.'));
       box.appendChild(aside);
     }
     box.classList.add('arrived');
@@ -575,7 +598,10 @@
         any = true;
         var div = el('div', 'reflection');
         var head = el('p', 'reflection-who');
-        head.appendChild(el('strong', null, m.handle));
+        var who = el('a', null);
+        who.href = WALK + '/' + encodeURIComponent(m.handle);
+        who.appendChild(el('strong', null, m.handle));
+        head.appendChild(who);
         div.appendChild(head);
         if (r.private) {
           div.appendChild(el('p', 'private', 'A private reflection'));
@@ -694,6 +720,7 @@
     var form = el('form', 'comment-form');
     form.noValidate = true;
     form.appendChild(el('p', 'form-foot notice', NOTICE));
+    form.appendChild(withLink('form-foot mirror-link', 'For a considered reflection on chapter ' + chapter + ', write in your own mirror: ', WALK, ''));
 
     var l1 = el('label', null, 'Your name');
     l1.htmlFor = id + '-name';
