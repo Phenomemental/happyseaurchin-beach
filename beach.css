@@ -25,6 +25,13 @@ html, body {
   margin: 0;
   padding: 0;
 }
+/* Everything on these pages is sized in rem, so the root size sets the
+   scale. Phones (up to 480px wide) stay at 16px, as they always were;
+   from there the type grows smoothly with the window, to 21px on a wide
+   desktop, and the headings, spacing and column grow with it. */
+html {
+  font-size: clamp(16px, calc(16px + (100vw - 480px) * 0.0055), 21px);
+}
 body {
   background: var(--paper);
   color: var(--ink);
@@ -37,7 +44,9 @@ body {
 }
 main {
   width: 100%;
-  max-width: 620px;
+  /* 620px on a phone; widens with the type to about 810px on desktop,
+     keeping the same comfortable line length. */
+  max-width: 38.75rem;
   padding: 1.5rem 1rem 3rem;
 }
 a {
