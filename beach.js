@@ -5,13 +5,28 @@
   var REFRESH_MS = 30000;
   var clock = null;
 
-  function get(block) {
-    return fetch(BEACH + '?block=' + encodeURIComponent(block), { cache: 'no-store' })
+  // Read a block, or only part of it: opts.spindle is an address such as
+  // "19" (position 1.9), which returns that node and what's beneath it;
+  // add opts.pscale to read a single node's own text (see point below).
+  function get(block, opts) {
+    var q = '?block=' + encodeURIComponent(block);
+    if (opts && opts.spindle != null) q += '&spindle=' + encodeURIComponent(opts.spindle);
+    if (opts && opts.pscale != null) q += '&pscale=' + encodeURIComponent(opts.pscale);
+    return fetch(BEACH + q, { cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         readClock(r.headers.get('X-Pscale-Now'));
         return r.json();
       });
+  }
+
+  // One node's own text, without anything beneath it. The pscale counts
+  // down from the block's floor: in a floor-1 block, 0 is a first-level
+  // position ("1"), -1 a second-level one ("1.8"), and so on.
+  function point(block, spindle, pscale) {
+    return get(block, { spindle: spindle, pscale: pscale }).then(function (r) {
+      return r && typeof r.content === 'string' ? r.content : '';
+    });
   }
 
   // The beach's front door: every block's name ("blocks"), and when each
@@ -126,7 +141,10 @@
       ev.preventDefault();
       var note = form.note.value.trim();
       if (form.web.value || !note) return;
-      var who = form.who.value.trim().slice(0, 40) || 'a visitor';
+      // A typed name is shown as a visitor's, never as a beach handle, so
+      // nobody can sign as someone else.
+      var name = form.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+      var who = name ? name + ', a visitor' : 'a visitor';
       button.disabled = true;
       status.textContent = 'Sending…';
       postNote(pool, who, note).then(function () {
@@ -170,6 +188,7 @@
 
   window.Beach = {
     get: get,
+    point: point,
     index: index,
     clock: function () { return clock; },
     text: text,
