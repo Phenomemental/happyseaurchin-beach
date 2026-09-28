@@ -474,64 +474,49 @@
       <div id="offer-live">
       <p>Four things, and nothing more complicated than these:</p>
       <ul>
-        <li><strong>A notebook each.</strong> It's yours, nobody else writes in it, and you choose which pages others can see.</li>
-        <li><strong>A wall in the middle of the room.</strong> When the group asks a question, everyone answers in their own notebook, and the wall shows all the answers side by side. Nobody is rewritten and nothing is lost.</li>
-        <li><strong>One shared calendar.</strong> Everyone's days, months and years line up, so change over time can be seen.</li>
-        <li><strong>A helper in your pocket.</strong> You can simply talk to it, out loud, while you walk. It puts your words in the right place and reads them back to you.</li>
+        <li>Everyone has their own notebook: theirs, nobody else writes in it, and they choose which pages others see.</li>
+        <li>In the middle of the room is a wall: when the group asks a question, everyone answers in their own notebook and the wall shows all the answers side by side, nobody rewritten, nothing lost.</li>
+        <li>There is one shared calendar, so everyone's days, months and years line up and change over time can be seen.</li>
+        <li>And everyone has a helper in their pocket they can simply talk to, out loud, while they walk, which puts their words in the right place and reads them back.</li>
       </ul>
-
       <h3>For members</h3>
       <ul>
-        <li>Your story stays yours, and it outlives any service you pass through.</li>
-        <li>Private things stay buried where only your key finds them, with access you can grant and take back.</li>
-        <li>You are seen for what you bring.</li>
-        <li>Helping is easy, and thanks travel.</li>
-        <li>No forms, and no training.</li>
+        <li>Their story stays theirs and outlives any service.</li>
+        <li>Private things stay buried where only their key finds them, with access they can grant and withdraw.</li>
+        <li>They are seen for what they bring.</li>
+        <li>Helping is easy and thanks travel.</li>
+        <li>No forms, no training.</li>
       </ul>
-
-      <h3>For the organisation</h3>
+      <h3>For LEROs</h3>
       <ul>
         <li>Proof that comes from members, not from the organisation's report about itself.</li>
         <li>Evidence that builds itself as people live and work.</li>
-        <li>Co-production you can actually see, including how decisions were made and who shaped them.</li>
+        <li>Co-production that can be seen, including how decisions were made and who shaped them.</li>
         <li>A front door that updates itself.</li>
         <li>Infrastructure for groups that have none.</li>
         <li>Money that stays in the movement.</li>
       </ul>
-
       <h3>For CLERO</h3>
       <ul>
         <li>A national picture of how LEROs read themselves against the 33 standards, held by nobody, without monitoring anyone.</li>
         <li>Standards that keep being shaped from the ground.</li>
         <li>Learning that spreads by copying.</li>
       </ul>
-
-      <h3>What's genuinely new</h3>
+      <h3>What is genuinely new</h3>
       <ul>
-        <li>People keep their own story, and it still counts together.</li>
-        <li>Many voices stand side by side, and none are merged.</li>
+        <li>People keep their own story and it still counts together.</li>
+        <li>Many voices side by side, none merged.</li>
         <li>Talking is the way in.</li>
         <li>The record keeps itself.</li>
         <li>Nobody owns the middle.</li>
         <li>It is open and portable.</li>
       </ul>
-
       <h3>Why not the ordinary tools</h3>
-      <p>
-        A normal website is maintained by one person and says what the
-        organisation says about itself.
-      </p>
-      <p>
-        Google Workspace suits an office, but the organisation owns
-        everything, files sit by department, nothing is held by the person,
-        and there's no shared clock and no shared place for everyone's own
-        reading.
-      </p>
-      <p>
-        Phoning round for a case study takes someone's story, edits it, uses
-        it once and loses it. On the beach the story already exists, in their
-        own words, consented to, and still growing.
-      </p>
+      <p>A normal website is maintained by one person and says what the organisation says about itself.</p>
+      <p>Google Workspace suits an office but the organisation owns everything, files sit by department, nothing is held by the person and there is no shared clock or shared place for everyone's own reading.</p>
+      <p>Phoning round for a case study takes someone's story, edits it, uses it once and loses it, where on the beach it already exists in their words, consented and growing.</p>
+      <h3>The one sentence</h3>
+      <p class="lead">The truth about a recovery community should come from its members' own voices, kept by them and seen together.</p>
       </div>
       <p class="live-note section-live" data-live="offer"></p>
     </section>
@@ -1452,11 +1437,12 @@
         <li>Where should the check-in protocol live once the directory is trimmed: in the spine, in <code>policy:lero-nnh</code>, or as its own family member?</li>
       </ol>
       <ol id="questions-live" style="counter-reset: step 5">
-        <li>A custodian reset: how someone who has lost their latch is helped back in, with them present, visibly, leaving the custodian no writing access.</li>
-        <li>Who runs the combined picture, as a named, trusted reader of members-only pages?</li>
+        <li>A custodian reset on the beach: how someone who has lost their latch is helped back in, with them present, visibly, leaving the custodian no writing access.</li>
+        <li>Who runs the combined picture as a named, trusted reader of members-only mirrors.</li>
         <li>Whether a free or a Team Claude account can connect to the beach, and on what data terms.</li>
         <li>How temporary read access for doctors and support workers would work.</li>
         <li>The sustainability model for the LERO and the beach, at no cost to volunteers.</li>
+        <li><em>Answered: </em>The policies are all Community Recovery's own, because it is an independent organisation; they are developed against the 33 LERO standards.</li>
       </ol>
       <p class="live-note section-live" data-live="questions"></p>
 
@@ -1480,7 +1466,7 @@
       </p>
 
       <form id="note-form" hidden>
-        <label for="n-name">Your name (optional)</label>
+        <label for="n-name">Your name (optional; shown as &ldquo;your name, a visitor&rdquo;)</label>
         <input id="n-name" name="who" maxlength="40" autocomplete="name">
         <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
         <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -1590,11 +1576,19 @@
     questions: 'Live from the design on the beach'
   };
 
-  // Render one section from live text, or fall back to the saved version.
+  // Every string in a node read from the beach, for the name check.
+  function allText(node) {
+    if (typeof node === 'string') return node;
+    if (!node || typeof node !== 'object') return '';
+    return Object.keys(node).map(function (k) { return allText(node[k]); }).join(' ');
+  }
+
+  // Render one section from live text (a string, or a node and the
+  // positions beneath it), or fall back to the saved version.
   function show(key, raw, render) {
     var sec = sections[key];
     var ok = false;
-    if (raw && namesOnlyOurs(raw)) {
+    if (raw && namesOnlyOurs(allText(raw))) {
       var frag = document.createDocumentFragment();
       try { ok = render(raw, frag) !== false && frag.childNodes.length > 0; } catch (e) { ok = false; }
       if (ok) {
@@ -1654,22 +1648,26 @@
     if (parts.length) out.appendChild(el('p', null, parts.join(' ')));
   }
 
-  // 1 -> 9: one string with capitalised headings. Split at them; the four
-  // things become a list, each heading's items a list, "why not" becomes
-  // paragraphs. THE MESSAGE and anything after it is an internal pointer.
-  function renderOffer(s, out) {
-    s = s.replace(/^\s*THE OFFER IN PLAIN WORDS\b[^.]*\.\s*/, '');
-    var cut = s.search(/\bTHE MESSAGE:/);
-    if (cut >= 0) s = s.slice(0, cut);
-    var bits = s.split(/\b([A-Z]{2,}(?: [A-Z]{2,}s?)*s?):\s+/);
-    var lead = bits.shift();
-    out.appendChild(el('p', null, 'Four things, and nothing more complicated than these:'));
-    var ul = el('ul');
-    sentences(lead).forEach(function (x) { ul.appendChild(el('li', null, x.trim())); });
-    out.appendChild(ul);
-    for (var i = 0; i + 1 < bits.length; i += 2) {
-      var head = bits[i], body = bits[i + 1].trim();
-      if (!body) continue;
+  // 1.9: its "_" opens with "THE OFFER IN PLAIN WORDS (…)." and then the
+  // four things; 1.9.1 onward each hold one section, "HEADING: body". The
+  // heading is the text before the first colon. THE MESSAGE is an internal
+  // pointer, so it isn't shown. Items within a section are split at ";".
+  function renderOffer(node, out) {
+    if (!node || typeof node !== 'object') return false;
+    var lead = text(node).replace(/^\s*THE OFFER IN PLAIN WORDS\b[^.]*\.\s*/, '');
+    var four = sentences(lead);
+    if (four.length) {
+      out.appendChild(el('p', null, 'Four things, and nothing more complicated than these:'));
+      var ul = el('ul');
+      four.forEach(function (x) { ul.appendChild(el('li', null, x)); });
+      out.appendChild(ul);
+    }
+    for (var i = 1; i <= 9; i++) {
+      var s = text(node[String(i)]).trim();
+      var colon = s.indexOf(':');
+      if (!s || colon < 0) continue;
+      var head = s.slice(0, colon).trim(), body = s.slice(colon + 1).trim();
+      if (!body || /^THE MESSAGE$/.test(head)) continue;
       out.appendChild(el('h3', null, sentenceCase(head)));
       var items = body.split(/;\s+/);
       if (/^THE ONE SENTENCE$/.test(head)) {
@@ -1682,6 +1680,7 @@
         out.appendChild(list);
       }
     }
+    if (!out.childNodes.length) return false;
   }
 
   // 7 -> 3: the text after "GAPS, NOT YET BUILT:".
@@ -1691,12 +1690,20 @@
     out.appendChild(document.createTextNode(cap(m[1])));
   }
 
-  // 9 -> 1 only: the numbered questions. An answered one says so.
-  function renderQuestions(s, out) {
-    var re = /\((\d+)\)\s*([\s\S]*?)(?=\s*\(\d+\)\s|$)/g, m, first = null;
-    while ((m = re.exec(s))) {
-      if (first === null) first = parseInt(m[1], 10);
-      var q = m[2].trim();
+  // 9.1: its "_" is the heading; 9.1.1 onward hold one question each,
+  // written "(6) …". The list's numbering continues from the first number,
+  // after the five questions above it. An answered one says so.
+  function renderQuestions(node, out) {
+    if (!node || typeof node !== 'object') return false;
+    var first = null;
+    for (var i = 1; i <= 9; i++) {
+      var q = text(node[String(i)]).trim();
+      if (!q) continue;
+      var n = /^\((\d+)\)\s*/.exec(q);
+      if (n) {
+        if (first === null) first = parseInt(n[1], 10);
+        q = q.slice(n[0].length);
+      }
       var answered = /^ANSWERED\b[^:]*:\s*/.exec(q);
       var li = el('li');
       if (answered) {
@@ -1707,28 +1714,41 @@
       }
       out.appendChild(li);
     }
-    if (first === null) return false;
-    sections.questions.box.style.counterReset = 'step ' + (first - 1);
+    if (!out.childNodes.length) return false;
+    sections.questions.box.style.counterReset = 'step ' + ((first || 6) - 1);
   }
 
-  function renderProposal(d) {
-    var p1 = d['1'] || {}, p18 = p1['8'] || {};
-    var p182 = p18['2'] || {};
-    show('intro', text(p182), renderIntro);
-    show('who', text(p182['1']), renderWho);
-    show('vision', text(p18), renderVision);
-    show('offer', text(p1['9']), renderOffer);
-    show('gaps', text((d['7'] || {})['3']), renderGaps);
-    show('questions', text((d['9'] || {})['1']), renderQuestions);
+  // Only the parts of the design proposal this page shows are read, each
+  // on its own, so a refresh fetches a few kilobytes, not the whole block:
+  //   1.8's own text (the vision), without the long paper beneath it;
+  //   1.8.2 and 1.8.2.1 (the introduction, and who's behind this);
+  //   1.9 and its sections (the offer); 7.3 (the gaps); 9.1 and its questions.
+  var PROPOSAL = 'lero-nnh-design-proposal';
+  function readProposal() {
+    return [
+      Beach.point(PROPOSAL, '18', -1).then(function (s) { show('vision', s, renderVision); }),
+      Beach.get(PROPOSAL, { spindle: '182' }).then(function (n) {
+        show('intro', text(n), renderIntro);
+        show('who', text(n && n['1']), renderWho);
+      }),
+      Beach.get(PROPOSAL, { spindle: '19' }).then(function (n) { show('offer', n, renderOffer); }),
+      Beach.get(PROPOSAL, { spindle: '73' }).then(function (n) { show('gaps', text(n), renderGaps); }),
+      Beach.get(PROPOSAL, { spindle: '91' }).then(function (n) { show('questions', n, renderQuestions); })
+    ];
   }
 
   // The frame's dimensions live at positions 1-5 of its spine, each written
   // "Name — description". Only those five are shown here; the spine's
   // other positions are for its operator and never appear on this page.
-  function renderFrame(spine) {
+  function readFrame() {
+    var reads = [];
+    for (var i = 1; i <= 5; i++) reads.push(Beach.point('spine:lero-nnh-recovery-capital', String(i), 0));
+    return Promise.all(reads).then(renderFrame);
+  }
+  function renderFrame(dims) {
     var items = [];
-    for (var i = 1; i <= 5; i++) {
-      var s = text(spine[String(i)]).trim();
+    for (var i = 0; i < 5; i++) {
+      var s = (dims[i] || '').trim();
       if (!s) return;
       var cut = s.indexOf(' — ');
       items.push(cut > 0
@@ -1792,10 +1812,7 @@
   // Each read stands alone, so one block being out of reach never blanks
   // another; the page counts as live once any of them answers.
   Beach.live(function () {
-    var reads = [
-      Beach.get('lero-nnh-design-proposal').then(renderProposal),
-      Beach.get('spine:lero-nnh-recovery-capital').then(renderFrame)
-    ];
+    var reads = readProposal().concat([readFrame()]);
     var settled = reads.map(function (r) {
       return r.then(function () { return true; }, function () { return false; });
     });
