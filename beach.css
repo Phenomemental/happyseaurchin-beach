@@ -227,6 +227,43 @@ form button {
   padding: 0.5rem 1.4rem;
   cursor: pointer;
 }
+/* The microphone beside a text box: quieter than the send button. */
+form button.mic {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--crimson);
+  background: transparent;
+  border: 1px solid var(--crimson);
+  padding: 0.25rem 0.8rem;
+}
+form button.mic.listening {
+  color: var(--page);
+  background: var(--crimson);
+}
+form button.mic.listening svg {
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  form button.mic.listening svg { animation: none; }
+}
+.mic-row {
+  margin: -0.4rem 0 0.9rem;
+}
+.mic-note {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
+  margin: 0.35rem 0 0;
+}
+.mic-note:empty {
+  display: none;
+}
 form button:disabled {
   opacity: 0.6;
   cursor: default;

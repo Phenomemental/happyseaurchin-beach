@@ -186,11 +186,94 @@
     });
   }
 
+  // A microphone beside a text box, so people can speak their words in.
+  // It uses the browser's own speech recognition (Chrome, Edge, Safari);
+  // where there is none, no button appears. The words land in the box to
+  // be read and changed before anything is posted.
+  var MIC_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  function addMic(box) {
+    var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec || !box || box.dataset.mic) return;
+    box.dataset.mic = '1';
+    var row = document.createElement('div');
+    row.className = 'mic-row';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mic';
+    btn.setAttribute('aria-pressed', 'false');
+    var note = document.createElement('p');
+    note.className = 'mic-note';
+    note.setAttribute('role', 'status');
+    row.appendChild(btn);
+    row.appendChild(note);
+    box.parentNode.insertBefore(row, box.nextSibling);
+
+    var rec = null, base = '', said = '';
+    function label(on) {
+      btn.innerHTML = MIC_ICON + '<span>' + (on ? 'Stop' : 'Speak') + '</span>';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('aria-label', on ? 'Stop listening' : 'Speak your words into the box');
+      btn.classList.toggle('listening', on);
+    }
+    function fill(extra) {
+      var t = base + said + extra;
+      var max = box.maxLength > 0 ? box.maxLength : Infinity;
+      box.value = t.slice(0, max);
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    function stop() { if (rec) rec.stop(); }
+    label(false);
+
+    btn.addEventListener('click', function () {
+      if (rec) return stop();
+      rec = new Rec();
+      rec.lang = document.documentElement.lang === 'en' ? 'en-GB' : (document.documentElement.lang || 'en-GB');
+      rec.continuous = true;
+      rec.interimResults = true;
+      base = box.value && !/\s$/.test(box.value) ? box.value + ' ' : box.value;
+      said = '';
+      rec.onresult = function (ev) {
+        var interim = '';
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          var t = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) said += t.trim() + ' ';
+          else interim += t;
+        }
+        fill(interim);
+      };
+      rec.onerror = function (ev) {
+        note.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
+          ? 'The microphone wasn\u2019t allowed. You can let this page use it in your browser\u2019s settings, or type instead.'
+          : ev.error === 'no-speech'
+            ? 'I didn\u2019t hear anything. Press Speak to try again.'
+            : 'Speaking didn\u2019t work just now. You can type instead.';
+      };
+      rec.onend = function () {
+        rec = null;
+        fill('');
+        box.value = box.value.replace(/\s+$/, '');
+        label(false);
+        if (/^Listening/.test(note.textContent)) note.textContent = 'Read it through and change anything before you post.';
+      };
+      try {
+        rec.start();
+        label(true);
+        note.textContent = 'Listening\u2026 press Stop when you\u2019re done. Your browser may send your voice to its maker (Google or Apple) to turn it into text; nothing is posted until you press Post.';
+      } catch (e) {
+        rec = null;
+        note.textContent = 'Speaking didn\u2019t work just now. You can type instead.';
+      }
+    });
+    // Posting stops the microphone.
+    if (box.form) box.form.addEventListener('submit', stop);
+  }
+
   // Wire a note form (fields: who, web [a trap for bots], note; a button;
   // a .form-status line) to leave notes in the given pool.
   function wireNoteForm(form, pool, onSent) {
+    addMic(form.note);
     var status = form.querySelector('.form-status');
-    var button = form.querySelector('button');
+    var button = form.querySelector('button[type=submit]') || form.querySelector('button');
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var note = form.note.value.trim();
@@ -248,6 +331,7 @@
     text: text,
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
+    addMic: addMic,
     live: live
   };
 })();
