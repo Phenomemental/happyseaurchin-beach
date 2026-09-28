@@ -157,6 +157,32 @@
     color: var(--crimson);
     cursor: pointer;
   }
+  .comment-form {
+    margin-top: 0.9rem;
+  }
+  .comment-form .notice {
+    margin: 0 0 0.7rem;
+  }
+  .comment-form textarea {
+    min-height: 5rem;
+  }
+  .count {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: -0.6rem 0 0.6rem;
+    min-height: 0;
+  }
+  .count:empty {
+    display: none;
+  }
+  .comment-form .fallback[hidden] {
+    display: none;
+  }
+  .comment-form .fallback {
+    font-size: 0.95rem;
+    min-height: 9rem;
+    margin-top: 0.4rem;
+  }
   .page-links {
     text-align: center;
     font-style: italic;
@@ -187,6 +213,7 @@
   <nav class="site-nav" aria-label="Pages">
     <a href="index.html">Phenomemental</a>
     <a href="community-recovery.html">Community Recovery</a>
+    <a href="community-recovery-design.html" aria-current="page">The proposal</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="map.html">My map</a>
     <a href="night-watchman.html">The Night Watchman</a>
@@ -237,7 +264,7 @@
   </div>
 
   <footer class="site-footer">
-    <p>Read live from the beach as the page opens. This page only reads; it never writes.</p>
+    <p>Read live from the beach as the page opens. The only thing this page writes is a comment you choose to post, into the room.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
@@ -482,13 +509,27 @@
       var aside = el('div', 'how');
       aside.appendChild(el('span', 'how-label', 'How to take part'));
       prose(aside, parts);
+      aside.appendChild(el('p', null, 'For a considered reflection, ask your AI to write in your own mirror, community-recovery-design:<your handle>, at that chapter.'));
       box.appendChild(aside);
     }
     box.classList.add('arrived');
   }
 
+  var threads = {};
+
+  function renderComments(room, reached) {
+    Object.keys(threads).forEach(function (i) {
+      var box = threads[i];
+      var here = room.byChapter[i] || [];
+      box.textContent = '';
+      if (here.length) here.forEach(function (c) { box.appendChild(note(c, 'comment')); });
+      else box.appendChild(el('p', 'none', reached ? 'No comments yet.' : 'The comments can\u2019t be reached just now.'));
+    });
+  }
+
   function renderChapters(book, mirrors, room) {
     var list = $('chapters');
+    threads = {};
     var contents = $('contents');
     list.textContent = '';
     contents.textContent = '';
@@ -542,16 +583,15 @@
         : 'No reflections yet.'));
       card.appendChild(refl);
 
-      // The room's messages tied to this chapter.
-      var here = room.byChapter[i] || [];
-      if (here.length) {
-        var talk = el('div', 'part');
-        talk.appendChild(el('span', 'part-label', 'From the room'));
-        var thread = el('div', 'thread');
-        here.forEach(function (c) { thread.appendChild(note(c, 'comment')); });
-        talk.appendChild(thread);
-        card.appendChild(talk);
-      }
+      // The room's messages tied to this chapter, and a way to add one.
+      var talk = el('div', 'part');
+      talk.appendChild(el('span', 'part-label', 'Comments'));
+      var thread = el('div', 'thread');
+      thread.id = 'comments-' + i;
+      talk.appendChild(thread);
+      talk.appendChild(commentForm(i));
+      card.appendChild(talk);
+      threads[i] = thread;
 
       list.appendChild(card);
 
@@ -604,6 +644,133 @@
     return { byChapter: byChapter, loose: loose.slice(-ROOM_RECENT) };
   }
 
+  // ---- Adding a comment ----------------------------------------------------
+  // The room is open, so no key is needed. The beach's own append chooses
+  // the next free slot, so nothing already there can be overwritten. The
+  // entry takes the room's shape: {_: text, 1: who, 2: chapter, 3: time}.
+  var BEACH_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
+  var MAX = 1500;
+  var NOTICE = 'Comments are public and stay on the beach. Please don\u2019t share personal details about your own health or anyone else\u2019s.';
+
+  function append(entry) {
+    return fetch(BEACH_URL + '?block=' + encodeURIComponent(POOL), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block: POOL, append: true, content: entry })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok || j.ok === false || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+        return j;
+      });
+    });
+  }
+
+  // If the beach won't take the comment from this page, the person can
+  // still leave it through their own AI: a ready instruction to paste.
+  function instruction(entry) {
+    return 'Please add this comment to the room on the Pscale beach. Using bsp, append to the block ' +
+      POOL + ' at https://beach.happyseaurchin.com (agent_id "https://beach.happyseaurchin.com", append: true; the room is open, so no secret). ' +
+      'The content is exactly:\n' + JSON.stringify(entry, null, 2);
+  }
+  function copy(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+    return Promise.reject(new Error('no clipboard'));
+  }
+
+  var formCount = 0;
+  function commentForm(chapter) {
+    var id = 'c' + (++formCount);
+    var form = el('form', 'comment-form');
+    form.noValidate = true;
+    form.appendChild(el('p', 'form-foot notice', NOTICE));
+
+    var l1 = el('label', null, 'Your name');
+    l1.htmlFor = id + '-name';
+    var name = el('input');
+    name.id = id + '-name'; name.name = 'who'; name.maxLength = 40; name.autocomplete = 'name';
+    var trapL = el('label', 'trap', 'Leave this empty');
+    trapL.htmlFor = id + '-web'; trapL.setAttribute('aria-hidden', 'true');
+    var trap = el('input', 'trap');
+    trap.id = id + '-web'; trap.name = 'web'; trap.tabIndex = -1; trap.autocomplete = 'off';
+    trap.setAttribute('aria-hidden', 'true');
+    var l2 = el('label', null, 'Your comment on chapter ' + chapter);
+    l2.htmlFor = id + '-text';
+    var msg = el('textarea');
+    msg.id = id + '-text'; msg.name = 'note'; msg.maxLength = MAX; msg.required = true;
+    var count = el('p', 'count', '');
+    var button = el('button', null, 'Post');
+    button.type = 'submit';
+    var status = el('p', 'form-status');
+    status.setAttribute('role', 'status');
+    var fallback = el('textarea', 'fallback');
+    fallback.readOnly = true;
+    fallback.hidden = true;
+    fallback.setAttribute('aria-label', 'An instruction to paste to your own AI');
+
+    [l1, name, trapL, trap, l2, msg, count, button, status, fallback].forEach(function (x) { form.appendChild(x); });
+
+    msg.addEventListener('input', function () {
+      var left = MAX - msg.value.length;
+      count.textContent = left < 300 ? left + ' characters left' : '';
+    });
+
+    var sending = false;
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (sending || trap.value) return;
+      var text = msg.value.trim().slice(0, MAX);
+      if (!text) {
+        status.textContent = 'Please write a comment first.';
+        msg.focus();
+        return;
+      }
+      // A typed name is shown as a visitor's, never as a beach handle, so
+      // nobody can sign as someone else (the same as the site's other boxes).
+      var typed = name.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+      var entry = {
+        _: text,
+        1: typed ? typed + ', a visitor' : 'a visitor',
+        2: String(chapter),
+        3: new Date().toISOString()
+      };
+      sending = true;
+      button.disabled = true;
+      fallback.hidden = true;
+      status.textContent = 'Posting\u2026';
+      append(entry).then(function () {
+        msg.value = '';
+        count.textContent = '';
+        status.textContent = 'Thank you. Your comment is on the beach.';
+        return reloadComments();
+      }, function () {
+        var t = instruction(entry);
+        fallback.value = t;
+        fallback.hidden = false;
+        return copy(t).then(function () {
+          status.textContent = 'The beach didn\u2019t take the comment from this page, so nothing was posted. The instruction below is copied for you: paste it to your own AI and it will leave your comment in the room.';
+        }, function () {
+          status.textContent = 'The beach didn\u2019t take the comment from this page, so nothing was posted. Copy the instruction below and paste it to your own AI, and it will leave your comment in the room.';
+          fallback.select();
+        });
+      }).then(function () {
+        sending = false;
+        button.disabled = false;
+      });
+    });
+    return form;
+  }
+
+  // Read the room again and redraw the comments, so a new one appears
+  // beneath its chapter.
+  function reloadComments() {
+    return read(POOL).then(function (pool) {
+      if (!pool) return;
+      var room = sortRoom(pool);
+      renderComments(room, true);
+      renderRoom(room, true);
+    });
+  }
+
   // ---- Load ----------------------------------------------------------------
   // Each read stands alone, so one block being out of reach never blanks
   // the rest of the page.
@@ -633,6 +800,7 @@
       renderIntro(book);
       renderSpine(spine);
       renderChapters(book, mirrors, room);
+      renderComments(room, !!pool);
       if (book) renderRoom(room, !!pool);
       renderProvenance(book);
 
