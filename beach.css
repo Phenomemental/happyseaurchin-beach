@@ -251,8 +251,121 @@ form button:disabled {
   font-style: italic;
   margin: 0 0 1.5rem;
 }
-.site-nav a[aria-current="page"] {
+/* The page you're on, or the project the page belongs to. */
+.site-nav a[aria-current] {
   color: var(--ink);
+}
+/* A project's own pages: a quieter second line just under the header.
+     <nav class="sub-nav" aria-label="Project name">
+       <a href="…" aria-current="page">Front door</a> <a href="…">…</a>
+     </nav> */
+.sub-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.2rem 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  margin: -0.9rem 0 1.5rem;
+}
+.sub-nav a {
+  color: var(--muted);
+}
+.sub-nav a + a::before {
+  content: "\00b7";
+  display: inline-block;
+  color: var(--frame);
+  padding: 0 0.7rem;
+}
+.sub-nav a:hover {
+  border-bottom-color: transparent;
+  color: var(--crimson);
+}
+.sub-nav a[aria-current="page"] {
+  color: var(--ink);
+  font-style: italic;
+}
+/* Where a page sits: Phenomemental › Project › Page, at the top of the
+   content. Every part but the last is a link. */
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: -0.8rem 0 1.4rem;
+}
+.breadcrumb ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 0.1rem;
+}
+.breadcrumb li {
+  padding: 0;
+  margin: 0;
+}
+.breadcrumb li::before {
+  content: none;
+}
+/* The separator ends its item, so a wrapped line never starts with one. */
+.breadcrumb li:not(:last-child)::after {
+  content: "\203a";
+  position: static;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--frame);
+  padding: 0 0.5rem;
+}
+.breadcrumb [aria-current] {
+  color: var(--ink);
+  font-style: italic;
+}
+/* A project's front door: one card for each of its parts. */
+.doors {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+}
+.doors li {
+  padding: 0;
+  margin: 0;
+}
+.doors li::before {
+  content: none;
+}
+.door {
+  display: block;
+  border: 1px solid var(--frame);
+  background: var(--paper);
+  padding: 1rem 1.1rem 1.05rem;
+  color: var(--ink);
+  transition: border-color 0.2s;
+}
+.door:hover,
+.door:focus-visible {
+  border-color: var(--crimson);
+}
+.door-title {
+  display: block;
+  font-style: italic;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--crimson);
+  margin: 0 0 0.3rem;
+}
+.door-text {
+  display: block;
+}
+.doors-later {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+  font-size: 1rem;
+  margin: 0;
 }
 .links li {
   margin-bottom: 0.6rem;
