@@ -1,0 +1,255 @@
+/* Community Recovery's own look: calm, readable and phone-first. Shared by
+   every page in this section, and by nothing outside it. */
+
+:root {
+  --bg: #f7f5f0;
+  --card: #ffffff;
+  --ink: #26302e;
+  --muted: #5f6b68;
+  --faint: #d9ddd8;
+  --line: #e6e8e3;
+  --accent: #3f6f66;
+  --accent-soft: #e8f0ed;
+  --quiet-bg: #eeefea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151a19;
+    --card: #1c2322;
+    --ink: #e4e9e6;
+    --muted: #a2adaa;
+    --faint: #333c3a;
+    --line: #2b3432;
+    --accent: #8cc2b6;
+    --accent-soft: #22302d;
+    --quiet-bg: #19201f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+a { color: var(--accent); text-underline-offset: 0.15em; }
+.wrap {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Header: the name, and the section's pages. */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.masthead .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1.2rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.brand svg { flex: none; }
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.1rem;
+  font-size: 0.98rem;
+}
+.section-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+}
+.section-nav a:hover { color: var(--accent); }
+.section-nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+main.wrap { padding-top: 1.8rem; padding-bottom: 2rem; }
+h2 {
+  font-size: 1.35rem;
+  line-height: 1.3;
+  margin: 2.4rem 0 0.8rem;
+}
+p { margin: 0 0 1rem; }
+code {
+  font-family: inherit;
+  font-weight: 700;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.calm, .none, .private {
+  color: var(--muted);
+  font-style: italic;
+}
+.none, .private { margin: 0; }
+
+/* Reflections, comments and notes */
+.reflection, .comment {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.reflection:last-child, .comment:last-child { border-bottom: 0; }
+.reflection-who, .comment-meta {
+  font-size: 0.92rem;
+  color: var(--muted);
+  margin: 0 0 0.2rem;
+}
+.reflection-who strong, .comment-meta strong { color: var(--ink); }
+.reflection-who a strong { color: var(--accent); }
+.reflection-text, .comment-text {
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  margin: 0 0 0.5rem;
+}
+.replies {
+  margin-left: 1rem;
+  border-left: 2px solid var(--line);
+  padding-left: 0.8rem;
+}
+.thread-empty { color: var(--muted); font-style: italic; }
+.more, .comment-more {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Forms */
+.form-foot {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+form label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.7rem 0 0.25rem;
+}
+form input,
+form textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--faint);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+}
+form textarea { min-height: 6rem; resize: vertical; }
+form input:focus,
+form textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.trap {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+form button[type=submit] {
+  font: inherit;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 1.4rem;
+  margin-top: 0.8rem;
+  cursor: pointer;
+}
+@media (prefers-color-scheme: dark) {
+  form button[type=submit] { color: #10201c; }
+}
+form button:disabled { opacity: 0.6; cursor: default; }
+.count { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0; }
+.count:empty { display: none; }
+.form-status { margin: 0.6rem 0 0; font-size: 0.95rem; }
+.form-status:empty { display: none; }
+.mic-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.4rem; flex-wrap: wrap; }
+form button.mic {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--faint);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  cursor: pointer;
+}
+form button.mic.listening { border-color: var(--accent); background: var(--accent-soft); }
+.mic-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
+.mic-note:empty { display: none; }
+
+/* Footer, and a way home that only its owner looks for. */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 1.2rem 0 2.4rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+footer p { margin: 0 0 0.5rem; }
+.home {
+  display: block;
+  width: max-content;
+  margin: 1.6rem auto 0;
+  padding: 0.2rem 0.5rem;
+  color: var(--faint);
+  text-decoration: none;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.home:hover, .home:focus { color: var(--muted); }
+
+@keyframes settle {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to { opacity: 1; transform: none; }
+}
+.arrived { animation: settle 0.5s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .arrived { animation: none; }
+}
+@media (min-width: 600px) {
+  body { font-size: 1.125rem; }
+  .brand { font-size: 1.35rem; }
+}
