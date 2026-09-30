@@ -374,7 +374,8 @@
     line-height: 1.2;
     margin: 0 0 1rem;
   }
-  .outside section, .chapter-fold, #builders { scroll-margin-top: 1rem; }
+  .outside section, .chapter-fold, #chapter-9, #builders { scroll-margin-top: 1rem; }
+  .builders-kids > .sect { margin-top: 0.4rem; }
   .outside .how { margin-top: 1.4rem; }
   /* Inside a fold: the first heading sits close under the title. */
   :where(.outside) .kids > h3:first-child { margin-top: 0.4rem; }
@@ -1657,10 +1658,16 @@
     <div class="thread" id="room"></div>
   </section>
 
-  <section id="builders" class="part" hidden>
+  <section id="chapter-9" class="part" hidden>
     <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Chapter 9 &middot; Provenance, notes for the builders, and how to take part</span><span class="fold-gloss" id="builders-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
     <div class="kids builders-kids" hidden>
-      <div id="builders-text" class="text"></div>
+      <div id="chapter-9-text" class="text"></div>
+      <section class="sect" id="builders">
+        <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Notes for the builders</span><span class="fold-gloss">Old names, open questions, the build brief and the work list</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+        <div class="kids" hidden>
+          <div id="builders-text" class="text"></div>
+        </div>
+      </section>
     </div>
   </section>
 </main>
@@ -2150,13 +2157,16 @@
       var kid = node[String(i)];
       if (kid == null) continue;
       if (notes && statusOf(kid)) { notes.push(kid); continue; }
-      if (hasKids(kid)) {
-        var sub = el('div', 'sub');
-        renderTree(sub, kid, leadIns);
-        box.appendChild(sub);
-      } else {
-        renderTree(box, kid, leadIns);
-      }
+      renderKid(box, kid, leadIns);
+    }
+  }
+  function renderKid(box, kid, leadIns) {
+    if (hasKids(kid)) {
+      var sub = el('div', 'sub');
+      renderTree(sub, kid, leadIns);
+      box.appendChild(sub);
+    } else {
+      renderTree(box, kid, leadIns);
     }
   }
 
@@ -2508,20 +2518,44 @@
     $('room-wrap').hidden = false;
   }
 
+  // Chapter 9, the builders' notes. Shown openly: its own opening words,
+  // its "THIRD EDITION" note, and its "How to respond" part. Every other
+  // part (old names, open questions, the build brief, the work list) sits
+  // in the closed "Notes for the builders" fold inside it, rendered as
+  // before.
+  var TO_READERS = /^How to respond\b/;
   function renderBuilders(book) {
-    var box = $('builders-text');
-    box.textContent = '';
+    var open = $('chapter-9-text'), inner = $('builders-text');
+    open.textContent = '';
+    inner.textContent = '';
     var node = book && book['9'];
     if (node == null) return;
-    var notes = [];
-    renderTree(box, node, true, notes);
-    notes.forEach(function (n) { box.appendChild(statusNote(n)); });
-    if (!box.childNodes.length) return;
+    if (sealed(node)) {
+      open.appendChild(el('p', 'private', 'A private part'));
+    } else if (typeof node === 'object' && node._ && typeof node._ === 'object') {
+      renderTree(open, node._, true);
+    } else {
+      paras(text(node)).forEach(function (p) { open.appendChild(para(p, null, true)); });
+    }
+    var notes = [], respond = [];
+    if (node && typeof node === 'object') {
+      for (var i = 1; i <= 9; i++) {
+        var kid = node[String(i)];
+        if (kid == null) continue;
+        if (statusOf(kid)) notes.push(kid);
+        else if (!sealed(kid) && TO_READERS.test(text(kid).trim())) respond.push(kid);
+        else renderKid(inner, kid, true);
+      }
+    }
+    notes.forEach(function (n) { open.appendChild(statusNote(n)); });
+    respond.forEach(function (n) { renderKid(open, n, true); });
+    $('builders').hidden = !inner.childNodes.length;
+    if (!open.childNodes.length && !inner.childNodes.length) return;
     // Its one line: the first sentence after its title in capitals.
     $('builders-gloss').textContent = Beach.gloss(text(node).replace(LEAD, ''));
-    $('builders').hidden = false;
-    $('builders').classList.add('arrived');
-    contentsItem('#builders', 'Provenance, notes for the builders, and how to take part', 'after');
+    $('chapter-9').hidden = false;
+    $('chapter-9').classList.add('arrived');
+    contentsItem('#chapter-9', 'Provenance, notes for the builders, and how to take part', 'after');
   }
 
   // Sort the room: tagged messages go to their chapter; of the rest, only
@@ -2773,7 +2807,7 @@
       // Wire the book's folds, then, arriving on a link, open its way and
       // go to it once it exists.
       Beach.folds($('chapters'));
-      Beach.folds($('builders'));
+      Beach.folds($('chapter-9'));
       if (location.hash) Beach.landOnHash();
 
       var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
