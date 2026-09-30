@@ -345,7 +345,83 @@
     }, node);
   }
 
+  // ---- Folds ---------------------------------------------------------------
+  // The folding pattern from the pscale-commons Community Recovery pages: a
+  // section.part (or .sect, a fold inside a fold) holding a button.fold and
+  // a div.kids. Opening sets "open" on the section, aria-expanded on the
+  // button, and shows the kids; closing reverses it.
+  function setOpen(sec, open) {
+    var btn = sec.querySelector(':scope > button.fold');
+    var kids = sec.querySelector(':scope > .kids');
+    if (!btn || !kids) return;
+    sec.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    kids.hidden = !open;
+  }
+
+  // Wire every button.fold on the page not yet wired. Pages that build
+  // folds as they load call this again afterwards. A button answers tap,
+  // Enter and Space by itself.
+  function folds(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('button.fold'), function (btn) {
+      if (btn.dataset.fold) return;
+      btn.dataset.fold = '1';
+      var sec = btn.parentNode;
+      setOpen(sec, sec.classList.contains('open'));
+      btn.addEventListener('click', function () {
+        setOpen(sec, !sec.classList.contains('open'));
+      });
+    });
+  }
+
+  // Open every fold that holds the element with this id (and the element
+  // itself, if it is a fold), then scroll to it. False if it isn't there.
+  function openTo(id) {
+    var target = id && document.getElementById(id);
+    if (!target) return false;
+    for (var n = target; n && n !== document.body; n = n.parentNode) {
+      if (n.classList && (n.classList.contains('part') || n.classList.contains('sect'))) setOpen(n, true);
+    }
+    target.scrollIntoView();
+    return true;
+  }
+
+  // Links with #something land, opening their folds: on arrival, when the
+  // address changes, and when an in-page link is tapped again.
+  function landOnHash() {
+    openTo(decodeURIComponent(location.hash.slice(1)));
+  }
+  window.addEventListener('hashchange', landOnHash);
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (a && a.getAttribute('href') === location.hash) openTo(location.hash.slice(1));
+  });
+
+  // The one line under a fold's title, taken from its own words: its
+  // first sentence (a short lead line is one), cut at a word boundary to
+  // about 120 characters with an ellipsis.
+  function gloss(s) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    var m = s.match(/^.+?[.!?](?:["”’])?(?=\s|$)/);
+    if (m) s = m[0];
+    if (s.length <= 120) return s;
+    var cut = s.lastIndexOf(' ', 119);
+    return s.slice(0, cut > 60 ? cut : 119).replace(/[\s,;:—-]+$/, '') + '…';
+  }
+
+  // A fold's gloss from what it holds: its opening paragraph (its short
+  // lead line, when it opens with one), else its first list item.
+  function glossOf(kids) {
+    var first = kids.querySelector('p:not(.live-note)') || kids.querySelector('li');
+    return gloss(first ? first.textContent : kids.textContent);
+  }
+
   window.Beach = {
+    folds: folds,
+    openTo: openTo,
+    landOnHash: landOnHash,
+    gloss: gloss,
+    glossOf: glossOf,
     place: { get: placeGet, at: at },
     get: get,
     point: point,

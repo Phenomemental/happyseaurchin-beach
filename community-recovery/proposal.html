@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2026-09-30b">
+<link rel="stylesheet" href="style.css?v=2026-09-30c">
 <style>
   .prose p, .text p {
     white-space: pre-line;
@@ -75,12 +75,12 @@
     font-style: italic;
     margin: 0 0 1rem;
   }
-  .part {
+  .chapter-part {
     border-top: 1px solid var(--line);
     padding-top: 0.9rem;
     margin-top: 1.1rem;
   }
-  .part-label {
+  .chapter-part-label {
     display: block;
     font-size: 0.8rem;
     font-weight: 700;
@@ -374,16 +374,21 @@
     line-height: 1.2;
     margin: 0 0 1rem;
   }
-  .group-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0 0 1.2rem;
-    scroll-margin-top: 1rem;
+  .outside section, .chapter-fold, #builders { scroll-margin-top: 1rem; }
+  .outside .how { margin-top: 1.4rem; }
+  /* Inside a fold: the first heading sits close under the title. */
+  :where(.outside) .kids > h3:first-child { margin-top: 0.4rem; }
+  .part > .kids > .made { margin: 1rem 0 0.8rem; }
+  .part > .kids > .sect + .made { border-top: 1px solid var(--line); padding-top: 0.9rem; }
+  /* A chapter, folded: its title is "Chapter N · Title". */
+  .chapter-fold > .kids { padding-bottom: 1rem; }
+  .chapter-fold .see-live { margin-top: 0.8rem; }
+  .builders-kids {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
-  .outside section { scroll-margin-top: 1rem; }
+  .builders-kids .sub { border-left-color: var(--faint); }
   .made { font-style: italic; }
   .design-title { margin: 2.6rem 0 1rem; font-size: 1.6rem; line-height: 1.2; }
   /* "See it live" beneath each chapter title. */
@@ -432,1214 +437,1189 @@
       Parts of this page are read from the beach as it loads, so when the
       design changes, the page changes.
     </p>
+    <p class="how">Tap a part to open it.</p>
 
-    <nav class="contents toc-card" aria-label="On this page">
-      <h2>On this page</h2>
-      <ol class="toc">
-        <li><a href="#g-why">Why this matters</a></li>
-        <li><a href="#g-whom">For whom</a></li>
-        <li><a href="#g-ground">The ground</a></li>
-        <li><a href="#g-how">How it works</a></li>
-        <li><a href="#design">The design, chapter by chapter</a></li>
-      </ol>
-    </nav>
-
-    <hr class="rule">
-
-    <p class="group-label" id="g-why">Why this matters</p>
-
-    <section id="problem">
-      <h2>The problem</h2>
-      <p class="lead">Compounding value that nobody can see.</p>
-      <p>
-        A LERO serves recovery in its fullest sense: from addiction,
-        gambling, homelessness, the criminal justice system and trauma;
-        alongside mental health conditions such as bipolar disorder or
-        schizophrenia; and toward whole wellbeing, thriving people, and
-        recovery and social capital. The costs of those situations land on
-        health, housing, justice, families and work all at once, so a LERO
-        at full stretch eases a burden across every one of them.
-      </p>
-      <p>
-        It doesn't start at full value. Its value grows as the community
-        grows stronger, so its worth to society compounds over years.
-      </p>
-      <p>
-        Almost none of that is visible. Evaluation sees snapshots and
-        short-term outputs inside a funding cycle, and misses what grows
-        underneath: relationships, skills, confidence, community assets,
-        people moving from receiving help to giving it. Insight from groups
-        and meetings evaporates. People's stories are held by institutions,
-        in pieces, and they repeat them at every door.
-      </p>
-      <p>
-        When people can't see growth, they wonder, and wondering becomes
-        worry. Trust in your own contribution depends on seeing it go on
-        working when you're not in the room. When commissioners can't see
-        it, funding judges a LERO by the wrong measure. A RAND study this
-        year found there's still no consistent understanding of what a LERO
-        even is, and that direct commissioning is what gives LEROs autonomy
-        and influence. A LERO that can show itself, in its members' own
-        words, is exactly what that system is missing.
-      </p>
-      <p>So growth has to be visible as it happens, over years, at three levels:</p>
-      <ul>
-        <li>each person's own line of growth;</li>
-        <li>the community's picture of who holds whom, and where value flows;</li>
-        <li>for commissioners and society, a visible measure of social cohesion.</li>
-      </ul>
-    </section>
-
-    <hr class="rule">
-
-    <section id="pitch">
-      <h2>The pitch</h2>
-      <ol class="pitch" id="pitch-frames">
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
-            <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
-            <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>Value nobody can see</h3>
-            <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
+    <section class="part" id="g-why">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Why this matters</span><span class="fold-gloss">The problem, the pitch, what is new, and what we are not claiming</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
+        <section class="sect" id="problem">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The problem</span><span class="fold-gloss">Compounding value that nobody can see.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p class="lead">Compounding value that nobody can see.</p>
+          <p>
+            A LERO serves recovery in its fullest sense: from addiction,
+            gambling, homelessness, the criminal justice system and trauma;
+            alongside mental health conditions such as bipolar disorder or
+            schizophrenia; and toward whole wellbeing, thriving people, and
+            recovery and social capital. The costs of those situations land on
+            health, housing, justice, families and work all at once, so a LERO
+            at full stretch eases a burden across every one of them.
+          </p>
+          <p>
+            It doesn't start at full value. Its value grows as the community
+            grows stronger, so its worth to society compounds over years.
+          </p>
+          <p>
+            Almost none of that is visible. Evaluation sees snapshots and
+            short-term outputs inside a funding cycle, and misses what grows
+            underneath: relationships, skills, confidence, community assets,
+            people moving from receiving help to giving it. Insight from groups
+            and meetings evaporates. People's stories are held by institutions,
+            in pieces, and they repeat them at every door.
+          </p>
+          <p>
+            When people can't see growth, they wonder, and wondering becomes
+            worry. Trust in your own contribution depends on seeing it go on
+            working when you're not in the room. When commissioners can't see
+            it, funding judges a LERO by the wrong measure. A RAND study this
+            year found there's still no consistent understanding of what a LERO
+            even is, and that direct commissioning is what gives LEROs autonomy
+            and influence. A LERO that can show itself, in its members' own
+            words, is exactly what that system is missing.
+          </p>
+          <p>So growth has to be visible as it happens, over years, at three levels:</p>
+          <ul>
+            <li>each person's own line of growth;</li>
+            <li>the community's picture of who holds whom, and where value flows;</li>
+            <li>for commissioners and society, a visible measure of social cohesion.</li>
+          </ul>
           </div>
-        </li>
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
-            <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
-            <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>What&rsquo;s theirs stays theirs</h3>
-            <p>Each member keeps their own account, in their own words, under their own key.</p>
-          </div>
-        </li>
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
-            <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
-            <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
-            <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
-            <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>What happens together is ours</h3>
-            <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
-          </div>
-        </li>
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
-            <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
-            <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
-            <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
-            <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>Growth, seen over time</h3>
-            <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
-          </div>
-        </li>
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
-            <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
-            <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
-            <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
-            <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>Evidence, in members&rsquo; own words</h3>
-            <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture commissioners are missing.</p>
-          </div>
-        </li>
-        <li class="pitch-frame">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
-            <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
-            <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
-            <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
-            <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
-          </svg>
-          <div class="pitch-words">
-            <h3>It travels by recognition</h3>
-            <p>A working example in Community Recovery, offered to other LEROs: pull, not push.</p>
-          </div>
-        </li>
-      </ol>
-      <p class="pitch-closing">A LERO that can show itself, in its members&rsquo; own words.</p>
+        </section>
+        <section class="sect" id="pitch">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The pitch</span><span class="fold-gloss">A LERO’s worth compounds over years, but evaluation sees snapshots.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <ol class="pitch" id="pitch-frames">
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
+                <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
+                <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>Value nobody can see</h3>
+                <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
+              </div>
+            </li>
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
+                <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
+                <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>What&rsquo;s theirs stays theirs</h3>
+                <p>Each member keeps their own account, in their own words, under their own key.</p>
+              </div>
+            </li>
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
+                <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
+                <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
+                <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
+                <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>What happens together is ours</h3>
+                <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
+              </div>
+            </li>
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
+                <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
+                <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
+                <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
+                <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>Growth, seen over time</h3>
+                <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
+              </div>
+            </li>
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
+                <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
+                <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
+                <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
+                <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>Evidence, in members&rsquo; own words</h3>
+                <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture commissioners are missing.</p>
+              </div>
+            </li>
+            <li class="pitch-frame">
+              <svg viewBox="0 0 60 60" aria-hidden="true">
+                <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
+                <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
+                <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
+                <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
+                <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
+              </svg>
+              <div class="pitch-words">
+                <h3>It travels by recognition</h3>
+                <p>A working example in Community Recovery, offered to other LEROs: pull, not push.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="pitch-closing">A LERO that can show itself, in its members&rsquo; own words.</p>
 
-      <h3 id="one-sentence">The one sentence</h3>
-      <div id="one-live">
-      <p class="lead">The truth about a recovery community should come from its members' own voices, kept by them and seen together.</p>
+          <h3 id="one-sentence">The one sentence</h3>
+          <div id="one-live">
+          <p class="lead">The truth about a recovery community should come from its members' own voices, kept by them and seen together.</p>
+          </div>
+          </div>
+        </section>
+        <section class="sect" id="new">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What is genuinely new</span><span class="fold-gloss">People keep their own story and it still counts together.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="new-live">
+          <ul>
+            <li>People keep their own story and it still counts together.</li>
+            <li>Many voices side by side, none merged.</li>
+            <li>Talking is the way in.</li>
+            <li>The record keeps itself.</li>
+            <li>Nobody owns the middle.</li>
+            <li>It is open and portable.</li>
+          </ul>
+          </div>
+          </div>
+        </section>
+        <section class="sect" id="not-claiming">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What we're not claiming</span><span class="fold-gloss">The structure doesn't, by itself, prevent chaos as Community Recovery grows from a few people to many.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            The structure doesn't, by itself, prevent chaos as Community Recovery
+            grows from a few people to many. A fold and a lighthouse are places
+            for the work to live; they don't do the work. Someone has to tend
+            them. This is a live proposal, not a finished design. The card and
+            the bank are visions; the rest is built or being built. We intend to
+            test the whole design against real decisions with real members
+            before relying on it further.
+          </p>
+
+          <h3>Open questions, for David and weft</h3>
+          <ol>
+            <li>Does the combination of arrival directory, fold and lighthouse match how you'd want other groups on the beach to scale, or are there failure modes you've already seen?</li>
+            <li>Is there already a pattern on the beach for a decisions surface (proposal, objection window, resolution) we should adopt rather than invent?</li>
+            <li>Is trimming <code>sed:lero-nnh</code> to a pure arrival-ordered directory the right use of the pattern?</li>
+            <li>Is a block like <code>safeguarding:lero-nnh</code>, open to a defined set of cleared people rather than one coordinator's key, a pattern that exists already, or would it be the first?</li>
+            <li>Where should the check-in protocol live once the directory is trimmed: in the spine, in <code>policy:lero-nnh</code>, or as its own family member?</li>
+          </ol>
+          <ol id="questions-live" style="counter-reset: step 5">
+            <li>A custodian reset on the beach: how someone who has lost their latch is helped back in, with them present, visibly, leaving the custodian no writing access.</li>
+            <li>Who runs the combined picture as a named, trusted reader of members-only mirrors.</li>
+            <li>Whether a free or a Team Claude account can connect to the beach, and on what data terms.</li>
+            <li>How temporary read access for doctors and support workers would work.</li>
+            <li>The sustainability model for the LERO and the beach, at no cost to volunteers.</li>
+            <li><em>Answered: </em>The policies are all Community Recovery's own, because it is an independent organisation; they are developed against the 33 LERO standards.</li>
+          </ol>
+          <p class="live-note section-live" data-live="questions"></p>
+
+          <h3>Wider questions</h3>
+          <ul>
+            <li>Whether and how a community bank is legally possible, and with whom: a credit union, a community benefit society, the regulators.</li>
+            <li>Whether David, weft and our colleague at the ISBD want to take part, and how.</li>
+            <li>Whether CLERO would take this up as a toolkit. Its standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</li>
+            <li>What evidence a pilot needs to gather to persuade commissioners.</li>
+          </ul>
+          </div>
+        </section>
       </div>
     </section>
-
-    <hr class="rule">
-
-    <section id="new">
-      <h2>What is genuinely new</h2>
-      <div id="new-live">
-      <ul>
-        <li>People keep their own story and it still counts together.</li>
-        <li>Many voices side by side, none merged.</li>
-        <li>Talking is the way in.</li>
-        <li>The record keeps itself.</li>
-        <li>Nobody owns the middle.</li>
-        <li>It is open and portable.</li>
-      </ul>
+    <section class="part" id="g-whom">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">For whom</span><span class="fold-gloss">LEROs, CLERO, and commissioners and public bodies</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
+        <section class="sect" id="for-leros">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">For LEROs</span><span class="fold-gloss">Proof that comes from members, not from the organisation's report about itself.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="leros-live">
+          <ul>
+            <li>Proof that comes from members, not from the organisation's report about itself.</li>
+            <li>Evidence that builds itself as people live and work.</li>
+            <li>Co-production that can be seen, including how decisions were made and who shaped them.</li>
+            <li>A front door that updates itself.</li>
+            <li>Infrastructure for groups that have none.</li>
+            <li>Money that stays in the movement.</li>
+          </ul>
+          </div>
+          </div>
+        </section>
+        <section class="sect" id="for-clero">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">For CLERO</span><span class="fold-gloss">A national picture of how LEROs read themselves against the 33 standards, held by nobody, without monitoring anyone.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="clero-live">
+          <ul>
+            <li>A national picture of how LEROs read themselves against the 33 standards, held by nobody, without monitoring anyone.</li>
+            <li>Standards that keep being shaped from the ground.</li>
+            <li>Learning that spreads by copying.</li>
+          </ul>
+          </div>
+          </div>
+        </section>
+        <section class="sect" id="for-commissioners">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">For commissioners and public bodies</span><span class="fold-gloss">Evidence that comes from members, not from the organisation's report about itself.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <ul>
+            <li>Evidence that comes from members, not from the organisation's report about itself.</li>
+            <li>Evidence that builds itself as people live and work.</li>
+            <li>Co-production that can be seen, including how decisions were made and who shaped them.</li>
+            <li>A visible measure of social cohesion, over years.</li>
+            <li>A RAND study this year found there's still no consistent understanding of what a LERO even is, and that direct commissioning is what gives LEROs autonomy and influence. A LERO that can show itself, in its members' own words, is exactly what that system is missing.</li>
+          </ul>
+          </div>
+        </section>
       </div>
     </section>
+    <section class="part" id="g-ground">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">The commission, who is behind this, and Sheffield and the north</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
+        <section class="sect" id="ground">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">My role exists because of a commission.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
 
-    <hr class="rule">
+          <h3>The commission</h3>
+          <p>
+            My role exists because of a commission. North Northamptonshire
+            Council commissioned The Forward Trust, within the North
+            Northamptonshire Recovery Partnership alongside Change Grow Live,
+            Family Support Link and Release, to build a brand new lived
+            experience recovery organisation: built by people in recovery, for
+            people in recovery, and after a period of set-up, run and managed by
+            them. I'm the coordinator funded to make that happen.
+          </p>
+          <p>
+            I've also been on the ImROC LERO capacity-building mentorship
+            programme, linked to CLERO and the Office for Health Improvement and
+            Disparities, with a mentor from Chase Recovery in the north. I've
+            applied for an extension, and a colleague has just been accepted onto
+            it. So this work sits inside the very system that commissions and
+            grows LEROs.
+          </p>
 
-    <section id="not-claiming">
-      <h2>What we're not claiming</h2>
-      <p>
-        The structure doesn't, by itself, prevent chaos as Community Recovery
-        grows from a few people to many. A fold and a lighthouse are places
-        for the work to live; they don't do the work. Someone has to tend
-        them. This is a live proposal, not a finished design. The card and
-        the bank are visions; the rest is built or being built. We intend to
-        test the whole design against real decisions with real members
-        before relying on it further.
-      </p>
-
-      <h3>Open questions, for David and weft</h3>
-      <ol>
-        <li>Does the combination of arrival directory, fold and lighthouse match how you'd want other groups on the beach to scale, or are there failure modes you've already seen?</li>
-        <li>Is there already a pattern on the beach for a decisions surface (proposal, objection window, resolution) we should adopt rather than invent?</li>
-        <li>Is trimming <code>sed:lero-nnh</code> to a pure arrival-ordered directory the right use of the pattern?</li>
-        <li>Is a block like <code>safeguarding:lero-nnh</code>, open to a defined set of cleared people rather than one coordinator's key, a pattern that exists already, or would it be the first?</li>
-        <li>Where should the check-in protocol live once the directory is trimmed: in the spine, in <code>policy:lero-nnh</code>, or as its own family member?</li>
-      </ol>
-      <ol id="questions-live" style="counter-reset: step 5">
-        <li>A custodian reset on the beach: how someone who has lost their latch is helped back in, with them present, visibly, leaving the custodian no writing access.</li>
-        <li>Who runs the combined picture as a named, trusted reader of members-only mirrors.</li>
-        <li>Whether a free or a Team Claude account can connect to the beach, and on what data terms.</li>
-        <li>How temporary read access for doctors and support workers would work.</li>
-        <li>The sustainability model for the LERO and the beach, at no cost to volunteers.</li>
-        <li><em>Answered: </em>The policies are all Community Recovery's own, because it is an independent organisation; they are developed against the 33 LERO standards.</li>
-      </ol>
-      <p class="live-note section-live" data-live="questions"></p>
-
-      <h3>Wider questions</h3>
-      <ul>
-        <li>Whether and how a community bank is legally possible, and with whom: a credit union, a community benefit society, the regulators.</li>
-        <li>Whether David, weft and our colleague at the ISBD want to take part, and how.</li>
-        <li>Whether CLERO would take this up as a toolkit. Its standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</li>
-        <li>What evidence a pilot needs to gather to persuade commissioners.</li>
-      </ul>
-    </section>
-
-    <hr class="rule">
-
-    <p class="group-label" id="g-whom">For whom</p>
-
-    <section id="for-leros">
-      <h2>For LEROs</h2>
-      <div id="leros-live">
-      <ul>
-        <li>Proof that comes from members, not from the organisation's report about itself.</li>
-        <li>Evidence that builds itself as people live and work.</li>
-        <li>Co-production that can be seen, including how decisions were made and who shaped them.</li>
-        <li>A front door that updates itself.</li>
-        <li>Infrastructure for groups that have none.</li>
-        <li>Money that stays in the movement.</li>
-      </ul>
+          <h3>The community</h3>
+          <p>
+            The organisation is called Community Recovery: independent,
+            member-led, and at the start of its life. Its people are in recovery
+            from addiction, gambling, homelessness, prison and trauma. Some live
+            with bipolar disorder or schizophrenia. Some have twenty years of
+            recovery; some arrived last week.
+          </p>
+          <p>
+            What they share is a culture of contribution: giving back what was
+            given to them. That culture is the thing the whole design is built to
+            serve and make visible.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="who">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Who's behind this</span><span class="fold-gloss">I'm Matthew Bushell, LERO Coordinator for North Northamptonshire at The Forward Trust, providing coordination support…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="who-live">
+            <p>
+              I'm Matthew Bushell, LERO Coordinator for
+              North Northamptonshire at The Forward Trust, providing coordination
+              support to Community Recovery, the independent lived experience
+              recovery organisation The Forward Trust was commissioned to help
+              establish.
+            </p>
+            <p>
+              I'm on the Imroc LERO Mentoring Programme with the Office for Health
+              Improvement and Disparities; on the Lived Experience Council of the
+              International Society for Bipolar Disorders; and a Peer Trainer at
+              the Recovery College (NHS).
+            </p>
+            <p>
+              I'm trained in therapeutic coaching (integrated counselling and
+              coaching), as an Emotional Fitness Coach, as an Intentional Peer
+              Support facilitator and as an Imroc Peer Support Worker, and in
+              Mental Health First Aid.
+            </p>
+          </div>
+          <p class="live-note section-live" data-live="who"></p>
+          </div>
+        </section>
+        <section class="sect" id="north">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Sheffield and the north</span><span class="fold-gloss">David is heading into the right country for this.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            David is heading into the right country for this. LEROs are all
+            around: Sheffield Recovery Community, whose chair sits on CLERO's
+            board; long-standing LEROs across West Yorkshire; DATUS in
+            Birmingham, twenty years established; and Chase Recovery. A new
+            network, LEROY, is gathering LEROs across Yorkshire and beyond, and
+            councils are commissioning LEROs as part of their substance use
+            strategies.
+          </p>
+          <p>
+            These are people who'd understand what the beach is in minutes,
+            because they live the problem it solves. Nobody has to explain the
+            technology from first principles. You can point at a use case.
+          </p>
+          <p class="lead">
+            Community Recovery is offered as a live example, in any conversation,
+            with my full backing.
+          </p>
+          <p>
+            If you're from a LERO and something here fits what you need, or
+            doesn't, I'd like to hear it. Leave a note below, or speak to David.
+          </p>
+          <p class="closing">
+            This was written for David Pinto (happyseaurchin) to carry into
+            conversations with lived experience recovery organisations in
+            Sheffield and the north, and for anyone in those organisations who
+            wants to see what we're building and why.
+          </p>
+          </div>
+        </section>
       </div>
     </section>
+    <section class="part" id="g-how">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">How it works</span><span class="fold-gloss">The vision, the offer, privacy, how it is built, and how it grows</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
+        <section class="sect" id="vision">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The vision</span><span class="fold-gloss">A co-production tool and lived experience platform, the first of its kind.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="vision-live">
+          <p class="lead">
+            A co-production tool and lived experience platform, the first of its
+            kind.
+          </p>
+          <p>
+            Volunteers go out and meet people. They talk, and they use Claude on
+            a phone connected to the beach and to our project, so everything
+            said stays owned by the community and open to the community. Each
+            volunteer gets something for themselves; the community gets
+            something together. It is asset-based community development done in
+            practice, with our goals held against CLERO's 33 national LERO
+            standards.
+          </p>
+          <p>
+            Its root is sovereign perspective: each person holding their own
+            account of their own reality, and oriented enough to themselves that
+            others can see what they need to see.
+          </p>
+          </div>
+          <p class="live-note section-live" data-live="vision"></p>
+          </div>
+        </section>
+        <section class="sect" id="offer">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The offer in plain words</span><span class="fold-gloss">Four things, and nothing more complicated than these:</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="offer-live">
+          <p>Four things, and nothing more complicated than these:</p>
+          <ul>
+            <li>Everyone has their own notebook: theirs, nobody else writes in it, and they choose which pages others see.</li>
+            <li>In the middle of the room is a wall: when the group asks a question, everyone answers in their own notebook and the wall shows all the answers side by side, nobody rewritten, nothing lost.</li>
+            <li>There is one shared calendar, so everyone's days, months and years line up and change over time can be seen.</li>
+            <li>And everyone has a helper in their pocket they can simply talk to, out loud, while they walk, which puts their words in the right place and reads them back.</li>
+          </ul>
+          <h3>For members</h3>
+          <ul>
+            <li>Their story stays theirs and outlives any service.</li>
+            <li>Private things stay buried where only their key finds them, with access they can grant and withdraw.</li>
+            <li>They are seen for what they bring.</li>
+            <li>Helping is easy and thanks travel.</li>
+            <li>No forms, no training.</li>
+          </ul>
+          </div>
+          <p class="live-note section-live" data-live="offer"></p>
+          </div>
+        </section>
+        <section class="sect" id="theirs">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What's theirs is theirs</span><span class="fold-gloss">What's theirs is theirs; what happens together is ours.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p class="lead">What's theirs is theirs; what happens together is ours.</p>
+          <p>
+            This is the distinction the whole design turns on. Each person's own
+            reflection, identity and history is sovereign: held under their own
+            key, never nested inside a block someone else locks. What people
+            contribute, to the room, to a shared question, to each other, belongs
+            to everyone, visible and combined. Nobody should have to hand over
+            what's theirs in order to be seen as part of what's ours.
+          </p>
+          <p>
+            That's why we're moving away from treating our arrival directory as
+            a membership register, where each person's declaration sits inside a
+            block the coordinator ultimately holds, and toward the family pattern
+            already proven in our recovery-capital work, where identity lives
+            with the person and contribution lives in the shared space.
+          </p>
 
-    <hr class="rule">
+          <h3>Three kinds of privacy</h3>
+          <ul>
+            <li><strong>Public:</strong> anyone can read it.</li>
+            <li><strong>Members-only:</strong> encrypted so only members can read it.</li>
+            <li><strong>Private:</strong> encrypted to the person alone.</li>
+          </ul>
+          <p>
+            Sensitive things, such as health, addiction or criminal justice
+            history, are only ever private: never public, never members-only. A
+            person can give temporary read access to a doctor, support worker or
+            other professional, the way you'd share a driving licence online.
+          </p>
+          <p>
+            Whatever builds the combined picture has to be allowed to read
+            members-only pages, which makes it a trusted reader. That role must
+            be named, and visible to everyone.
+          </p>
 
-    <section id="for-clero">
-      <h2>For CLERO</h2>
-      <div id="clero-live">
-      <ul>
-        <li>A national picture of how LEROs read themselves against the 33 standards, held by nobody, without monitoring anyone.</li>
-        <li>Standards that keep being shaped from the ground.</li>
-        <li>Learning that spreads by copying.</li>
-      </ul>
-      </div>
-    </section>
+          <h3>Writers and the custodian</h3>
+          <p>
+            A project is a collaboration, and every account in it is its writer's
+            own. Each writer holds their own latch and writes only their own
+            page. That's safe by construction: nobody else can overwrite it,
+            the coordinator included.
+          </p>
+          <p>
+            The coordinator acts as custodian, like a sealed envelope. They may
+            hold a spare so that someone who loses their latch can be helped back
+            in, but only with that person present and asking, with every use
+            recorded where the person can see it. On a reset the person chooses a
+            new latch, and the custodian keeps no writing access. The beach
+            doesn't have a custodian reset yet; that's for us to design with
+            David and weft.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="built">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">How it's built on the beach</span><span class="fold-gloss">The beach is David Pinto's open commons: a surface of named blocks, each a small tree of numbered positions, which any…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            The beach is David Pinto's open commons: a surface of named blocks,
+            each a small tree of numbered positions, which any AI can read and
+            write through one function, <code>bsp()</code>. Reading is public.
+            A lock is an edit-latch, proof that you're the same author as before,
+            not a login, and it grants no privacy on its own. Privacy is a
+            separate choice: encryption (the beach calls it <em>gray</em>) with a
+            key that never leaves the person.
+          </p>
+          <p>Here are the pieces we use, plain word first, block name after.</p>
 
-    <hr class="rule">
+          <dl class="terms">
+            <dt>Passport <code>passport:&lt;handle&gt;</code></dt>
+            <dd>A person's own words on who they are, what they offer and what they need. It's the first thing any AI reads to orient to them.</dd>
 
-    <section id="for-commissioners">
-      <h2>For commissioners and public bodies</h2>
-      <ul>
-        <li>Evidence that comes from members, not from the organisation's report about itself.</li>
-        <li>Evidence that builds itself as people live and work.</li>
-        <li>Co-production that can be seen, including how decisions were made and who shaped them.</li>
-        <li>A visible measure of social cohesion, over years.</li>
-        <li>A RAND study this year found there's still no consistent understanding of what a LERO even is, and that direct commissioning is what gives LEROs autonomy and influence. A LERO that can show itself, in its members' own words, is exactly what that system is missing.</li>
-      </ul>
-    </section>
+            <dt>Mirror <code>lero-nnh-recovery-capital:&lt;handle&gt;</code></dt>
+            <dd>A person's own reading against a shared frame, written at the same addresses as the frame. Locked so only they write it, and encrypted with their own passphrase so only they read what they keep private. This is the notebook.</dd>
 
-    <hr class="rule">
+            <dt>Now <code>now:&lt;handle&gt;</code></dt>
+            <dd>Where someone is on the beach's shared clock: their year, season, month, week and today. Every response from the beach carries the same clock, so everyone's now lines up. This is the shared calendar.</dd>
 
-    <p class="group-label" id="g-ground">The ground</p>
+            <dt>Hand</dt>
+            <dd>Cards of things that need doing, which someone takes into their hand and plays when they're done, so the work lands on their now. We want the organisation to have its own hand, grown from the room and the combined picture. Not built yet.</dd>
 
-    <section id="ground">
-      <h2>The ground</h2>
+            <dt>Grain <code>grain:&lt;pair&gt;</code></dt>
+            <dd>A durable channel between exactly two people: one block, two sides, each side locked to the person who writes it, and able to be encrypted so only the two of them read it. The place for one-to-one support.</dd>
 
-      <h3>The commission</h3>
-      <p>
-        My role exists because of a commission. North Northamptonshire
-        Council commissioned The Forward Trust, within the North
-        Northamptonshire Recovery Partnership alongside Change Grow Live,
-        Family Support Link and Release, to build a brand new lived
-        experience recovery organisation: built by people in recovery, for
-        people in recovery, and after a period of set-up, run and managed by
-        them. I'm the coordinator funded to make that happen.
-      </p>
-      <p>
-        I've also been on the ImROC LERO capacity-building mentorship
-        programme, linked to CLERO and the Office for Health Improvement and
-        Disparities, with a mentor from Chase Recovery in the north. I've
-        applied for an extension, and a colleague has just been accepted onto
-        it. So this work sits inside the very system that commissions and
-        grows LEROs.
-      </p>
+            <dt>Spine <code>spine:lero-nnh-recovery-capital</code></dt>
+            <dd>The neutral frame everyone reads themselves against. It holds no content authority and no clinical judgement; it only names the dimensions. Our organisation will have a second spine, the LERO standards.</dd>
 
-      <h3>The community</h3>
-      <p>
-        The organisation is called Community Recovery: independent,
-        member-led, and at the start of its life. Its people are in recovery
-        from addiction, gambling, homelessness, prison and trauma. Some live
-        with bipolar disorder or schizophrenia. Some have twenty years of
-        recovery; some arrived last week.
-      </p>
-      <p>
-        What they share is a culture of contribution: giving back what was
-        given to them. That culture is the thing the whole design is built to
-        serve and make visible.
-      </p>
-    </section>
+            <dt>Room <code>pool:lero-nnh</code></dt>
+            <dd>The project's room. Every contribution lands in its own slot, attributed, and is never rewritten. What a group says together goes here.</dd>
 
-    <hr class="rule">
+            <dt>The question room <code>pool:lero-nnh-recovery-capital</code></dt>
+            <dd>Where questions go to the whole board, and answers can be given without joining any list. It's kept off the combined picture on purpose: an open write box on a surface that promises only the combined view would undercut that promise. This is how the wall gets its questions.</dd>
 
-    <section id="who">
-      <h2>Who's behind this</h2>
-      <div id="who-live">
-        <p>
-          I'm Matthew Bushell, LERO Coordinator for
-          North Northamptonshire at The Forward Trust, providing coordination
-          support to Community Recovery, the independent lived experience
-          recovery organisation The Forward Trust was commissioned to help
-          establish.
+            <dt>Fold <code>recovery-capital-lero-nnh</code></dt>
+            <dd>The combined picture: a synthesis over many people's mirrors, recomputed from time to time, owned by nobody and replacing nobody's own record. The coordinator reads only the fold, never a named mirror. This is the wall.</dd>
+
+            <dt>Arrival directory <code>sed:lero-nnh</code></dt>
+            <dd>A list of arrivals in order, each place held under a latch its holder chooses. We intend to trim it to exactly that: a directory, not a register of what people have declared.</dd>
+
+            <dt>Lighthouse <code>lighthouse</code></dt>
+            <dd>Curated navigation with a single job: point at things, never contain them. Tended by the Lived Experience Leaders. The website will be our lighthouse, rendered.</dd>
+
+            <dt>Field log <code>field-log:lero-nnh</code></dt>
+            <dd>The coordinator's running log of the work, keeping the story over time. It replaced a case-tracking system that was tedious for following a story.</dd>
+
+            <dt>The design proposal <code>lero-nnh-design-proposal</code></dt>
+            <dd>This whole design, grown by conversation, with papers kept beneath the part they belong to. Papers and long pieces live there; pools are for messages.</dd>
+          </dl>
+
+          <h3>The family, drawn</h3>
+          <figure>
+            <svg id="family" viewBox="0 0 260 350" role="img" aria-labelledby="fam-title fam-desc">
+              <title id="fam-title">The recovery-capital family</title>
+              <desc id="fam-desc">A spine at the top holds the shared frame. Below it, a mirror for each person, each read against the spine. Beside them, the room sends questions to every mirror. Below, the fold gathers the mirrors into a combined picture owned by nobody. At the bottom left, the lighthouse points at the fold and the room without holding them.</desc>
+
+              <!-- spine -->
+              <g class="fam-step" style="--d:0s">
+                <rect class="fam-box" x="116" y="8" width="130" height="46" rx="3"/>
+                <text class="fam-text" x="181" y="28" text-anchor="middle">Spine</text>
+                <text class="fam-small" x="181" y="45" text-anchor="middle">the shared frame</text>
+              </g>
+
+              <!-- spine to mirrors -->
+              <path class="fam-line fam-draw" pathLength="1" style="--d:0.45s" d="M181 54 V70"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H136 V84"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 V84"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H226 V84"/>
+
+              <!-- mirrors, lit one by one -->
+              <g class="fam-step" style="--d:1.0s">
+                <rect class="fam-key" x="118" y="84" width="36" height="36" rx="3"/>
+                <circle class="fam-dot" cx="136" cy="102" r="3.5"/>
+              </g>
+              <g class="fam-step" style="--d:1.25s">
+                <rect class="fam-key" x="163" y="84" width="36" height="36" rx="3"/>
+                <circle class="fam-dot" cx="181" cy="102" r="3.5"/>
+              </g>
+              <g class="fam-step" style="--d:1.5s">
+                <rect class="fam-key" x="208" y="84" width="36" height="36" rx="3"/>
+                <circle class="fam-dot" cx="226" cy="102" r="3.5"/>
+              </g>
+              <text class="fam-small fam-step" style="--d:1.6s" x="181" y="137" text-anchor="middle">mirrors, one each</text>
+
+              <!-- room -->
+              <g class="fam-step" style="--d:1.6s">
+                <rect class="fam-box" x="8" y="74" width="88" height="56" rx="3"/>
+                <text class="fam-text" x="52" y="94" text-anchor="middle">Room</text>
+                <text class="fam-small" x="52" y="110" text-anchor="middle">questions</text>
+                <text class="fam-small" x="52" y="123" text-anchor="middle">to everyone</text>
+                <path class="fam-line" d="M96 102 H114 M109 97 L114 102 L109 107"/>
+              </g>
+
+              <!-- mirrors flow down into the fold -->
+              <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M136 120 V126"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M181 120 V126"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M226 120 V126"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M136 142 V146 H181"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M226 142 V146 H181"/>
+              <path class="fam-line fam-draw" pathLength="1" style="--d:2.15s" d="M181 146 V170"/>
+
+              <!-- fold -->
+              <g class="fam-step" style="--d:2.35s">
+                <rect class="fam-box" x="116" y="170" width="130" height="46" rx="3"/>
+                <text class="fam-text" x="181" y="190" text-anchor="middle">Fold</text>
+                <text class="fam-small" x="181" y="207" text-anchor="middle">owned by nobody</text>
+              </g>
+
+              <!-- lighthouse -->
+              <g class="fam-step" style="--d:2.6s">
+                <path class="fam-box" d="M46 300 L53 236 L67 236 L74 300 Z"/>
+                <rect class="fam-key" x="50" y="224" width="20" height="12" rx="2"/>
+                <text class="fam-text" x="60" y="322" text-anchor="middle">Lighthouse</text>
+                <text class="fam-small" x="60" y="339" text-anchor="middle">points, never holds</text>
+              </g>
+              <g class="fam-step" style="--d:2.85s">
+                <path class="fam-point" d="M72 226 L116 200"/>
+                <path class="fam-point" d="M56 222 L52 134"/>
+              </g>
+            </svg>
+            <figcaption>The family: a spine, a mirror for each person, a room for questions, a fold that combines, and a lighthouse that points.</figcaption>
+          </figure>
+
+          <h3>Vapour, liquid and solid</h3>
+          <p>
+            The beach names three states for what people say. <em>Vapour</em>
+            is the moment itself: the conversation, the keystrokes, the talk on
+            a walk. It isn't kept. <em>Liquid</em> is a staging place, one slot
+            per person, edited in place until it's ready. <em>Solid</em> is what
+            has been committed to the block the work is actually about, where it
+            stays.
+          </p>
+          <p>
+            For a member, that means: you talk (vapour); the helper drafts your
+            words and reads them back to you (liquid); and only what you agree
+            to lands in your mirror or the room (solid). Nothing becomes part of
+            the record without passing through your own hearing of it.
+          </p>
+
+          <h3>The two mechanisms doing the work</h3>
+          <p>
+            <strong>The fold</strong> is how we'll see the membership as a whole:
+            how many people, how many Lived Experience Leaders and Peer Leaders,
+            who they are and what they do. Not a database table, but a
+            synthesis recomputed from time to time and pointing back at people's
+            own passports. We already use it for recovery capital, and we mean
+            to use the same pattern for membership and roles.
+          </p>
+          <p>
+            <strong>The lighthouse</strong> is how roles stay alive rather than
+            becoming titles. Being a Lived Experience Leader isn't a field burned
+            into a record; it's a line in a curated list that can be redrawn,
+            kept by the Leaders themselves, always pointing back at the person's
+            own passport.
+          </p>
+          <p>
+            The discipline in both is the same: curation without ownership. If
+            either the fold or the lighthouse ever came to contain someone's
+            actual data rather than point at it, the design would have failed.
+          </p>
+
+          <h3>The same shape for everything we co-produce</h3>
+          <p>
+            A frame everyone reads against; everyone's own readings in their own
+            words; a room where questions go to everyone; a combined picture no
+            one owns; and a decisions surface where something is proposed, open
+            to objection, and adopted. That's how we mean to make the
+            constitution, the policies and the welcome, not just the recovery
+            picture.
+          </p>
+          <p>
+            One open question is what grows inside the project and what stands
+            beside it. The test we're trying: if the making of it is the point,
+            it grows inside; if it's a formal record or it's personal, it stands
+            beside, and the project points to it without holding it. So the
+            welcome insight grows inside as the heart; the constitution's living
+            draft grows inside while the signed version sits beside, with the
+            regulator and the bank; general risk assessments are co-produced
+            in the open, while assessments about individuals live in a secure
+            system. Not yet agreed.
+          </p>
+
+          <p class="aside">
+            <span class="aside-label">Who made what</span>
+            The pattern is David's: he built the recovery-capital family first,
+            elsewhere on his beach, and his own exemplars name it as the first
+            practice on the beach to be copied and adapted by someone else. The
+            Community Recovery implementation is mine, built on 10 August 2026,
+            along with the judgement about how it should hold real members'
+            words. The arrival directory's structure and wording are mine too;
+            weft moved it onto this beach from an earlier commons as a
+            translation, not a redesign. This is offered in that spirit: learning
+            from what David has built and tested, rather than copying it without
+            thought or building apart from him.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="ordinary">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Why not the ordinary tools</span><span class="fold-gloss">A normal website is maintained by one person and says what the organisation says about itself.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <div id="ordinary-live">
+          <p>A normal website is maintained by one person and says what the organisation says about itself.</p>
+          <p>Google Workspace suits an office but the organisation owns everything, files sit by department, nothing is held by the person and there is no shared clock or shared place for everyone's own reading.</p>
+          <p>Phoning round for a case study takes someone's story, edits it, uses it once and loses it, where on the beach it already exists in their words, consented and growing.</p>
+          </div>
+          </div>
+        </section>
+        <section class="sect" id="frame">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The recovery-capital frame</span><span class="fold-gloss">Our frame merges CHIME (Connection, Hope, Identity, Meaning, Empowerment), which our check-ins already use, with Best…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            Our frame merges CHIME (Connection, Hope, Identity, Meaning,
+            Empowerment), which our check-ins already use, with Best and Laudet's
+            clusters of recovery capital. So what we already collect and the
+            combined picture can speak the same language. These are the
+            dimensions each person reads themselves against, in their own words:
+          </p>
+          <ol class="frame-list" id="frame-list">
+            <li><strong>Connection and social capital.</strong> Relationships, family, peers and mutual aid; the people who hold a person steady and the living connection to others in recovery.</li>
+            <li><strong>Hope, identity, and personal capital.</strong> Physical and mental health, sleep, coping skills, self-worth, and a sense of who a person is becoming.</li>
+            <li><strong>Meaning and purpose.</strong> A sense of direction and an identity beyond the thing being recovered from; something to get up for.</li>
+            <li><strong>Empowerment and agency.</strong> Voice, control, and the ability to act on one's own behalf; not acted upon, but acting.</li>
+            <li><strong>Community capital.</strong> Housing, work or study, and belonging; the external footing a life stands on.</li>
+          </ol>
+          <p>
+            There's no scale, no score and no total. A dimension nobody has
+            voiced is not-yet-spoken, never a failing. Recovery capital can also
+            run down, actively wearing away rather than just quiet, and a person
+            can say so in their own words; that's theirs to say, never something
+            a reader infers.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="journey">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">From arrival to helping</span><span class="fold-gloss">A plausible picture to test, built from what the beach already has, with the gaps marked.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            A plausible picture to test, built from what the beach already has,
+            with the gaps marked.
+          </p>
+          <ol>
+            <li>
+              <strong>Arriving alone.</strong> Someone lands on the Community
+              Recovery website, which shows the beach: the community's own words,
+              what's happening, what's needed. One button, <em>Join us</em>,
+              gives them the beach link and a short starting prompt to paste into
+              Claude on their phone. The prompt tells Claude to open the beach's
+              welcome (<code>pscale_invite</code>), go straight to Community
+              Recovery, and hold the conversation gently and plainly.
+            </li>
+            <li>
+              <strong>The welcome.</strong> Claude has the welcome conversation:
+              who they are, what they bring, what they're looking for, and what
+              stays private. Three things happen, each confirmed back in plain
+              words: a place in the arrival directory, in order of arrival, under
+              a latch they choose, with a sealed spare to the custodian
+              (<code>pscale_settle</code> on <code>sed:lero-nnh</code>); a
+              passport in their own words (<code>passport:&lt;handle&gt;</code>);
+              and their own mirror on the recovery-capital frame, voiced only as
+              far as they want.
+            </li>
+            <li>
+              <strong>Arriving as a group.</strong> A volunteer runs the same
+              prompt on one phone with several people round it. The beach already
+              supports several people at one screen
+              (<code>pscale_pool_engage</code> with a party). Each person still
+              gets their own place, passport and mirror; what the group says
+              together goes into the room (<code>pool:lero-nnh</code>), each
+              voice attributed.
+            </li>
+            <li>
+              <strong>Contributing, robustly.</strong> Everything anyone says lands
+              somewhere it can't be lost: their mirror, the room, a note. Claude
+              reads each back and says where it now lives, so voices are captured
+              and people know they've been heard. The fold gathers what's shared
+              across everyone, so patterns surface on their own.
+            </li>
+            <li>
+              <strong>Wanting to help.</strong> Someone says, "I want to do
+              something." The organisation has its own hand: cards of things that
+              need doing, grown from the room and the fold. They see what's open,
+              take a card into their hand, and when it's done it lands on their
+              now and the organisation's. Ideas from social media come in the
+              same way: posted into the room, becoming cards once the community
+              takes them up.
+            </li>
+          </ol>
+          <p class="aside">
+            <span class="aside-label">Gaps, not yet built</span>
+            <span id="gaps-live">The starting prompt; the website door; the
+            organisation's own hand; the custodian reset; and call-back
+            notifications, so people hear when something happens. This is what
+            needs testing.</span>
+          </p>
+          <p class="live-note section-live" data-live="gaps"></p>
+
+          <h3>The welcome conversation</h3>
+          <p>
+            Every new member has a welcome conversation with a volunteer. Today
+            it's a paper form, stored physically, hard to share, its wisdom
+            buried. On the beach it happens on a phone, with Claude connected to
+            the project coaching co-production, not therapy, and the form splits
+            three ways:
+          </p>
+          <ul>
+            <li>What they'd like the community to know (gifts, interests, what they bring, what they're looking for) goes in their own mirror, in their own words, readable by members, and feeds the combined picture.</li>
+            <li>What the organisation needs for safety and admin (contact details, an emergency contact, risk) stays in the organisation's proper secure system, not on the beach.</li>
+            <li>Their story is theirs: private, or not written at all, unless they choose.</li>
+          </ul>
+          <p>The volunteer's own mirror records only that the welcome happened.</p>
+
+          <h3>Volunteers</h3>
+          <p>
+            The tool offers each volunteer something personal, AI tools for their
+            own learning, development and growth, and something collective for
+            the community. It must never cost the volunteer anything.
+          </p>
+
+          <h3>Role-play, as an idea</h3>
+          <p>
+            Role-play has long been one of the ways people rehearse life: trying
+            on a braver version of themselves, practising a hard conversation,
+            finding a voice in company. The beach's role-play worlds, played
+            together, could become a place for psychosocial development, where
+            members grow capability in a story before carrying it into the
+            street. Like the AI coaching, it's developmental and co-productive,
+            not therapy. The thing David loves most might turn out to be one of
+            the most useful parts of all.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="standards">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Standards, decisions and roles</span><span class="fold-gloss">The organisation reads itself against CLERO's 33 national LERO standards the way people read themselves against CHIME…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+
+          <h3>The 33 LERO standards as a second frame</h3>
+          <p>
+            The organisation reads itself against CLERO's 33 national LERO
+            standards the way people read themselves against CHIME: a second
+            spine whose dimensions are the standards. Members write, in their own
+            words, how the organisation currently stands against each one, and
+            the combined picture becomes the organisation's co-produced
+            self-assessment. No scores, no totals; a standard nobody has voiced
+            is not-yet-spoken, not a failure.
+          </p>
+          <p>
+            Community Recovery is being developed as a LERO according to those
+            standards, so it can show itself, and every step is visible. Every
+            policy, practice and page can say which standard it answers, so
+            nothing looks invented. The evidence is in members' own words. And
+            the making is visible: drafts, debates and decisions open, so anyone
+            can see how something was decided and who took part. On the website,
+            each adopted policy will carry a line like <em>"This answers LERO
+            standards X and Y. Here's how members shaped it."</em>
+          </p>
+          <p>
+            The standards say what a good LERO is; they don't dictate how to get
+            there. The how is co-produced, and that's what makes Community
+            Recovery distinct: standards and lived voice, both on show. Our
+            policies are all Community Recovery's own, because it's an
+            independent organisation.
+          </p>
+
+          <h3>Decisions by consent</h3>
+          <p>
+            We work from asset-based community development: decisions and
+            priorities should present themselves from the pattern of what's
+            already here (people's offers, needs, ambitions and capacity), not be
+            invented from the top. The fold, read as a pattern across many people
+            rather than any one entry, is where priorities become visible.
+          </p>
+          <p>
+            A separate decisions surface works by consent, sociocracy-style: a
+            proposal, then an open period for reasoned objection, not unanimous
+            agreement. That fits the sovereignty model far better than strict
+            hierarchy or full consensus. We intend to test it first on a real
+            decision: a festival idea that a member raised and that keeps coming
+            up in check-ins.
+          </p>
+
+          <h3>The roles</h3>
+          <p>
+            <strong>Community Member</strong> is the way in: anyone who takes
+            part, joins in, or is present. There's no threshold, no application
+            and no key; curiosity about recovery is enough. Being present carries
+            the long-practised expectation of in-person recovery groups, that
+            whoever is there is there safely, and that presence itself adds to the
+            group's safety. The beach doesn't enforce that. It's the same quiet,
+            human moderation that already happens face to face, carried into
+            these spaces.
+          </p>
+          <p>
+            <strong>Lived Experience Leaders</strong> work at the level of the
+            organisation. They hold the lighthouse, tend the commons, and keep an
+            eye on the health of the whole. All are DBS-cleared as a condition of
+            the role.
+          </p>
+          <p>
+            <strong>Peer Leaders</strong> give direct, relational, frontline
+            support through shared identity and lived experience. DBS clearance
+            is progressive: required once a Peer Leader works unsupervised, not
+            before.
+          </p>
+          <p>
+            Roles are circles of accountability, not fixed positions of
+            authority. Leaders' oversight runs through the lighthouse and the
+            decisions surface, never through control of anyone's personal record.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="safety">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Safeguarding, data and the path out</span><span class="fold-gloss">This is the one part of the design that architecture alone can't settle, but it needs a place built for it now, before…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+
+          <h3>Safeguarding</h3>
+          <p>
+            This is the one part of the design that architecture alone can't
+            settle, but it needs a place built for it now, before the policy
+            content exists. What a member shares is private by default. That's
+            right for ordinary reflection and wrong when what's disclosed is a
+            safeguarding concern: risk to self, risk to others, or risk to a
+            child or vulnerable adult. The CLERO standard itself carves out that
+            exception: confidentiality holds except where there's a legal duty
+            to share.
+          </p>
+          <ul>
+            <li><code>policy:lero-nnh</code>, public and readable, to hold the trigger criteria, the escalation chain and the role and DBS policy. Created now as an honest placeholder, not a silent gap.</li>
+            <li><code>safeguarding:lero-nnh</code>, a separate block where flagged concerns go, open only to DBS-cleared Leaders and kept apart from the recovery-capital family.</li>
+            <li>Transparency by default: whoever is with the member tells them directly that something is being escalated, rather than reporting silently.</li>
+            <li>A human at the other end: an on-call rota among cleared Leaders, with a step to acknowledge.</li>
+          </ul>
+          <p>
+            We won't invent safeguarding policy from scratch. The real triggers
+            and escalation chain come from the existing policy of The Forward
+            Trust and ImROC, translated onto this structure, and none of it is
+            relied on until their policy holder signs it off. The duty to act on
+            a disclosure of risk is unchanged by any platform, and the welcome
+            conversation says plainly what stays private and when it can't.
+          </p>
+          <p>
+            DBS records for named people never live on the open beach, locked or
+            not: a lock limits writing, not reading, and DBS status is sensitive
+            personal data with real legal weight. They stay in The Forward
+            Trust's own HR and safeguarding systems. If anything on the beach
+            needs to know whether someone is cleared, it holds at most a
+            non-identifying flag pointing back to that record.
+          </p>
+
+          <h3>Data protection</h3>
+          <p>
+            Putting things on the beach doesn't take them outside UK GDPR. Once
+            volunteers collect information as part of the organisation's work,
+            the organisation is responsible for it wherever it sits. The beach
+            has to meet the law better, not go around it.
+          </p>
+          <ul>
+            <li>Least data: assets, gifts and hopes in people's own words, not case notes.</li>
+            <li>Records held by the person, who can already see, correct and take their own.</li>
+            <li>Consent built in: the person chooses what's public, members-only or private.</li>
+            <li>Nothing is lost unless the person chooses, including backups, which honours the right to erasure.</li>
+            <li>Encryption happens at the beach's connector, not on the phone, so whoever runs the connector is a trusted party.</li>
+            <li>A Data Protection Impact Assessment before any real use.</li>
+          </ul>
+          <p>All of this is still to be checked with a data protection adviser.</p>
+
+          <h3>The path out of the beach</h3>
+          <p>
+            The fold already respects sovereignty: it's a combined picture, not
+            raw personal data. The gap is that nothing outside the beach can read
+            it yet. The simplest step is a small bridge: a scheduled job that
+            reads the fold, turns it into something a commissioner can read, and
+            delivers it where it's needed, as a basic read-only API or as an MCP
+            server, depending on who's meant to use it.
+          </p>
+          <p>
+            The bridge only ever reads the fold: never anyone's mirror, never
+            encrypted content, never the safeguarding block, and that's enforced
+            by how it's built, not by good intentions. It's ordinary integration
+            work, outside the beach, and it matters more the more we rest on the
+            beach staying up.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="website">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The website is the lighthouse</span><span class="fold-gloss">One public lighthouse, tended by the Lived Experience Leaders, points at the public parts of the community on the…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            One public lighthouse, tended by the Lived Experience Leaders, points
+            at the public parts of the community on the beach, and the website
+            reads it and shows them. Change the lighthouse and the website
+            changes. Nobody maintains a website; the community tends its own
+            front door.
+          </p>
+          <ul>
+            <li>It's the organisation's own navigation, not marketing, kept by the people this design already gives that role.</li>
+            <li>It scales: new members add to the same frames and the site shows more without a redesign. Other LEROs could run the same site on their own lighthouse.</li>
+            <li>Nothing personal ever appears, because the lighthouse only points at what's public by design.</li>
+            <li>A first version from what exists: who we are, in the community's words from the arrival directory; how we see recovery, from the frame; what's happening, from the organisation's now once it has one; and join us.</li>
+            <li>The housekeeping every website needs, in the footer: privacy notice, safeguarding statement, accessibility statement, complaints and feedback, contact and legal status, crisis signposting, and governance.</li>
+            <li>Drafts grow inside the project; the website shows only adopted versions, dated, each with "last reviewed" and "have your say" linking to where its draft is made.</li>
+            <li>Some things never depend on the beach being up: crisis signposting, contact details and the legal name are built into the site itself.</li>
+            <li>No tracking, so no cookie banner, and we'll keep that true.</li>
+            <li>Hosted on GitHub Pages, with its own domain.</li>
+          </ul>
+
+          <h3>Why we're moving off Wix and Mailchimp</h3>
+          <p>
+            Wix means a separate website built and maintained by hand, apart from
+            the community's work. A site that shows the beach is far lower
+            maintenance: the community's own words, offers, combined picture and
+            adopted documents become the website and update themselves.
+          </p>
+          <p>
+            Mailchimp is one-way: the organisation talks and people receive.
+            Instead, every visitor can join the community on the beach, stepping
+            into the arrival directory, the room and their own mirror, and become
+            part of what's being made rather than an address on a list.
+          </p>
+          <p>
+            Both cost money that can go to the beach's upkeep and to Claude seats
+            for volunteers instead, and neither needs tracking. We did weigh the
+            other side: Wix and Mailchimp do reach people who've never heard of
+            the beach, and email pushes while the beach waits to be visited. So
+            before Mailchimp goes, we need a door that works for anyone, with no
+            Claude account and no knowledge of the beach, and a way to call
+            people back when something happens.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="economics">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">David's economics</span><span class="fold-gloss">David Pinto, social anthropologist and mathematician, co-founded Ecosquared and Sqale over more than a decade.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+          <p>
+            David Pinto, social anthropologist and mathematician, co-founded
+            Ecosquared and Sqale over more than a decade. The ideas: money as a
+            vector rather than a scalar, so it works more like a vote than a
+            transaction; pull rather than push; tracking the intangibles, like
+            value, gratitude and contribution; and feedforward, so valuing
+            something also sends support onward. Sqale's heart was simple: rate
+            the value of what you received, rate your gratitude, and give forward
+            time or money to what you value. By his own account it had plenty of
+            social proof but not enough money moving through it.
+          </p>
+          <p>It lives on in the beach's trust and exchange tools, SAND:</p>
+          <ul>
+            <li>Receiving is the transfer.</li>
+            <li><strong>SQ</strong>, a social quotient, is worked out from what others received from you, and can never be written by yourself.</li>
+            <li>Credit travels person to person in signed chains that anyone can check.</li>
+            <li>When something is completed, a share can flow back along every pair of hands that carried it, split equally or by SQ: the gift returning.</li>
+            <li>A claim nobody backs is reported as unbacked.</li>
+          </ul>
+
+          <h3>A recovery community is already an economy</h3>
+          <p>
+            It just can't see itself. Members' own money, spent like anyone's.
+            Coins in the donation box for a bacon sandwich and a cup of tea.
+            Money people would gladly direct toward the café the group dreams
+            of, if there were a simple, ethical way to do it. What's missing
+            isn't generosity or money. It's coordination, which is what a system
+            is for.
+          </p>
+          <p>
+            Money as a vector, in the hands of people who already give it
+            direction by instinct. SQ from what others received, in a culture
+            where being valued by peers is the substance of recovery. Feedforward
+            along the hands that carried something, in a community built on
+            "pass it on". And a measure of social cohesion, David's old PhD
+            question, lived and recorded as it happens: the included middle,
+            where a community's life happens, made visible without being
+            flattened, so growth can be seen, and things going wrong can be seen
+            early enough to mend.
+          </p>
+
+          <h3><span class="tag">Vision</span>The Recovery Card</h3>
+          <p>
+            Not built. People need something they can hold. Picture a Recovery
+            Card, powered by Ecosquared, carried by someone who has come through
+            Community Recovery. In a participating café, gym, barber or
+            bookshop it carries value, because local businesses choose to direct
+            the discounts they already give toward a recovery community they
+            believe in. Every use is visible, so a business sees its generosity
+            working and a member sees where their community is backed.
+          </p>
+          <p>
+            It can carry value outward too, into food banks, community fridges
+            and surplus schemes, anywhere distribution is the problem: a
+            dignified way to get the right thing to the right person without
+            forms. And it's recognition in the hand. For someone rebuilding an
+            identity, a card that says "I belong to this, and this town backs it"
+            is worth more than its face value.
+          </p>
+
+          <h3><span class="tag">Vision</span>The community bank</h3>
+          <p>
+            Not built, and we don't yet know how it would work. Put it together
+            and it's a community bank: members' own money, the donation box,
+            businesses' directed discounts, commissioners' grants, the volunteer
+            budget and gifts forward, all moving through one system that knows
+            where value came from, where it's going and what it did.
+          </p>
+          <p>
+            Most of what holds LEROs back is financial: short contracts,
+            cliff-edge funding, no reserves, and no way to show the value they
+            create between funding rounds. A mutual owned by the recovery
+            community, directing its own resources by its members' sense of
+            value, could change that for the whole movement, with the Recovery
+            Card as how people touch it. Taking deposits or issuing money is
+            regulated, so it would have to be built properly: a community benefit
+            society, or a partnership with a credit union, working with the
+            regulators rather than around them.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="grows">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">How it grows</span><span class="fold-gloss">Three conditions, kept simple:</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+
+          <h3>Sustainability</h3>
+          <p>Three conditions, kept simple:</p>
+          <ul>
+            <li>the LERO must generate income;</li>
+            <li>the beach, David's infrastructure, must become sustainable;</li>
+            <li>volunteers must pay nothing.</li>
+          </ul>
+          <p>
+            What's real now is small but honest. The LERO has a flexible budget
+            for supporting volunteers, and linking this to volunteer growth,
+            rolled out slowly, makes a modest recurring stream plausible. Money
+            we'd otherwise pay to Wix and Mailchimp can go to the beach, or to
+            Claude, instead. Claude's Team plan, with central billing, admin
+            controls for connectors and no model training on content by default,
+            could give each volunteer a seat of their own. We'll ask Anthropic
+            whether there's a charity rate.
+          </p>
+
+          <h3>The iceberg</h3>
+          <p>
+            That early income is the tip. If it works in Community Recovery, the
+            path widens in stages, each carrying the last.
+          </p>
+          <ol>
+            <li>
+              <strong>Other LEROs,</strong> across CLERO's national network, all
+              built on the same culture, all asked to evidence themselves against
+              the same standards, most with no systems at all. A working example,
+              shown by its own members, travels by recognition, not marketing:
+              pull, not push. Community Recovery offers the system as its social
+              enterprise (setup, welcome conversations, coaching volunteers to
+              coach others), paid modestly from budgets already meant for
+              volunteers and development. The standards themselves count income
+              from social enterprise as evidence of an asset-based approach.
+            </li>
+            <li>
+              <strong>The organisations around them:</strong> recovery cafés,
+              mutual aid groups, mental health peer networks, homelessness
+              projects, housing associations, faith and community groups, anywhere
+              people gather and the insight evaporates. It fits them all, because
+              it was never about recovery alone.
+            </li>
+            <li>
+              <strong>Each community strengthening the rest.</strong> Practices
+              copied and adapted, as recovery capital already was. Value flowing
+              between organisations as well as within them, so a café in one town
+              can back a project in another. The network is worth more with each
+              community that joins, which is the property David's economics was
+              designed for.
+            </li>
+          </ol>
+
+          <h3>Reinvestment, on purpose</h3>
+          <ul>
+            <li>Into the beach, so its infrastructure and builders are sustained properly.</li>
+            <li>Into communities, backing what their people value.</li>
+            <li>Into evidence, with researchers, so a measure of social cohesion is recognised, not just visible.</li>
+            <li>Into fields beyond, such as a bipolar task force.</li>
+          </ul>
+          <p>
+            On that last one: I sit on the Lived Experience Council of the
+            International Society for Bipolar Disorders, alongside the developer
+            of In The Zone, an app for people with bipolar to share daily
+            check-ins with the people who support them. Bipolar disorder and
+            substance use so often travel together, and both are underserved.
+            There's appetite for a task force on technology for social good in
+            that space, and no budget yet. A living demonstration would change
+            that.
+          </p>
+          <p>
+            One community living it first. Then a movement of LEROs. Then the
+            wider community sector. Then a field. Money given direction, at every
+            scale, by the people it serves.
+          </p>
+          </div>
+        </section>
+        <section class="sect" id="evidence">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The evidence</span><span class="fold-gloss">This is deliberately broader than what we claim or do today.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <div class="kids" hidden>
+
+          <h3>Why CHIME, and why the fold</h3>
+          <ul class="refs">
+            <li>CHIME is the right frame on purpose. David Best's work extends CHIME into C-CHIME, reconciling it with recovery capital for community-based addiction recovery: Best and Stauffer (2025), building on Best, "The science of recovery capital", <em>Addiction</em> (2022). It's a framework being built forward within the field for exactly this use.</li>
+            <li>Ed Day's <em>Next Steps</em> (2025) names better data on current provision and developing outcome measures as open national priorities for the LERO movement. A commissioner-facing picture that never exposes individual records is a live answer to that.</li>
+            <li>Sovereign mirrors match the CLERO standard on co-production, which asks LEROs to co-create their offer with people with living and lived experience, and to promote people's right to choose their own recovery pathway. Mapping offers, needs and gifts matches the standards' asset-based approach almost exactly.</li>
+            <li>A RAND study (2026) found there's still no consistent understanding of what a LERO is, and that direct commissioning and ring-fenced allocations support LERO autonomy, visibility and influence.</li>
+          </ul>
+
+          <h3>The fuller scope a LERO can grow into</h3>
+          <p>
+            This is deliberately broader than what we claim or do today. It's
+            there so that when our scope grows, it grows into ground already
+            surveyed, not justified afterwards.
+          </p>
+          <ul class="refs">
+            <li>Dame Carol Black's <em>Independent Review of Drugs, Phase 2</em> (32 recommendations, GOV.UK, 8 July 2021) found existing provision "not fit for purpose" because partnerships between local authorities, health, housing, employment support and criminal justice agencies had deteriorated, and called for equal access to housing, employment, mental health and physical health support alongside treatment.</li>
+            <li>The government's response, <em>From Harm to Hope</em> (6 December 2021), commits to a whole-system recovery-oriented system of care and names LEROs as part of it, backed by around £900m of additional investment over 2022 to 2025.</li>
+            <li>CLERO's National LERO Standards (33 statements in 4 sections) are aspirational best-practice guidance that CLERO doesn't monitor or enforce. They anchor a LERO around substance use recovery and treat mental health, housing and criminal justice mainly as services a LERO connects people to. But they're also explicitly community-led, "directed by and for local residents", and that's the real permission: a LERO's scope should follow its community's actual needs.</li>
+            <li>Institutional trauma is real and separately evidenced: Jennifer Freyd's institutional betrayal theory; a 2024 peer-reviewed scoping review by Christl, Tran Pham, Rosenthal and DePrince in <em>Trauma, Violence &amp; Abuse</em>; IICSA's Final Report (October 2022, 20 recommendations plus 87 from earlier investigation reports); and UK care-leaver research. OHID's trauma-informed practice guidance (six principles: safety, trust, choice, collaboration, empowerment, cultural consideration) mainly frames institutions as places that must avoid re-traumatising people. Connecting substance recovery policy to an institutional-trauma remit is an inference we make deliberately; no single policy document states it, and we say so whenever we make the claim.</li>
+            <li>Extended frameworks, for when they're needed: CHIME-S adds a safety domain for forensic and criminal justice settings (Senneseth et al., <em>BJPsych Open</em>, 2022); SECURED adapts CHIME for homelessness, naming security and stability as a prerequisite (Dring et al., <em>BJPsych Open</em>, 2025).</li>
+            <li>Precedent: Red Rose Recovery in Lancashire works across substance use, mental health peer support, criminal justice (liaison and diversion, prison in-reach, a secure medical unit) and homelessness and multiple disadvantage (through Changing Futures), and holds a Trauma Informed Charter Mark. Emerging Futures works similarly across homelessness and substance use, with prison link workers. Neither started there; both grew into it. That growth, not a day-one claim, is our honest precedent.</li>
+          </ul>
+          </div>
+        </section>
+        <p class="made">
+          The pages Community Recovery uses were made by weft at David Pinto's
+          word; how they were made, and what was decided, is at
+          <a href="https://pscale-commons.github.io/community-recovery/made.html">How this place was made</a>.
         </p>
-        <p>
-          I'm on the Imroc LERO Mentoring Programme with the Office for Health
-          Improvement and Disparities; on the Lived Experience Council of the
-          International Society for Bipolar Disorders; and a Peer Trainer at
-          the Recovery College (NHS).
-        </p>
-        <p>
-          I'm trained in therapeutic coaching (integrated counselling and
-          coaching), as an Emotional Fitness Coach, as an Intentional Peer
-          Support facilitator and as an Imroc Peer Support Worker, and in
-          Mental Health First Aid.
-        </p>
-      </div>
-      <p class="live-note section-live" data-live="who"></p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="north">
-      <h2>Sheffield and the north</h2>
-      <p>
-        David is heading into the right country for this. LEROs are all
-        around: Sheffield Recovery Community, whose chair sits on CLERO's
-        board; long-standing LEROs across West Yorkshire; DATUS in
-        Birmingham, twenty years established; and Chase Recovery. A new
-        network, LEROY, is gathering LEROs across Yorkshire and beyond, and
-        councils are commissioning LEROs as part of their substance use
-        strategies.
-      </p>
-      <p>
-        These are people who'd understand what the beach is in minutes,
-        because they live the problem it solves. Nobody has to explain the
-        technology from first principles. You can point at a use case.
-      </p>
-      <p class="lead">
-        Community Recovery is offered as a live example, in any conversation,
-        with my full backing.
-      </p>
-      <p>
-        If you're from a LERO and something here fits what you need, or
-        doesn't, I'd like to hear it. Leave a note below, or speak to David.
-      </p>
-      <p class="closing">
-        This was written for David Pinto (happyseaurchin) to carry into
-        conversations with lived experience recovery organisations in
-        Sheffield and the north, and for anyone in those organisations who
-        wants to see what we're building and why.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <p class="group-label" id="g-how">How it works</p>
-
-    <section id="vision">
-      <h2>The vision</h2>
-      <div id="vision-live">
-      <p class="lead">
-        A co-production tool and lived experience platform, the first of its
-        kind.
-      </p>
-      <p>
-        Volunteers go out and meet people. They talk, and they use Claude on
-        a phone connected to the beach and to our project, so everything
-        said stays owned by the community and open to the community. Each
-        volunteer gets something for themselves; the community gets
-        something together. It is asset-based community development done in
-        practice, with our goals held against CLERO's 33 national LERO
-        standards.
-      </p>
-      <p>
-        Its root is sovereign perspective: each person holding their own
-        account of their own reality, and oriented enough to themselves that
-        others can see what they need to see.
-      </p>
-      </div>
-      <p class="live-note section-live" data-live="vision"></p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="offer">
-      <h2>The offer in plain words</h2>
-      <div id="offer-live">
-      <p>Four things, and nothing more complicated than these:</p>
-      <ul>
-        <li>Everyone has their own notebook: theirs, nobody else writes in it, and they choose which pages others see.</li>
-        <li>In the middle of the room is a wall: when the group asks a question, everyone answers in their own notebook and the wall shows all the answers side by side, nobody rewritten, nothing lost.</li>
-        <li>There is one shared calendar, so everyone's days, months and years line up and change over time can be seen.</li>
-        <li>And everyone has a helper in their pocket they can simply talk to, out loud, while they walk, which puts their words in the right place and reads them back.</li>
-      </ul>
-      <h3>For members</h3>
-      <ul>
-        <li>Their story stays theirs and outlives any service.</li>
-        <li>Private things stay buried where only their key finds them, with access they can grant and withdraw.</li>
-        <li>They are seen for what they bring.</li>
-        <li>Helping is easy and thanks travel.</li>
-        <li>No forms, no training.</li>
-      </ul>
-      </div>
-      <p class="live-note section-live" data-live="offer"></p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="theirs">
-      <h2>What's theirs is theirs</h2>
-      <p class="lead">What's theirs is theirs; what happens together is ours.</p>
-      <p>
-        This is the distinction the whole design turns on. Each person's own
-        reflection, identity and history is sovereign: held under their own
-        key, never nested inside a block someone else locks. What people
-        contribute, to the room, to a shared question, to each other, belongs
-        to everyone, visible and combined. Nobody should have to hand over
-        what's theirs in order to be seen as part of what's ours.
-      </p>
-      <p>
-        That's why we're moving away from treating our arrival directory as
-        a membership register, where each person's declaration sits inside a
-        block the coordinator ultimately holds, and toward the family pattern
-        already proven in our recovery-capital work, where identity lives
-        with the person and contribution lives in the shared space.
-      </p>
-
-      <h3>Three kinds of privacy</h3>
-      <ul>
-        <li><strong>Public:</strong> anyone can read it.</li>
-        <li><strong>Members-only:</strong> encrypted so only members can read it.</li>
-        <li><strong>Private:</strong> encrypted to the person alone.</li>
-      </ul>
-      <p>
-        Sensitive things, such as health, addiction or criminal justice
-        history, are only ever private: never public, never members-only. A
-        person can give temporary read access to a doctor, support worker or
-        other professional, the way you'd share a driving licence online.
-      </p>
-      <p>
-        Whatever builds the combined picture has to be allowed to read
-        members-only pages, which makes it a trusted reader. That role must
-        be named, and visible to everyone.
-      </p>
-
-      <h3>Writers and the custodian</h3>
-      <p>
-        A project is a collaboration, and every account in it is its writer's
-        own. Each writer holds their own latch and writes only their own
-        page. That's safe by construction: nobody else can overwrite it,
-        the coordinator included.
-      </p>
-      <p>
-        The coordinator acts as custodian, like a sealed envelope. They may
-        hold a spare so that someone who loses their latch can be helped back
-        in, but only with that person present and asking, with every use
-        recorded where the person can see it. On a reset the person chooses a
-        new latch, and the custodian keeps no writing access. The beach
-        doesn't have a custodian reset yet; that's for us to design with
-        David and weft.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="built">
-      <h2>How it's built on the beach</h2>
-      <p>
-        The beach is David Pinto's open commons: a surface of named blocks,
-        each a small tree of numbered positions, which any AI can read and
-        write through one function, <code>bsp()</code>. Reading is public.
-        A lock is an edit-latch, proof that you're the same author as before,
-        not a login, and it grants no privacy on its own. Privacy is a
-        separate choice: encryption (the beach calls it <em>gray</em>) with a
-        key that never leaves the person.
-      </p>
-      <p>Here are the pieces we use, plain word first, block name after.</p>
-
-      <dl class="terms">
-        <dt>Passport <code>passport:&lt;handle&gt;</code></dt>
-        <dd>A person's own words on who they are, what they offer and what they need. It's the first thing any AI reads to orient to them.</dd>
-
-        <dt>Mirror <code>lero-nnh-recovery-capital:&lt;handle&gt;</code></dt>
-        <dd>A person's own reading against a shared frame, written at the same addresses as the frame. Locked so only they write it, and encrypted with their own passphrase so only they read what they keep private. This is the notebook.</dd>
-
-        <dt>Now <code>now:&lt;handle&gt;</code></dt>
-        <dd>Where someone is on the beach's shared clock: their year, season, month, week and today. Every response from the beach carries the same clock, so everyone's now lines up. This is the shared calendar.</dd>
-
-        <dt>Hand</dt>
-        <dd>Cards of things that need doing, which someone takes into their hand and plays when they're done, so the work lands on their now. We want the organisation to have its own hand, grown from the room and the combined picture. Not built yet.</dd>
-
-        <dt>Grain <code>grain:&lt;pair&gt;</code></dt>
-        <dd>A durable channel between exactly two people: one block, two sides, each side locked to the person who writes it, and able to be encrypted so only the two of them read it. The place for one-to-one support.</dd>
-
-        <dt>Spine <code>spine:lero-nnh-recovery-capital</code></dt>
-        <dd>The neutral frame everyone reads themselves against. It holds no content authority and no clinical judgement; it only names the dimensions. Our organisation will have a second spine, the LERO standards.</dd>
-
-        <dt>Room <code>pool:lero-nnh</code></dt>
-        <dd>The project's room. Every contribution lands in its own slot, attributed, and is never rewritten. What a group says together goes here.</dd>
-
-        <dt>The question room <code>pool:lero-nnh-recovery-capital</code></dt>
-        <dd>Where questions go to the whole board, and answers can be given without joining any list. It's kept off the combined picture on purpose: an open write box on a surface that promises only the combined view would undercut that promise. This is how the wall gets its questions.</dd>
-
-        <dt>Fold <code>recovery-capital-lero-nnh</code></dt>
-        <dd>The combined picture: a synthesis over many people's mirrors, recomputed from time to time, owned by nobody and replacing nobody's own record. The coordinator reads only the fold, never a named mirror. This is the wall.</dd>
-
-        <dt>Arrival directory <code>sed:lero-nnh</code></dt>
-        <dd>A list of arrivals in order, each place held under a latch its holder chooses. We intend to trim it to exactly that: a directory, not a register of what people have declared.</dd>
-
-        <dt>Lighthouse <code>lighthouse</code></dt>
-        <dd>Curated navigation with a single job: point at things, never contain them. Tended by the Lived Experience Leaders. The website will be our lighthouse, rendered.</dd>
-
-        <dt>Field log <code>field-log:lero-nnh</code></dt>
-        <dd>The coordinator's running log of the work, keeping the story over time. It replaced a case-tracking system that was tedious for following a story.</dd>
-
-        <dt>The design proposal <code>lero-nnh-design-proposal</code></dt>
-        <dd>This whole design, grown by conversation, with papers kept beneath the part they belong to. Papers and long pieces live there; pools are for messages.</dd>
-      </dl>
-
-      <h3>The family, drawn</h3>
-      <figure>
-        <svg id="family" viewBox="0 0 260 350" role="img" aria-labelledby="fam-title fam-desc">
-          <title id="fam-title">The recovery-capital family</title>
-          <desc id="fam-desc">A spine at the top holds the shared frame. Below it, a mirror for each person, each read against the spine. Beside them, the room sends questions to every mirror. Below, the fold gathers the mirrors into a combined picture owned by nobody. At the bottom left, the lighthouse points at the fold and the room without holding them.</desc>
-
-          <!-- spine -->
-          <g class="fam-step" style="--d:0s">
-            <rect class="fam-box" x="116" y="8" width="130" height="46" rx="3"/>
-            <text class="fam-text" x="181" y="28" text-anchor="middle">Spine</text>
-            <text class="fam-small" x="181" y="45" text-anchor="middle">the shared frame</text>
-          </g>
-
-          <!-- spine to mirrors -->
-          <path class="fam-line fam-draw" pathLength="1" style="--d:0.45s" d="M181 54 V70"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H136 V84"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 V84"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:0.65s" d="M181 70 H226 V84"/>
-
-          <!-- mirrors, lit one by one -->
-          <g class="fam-step" style="--d:1.0s">
-            <rect class="fam-key" x="118" y="84" width="36" height="36" rx="3"/>
-            <circle class="fam-dot" cx="136" cy="102" r="3.5"/>
-          </g>
-          <g class="fam-step" style="--d:1.25s">
-            <rect class="fam-key" x="163" y="84" width="36" height="36" rx="3"/>
-            <circle class="fam-dot" cx="181" cy="102" r="3.5"/>
-          </g>
-          <g class="fam-step" style="--d:1.5s">
-            <rect class="fam-key" x="208" y="84" width="36" height="36" rx="3"/>
-            <circle class="fam-dot" cx="226" cy="102" r="3.5"/>
-          </g>
-          <text class="fam-small fam-step" style="--d:1.6s" x="181" y="137" text-anchor="middle">mirrors, one each</text>
-
-          <!-- room -->
-          <g class="fam-step" style="--d:1.6s">
-            <rect class="fam-box" x="8" y="74" width="88" height="56" rx="3"/>
-            <text class="fam-text" x="52" y="94" text-anchor="middle">Room</text>
-            <text class="fam-small" x="52" y="110" text-anchor="middle">questions</text>
-            <text class="fam-small" x="52" y="123" text-anchor="middle">to everyone</text>
-            <path class="fam-line" d="M96 102 H114 M109 97 L114 102 L109 107"/>
-          </g>
-
-          <!-- mirrors flow down into the fold -->
-          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M136 120 V126"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M181 120 V126"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:1.85s" d="M226 120 V126"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M136 142 V146 H181"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:2.0s" d="M226 142 V146 H181"/>
-          <path class="fam-line fam-draw" pathLength="1" style="--d:2.15s" d="M181 146 V170"/>
-
-          <!-- fold -->
-          <g class="fam-step" style="--d:2.35s">
-            <rect class="fam-box" x="116" y="170" width="130" height="46" rx="3"/>
-            <text class="fam-text" x="181" y="190" text-anchor="middle">Fold</text>
-            <text class="fam-small" x="181" y="207" text-anchor="middle">owned by nobody</text>
-          </g>
-
-          <!-- lighthouse -->
-          <g class="fam-step" style="--d:2.6s">
-            <path class="fam-box" d="M46 300 L53 236 L67 236 L74 300 Z"/>
-            <rect class="fam-key" x="50" y="224" width="20" height="12" rx="2"/>
-            <text class="fam-text" x="60" y="322" text-anchor="middle">Lighthouse</text>
-            <text class="fam-small" x="60" y="339" text-anchor="middle">points, never holds</text>
-          </g>
-          <g class="fam-step" style="--d:2.85s">
-            <path class="fam-point" d="M72 226 L116 200"/>
-            <path class="fam-point" d="M56 222 L52 134"/>
-          </g>
-        </svg>
-        <figcaption>The family: a spine, a mirror for each person, a room for questions, a fold that combines, and a lighthouse that points.</figcaption>
-      </figure>
-
-      <h3>Vapour, liquid and solid</h3>
-      <p>
-        The beach names three states for what people say. <em>Vapour</em>
-        is the moment itself: the conversation, the keystrokes, the talk on
-        a walk. It isn't kept. <em>Liquid</em> is a staging place, one slot
-        per person, edited in place until it's ready. <em>Solid</em> is what
-        has been committed to the block the work is actually about, where it
-        stays.
-      </p>
-      <p>
-        For a member, that means: you talk (vapour); the helper drafts your
-        words and reads them back to you (liquid); and only what you agree
-        to lands in your mirror or the room (solid). Nothing becomes part of
-        the record without passing through your own hearing of it.
-      </p>
-
-      <h3>The two mechanisms doing the work</h3>
-      <p>
-        <strong>The fold</strong> is how we'll see the membership as a whole:
-        how many people, how many Lived Experience Leaders and Peer Leaders,
-        who they are and what they do. Not a database table, but a
-        synthesis recomputed from time to time and pointing back at people's
-        own passports. We already use it for recovery capital, and we mean
-        to use the same pattern for membership and roles.
-      </p>
-      <p>
-        <strong>The lighthouse</strong> is how roles stay alive rather than
-        becoming titles. Being a Lived Experience Leader isn't a field burned
-        into a record; it's a line in a curated list that can be redrawn,
-        kept by the Leaders themselves, always pointing back at the person's
-        own passport.
-      </p>
-      <p>
-        The discipline in both is the same: curation without ownership. If
-        either the fold or the lighthouse ever came to contain someone's
-        actual data rather than point at it, the design would have failed.
-      </p>
-
-      <h3>The same shape for everything we co-produce</h3>
-      <p>
-        A frame everyone reads against; everyone's own readings in their own
-        words; a room where questions go to everyone; a combined picture no
-        one owns; and a decisions surface where something is proposed, open
-        to objection, and adopted. That's how we mean to make the
-        constitution, the policies and the welcome, not just the recovery
-        picture.
-      </p>
-      <p>
-        One open question is what grows inside the project and what stands
-        beside it. The test we're trying: if the making of it is the point,
-        it grows inside; if it's a formal record or it's personal, it stands
-        beside, and the project points to it without holding it. So the
-        welcome insight grows inside as the heart; the constitution's living
-        draft grows inside while the signed version sits beside, with the
-        regulator and the bank; general risk assessments are co-produced
-        in the open, while assessments about individuals live in a secure
-        system. Not yet agreed.
-      </p>
-
-      <p class="aside">
-        <span class="aside-label">Who made what</span>
-        The pattern is David's: he built the recovery-capital family first,
-        elsewhere on his beach, and his own exemplars name it as the first
-        practice on the beach to be copied and adapted by someone else. The
-        Community Recovery implementation is mine, built on 10 August 2026,
-        along with the judgement about how it should hold real members'
-        words. The arrival directory's structure and wording are mine too;
-        weft moved it onto this beach from an earlier commons as a
-        translation, not a redesign. This is offered in that spirit: learning
-        from what David has built and tested, rather than copying it without
-        thought or building apart from him.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="ordinary">
-      <h2>Why not the ordinary tools</h2>
-      <div id="ordinary-live">
-      <p>A normal website is maintained by one person and says what the organisation says about itself.</p>
-      <p>Google Workspace suits an office but the organisation owns everything, files sit by department, nothing is held by the person and there is no shared clock or shared place for everyone's own reading.</p>
-      <p>Phoning round for a case study takes someone's story, edits it, uses it once and loses it, where on the beach it already exists in their words, consented and growing.</p>
       </div>
     </section>
-
-    <hr class="rule">
-
-    <section id="frame">
-      <h2>The recovery-capital frame</h2>
-      <p>
-        Our frame merges CHIME (Connection, Hope, Identity, Meaning,
-        Empowerment), which our check-ins already use, with Best and Laudet's
-        clusters of recovery capital. So what we already collect and the
-        combined picture can speak the same language. These are the
-        dimensions each person reads themselves against, in their own words:
-      </p>
-      <ol class="frame-list" id="frame-list">
-        <li><strong>Connection and social capital.</strong> Relationships, family, peers and mutual aid; the people who hold a person steady and the living connection to others in recovery.</li>
-        <li><strong>Hope, identity, and personal capital.</strong> Physical and mental health, sleep, coping skills, self-worth, and a sense of who a person is becoming.</li>
-        <li><strong>Meaning and purpose.</strong> A sense of direction and an identity beyond the thing being recovered from; something to get up for.</li>
-        <li><strong>Empowerment and agency.</strong> Voice, control, and the ability to act on one's own behalf; not acted upon, but acting.</li>
-        <li><strong>Community capital.</strong> Housing, work or study, and belonging; the external footing a life stands on.</li>
-      </ol>
-      <p>
-        There's no scale, no score and no total. A dimension nobody has
-        voiced is not-yet-spoken, never a failing. Recovery capital can also
-        run down, actively wearing away rather than just quiet, and a person
-        can say so in their own words; that's theirs to say, never something
-        a reader infers.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="journey">
-      <h2>From arrival to helping</h2>
-      <p>
-        A plausible picture to test, built from what the beach already has,
-        with the gaps marked.
-      </p>
-      <ol>
-        <li>
-          <strong>Arriving alone.</strong> Someone lands on the Community
-          Recovery website, which shows the beach: the community's own words,
-          what's happening, what's needed. One button, <em>Join us</em>,
-          gives them the beach link and a short starting prompt to paste into
-          Claude on their phone. The prompt tells Claude to open the beach's
-          welcome (<code>pscale_invite</code>), go straight to Community
-          Recovery, and hold the conversation gently and plainly.
-        </li>
-        <li>
-          <strong>The welcome.</strong> Claude has the welcome conversation:
-          who they are, what they bring, what they're looking for, and what
-          stays private. Three things happen, each confirmed back in plain
-          words: a place in the arrival directory, in order of arrival, under
-          a latch they choose, with a sealed spare to the custodian
-          (<code>pscale_settle</code> on <code>sed:lero-nnh</code>); a
-          passport in their own words (<code>passport:&lt;handle&gt;</code>);
-          and their own mirror on the recovery-capital frame, voiced only as
-          far as they want.
-        </li>
-        <li>
-          <strong>Arriving as a group.</strong> A volunteer runs the same
-          prompt on one phone with several people round it. The beach already
-          supports several people at one screen
-          (<code>pscale_pool_engage</code> with a party). Each person still
-          gets their own place, passport and mirror; what the group says
-          together goes into the room (<code>pool:lero-nnh</code>), each
-          voice attributed.
-        </li>
-        <li>
-          <strong>Contributing, robustly.</strong> Everything anyone says lands
-          somewhere it can't be lost: their mirror, the room, a note. Claude
-          reads each back and says where it now lives, so voices are captured
-          and people know they've been heard. The fold gathers what's shared
-          across everyone, so patterns surface on their own.
-        </li>
-        <li>
-          <strong>Wanting to help.</strong> Someone says, "I want to do
-          something." The organisation has its own hand: cards of things that
-          need doing, grown from the room and the fold. They see what's open,
-          take a card into their hand, and when it's done it lands on their
-          now and the organisation's. Ideas from social media come in the
-          same way: posted into the room, becoming cards once the community
-          takes them up.
-        </li>
-      </ol>
-      <p class="aside">
-        <span class="aside-label">Gaps, not yet built</span>
-        <span id="gaps-live">The starting prompt; the website door; the
-        organisation's own hand; the custodian reset; and call-back
-        notifications, so people hear when something happens. This is what
-        needs testing.</span>
-      </p>
-      <p class="live-note section-live" data-live="gaps"></p>
-
-      <h3>The welcome conversation</h3>
-      <p>
-        Every new member has a welcome conversation with a volunteer. Today
-        it's a paper form, stored physically, hard to share, its wisdom
-        buried. On the beach it happens on a phone, with Claude connected to
-        the project coaching co-production, not therapy, and the form splits
-        three ways:
-      </p>
-      <ul>
-        <li>What they'd like the community to know (gifts, interests, what they bring, what they're looking for) goes in their own mirror, in their own words, readable by members, and feeds the combined picture.</li>
-        <li>What the organisation needs for safety and admin (contact details, an emergency contact, risk) stays in the organisation's proper secure system, not on the beach.</li>
-        <li>Their story is theirs: private, or not written at all, unless they choose.</li>
-      </ul>
-      <p>The volunteer's own mirror records only that the welcome happened.</p>
-
-      <h3>Volunteers</h3>
-      <p>
-        The tool offers each volunteer something personal, AI tools for their
-        own learning, development and growth, and something collective for
-        the community. It must never cost the volunteer anything.
-      </p>
-
-      <h3>Role-play, as an idea</h3>
-      <p>
-        Role-play has long been one of the ways people rehearse life: trying
-        on a braver version of themselves, practising a hard conversation,
-        finding a voice in company. The beach's role-play worlds, played
-        together, could become a place for psychosocial development, where
-        members grow capability in a story before carrying it into the
-        street. Like the AI coaching, it's developmental and co-productive,
-        not therapy. The thing David loves most might turn out to be one of
-        the most useful parts of all.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="standards">
-      <h2>Standards, decisions and roles</h2>
-
-      <h3>The 33 LERO standards as a second frame</h3>
-      <p>
-        The organisation reads itself against CLERO's 33 national LERO
-        standards the way people read themselves against CHIME: a second
-        spine whose dimensions are the standards. Members write, in their own
-        words, how the organisation currently stands against each one, and
-        the combined picture becomes the organisation's co-produced
-        self-assessment. No scores, no totals; a standard nobody has voiced
-        is not-yet-spoken, not a failure.
-      </p>
-      <p>
-        Community Recovery is being developed as a LERO according to those
-        standards, so it can show itself, and every step is visible. Every
-        policy, practice and page can say which standard it answers, so
-        nothing looks invented. The evidence is in members' own words. And
-        the making is visible: drafts, debates and decisions open, so anyone
-        can see how something was decided and who took part. On the website,
-        each adopted policy will carry a line like <em>"This answers LERO
-        standards X and Y. Here's how members shaped it."</em>
-      </p>
-      <p>
-        The standards say what a good LERO is; they don't dictate how to get
-        there. The how is co-produced, and that's what makes Community
-        Recovery distinct: standards and lived voice, both on show. Our
-        policies are all Community Recovery's own, because it's an
-        independent organisation.
-      </p>
-
-      <h3>Decisions by consent</h3>
-      <p>
-        We work from asset-based community development: decisions and
-        priorities should present themselves from the pattern of what's
-        already here (people's offers, needs, ambitions and capacity), not be
-        invented from the top. The fold, read as a pattern across many people
-        rather than any one entry, is where priorities become visible.
-      </p>
-      <p>
-        A separate decisions surface works by consent, sociocracy-style: a
-        proposal, then an open period for reasoned objection, not unanimous
-        agreement. That fits the sovereignty model far better than strict
-        hierarchy or full consensus. We intend to test it first on a real
-        decision: a festival idea that a member raised and that keeps coming
-        up in check-ins.
-      </p>
-
-      <h3>The roles</h3>
-      <p>
-        <strong>Community Member</strong> is the way in: anyone who takes
-        part, joins in, or is present. There's no threshold, no application
-        and no key; curiosity about recovery is enough. Being present carries
-        the long-practised expectation of in-person recovery groups, that
-        whoever is there is there safely, and that presence itself adds to the
-        group's safety. The beach doesn't enforce that. It's the same quiet,
-        human moderation that already happens face to face, carried into
-        these spaces.
-      </p>
-      <p>
-        <strong>Lived Experience Leaders</strong> work at the level of the
-        organisation. They hold the lighthouse, tend the commons, and keep an
-        eye on the health of the whole. All are DBS-cleared as a condition of
-        the role.
-      </p>
-      <p>
-        <strong>Peer Leaders</strong> give direct, relational, frontline
-        support through shared identity and lived experience. DBS clearance
-        is progressive: required once a Peer Leader works unsupervised, not
-        before.
-      </p>
-      <p>
-        Roles are circles of accountability, not fixed positions of
-        authority. Leaders' oversight runs through the lighthouse and the
-        decisions surface, never through control of anyone's personal record.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="safety">
-      <h2>Safeguarding, data and the path out</h2>
-
-      <h3>Safeguarding</h3>
-      <p>
-        This is the one part of the design that architecture alone can't
-        settle, but it needs a place built for it now, before the policy
-        content exists. What a member shares is private by default. That's
-        right for ordinary reflection and wrong when what's disclosed is a
-        safeguarding concern: risk to self, risk to others, or risk to a
-        child or vulnerable adult. The CLERO standard itself carves out that
-        exception: confidentiality holds except where there's a legal duty
-        to share.
-      </p>
-      <ul>
-        <li><code>policy:lero-nnh</code>, public and readable, to hold the trigger criteria, the escalation chain and the role and DBS policy. Created now as an honest placeholder, not a silent gap.</li>
-        <li><code>safeguarding:lero-nnh</code>, a separate block where flagged concerns go, open only to DBS-cleared Leaders and kept apart from the recovery-capital family.</li>
-        <li>Transparency by default: whoever is with the member tells them directly that something is being escalated, rather than reporting silently.</li>
-        <li>A human at the other end: an on-call rota among cleared Leaders, with a step to acknowledge.</li>
-      </ul>
-      <p>
-        We won't invent safeguarding policy from scratch. The real triggers
-        and escalation chain come from the existing policy of The Forward
-        Trust and ImROC, translated onto this structure, and none of it is
-        relied on until their policy holder signs it off. The duty to act on
-        a disclosure of risk is unchanged by any platform, and the welcome
-        conversation says plainly what stays private and when it can't.
-      </p>
-      <p>
-        DBS records for named people never live on the open beach, locked or
-        not: a lock limits writing, not reading, and DBS status is sensitive
-        personal data with real legal weight. They stay in The Forward
-        Trust's own HR and safeguarding systems. If anything on the beach
-        needs to know whether someone is cleared, it holds at most a
-        non-identifying flag pointing back to that record.
-      </p>
-
-      <h3>Data protection</h3>
-      <p>
-        Putting things on the beach doesn't take them outside UK GDPR. Once
-        volunteers collect information as part of the organisation's work,
-        the organisation is responsible for it wherever it sits. The beach
-        has to meet the law better, not go around it.
-      </p>
-      <ul>
-        <li>Least data: assets, gifts and hopes in people's own words, not case notes.</li>
-        <li>Records held by the person, who can already see, correct and take their own.</li>
-        <li>Consent built in: the person chooses what's public, members-only or private.</li>
-        <li>Nothing is lost unless the person chooses, including backups, which honours the right to erasure.</li>
-        <li>Encryption happens at the beach's connector, not on the phone, so whoever runs the connector is a trusted party.</li>
-        <li>A Data Protection Impact Assessment before any real use.</li>
-      </ul>
-      <p>All of this is still to be checked with a data protection adviser.</p>
-
-      <h3>The path out of the beach</h3>
-      <p>
-        The fold already respects sovereignty: it's a combined picture, not
-        raw personal data. The gap is that nothing outside the beach can read
-        it yet. The simplest step is a small bridge: a scheduled job that
-        reads the fold, turns it into something a commissioner can read, and
-        delivers it where it's needed, as a basic read-only API or as an MCP
-        server, depending on who's meant to use it.
-      </p>
-      <p>
-        The bridge only ever reads the fold: never anyone's mirror, never
-        encrypted content, never the safeguarding block, and that's enforced
-        by how it's built, not by good intentions. It's ordinary integration
-        work, outside the beach, and it matters more the more we rest on the
-        beach staying up.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="website">
-      <h2>The website is the lighthouse</h2>
-      <p>
-        One public lighthouse, tended by the Lived Experience Leaders, points
-        at the public parts of the community on the beach, and the website
-        reads it and shows them. Change the lighthouse and the website
-        changes. Nobody maintains a website; the community tends its own
-        front door.
-      </p>
-      <ul>
-        <li>It's the organisation's own navigation, not marketing, kept by the people this design already gives that role.</li>
-        <li>It scales: new members add to the same frames and the site shows more without a redesign. Other LEROs could run the same site on their own lighthouse.</li>
-        <li>Nothing personal ever appears, because the lighthouse only points at what's public by design.</li>
-        <li>A first version from what exists: who we are, in the community's words from the arrival directory; how we see recovery, from the frame; what's happening, from the organisation's now once it has one; and join us.</li>
-        <li>The housekeeping every website needs, in the footer: privacy notice, safeguarding statement, accessibility statement, complaints and feedback, contact and legal status, crisis signposting, and governance.</li>
-        <li>Drafts grow inside the project; the website shows only adopted versions, dated, each with "last reviewed" and "have your say" linking to where its draft is made.</li>
-        <li>Some things never depend on the beach being up: crisis signposting, contact details and the legal name are built into the site itself.</li>
-        <li>No tracking, so no cookie banner, and we'll keep that true.</li>
-        <li>Hosted on GitHub Pages, with its own domain.</li>
-      </ul>
-
-      <h3>Why we're moving off Wix and Mailchimp</h3>
-      <p>
-        Wix means a separate website built and maintained by hand, apart from
-        the community's work. A site that shows the beach is far lower
-        maintenance: the community's own words, offers, combined picture and
-        adopted documents become the website and update themselves.
-      </p>
-      <p>
-        Mailchimp is one-way: the organisation talks and people receive.
-        Instead, every visitor can join the community on the beach, stepping
-        into the arrival directory, the room and their own mirror, and become
-        part of what's being made rather than an address on a list.
-      </p>
-      <p>
-        Both cost money that can go to the beach's upkeep and to Claude seats
-        for volunteers instead, and neither needs tracking. We did weigh the
-        other side: Wix and Mailchimp do reach people who've never heard of
-        the beach, and email pushes while the beach waits to be visited. So
-        before Mailchimp goes, we need a door that works for anyone, with no
-        Claude account and no knowledge of the beach, and a way to call
-        people back when something happens.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="economics">
-      <h2>David's economics</h2>
-      <p>
-        David Pinto, social anthropologist and mathematician, co-founded
-        Ecosquared and Sqale over more than a decade. The ideas: money as a
-        vector rather than a scalar, so it works more like a vote than a
-        transaction; pull rather than push; tracking the intangibles, like
-        value, gratitude and contribution; and feedforward, so valuing
-        something also sends support onward. Sqale's heart was simple: rate
-        the value of what you received, rate your gratitude, and give forward
-        time or money to what you value. By his own account it had plenty of
-        social proof but not enough money moving through it.
-      </p>
-      <p>It lives on in the beach's trust and exchange tools, SAND:</p>
-      <ul>
-        <li>Receiving is the transfer.</li>
-        <li><strong>SQ</strong>, a social quotient, is worked out from what others received from you, and can never be written by yourself.</li>
-        <li>Credit travels person to person in signed chains that anyone can check.</li>
-        <li>When something is completed, a share can flow back along every pair of hands that carried it, split equally or by SQ: the gift returning.</li>
-        <li>A claim nobody backs is reported as unbacked.</li>
-      </ul>
-
-      <h3>A recovery community is already an economy</h3>
-      <p>
-        It just can't see itself. Members' own money, spent like anyone's.
-        Coins in the donation box for a bacon sandwich and a cup of tea.
-        Money people would gladly direct toward the café the group dreams
-        of, if there were a simple, ethical way to do it. What's missing
-        isn't generosity or money. It's coordination, which is what a system
-        is for.
-      </p>
-      <p>
-        Money as a vector, in the hands of people who already give it
-        direction by instinct. SQ from what others received, in a culture
-        where being valued by peers is the substance of recovery. Feedforward
-        along the hands that carried something, in a community built on
-        "pass it on". And a measure of social cohesion, David's old PhD
-        question, lived and recorded as it happens: the included middle,
-        where a community's life happens, made visible without being
-        flattened, so growth can be seen, and things going wrong can be seen
-        early enough to mend.
-      </p>
-
-      <h3><span class="tag">Vision</span>The Recovery Card</h3>
-      <p>
-        Not built. People need something they can hold. Picture a Recovery
-        Card, powered by Ecosquared, carried by someone who has come through
-        Community Recovery. In a participating café, gym, barber or
-        bookshop it carries value, because local businesses choose to direct
-        the discounts they already give toward a recovery community they
-        believe in. Every use is visible, so a business sees its generosity
-        working and a member sees where their community is backed.
-      </p>
-      <p>
-        It can carry value outward too, into food banks, community fridges
-        and surplus schemes, anywhere distribution is the problem: a
-        dignified way to get the right thing to the right person without
-        forms. And it's recognition in the hand. For someone rebuilding an
-        identity, a card that says "I belong to this, and this town backs it"
-        is worth more than its face value.
-      </p>
-
-      <h3><span class="tag">Vision</span>The community bank</h3>
-      <p>
-        Not built, and we don't yet know how it would work. Put it together
-        and it's a community bank: members' own money, the donation box,
-        businesses' directed discounts, commissioners' grants, the volunteer
-        budget and gifts forward, all moving through one system that knows
-        where value came from, where it's going and what it did.
-      </p>
-      <p>
-        Most of what holds LEROs back is financial: short contracts,
-        cliff-edge funding, no reserves, and no way to show the value they
-        create between funding rounds. A mutual owned by the recovery
-        community, directing its own resources by its members' sense of
-        value, could change that for the whole movement, with the Recovery
-        Card as how people touch it. Taking deposits or issuing money is
-        regulated, so it would have to be built properly: a community benefit
-        society, or a partnership with a credit union, working with the
-        regulators rather than around them.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="grows">
-      <h2>How it grows</h2>
-
-      <h3>Sustainability</h3>
-      <p>Three conditions, kept simple:</p>
-      <ul>
-        <li>the LERO must generate income;</li>
-        <li>the beach, David's infrastructure, must become sustainable;</li>
-        <li>volunteers must pay nothing.</li>
-      </ul>
-      <p>
-        What's real now is small but honest. The LERO has a flexible budget
-        for supporting volunteers, and linking this to volunteer growth,
-        rolled out slowly, makes a modest recurring stream plausible. Money
-        we'd otherwise pay to Wix and Mailchimp can go to the beach, or to
-        Claude, instead. Claude's Team plan, with central billing, admin
-        controls for connectors and no model training on content by default,
-        could give each volunteer a seat of their own. We'll ask Anthropic
-        whether there's a charity rate.
-      </p>
-
-      <h3>The iceberg</h3>
-      <p>
-        That early income is the tip. If it works in Community Recovery, the
-        path widens in stages, each carrying the last.
-      </p>
-      <ol>
-        <li>
-          <strong>Other LEROs,</strong> across CLERO's national network, all
-          built on the same culture, all asked to evidence themselves against
-          the same standards, most with no systems at all. A working example,
-          shown by its own members, travels by recognition, not marketing:
-          pull, not push. Community Recovery offers the system as its social
-          enterprise (setup, welcome conversations, coaching volunteers to
-          coach others), paid modestly from budgets already meant for
-          volunteers and development. The standards themselves count income
-          from social enterprise as evidence of an asset-based approach.
-        </li>
-        <li>
-          <strong>The organisations around them:</strong> recovery cafés,
-          mutual aid groups, mental health peer networks, homelessness
-          projects, housing associations, faith and community groups, anywhere
-          people gather and the insight evaporates. It fits them all, because
-          it was never about recovery alone.
-        </li>
-        <li>
-          <strong>Each community strengthening the rest.</strong> Practices
-          copied and adapted, as recovery capital already was. Value flowing
-          between organisations as well as within them, so a café in one town
-          can back a project in another. The network is worth more with each
-          community that joins, which is the property David's economics was
-          designed for.
-        </li>
-      </ol>
-
-      <h3>Reinvestment, on purpose</h3>
-      <ul>
-        <li>Into the beach, so its infrastructure and builders are sustained properly.</li>
-        <li>Into communities, backing what their people value.</li>
-        <li>Into evidence, with researchers, so a measure of social cohesion is recognised, not just visible.</li>
-        <li>Into fields beyond, such as a bipolar task force.</li>
-      </ul>
-      <p>
-        On that last one: I sit on the Lived Experience Council of the
-        International Society for Bipolar Disorders, alongside the developer
-        of In The Zone, an app for people with bipolar to share daily
-        check-ins with the people who support them. Bipolar disorder and
-        substance use so often travel together, and both are underserved.
-        There's appetite for a task force on technology for social good in
-        that space, and no budget yet. A living demonstration would change
-        that.
-      </p>
-      <p>
-        One community living it first. Then a movement of LEROs. Then the
-        wider community sector. Then a field. Money given direction, at every
-        scale, by the people it serves.
-      </p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="evidence">
-      <h2>The evidence</h2>
-
-      <h3>Why CHIME, and why the fold</h3>
-      <ul class="refs">
-        <li>CHIME is the right frame on purpose. David Best's work extends CHIME into C-CHIME, reconciling it with recovery capital for community-based addiction recovery: Best and Stauffer (2025), building on Best, "The science of recovery capital", <em>Addiction</em> (2022). It's a framework being built forward within the field for exactly this use.</li>
-        <li>Ed Day's <em>Next Steps</em> (2025) names better data on current provision and developing outcome measures as open national priorities for the LERO movement. A commissioner-facing picture that never exposes individual records is a live answer to that.</li>
-        <li>Sovereign mirrors match the CLERO standard on co-production, which asks LEROs to co-create their offer with people with living and lived experience, and to promote people's right to choose their own recovery pathway. Mapping offers, needs and gifts matches the standards' asset-based approach almost exactly.</li>
-        <li>A RAND study (2026) found there's still no consistent understanding of what a LERO is, and that direct commissioning and ring-fenced allocations support LERO autonomy, visibility and influence.</li>
-      </ul>
-
-      <h3>The fuller scope a LERO can grow into</h3>
-      <p>
-        This is deliberately broader than what we claim or do today. It's
-        there so that when our scope grows, it grows into ground already
-        surveyed, not justified afterwards.
-      </p>
-      <ul class="refs">
-        <li>Dame Carol Black's <em>Independent Review of Drugs, Phase 2</em> (32 recommendations, GOV.UK, 8 July 2021) found existing provision "not fit for purpose" because partnerships between local authorities, health, housing, employment support and criminal justice agencies had deteriorated, and called for equal access to housing, employment, mental health and physical health support alongside treatment.</li>
-        <li>The government's response, <em>From Harm to Hope</em> (6 December 2021), commits to a whole-system recovery-oriented system of care and names LEROs as part of it, backed by around £900m of additional investment over 2022 to 2025.</li>
-        <li>CLERO's National LERO Standards (33 statements in 4 sections) are aspirational best-practice guidance that CLERO doesn't monitor or enforce. They anchor a LERO around substance use recovery and treat mental health, housing and criminal justice mainly as services a LERO connects people to. But they're also explicitly community-led, "directed by and for local residents", and that's the real permission: a LERO's scope should follow its community's actual needs.</li>
-        <li>Institutional trauma is real and separately evidenced: Jennifer Freyd's institutional betrayal theory; a 2024 peer-reviewed scoping review by Christl, Tran Pham, Rosenthal and DePrince in <em>Trauma, Violence &amp; Abuse</em>; IICSA's Final Report (October 2022, 20 recommendations plus 87 from earlier investigation reports); and UK care-leaver research. OHID's trauma-informed practice guidance (six principles: safety, trust, choice, collaboration, empowerment, cultural consideration) mainly frames institutions as places that must avoid re-traumatising people. Connecting substance recovery policy to an institutional-trauma remit is an inference we make deliberately; no single policy document states it, and we say so whenever we make the claim.</li>
-        <li>Extended frameworks, for when they're needed: CHIME-S adds a safety domain for forensic and criminal justice settings (Senneseth et al., <em>BJPsych Open</em>, 2022); SECURED adapts CHIME for homelessness, naming security and stability as a prerequisite (Dring et al., <em>BJPsych Open</em>, 2025).</li>
-        <li>Precedent: Red Rose Recovery in Lancashire works across substance use, mental health peer support, criminal justice (liaison and diversion, prison in-reach, a secure medical unit) and homelessness and multiple disadvantage (through Changing Futures), and holds a Trauma Informed Charter Mark. Emerging Futures works similarly across homelessness and substance use, with prison link workers. Neither started there; both grew into it. That growth, not a day-one claim, is our honest precedent.</li>
-      </ul>
-    </section>
-
-    <hr class="rule">
-
-    <p class="made">
-      The pages Community Recovery uses were made by weft at David Pinto's
-      word; how they were made, and what was decided, is at
-      <a href="https://pscale-commons.github.io/community-recovery/made.html">How this place was made</a>.
-    </p>
-
-    <hr class="rule">
-
-    <section id="note">
-      <h2>Leave a note</h2>
+    <section class="part" id="note">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Leave a note</span><span class="fold-gloss">Questions, challenges, a LERO that wants to talk: all welcome.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
       <p>
         Questions, challenges, a LERO that wants to talk: all welcome. I work
         by conversation, and for anything complex I'll take time to reflect
@@ -1659,6 +1639,7 @@
       </form>
 
       <p class="closing" id="closing">Leave a note in <code>pool:Phenomemental</code> on the beach. Please don't include anything personal about anyone's recovery.</p>
+      </div>
     </section>
 
     <p class="live-note" id="outside-live-note"></p>
@@ -1682,9 +1663,11 @@
     <div class="thread" id="room"></div>
   </section>
 
-  <section id="builders" class="builders" hidden>
-    <h2>Provenance, notes for the builders, and how to take part</h2>
-    <div id="builders-text" class="text"></div>
+  <section id="builders" class="part" hidden>
+    <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Chapter 9 &middot; Provenance, notes for the builders, and how to take part</span><span class="fold-gloss" id="builders-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+    <div class="kids builders-kids" hidden>
+      <div id="builders-text" class="text"></div>
+    </div>
   </section>
 </main>
 
@@ -1696,10 +1679,15 @@
   </div>
 </footer>
 
-<script src="beach.js?v=2026-09-30b"></script>
+<script src="beach.js?v=2026-09-30c"></script>
 <script>
 (function () {
   var text = Beach.text;
+
+  // The opening section is folded: wire its folds, and open the way to a
+  // linked part (the book's own parts are wired as the book arrives).
+  Beach.folds(document.getElementById('outside'));
+  if (location.hash) Beach.landOnHash();
 
   // ---- Privacy: no member's name is ever shown ----------------------------
   // Every capitalised word in live text must be one we know is safe: a
@@ -1811,6 +1799,13 @@
       sec.arrived = true;
       sec.box.classList.add('arrived');
       if (sec.note) sec.note.classList.add('landed');
+    }
+    // A fold opening on this section keeps its one line in step with it.
+    var fold = sec.box.closest('.sect');
+    var kids = fold && fold.querySelector(':scope > .kids');
+    if (kids && sec.box === kids.firstElementChild) {
+      var g = Beach.glossOf(kids);
+      if (g) fold.querySelector('.fold-gloss').textContent = g;
     }
   }
 
@@ -2411,6 +2406,27 @@
     return p;
   }
 
+  // A fold, in the shared pattern (see Beach.folds in beach.js).
+  function foldEl(cls, id, title, gloss) {
+    var section = el('section', cls);
+    section.id = id;
+    var btn = el('button', 'fold');
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', 'false');
+    var w = el('span', 'fold-words');
+    w.appendChild(el('span', 'fold-title', title));
+    if (gloss) w.appendChild(el('span', 'fold-gloss', gloss));
+    btn.appendChild(w);
+    var chev = el('span', 'chev', '\u2304');
+    chev.setAttribute('aria-hidden', 'true');
+    btn.appendChild(chev);
+    var kids = el('div', 'kids');
+    kids.hidden = true;
+    section.appendChild(btn);
+    section.appendChild(kids);
+    return { section: section, kids: kids };
+  }
+
   function renderChapters(book, mirrors) {
     var list = $('chapters');
     threads = {};
@@ -2423,24 +2439,25 @@
       if (node == null) continue;
       var t = typeof node === 'string' ? { title: 'Chapter ' + i, strap: '' } : titleOf(text(node) || ('Chapter ' + i));
 
-      var card = el('article', 'chapter');
-      card.id = 'chapter-' + i;
-      card.appendChild(el('span', 'chapter-num', 'Chapter ' + i));
-      card.appendChild(el('h3', null, t.title));
-      if (t.strap) card.appendChild(el('p', 'strap', t.strap));
-      var seeLive = seeItLive(i);
-      if (seeLive) card.appendChild(seeLive);
-
       // The chapter's words: everything beneath its title, in full.
       var body = el('div', 'text');
       if (typeof node === 'string') renderTree(body, node);
       else renderKids(body, node);
       if (!body.childNodes.length) body.appendChild(el('p', 'none', 'This chapter isn\u2019t written yet.'));
+
+      // A fold: "Chapter N · Title", its strap (or first sentence) beneath;
+      // opened, the pointer to where it runs, its words, then what people
+      // made of it.
+      var f = foldEl('part chapter-fold', 'chapter-' + i, 'Chapter ' + i + ' \u00b7 ' + t.title,
+        t.strap || Beach.glossOf(body));
+      var card = f.kids;
+      var seeLive = seeItLive(i);
+      if (seeLive) card.appendChild(seeLive);
       card.appendChild(body);
 
       // Reflections, one per person who has written at this chapter.
-      var refl = el('div', 'part');
-      refl.appendChild(el('span', 'part-label', 'Reflections'));
+      var refl = el('div', 'chapter-part');
+      refl.appendChild(el('span', 'chapter-part-label', 'Reflections'));
       var any = false;
       mirrors.forEach(function (m) {
         var r = reflectionAt(m.block, i);
@@ -2468,8 +2485,8 @@
       card.appendChild(refl);
 
       // The room's messages tied to this chapter, and a way to add one.
-      var talk = el('div', 'part');
-      talk.appendChild(el('span', 'part-label', 'Comments'));
+      var talk = el('div', 'chapter-part');
+      talk.appendChild(el('span', 'chapter-part-label', 'Comments'));
       var thread = el('div', 'thread');
       thread.id = 'comments-' + i;
       talk.appendChild(thread);
@@ -2477,7 +2494,7 @@
       card.appendChild(talk);
       threads[i] = thread;
 
-      list.appendChild(card);
+      list.appendChild(f.section);
       contentsItem('#chapter-' + i, t.title);
     }
     if (!list.childNodes.length) {
@@ -2506,6 +2523,8 @@
     if (node == null) return;
     renderTree(box, node, true);
     if (!box.childNodes.length) return;
+    // Its one line: the first sentence after its title in capitals.
+    $('builders-gloss').textContent = Beach.gloss(text(node).replace(LEAD, ''));
     $('builders').hidden = false;
     $('builders').classList.add('arrived');
     contentsItem('#builders', 'Provenance, notes for the builders, and how to take part', 'after');
@@ -2757,11 +2776,11 @@
       renderBuilders(book);
       if ($('contents').childNodes.length) $('contents-wrap').hidden = false;
 
-      // Arriving on a chapter's link, go to it once it exists.
-      if (location.hash) {
-        var target = document.getElementById(location.hash.slice(1));
-        if (target) target.scrollIntoView();
-      }
+      // Wire the book's folds, then, arriving on a link, open its way and
+      // go to it once it exists.
+      Beach.folds($('chapters'));
+      Beach.folds($('builders'));
+      if (location.hash) Beach.landOnHash();
 
       var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       $('live-note').textContent = book || pool || !mirrors.unreadable
