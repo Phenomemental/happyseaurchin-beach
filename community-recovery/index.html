@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2026-09-30b">
+<link rel="stylesheet" href="style.css?v=2026-09-30c">
 <style>
   h1 {
     font-size: 1.9rem;
@@ -22,12 +22,6 @@
     font-size: 1.05rem;
     color: var(--muted);
     margin: 0.5rem 0 0;
-  }
-  hr.rule {
-    width: 3rem;
-    border: 0;
-    border-top: 2px solid var(--faint);
-    margin: 2.2rem auto;
   }
   section h2 { margin-top: 0; }
   blockquote {
@@ -43,12 +37,47 @@
     line-height: 1.3;
     margin: 1.4rem 0 0.3rem;
   }
-  section h2 + .words > h3:first-child { margin-top: 0.4rem; }
+  .pill { margin-top: 0.8rem; }
+  .opening-note {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.92rem;
+    margin: 0.5rem 0 0;
+  }
+  blockquote { margin-top: 1.4rem; }
+  /* The first step: Join us, in the accent colour, full width on a phone. */
+  .join-button {
+    display: block;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin: 1.6rem 0 0.6rem;
+    text-decoration: none;
+  }
+  .join-button:hover { filter: brightness(1.08); }
+  .join-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (prefers-color-scheme: dark) {
+    .join-button { color: #10201c; }
+  }
+  .already {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0;
+  }
+  .words > .sect:first-child { border-top: 0; }
+  .words .kids p { margin: 0 0 0.9rem; }
+  .chime { margin: 0.2rem 0 0.8rem; }
   .draft-line {
     font-size: 0.92rem;
     color: var(--muted);
-    margin: 1rem 0 0;
+    margin: 0.6rem 0 0.8rem;
   }
+  #doors { margin-top: 2rem; }
+  #notice { margin-top: 2rem; }
   /* Cards that open onto the section's other pages. */
   .doors {
     list-style: none;
@@ -80,6 +109,21 @@
     margin: 0 0 0.25rem;
   }
   .door-text { display: block; }
+  .start-tag {
+    display: inline-block;
+    vertical-align: 0.15em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+    margin-left: 0.4rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    .start-tag { color: #10201c; }
+  }
   .doors-later {
     font-style: italic;
     color: var(--muted);
@@ -118,34 +162,80 @@
 <main class="wrap">
   <h1>Community Recovery</h1>
   <p class="sub">A lived experience recovery organisation in North Northamptonshire</p>
-
-  <hr class="rule">
+  <span class="pill">Working draft &middot; September 2026</span>
+  <p class="opening-note" id="opening-note" role="status">Opening our words&hellip;</p>
 
   <blockquote>The truth about a recovery community should come from its members' own voices, kept by them and seen together.</blockquote>
 
-  <hr class="rule">
+  <a class="join-button" href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+  <p class="already">Already with us? Have your say on <a href="https://pscale-commons.github.io/community-recovery/constitution.html">the constitution</a> and <a href="https://pscale-commons.github.io/community-recovery/standards.html">the standards</a>.</p>
 
-  <section id="who-we-are">
-    <h2>Who we are</h2>
-    <div class="words" id="who-we-are-words" aria-live="polite"><p class="calm">Reading our words&hellip;</p></div>
-    <p class="draft-line">In the words of our <a href="https://pscale-commons.github.io/community-recovery/constitution.html">working draft constitution</a>, which members are shaping now.</p>
+  <p class="how">Tap a part to open it.</p>
+
+  <section class="part open" id="who-we-are">
+    <button class="fold" type="button" aria-expanded="true"><span class="fold-words"><span class="fold-title">Who we are</span><span class="fold-gloss">In the words of our working draft constitution</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+    <div class="kids">
+      <div class="words" id="who-we-are-words">
+        <section class="sect" data-pos="1.2.2">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Purpose</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.2.3">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Vision</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.2.4">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Who Community Recovery primarily serves</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.2.5">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What makes Community Recovery distinctive</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+      </div>
+      <p class="draft-line">In the words of our <a href="https://pscale-commons.github.io/community-recovery/constitution.html">working draft constitution</a>, which members are shaping now.</p>
+    </div>
   </section>
 
-  <hr class="rule">
-
-  <section id="stand">
-    <h2>What we stand on</h2>
-    <div class="words" id="stand-words" aria-live="polite"><p class="calm">Reading our words&hellip;</p></div>
+  <section class="part" id="stand">
+    <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What we stand on</span><span class="fold-gloss">Connectedness, hope, identity, meaning and empowerment &mdash; and recovery first</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+    <div class="kids" hidden>
+      <div class="words" id="stand-words">
+        <p class="chime" data-pos="1.3.1.1" hidden></p>
+        <section class="sect" data-pos="1.3.1.2">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Connectedness</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.3.1.3">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Hope</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.3.1.4">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Identity</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.3.1.5">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Meaning</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.3.1.6">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Empowerment</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+        <section class="sect" data-pos="1.3.2.1">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Recovery First</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden></div>
+        </section>
+      </div>
+    </div>
   </section>
-
-  <hr class="rule">
 
   <section id="doors">
-    <h2>Doors</h2>
+    <h2>Where to go</h2>
     <ul class="doors">
       <li>
         <a class="door" href="https://pscale-commons.github.io/community-recovery/join.html">
-          <span class="door-title">Join us</span>
+          <span class="door-title">Join us <span class="start-tag">Start here</span></span>
           <span class="door-text">Choose a name, read our community agreement and say yes in your own time.</span>
         </a>
       </li>
@@ -177,10 +267,8 @@
     <p class="doors-later">Still to come: the journey, the members&rsquo; recovery capital tool, and the map of places.</p>
   </section>
 
-  <hr class="rule">
-
   <section id="notice" aria-label="Important">
-    <div class="notice" id="notice-words" aria-live="polite"><p class="calm">Reading our words&hellip;</p></div>
+    <div class="notice" id="notice-words" hidden></div>
   </section>
 </main>
 
@@ -197,19 +285,24 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|who|vis
   location.replace('proposal.html' + (location.hash === '#intro' ? '' : location.hash));
 }
 </script>
-<script src="beach.js?v=2026-09-30b"></script>
+<script src="beach.js?v=2026-09-30c"></script>
 <script>
 (function () {
   // Where on the beach each part of this page comes from, in Community
   // Recovery's own place. Positions are written key by key through the
-  // block ("1.2.2" is key "1", then "2", then "2").
+  // block ("1.2.2" is key "1", then "2", then "2"). Each position's fold
+  // is in the page already, marked with data-pos, so its title shows at
+  // once; the words fill it as they arrive.
   var CONSTITUTION = 'spine:constitution';
   var AGREEMENT = 'spine:agreement';
   var WHO_WE_ARE = ['1.2.2', '1.2.3', '1.2.4', '1.2.5'];            // purpose, vision, who we serve, what makes us distinctive
   var WHAT_WE_STAND_ON = ['1.3.1.1', '1.3.1.2', '1.3.1.3', '1.3.1.4', '1.3.1.5', '1.3.1.6', '1.3.2.1'];  // CHIME, its five parts, recovery first
   var NOTICE = '3.1';                                                // "Important." and what follows
 
-  var UNREACHED = 'This part is read from our place on the beach and couldn\u2019t be reached just now. Please try again shortly.';
+  var UNREACHED = 'Our words are kept on the beach and couldn\u2019t be reached just now. Please try again shortly.';
+
+  Beach.folds();
+  if (location.hash) Beach.landOnHash();
 
   function el(tag, cls, t) {
     var e = document.createElement(tag);
@@ -231,50 +324,63 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|who|vis
     return { title: title, text: ls.slice(1).join(' ') };
   }
 
-  function fill(box, build) {
-    var frag = document.createDocumentFragment();
-    var ok = false;
-    try { ok = build(frag) !== false && frag.childNodes.length > 0; } catch (e) { ok = false; }
-    box.textContent = '';
-    if (ok) {
-      box.appendChild(frag);
-      box.classList.add('arrived');
-    } else {
-      box.appendChild(el('p', 'calm', UNREACHED));
-    }
-  }
-
-  function clauses(box, block, positions) {
-    fill(box, function (out) {
-      if (!block) return false;
-      var found = positions.map(function (p) { return clause(Beach.place.at(block, p)); });
-      if (found.some(function (c) { return !c; })) return false;
-      found.forEach(function (c) {
-        out.appendChild(el('h3', null, c.title));
-        out.appendChild(el('p', null, c.text));
-      });
-    });
-  }
-
   function read(block) {
     return Beach.place.get(block).then(function (b) {
       return b && typeof b === 'object' ? b : null;
     }, function () { return null; });
   }
 
-  read(CONSTITUTION).then(function (c) {
-    clauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE);
-    clauses(document.getElementById('stand-words'), c, WHAT_WE_STAND_ON);
-  });
+  // Fill each position's fold (or, for the CHIME opening, its plain
+  // paragraph) from the block. True only if every one was found.
+  function fillClauses(box, block, positions) {
+    var all = true;
+    positions.forEach(function (pos) {
+      var c = block ? clause(Beach.place.at(block, pos)) : null;
+      var spot = box.querySelector('[data-pos="' + pos + '"]');
+      if (!spot) return;
+      if (!c) { all = false; return; }
+      if (spot.classList.contains('sect')) {
+        spot.querySelector('.fold-title').textContent = c.title;
+        spot.querySelector('.fold-gloss').textContent = Beach.gloss(c.text);
+        var kids = spot.querySelector(':scope > .kids');
+        kids.textContent = '';
+        kids.appendChild(el('p', null, c.text));
+        kids.classList.add('arrived');
+      } else {
+        spot.textContent = c.text;
+        spot.hidden = false;
+        spot.classList.add('arrived');
+      }
+    });
+    return all;
+  }
 
   // The notice, word for word: its first line ("Important.") and its text.
-  read(AGREEMENT).then(function (a) {
-    fill(document.getElementById('notice-words'), function (out) {
-      var ls = a ? lines(Beach.text(Beach.place.at(a, NOTICE))) : [];
-      if (ls.length < 2 || !/^Important\.?$/.test(ls[0])) return false;
-      out.appendChild(el('p', 'notice-title', ls[0]));
-      ls.slice(1).forEach(function (l) { out.appendChild(el('p', null, l)); });
-    });
+  function fillNotice(a) {
+    var box = document.getElementById('notice-words');
+    var ls = a ? lines(Beach.text(Beach.place.at(a, NOTICE))) : [];
+    if (ls.length < 2 || !/^Important\.?$/.test(ls[0])) return false;
+    box.textContent = '';
+    box.appendChild(el('p', 'notice-title', ls[0]));
+    ls.slice(1).forEach(function (l) { box.appendChild(el('p', null, l)); });
+    box.hidden = false;
+    box.classList.add('arrived');
+    return true;
+  }
+
+  // One quiet line while the words open; gone when they have, or saying
+  // calmly that they couldn't be reached (the folds keep their titles).
+  var note = document.getElementById('opening-note');
+  Promise.all([
+    read(CONSTITUTION).then(function (c) {
+      var a = fillClauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE);
+      var b = fillClauses(document.getElementById('stand-words'), c, WHAT_WE_STAND_ON);
+      return a && b;
+    }),
+    read(AGREEMENT).then(fillNotice)
+  ]).then(function (ok) {
+    if (ok[0] && ok[1]) note.remove();
+    else note.textContent = UNREACHED;
   });
 })();
 </script>

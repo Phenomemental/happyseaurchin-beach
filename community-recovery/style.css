@@ -221,6 +221,32 @@ form button.mic.listening { border-color: var(--accent); background: var(--accen
 .mic-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
 .mic-note:empty { display: none; }
 
+/* Folding, from the pscale-commons Community Recovery pages (MIT licence), so these pages fold as theirs do. */
+.pill {
+  display: inline-block; font-size: 0.78rem; letter-spacing: 0.06em; color: var(--muted);
+  border: 1px solid var(--faint); border-radius: 999px; padding: 0.05rem 0.6rem; margin: 0.6rem 0 0;
+}
+a.pill { text-decoration: none; }
+.how { color: var(--muted); margin: 0.8rem 0 1.2rem; }
+
+/* A frame, folded: parts, then sections, then the clauses themselves */
+.part { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 0 0 0.6rem; }
+button.fold {
+  display: flex; width: 100%; justify-content: space-between; align-items: flex-start; gap: 0.8rem;
+  text-align: left; font: inherit; color: inherit; background: none; border: 0; padding: 0.85rem 1rem; cursor: pointer;
+}
+.fold-words, .fold-title, .fold-gloss { display: block; }
+.part > .fold .fold-title { font-weight: 700; }
+.fold-gloss { font-size: 0.9rem; color: var(--muted); font-weight: 400; margin-top: 0.1rem; }
+.chev { color: var(--muted); flex: none; transition: transform 0.15s; }
+.open > .fold .chev { transform: rotate(180deg); }
+.part.open > .fold { border-bottom: 1px solid var(--line); }
+.part > .kids { padding: 0 1rem 0.3rem; }
+.sect { border-top: 1px solid var(--line); }
+.part > .kids > .sect:first-child { border-top: 0; }
+.sect > .fold { padding: 0.75rem 0; }
+.sect.open > .fold .fold-title { color: var(--accent); font-weight: 700; }
+
 /* TESTING EMBLEM: a temporary pill beside the name while these pages are
    being tried out. To remove it, delete this block; the pages carry no
    markup of their own for it. */
