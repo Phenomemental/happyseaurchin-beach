@@ -399,6 +399,24 @@
   }
   .see-live .label { font-weight: 700; }
   .see-live.quiet { font-style: italic; }
+  /* Where a chapter stands today: a quiet note after its words. */
+  .status-note {
+    background: var(--accent-soft);
+    border: 1px solid var(--faint);
+    border-radius: 10px;
+    padding: 0.8rem 1rem 0.1rem;
+    margin: 1rem 0 0.4rem;
+    font-size: 0.97rem;
+  }
+  .status-note p { white-space: pre-line; overflow-wrap: break-word; margin: 0 0 0.7rem; }
+  .status-note .status-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin: 0 0 0.3rem;
+  }
+  .builders-kids .status-note { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -432,6 +450,13 @@
       experience recovery organisations, to CLERO, and to commissioners and
       public bodies who want to see a LERO show itself in its members' own
       words.
+    </p>
+    <p>
+      It is built here, and offered nationally: to CLERO's network and to the
+      LEROs already leading the way, so that any lived experience recovery
+      organisation can show itself in its members' own words, and CLERO can
+      see a national picture against the 33 standards without monitoring
+      anyone.
     </p>
     <p class="how-live">
       Parts of this page are read from the beach as it loads, so when the
@@ -600,29 +625,10 @@
             before relying on it further.
           </p>
 
-          <h3>Open questions, for David and weft</h3>
-          <ol>
-            <li>Does the combination of arrival directory, fold and lighthouse match how you'd want other groups on the beach to scale, or are there failure modes you've already seen?</li>
-            <li>Is there already a pattern on the beach for a decisions surface (proposal, objection window, resolution) we should adopt rather than invent?</li>
-            <li>Is trimming <code>sed:lero-nnh</code> to a pure arrival-ordered directory the right use of the pattern?</li>
-            <li>Is a block like <code>safeguarding:lero-nnh</code>, open to a defined set of cleared people rather than one coordinator's key, a pattern that exists already, or would it be the first?</li>
-            <li>Where should the check-in protocol live once the directory is trimmed: in the spine, in <code>policy:lero-nnh</code>, or as its own family member?</li>
-          </ol>
-          <ol id="questions-live" style="counter-reset: step 5">
-            <li>A custodian reset on the beach: how someone who has lost their latch is helped back in, with them present, visibly, leaving the custodian no writing access.</li>
-            <li>Who runs the combined picture as a named, trusted reader of members-only mirrors.</li>
-            <li>Whether a free or a Team Claude account can connect to the beach, and on what data terms.</li>
-            <li>How temporary read access for doctors and support workers would work.</li>
-            <li>The sustainability model for the LERO and the beach, at no cost to volunteers.</li>
-            <li><em>Answered: </em>The policies are all Community Recovery's own, because it is an independent organisation; they are developed against the 33 LERO standards.</li>
-          </ol>
-          <p class="live-note section-live" data-live="questions"></p>
-
           <h3>Wider questions</h3>
           <ul>
             <li>Whether and how a community bank is legally possible, and with whom: a credit union, a community benefit society, the regulators.</li>
-            <li>Whether David, weft and our colleague at the ISBD want to take part, and how.</li>
-            <li>Whether CLERO would take this up as a toolkit. Its standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</li>
+            <li>We would welcome CLERO, and the LEROs already leading the way, to take this up, test it, and shape it as a toolkit for the national network. Its standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</li>
             <li>What evidence a pilot needs to gather to persuade commissioners.</li>
           </ul>
           </div>
@@ -674,7 +680,7 @@
       </div>
     </section>
     <section class="part" id="g-ground">
-      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">The commission, who is behind this, and Sheffield and the north</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">The commission, who is behind this, and the LEROs leading the way</span></span><span class="chev" aria-hidden="true">⌄</span></button>
       <div class="kids" hidden>
         <section class="sect" id="ground">
           <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">My role exists because of a commission.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
@@ -742,35 +748,23 @@
           </div>
         </section>
         <section class="sect" id="north">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Sheffield and the north</span><span class="fold-gloss">David is heading into the right country for this.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs leading the way</span><span class="fold-gloss">Across the north and the Midlands, established lived experience recovery organisations are already leading the way…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
           <div class="kids" hidden>
           <p>
-            David is heading into the right country for this. LEROs are all
-            around: Sheffield Recovery Community, whose chair sits on CLERO's
-            board; long-standing LEROs across West Yorkshire; DATUS in
-            Birmingham, twenty years established; and Chase Recovery. A new
-            network, LEROY, is gathering LEROs across Yorkshire and beyond, and
-            councils are commissioning LEROs as part of their substance use
-            strategies.
+            Across the north and the Midlands, established lived experience
+            recovery organisations are already leading the way, beacons for the
+            movement: among them Sheffield Recovery Community, whose chair sits
+            on CLERO's board; the long-standing LEROs of West Yorkshire; Chase
+            Recovery; and DATUS in Birmingham, twenty years established.
           </p>
           <p>
-            These are people who'd understand what the beach is in minutes,
-            because they live the problem it solves. Nobody has to explain the
-            technology from first principles. You can point at a use case.
-          </p>
-          <p class="lead">
-            Community Recovery is offered as a live example, in any conversation,
-            with my full backing.
+            They show what a LERO becomes when it is led by its members and
+            given time.
           </p>
           <p>
-            If you're from a LERO and something here fits what you need, or
-            doesn't, I'd like to hear it. Leave a note below, or speak to David.
-          </p>
-          <p class="closing">
-            This was written for David Pinto (happyseaurchin) to carry into
-            conversations with lived experience recovery organisations in
-            Sheffield and the north, and for anyone in those organisations who
-            wants to see what we're building and why.
+            Community Recovery is new, and learns from them. What it offers back
+            is a way for any LERO, new or established, to show that growth in its
+            members' own words.
           </p>
           </div>
         </section>
@@ -878,9 +872,9 @@
             hold a spare so that someone who loses their latch can be helped back
             in, but only with that person present and asking, with every use
             recorded where the person can see it. On a reset the person chooses a
-            new latch, and the custodian keeps no writing access. The beach
-            doesn't have a custodian reset yet; that's for us to design with
-            David and weft.
+            new latch, and the custodian keeps no writing access. Someone who
+            loses their way back in can be helped to a new one by a welcome
+            helper, who then holds nothing.
           </p>
           </div>
         </section>
@@ -1215,8 +1209,8 @@
             together, could become a place for psychosocial development, where
             members grow capability in a story before carrying it into the
             street. Like the AI coaching, it's developmental and co-productive,
-            not therapy. The thing David loves most might turn out to be one of
-            the most useful parts of all.
+            not therapy. This may turn out to be one of the most useful parts of
+            all.
           </p>
           </div>
         </section>
@@ -1419,7 +1413,7 @@
           </div>
         </section>
         <section class="sect" id="economics">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">David's economics</span><span class="fold-gloss">David Pinto, social anthropologist and mathematician, co-founded Ecosquared and Sqale over more than a decade.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The economics</span><span class="fold-gloss">David Pinto, social anthropologist and mathematician, co-founded Ecosquared and Sqale over more than a decade.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
           <div class="kids" hidden>
           <p>
             David Pinto, social anthropologist and mathematician, co-founded
@@ -1455,8 +1449,8 @@
             direction by instinct. SQ from what others received, in a culture
             where being valued by peers is the substance of recovery. Feedforward
             along the hands that carried something, in a community built on
-            "pass it on". And a measure of social cohesion, David's old PhD
-            question, lived and recorded as it happens: the included middle,
+            "pass it on". And a measure of social cohesion, a long-standing
+            research question, lived and recorded as it happens: the included middle,
             where a community's life happens, made visible without being
             flattened, so growth can be seen, and things going wrong can be seen
             early enough to mend.
@@ -1755,8 +1749,8 @@
   // fails the name check, puts the saved version back. The offer's parts
   // (leros to one) are read together but shown in sections of their own.
   var sections = {};
-  ['who', 'vision', 'offer', 'leros', 'clero', 'new', 'ordinary', 'one', 'gaps', 'questions'].forEach(function (k) {
-    var box = document.getElementById(k === 'questions' ? 'questions-live' : k + '-live');
+  ['who', 'vision', 'offer', 'leros', 'clero', 'new', 'ordinary', 'one', 'gaps'].forEach(function (k) {
+    var box = document.getElementById(k + '-live');
     sections[k] = {
       box: box,
       saved: box.innerHTML,
@@ -1768,8 +1762,7 @@
     who: 'Live from the design on the beach',
     vision: 'Live from the design on the beach',
     offer: 'Live from the design on the beach',
-    gaps: 'Live from the design on the beach',
-    questions: 'Live from the design on the beach'
+    gaps: 'Live from the design on the beach'
   };
 
   // Every string in a node read from the beach, for the name check.
@@ -1896,39 +1889,13 @@
     out.appendChild(document.createTextNode(cap(m[1])));
   }
 
-  // 9.1: its "_" is the heading; 9.1.1 onward hold one question each,
-  // written "(6) …". The list's numbering continues from the first number,
-  // after the five questions above it. An answered one says so.
-  function renderQuestions(node, out) {
-    if (!node || typeof node !== 'object') return false;
-    var first = null;
-    for (var i = 1; i <= 9; i++) {
-      var q = text(node[String(i)]).trim();
-      if (!q) continue;
-      var n = /^\((\d+)\)\s*/.exec(q);
-      if (n) {
-        if (first === null) first = parseInt(n[1], 10);
-        q = q.slice(n[0].length);
-      }
-      var answered = /^ANSWERED\b[^:]*:\s*/.exec(q);
-      var li = el('li');
-      if (answered) {
-        li.appendChild(el('em', null, 'Answered: '));
-        li.appendChild(document.createTextNode(stop(q.slice(answered[0].length))));
-      } else {
-        li.textContent = stop(q);
-      }
-      out.appendChild(li);
-    }
-    if (!out.childNodes.length) return false;
-    sections.questions.box.style.counterReset = 'step ' + ((first || 6) - 1);
-  }
-
   // Only the parts of the design proposal this page shows are read, each
   // on its own, so a refresh fetches a few kilobytes, not the whole block:
   //   1.8's own text (the vision), without the long paper beneath it;
   //   1.8.2.1 (who's behind this);
-  //   1.9 and its sections (the offer); 7.3 (the gaps); 9.1 and its questions.
+  //   1.9 and its sections (the offer); and 7.3 (the gaps).
+  // (9.1, the open questions for the builders, is no longer shown here:
+  // those questions live in the book's builders' notes.)
   var PROPOSAL = 'lero-nnh-design-proposal';
   function readProposal() {
     return [
@@ -1937,8 +1904,7 @@
         show('who', text(n && n['1']), renderWho);
       }),
       Beach.get(PROPOSAL, { spindle: '19' }).then(showOffer),
-      Beach.get(PROPOSAL, { spindle: '73' }).then(function (n) { show('gaps', text(n), renderGaps); }),
-      Beach.get(PROPOSAL, { spindle: '91' }).then(function (n) { show('questions', n, renderQuestions); })
+      Beach.get(PROPOSAL, { spindle: '73' }).then(function (n) { show('gaps', text(n), renderGaps); })
     ];
   }
 
@@ -2166,7 +2132,7 @@
     for (var i = 1; i <= 9; i++) if (node[String(i)] != null) return true;
     return false;
   }
-  function renderTree(box, node, leadIns) {
+  function renderTree(box, node, leadIns, notes) {
     if (node == null) return;
     if (sealed(node)) { box.appendChild(el('p', 'private', 'A private part')); return; }
     if (typeof node === 'object' && node._ && typeof node._ === 'object') {
@@ -2174,13 +2140,16 @@
     } else {
       paras(text(node)).forEach(function (p) { box.appendChild(para(p, null, leadIns)); });
     }
-    renderKids(box, node, leadIns);
+    renderKids(box, node, leadIns, notes);
   }
-  function renderKids(box, node, leadIns) {
+  // Given a list to collect them in, a chapter's own "WHERE THIS STANDS" or
+  // "THIRD EDITION" part is set aside, to be shown as a note after its words.
+  function renderKids(box, node, leadIns, notes) {
     if (!node || typeof node !== 'object') return;
     for (var i = 1; i <= 9; i++) {
       var kid = node[String(i)];
       if (kid == null) continue;
+      if (notes && statusOf(kid)) { notes.push(kid); continue; }
       if (hasKids(kid)) {
         var sub = el('div', 'sub');
         renderTree(sub, kid, leadIns);
@@ -2189,6 +2158,27 @@
         renderTree(box, kid, leadIns);
       }
     }
+  }
+
+  // A short note on where a chapter stands today: its lead words
+  // ("WHERE THIS STANDS, 30 September 2026.") become a small label
+  // ("Where this stands · 30 September 2026"), the rest plain text.
+  var STATUS = /^(WHERE THIS STANDS|THIRD EDITION),\s*([^.]+)\.\s*/;
+  function statusOf(node) {
+    if (sealed(node)) return null;
+    var t = text(node).trim();
+    var m = t.match(STATUS);
+    if (!m) return null;
+    var lead = m[1].charAt(0) + m[1].slice(1).toLowerCase();
+    return { label: lead + ' \u00b7 ' + m[2].trim(), rest: t.slice(m[0].length) };
+  }
+  function statusNote(node) {
+    var st = statusOf(node);
+    var box = el('aside', 'status-note');
+    box.appendChild(el('p', 'status-label', st.label));
+    paras(st.rest).forEach(function (p) { box.appendChild(el('p', null, p)); });
+    if (node && typeof node === 'object') renderKids(box, node);
+    return box;
   }
 
   // Paragraphs, with a very long piece opening on its first part (used for
@@ -2441,8 +2431,9 @@
 
       // The chapter's words: everything beneath its title, in full.
       var body = el('div', 'text');
+      var notes = [];
       if (typeof node === 'string') renderTree(body, node);
-      else renderKids(body, node);
+      else renderKids(body, node, false, notes);
       if (!body.childNodes.length) body.appendChild(el('p', 'none', 'This chapter isn\u2019t written yet.'));
 
       // A fold: "Chapter N · Title", its strap (or first sentence) beneath;
@@ -2454,6 +2445,7 @@
       var seeLive = seeItLive(i);
       if (seeLive) card.appendChild(seeLive);
       card.appendChild(body);
+      notes.forEach(function (n) { card.appendChild(statusNote(n)); });
 
       // Reflections, one per person who has written at this chapter.
       var refl = el('div', 'chapter-part');
@@ -2521,7 +2513,9 @@
     box.textContent = '';
     var node = book && book['9'];
     if (node == null) return;
-    renderTree(box, node, true);
+    var notes = [];
+    renderTree(box, node, true, notes);
+    notes.forEach(function (n) { box.appendChild(statusNote(n)); });
     if (!box.childNodes.length) return;
     // Its one line: the first sentence after its title in capitals.
     $('builders-gloss').textContent = Beach.gloss(text(node).replace(LEAD, ''));
