@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The standards · Community Recovery</title>
+<meta name="description" content="Community Recovery and the LERO standards: CLERO's 33 National LERO Standards, with members' own readings of where Community Recovery stands on each.">
+<meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151a19" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%233f6f66'/%3E%3Cpath d='M16 25V14' stroke='%23f7f5f0' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23f7f5f0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=2026-09-30a">
+<style>
+  :root {
+    --spoken: #4f7f63;
+    --partly: #b7812a;
+    --notyet: #8e9794;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --spoken: #8cc0a0;
+      --partly: #d9a64f;
+      --notyet: #7d8784;
+    }
+  }
+  h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .prototype {
+    display: inline-block;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border: 1px solid var(--faint);
+    border-radius: 999px;
+    padding: 0.05rem 0.6rem;
+    margin: 0.6rem 0 0;
+  }
+  .intro { margin-top: 1rem; }
+
+  /* The circles */
+  .dot { display: inline-block; flex: none; vertical-align: middle; }
+  .dot circle, .dot path { vector-effect: non-scaling-stroke; }
+
+  .overview {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1rem 0.8rem;
+    margin: 1.4rem 0 1rem;
+  }
+  .row { margin: 0 0 0.9rem; }
+  .row-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 0 0 0.3rem;
+  }
+  .row-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.2rem;
+  }
+  .row-dots a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 2.1rem;
+    padding: 0.15rem 0 0.1rem;
+    border-radius: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+  .row-dots a:hover, .row-dots a:focus-visible { background: var(--accent-soft); color: var(--ink); }
+  .row-dots a:focus-visible { outline: 2px solid var(--accent); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    list-style: none;
+    padding: 0.7rem 0 0;
+    margin: 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .legend li { display: flex; align-items: center; gap: 0.35rem; }
+  .counts {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0 0 1.4rem;
+  }
+  .counts strong { color: var(--ink); }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.4rem;
+  }
+  .filters button {
+    font: inherit;
+    font-size: 0.92rem;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--faint);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem;
+    cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    .filters button[aria-pressed="true"] { color: #10201c; }
+  }
+
+  /* Groups, clusters and standards */
+  .group { margin: 0 0 2.2rem; }
+  .group h2 { margin: 0 0 0.2rem; }
+  .group-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 0.4rem;
+  }
+  .constituted {
+    font-size: 0.92rem;
+    background: var(--quiet-bg);
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    margin: 0 0 1rem;
+  }
+  .cluster h3 {
+    font-size: 1.02rem;
+    color: var(--muted);
+    margin: 1.2rem 0 0.6rem;
+  }
+  .standard {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1rem 0.9rem;
+    margin: 0 0 0.9rem;
+    scroll-margin-top: 1rem;
+  }
+  .standard:target { border-color: var(--accent); }
+  .standard-head {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .standard-num {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .standard-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0.1rem 0 0;
+  }
+  .standard-status {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 0.25rem 0 0;
+  }
+  .readings { margin-top: 0.8rem; }
+  .reading {
+    border-top: 1px solid var(--line);
+    padding: 0.7rem 0 0.2rem;
+  }
+  .reading-who {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.92rem;
+    margin: 0 0 0.3rem;
+  }
+  .reading-who .status-word { color: var(--muted); }
+  .reading p {
+    font-size: 0.96rem;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    margin: 0 0 0.4rem;
+  }
+  .reading .label { font-weight: 700; }
+  .nobody {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 0.95rem;
+    margin: 0.7rem 0 0;
+  }
+  .meaning {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1.1rem 0.3rem;
+    margin: 0 0 2rem;
+  }
+  .meaning h2 { margin-top: 0; }
+  .meaning p { white-space: pre-line; }
+  .how {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .empty-filter {
+    color: var(--muted);
+    font-style: italic;
+  }
+  @media (min-width: 600px) {
+    h1 { font-size: 2.1rem; }
+    .overview { padding: 1.2rem 1.4rem 1rem; }
+    .standard { padding: 1.2rem 1.4rem 1rem; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#3f6f66"/><path d="M16 25V14" stroke="#f7f5f0" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#f7f5f0"/></svg>Community Recovery</a>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="./">About</a>
+      <a href="proposal.html">The proposal</a>
+      <a href="standards.html" aria-current="page">The standards</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Community Recovery and the LERO standards</h1>
+  <p class="prototype">Working prototype</p>
+
+  <div class="intro">
+    <p>CLERO, the national body for lived experience recovery organisations, sets out 33 standards for what a good LERO looks like. They describe where to get to, not how.</p>
+    <p>Here, people read Community Recovery against each standard in their own words: whether it&rsquo;s already spoken for, partly there, or not yet. Nobody scores anything. Each circle shows what the readings say, and where people see it differently, that shows too.</p>
+  </div>
+
+  <div id="status" aria-live="polite"><p class="calm">Reading the standards&hellip;</p></div>
+
+  <section class="overview" id="overview" aria-label="All 33 standards at a glance" hidden>
+    <div id="rows"></div>
+    <ul class="legend" id="legend"></ul>
+  </section>
+  <p class="counts" id="counts" hidden></p>
+
+  <section class="meaning" id="meaning" hidden>
+    <h2>What it means</h2>
+    <div id="meaning-text"></div>
+  </section>
+
+  <div class="filters" id="filters" role="group" aria-label="Show standards" hidden></div>
+
+  <div id="groups"></div>
+
+  <p class="how" id="how" hidden>Readings are written by members in their own mirrors on the beach, one for each person, at the same place as each standard. This page reads them afresh each time it opens.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p id="live-note"></p>
+    <p>This page only reads. Nothing here is written anywhere.</p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var BEACH_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
+  var FRAME = 'spine:community-recovery-standards';
+  var FAMILY = 'community-recovery-standards:';
+  var COMBINED = 'community-recovery-standards';
+
+  // ---- Reading the beach ---------------------------------------------------
+  function get(block) {
+    return fetch(BEACH_URL + '?block=' + encodeURIComponent(block), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+  }
+  function index() {
+    return fetch(BEACH_URL, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+  // A read that never throws: the block, or null if it couldn't be had.
+  function read(block) {
+    return get(block).then(function (b) {
+      return b && typeof b === 'object' && !b.error ? b : null;
+    }, function () { return null; });
+  }
+  function text(node) {
+    if (typeof node === 'string') return node;
+    if (node && typeof node._ === 'string') return node._;
+    return '';
+  }
+  function el(tag, cls, t) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (t != null) e.textContent = t;
+    return e;
+  }
+  function $(id) { return document.getElementById(id); }
+
+  // Encrypted text is never shown.
+  var SEAL_KEYS = /^(gray|grey|cipher|ciphertext|ct|iv|nonce|salt|encrypted|sealed|enc)$/i;
+  function sealed(v) {
+    if (v && typeof v === 'object') {
+      return Object.keys(v).some(function (k) { return SEAL_KEYS.test(k); }) ||
+        (typeof v._ === 'string' && sealed(v._));
+    }
+    if (typeof v !== 'string') return false;
+    var s = v.trim();
+    if (!s) return false;
+    if (/^(gray|grey|enc|encrypted|sealed|cipher)\s*[:|{]/i.test(s)) return true;
+    if (/^-----BEGIN /.test(s)) return true;
+    if (s.charAt(0) === '{' && /"(ct|ciphertext|iv|nonce|gray)"\s*:/.test(s)) return true;
+    return s.length >= 40 && !/\s/.test(s) && /^[A-Za-z0-9+\/=_\-.:]+$/.test(s);
+  }
+  function paras(s) {
+    return String(s).split(/\n[ \t]*\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
+  }
+
+  // ---- The frame -----------------------------------------------------------
+  // Groups sit at 1-4 ("A. Culture and values. Applies to ..."). A group's
+  // standards sit directly beneath it (C, D) or one level deeper inside
+  // themed clusters (A, B). A standard's text begins "Standard N.", and N
+  // is its CLERO number; its address is where each mirror answers it.
+  var STD = /^\s*Standard\s+(\d+)\.\s*/;
+  function isStandard(node) { return STD.test(text(node)); }
+
+  function frameOf(spine) {
+    var groups = [];
+    for (var g = 1; g <= 9; g++) {
+      var gn = spine[String(g)];
+      if (!gn || typeof gn !== 'object') continue;
+      var head = text(gn).trim();
+      var m = head.match(/^([A-Z])\.\s*([^.]+)\.\s*([\s\S]*)$/);
+      var group = {
+        letter: m ? m[1] : String.fromCharCode(64 + g),
+        title: m ? m[2] : head,
+        note: m ? m[3].trim() : '',
+        parts: []
+      };
+      var loose = null;
+      for (var i = 1; i <= 9; i++) {
+        var n = gn[String(i)];
+        if (n == null) continue;
+        var addr = [String(g), String(i)];
+        if (isStandard(n)) {
+          if (!loose) { loose = { title: '', standards: [] }; group.parts.push(loose); }
+          loose.standards.push(standardAt(n, addr, group.letter));
+        } else if (typeof n === 'object') {
+          loose = null;
+          var cluster = { title: text(n).trim(), standards: [] };
+          for (var j = 1; j <= 9; j++) {
+            var s = n[String(j)];
+            if (s != null && isStandard(s)) cluster.standards.push(standardAt(s, addr.concat(String(j)), group.letter));
+          }
+          if (cluster.standards.length) group.parts.push(cluster);
+        }
+      }
+      groups.push(group);
+    }
+    return groups;
+  }
+  function standardAt(node, addr, letter) {
+    var t = text(node).trim();
+    var m = t.match(STD);
+    return { num: +m[1], text: t.slice(m[0].length), addr: addr, letter: letter, readings: [] };
+  }
+
+  // ---- Readings ------------------------------------------------------------
+  // Each reading begins "Spoken", "Partly" or "Not yet".
+  var STATUS = /^\s*(Spoken|Partly|Not yet)\b[\s.:,;—-]*/i;
+  var ORDER = { spoken: 0, partly: 1, notyet: 2 };
+  var WORD = { spoken: 'Spoken', partly: 'Partly', notyet: 'Not yet', none: 'Nobody has written yet', differ: 'Readings differ' };
+
+  function statusOf(s) {
+    var m = String(s).match(STATUS);
+    if (!m) return { status: null, rest: String(s).trim() };
+    var w = m[1].toLowerCase();
+    return { status: w === 'not yet' ? 'notyet' : w, rest: String(s).slice(m[0].length).trim() };
+  }
+  function at(block, addr) {
+    var n = block;
+    for (var i = 0; i < addr.length; i++) {
+      if (!n || typeof n !== 'object') return null;
+      n = n[addr[i]];
+    }
+    return n;
+  }
+  function mirrorNames(idx) {
+    var names = [];
+    var blocks = idx && idx.blocks;
+    if (Array.isArray(blocks)) names = blocks;
+    else if (blocks && typeof blocks === 'object') names = Object.keys(blocks);
+    return names
+      .map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; })
+      .filter(function (n) { return n.indexOf(FAMILY) === 0 && n.length > FAMILY.length; })
+      .sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  }
+
+  // What the readings say together: one status, "differ", or "none".
+  function overall(std) {
+    var seen = {};
+    std.readings.forEach(function (r) { if (r.status) seen[r.status] = true; });
+    var list = Object.keys(seen).sort(function (a, b) { return ORDER[a] - ORDER[b]; });
+    std.statuses = list;
+    std.overall = !list.length ? 'none' : list.length === 1 ? list[0] : 'differ';
+  }
+
+  // ---- Drawing the circles -------------------------------------------------
+  var SVG = 'http://www.w3.org/2000/svg';
+  function svg(tag, attrs) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+  var COLOR = { spoken: 'var(--spoken)', partly: 'var(--partly)', notyet: 'var(--notyet)' };
+  // Full for spoken, half for partly, dashed for not yet (and for nobody
+  // yet); where readings differ, split: each half the colour of a reading.
+  function dot(kind, size, statuses) {
+    size = size || 22;
+    var s = svg('svg', { viewBox: '0 0 24 24', width: size, height: size, class: 'dot', 'aria-hidden': 'true' });
+    var ring = function (c, dash) {
+      var a = { cx: 12, cy: 12, r: 10, fill: 'none', stroke: c, 'stroke-width': 2 };
+      if (dash) a['stroke-dasharray'] = '3.2 2.6';
+      return svg('circle', a);
+    };
+    var left = 'M12 2 A10 10 0 0 0 12 22 Z', right = 'M12 2 A10 10 0 0 1 12 22 Z';
+    if (kind === 'spoken') {
+      s.appendChild(svg('circle', { cx: 12, cy: 12, r: 11, fill: COLOR.spoken }));
+    } else if (kind === 'partly') {
+      s.appendChild(svg('path', { d: left, fill: COLOR.partly }));
+      s.appendChild(ring(COLOR.partly));
+    } else if (kind === 'differ') {
+      var a = (statuses && statuses[0]) || 'spoken';
+      var b = (statuses && statuses[statuses.length - 1]) || 'notyet';
+      s.appendChild(svg('path', { d: left, fill: COLOR[a] }));
+      s.appendChild(svg('path', { d: right, fill: COLOR[b], 'fill-opacity': b === 'notyet' ? 0.45 : 1 }));
+      s.appendChild(svg('path', { d: 'M12 1.5 V22.5', stroke: 'var(--card)', 'stroke-width': 1.6 }));
+    } else {
+      s.appendChild(ring(COLOR.notyet, true));
+    }
+    return s;
+  }
+
+  // ---- Rendering -----------------------------------------------------------
+  var all = [];
+
+  function renderOverview(groups) {
+    var rows = $('rows');
+    rows.textContent = '';
+    groups.forEach(function (g) {
+      var row = el('div', 'row');
+      row.appendChild(el('span', 'row-label', g.letter + '. ' + g.title));
+      var dots = el('div', 'row-dots');
+      g.parts.forEach(function (p) {
+        p.standards.forEach(function (s) {
+          var a = el('a');
+          a.href = '#standard-' + s.num;
+          a.setAttribute('aria-label', 'Standard ' + s.num + ': ' + WORD[s.overall]);
+          a.title = 'Standard ' + s.num + ': ' + WORD[s.overall];
+          a.appendChild(dot(s.overall, 24, s.statuses));
+          a.appendChild(el('span', null, String(s.num)));
+          a.addEventListener('click', function () { setFilter('all'); });
+          dots.appendChild(a);
+        });
+      });
+      row.appendChild(dots);
+      rows.appendChild(row);
+    });
+
+    var legend = $('legend');
+    legend.textContent = '';
+    [['spoken', 'Spoken'], ['partly', 'Partly'], ['notyet', 'Not yet, or nobody has written'], ['differ', 'Readings differ']].forEach(function (k) {
+      var li = el('li');
+      li.appendChild(dot(k[0], 18, ['spoken', 'partly']));
+      li.appendChild(document.createTextNode(k[1]));
+      legend.appendChild(li);
+    });
+    $('overview').hidden = false;
+  }
+
+  function renderCounts() {
+    var n = { spoken: 0, partly: 0, notyet: 0, differ: 0, none: 0 };
+    all.forEach(function (s) { n[s.overall]++; });
+    var box = $('counts');
+    box.textContent = '';
+    var parts = [
+      [n.spoken, 'spoken'], [n.partly, 'partly'], [n.notyet, 'not yet'],
+      [n.differ, 'where readings differ'], [n.none, 'nobody has written yet']
+    ].filter(function (x, i) { return x[0] > 0 || i < 3; });
+    box.appendChild(document.createTextNode('Of ' + all.length + ' standards: '));
+    parts.forEach(function (x, i) {
+      if (i) box.appendChild(document.createTextNode(' · '));
+      box.appendChild(el('strong', null, String(x[0])));
+      box.appendChild(document.createTextNode(' ' + x[1]));
+    });
+    box.appendChild(document.createTextNode('.'));
+    box.hidden = false;
+  }
+
+  // A reading's words, with "In place:", "Not there yet:" and "Would show
+  // it:" starting lines of their own when a reading uses them.
+  var LABELS = /(In place:|Not there yet:|Would show it:)/;
+  function readingWords(box, s) {
+    paras(s).forEach(function (para) {
+      var bits = para.split(/\s+(?=(?:In place:|Not there yet:|Would show it:))/);
+      bits.forEach(function (bit) {
+        var p = el('p');
+        var m = bit.match(LABELS);
+        if (m && bit.indexOf(m[1]) === 0) {
+          p.appendChild(el('span', 'label', m[1]));
+          p.appendChild(document.createTextNode(bit.slice(m[1].length)));
+        } else {
+          p.textContent = bit;
+        }
+        box.appendChild(p);
+      });
+    });
+  }
+
+  function renderStandard(s) {
+    var art = el('article', 'standard');
+    art.id = 'standard-' + s.num;
+    art.dataset.statuses = s.overall === 'none' ? 'notyet' : s.statuses.join(' ');
+    var head = el('div', 'standard-head');
+    head.appendChild(dot(s.overall, 30, s.statuses));
+    var words = el('div');
+    words.appendChild(el('span', 'standard-num', 'Standard ' + s.num));
+    words.appendChild(el('p', 'standard-text', s.text));
+    words.appendChild(el('p', 'standard-status', WORD[s.overall] + (s.overall === 'differ'
+      ? ': ' + s.statuses.map(function (x) { return WORD[x].toLowerCase(); }).join(', ')
+      : '')));
+    head.appendChild(words);
+    art.appendChild(head);
+
+    if (!s.readings.length) {
+      art.appendChild(el('p', 'nobody', 'Nobody has written a reading here yet.'));
+      return art;
+    }
+    var list = el('div', 'readings');
+    s.readings.forEach(function (r) {
+      var div = el('div', 'reading');
+      var who = el('p', 'reading-who');
+      who.appendChild(dot(r.private ? 'none' : (r.status || 'none'), 16));
+      who.appendChild(el('strong', null, r.handle));
+      if (r.status) who.appendChild(el('span', 'status-word', '· ' + WORD[r.status]));
+      div.appendChild(who);
+      if (r.private) div.appendChild(el('p', 'private', 'A private reading'));
+      else if (r.rest) readingWords(div, r.rest);
+      list.appendChild(div);
+    });
+    art.appendChild(list);
+    return art;
+  }
+
+  function renderGroups(groups) {
+    var box = $('groups');
+    box.textContent = '';
+    groups.forEach(function (g) {
+      var sec = el('section', 'group');
+      sec.id = 'group-' + g.letter.toLowerCase();
+      sec.appendChild(el('h2', null, g.letter + '. ' + g.title));
+      if (g.note) sec.appendChild(el('p', 'group-note', g.note));
+      if (g.letter === 'C' || g.letter === 'D') {
+        sec.appendChild(el('p', 'constituted', 'These apply once Community Recovery is constituted.'));
+      }
+      g.parts.forEach(function (p) {
+        var c = el('div', 'cluster');
+        if (p.title) c.appendChild(el('h3', null, p.title));
+        p.standards.forEach(function (s) { c.appendChild(renderStandard(s)); });
+        sec.appendChild(c);
+      });
+      box.appendChild(sec);
+    });
+    var none = el('p', 'empty-filter', 'No standards show with this filter.');
+    none.id = 'empty-filter';
+    none.hidden = true;
+    box.appendChild(none);
+  }
+
+  // ---- Filters -------------------------------------------------------------
+  var FILTERS = [['all', 'All'], ['spoken', 'Spoken'], ['partly', 'Partly'], ['notyet', 'Not yet']];
+  var current = 'all';
+  function setFilter(f) {
+    current = f;
+    Array.prototype.forEach.call($('filters').querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-pressed', b.dataset.f === f ? 'true' : 'false');
+    });
+    var shown = 0;
+    Array.prototype.forEach.call(document.querySelectorAll('.standard'), function (a) {
+      var ok = f === 'all' || a.dataset.statuses.split(' ').indexOf(f) >= 0;
+      a.hidden = !ok;
+      if (ok) shown++;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.cluster, .group'), function (c) {
+      c.hidden = !c.querySelector('.standard:not([hidden])');
+    });
+    $('empty-filter').hidden = shown > 0;
+  }
+  function renderFilters() {
+    var box = $('filters');
+    box.textContent = '';
+    FILTERS.forEach(function (x) {
+      var b = el('button', null, x[1]);
+      b.type = 'button';
+      b.dataset.f = x[0];
+      b.addEventListener('click', function () { setFilter(x[0]); });
+      box.appendChild(b);
+    });
+    box.hidden = false;
+    setFilter(current);
+  }
+
+  function renderMeaning(block) {
+    var box = $('meaning-text');
+    box.textContent = '';
+    if (!block || sealed(block)) return;
+    var opening = text(block);
+    if (typeof block._ === 'object' && block._) opening = text(block._);
+    var ps = sealed(opening) ? [] : paras(opening);
+    if (!ps.length) return;
+    ps.forEach(function (p) { box.appendChild(el('p', null, p)); });
+    $('meaning').hidden = false;
+  }
+
+  // ---- Load ----------------------------------------------------------------
+  function load() {
+    var mirrorsP = index().then(function (idx) {
+      return Promise.all(mirrorNames(idx).map(function (n) {
+        return get(n).then(function (b) {
+          if (typeof b === 'string') b = sealed(b) ? { gray: b } : { _: b };
+          return { handle: n.slice(FAMILY.length), block: b && typeof b === 'object' && !b.error ? b : null };
+        }, function () { return { handle: n.slice(FAMILY.length), block: null }; });
+      }));
+    }).then(function (list) {
+      return list.filter(function (m) { return m.block; });
+    }, function () { var none = []; none.unreadable = true; return none; });
+
+    return Promise.all([read(FRAME), mirrorsP, read(COMBINED)]).then(function (r) {
+      var spine = r[0], mirrors = r[1], combined = r[2];
+      $('status').textContent = '';
+      if (!spine) {
+        $('status').appendChild(el('p', 'calm', 'The standards can’t be reached just now. Please try again in a little while.'));
+        return;
+      }
+      var groups = frameOf(spine);
+      all = [];
+      groups.forEach(function (g) { g.parts.forEach(function (p) { all = all.concat(p.standards); }); });
+
+      all.forEach(function (s) {
+        mirrors.forEach(function (m) {
+          var node = at(m.block, s.addr);
+          if (node == null) return;
+          if (sealed(node) || sealed(m.block)) {
+            s.readings.push({ handle: m.handle, private: true, status: null });
+            return;
+          }
+          var t = text(node).trim();
+          if (!t) return;
+          var st = statusOf(t);
+          s.readings.push({ handle: m.handle, status: st.status, rest: st.rest });
+        });
+        overall(s);
+      });
+
+      renderOverview(groups);
+      renderCounts();
+      renderMeaning(combined);
+      renderGroups(groups);
+      renderFilters();
+      $('how').hidden = false;
+      if (mirrors.unreadable) {
+        $('status').appendChild(el('p', 'calm', 'The readings can’t be reached just now, so every standard shows as not yet read.'));
+      }
+
+      // Arriving on a standard's link, go to it once it exists.
+      if (location.hash) {
+        var target = document.getElementById(location.hash.slice(1));
+        if (target) target.scrollIntoView();
+      }
+      var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      $('live-note').textContent = 'Read live at ' + t +
+        (mirrors.length ? ' · readings from ' + mirrors.length + (mirrors.length === 1 ? ' person' : ' people') : '') + '.';
+    });
+  }
+
+  load().catch(function () {
+    $('status').textContent = '';
+    $('status').appendChild(el('p', 'calm', 'Something went wrong reading the standards. Please try again in a little while.'));
+  });
+})();
+</script>
+</body>
+</html>
