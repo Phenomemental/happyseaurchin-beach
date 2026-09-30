@@ -323,7 +323,30 @@
     return run;
   }
 
+  // ---- Community Recovery's own place --------------------------------------
+  // A second reader, for the place that carries the organisation's name
+  // (beach.happyseaurchin.com/w/community-recovery). Its blocks read
+  // openly, no key needed.
+  var PLACE = 'https://beach.happyseaurchin.com/w/community-recovery/.well-known/pscale-beach';
+
+  function placeGet(block) {
+    return fetch(PLACE + '?block=' + encodeURIComponent(block), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+  }
+
+  // The node at a position written key by key: "1.2.2" is key "1", then
+  // "2", then "2" through the returned JSON.
+  function at(node, position) {
+    return String(position).split('.').reduce(function (n, k) {
+      return n && typeof n === 'object' ? n[k] : undefined;
+    }, node);
+  }
+
   window.Beach = {
+    place: { get: placeGet, at: at },
     get: get,
     point: point,
     index: index,

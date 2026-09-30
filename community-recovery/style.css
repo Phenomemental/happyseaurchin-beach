@@ -221,6 +221,24 @@ form button.mic.listening { border-color: var(--accent); background: var(--accen
 .mic-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
 .mic-note:empty { display: none; }
 
+/* TESTING EMBLEM: a temporary pill beside the name while these pages are
+   being tried out. To remove it, delete this block; the pages carry no
+   markup of their own for it. */
+.brand { flex-wrap: wrap; row-gap: 0.15rem; }
+.brand::after {
+  content: "Matthew\2019s pages \00B7  testing"; /* the escape takes one space */
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--muted);
+  background: var(--accent-soft);
+  border: 1px solid var(--faint);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+
 /* Footer, and a way home that only its owner looks for. */
 footer {
   border-top: 1px solid var(--line);
