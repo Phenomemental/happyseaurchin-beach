@@ -27,6 +27,105 @@
     margin: 0 auto 0.5rem;
     max-width: 26rem;
   }
+  .opening {
+    font-size: 1.35rem;
+    line-height: 1.5;
+    text-align: left;
+    max-width: 30rem;
+    margin: 1.6rem auto 0.9rem;
+  }
+  .opening::first-letter {
+    font-size: 3.1em;
+    line-height: 0.8;
+    float: left;
+    padding: 0.06em 0.1em 0 0;
+    color: var(--crimson);
+  }
+  .watches-intro {
+    font-style: italic;
+    text-align: center;
+  }
+  .watches {
+    border-top: 1px solid var(--frame);
+    margin: 0 0 0.6rem;
+  }
+  .watch {
+    border-bottom: 1px solid var(--frame);
+  }
+  .watch summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.2rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .watch summary::-webkit-details-marker {
+    display: none;
+  }
+  .watch summary:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .watch-num {
+    flex: 0 0 2.2rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-variant-numeric: oldstyle-nums;
+  }
+  .watch-title {
+    flex: 1;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  .watch summary::after {
+    content: "+";
+    flex: 0 0 auto;
+    color: var(--crimson);
+    font-size: 1.3rem;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .watch[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .watch summary:hover .watch-title,
+  .watch[open] .watch-title {
+    color: var(--crimson);
+  }
+  .watch-body {
+    padding: 0 0.2rem 1rem 3.1rem;
+  }
+  .watch-synopsis {
+    overflow-wrap: anywhere;
+  }
+  .watch-notes-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0.4rem 0 0.2rem;
+  }
+  .watch-notes .comment {
+    padding: 0.5rem 0 0.5rem 0.8rem;
+    border-bottom: 0;
+    border-left: 2px solid var(--frame);
+    margin-bottom: 0.5rem;
+  }
+  .watch-invite {
+    font-size: 1rem;
+    font-style: italic;
+    margin: 0.6rem 0 0;
+  }
+  @media (max-width: 420px) {
+    .watch-body { padding-left: 0.2rem; }
+    .watch-num { flex-basis: 1.9rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .watch summary::after { transition: none; }
+  }
   .plan {
     text-align: center;
     font-size: 1.3rem;
@@ -71,15 +170,262 @@
 
     <blockquote>The soldier who does not know himself, who does not have his own house</blockquote>
 
+    <p class="opening" id="opening">
+      A man keeps watch through the night. He has no house, and does not
+      know himself. A historian in a Johannesburg bookshop told him so, in
+      isiZulu, in a book he'd asked her to sign. So he does what soldiers on
+      watch have always done: he goes back through what he carries. Old
+      books, old names, old selves are brought into the night one by one and
+      tested. What survives goes in.
+    </p>
+    <p class="walk"><a href="https://happyseaurchin.com/walk/wholeless-nights/Phenomemental">Walk it on the beach</a></p>
+
     <hr class="rule">
 
     <section>
-      <h2>The book</h2>
-      <p id="about">
-        A soldier's night watch, told across 27 watches. The nights are
-        spent restoring old memories, so that they survive.
+      <h2>The form</h2>
+      <p id="form-text">
+        Nights at the watch, where earlier books and material are brought to
+        be tested, and what survives goes in. The other stories become books
+        within the book. It ends with a personal reflection on the process
+        rather than a conclusion.
       </p>
-      <p class="walk"><a href="https://happyseaurchin.com/walk/wholeless-nights/Phenomemental">Walk it on the beach</a></p>
+    </section>
+
+    <hr class="rule">
+
+    <section>
+      <h2>The watches</h2>
+      <p class="watches-intro" id="watches-intro">
+        The chapters are watches, a working list of 27. Each is a night; read
+        a watch and leave your thoughts beside it in your own notebook.
+      </p>
+      <div class="watches" id="watches">
+          <details class="watch" id="watch-1">
+            <summary><span class="watch-num">1</span><span class="watch-title">The Return</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A GP surgery at eighteen, a mother explaining her son, a word the doctor offers. Then a minibus ride across Northampton, and a woman behind the glass who wants him to see. It's 04:16, and the book begins.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-2">
+            <summary><span class="watch-num">2</span><span class="watch-title">The Names</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">One "t" or two. A clerk's note in the margin, an archive in Kent, and a soldier who gave up his surname in 1880. Then the dragon and the phoenix, inked on a day he won't dress up.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-3">
+            <summary><span class="watch-num">3</span><span class="watch-title">The Inscription</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Johannesburg, spring. A bookshop down a flight of steps, a launch, a question he decided not to ask. He asked for a dedication, and was given his own truth instead.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-4">
+            <summary><span class="watch-num">4</span><span class="watch-title">The Pilgrimage</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Step. Another. A motorbike he rides less fast now, a pilgrimage he read about on a plane and didn't walk, and a lake that teaches him how to be water.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-5">
+            <summary><span class="watch-num">5</span><span class="watch-title">The Unyielding</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">"Your writing is unyielding," a tutor once said. Seventeen years of books written and deleted. Then he discovers what those seventeen years were really counting.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-6">
+            <summary><span class="watch-num">6</span><span class="watch-title">Travelling Man</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A care home, jacket potatoes, a quiet woman on the top floor. Before she died, she handed him her book. He's carried it ever since, as far as Africa.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-7">
+            <summary><span class="watch-num">7</span><span class="watch-title">Chiba</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A proposal written at night while the professors slept. An abstract about "Mr. Bushell," in the third person because it felt safe. Then the room in Japan where he had to say it as himself.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-8">
+            <summary><span class="watch-num">8</span><span class="watch-title">The House Full of Other People's Children</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Foster children came and went through one house on an estate, so many he lost count. A home where people were always temporary. A brother who left at sixteen, and why he understood.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-9">
+            <summary><span class="watch-num">9</span><span class="watch-title">The Uniform</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Seventeen and a half. Encryption keys you could drop and lose the message. Best soldier of two hundred. The mirror afterwards, and handing it all back.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-10">
+            <summary><span class="watch-num">10</span><span class="watch-title">The Bridge</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Detroit, 2007. A motel, poetry read to American radio, a stranger online, and a border he planned to cross and didn't.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-11">
+            <summary><span class="watch-num">11</span><span class="watch-title">Two Emails</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">No GCSEs at twenty-six, and two emails that let him in anyway. A first year, a first conference, the first time in print.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-12">
+            <summary><span class="watch-num">12</span><span class="watch-title">The Library</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A book last borrowed in 1982, with a tram ticket inside. Fifty pence in a charity shop. The books that came looking for him, and a chain of hands he's never joined up until now.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-13">
+            <summary><span class="watch-num">13</span><span class="watch-title">The Kitchen Floor</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">June 2011. Written four times before and never plainly. The centre of the book.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-14">
+            <summary><span class="watch-num">14</span><span class="watch-title">The Magnet</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A £1.50 horseshoe magnet, a small lie at a till, a park bench, and forty-seven printed pages that changed how he saw everything.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-15">
+            <summary><span class="watch-num">15</span><span class="watch-title">Alan</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">"Nature herself never excludes you. Only some people, in some places do." A decade of letters with the man who wrote it.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-16">
+            <summary><span class="watch-num">16</span><span class="watch-title">Adam</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A psychiatrist and pioneer of psychodrama, met as a pen pal across the internet. He once cared for a great philosopher, encouraged a young writer to explain things to the curiosity of a child, and sent him to work in the building where a poet died.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-17">
+            <summary><span class="watch-num">17</span><span class="watch-title">The Asylum Garden</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Night shifts where John Clare was kept, his grandfather's Penguin book, and a helicopter pilot who borrowed it and never gave it back.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-18">
+            <summary><span class="watch-num">18</span><span class="watch-title">The Narrow Escape</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">The day everything stopped, and the day the drinking stopped with it. Two years of a programme, and a name for what bipolar never reached.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-18a">
+            <summary><span class="watch-num">18a</span><span class="watch-title">The Second Time</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Ten years later, while helping others recover, it all came back, harder. This is the watch that refuses to make a recovery story.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-19">
+            <summary><span class="watch-num">19</span><span class="watch-title">Reclaiming Life</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Francis Masters trained him as a therapeutic coach, his first step from lived experience into a profession. She named what he carried, and gave him her book. Three kinds of handing over from one woman.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-20">
+            <summary><span class="watch-num">20</span><span class="watch-title">The Companion Writing Circle</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A man on morning television, an email, a chapter that came of it. A weekly circle of thinkers, a chapter he was invited to write and didn't, and the first of them to die.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-21">
+            <summary><span class="watch-num">21</span><span class="watch-title">NISA</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A physicist who spoke of devotion and an old way of counting in the same breath. A way of counting and a way of loving in one conversation.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-22">
+            <summary><span class="watch-num">22</span><span class="watch-title">Portobello</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A long ride north, and a house by the sea where Louie Gardiner taught him presence in action. Not a lesson but an experience: mirrors became windows.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-23">
+            <summary><span class="watch-num">23</span><span class="watch-title">Roy</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Rev. Roy Reynolds wrote with many people, and with him. He offered four ways of thinking and doing, from fixing things to the inviting emptiness and beyond. Then his death.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-24">
+            <summary><span class="watch-num">24</span><span class="watch-title">The Shape of Emotion</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A pandemic, fifteen-hour days, and a comment on LinkedIn from a stranger who shared his name. A dining table, a photo of his daughters on the fridge, and happy tears for the first time in years.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-25">
+            <summary><span class="watch-num">25</span><span class="watch-title">Vinnie</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">A peer in the support group, then the first person he coached, the case study behind his coaching submission, then a friend. Long silences between them, and then the online recovery community, where they shared networks and time again. This watch is for him.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-26">
+            <summary><span class="watch-num">26</span><span class="watch-title">The Ones Who Came After</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">The work he does now, shaped by Vinnie: lived experience recovery organisations, where people who have been through it lead the way for those coming after.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+          <details class="watch" id="watch-27">
+            <summary><span class="watch-num">27</span><span class="watch-title">Afterword</span></summary>
+            <div class="watch-body">
+              <p class="watch-synopsis">Not a conclusion. Written from the desk after the last night: what he brought, what didn't survive, what he still doesn't know.</p>
+              <div class="watch-notes"></div>
+              <p class="watch-invite"><a href="https://happyseaurchin.com/walk/wholeless-nights">Leave your thoughts on this watch in your own notebook</a></p>
+            </div>
+          </details>
+      </div>
     </section>
 
     <hr class="rule">
@@ -143,8 +489,150 @@
     if (s) document.getElementById(id).textContent = s;
   }
 
+  var INVITE = 'https://happyseaurchin.com/walk/wholeless-nights';
+  var MIRROR = /^wholeless-nights:(.+)$/;
+  var watchesBox = document.getElementById('watches');
+  var lastSig = null;
+  // Readers' mirrors: handle -> { touched, block }, refetched only when
+  // the beach's index says they've changed.
+  var mirrors = {};
+
+  function el(tag, cls, s) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (s != null) e.textContent = s;
+    return e;
+  }
+
+  // Walk a block down an address such as ['3', '2', '9'].
+  function at(block, path) {
+    var n = block;
+    for (var i = 0; i < path.length; i++) {
+      if (!n || typeof n !== 'object') return null;
+      n = n[path[i]];
+    }
+    return n;
+  }
+
+  // Every watch in order: the groups at 3.1, 3.2, 3.3 (their own text is
+  // only a label), numbered straight through. A watch that holds more
+  // beneath it keeps those as lettered watches of its own: 18, then 18a.
+  function watchList(spine) {
+    var out = [];
+    var n = 0;
+    for (var g = 1; g <= 9; g++) {
+      var group = at(spine, ['3', String(g)]);
+      if (!group || typeof group !== 'object') continue;
+      for (var c = 1; c <= 9; c++) {
+        var node = group[String(c)];
+        var t = text(node);
+        if (!t.trim()) continue;
+        n++;
+        out.push({ num: String(n), text: t, path: ['3', String(g), String(c)] });
+        if (node && typeof node === 'object') {
+          for (var k = 1; k <= 9; k++) {
+            var sub = text(node[String(k)]);
+            if (sub.trim()) {
+              out.push({ num: n + 'abcdefghi'.charAt(k - 1), text: sub, path: ['3', String(g), String(c), String(k)] });
+            }
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  // "Title — synopsis".
+  function split(s) {
+    var i = s.indexOf(' \u2014 ');
+    return i < 0 ? { title: s.trim(), body: '' } : { title: s.slice(0, i).trim(), body: s.slice(i + 3).trim() };
+  }
+
+  // What each reader has written at a watch's own address in their mirror.
+  function notesAt(path) {
+    return Object.keys(mirrors).sort(function (a, b) {
+      return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+    }).map(function (handle) {
+      return { who: handle, text: text(at(mirrors[handle].block, path)).trim() };
+    }).filter(function (x) { return x.text; });
+  }
+
+  function renderWatches(list) {
+    // Rebuilding would close whatever a reader has open, so only rebuild
+    // when something has changed, and reopen what was open.
+    var withNotes = list.map(function (w) { return { w: w, notes: notesAt(w.path) }; });
+    var sig = JSON.stringify(withNotes);
+    if (sig === lastSig) return;
+    lastSig = sig;
+    var open = {};
+    Array.prototype.forEach.call(watchesBox.querySelectorAll('details[open]'), function (d) { open[d.id] = true; });
+    var frag = document.createDocumentFragment();
+    withNotes.forEach(function (item) {
+      var w = item.w;
+      var parts = split(w.text);
+      var d = el('details', 'watch');
+      d.id = 'watch-' + w.num;
+      if (open[d.id]) d.open = true;
+      var sum = el('summary');
+      sum.appendChild(el('span', 'watch-num', w.num));
+      sum.appendChild(el('span', 'watch-title', parts.title));
+      d.appendChild(sum);
+      var body = el('div', 'watch-body');
+      if (parts.body) body.appendChild(el('p', 'watch-synopsis', parts.body));
+      var notes = el('div', 'watch-notes');
+      var found = item.notes;
+      if (found.length) {
+        notes.appendChild(el('p', 'watch-notes-label', found.length === 1 ? 'A reader\u2019s thoughts' : 'Readers\u2019 thoughts'));
+        found.forEach(function (x) {
+          var c = el('div', 'comment');
+          var meta = el('p', 'comment-meta');
+          meta.appendChild(el('strong', null, x.who));
+          c.appendChild(meta);
+          c.appendChild(el('p', 'comment-text', x.text));
+          notes.appendChild(c);
+        });
+      }
+      body.appendChild(notes);
+      var invite = el('p', 'watch-invite');
+      var a = el('a', null, 'Leave your thoughts on this watch in your own notebook');
+      a.href = INVITE;
+      invite.appendChild(a);
+      body.appendChild(invite);
+      d.appendChild(body);
+      frag.appendChild(d);
+    });
+    watchesBox.textContent = '';
+    watchesBox.appendChild(frag);
+  }
+
+  // Find the readers' mirror blocks (wholeless-nights:<handle>) and read
+  // any that are new or have changed. A mirror that can't be read keeps
+  // what we had; if the index can't be read, the watches still show.
+  function loadMirrors() {
+    return Beach.index().then(function (idx) {
+      var names = (idx && Array.isArray(idx.blocks) ? idx.blocks : []).filter(function (b) { return MIRROR.test(b); });
+      var touched = (idx && idx.touched) || {};
+      var seen = {};
+      return Promise.all(names.map(function (name) {
+        var handle = name.match(MIRROR)[1];
+        seen[handle] = true;
+        var had = mirrors[handle];
+        if (had && touched[name] && had.touched === touched[name]) return null;
+        return Beach.get(name).then(function (block) {
+          mirrors[handle] = { touched: touched[name] || null, block: block };
+        }, function () {});
+      })).then(function () {
+        Object.keys(mirrors).forEach(function (h) { if (!seen[h]) delete mirrors[h]; });
+      });
+    }).catch(function () {});
+  }
+
   function renderSpine(spine) {
-    setText('about', unlabel(text(spine['1'])));
+    setText('opening', unlabel(text(spine['1'])));
+    setText('form-text', unlabel(text(spine['2'])));
+    setText('watches-intro', unlabel(text(spine['3'])));
+    var list = watchList(spine);
+    if (list.length) renderWatches(list);
     setText('plan', unlabel(text(spine['4'])));
     var progress = unlabel(text(spine['5']));
     if (!progress) return;
@@ -171,7 +659,9 @@
 
   var refresh = Beach.live(function () {
     return Promise.all([
-      Beach.get('spine:wholeless-nights').then(renderSpine),
+      Promise.all([Beach.get('spine:wholeless-nights'), loadMirrors()]).then(function (r) {
+        renderSpine(r[0]);
+      }),
       Beach.get('pool:wholeless-nights').then(function (pool) {
         Beach.renderThread(thread, pool);
       })
