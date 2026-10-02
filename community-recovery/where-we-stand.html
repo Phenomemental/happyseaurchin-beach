@@ -3,17 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The standards · Community Recovery</title>
-<meta http-equiv="refresh" content="0; url=https://pscale-commons.github.io/community-recovery/standards.html">
-<link rel="canonical" href="https://pscale-commons.github.io/community-recovery/standards.html">
-<meta name="robots" content="noindex">
+<title>Where we stand · Community Recovery</title>
+<meta name="description" content="Where we stand: two ways of seeing where a LERO is: on the earth, among others, and on the road towards CLERO's national standards.">
+<meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151a19" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%233f6f66'/%3E%3Cpath d='M16 25V14' stroke='%23f7f5f0' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23f7f5f0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=2026-09-30d">
 <style>
-  body { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif; margin: 2rem 1rem; line-height: 1.6; background: #f7f5f0; color: #26302e; }
-  a { color: #3f6f66; }
-  @media (prefers-color-scheme: dark) { body { background: #151a19; color: #e4e9e6; } a { color: #8cc2b6; } }
+  h1 {
+    font-size: 1.9rem;
+    line-height: 1.15;
+    margin: 0;
+  }
+  .intro {
+    font-size: 1.1rem;
+    margin: 0.8rem 0 0;
+  }
+  section h2 { margin-top: 2.4rem; }
+  .section-lead { color: var(--muted); }
+
+  /* On the earth: the LEROs on the earth beach, as a simple list. */
+  .places {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .place {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+  }
+  .place.ours { border-color: var(--accent); }
+  .place-name { font-weight: 700; display: block; }
+  .place-line { display: block; color: var(--muted); font-size: 0.95rem; }
+  .ours-tag {
+    display: inline-block;
+    vertical-align: 0.15em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+    margin-left: 0.4rem;
+  }
+  .beginning {
+    border: 1px dashed var(--faint);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    background: var(--card);
+  }
+  .earth-link { margin-top: 0.8rem; }
+
+  /* On the journey: six footsteps down a vertical path. */
+  .path {
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0 1rem;
+  }
+  .step {
+    position: relative;
+    padding: 0 0 1.4rem 2.6rem;
+  }
+  .step::before {
+    /* the path between one footstep and the next */
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    top: 1.9rem;
+    bottom: 0.1rem;
+    border-left: 2px dotted var(--faint);
+  }
+  .step:last-child { padding-bottom: 0; }
+  .step:last-child::before { display: none; }
+  .step.reached::before { border-left: 2px solid var(--accent); }
+  .mark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 2px solid var(--faint);
+    background: var(--bg);
+    color: var(--muted);
+  }
+  .step.reached .mark {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .step.on .mark {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  .step-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.1rem 0 0.15rem;
+  }
+  .step.ahead .step-title { color: var(--muted); }
+  .step-line { margin: 0; }
+  .state {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+    margin-left: 0.4rem;
+    vertical-align: 0.15em;
+    border: 1px solid var(--faint);
+    color: var(--muted);
+  }
+  .step.reached .state { border-color: var(--accent); color: var(--accent); }
+  .step.on .state { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  @media (min-width: 600px) {
+    h1 { font-size: 2.3rem; }
+  }
 </style>
 </head>
 <body>
-<p><a href="https://pscale-commons.github.io/community-recovery/standards.html">The standards are now read on this page</a></p>
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#3f6f66"/><path d="M16 25V14" stroke="#f7f5f0" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#f7f5f0"/></svg>Community Recovery</a>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="./">The proposal</a>
+      <a href="meet.html">Meet the LERO</a>
+      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
+      <a href="https://pscale-commons.github.io/community-recovery/standards.html">The standards</a>
+      <a href="where-we-stand.html" aria-current="page">Where we stand</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Where we stand</h1>
+  <p class="intro">Two ways of seeing where a LERO is: on the earth, among others, and on the road towards the standards.</p>
+
+  <section id="earth" aria-labelledby="earth-title">
+    <h2 id="earth-title">On the earth</h2>
+    <p class="section-lead">The LERO&rsquo;s place on the map, beside others walking the same road.</p>
+    <div id="earth-places" aria-live="polite">
+      <p class="beginning">The map of LEROs is just beginning, and this one will appear here as it takes its place.</p>
+    </div>
+    <p class="earth-link"><a href="https://happyseaurchin.com/earth">See the whole earth</a></p>
+  </section>
+
+  <section id="journey" aria-labelledby="journey-title">
+    <h2 id="journey-title">On the journey</h2>
+    <p class="section-lead">Footsteps towards CLERO&rsquo;s standards, from first gathering to maturity.</p>
+    <ol class="path" id="path">
+      <li class="step" data-step="gathering"><span class="mark" aria-hidden="true">1</span><p class="step-title">Gathering</p><p class="step-line">People with lived experience meeting with shared purpose.</p></li>
+      <li class="step" data-step="agreeing"><span class="mark" aria-hidden="true">2</span><p class="step-title">Agreeing</p><p class="step-line">A community agreement, a name, and a voice of its own.</p></li>
+      <li class="step" data-step="constituting"><span class="mark" aria-hidden="true">3</span><p class="step-title">Constituting</p><p class="step-line">A working constitution, shaped by members.</p></li>
+      <li class="step" data-step="leading"><span class="mark" aria-hidden="true">4</span><p class="step-title">Leading</p><p class="step-line">A leadership team drawn from lived experience.</p></li>
+      <li class="step" data-step="standing"><span class="mark" aria-hidden="true">5</span><p class="step-title">Standing</p><p class="step-line">Reading itself against the standards, in its own words.</p></li>
+      <li class="step" data-step="growing"><span class="mark" aria-hidden="true">6</span><p class="step-title">Growing</p><p class="step-line">The community&rsquo;s strength and value, visible over time.</p></li>
+    </ol>
+    <p>For the full 33, see <a href="https://pscale-commons.github.io/community-recovery/standards.html">the standards</a>.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>The places on this page are read live from the earth beach.</p>
+    <p>Kept on Pscale, the open commons built by David Pinto.</p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+<script src="beach.js?v=2026-10-02a"></script>
+<script>
+// Where this LERO is on its journey. Each step is "reached", "on" (on it
+// now) or "ahead". Change these as the LERO moves along the path.
+var JOURNEY = {
+  gathering: 'reached',
+  agreeing: 'reached',
+  constituting: 'on',
+  leading: 'ahead',
+  standing: 'ahead',
+  growing: 'ahead'
+};
+
+(function () {
+  var STATE_WORDS = { reached: 'Reached', on: 'On it', ahead: 'Ahead' };
+
+  // ---- On the journey --------------------------------------------------------
+  Array.prototype.forEach.call(document.querySelectorAll('#path .step'), function (li) {
+    var state = JOURNEY[li.dataset.step];
+    if (!STATE_WORDS[state]) state = 'ahead';
+    li.classList.add(state);
+    if (state === 'on') li.setAttribute('aria-current', 'step');
+    var tag = document.createElement('span');
+    tag.className = 'state';
+    tag.textContent = STATE_WORDS[state];
+    li.querySelector('.step-title').appendChild(tag);
+  });
+
+  // ---- On the earth ----------------------------------------------------------
+  // Places sit in spatial:earth at their addresses, each a node whose own
+  // words open with its name ("name — what it is"). A place whose words
+  // say it is a LERO is shown; one naming Community Recovery is this one.
+  // Until there are any, the built-in line stays, as it does if the earth
+  // can't be reached.
+  var IS_LERO = /\bLEROs?\b|lived experience recovery/i;
+  var IS_OURS = /community recovery/i;
+
+  function leros(node, address, out) {
+    if (!node || typeof node !== 'object') return out;
+    var own = Beach.text(node).trim();
+    if (address && own && IS_LERO.test(own)) out.push(own);
+    Object.keys(node).forEach(function (k) {
+      if (/^\d+$/.test(k)) leros(node[k], address + k, out);
+      else if (k === '_' && typeof node._ === 'object') leros(node._, address, out);
+    });
+    return out;
+  }
+
+  function el(tag, cls, t) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (t != null) e.textContent = t;
+    return e;
+  }
+
+  Beach.earth.get('spatial:earth').then(function (earth) {
+    var found = leros(earth, '', []);
+    if (!found.length) return;
+    found.sort(function (a, b) { return IS_OURS.test(b) - IS_OURS.test(a); });
+    var list = el('ul', 'places');
+    found.forEach(function (words) {
+      var cut = words.indexOf(' — ');
+      var li = el('li', 'place' + (IS_OURS.test(words) ? ' ours' : ''));
+      var name = el('span', 'place-name', cut > 0 ? words.slice(0, cut) : words);
+      if (IS_OURS.test(words)) name.appendChild(el('span', 'ours-tag', 'This LERO'));
+      li.appendChild(name);
+      if (cut > 0) li.appendChild(el('span', 'place-line', words.slice(cut + 3)));
+      list.appendChild(li);
+    });
+    var box = document.getElementById('earth-places');
+    box.textContent = '';
+    box.appendChild(list);
+    if (!found.some(function (w) { return IS_OURS.test(w); })) {
+      box.appendChild(el('p', 'section-lead', 'This one will appear here as it takes its place.'));
+    }
+  }, function () { /* out of reach: the built-in line stays */ });
+})();
+</script>
 </body>
 </html>
