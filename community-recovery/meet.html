@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meet the LERO · Community Recovery</title>
-<meta name="description" content="Meet the LERO: Community Recovery, a lived experience recovery organisation in the making. Who we are and what we stand on, in the words of our working draft constitution.">
+<meta name="description" content="Meet the LERO: a lived experience recovery organisation in the making. Who they are, in the words of their working draft constitution.">
 <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151a19" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%233f6f66'/%3E%3Cpath d='M16 25V14' stroke='%23f7f5f0' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23f7f5f0'/%3E%3C/svg%3E">
@@ -37,16 +37,39 @@
     line-height: 1.3;
     margin: 1.4rem 0 0.3rem;
   }
-  .pill { margin-top: 0.8rem; }
-  .welcome { margin-top: 1.4rem; }
-  .welcome p:last-child { margin-bottom: 0; }
+  /* A seedling breaking ground: the favicon's sprout, grown big. */
+  .seedling {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    margin: 0 auto 1.2rem;
+  }
+  .s-soil { fill: var(--accent-soft); }
+  .s-crack { fill: none; stroke: var(--faint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .s-stem { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+  .s-leaf { fill: var(--accent); }
+  .s-leaf-small { opacity: 0.85; }
+  .s-sprout { transform-origin: 120px 112px; animation: s-rise 2.4s ease-out both; }
+  @keyframes s-rise {
+    from { transform: scale(0.6) translateY(10px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .s-sprout { animation: none; }
+  }
+  .welcome { margin: 1.4rem 0 0; font-size: 1.1rem; }
+  .grounded {
+    color: var(--muted);
+    margin: 1rem 0 0;
+  }
   .opening-note {
     color: var(--muted);
     font-style: italic;
     font-size: 0.92rem;
     margin: 0.5rem 0 0;
   }
-  blockquote { margin-top: 1.4rem; }
+  blockquote { margin: 1.4rem 0; }
   /* The first step: Join us, in the accent colour, full width on a phone. */
   .join-button {
     display: block;
@@ -72,22 +95,11 @@
   }
   .words > .sect:first-child { border-top: 0; }
   .words .kids p { margin: 0 0 0.9rem; }
-  .chime { margin: 0.2rem 0 0.8rem; }
   .draft-line {
     font-size: 0.92rem;
     color: var(--muted);
     margin: 0.6rem 0 0.8rem;
   }
-  #notice { margin-top: 2rem; }
-  /* The notice from the community agreement. */
-  .notice {
-    border: 1px solid var(--faint);
-    border-radius: 12px;
-    background: var(--card);
-    padding: 1rem 1.1rem;
-  }
-  .notice p:last-child { margin-bottom: 0; }
-  .notice-title { font-weight: 700; margin-bottom: 0.3rem; }
   @media (min-width: 600px) {
     h1 { font-size: 2.3rem; }
   }
@@ -109,22 +121,26 @@
 </header>
 
 <main class="wrap">
-  <h1>Meet the LERO</h1>
-  <p class="sub">Community Recovery, a lived experience recovery organisation in the making</p>
-  <span class="pill">Working draft &middot; September 2026</span>
-  <p class="opening-note" id="opening-note" role="status">Opening our words&hellip;</p>
+  <svg class="seedling" viewBox="0 0 240 150" role="img" aria-label="A seedling breaking ground">
+    <path class="s-soil" d="M0 118 C50 108 90 106 120 107 C150 106 190 108 240 118 V150 H0 Z"/>
+    <path class="s-crack" d="M104 110 L112 116 L120 108 L128 116 L136 110"/>
+    <g class="s-sprout">
+      <path class="s-stem" d="M120 112 V58"/>
+      <path class="s-leaf" d="M120 76 C120 50 135 36 160 36 C160 61 145 76 120 76 Z"/>
+      <path class="s-leaf s-leaf-small" d="M120 88 C120 69 109 58 90 58 C90 77 101 88 120 88 Z"/>
+    </g>
+  </svg>
 
-  <div class="welcome">
-    <p>Lived experience recovery organisations are one of the quiet successes of recovery in this country: communities that rise from people who have lived it, and stay to hold the door open for others. Each one is different, shaped by its people and its place. All of them are worth celebrating.</p>
-    <p>Below is a LERO in the making: Community Recovery, as it shapes itself in its members&rsquo; own words. Its constitution is still a working draft, its leadership still forming. That&rsquo;s the point. This is what the beginning looks like.</p>
-  </div>
+  <h1>Meet the LERO</h1>
+  <p class="sub">A lived experience recovery organisation in the making</p>
+  <p class="opening-note" id="opening-note" role="status">Opening their words&hellip;</p>
+
+  <p class="welcome">LEROs rise from people who have lived it, and stay to hold the door open for others. This one is just beginning.</p>
 
   <blockquote>The truth about a recovery community should come from its members' own voices, kept by them and seen together.</blockquote>
 
-  <p class="how">Tap a part to open it.</p>
-
   <section class="part open" id="who-we-are">
-    <button class="fold" type="button" aria-expanded="true"><span class="fold-words"><span class="fold-title">Who we are</span><span class="fold-gloss">In the words of our working draft constitution</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+    <button class="fold" type="button" aria-expanded="true"><span class="fold-words"><span class="fold-title">Who they are</span><span class="fold-gloss">In the words of their working draft constitution</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
     <div class="kids">
       <div class="words" id="who-we-are-words">
         <section class="sect" data-pos="1.2.2">
@@ -144,49 +160,15 @@
           <div class="kids" hidden></div>
         </section>
       </div>
-      <p class="draft-line">In the words of our <a href="https://pscale-commons.github.io/community-recovery/constitution.html">working draft constitution</a>, which members are shaping now.</p>
+      <p class="draft-line">In the words of their <a href="https://pscale-commons.github.io/community-recovery/constitution.html">working draft constitution</a>, which members are shaping now.</p>
     </div>
   </section>
 
-  <section class="part" id="stand">
-    <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What we stand on</span><span class="fold-gloss">Connectedness, hope, identity, meaning and empowerment &mdash; and recovery first</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-    <div class="kids" hidden>
-      <div class="words" id="stand-words">
-        <p class="chime" data-pos="1.3.1.1" hidden></p>
-        <section class="sect" data-pos="1.3.1.2">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Connectedness</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-        <section class="sect" data-pos="1.3.1.3">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Hope</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-        <section class="sect" data-pos="1.3.1.4">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Identity</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-        <section class="sect" data-pos="1.3.1.5">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Meaning</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-        <section class="sect" data-pos="1.3.1.6">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Empowerment</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-        <section class="sect" data-pos="1.3.2.1">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Recovery First</span><span class="fold-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-          <div class="kids" hidden></div>
-        </section>
-      </div>
-    </div>
-  </section>
+  <p class="grounded">Grounded in connection, hope, identity, meaning and empowerment, and recovery first.</p>
 
   <a class="join-button" href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
   <p class="already">Already with us? Have your say on <a href="https://pscale-commons.github.io/community-recovery/constitution.html">the constitution</a> and <a href="https://pscale-commons.github.io/community-recovery/standards.html">the standards</a>.</p>
 
-  <section id="notice" aria-label="Important">
-    <div class="notice" id="notice-words" hidden></div>
-  </section>
 </main>
 
 <footer>
@@ -204,6 +186,28 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
 </script>
 <script src="beach.js?v=2026-10-02a"></script>
 <script>
+// This page is an offer to any LERO, so what it reads live from the beach
+// never names the area it began in, its providers, or the person
+// coordinating it. A sentence that does is left out as it arrives.
+var Unsaid = /northamptonshire|forward trust|commission|matthew|bushell|phenomemental/i;
+function unsaid(v) {
+  if (typeof v === 'string') {
+    if (!Unsaid.test(v)) return v;
+    return v.split(/(\n[ \t]*\n+)/).map(function (p) {
+      if (/^\n/.test(p) || !Unsaid.test(p)) return p;
+      return (p.match(/[^.!?]+(?:[.!?]+["\u201d\u2019)]*\s*|$)/g) || [])
+        .filter(function (x) { return !Unsaid.test(x); }).join('').trim();
+    }).join('').replace(/(\n[ \t]*){3,}/g, '\n\n').trim();
+  }
+  if (v && typeof v === 'object') {
+    var out = Array.isArray(v) ? [] : {};
+    Object.keys(v).forEach(function (k) { out[k] = unsaid(v[k]); });
+    return out;
+  }
+  return v;
+}
+</script>
+<script>
 (function () {
   // Where on the beach each part of this page comes from, in Community
   // Recovery's own place. Positions are written key by key through the
@@ -211,12 +215,9 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
   // is in the page already, marked with data-pos, so its title shows at
   // once; the words fill it as they arrive.
   var CONSTITUTION = 'spine:constitution';
-  var AGREEMENT = 'spine:agreement';
-  var WHO_WE_ARE = ['1.2.2', '1.2.3', '1.2.4', '1.2.5'];            // purpose, vision, who we serve, what makes us distinctive
-  var WHAT_WE_STAND_ON = ['1.3.1.1', '1.3.1.2', '1.3.1.3', '1.3.1.4', '1.3.1.5', '1.3.1.6', '1.3.2.1'];  // CHIME, its five parts, recovery first
-  var NOTICE = '3.1';                                                // "Important." and what follows
+  var WHO_WE_ARE = ['1.2.2', '1.2.3', '1.2.4', '1.2.5'];            // purpose, vision, who they serve, what makes them distinctive
 
-  var UNREACHED = 'Our words are kept on the beach and couldn\u2019t be reached just now. Please try again shortly.';
+  var UNREACHED = 'Their words are kept on the beach and couldn\u2019t be reached just now. Please try again shortly.';
 
   Beach.folds();
   if (location.hash) Beach.landOnHash();
@@ -243,7 +244,7 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
 
   function read(block) {
     return Beach.place.get(block).then(function (b) {
-      return b && typeof b === 'object' ? b : null;
+      return b && typeof b === 'object' ? unsaid(b) : null;
     }, function () { return null; });
   }
 
@@ -272,31 +273,11 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
     return all;
   }
 
-  // The notice, word for word: its first line ("Important.") and its text.
-  function fillNotice(a) {
-    var box = document.getElementById('notice-words');
-    var ls = a ? lines(Beach.text(Beach.place.at(a, NOTICE))) : [];
-    if (ls.length < 2 || !/^Important\.?$/.test(ls[0])) return false;
-    box.textContent = '';
-    box.appendChild(el('p', 'notice-title', ls[0]));
-    ls.slice(1).forEach(function (l) { box.appendChild(el('p', null, l)); });
-    box.hidden = false;
-    box.classList.add('arrived');
-    return true;
-  }
-
   // One quiet line while the words open; gone when they have, or saying
   // calmly that they couldn't be reached (the folds keep their titles).
   var note = document.getElementById('opening-note');
-  Promise.all([
-    read(CONSTITUTION).then(function (c) {
-      var a = fillClauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE);
-      var b = fillClauses(document.getElementById('stand-words'), c, WHAT_WE_STAND_ON);
-      return a && b;
-    }),
-    read(AGREEMENT).then(fillNotice)
-  ]).then(function (ok) {
-    if (ok[0] && ok[1]) note.remove();
+  read(CONSTITUTION).then(function (c) {
+    if (fillClauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE)) note.remove();
     else note.textContent = UNREACHED;
   });
 })();
