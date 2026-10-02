@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Where we stand · Community Recovery</title>
-<meta name="description" content="Where we stand: two ways of seeing where a LERO is: on the earth, among others, and on the road towards CLERO's national standards.">
+<meta name="description" content="Where we stand: where this LERO is on the earth, and on its journey towards CLERO's national standards.">
 <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151a19" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%233f6f66'/%3E%3Cpath d='M16 25V14' stroke='%23f7f5f0' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23f7f5f0'/%3E%3C/svg%3E">
@@ -13,16 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=2026-09-30d">
 <style>
-  /* Get your LERO on the map: the beach's own globe, with a way to open
-     it whole (and a way in if it won't show inside this page). */
-  .hero { margin: 0 0 1.6rem; }
-  .hero-line {
-    font-size: 1.45rem;
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--accent);
-    margin: 0 0 0.6rem;
-  }
+  /* Get your LERO on the map: the beach's own globe. */
   .globe {
     display: block;
     width: 100%;
@@ -31,21 +22,10 @@
     border-radius: 12px;
     background: var(--card);
   }
-  .globe-open {
-    display: block;
-    margin-top: 0.6rem;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 0.8rem 1rem;
-    color: var(--ink);
-    text-decoration: none;
-    transition: border-color 0.2s;
+  .globe-link {
+    font-size: 0.92rem;
+    margin: 0.5rem 0 0;
   }
-  .globe-open:hover,
-  .globe-open:focus-visible { border-color: var(--accent); }
-  .globe-open-title { display: block; font-weight: 700; color: var(--accent); }
-  .globe-open-text { display: block; color: var(--muted); font-size: 0.95rem; }
   h1 {
     font-size: 1.9rem;
     line-height: 1.15;
@@ -57,43 +37,6 @@
   }
   section h2 { margin-top: 2.4rem; }
   .section-lead { color: var(--muted); }
-
-  /* On the earth: the LEROs on the earth beach, as a simple list. */
-  .places {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1rem;
-    display: grid;
-    gap: 0.7rem;
-  }
-  .place {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 0.8rem 1rem;
-  }
-  .place.ours { border-color: var(--accent); }
-  .place-name { font-weight: 700; display: block; }
-  .place-line { display: block; color: var(--muted); font-size: 0.95rem; }
-  .ours-tag {
-    display: inline-block;
-    vertical-align: 0.15em;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: #fff;
-    background: var(--accent);
-    border-radius: 999px;
-    padding: 0.05rem 0.55rem;
-    margin-left: 0.4rem;
-  }
-  .beginning {
-    border: 1px dashed var(--faint);
-    border-radius: 12px;
-    padding: 0.9rem 1rem;
-    background: var(--card);
-  }
-  .earth-link { margin-top: 0.8rem; }
 
   /* On the journey: six footsteps down a vertical path. */
   .path {
@@ -185,25 +128,13 @@
 </header>
 
 <main class="wrap">
-  <section class="hero" aria-labelledby="hero-line">
-    <p class="hero-line" id="hero-line">Get your LERO on the map</p>
-    <iframe class="globe" src="https://happyseaurchin.com/globe#3" title="The beach&rsquo;s globe" loading="lazy" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    <a class="globe-open" href="https://happyseaurchin.com/globe#3">
-      <span class="globe-open-title">Open the globe</span>
-      <span class="globe-open-text">See the whole earth, and where LEROs are taking their place on it.</span>
-    </a>
-  </section>
-
   <h1>Where we stand</h1>
-  <p class="intro">Two ways of seeing where a LERO is: on the earth, among others, and on the road towards the standards.</p>
+  <p class="intro">Where this LERO is on the earth, and on its journey towards the standards.</p>
 
-  <section id="earth" aria-labelledby="earth-title">
-    <h2 id="earth-title">On the earth</h2>
-    <p class="section-lead">The LERO&rsquo;s place on the map, beside others walking the same road.</p>
-    <div id="earth-places" aria-live="polite">
-      <p class="beginning">The map of LEROs is just beginning, and this one will appear here as it takes its place.</p>
-    </div>
-    <p class="earth-link"><a href="https://happyseaurchin.com/earth">See the whole earth</a></p>
+  <section id="map" aria-labelledby="map-title">
+    <h2 id="map-title">Get your LERO on the map</h2>
+    <iframe class="globe" src="https://happyseaurchin.com/globe#3" title="The beach&rsquo;s globe" loading="lazy" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <p class="globe-link"><a href="https://happyseaurchin.com/globe#3">Open the globe</a></p>
   </section>
 
   <section id="journey" aria-labelledby="journey-title">
@@ -223,12 +154,10 @@
 
 <footer>
   <div class="wrap">
-    <p>The places on this page are read live from the earth beach.</p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
-<script src="beach.js?v=2026-10-02a"></script>
 <script>
 // Where this LERO is on its journey. Each step is "reached", "on" (on it
 // now) or "ahead". Change these as the LERO moves along the path.
@@ -244,7 +173,6 @@ var JOURNEY = {
 (function () {
   var STATE_WORDS = { reached: 'Reached', on: 'On it', ahead: 'Ahead' };
 
-  // ---- On the journey --------------------------------------------------------
   Array.prototype.forEach.call(document.querySelectorAll('#path .step'), function (li) {
     var state = JOURNEY[li.dataset.step];
     if (!STATE_WORDS[state]) state = 'ahead';
@@ -255,55 +183,6 @@ var JOURNEY = {
     tag.textContent = STATE_WORDS[state];
     li.querySelector('.step-title').appendChild(tag);
   });
-
-  // ---- On the earth ----------------------------------------------------------
-  // Places sit in spatial:earth at their addresses, each a node whose own
-  // words open with its name ("name — what it is"). A place whose words
-  // say it is a LERO is shown; one naming Community Recovery is this one.
-  // Until there are any, the built-in line stays, as it does if the earth
-  // can't be reached.
-  var IS_LERO = /\bLEROs?\b|lived experience recovery/i;
-  var IS_OURS = /community recovery/i;
-
-  function leros(node, address, out) {
-    if (!node || typeof node !== 'object') return out;
-    var own = Beach.text(node).trim();
-    if (address && own && IS_LERO.test(own)) out.push(own);
-    Object.keys(node).forEach(function (k) {
-      if (/^\d+$/.test(k)) leros(node[k], address + k, out);
-      else if (k === '_' && typeof node._ === 'object') leros(node._, address, out);
-    });
-    return out;
-  }
-
-  function el(tag, cls, t) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (t != null) e.textContent = t;
-    return e;
-  }
-
-  Beach.earth.get('spatial:earth').then(function (earth) {
-    var found = leros(earth, '', []);
-    if (!found.length) return;
-    found.sort(function (a, b) { return IS_OURS.test(b) - IS_OURS.test(a); });
-    var list = el('ul', 'places');
-    found.forEach(function (words) {
-      var cut = words.indexOf(' — ');
-      var li = el('li', 'place' + (IS_OURS.test(words) ? ' ours' : ''));
-      var name = el('span', 'place-name', cut > 0 ? words.slice(0, cut) : words);
-      if (IS_OURS.test(words)) name.appendChild(el('span', 'ours-tag', 'This LERO'));
-      li.appendChild(name);
-      if (cut > 0) li.appendChild(el('span', 'place-line', words.slice(cut + 3)));
-      list.appendChild(li);
-    });
-    var box = document.getElementById('earth-places');
-    box.textContent = '';
-    box.appendChild(list);
-    if (!found.some(function (w) { return IS_OURS.test(w); })) {
-      box.appendChild(el('p', 'section-lead', 'This one will appear here as it takes its place.'));
-    }
-  }, function () { /* out of reach: the built-in line stays */ });
 })();
 </script>
 </body>
