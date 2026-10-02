@@ -380,7 +380,39 @@
     color: var(--muted);
     margin: 0.5rem 0 0;
   }
-  .offer-head { margin: 1.8rem 0 0.4rem; }
+  .opening-pitch { margin-top: 1.4rem; }
+  .opening-pitch blockquote {
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    margin: 0 0 1.4rem;
+    padding: 0.2rem 0 0.2rem 1rem;
+    border-left: 3px solid var(--accent);
+  }
+  /* What it does: eight cards, one column on a phone, two when there's room. */
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin: 0;
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+    margin: 0 0 0.3rem;
+  }
+  .card p { margin: 0; }
+  @media (min-width: 640px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+  }
   .meet-button {
     display: block;
     text-align: center;
@@ -472,24 +504,93 @@
     <h1 class="offer-title">Recovery, held by its own community</h1>
     <p class="offer-sub">A digital home for lived experience recovery organisations</p>
 
-    <h2 class="offer-head">Why</h2>
-    <p>A lived experience recovery organisation is built by people who have been through it, for those coming after. Its value grows as its community grows stronger, easing burdens on health, housing, justice, families and work. Yet most of that value stays invisible: in conversations, in trust, in people quietly finding their way back to life.</p>
-
-    <h2 class="offer-head">The offer</h2>
-    <p>An open, free home for any LERO, from its first gathering to maturity. Members speak in their own words, shape their own constitution, see where they stand against CLERO&rsquo;s national standards, and show their journey as it happens.</p>
-
-    <h2 class="offer-head">What&rsquo;s different</h2>
-    <p>Nothing is reported upward. Everything is kept by the community itself, and each person&rsquo;s voice stays their own, seen together.</p>
-
-    <h2 class="offer-head">See it working</h2>
-    <p>Below is a LERO in the making, shown as it grows, so you can see the offer working rather than just read about it.</p>
+    <div class="opening-pitch" id="pitch">
+      <blockquote>The truth about a recovery community should come from its members&rsquo; own voices, kept by them and seen together.</blockquote>
+    <ol class="pitch" id="pitch-frames">
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
+          <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
+          <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Value nobody can see</h3>
+          <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
+          <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>What&rsquo;s theirs stays theirs</h3>
+          <p>Each member keeps their own account, in their own words, under their own key.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
+          <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
+          <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
+          <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>What happens together is ours</h3>
+          <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
+          <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
+          <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
+          <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
+          <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Growth, seen over time</h3>
+          <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Evidence, in members&rsquo; own words</h3>
+          <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture that&rsquo;s been missing.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
+          <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
+          <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>It travels by recognition</h3>
+          <p>An open, free offer to any LERO, from its first gathering to maturity: pull, not push.</p>
+        </div>
+      </li>
+    </ol>
+      <p class="pitch-closing">Below is a LERO in the making, so you can see it working rather than just read about it.</p>
+    </div>
 
     <a class="meet-button" href="meet.html">Meet the LERO</a>
 
     <p class="how">The detail, for those who want it: the problem, the design, the standards and how it&rsquo;s built &mdash; tap a part to open it.</p>
 
     <section class="part" id="g-why">
-      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Why this matters</span><span class="fold-gloss">The problem, the pitch, what is new, and what we are not claiming</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Why this matters</span><span class="fold-gloss">The problem and what is new</span></span><span class="chev" aria-hidden="true">⌄</span></button>
       <div class="kids" hidden>
         <section class="sect" id="problem">
           <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The problem</span><span class="fold-gloss">Compounding value that nobody can see.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
@@ -533,93 +634,6 @@
           </ul>
           </div>
         </section>
-        <section class="sect" id="pitch">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The pitch</span><span class="fold-gloss">A LERO’s worth compounds over years, but evaluation sees snapshots.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
-          <div class="kids" hidden>
-          <ol class="pitch" id="pitch-frames">
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
-                <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
-                <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>Value nobody can see</h3>
-                <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
-              </div>
-            </li>
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
-                <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
-                <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>What&rsquo;s theirs stays theirs</h3>
-                <p>Each member keeps their own account, in their own words, under their own key.</p>
-              </div>
-            </li>
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
-                <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
-                <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
-                <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
-                <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>What happens together is ours</h3>
-                <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
-              </div>
-            </li>
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
-                <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
-                <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
-                <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
-                <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>Growth, seen over time</h3>
-                <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
-              </div>
-            </li>
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
-                <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
-                <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
-                <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
-                <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>Evidence, in members&rsquo; own words</h3>
-                <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture that&rsquo;s been missing.</p>
-              </div>
-            </li>
-            <li class="pitch-frame">
-              <svg viewBox="0 0 60 60" aria-hidden="true">
-                <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
-                <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
-                <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
-                <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
-                <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
-              </svg>
-              <div class="pitch-words">
-                <h3>It travels by recognition</h3>
-                <p>A working example in Community Recovery, offered to other LEROs: pull, not push.</p>
-              </div>
-            </li>
-          </ol>
-          <p class="pitch-closing">A LERO that can show itself, in its members&rsquo; own words.</p>
-
-          <h3 id="one-sentence">The one sentence</h3>
-          <div id="one-live">
-          <p class="lead">The truth about a recovery community should come from its members' own voices, kept by them and seen together.</p>
-          </div>
-          </div>
-        </section>
         <section class="sect" id="new">
           <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What is genuinely new</span><span class="fold-gloss">People keep their own story and it still counts together.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
           <div class="kids" hidden>
@@ -633,27 +647,6 @@
             <li>It is open and portable.</li>
           </ul>
           </div>
-          </div>
-        </section>
-        <section class="sect" id="not-claiming">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">What we're not claiming</span><span class="fold-gloss">The structure doesn't, by itself, prevent chaos as Community Recovery grows from a few people to many.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
-          <div class="kids" hidden>
-          <p>
-            The structure doesn't, by itself, prevent chaos as Community Recovery
-            grows from a few people to many. A fold and a lighthouse are places
-            for the work to live; they don't do the work. Someone has to tend
-            them. This is a live proposal, not a finished design. The card and
-            the bank are visions; the rest is built or being built. We intend to
-            test the whole design against real decisions with real members
-            before relying on it further.
-          </p>
-
-          <h3>Wider questions</h3>
-          <ul>
-            <li>Whether and how a community bank is legally possible, and with whom: a credit union, a community benefit society, the regulators.</li>
-            <li>We would welcome CLERO, and the LEROs already leading the way, to take this up, test it, and shape it as a toolkit for the national network. Its standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</li>
-            <li>What evidence a pilot needs to gather to persuade funders and public bodies.</li>
-          </ul>
           </div>
         </section>
       </div>
@@ -703,45 +696,31 @@
       </div>
     </section>
     <section class="part" id="g-ground">
-      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">The community, and the LEROs leading the way</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">LEROs across the UK</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
       <div class="kids" hidden>
-        <section class="sect" id="ground">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The community</span><span class="fold-gloss">The organisation is called Community Recovery: independent, member-led, and at the start of its life.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+        <section class="sect" id="across">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs across the UK</span><span class="fold-gloss">Lived experience recovery organisations have grown across the country, built by people in recovery for people in…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
           <div class="kids" hidden>
-
-          <p>
-            The organisation is called Community Recovery: independent,
-            member-led, and at the start of its life. Its people are in recovery
-            from addiction, gambling, homelessness, prison and trauma. Some live
-            with bipolar disorder or schizophrenia. Some have twenty years of
-            recovery; some arrived last week.
-          </p>
-          <p>
-            What they share is a culture of contribution: giving back what was
-            given to them. That culture is the thing the whole design is built to
-            serve and make visible.
-          </p>
+          <p>Lived experience recovery organisations have grown across the country, built by people in recovery for people in recovery. Some are twenty years established; many are just beginning. Yet there&rsquo;s still no consistent understanding of what a LERO is, or how its worth can be seen.</p>
           </div>
         </section>
         <section class="sect" id="north">
-          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs leading the way</span><span class="fold-gloss">Across the north and the Midlands, established lived experience recovery organisations are already leading the way…</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs leading the way</span><span class="fold-gloss">Across the north and the Midlands, established LEROs are already leading the way, beacons for the movement: among them…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
           <div class="kids" hidden>
-          <p>
-            Across the north and the Midlands, established lived experience
-            recovery organisations are already leading the way, beacons for the
-            movement: among them Sheffield Recovery Community, whose chair sits
-            on CLERO's board; the long-standing LEROs of West Yorkshire; Chase
-            Recovery; and DATUS in Birmingham, twenty years established.
-          </p>
-          <p>
-            They show what a LERO becomes when it is led by its members and
-            given time.
-          </p>
-          <p>
-            Community Recovery is new, and learns from them. What it offers back
-            is a way for any LERO, new or established, to show that growth in its
-            members' own words.
-          </p>
+          <p>Across the north and the Midlands, established LEROs are already leading the way, beacons for the movement: among them Sheffield Recovery Community, whose chair sits on CLERO&rsquo;s board; the long-standing LEROs of West Yorkshire; Chase Recovery; and DATUS in Birmingham, twenty years established.</p>
+          <p>They show what a LERO becomes when it is led by its members and given time.</p>
+          </div>
+        </section>
+        <section class="sect" id="invitation">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">An invitation</span><span class="fold-gloss">We&rsquo;d welcome CLERO, and the LEROs leading the way, to take this up, test it, and shape it as a toolkit for the…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>We&rsquo;d welcome CLERO, and the LEROs leading the way, to take this up, test it, and shape it as a toolkit for the national network. CLERO&rsquo;s standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</p>
+          </div>
+        </section>
+        <section class="sect" id="honestly">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Honestly</span><span class="fold-gloss">This is a live proposal, not a finished design.</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>This is a live proposal, not a finished design. It&rsquo;s being tested with a LERO in the making, against real decisions with real members, before it&rsquo;s relied on further.</p>
           </div>
         </section>
       </div>
@@ -1611,42 +1590,26 @@
     <p class="live-note" id="outside-live-note"></p>
   </div>
 
-  <h2 class="design-title" id="design">The design, chapter by chapter</h2>
-  <section id="opening" class="prose" aria-live="polite">
-    <p class="calm">Opening the book&hellip;</p>
-  </section>
-
-  <nav class="contents" id="contents-wrap" aria-label="Contents" hidden>
-    <h2>Contents</h2>
-    <ol id="contents"></ol>
-  </nav>
-
-  <div id="chapters"></div>
-
-  <section id="room-wrap" hidden>
-    <h2>In the room</h2>
-    <p class="calm">Other comments, not tied to one chapter.</p>
-    <div class="thread" id="room"></div>
-  </section>
-
-  <section id="chapter-9" class="part" hidden>
-    <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Chapter 9 &middot; Provenance, notes for the builders, and how to take part</span><span class="fold-gloss" id="builders-gloss"></span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-    <div class="kids builders-kids" hidden>
-      <div id="chapter-9-text" class="text"></div>
-      <section class="sect" id="builders">
-        <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Notes for the builders</span><span class="fold-gloss">Old names, open questions, the build brief and the work list</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
-        <div class="kids" hidden>
-          <div id="builders-text" class="text"></div>
-        </div>
-      </section>
-    </div>
+  <section id="does" aria-labelledby="does-title">
+    <h2 class="design-title" id="does-title">What it does</h2>
+    <ul class="cards">
+      <li class="card"><h3>A front door in your members&rsquo; own words</h3><p>Your LERO&rsquo;s home page is written by its people, not about them, and it changes as they do.</p></li>
+      <li class="card"><h3>A welcome anyone can use</h3><p>From hello to &lsquo;you&rsquo;re in&rsquo; on a phone, with no technical knowledge needed. What should stay on paper, stays on paper.</p></li>
+      <li class="card"><h3>Your constitution, shaped together</h3><p>Members read it clause by clause and say yes, suggest a change, or say they&rsquo;re not sure. Decisions are made in the open.</p></li>
+      <li class="card"><h3>The standards, in your own words</h3><p>Read your LERO against CLERO&rsquo;s 33 national standards, at your own pace, without anyone monitoring you.</p></li>
+      <li class="card"><h3>Recovery capital, privately held</h3><p>Each person can see their own recovery grow, gently and privately. It belongs to them.</p></li>
+      <li class="card"><h3>Your journey over time</h3><p>What your LERO is aiming for this week, this season and this year, with everyone able to feed back.</p></li>
+      <li class="card"><h3>On the map</h3><p>Your LERO&rsquo;s place on the earth, beside the people and places that help recovery, and other LEROs walking the same road.</p></li>
+      <li class="card"><h3>Growth you can see</h3><p>The community&rsquo;s value made visible as it grows, so its worth is seen over years, not snapshots.</p></li>
+    </ul>
+    <p class="calm">The full design is kept on the beach for anyone who wants the depth.</p>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
     <p id="live-note"></p>
-    <p>This page is read live as it opens. The only things it writes are a comment or a note you choose to leave.</p>
+    <p>This page is read live as it opens. The only thing it writes is a note you choose to leave.</p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
@@ -1749,7 +1712,7 @@ function unsaid(v) {
   // fails the name check, puts the saved version back. The offer's parts
   // (leros to one) are read together but shown in sections of their own.
   var sections = {};
-  ['vision', 'offer', 'leros', 'clero', 'new', 'ordinary', 'one', 'gaps'].forEach(function (k) {
+  ['vision', 'offer', 'leros', 'clero', 'new', 'ordinary', 'gaps'].forEach(function (k) {
     var box = document.getElementById(k + '-live');
     sections[k] = {
       box: box,
@@ -1861,7 +1824,7 @@ function unsaid(v) {
     }
     // The offer itself is the four things and "for members", together.
     parts.offer = parts.four && parts.offer ? parts.four.concat(parts.offer) : null;
-    ['offer', 'leros', 'clero', 'new', 'ordinary', 'one'].forEach(function (k) {
+    ['offer', 'leros', 'clero', 'new', 'ordinary'].forEach(function (k) {
       show(k, parts[k] ? node : null, function (n, frag) {
         parts[k].forEach(function (e) { frag.appendChild(e); });
       });
@@ -1879,8 +1842,6 @@ function unsaid(v) {
   // on its own, so a refresh fetches a few kilobytes, not the whole block:
   //   1.8's own text (the vision), without the long paper beneath it;
   //   1.9 and its sections (the offer); and 7.3 (the gaps).
-  // (9.1, the open questions for the builders, is no longer shown here:
-  // those questions live in the book's builders' notes.)
   var PROPOSAL = 'lero-nnh-design-proposal';
   function readProposal() {
     return [
@@ -1979,824 +1940,6 @@ function unsaid(v) {
   });
 
   Beach.wireNoteForm(form, 'pool:Phenomemental');
-})();
-</script>
-<script>
-(function () {
-  // "See it live" beneath each chapter title, by chapter number: the pages
-  // where that part of the design can be seen working. A chapter listed
-  // with no pages shows a quiet "Not built yet"; one not listed shows
-  // nothing. Change this list when the book or the pages change.
-  var CR = 'https://pscale-commons.github.io/community-recovery/';
-  var SEE_LIVE = {
-    1: [['Meet the LERO', 'meet.html']],
-    2: [],
-    3: [['The constitution', CR + 'constitution.html'], ['The standards', CR + 'standards.html'],
-        ['The agreement', CR + 'agreement.html']],
-    4: [],
-    5: [['Where we stand', 'where-we-stand.html']],
-    8: [['Join us', CR + 'join.html']]
-  };
-
-  var BEACH_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
-  var BOOK = 'proposal:community-recovery';
-  var POOL = 'pool:community-recovery-design';
-  var FAMILY = 'community-recovery-design:';
-  // The mirrors' own page: everyone's reflections, and a place to write yours.
-  var WALK = 'https://happyseaurchin.com/walk/community-recovery-design';
-  var CHAPTERS = 8;
-  var ROOM_RECENT = 8;   // untagged messages shown at the end
-  var LONG = 700;        // a reflection or comment longer than this opens with "Read all"
-
-  // ---- Reading the beach ---------------------------------------------------
-  function get(block) {
-    return fetch(BEACH_URL + '?block=' + encodeURIComponent(block), { cache: 'no-store' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(unsaid);
-  }
-  // The beach's front door: every block's name.
-  function index() {
-    return fetch(BEACH_URL, { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
-  }
-  // A read that never throws: the block, or null if it couldn't be had.
-  function read(block) {
-    return get(block).then(function (b) {
-      return b && typeof b === 'object' ? b : null;
-    }, function () { return null; });
-  }
-  // A position's own text: a string leaf, or the "_" of a node.
-  function text(node) {
-    if (typeof node === 'string') return node;
-    if (node && typeof node._ === 'string') return node._;
-    return '';
-  }
-
-  function el(tag, cls, t) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (t != null) e.textContent = t;
-    return e;
-  }
-  function $(id) { return document.getElementById(id); }
-
-  // "text <link>." with the link showing its own address.
-  function withLink(cls, before, href, after) {
-    var p = el('p', cls, before);
-    var a = el('a', null, href.replace(/^https:\/\//, ''));
-    a.href = href;
-    p.appendChild(a);
-    if (after) p.appendChild(document.createTextNode(after));
-    return p;
-  }
-
-  // ---- Sealed content ------------------------------------------------------
-  // Encrypted text is never shown. Anything that looks like ciphertext, or
-  // a node marked as sealed, is treated as private.
-  var SEAL_KEYS = /^(gray|grey|cipher|ciphertext|ct|iv|nonce|salt|encrypted|sealed|enc)$/i;
-  function sealed(v) {
-    if (v && typeof v === 'object') {
-      return Object.keys(v).some(function (k) { return SEAL_KEYS.test(k); }) ||
-        (typeof v._ === 'string' && sealed(v._));
-    }
-    if (typeof v !== 'string') return false;
-    var s = v.trim();
-    if (!s) return false;
-    if (/^(gray|grey|enc|encrypted|sealed|cipher)\s*[:|{]/i.test(s)) return true;
-    if (/^-----BEGIN /.test(s)) return true;
-    if (s.charAt(0) === '{' && /"(ct|ciphertext|iv|nonce|gray)"\s*:/.test(s)) return true;
-    return s.length >= 40 && !/\s/.test(s) && /^[A-Za-z0-9+\/=_\-.:]+$/.test(s);
-  }
-
-  // A position's words: its own text, then any plain words beneath it.
-  function words(node) {
-    var out = [];
-    var own = text(node).trim();
-    if (own) out.push(own);
-    if (node && typeof node === 'object') {
-      for (var i = 1; i <= 9; i++) {
-        var t = text(node[String(i)]).trim();
-        if (t && !sealed(node[String(i)])) out.push(t);
-      }
-    }
-    return out;
-  }
-
-  // Split text at blank lines into paragraphs; single line breaks stay.
-  function paras(s) {
-    return String(s).split(/\n[ \t]*\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
-  }
-
-  // A paragraph that opens on a phrase in capitals ("THE WELCOME — ...",
-  // "ROLES. ...") shows that phrase as its lead-in.
-  var LEAD = /^([A-Z][A-Z0-9 ,:&'\u2019\/\-]{2,}[A-Z0-9])(\s+\u2014\s+|\.\s+)/;
-  function para(p, cls, leadIns) {
-    var m = leadIns && p.match(LEAD);
-    var e = el('p', cls);
-    if (m) {
-      e.appendChild(el('span', 'lead-in', m[1]));
-      e.appendChild(document.createTextNode(m[2] + p.slice(m[0].length)));
-    } else {
-      e.textContent = p;
-    }
-    return e;
-  }
-
-  // Render a part and everything beneath it, in order: its own words, then
-  // each of 1-9. A part that has parts of its own is set in, so the shape
-  // of the book shows.
-  function hasKids(node) {
-    if (!node || typeof node !== 'object') return false;
-    for (var i = 1; i <= 9; i++) if (node[String(i)] != null) return true;
-    return false;
-  }
-  function renderTree(box, node, leadIns, notes) {
-    if (node == null) return;
-    if (sealed(node)) { box.appendChild(el('p', 'private', 'A private part')); return; }
-    if (typeof node === 'object' && node._ && typeof node._ === 'object') {
-      renderTree(box, node._, leadIns);
-    } else {
-      paras(text(node)).forEach(function (p) { box.appendChild(para(p, null, leadIns)); });
-    }
-    renderKids(box, node, leadIns, notes);
-  }
-  // Given a list to collect them in, a chapter's own "WHERE THIS STANDS" or
-  // "THIRD EDITION" part is set aside, to be shown as a note after its words.
-  function renderKids(box, node, leadIns, notes) {
-    if (!node || typeof node !== 'object') return;
-    for (var i = 1; i <= 9; i++) {
-      var kid = node[String(i)];
-      if (kid == null) continue;
-      if (notes && statusOf(kid)) { notes.push(kid); continue; }
-      renderKid(box, kid, leadIns);
-    }
-  }
-  function renderKid(box, kid, leadIns) {
-    if (hasKids(kid)) {
-      var sub = el('div', 'sub');
-      renderTree(sub, kid, leadIns);
-      box.appendChild(sub);
-    } else {
-      renderTree(box, kid, leadIns);
-    }
-  }
-
-  // A short note on where a chapter stands today: its lead words
-  // ("WHERE THIS STANDS, 30 September 2026.") become a small label
-  // ("Where this stands · 30 September 2026"), the rest plain text.
-  var STATUS = /^(WHERE THIS STANDS|THIRD EDITION),\s*([^.]+)\.\s*/;
-  function statusOf(node) {
-    if (sealed(node)) return null;
-    var t = text(node).trim();
-    var m = t.match(STATUS);
-    if (!m) return null;
-    var lead = m[1].charAt(0) + m[1].slice(1).toLowerCase();
-    return { label: lead + ' \u00b7 ' + m[2].trim(), rest: t.slice(m[0].length) };
-  }
-  function statusNote(node) {
-    var st = statusOf(node);
-    var box = el('aside', 'status-note');
-    box.appendChild(el('p', 'status-label', st.label));
-    paras(st.rest).forEach(function (p) { box.appendChild(el('p', null, p)); });
-    if (node && typeof node === 'object') renderKids(box, node);
-    return box;
-  }
-
-  // Paragraphs, with a very long piece opening on its first part (used for
-  // reflections, as before).
-  function prose(box, parts, cls) {
-    var full = parts.join('\n\n');
-    if (full.length <= LONG * 2) {
-      parts.forEach(function (p) { box.appendChild(el('p', cls, p)); });
-      return;
-    }
-    var shown = el('div');
-    var cut = full.lastIndexOf(' ', LONG);
-    shown.appendChild(el('p', cls, full.slice(0, cut > 400 ? cut : LONG) + '\u2026'));
-    var more = el('button', 'more', 'Read all');
-    more.type = 'button';
-    more.addEventListener('click', function () {
-      shown.textContent = '';
-      parts.forEach(function (x) { shown.appendChild(el('p', cls, x)); });
-      more.remove();
-    });
-    box.appendChild(shown);
-    box.appendChild(more);
-  }
-
-  function when(iso) {
-    var d = new Date(iso);
-    if (isNaN(d)) return '';
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  // ---- The room ------------------------------------------------------------
-  // A room entry is {_: text, 1: who, 2: address, 3: time}; older entries
-  // nest under "_" as the room grows, so walk "_" first, then 1-9, to read
-  // oldest to newest. Replies sit beneath the entry they answer.
-  function isEntry(n) {
-    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
-  }
-  function who(v) {
-    return typeof v === 'string' && v.length <= 60 ? v : '';
-  }
-  function repliesOf(e) {
-    var out = [];
-    for (var i = 1; i <= 9; i++) {
-      var r = e[String(i)];
-      if (r && typeof r === 'object' && typeof r._ === 'string' && r._.trim()) {
-        out.push({ who: who(r['1']), when: typeof r['3'] === 'string' ? r['3'] : '', text: r._ });
-      }
-    }
-    return out;
-  }
-  function entries(node, out) {
-    out = out || [];
-    if (!node || typeof node !== 'object') return out;
-    if (node._ && typeof node._ === 'object') entries(node._, out);
-    for (var i = 1; i <= 9; i++) {
-      var e = node[String(i)];
-      if (isEntry(e)) {
-        if (e._.trim()) out.push({
-          who: who(e['1']),
-          where: typeof e['2'] === 'string' ? e['2'] : (typeof e['2'] === 'number' ? String(e['2']) : ''),
-          when: e['3'],
-          text: e._,
-          replies: repliesOf(e)
-        });
-      } else if (typeof e === 'string') {
-        if (e.trim()) out.push({ who: '', where: '', when: '', text: e, replies: [] });
-      } else {
-        entries(e, out);
-      }
-    }
-    return out;
-  }
-
-  // Which chapter (1-8) a message's address points at, or 0. Addresses may
-  // be bare ("3", "3.1", "0.3") or name a block first
-  // ("proposal:community-recovery 3", "community-recovery-design:x/3").
-  function chapterOf(addr) {
-    if (!addr) return 0;
-    var s = String(addr).trim();
-    var m = s.match(/(?:^|[\s:\/#@,])(\d+(?:\.\d+)*)\s*$/) || s.match(/^(\d+(?:\.\d+)*)$/);
-    if (!m) {
-      var c = s.match(/chapter\s+(\d)/i);
-      return c && +c[1] >= 1 && +c[1] <= CHAPTERS ? +c[1] : 0;
-    }
-    var digits = m[1].replace(/^(0\.)+/, '').replace(/\./g, '');
-    var n = parseInt(digits.charAt(0), 10);
-    return n >= 1 && n <= CHAPTERS ? n : 0;
-  }
-
-  function note(c, cls) {
-    var div = el('div', cls);
-    var meta = el('p', 'comment-meta');
-    if (c.who) meta.appendChild(el('strong', null, c.who));
-    var w = when(c.when);
-    if (w) meta.appendChild(document.createTextNode((c.who ? ' · ' : '') + w));
-    if (meta.childNodes.length) div.appendChild(meta);
-    if (sealed(c.text)) {
-      div.appendChild(el('p', 'private', 'A private message'));
-      return div;
-    }
-    var full = c.text.trim();
-    var t = el('p', 'comment-text');
-    div.appendChild(t);
-    if (full.length > LONG) {
-      var cut = full.lastIndexOf(' ', 500);
-      t.textContent = full.slice(0, cut > 300 ? cut : 500) + '\u2026';
-      var more = el('button', 'more', 'Read all');
-      more.type = 'button';
-      more.addEventListener('click', function () { t.textContent = full; more.remove(); });
-      div.appendChild(more);
-    } else {
-      t.textContent = full;
-    }
-    if (c.replies && c.replies.length) {
-      var rs = el('div', 'replies');
-      c.replies.forEach(function (r) { rs.appendChild(note(r, 'comment reply')); });
-      div.appendChild(rs);
-    }
-    return div;
-  }
-
-  // ---- Mirrors -------------------------------------------------------------
-  // Each person's reflections are found by name on the beach's front door.
-  function mirrorNames(idx) {
-    var names = [];
-    var blocks = idx && idx.blocks;
-    if (Array.isArray(blocks)) names = blocks;
-    else if (blocks && typeof blocks === 'object') names = Object.keys(blocks);
-    return names
-      .map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; })
-      .filter(function (n) { return n.indexOf(FAMILY) === 0 && n.length > FAMILY.length; })
-      .sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
-  }
-
-  // One person's reading at one chapter: their words, "private" when sealed,
-  // or null when they haven't written there.
-  function reflectionAt(mirror, i) {
-    if (!mirror) return null;
-    if (sealed(mirror) && !mirror[String(i)]) return { private: true };
-    var node = mirror[String(i)];
-    if (node == null) return null;
-    if (sealed(node)) return { private: true };
-    var parts = words(node);
-    if (!parts.length) {
-      return node && typeof node === 'object' && Object.keys(node).length ? { private: true } : null;
-    }
-    return { parts: parts };
-  }
-
-  // ---- Rendering -----------------------------------------------------------
-  function renderOpening(book) {
-    var box = $('opening');
-    box.textContent = '';
-    if (!book) {
-      box.appendChild(el('p', 'calm', 'The book can\u2019t be reached just now. Please try again in a little while.'));
-      return;
-    }
-    var ps = sealed(book._) ? [] : paras(text(book));
-    if (!ps.length) {
-      box.appendChild(el('p', 'calm', 'The book has no opening yet.'));
-      return;
-    }
-    // The first paragraph is the book's own title line.
-    box.appendChild(el('p', 'edition', ps[0]));
-    ps.slice(1).forEach(function (p, i) { box.appendChild(el('p', i === 0 ? 'lead' : null, p)); });
-    box.classList.add('arrived');
-  }
-
-  // "TITLE IN CAPITALS — what it is about." → the title, and its strap.
-  // A title written all in capitals reads more gently in title case.
-  var SMALL = /^(a|an|and|at|by|for|in|of|on|or|the|to)$/;
-  function gentle(s) {
-    if (/[a-z]/.test(s)) return s;
-    return s.toLowerCase().split(' ').map(function (w, i) {
-      return i > 0 && SMALL.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1);
-    }).join(' ');
-  }
-  function titleOf(s) {
-    var m = String(s).trim().match(/^(.+?)\s+\u2014\s+(.+)$/);
-    return m ? { title: gentle(m[1]), strap: m[2] } : { title: gentle(String(s).trim()), strap: '' };
-  }
-
-  var threads = {};
-
-  function renderComments(room, reached) {
-    Object.keys(threads).forEach(function (i) {
-      var box = threads[i];
-      var here = room.byChapter[i] || [];
-      box.textContent = '';
-      if (here.length) here.forEach(function (c) { box.appendChild(note(c, 'comment')); });
-      else box.appendChild(el('p', 'none', reached ? 'No comments yet.' : 'The comments can\u2019t be reached just now.'));
-    });
-  }
-
-  function contentsItem(href, label, cls) {
-    var li = el('li', cls);
-    var a = el('a', null, label);
-    a.href = href;
-    li.appendChild(a);
-    $('contents').appendChild(li);
-  }
-
-  function seeItLive(i) {
-    var links = SEE_LIVE[i];
-    if (!links) return null;
-    if (!links.length) return el('p', 'see-live quiet', 'Not built yet');
-    var p = el('p', 'see-live');
-    p.appendChild(el('span', 'label', 'See it live: '));
-    links.forEach(function (l, n) {
-      if (n) p.appendChild(document.createTextNode(' \u00b7 '));
-      var a = el('a', null, l[0]);
-      a.href = l[1];
-      p.appendChild(a);
-    });
-    return p;
-  }
-
-  // A fold, in the shared pattern (see Beach.folds in beach.js).
-  function foldEl(cls, id, title, gloss) {
-    var section = el('section', cls);
-    section.id = id;
-    var btn = el('button', 'fold');
-    btn.type = 'button';
-    btn.setAttribute('aria-expanded', 'false');
-    var w = el('span', 'fold-words');
-    w.appendChild(el('span', 'fold-title', title));
-    if (gloss) w.appendChild(el('span', 'fold-gloss', gloss));
-    btn.appendChild(w);
-    var chev = el('span', 'chev', '\u2304');
-    chev.setAttribute('aria-hidden', 'true');
-    btn.appendChild(chev);
-    var kids = el('div', 'kids');
-    kids.hidden = true;
-    section.appendChild(btn);
-    section.appendChild(kids);
-    return { section: section, kids: kids };
-  }
-
-  function renderChapters(book, mirrors) {
-    var list = $('chapters');
-    threads = {};
-    list.textContent = '';
-    $('contents').textContent = '';
-    if (!book) return;
-
-    for (var i = 1; i <= CHAPTERS; i++) {
-      var node = book[String(i)];
-      if (node == null) continue;
-      var t = typeof node === 'string' ? { title: 'Chapter ' + i, strap: '' } : titleOf(text(node) || ('Chapter ' + i));
-
-      // The chapter's words: everything beneath its title, in full.
-      var body = el('div', 'text');
-      var notes = [];
-      if (typeof node === 'string') renderTree(body, node);
-      else renderKids(body, node, false, notes);
-      if (!body.childNodes.length) body.appendChild(el('p', 'none', 'This chapter isn\u2019t written yet.'));
-
-      // A fold: "Chapter N · Title", its strap (or first sentence) beneath;
-      // opened, the pointer to where it runs, its words, then what people
-      // made of it.
-      var f = foldEl('part chapter-fold', 'chapter-' + i, 'Chapter ' + i + ' \u00b7 ' + t.title,
-        t.strap || Beach.glossOf(body));
-      var card = f.kids;
-      var seeLive = seeItLive(i);
-      if (seeLive) card.appendChild(seeLive);
-      card.appendChild(body);
-      notes.forEach(function (n) { card.appendChild(statusNote(n)); });
-
-      // Reflections, one per person who has written at this chapter.
-      var refl = el('div', 'chapter-part');
-      refl.appendChild(el('span', 'chapter-part-label', 'Reflections'));
-      var any = false;
-      mirrors.forEach(function (m) {
-        var r = reflectionAt(m.block, i);
-        if (!r) return;
-        any = true;
-        var div = el('div', 'reflection');
-        var head = el('p', 'reflection-who');
-        var a = el('a', null);
-        a.href = WALK + '/' + encodeURIComponent(m.handle);
-        a.appendChild(el('strong', null, m.handle));
-        head.appendChild(a);
-        div.appendChild(head);
-        if (r.private) {
-          div.appendChild(el('p', 'private', 'A private reflection'));
-        } else {
-          var box = el('div');
-          prose(box, r.parts, 'reflection-text');
-          div.appendChild(box);
-        }
-        refl.appendChild(div);
-      });
-      if (!any) refl.appendChild(el('p', 'none', mirrors.unreadable
-        ? 'The reflections can\u2019t be reached just now.'
-        : 'No reflections yet.'));
-      card.appendChild(refl);
-
-      // The room's messages tied to this chapter, and a way to add one.
-      var talk = el('div', 'chapter-part');
-      talk.appendChild(el('span', 'chapter-part-label', 'Comments'));
-      var thread = el('div', 'thread');
-      thread.id = 'comments-' + i;
-      talk.appendChild(thread);
-      talk.appendChild(commentForm(i));
-      card.appendChild(talk);
-      threads[i] = thread;
-
-      list.appendChild(f.section);
-      contentsItem('#chapter-' + i, t.title);
-    }
-    if (!list.childNodes.length) {
-      list.appendChild(el('p', 'calm', 'The chapters haven\u2019t been written yet.'));
-    }
-    list.classList.add('arrived');
-  }
-
-  function renderRoom(room, reached) {
-    var box = $('room');
-    box.textContent = '';
-    if (!reached) {
-      box.appendChild(el('p', 'thread-empty', 'The room can\u2019t be reached just now.'));
-    } else if (!room.loose.length) {
-      box.appendChild(el('p', 'thread-empty', 'Nothing in the room yet beyond the chapters.'));
-    } else {
-      room.loose.forEach(function (c) { box.appendChild(note(c, 'comment')); });
-    }
-    $('room-wrap').hidden = false;
-  }
-
-  // Chapter 9, the builders' notes. Shown openly: its own opening words,
-  // its "THIRD EDITION" note, and its "How to respond" part. Every other
-  // part (old names, open questions, the build brief, the work list) sits
-  // in the closed "Notes for the builders" fold inside it, rendered as
-  // before.
-  var TO_READERS = /^How to respond\b/;
-  function renderBuilders(book) {
-    var open = $('chapter-9-text'), inner = $('builders-text');
-    open.textContent = '';
-    inner.textContent = '';
-    var node = book && book['9'];
-    if (node == null) return;
-    if (sealed(node)) {
-      open.appendChild(el('p', 'private', 'A private part'));
-    } else if (typeof node === 'object' && node._ && typeof node._ === 'object') {
-      renderTree(open, node._, true);
-    } else {
-      paras(text(node)).forEach(function (p) { open.appendChild(para(p, null, true)); });
-    }
-    var notes = [], respond = [];
-    if (node && typeof node === 'object') {
-      for (var i = 1; i <= 9; i++) {
-        var kid = node[String(i)];
-        if (kid == null) continue;
-        if (statusOf(kid)) notes.push(kid);
-        else if (!sealed(kid) && TO_READERS.test(text(kid).trim())) respond.push(kid);
-        else renderKid(inner, kid, true);
-      }
-    }
-    notes.forEach(function (n) { open.appendChild(statusNote(n)); });
-    respond.forEach(function (n) { renderKid(open, n, true); });
-    $('builders').hidden = !inner.childNodes.length;
-    if (!open.childNodes.length && !inner.childNodes.length) return;
-    // Its one line: the first sentence after its title in capitals.
-    $('builders-gloss').textContent = Beach.gloss(text(node).replace(LEAD, ''));
-    $('chapter-9').hidden = false;
-    $('chapter-9').classList.add('arrived');
-    contentsItem('#chapter-9', 'Provenance, notes for the builders, and how to take part', 'after');
-  }
-
-  // Sort the room: tagged messages go to their chapter; of the rest, only
-  // the most recent few are kept.
-  function sortRoom(pool) {
-    var all = entries(pool);
-    var byChapter = {}, loose = [];
-    all.forEach(function (c) {
-      var n = chapterOf(c.where);
-      if (n) (byChapter[n] = byChapter[n] || []).push(c);
-      else loose.push(c);
-    });
-    return { byChapter: byChapter, loose: loose.slice(-ROOM_RECENT) };
-  }
-
-  // ---- Adding a comment ----------------------------------------------------
-  // The room is open, so no key is needed. The beach's own append chooses
-  // the next free slot, so nothing already there can be overwritten. The
-  // entry takes the room's shape: {_: text, 1: who, 2: chapter, 3: time}.
-  var MAX = 1500;
-  var NOTICE = 'Comments are public and stay on the page. Please don\u2019t share personal details about your own health or anyone else\u2019s.';
-
-  function append(entry) {
-    return fetch(BEACH_URL + '?block=' + encodeURIComponent(POOL), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ block: POOL, append: true, content: entry })
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok || j.ok === false || j.error) throw new Error(j.error || ('HTTP ' + r.status));
-        return j;
-      });
-    });
-  }
-
-  // If the comment can't be posted from this page, the person can still
-  // leave it through their own AI: a ready instruction to paste.
-  function instruction(entry) {
-    return 'Please add this comment to the room on the Pscale beach. Using bsp, append to the block ' +
-      POOL + ' at https://beach.happyseaurchin.com (agent_id "https://beach.happyseaurchin.com", append: true; the room is open, so no secret). ' +
-      'The content is exactly:\n' + JSON.stringify(entry, null, 2);
-  }
-  function copy(t) {
-    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
-    return Promise.reject(new Error('no clipboard'));
-  }
-
-  // A microphone beside a text box, so people can speak their words in.
-  // Uses the browser's own speech recognition; where there is none, no
-  // button appears. The words land in the box to be read before posting.
-  var MIC_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  function addMic(box) {
-    var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Rec || !box || box.dataset.mic) return;
-    box.dataset.mic = '1';
-    var row = el('div', 'mic-row');
-    var btn = el('button', 'mic');
-    btn.type = 'button';
-    var status = el('p', 'mic-note');
-    status.setAttribute('role', 'status');
-    row.appendChild(btn);
-    row.appendChild(status);
-    box.parentNode.insertBefore(row, box.nextSibling);
-
-    var rec = null, base = '', said = '';
-    function label(on) {
-      btn.innerHTML = MIC_ICON + '<span>' + (on ? 'Stop' : 'Speak') + '</span>';
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      btn.setAttribute('aria-label', on ? 'Stop listening' : 'Speak your words into the box');
-      btn.classList.toggle('listening', on);
-    }
-    function fill(extra) {
-      var t = base + said + extra;
-      var max = box.maxLength > 0 ? box.maxLength : Infinity;
-      box.value = t.slice(0, max);
-      box.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    function stop() { if (rec) rec.stop(); }
-    label(false);
-
-    btn.addEventListener('click', function () {
-      if (rec) return stop();
-      rec = new Rec();
-      rec.lang = 'en-GB';
-      rec.continuous = true;
-      rec.interimResults = true;
-      base = box.value && !/\s$/.test(box.value) ? box.value + ' ' : box.value;
-      said = '';
-      rec.onresult = function (ev) {
-        var interim = '';
-        for (var i = ev.resultIndex; i < ev.results.length; i++) {
-          var t = ev.results[i][0].transcript;
-          if (ev.results[i].isFinal) said += t.trim() + ' ';
-          else interim += t;
-        }
-        fill(interim);
-      };
-      rec.onerror = function (ev) {
-        status.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
-          ? 'The microphone wasn\u2019t allowed. You can let this page use it in your browser\u2019s settings, or type instead.'
-          : ev.error === 'no-speech'
-            ? 'I didn\u2019t hear anything. Press Speak to try again.'
-            : 'Speaking didn\u2019t work just now. You can type instead.';
-      };
-      rec.onend = function () {
-        rec = null;
-        fill('');
-        box.value = box.value.replace(/\s+$/, '');
-        label(false);
-        if (/^Listening/.test(status.textContent)) status.textContent = 'Read it through and change anything before you post.';
-      };
-      try {
-        rec.start();
-        label(true);
-        status.textContent = 'Listening\u2026 press Stop when you\u2019re done. Your browser may send your voice to its maker (Google or Apple) to turn it into text; nothing is posted until you press Post.';
-      } catch (e) {
-        rec = null;
-        status.textContent = 'Speaking didn\u2019t work just now. You can type instead.';
-      }
-    });
-    if (box.form) box.form.addEventListener('submit', stop);
-  }
-
-  var formCount = 0;
-  function commentForm(chapter) {
-    var id = 'c' + (++formCount);
-    var form = el('form', 'comment-form');
-    form.noValidate = true;
-    form.appendChild(el('p', 'form-foot', NOTICE));
-    form.appendChild(withLink('form-foot', 'For a considered reflection on chapter ' + chapter + ', write in your own mirror: ', WALK, ''));
-
-    var l1 = el('label', null, 'Your name');
-    l1.htmlFor = id + '-name';
-    var name = el('input');
-    name.id = id + '-name'; name.name = 'who'; name.maxLength = 40; name.autocomplete = 'name';
-    var trapL = el('label', 'trap', 'Leave this empty');
-    trapL.htmlFor = id + '-web'; trapL.setAttribute('aria-hidden', 'true');
-    var trap = el('input', 'trap');
-    trap.id = id + '-web'; trap.name = 'web'; trap.tabIndex = -1; trap.autocomplete = 'off';
-    trap.setAttribute('aria-hidden', 'true');
-    var l2 = el('label', null, 'Your comment on chapter ' + chapter);
-    l2.htmlFor = id + '-text';
-    var msg = el('textarea');
-    msg.id = id + '-text'; msg.name = 'note'; msg.maxLength = MAX; msg.required = true;
-    var count = el('p', 'count', '');
-    var button = el('button', null, 'Post');
-    button.type = 'submit';
-    var status = el('p', 'form-status');
-    status.setAttribute('role', 'status');
-    var fallback = el('textarea', 'fallback');
-    fallback.readOnly = true;
-    fallback.hidden = true;
-    fallback.setAttribute('aria-label', 'An instruction to paste to your own AI');
-
-    [l1, name, trapL, trap, l2, msg, count, button, status, fallback].forEach(function (x) { form.appendChild(x); });
-    addMic(msg);
-
-    msg.addEventListener('input', function () {
-      var left = MAX - msg.value.length;
-      count.textContent = left < 300 ? left + ' characters left' : '';
-    });
-
-    var sending = false;
-    form.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      if (sending || trap.value) return;
-      var said = msg.value.trim().slice(0, MAX);
-      if (!said) {
-        status.textContent = 'Please write a comment first.';
-        msg.focus();
-        return;
-      }
-      // A typed name is shown as a visitor's, so nobody can sign as someone else.
-      var typed = name.value.replace(/\s+/g, ' ').trim().slice(0, 40);
-      var entry = {
-        _: said,
-        1: typed ? typed + ', a visitor' : 'a visitor',
-        2: String(chapter),
-        3: new Date().toISOString()
-      };
-      sending = true;
-      button.disabled = true;
-      fallback.hidden = true;
-      status.textContent = 'Posting\u2026';
-      append(entry).then(function () {
-        msg.value = '';
-        count.textContent = '';
-        status.textContent = 'Thank you. Your comment is posted.';
-        return reloadComments();
-      }, function () {
-        var t = instruction(entry);
-        fallback.value = t;
-        fallback.hidden = false;
-        return copy(t).then(function () {
-          status.textContent = 'Your comment couldn\u2019t be posted from this page, so nothing was posted. The instruction below is copied for you: paste it to your own AI and it will leave your comment in the room.';
-        }, function () {
-          status.textContent = 'Your comment couldn\u2019t be posted from this page, so nothing was posted. Copy the instruction below and paste it to your own AI, and it will leave your comment in the room.';
-          fallback.select();
-        });
-      }).then(function () {
-        sending = false;
-        button.disabled = false;
-      });
-    });
-    return form;
-  }
-
-  // Read the room again and redraw the comments, so a new one appears
-  // beneath its chapter.
-  function reloadComments() {
-    return read(POOL).then(function (pool) {
-      if (!pool) return;
-      var room = sortRoom(pool);
-      renderComments(room, true);
-      renderRoom(room, true);
-    });
-  }
-
-  // ---- Load ----------------------------------------------------------------
-  // Each read stands alone, so one being out of reach never blanks the rest.
-  function load() {
-    var mirrorsP = index().then(function (idx) {
-      var names = mirrorNames(idx);
-      return Promise.all(names.map(function (n) {
-        return get(n).then(function (b) {
-          if (typeof b === 'string') b = sealed(b) ? { gray: b } : { _: b };
-          return { handle: n.slice(FAMILY.length), block: b && typeof b === 'object' ? b : null };
-        }, function () { return { handle: n.slice(FAMILY.length), block: null }; });
-      }));
-    }).then(function (list) {
-      return list.filter(function (m) { return m.block; });
-    }, function () {
-      var none = [];
-      none.unreadable = true;
-      return none;
-    });
-
-    return Promise.all([read(BOOK), mirrorsP, read(POOL)]).then(function (r) {
-      var book = r[0], mirrors = r[1], pool = r[2];
-      var room = pool ? sortRoom(pool) : { byChapter: {}, loose: [] };
-
-      renderOpening(book);
-      renderChapters(book, mirrors);
-      renderComments(room, !!pool);
-      if (book) renderRoom(room, !!pool);
-      renderBuilders(book);
-      if ($('contents').childNodes.length) $('contents-wrap').hidden = false;
-
-      // Wire the book's folds, then, arriving on a link, open its way and
-      // go to it once it exists.
-      Beach.folds($('chapters'));
-      Beach.folds($('chapter-9'));
-      if (location.hash) Beach.landOnHash();
-
-      var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-      $('live-note').textContent = book || pool || !mirrors.unreadable
-        ? 'Read live at ' + t + '.'
-        : 'The page can\u2019t reach its words just now. Please try again in a little while.';
-    });
-  }
-
-  load().catch(function () {
-    $('opening').textContent = '';
-    $('opening').appendChild(el('p', 'calm', 'Something went wrong opening the book. Please try again in a little while.'));
-  });
 })();
 </script>
 </body>
