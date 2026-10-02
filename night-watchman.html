@@ -645,6 +645,28 @@
   playOnce();
 
   var form = document.getElementById('note-form');
+  // A note someone cleared has no words left. Leave it out of the room,
+  // with its name and time, so it doesn't show as a blank note. A slot
+  // that still holds notes of its own is kept.
+  function withoutCleared(node) {
+    if (!node || typeof node !== 'object') return node;
+    var out = {};
+    Object.keys(node).forEach(function (k) {
+      var v = node[k];
+      if (k !== '_' && v && typeof v === 'object') {
+        var said = typeof v._ === 'string' ? v._.trim() : (v._ && typeof v._ === 'object');
+        var holds = Object.keys(v).some(function (j) { return j !== '_' && v[j] && typeof v[j] === 'object'; });
+        if (!said && !holds) return;
+        out[k] = withoutCleared(v);
+      } else if (k === '_' && v && typeof v === 'object') {
+        out[k] = withoutCleared(v);
+      } else {
+        out[k] = v;
+      }
+    });
+    return out;
+  }
+
   var refresh = Beach.live(function () {
     var reads = [
       Beach.get('passport:night-watchman').then(function (p) {
@@ -658,7 +680,7 @@
         var slot = pool && pool['4'];
         show('wake', words(slot), renderWake, true);
         var room = document.getElementById('room');
-        Beach.renderThread(room, pool);
+        Beach.renderThread(room, withoutCleared(pool));
         room.hidden = false;
       })
     ];

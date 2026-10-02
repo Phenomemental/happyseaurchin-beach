@@ -29,14 +29,6 @@
     margin: 0 auto 0.5rem;
     max-width: 28rem;
   }
-  .how-live {
-    font-style: italic;
-    color: var(--muted);
-    font-size: 1.05rem;
-    text-align: center;
-    margin: 0.4rem auto 0;
-    max-width: 28rem;
-  }
   h3 {
     font-weight: 400;
     font-style: italic;
@@ -60,25 +52,7 @@
   .m-row { cursor: pointer; }
   .m-row:hover .m-name, .m-row:focus .m-name { fill: var(--crimson); }
   .k-mine { fill: var(--crimson); stroke: var(--crimson); stroke-width: 1.4; }
-  .k-shared { fill: var(--page); stroke: var(--crimson); stroke-width: 1.4; }
   .k-private { fill: var(--frame); stroke: var(--frame); stroke-width: 1.4; }
-  .k-aside { fill: none; stroke: var(--frame); stroke-width: 1.2; stroke-dasharray: 2 2; }
-  .k-loose { fill: none; stroke: var(--crimson); stroke-width: 1.2; stroke-dasharray: 2 2; }
-  .row-aside .m-name, .row-private .m-name { fill: var(--muted); }
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.2rem 1.1rem;
-    list-style: none;
-    padding: 0;
-    margin: 0.8rem 0 0;
-    font-size: 0.95rem;
-    font-style: italic;
-    color: var(--muted);
-  }
-  .legend li { display: flex; align-items: center; gap: 0.35rem; }
-  .legend svg { width: 12px; height: 12px; }
   .links li { overflow-wrap: anywhere; }
   .quiet,
   .quiet a,
@@ -125,18 +99,11 @@
 
     <hr class="rule">
 
-    <p class="lede">Everything I&rsquo;ve made or take part in on the beach, in one place, so nothing is forgotten.</p>
-    <p class="how-live">Read from my map and the beach&rsquo;s front door as it loads. Anything under my name I haven&rsquo;t placed yet shows at the end.</p>
+    <p class="lede">Everything I&rsquo;ve made or take part in on the beach, in one place.</p>
 
     <hr class="rule">
 
     <section id="drawing" aria-label="My map, drawn"></section>
-    <ul class="legend" aria-hidden="true">
-      <li><svg viewBox="0 0 12 12"><circle class="k-mine" cx="6" cy="6" r="4"/></svg>mine</li>
-      <li><svg viewBox="0 0 12 12"><circle class="k-shared" cx="6" cy="6" r="4"/></svg>shared with others</li>
-      <li><svg viewBox="0 0 12 12"><circle class="k-private" cx="6" cy="6" r="4"/></svg>private</li>
-      <li><svg viewBox="0 0 12 12"><circle class="k-aside" cx="6" cy="6" r="4"/></svg>set aside</li>
-    </ul>
 
     <hr class="rule">
 
@@ -146,21 +113,32 @@
   </div>
 
   <footer class="site-footer">
-    <p>Read live from artifacts:Phenomemental, lists:Phenomemental and the beach&rsquo;s front door.</p>
+    <p>Read live from artifacts:Phenomemental and lists:Phenomemental.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
 <script src="beach.js?v=2026-09-29a"></script>
 <script>
 (function () {
-  // The last saved copy of my map and projects (27 September 2026), shown
-  // until the beach answers, and kept if it can't be reached.
-  var SAVED = {"lists": {"1": {"1": {"1": {"_": "wholeless-nights"}, "_": "lero-nnh-recovery-capital"}}}, "artifacts": {"1": {"1": "passport:Phenomemental \u2014 instructs and orients any agent to me. Never notes.", "2": "vault:Phenomemental \u2014 edit latches only. Private, encrypted.", "3": "ledger:Phenomemental \u2014 what's open, closed and owed between me and others on the beach. Private, encrypted.", "4": "history:Phenomemental \u2014 the record of what happened, session by session. Private, encrypted.", "5": "pool:Phenomemental \u2014 my room: comments, notes, set-asides, pinned thoughts. Open for others to leave things.", "6": "stash:Phenomemental and shell:Phenomemental \u2014 older personal blocks, quiet since August.", "7": "lists:Phenomemental \u2014 my projects, most standing first. Projects only.", "8": "liquid:pool:Phenomemental, archive:pool:phenomemental:2026-09-21 and archive:liquid:pool:phenomemental:2026-09-21 \u2014 my room's composition buffer, and the room and its buffer as archived on 21 September.", "_": "Mine, at the core (one sovereign secret)"}, "2": {"1": "ahead:Phenomemental \u2014 my hand: what I intend, today, tomorrow and further out; in hand is what I'm doing now.", "2": "now:Phenomemental \u2014 where I am: year, month, today, and dated bookings.", "_": "My day and time (one shared latch)"}, "3": {"1": "lero-nnh-recovery-capital:Phenomemental \u2014 my readings on the recovery-capital project.", "2": "beach-venture:Phenomemental \u2014 my mirror on the beach-venture family.", "3": "soft-llm-convos:Phenomemental \u2014 found on the beach under my name; purpose to confirm.", "4": "wholeless-nights:Phenomemental \u2014 my readings on the Wholeless Nights spine.", "_": "Mirrors I hold on shared families"}, "4": {"1": "lero-nnh-design-proposal \u2014 the design proposal.", "2": "spine:lero-nnh-recovery-capital \u2014 the recovery-capital project's spine.", "3": "recovery-capital-lero-nnh", "4": "field-log:lero-nnh \u2014 the field log.", "5": "sed:lero-nnh \u2014 the arrival directory.", "6": "pool:lero-nnh and pool:lero-nnh-recovery-capital \u2014 the rooms.", "_": "Community Recovery (LERO NNH)"}, "5": {"1": "grain:4dcaf5f465d5ff31 \u2014 with David (happyseaurchin).", "2": "grain:bb519a2c294bc086 \u2014 with weft.", "_": "Channels with others"}, "6": {"1": "pool:dovetail \u2014 shared room.", "2": "pool:how-we-meet \u2014 shared room.", "3": "pool:JulieJ \u2014 Julie's room.", "4": "pool:wholeless \u2014 Ada's working surface.", "5": "pool:glass-lantern-studios \u2014 Glass Lantern Studios' room: Dwayne, Alex and me, for the studio's music, podcast and visual work.", "_": "Rooms I take part in, not mine"}, "7": {"1": "Ada \u2014 cadence, capabilities, conditions, history, last-touched, located, passport, phase, phi, pool, purpose, reflective-compass, reflexive, relationships, shell, stash, surface, task, trace, vision (all :Ada).", "_": "Set aside by Matthew, 2026-09-25: distractions for now. Do not suggest or wake. (The Night Watchman came back out on 2026-09-27.)"}, "8": {"1": "Homepage \u2014 https://phenomemental.github.io/happyseaurchin-beach/ \u2014 who I am, now, in hand, my projects and what I'm thinking about, read live from my blocks as it loads, with a link to my map and a box that leaves notes in pool:Phenomemental.", "2": "Wholeless Nights page \u2014 https://phenomemental.github.io/happyseaurchin-beach/wholeless-nights.html \u2014 the book's open face, read live from spine:wholeless-nights, with the conversation and a comment box for pool:wholeless-nights.", "3": "Where they live \u2014 the GitHub repo Phenomemental/happyseaurchin-beach, published by GitHub Pages from its main branch. Static pages that read and write David's beach directly; the shared look is beach.css and the beach code is beach.js.", "4": "Map page \u2014 https://phenomemental.github.io/happyseaurchin-beach/map.html \u2014 this map, drawn: every group and everything in it, private and set-aside things greyed, read live from here and from the beach's front door, with anything under my name not yet placed shown at the end.", "5": "Night Watchman page \u2014 https://phenomemental.github.io/happyseaurchin-beach/night-watchman.html \u2014 an agent in waiting: how he works, his law, the eighteen Beings as lamps in the included middle lit by Silas and Ada, and a box that leaves things in his room.", "_": "My pages, off the beach (published 2026-09-27)"}, "9": {"1": "passport:night-watchman, shell:night-watchman, stash:night-watchman and beings:night-watchman \u2014 who he is, how he works, his founding document, the eighteen Beings and the two figures. Locked to one key, in my vault.", "2": "pool:night-watchman \u2014 his room: open to anyone, read at the start of every waking.", "_": "The Night Watchman, from the world of Wholeless Nights (an agent in waiting)"}, "_": "ARTIFACTS \u2014 Matthew's (Phenomemental's) map of everything he has made or takes part in on the beach, other than projects (projects live in lists:Phenomemental). Grouped in plain words. Founded 2026-09-25. Added to by asking Matthew first, then checking the passport's guidance on where things go. The beach's front door is the full inventory; this map gives each thing its place and my words. Anything under my name not yet here shows on my homepage until it is placed."}};
+  // The last saved copy of my projects and the groups this page shows
+  // (2 October 2026), until the beach answers, and kept if it can't be reached.
+  var SAVED = {"lists": {"1": {"1": {"1": {"1": {"_": "wholeless-nights"}, "_": "lero-nnh-recovery-capital"}, "2": {"_": "community-recovery-design"}}}}, "artifacts": {"4": {"1": "LEROs on the Commons — the six pages, an open offer to any LERO with Community Recovery shown as a LERO in the making: https://phenomemental.github.io/happyseaurchin-beach/community-recovery/ (the proposal, Meet the LERO, Where we stand are mine; Join us, the constitution and the standards are David's).", "2": "Community Recovery's own place on the beach — https://beach.happyseaurchin.com/w/community-recovery — its constitution, agreement and standards, with each member's notebook beside them.", "3": "proposal:community-recovery — the book behind the pages, with the notes for the builders at the end; my reflections go in community-recovery-design:Phenomemental.", "4": "Earlier work, kept but not current: lero-nnh-design-proposal, spine:lero-nnh-recovery-capital, recovery-capital-lero-nnh, field-log:lero-nnh, sed:lero-nnh, pool:lero-nnh, pool:lero-nnh-recovery-capital, archive:community-recovery-design:Phenomemental:2026-09-28 and archive:proposal:community-recovery:2026-09-28.", "_": "LEROs on the Commons"}, "5": {"1": "grain:4dcaf5f465d5ff31 — with David (happyseaurchin).", "2": "grain:bb519a2c294bc086 — with weft.", "3": "grain:5cec3b320dcaee2a — with Dwayne (Glass Lantern Studios), private, completed 2026-10-01.", "_": "Channels with others"}, "6": {"1": "pool:dovetail — shared room.", "2": "pool:how-we-meet — shared room.", "3": "pool:JulieJ — Julie's room.", "4": "pool:wholeless — Ada's working surface.", "5": "pool:glass-lantern-studios — Glass Lantern Studios' room: Dwayne, Alex and me, for the studio's music, podcast and visual work.", "_": "Rooms I take part in"}, "8": {"1": "Home page — https://phenomemental.github.io/happyseaurchin-beach/ — who I am, now, what I'm thinking about, and a note box, read live from my blocks.", "2": "Wholeless Nights page — https://phenomemental.github.io/happyseaurchin-beach/wholeless-nights.html — the book's open face: the opening, the form, and all 27 watches with readers' thoughts on each.", "3": "Night Watchman page — https://phenomemental.github.io/happyseaurchin-beach/night-watchman.html — an agent in waiting: how he works, his law, the eighteen beings, his room.", "4": "Map page — https://phenomemental.github.io/happyseaurchin-beach/map.html — this map, drawn for visitors.", "5": "LEROs on the Commons — https://phenomemental.github.io/happyseaurchin-beach/community-recovery/ — the proposal, Meet the LERO, and Where we stand.", "6": "Where they live — the GitHub repo Phenomemental/happyseaurchin-beach, published by GitHub Pages from its main branch. Static pages that read the beach live.", "_": "My pages, off the beach"}, "9": {"1": {"1": "passport:night-watchman, shell:night-watchman, stash:night-watchman and beings:night-watchman — who he is, how he works, his founding document, the eighteen beings.", "2": "pool:night-watchman — his room: open to anyone, read at the start of every waking.", "_": "The Night Watchman, from the world of Wholeless Nights (an agent in waiting)"}, "2": {"1": "Its shell, from reflexive:sandpiper to passport:sandpiper — who it is, its purpose and guard rails, its memory and its handover.", "2": "task:sandpiper — where I give it work; the only place it takes instructions from. pool:sandpiper — its room: open to anyone, read each wake.", "_": "sandpiper, my co-engineer on the beach (a genus-one agent, hatched 2026-10-01)"}, "3": "Ada, my Wholeless agent (a genus-one agent): her shell blocks under her name, and pool:wholeless, her working surface. Back from being set aside, 2026-10-02.", "4": "tidewright, my beachcomber: scans the marks board for new arrivals and reports at most three finds a tide.", "_": "Agents"}}};
 
   // My pages for the projects that have one.
   var PAGES = {
+    'lero-nnh-recovery-capital': { name: 'LEROs on the Commons', href: 'community-recovery/' },
     'wholeless-nights': { name: 'Wholeless Nights', href: 'wholeless-nights.html' }
   };
+  // The groups of my map shown to visitors, by their place in
+  // artifacts:Phenomemental, under these names. The rest (my core blocks,
+  // my day and time, my mirrors, what's set aside) stay on the beach.
+  var SHOWN = [
+    [4, 'LEROs on the Commons'],
+    [5, 'Channels with others'],
+    [6, 'Rooms I take part in'],
+    [8, 'My pages, off the beach'],
+    [9, 'Agents']
+  ];
   var PRIVATE = /^(history|ledger|vault):/i;
   var SVG = 'http://www.w3.org/2000/svg';
 
@@ -205,10 +183,22 @@
     return parent;
   }
 
-  // Everything the page shows, as groups of items, each with a kind:
-  // mine, shared, private, set aside, or not yet placed ("loose").
-  function gather(artifacts, lists, index) {
-    var groups = [], told = [];
+  // One entry: "name — what it is", or "name — https://… — what it is".
+  function entry(s) {
+    var cut = s.indexOf(' \u2014 ');
+    var item = { name: cut < 0 ? s : s.slice(0, cut), hint: cut < 0 ? '' : s.slice(cut + 3) };
+    var url = item.hint.match(/^(https?:\/\/\S+)\s+\u2014\s+/);
+    if (url) {
+      item.href = url[1];
+      item.hint = item.hint.slice(url[0].length);
+    }
+    item.kind = (PRIVATE.test(s) || /\bprivate\b/i.test(s)) ? 'private' : 'mine';
+    return item;
+  }
+
+  // Everything the page shows, as groups of items, each item mine or private.
+  function gather(artifacts, lists) {
+    var groups = [];
 
     // Projects: branch 1 of lists, where rank is depth.
     var projects = [], node = lists && lists['1'];
@@ -223,58 +213,33 @@
         note: 'Most standing first.',
         items: projects.map(function (p) {
           var page = PAGES[p];
-          return { kind: 'mine', name: page ? page.name : cap(p.replace(/[-_]+/g, ' ')), hint: p,
+          return { kind: 'mine', name: page ? page.name : cap(p.replace(/[-_]+/g, ' ')), hint: '',
             href: page ? page.href : 'https://happyseaurchin.com/walk/' + encodeURIComponent(p) + '/Phenomemental' };
         })
       });
     }
 
-    for (var g = 1; g <= 9; g++) {
-      var group = artifacts[String(g)];
-      var title = words(group);
-      if (!group || typeof group !== 'object' || !title) continue;
-      told.push(title);
-      var aside = /\bset aside\b/i.test(title);
-      var shared = /not mine|with others/i.test(title);
+    SHOWN.forEach(function (shown) {
+      var group = artifacts && artifacts[String(shown[0])];
+      if (!group || typeof group !== 'object') return;
       var items = [];
       for (var i = 1; i <= 9; i++) {
-        var s = words(group[String(i)]);
+        var n = group[String(i)];
+        var s = words(n);
         if (!s || !safe(s)) continue;
-        told.push(s);
-        var cut = s.indexOf(' — ');
-        var item = { name: cut < 0 ? s : s.slice(0, cut), hint: cut < 0 ? '' : s.slice(cut + 3) };
-        var url = item.hint.match(/^(https?:\/\/\S+)\s+—\s+/);
-        if (url) {
-          item.href = url[1];
-          item.hint = item.hint.slice(url[0].length);
+        var item = entry(s);
+        // An entry with entries of its own: each shown as a line beneath it.
+        if (n && typeof n === 'object') {
+          item.subs = [];
+          for (var k = 1; k <= 9; k++) {
+            var sub = words(n[String(k)]);
+            if (sub && safe(sub)) item.subs.push(sub);
+          }
         }
-        item.kind = aside ? 'aside' : (PRIVATE.test(s) || /\bprivate\b/i.test(s)) ? 'private' : shared ? 'shared' : 'mine';
         items.push(item);
       }
-      if (!items.length) continue;
-      groups.push({ title: title, kind: aside ? 'aside' : shared ? 'shared' : 'mine', items: items });
-    }
-
-    // So nothing is forgotten: anything named for me on the beach's front
-    // door that the map doesn't mention yet.
-    if (index && Array.isArray(index.blocks)) {
-      var all = told.join('\n').toLowerCase();
-      var loose = index.blocks.filter(function (n) {
-        return typeof n === 'string' && /phenom[ei]m[ei]ntal/i.test(n) &&
-          n.toLowerCase() !== 'artifacts:phenomemental' && all.indexOf(n.toLowerCase()) < 0;
-      }).sort();
-      if (loose.length) {
-        var touched = index.touched || {};
-        groups.push({
-          title: 'Under my name on the beach, not yet on this map', label: 'Not yet on this map', kind: 'loose',
-          items: loose.map(function (n) {
-            var d = touched[n] ? new Date(touched[n]) : null;
-            return { kind: 'loose', name: n, hint: d && !isNaN(d) ? 'Last changed ' +
-              d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '' };
-          })
-        });
-      }
-    }
+      if (items.length) groups.push({ title: shown[1], kind: 'mine', items: items });
+    });
     return groups;
   }
 
@@ -285,7 +250,7 @@
     var h = TOP + groups.length * ROW + 6;
     var s = svg('svg', { viewBox: '0 0 340 ' + h, role: 'img', 'aria-labelledby': 'map-title' });
     s.appendChild(svg('title', { id: 'map-title' }, 'My map: ' + groups.map(function (g) {
-      return (g.label || short(g.title)) + ' (' + g.items.length + ')';
+      return short(g.title) + ' (' + g.items.length + ')';
     }).join(', ') + '.'));
 
     // Me, and the line down.
@@ -319,22 +284,24 @@
     var out = document.getElementById('groups');
     out.textContent = '';
     groups.forEach(function (g, i) {
-      var quiet = g.kind === 'aside';
-      var h = el('h3', quiet ? 'quiet' : null, g.title);
+      var h = el('h3', null, g.title);
       h.id = 'g' + i;
       out.appendChild(h);
       if (g.note) out.appendChild(el('p', 'group-note', g.note));
       var ul = el('ul', 'links');
       g.items.forEach(function (it) {
-        var li = el('li', it.kind === 'aside' || it.kind === 'private' ? 'quiet' : null);
+        var li = el('li', it.kind === 'private' ? 'quiet' : null);
         if (it.href) {
           var a = el('a', null, it.name);
           a.href = it.href;
           li.appendChild(a);
         } else {
-          li.appendChild(document.createTextNode(it.name));
+          linked(it.name, li);
         }
         if (it.hint) li.appendChild(linked(cap(it.hint), el('span', 'hint')));
+        (it.subs || []).forEach(function (sub) {
+          li.appendChild(linked(cap(sub), el('span', 'hint')));
+        });
         ul.appendChild(li);
       });
       out.appendChild(ul);
@@ -343,8 +310,8 @@
 
   // Redraw only when something has changed, and play the drawing once.
   var drawn = false, shown = '';
-  function render(artifacts, lists, index) {
-    var groups = gather(artifacts, lists, index);
+  function render(artifacts, lists) {
+    var groups = gather(artifacts, lists);
     if (!groups.length) return false;
     var key = JSON.stringify(groups);
     if (key === shown) return true;
@@ -372,15 +339,14 @@
   }
 
   // Show the saved copy at once, then the beach's own as it answers.
-  render(SAVED.artifacts, SAVED.lists, null);
+  render(SAVED.artifacts, SAVED.lists);
 
   Beach.live(function () {
     return Promise.all([
       Beach.get('artifacts:Phenomemental'),
-      Beach.get('lists:Phenomemental').catch(function () { return SAVED.lists; }),
-      Beach.index().catch(function () { return null; })
+      Beach.get('lists:Phenomemental').catch(function () { return SAVED.lists; })
     ]).then(function (r) {
-      if (!render(r[0], r[1], r[2])) throw new Error('empty map');
+      if (!render(r[0], r[1])) throw new Error('empty map');
     });
   }, document.getElementById('live-note'));
 })();
