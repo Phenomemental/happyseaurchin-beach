@@ -29,37 +29,6 @@
     margin: 0 auto 0.5rem;
     max-width: 28rem;
   }
-  h3 {
-    font-weight: 400;
-    font-style: italic;
-    font-size: 1.5rem;
-    line-height: 1.2;
-    margin: 0 0 0.3rem;
-  }
-  .project {
-    margin-bottom: 1.8rem;
-  }
-  .project:last-child {
-    margin-bottom: 0;
-  }
-  .project.with-cover {
-    display: grid;
-    grid-template-columns: 5.5rem 1fr;
-    gap: 1.1rem;
-    align-items: start;
-  }
-  .thumb {
-    display: block;
-    border: 0;
-  }
-  .thumb img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1040 / 1599;
-    border-radius: 2px;
-    box-shadow: 0 6px 16px rgba(40, 30, 15, 0.18);
-  }
   .more {
     font-style: italic;
   }
@@ -85,9 +54,12 @@
   .rung dd {
     margin: 0;
   }
-  .done {
-    margin-top: 0.4rem;
-    font-size: 1.05rem;
+  /* Who I am: a bold label, then its roles. */
+  .roles strong {
+    display: block;
+  }
+  .who-close {
+    margin-bottom: 0;
   }
   .now-link {
     text-align: center;
@@ -108,21 +80,6 @@
     text-align: center;
     margin: 0.4rem auto 0;
     max-width: 28rem;
-  }
-  .pile {
-    margin: 0 0 1rem;
-  }
-  .pile dt {
-    font-size: 0.85rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .pile dd {
-    margin: 0;
-  }
-  .pile ul {
-    margin: 0.2rem 0 0;
   }
   @keyframes settle {
     from { opacity: 0; transform: translateY(0.5rem); }
@@ -210,21 +167,10 @@
 
     <section id="who">
       <h2>Who I am</h2>
-      <div id="who-live">
-        <ul>
-          <li>LERO Coordinator for North Northamptonshire at The Forward Trust, providing coordination support to Community Recovery, an independent lived experience recovery organisation</li>
-          <li>On the Lived Experience Council of the International Society for Bipolar Disorders</li>
-          <li>Peer Trainer at the Recovery College (NHS)</li>
-          <li>Family</li>
-          <li>Writing my book, Wholeless Nights</li>
-        </ul>
-        <p>
-          Part philosopher, part peer, part digital tinkerer, working at the
-          edge of what community could become. Underneath it all: managing the
-          environment so my gifts, and other people's, can flow.
-        </p>
-      </div>
-      <p class="live-note section-live" data-live="who"></p>
+      <p class="roles"><strong>Recovery and lived experience</strong> LERO Coordinator, The Forward Trust &middot; Lived Experience Council, International Society for Bipolar Disorders &middot; Peer Trainer, Recovery College (NHS) &middot; Expert by Experience, West and North Northamptonshire Councils</p>
+      <p class="roles"><strong>Coaching and peer support</strong> Therapeutic Coach for Bipolar Disorder, 5th Place &middot; Intentional Peer Support Practitioner &middot; Imroc Peer Support Worker &middot; UK Ambassador, In the Zone</p>
+      <p class="roles"><strong>Writing and thinking</strong> Writing Wholeless Nights as Mathew Pay &middot; Co-creating Naturally Inclusive Cultures with Occurrity</p>
+      <p class="who-close"><em>Part philosopher, part peer, part digital tinkerer, working at the edge of what community could become.</em></p>
     </section>
 
     <hr class="rule">
@@ -237,69 +183,6 @@
     </section>
 
     <hr class="rule" id="now-rule" hidden>
-
-    <section id="hand">
-      <h2>In hand</h2>
-      <div id="hand-live">
-        <dl class="rungs">
-          <div class="pile">
-            <dt>Tomorrow</dt>
-            <dd><ul><li>Prepare to present the Living with Bipolar course, a full day at the recovery college next Friday, with media present: learn the content and be ready</li></ul></dd>
-          </div>
-          <div class="pile">
-            <dt>This week</dt>
-            <dd><ul><li>Finish my claims</li></ul></dd>
-          </div>
-          <div class="pile">
-            <dt>This season</dt>
-            <dd><ul><li>Come back to Ada, my Wholeless agent on the beach, and do more with her.</li></ul></dd>
-          </div>
-          <div class="pile">
-            <dt>This year</dt>
-            <dd><ul><li>Give Community Recovery its own handle so members can take up its cards, once there is the support to hold it.</li></ul></dd>
-          </div>
-        </dl>
-      </div>
-      <p class="live-note section-live" data-live="hand"></p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="projects">
-      <h2>Projects</h2>
-
-      <div id="projects-live">
-        <div class="project" data-family="lero-nnh-recovery-capital">
-          <h3>LEROs on the Commons</h3>
-          <p>
-            An open, free home for any lived experience recovery organisation,
-            from its first gathering to maturity. Members speak in their own
-            words, shape their own constitution, and see where they stand
-            against the national standards. What's theirs stays theirs; what
-            happens together is ours.
-          </p>
-          <p class="more"><a href="community-recovery/">See it on the Commons &rarr;</a></p>
-        </div>
-
-        <div class="project with-cover" data-family="wholeless-nights">
-          <a class="thumb" href="wholeless-nights.html" aria-label="Wholeless Nights">
-            <img src="wholeless-nights-cover.jpg" width="1040" height="1599" alt="">
-          </a>
-          <div>
-            <h3>Wholeless Nights</h3>
-            <p>
-              <em>Bipolar &amp; the included middle</em>, written as Mathew Pay.
-              A soldier's night watch across 27 watches; a complete first
-              draft before Christmas 2026.
-            </p>
-            <p class="more"><a href="wholeless-nights.html">About the book &rarr;</a></p>
-          </div>
-        </div>
-      </div>
-      <p class="live-note section-live" data-live="projects"></p>
-    </section>
-
-    <hr class="rule">
 
     <section>
       <h2>What I'm thinking about</h2>
@@ -324,31 +207,9 @@
 
     <hr class="rule">
 
-    <section id="shell">
-      <h2>My shell</h2>
-      <div id="shell-live">
-        <p>
-          My shell is the ground any AI working with me stands on: the beach
-          and how it is built, the ways I work, and what we have learnt about
-          working it. Standing knowledge, corrected in place as we learn. It
-          is not an agent: Phenomemental is me, a person.
-        </p>
-      </div>
-      <p class="live-note section-live" data-live="shell"></p>
-    </section>
-
-    <hr class="rule">
-
     <section id="meet">
       <h2>Meet me</h2>
-      <div id="meet-live">
-        <p>
-          I work by conversation, so speak to me in plain words. For anything
-          complex I need time away to reflect and come back properly: name the
-          ask plainly, and give me room to respond at the right pace.
-        </p>
-      </div>
-      <p class="live-note section-live" data-live="meet"></p>
+      <p>I work by conversation, so speak to me in plain words, and give me time to reflect on anything complex.</p>
 
       <form id="note-form" hidden>
         <label for="n-name">Your name (optional; shown as &ldquo;your name, a visitor&rdquo;)</label>
@@ -359,299 +220,65 @@
         <textarea id="n-text" name="note" maxlength="2000" required></textarea>
         <button type="submit">Leave me a note</button>
         <p class="form-status" role="status"></p>
-        <p class="form-foot">Notes are public: they go into my room on the beach, <code>pool:Phenomemental</code>. I'm in Northampton.</p>
       </form>
-
-      <p class="closing" id="closing">Leave a note in <code>pool:Phenomemental</code> on the beach. I'm in Northampton.</p>
+      <p class="form-foot">Notes are public and go into my room on the beach.</p>
     </section>
 
     <p class="live-note" id="live-note"></p>
   </div>
 
   <footer class="site-footer">
-    <p>Read live from my blocks on the beach; the saved version dates from 27 September 2026.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
 <script src="beach.js?v=2026-09-29a"></script>
 <script>
 (function () {
-  // Only these blocks are ever read. history, ledger and vault are private
-  // and are never read; from the passport only "_" and positions 1 to 3 are
-  // shown (5 to 9 are instructions for an AI and keys, not for this page).
-  var LIVE = 'Live from the beach';
+  // Only now:Phenomemental is read: this year's line from my now.
 
-  function el(tag, cls, txt) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (txt != null) e.textContent = txt;
-    return e;
-  }
-  function words(node) {
-    return (Beach.text(node) || '').trim();
-  }
-  function cap(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-  // Never let a passphrase through: drop any text that pairs "secret",
-  // "latch", "passphrase" or "password" with a value.
-  function safe(s) {
-    return !/\b(secrets?|latch(es)?|passphrases?|passwords?)\b\s*(is\s+)?[:=]/i.test(s);
-  }
-  // Text with its web addresses made into links.
-  function linked(s, parent) {
-    s.split(/(https?:\/\/[^\s]+[^\s.,;:)])/).forEach(function (part, i) {
-      if (i % 2) {
-        var a = el('a', null, part);
-        a.href = part;
-        parent.appendChild(a);
-      } else if (part) {
-        parent.appendChild(document.createTextNode(part));
-      }
-    });
-    return parent;
-  }
-
-  // ---- Live sections -------------------------------------------------------
-  // Each live section keeps its saved HTML, so a failed read, or a shape
-  // that doesn't render, puts the saved version back.
-  var sections = {};
-  ['who', 'hand', 'projects', 'shell', 'meet'].forEach(function (k) {
-    var box = document.getElementById(k + '-live');
-    sections[k] = { box: box, saved: box.innerHTML, note: document.querySelector('[data-live="' + k + '"]') };
-  });
-
-  function show(key, data, render) {
-    var sec = sections[key];
-    var frag = document.createDocumentFragment();
-    var ok = false;
-    try { ok = render(data, frag) !== false && frag.childNodes.length > 0; } catch (e) { ok = false; }
-    if (ok) {
-      sec.box.textContent = '';
-      sec.box.appendChild(frag);
-    } else {
-      sec.box.innerHTML = sec.saved;
-    }
-    landed(sec.box, sec.note, ok);
-  }
-  function landed(box, note, ok) {
-    note.textContent = ok ? LIVE : '';
-    if (ok && !note.classList.contains('landed')) {
-      box.classList.add('arrived');
-      note.classList.add('landed');
-    }
-  }
-  function fallback(key) {
-    return function () {
-      var sec = sections[key];
-      sec.box.innerHTML = sec.saved;
-      sec.note.textContent = '';
-    };
-  }
-
-  // 1. Who I am: the passport's "_". Its first sentence is my roles, split
-  // on semicolons, after my name; the rest is prose. A sentence that is
-  // already the line at the top of the page isn't repeated.
-  var lede = document.querySelector('.lede').textContent.trim();
-  function renderWho(passport, out) {
-    var s = words(passport);
-    if (!s || !safe(s)) return false;
-    s = s.replace(/^[^—.;]{1,40}\s—\s*/, '');
-    var m = s.match(/^([\s\S]*?\.)\s+(?=[A-Z])([\s\S]*)$/);
-    var first = m ? m[1] : s, rest = m ? m[2] : '';
-    var roles = first.replace(/\.$/, '').split(/;\s*/).map(function (r) {
-      return cap(r.trim().replace(/^and\s+/, ''));
-    }).filter(Boolean);
-    if (roles.length > 1) {
-      var ul = el('ul');
-      roles.forEach(function (r) { ul.appendChild(el('li', null, r)); });
-      out.appendChild(ul);
-    } else {
-      rest = s;
-    }
-    var prose = (rest.match(/[^.!?]+[.!?]+/g) || (rest ? [rest] : []))
-      .map(function (x) { return x.trim(); })
-      .filter(function (x) { return x && x !== lede; });
-    if (prose.length) out.appendChild(el('p', null, prose.join(' ')));
-  }
-
-  // 8. Meet me: passport positions 1, 2 and 3, each a plain string, with
-  // any capitalised label ("HOW YOU MEET ME —") dropped.
-  function renderMeet(passport, out) {
-    ['1', '2', '3'].forEach(function (k) {
-      var s = words(passport[k]).replace(/^[A-Z][A-Z' ,-]{2,}\s—\s*/, '');
-      if (s && safe(s)) out.appendChild(el('p', null, cap(s)));
-    });
-  }
-
-  // 3. In hand: ahead:Phenomemental keeps a pile per grain, 1 to 7. A card
-  // is a string, or {_: my words, 3: when}; a pile may nest older cards
-  // under its own "_". Only piles that hold cards are shown.
-  var PILES = { 1: 'Within hours', 2: 'Tomorrow', 3: 'This week', 4: 'This month', 5: 'This season', 6: 'This year', 7: 'This decade' };
-  function cards(pile, out) {
-    if (!pile || typeof pile !== 'object') return out;
-    if (pile._ && typeof pile._ === 'object') cards(pile._, out);
-    for (var i = 1; i <= 9; i++) {
-      var c = pile[String(i)];
-      if (c && typeof c === 'object' && typeof c._ !== 'string') {
-        cards(c, out);
-        continue;
-      }
-      var t = words(c);
-      if (t && safe(t)) out.push(t);
-    }
-    return out;
-  }
-  function renderHand(ahead, out) {
-    var dl = el('dl', 'rungs');
-    for (var p = 1; p <= 7; p++) {
-      var list = cards(ahead[String(p)], []);
-      if (!list.length) continue;
-      var div = el('div', 'pile');
-      div.appendChild(el('dt', null, PILES[p]));
-      var dd = el('dd'), ul = el('ul');
-      list.forEach(function (t) { ul.appendChild(el('li', null, t)); });
-      dd.appendChild(ul);
-      div.appendChild(dd);
-      dl.appendChild(div);
-    }
-    if (!dl.childNodes.length) {
-      out.appendChild(el('p', 'more', 'Nothing in hand just now.'));
-      return;
-    }
-    out.appendChild(dl);
-  }
-
-  // 4. Projects: branch 1 of lists:Phenomemental, where rank is depth: the
-  // first project is 1._, the second 1.1._, and so on. The two I have pages
-  // for keep their saved card; any other is named and walked on the beach.
-  var saved = {};
-  Array.prototype.forEach.call(document.querySelectorAll('#projects-live [data-family]'), function (n) {
-    saved[n.getAttribute('data-family')] = n.cloneNode(true);
-  });
-  function renderProjects(lists, out) {
-    var names = [], node = lists['1'];
-    for (var d = 0; d < 30 && node && typeof node === 'object'; d++) {
-      node = node['1'];
-      var t = words(node);
-      if (t) names.push(t);
-    }
-    if (!names.length) return false;
-    names.forEach(function (name) {
-      if (saved[name]) {
-        out.appendChild(saved[name].cloneNode(true));
-        return;
-      }
-      var div = el('div', 'project');
-      div.appendChild(el('h3', null, cap(name.replace(/[-_]+/g, ' '))));
-      var more = el('p', 'more'), a = el('a', null, 'Walk it on the beach →');
-      a.href = 'https://happyseaurchin.com/walk/' + encodeURIComponent(name) + '/Phenomemental';
-      more.appendChild(a);
-      div.appendChild(more);
-      out.appendChild(div);
-    });
-  }
-
-  // 7. My shell: the "_" of shell:Phenomemental, kept to its first two
-  // sentences (what the shell is; the rest is how an AI uses it).
-  function renderShell(shell, out) {
-    var s = words(shell);
-    if (!s || !safe(s)) return false;
-    var parts = s.split(/(?<=[.!?])\s+(?=[A-Z])/);
-    out.appendChild(linked(parts.slice(0, 2).join(' '), el('p')));
-  }
-
-  // 2. Now: now:Phenomemental mirrors the beach's clock: the sundial address
+  // Now: now:Phenomemental mirrors the beach's clock: the sundial address
   // is the date written digit by digit (millennium, century, decade, year,
-  // season, month, week, day, gathering, beat), and a 0 digit is the "_"
-  // branch. Each rung's own words are that node's "_" text; silence is skipped.
-  var RUNGS = [null, null, null, 'This year', 'This season', 'This month', 'This week', 'Today'];
-
+  // ...), and a 0 digit is the "_" branch. The year's own words are that
+  // node's "_" text; silence shows nothing.
   function renderNow(block) {
     var c = Beach.clock();
     if (!c) return;
     var digits = c.address.split('');
+    var node = block;
+    for (var i = 0; i < 4 && node && typeof node === 'object'; i++) {
+      node = node[digits[i] === '0' ? '_' : digits[i]];
+    }
+    var words = node && typeof node === 'object' && typeof node._ === 'string' ? node._.trim() : '';
     var dl = document.getElementById('rungs');
     dl.textContent = '';
-    var node = block, day = null, shown = 0;
-    for (var i = 0; i < RUNGS.length && node && typeof node === 'object'; i++) {
-      node = node[digits[i] === '0' ? '_' : digits[i]];
-      if (!node || typeof node !== 'object') break;
-      var words = typeof node._ === 'string' ? node._.trim() : '';
-      if (RUNGS[i] && words) {
-        var div = document.createElement('div');
-        div.className = 'rung';
-        var dt = document.createElement('dt');
-        dt.textContent = RUNGS[i] === 'Today' ? 'Today · ' + c.voicing.split(',')[0] : RUNGS[i];
-        var dd = document.createElement('dd');
-        dd.textContent = words;
-        div.appendChild(dt);
-        div.appendChild(dd);
-        dl.appendChild(div);
-        shown++;
-      }
-      if (RUNGS[i] === 'Today') day = node;
+    if (words) {
+      var div = document.createElement('div');
+      div.className = 'rung';
+      var dt = document.createElement('dt');
+      dt.textContent = 'This year';
+      var dd = document.createElement('dd');
+      dd.textContent = words;
+      div.appendChild(dt);
+      div.appendChild(dd);
+      dl.appendChild(div);
     }
-    if (day) renderDone(day, dl);
-    var any = shown > 0;
-    document.getElementById('now').hidden = !any;
-    document.getElementById('now-rule').hidden = !any;
-    if (any) landed(dl, document.querySelector('[data-live="now"]'), true);
-  }
-
-  // What was marked done today: entries anywhere under today's node
-  // shaped {_: what, 4: "done"}.
-  function renderDone(day, dl) {
-    var done = [];
-    (function walk(n) {
-      if (!n || typeof n !== 'object') return;
-      if (n['4'] === 'done' && typeof n._ === 'string') done.push(n._);
-      Object.keys(n).forEach(function (k) { if (k !== '_') walk(n[k]); });
-    })(day);
-    if (!done.length) return;
-    var div = document.createElement('div');
-    div.className = 'rung';
-    var dt = document.createElement('dt');
-    dt.textContent = 'Done today';
-    var dd = document.createElement('dd');
-    var ul = document.createElement('ul');
-    ul.className = 'done';
-    done.forEach(function (t) {
-      var li = document.createElement('li');
-      li.textContent = t;
-      ul.appendChild(li);
-    });
-    dd.appendChild(ul);
-    div.appendChild(dt);
-    div.appendChild(dd);
-    dl.appendChild(div);
+    document.getElementById('now').hidden = !words;
+    document.getElementById('now-rule').hidden = !words;
+    var note = document.querySelector('[data-live="now"]');
+    note.textContent = words ? 'Live from the beach' : '';
+    if (words && !note.classList.contains('landed')) {
+      dl.classList.add('arrived');
+      note.classList.add('landed');
+    }
   }
 
   var form = document.getElementById('note-form');
 
-  // Each read stands alone, so one block being out of reach never blanks
-  // another; the page counts as live once any of them answers.
   Beach.live(function () {
-    var reads = [
-      Beach.get('passport:Phenomemental').then(function (p) {
-        show('who', p, renderWho);
-        show('meet', p, renderMeet);
-      }, function (e) { fallback('who')(); fallback('meet')(); throw e; }),
-      Beach.get('now:Phenomemental').then(renderNow),
-      Beach.get('ahead:Phenomemental').then(function (b) { show('hand', b, renderHand); }, function (e) { fallback('hand')(); throw e; }),
-      Beach.get('lists:Phenomemental').then(function (b) { show('projects', b, renderProjects); }, function (e) { fallback('projects')(); throw e; }),
-      Beach.get('shell:Phenomemental').then(function (b) { show('shell', b, renderShell); }, function (e) { fallback('shell')(); throw e; })
-    ];
-    var settled = reads.map(function (r) {
-      return r.then(function () { return true; }, function () { return false; });
-    });
-    return Promise.all(settled).then(function (ok) {
-      if (ok.indexOf(true) < 0) throw new Error('beach out of reach');
-    });
+    return Beach.get('now:Phenomemental').then(renderNow);
   }, document.getElementById('live-note'), function () {
     // The form only makes sense once we know the beach is reachable.
     form.hidden = false;
-    document.getElementById('closing').hidden = true;
   });
 
   Beach.wireNoteForm(form, 'pool:Phenomemental');
