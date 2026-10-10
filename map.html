@@ -127,8 +127,15 @@
   // My pages for the projects that have one.
   var PAGES = {
     'lero-nnh-recovery-capital': { name: 'LEROs on the Commons', href: 'community-recovery/' },
-    'wholeless-nights': { name: 'Wholeless Nights', href: 'wholeless-nights.html' }
+    'wholeless-nights': { name: 'Wholeless Nights', href: 'wholeless-nights.html' },
+    'capability-gap': { name: 'The Capability Gap', href: 'capability-gap.html' }
   };
+  // Pages here that "My pages, off the beach" (artifacts:Phenomemental 8)
+  // doesn't list yet: shown with my pages until the beach lists them too.
+  var MORE_PAGES = [
+    { kind: 'mine', name: 'The Capability Gap', href: 'capability-gap.html',
+      hint: 'a note for chief executives: how the beach helps close the UK’s AI capability gap, with readers’ answers beside each step and room for comments.' }
+  ];
   // The groups of my map shown to visitors, by their place in
   // artifacts:Phenomemental, under these names. The rest (my core blocks,
   // my day and time, my mirrors, what's set aside) stay on the beach.
@@ -237,6 +244,16 @@
           }
         }
         items.push(item);
+      }
+      if (shown[0] === 8) {
+        MORE_PAGES.forEach(function (page) {
+          var listed = items.some(function (it) { return JSON.stringify(it).indexOf(page.href) >= 0; });
+          if (listed) return;
+          // After the last page, before notes such as "Where they live".
+          var after = 0;
+          items.forEach(function (it, j) { if (it.href) after = j + 1; });
+          items.splice(after, 0, page);
+        });
       }
       if (items.length) groups.push({ title: shown[1], kind: 'mine', items: items });
     });

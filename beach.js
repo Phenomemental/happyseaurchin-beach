@@ -299,7 +299,9 @@
   // Run refresh() now, every 30 seconds while the page is visible, and when
   // it comes back into view. refresh() returns a promise; its outcome is
   // shown in noteEl, and onFirstSuccess runs once the beach has answered.
-  function live(refresh, noteEl, onFirstSuccess) {
+  // A page with no saved copy passes its own words for when the beach
+  // hasn't answered yet (offline); '' says nothing in noteEl.
+  function live(refresh, noteEl, onFirstSuccess, offline) {
     var lastSeen = null;
     function run() {
       return refresh().then(function () {
@@ -309,7 +311,8 @@
           lastSeen.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       }, function () {
         if (!lastSeen) {
-          noteEl.textContent = 'The beach is out of reach just now, so this is the last saved version.';
+          noteEl.textContent = typeof offline === 'string' ? offline
+            : 'The beach is out of reach just now, so this is the last saved version.';
         }
       });
     }

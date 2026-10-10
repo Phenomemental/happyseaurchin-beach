@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Capability Gap</title>
+<meta name="description" content="The Capability Gap: a note for chief executives on how the beach helps close the UK's AI capability gap, read live from the beach, with room for comments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<style>
+  h1 {
+    font-weight: 400;
+    font-size: 2.6rem;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .kicker {
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin: 0.7rem 0 0;
+  }
+  .status {
+    font-style: italic;
+    color: var(--muted);
+    margin: 1.6rem 0 0;
+  }
+  .lede {
+    font-size: 1.3rem;
+    line-height: 1.5;
+    text-align: left;
+    max-width: 30rem;
+    margin: 0 auto;
+  }
+  .step-num {
+    font-size: 0.9rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.35rem;
+  }
+  .step h2 {
+    font-weight: 500;
+    font-size: 1.45rem;
+    line-height: 1.25;
+    letter-spacing: 0;
+    text-transform: none;
+    text-align: left;
+    color: var(--ink);
+    margin: 0 0 0.7rem;
+  }
+  .step-body {
+    overflow-wrap: break-word;
+  }
+  /* The figures behind a step: folded closed, one tap to open. */
+  .figures {
+    border-top: 1px solid var(--frame);
+    border-bottom: 1px solid var(--frame);
+    margin: 0.2rem 0 0.9rem;
+  }
+  .figures summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.1rem;
+    cursor: pointer;
+    list-style: none;
+    font-style: italic;
+    color: var(--crimson);
+  }
+  .figures summary::-webkit-details-marker {
+    display: none;
+  }
+  .figures summary::after {
+    content: "+";
+    font-style: normal;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .figures[open] summary::after {
+    content: "\2212";
+  }
+  .figures summary:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .figures-body {
+    padding: 0.2rem 0 0.3rem;
+  }
+  .figure {
+    font-size: 1.1rem;
+    overflow-wrap: break-word;
+    margin: 0 0 0.8rem;
+  }
+  .figure strong {
+    font-weight: 600;
+  }
+  .figure-sub {
+    display: block;
+    margin: 0.3rem 0 0 0.9rem;
+  }
+  /* Readers' answers beside a step. */
+  .answers-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0.6rem 0 0.3rem;
+  }
+  .answers .comment {
+    padding: 0.4rem 0 0.4rem 0.8rem;
+    border-bottom: 0;
+    border-left: 2px solid var(--frame);
+    margin-bottom: 0.6rem;
+  }
+  .comments-intro {
+    font-style: italic;
+    text-align: center;
+  }
+  #thread {
+    margin: 1.6rem 0 0;
+  }
+  .walk-link a {
+    overflow-wrap: anywhere;
+  }
+  .provenance {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--muted);
+    overflow-wrap: break-word;
+    margin: 0;
+  }
+  .provenance strong {
+    font-weight: 600;
+  }
+  @media (min-width: 560px) {
+    h1 { font-size: 3rem; }
+  }
+  /* On paper: the note itself, every set of figures open, on plain A4. */
+  @media print {
+    @page {
+      size: A4;
+      margin: 18mm 18mm 20mm;
+    }
+    :root {
+      --paper: #fff;
+      --page: #fff;
+      --ink: #000;
+      --muted: #555;
+      --frame: #aaa;
+      --rule: #a8323a;
+      --crimson: #a8323a;
+    }
+    html {
+      font-size: 10.5pt;
+    }
+    body {
+      display: block;
+      min-height: 0;
+      background: #fff;
+    }
+    main {
+      max-width: none;
+      padding: 0;
+    }
+    .site-nav,
+    .status,
+    #comments,
+    #comments-rule,
+    .live-note,
+    .site-footer {
+      display: none !important;
+    }
+    .sheet {
+      border: 0;
+      outline: 0;
+      margin: 0;
+      padding: 0;
+      background: none;
+    }
+    section,
+    .lede {
+      max-width: none;
+    }
+    .rule {
+      margin: 1rem auto;
+    }
+    .step-top,
+    .figures summary {
+      break-after: avoid;
+    }
+    .step-top,
+    .figure,
+    .answers .comment {
+      break-inside: avoid;
+    }
+    .figures summary {
+      min-height: 0;
+      color: var(--muted);
+    }
+    .figures summary::after,
+    .figures[open] summary::after {
+      content: none;
+    }
+    a {
+      color: inherit;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav class="site-nav" aria-label="Site">
+    <a href="index.html">Phenomemental</a>
+    <a href="wholeless-nights.html">Wholeless Nights</a>
+    <a href="night-watchman.html">The Night Watchman</a>
+    <a href="map.html">My map</a>
+  </nav>
+
+  <div class="sheet">
+    <h1>The Capability Gap</h1>
+    <p class="kicker" id="kicker" hidden></p>
+
+    <!-- Every word below is read live from the beach (spine:capability-gap);
+         nothing of the note itself is kept in this page. -->
+    <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
+
+    <div id="doc" hidden>
+      <hr class="rule">
+      <p class="lede" id="lede"></p>
+      <div id="steps"></div>
+    </div>
+
+    <hr class="rule" id="comments-rule" hidden>
+
+    <section id="comments" hidden>
+      <h2>Comments</h2>
+      <p class="comments-intro">Leave a note: a comment, a question, or what you would need to see before you tried it.</p>
+
+      <form id="note-form">
+        <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
+        <input id="n-name" name="who" maxlength="40" autocomplete="name">
+        <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
+        <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label for="n-text">Your note</label>
+        <textarea id="n-text" name="note" maxlength="2000" required></textarea>
+        <button type="submit">Leave a note</button>
+        <p class="form-status" role="status"></p>
+        <p class="form-foot">Notes are public, and appear below for everyone who reads this page.</p>
+        <p class="form-foot walk-link">If you have a name on the beach, you can answer beside any step there instead: <a href="https://happyseaurchin.com/walk/capability-gap">happyseaurchin.com/walk/capability-gap</a></p>
+      </form>
+
+      <div class="thread" id="thread" aria-live="polite"></div>
+    </section>
+
+    <div id="provenance-box" hidden>
+      <hr class="rule">
+      <section>
+        <p class="provenance" id="provenance"></p>
+      </section>
+    </div>
+
+    <p class="live-note" id="live-note"></p>
+  </div>
+
+  <footer class="site-footer">
+    <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
+  </footer>
+</main>
+<script src="beach.js?v=2026-10-10a"></script>
+<script>
+(function () {
+  var text = Beach.text;
+  var SPINE = 'spine:capability-gap';
+  var ROOM = 'pool:capability-gap';
+  var READER = /^capability-gap:(.+)$/;
+  var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
+
+  var stepsBox = document.getElementById('steps');
+  var status = document.getElementById('status');
+  var form = document.getElementById('note-form');
+  var thread = document.getElementById('thread');
+  var loaded = false;
+  var lastSig = null;
+  // Readers' own blocks: handle -> { touched, block }, refetched only when
+  // the beach's index says they've changed.
+  var readers = {};
+
+  function el(tag, cls, s) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (s != null) e.textContent = s;
+    return e;
+  }
+
+  function cap(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // Walk a block down an address such as ['1', '1', '2'].
+  function at(block, path) {
+    var n = block;
+    for (var i = 0; i < path.length; i++) {
+      if (!n || typeof n !== 'object') return null;
+      n = n[path[i]];
+    }
+    return n;
+  }
+
+  // ---- Capitals into sentence case -------------------------------------
+  // Each line opens in capitals. Those words are shown in ordinary
+  // sentence case, keeping the short forms that stay in capitals.
+  var KEEP = {};
+  ['AI', 'MCP', 'UK', 'EU', 'NHS', 'NCSC', 'ONS', 'DSIT', 'NAO', 'CIPD', 'IMF', 'OECD',
+   'CEO', 'HR', 'GDPR', 'DPIA', 'LERO', 'SME', 'API', 'ICT', 'I'].forEach(function (w) { KEEP[w] = true; });
+
+  function sentenceCase(s) {
+    var first = true;
+    return s.replace(/[A-Za-z]+/g, function (w) {
+      var out = KEEP[w] ? w
+        : w.length > 2 && /S$/.test(w) && KEEP[w.slice(0, -1)] ? w.slice(0, -1) + 's'
+        : w.toLowerCase();
+      if (first) {
+        first = false;
+        out = cap(out);
+      }
+      return out;
+    });
+  }
+
+  // The opening capitals of a line: whole words with no small letters, up
+  // to the first that ends with ".", ":", "?" or "!". A line that only
+  // opens with a short form ("UK organisations ...") has none.
+  function capsLead(s) {
+    var re = /\S+\s*/g, m, end = 0, real = false;
+    while ((m = re.exec(s))) {
+      var w = m[0].trim();
+      if (/[a-z]/.test(w)) break;
+      var letters = w.replace(/[^A-Z]/g, '');
+      if (letters.length > 1 && !KEEP[letters]) real = true;
+      end = re.lastIndex;
+      if (/[.:?!]$/.test(w)) break;
+    }
+    if (!real) return { caps: '', rest: s.trim() };
+    return { caps: s.slice(0, end).trim(), rest: s.slice(end).trim() };
+  }
+
+  // A step: its opening sentence is the heading, the rest its body. When
+  // the capitals stop part-way through a sentence, the heading runs on to
+  // the sentence's end.
+  function headAndBody(s) {
+    var l = capsLead(s);
+    if (!l.caps) return { head: '', body: s.trim() };
+    var head = sentenceCase(l.caps), rest = l.rest;
+    if (rest && !/[.:?!]$/.test(l.caps)) {
+      var m = rest.match(/^([\s\S]*?[.:?!])(\s+|$)/);
+      if (m) {
+        head += ' ' + m[1];
+        rest = rest.slice(m[0].length);
+      } else {
+        head += ' ' + rest;
+        rest = '';
+      }
+    }
+    return { head: head.replace(/[.:]$/, ''), body: cap(rest.trim()) };
+  }
+
+  // A figure, or the provenance: its capitals become a bold lead-in.
+  function leadIn(parent, s) {
+    var l = capsLead(s);
+    if (!l.caps) {
+      parent.appendChild(document.createTextNode(s));
+      return parent;
+    }
+    var m = l.caps.match(/^([\s\S]*?)([,:;.]?)$/);
+    parent.appendChild(el('strong', null, sentenceCase(m[1])));
+    parent.appendChild(document.createTextNode(m[2] + (l.rest ? ' ' + l.rest : '')));
+    return parent;
+  }
+
+  // ---- Reading the note ----------------------------------------------------
+  // What each reader has written at an address in their own block.
+  function answersAt(path) {
+    return Object.keys(readers).sort(function (a, b) {
+      return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+    }).map(function (handle) {
+      return { who: handle, text: text(at(readers[handle].block, path)).trim() };
+    }).filter(function (x) { return x.text; });
+  }
+
+  // The note runs down digit 1: the first step at 1, the next at 1.1, then
+  // 1.11, and so on. A step's other digits (2 to 9) are its figures.
+  function stepsOf(spine) {
+    var out = [], node = spine['1'], path = ['1'];
+    while (node != null && out.length < 40) {
+      var t = text(node).trim();
+      if (!t) break;
+      var figures = [];
+      if (typeof node === 'object') {
+        for (var d = 2; d <= 9; d++) {
+          var f = node[String(d)];
+          var ft = text(f).trim();
+          if (!ft) continue;
+          var subs = [];
+          if (f && typeof f === 'object') {
+            for (var k = 1; k <= 9; k++) {
+              var st = text(f[String(k)]).trim();
+              if (st) subs.push(st);
+            }
+          }
+          var fp = path.concat(String(d));
+          figures.push({ text: ft, subs: subs, answers: answersAt(fp) });
+        }
+      }
+      out.push({ id: path.join(''), text: t, figures: figures, answers: answersAt(path) });
+      node = typeof node === 'object' ? node['1'] : null;
+      path = path.concat('1');
+    }
+    return out;
+  }
+
+  function answersBox(found) {
+    var box = el('div', 'answers');
+    if (!found.length) return box;
+    box.appendChild(el('p', 'answers-label', found.length === 1 ? 'A reader’s answer' : 'Readers’ answers'));
+    found.forEach(function (x) {
+      var c = el('div', 'comment');
+      var meta = el('p', 'comment-meta');
+      meta.appendChild(el('strong', null, x.who));
+      c.appendChild(meta);
+      c.appendChild(el('p', 'comment-text', x.text));
+      box.appendChild(c);
+    });
+    return box;
+  }
+
+  function renderOpening(root) {
+    var kicker = '', lede = root;
+    var l = capsLead(root);
+    // The root opens with the note's own title; the title is shown
+    // already, so it isn't repeated. What follows it up to a colon
+    // ("a note for a chief executive") stands beneath the title.
+    if (l.caps && l.caps.replace(/[^A-Za-z ]+/g, '').trim().toLowerCase() === 'the capability gap') {
+      lede = l.rest;
+      var m = lede.match(/^([^:.]{1,60}):\s+([\s\S]+)$/);
+      if (m) {
+        kicker = cap(m[1].trim());
+        lede = m[2];
+      }
+    } else if (l.caps) {
+      lede = sentenceCase(l.caps) + (l.rest ? ' ' + l.rest : '');
+    }
+    var k = document.getElementById('kicker');
+    k.textContent = kicker;
+    k.hidden = !kicker;
+    document.getElementById('lede').textContent = cap(lede.trim());
+  }
+
+  function renderSteps(steps) {
+    // Rebuilding would close whatever a reader has open, so reopen it.
+    var open = {};
+    Array.prototype.forEach.call(stepsBox.querySelectorAll('details[open]'), function (d) { open[d.id] = true; });
+    var frag = document.createDocumentFragment();
+    steps.forEach(function (st, i) {
+      frag.appendChild(el('hr', 'rule'));
+      var parts = headAndBody(st.text);
+      var s = el('section', 'step');
+      s.id = 'step-' + (i + 1);
+      var top = el('div', 'step-top');
+      top.appendChild(el('p', 'step-num', 'Step ' + (i + 1)));
+      if (parts.head) top.appendChild(el('h2', null, parts.head));
+      s.appendChild(top);
+      if (parts.body) s.appendChild(el('p', 'step-body', parts.body));
+      if (st.figures.length) {
+        var d = el('details', 'figures');
+        d.id = 'figures-' + st.id;
+        if (open[d.id]) d.open = true;
+        d.appendChild(el('summary', null, 'The figures'));
+        var body = el('div', 'figures-body');
+        st.figures.forEach(function (f) {
+          var p = leadIn(el('p', 'figure'), f.text);
+          f.subs.forEach(function (sub) { p.appendChild(el('span', 'figure-sub', sub)); });
+          body.appendChild(p);
+          if (f.answers.length) body.appendChild(answersBox(f.answers));
+        });
+        d.appendChild(body);
+        s.appendChild(d);
+      }
+      s.appendChild(answersBox(st.answers));
+      frag.appendChild(s);
+    });
+    stepsBox.textContent = '';
+    stepsBox.appendChild(frag);
+  }
+
+  function renderProvenance(s) {
+    var p = document.getElementById('provenance');
+    p.textContent = '';
+    if (s) leadIn(p, s);
+    document.getElementById('provenance-box').hidden = !s;
+  }
+
+  // Draw the note; false if there is nothing to show.
+  function render(spine) {
+    if (!spine || typeof spine !== 'object') return false;
+    var root = text(spine).trim();
+    var steps = stepsOf(spine);
+    if (!root && !steps.length) return false;
+    var prov = text(spine['9']).trim();
+    var sig = JSON.stringify([root, steps, prov]);
+    if (sig === lastSig) return true;
+    lastSig = sig;
+    renderOpening(root);
+    renderSteps(steps);
+    renderProvenance(prov);
+    return true;
+  }
+
+  // Find the readers' blocks (capability-gap:<handle>) and read any that
+  // are new or have changed. A reader's block that can't be read keeps
+  // what we had; if the index can't be read, the note still shows.
+  function loadReaders() {
+    return Beach.index().then(function (idx) {
+      var names = (idx && Array.isArray(idx.blocks) ? idx.blocks : []).filter(function (b) { return READER.test(b); });
+      var touched = (idx && idx.touched) || {};
+      var seen = {};
+      return Promise.all(names.map(function (name) {
+        var handle = name.match(READER)[1];
+        seen[handle] = true;
+        var had = readers[handle];
+        if (had && touched[name] && had.touched === touched[name]) return null;
+        return Beach.get(name).then(function (block) {
+          readers[handle] = { touched: touched[name] || null, block: block };
+        }, function () {});
+      })).then(function () {
+        Object.keys(readers).forEach(function (h) { if (!seen[h]) delete readers[h]; });
+      });
+    }).catch(function () {});
+  }
+
+  // A note someone cleared has no words left. Leave it out, with its name
+  // and time, so it doesn't show as a blank note.
+  function withoutCleared(node) {
+    if (!node || typeof node !== 'object') return node;
+    var out = {};
+    Object.keys(node).forEach(function (k) {
+      var v = node[k];
+      if (k !== '_' && v && typeof v === 'object') {
+        var said = typeof v._ === 'string' ? v._.trim() : (v._ && typeof v._ === 'object');
+        var holds = Object.keys(v).some(function (j) { return j !== '_' && v[j] && typeof v[j] === 'object'; });
+        if (!said && !holds) return;
+        out[k] = withoutCleared(v);
+      } else if (k === '_' && v && typeof v === 'object') {
+        out[k] = withoutCleared(v);
+      } else {
+        out[k] = v;
+      }
+    });
+    return out;
+  }
+
+  var refresh = Beach.live(function () {
+    return Promise.all([
+      Promise.all([Beach.get(SPINE), loadReaders()]).then(function (r) {
+        if (!render(r[0])) throw new Error('nothing to show');
+      }),
+      // The note still shows if the comments can't be read.
+      Beach.get(ROOM).then(function (pool) {
+        Beach.renderThread(thread, withoutCleared(pool));
+      }, function () {})
+    ]).then(function () {
+      loaded = true;
+    }, function (e) {
+      // Never a blank page or old words: one plain line instead.
+      if (!loaded) status.textContent = OFFLINE;
+      throw e;
+    });
+  }, document.getElementById('live-note'), function () {
+    status.hidden = true;
+    ['doc', 'comments-rule', 'comments'].forEach(function (id) {
+      document.getElementById(id).hidden = false;
+    });
+  }, '');
+
+  // After a note is sent, read the room again so it appears at once.
+  Beach.wireNoteForm(form, ROOM, refresh);
+
+  // On paper, every set of figures is open; afterwards, as it was.
+  var closed = [];
+  window.addEventListener('beforeprint', function () {
+    closed = Array.prototype.filter.call(stepsBox.querySelectorAll('details.figures'), function (d) { return !d.open; });
+    closed.forEach(function (d) { d.open = true; });
+  });
+  window.addEventListener('afterprint', function () {
+    closed.forEach(function (d) { d.open = false; });
+    closed = [];
+  });
+})();
+</script>
+</body>
+</html>
