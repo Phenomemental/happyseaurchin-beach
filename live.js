@@ -59,6 +59,42 @@
     return plural(Math.floor(h / 24), 'day');
   }
 
+  // What moved, in plain words, from a block's name; present holds every
+  // name on the beach (name -> true), for the readings that depend on
+  // what else is there. A name with no plain reading is given as it is.
+  //   pool:X      a note in X’s room
+  //   now:X       X said their day
+  //   spine:X     a post in X’s diary, when X has a passport; otherwise
+  //               the X family changed
+  //   passport:X  X’s card changed
+  //   X:Y         Y answered X, when there is a spine:X
+  function moved(name, present) {
+    var m = /^([^:]+):(.+)$/.exec(name);
+    if (!m) return name;
+    var kind = m[1];
+    var x = m[2];
+    present = present || {};
+    if (kind === 'pool') return 'a note in ' + x + '’s room';
+    if (kind === 'now') return x + ' said their day';
+    if (kind === 'spine') {
+      return present['passport:' + x] ? 'a post in ' + x + '’s diary' : 'the ' + x + ' family changed';
+    }
+    if (kind === 'passport') return x + '’s card changed';
+    if (present['spine:' + kind]) return x + ' answered ' + kind;
+    return name;
+  }
+
+  // Words put into el with a place to break after every colon and hyphen,
+  // so a long name wraps there and not in the middle of a word.
+  function breakable(el, s) {
+    s.split(/([:-])/).forEach(function (part, i) {
+      if (!part) return;
+      el.appendChild(document.createTextNode(part));
+      if (i % 2) el.appendChild(document.createElement('wbr'));
+    });
+    return el;
+  }
+
   // One pulse on an element; none for anyone who asks for less motion.
   function pulse(el) {
     if (still()) return;
@@ -460,10 +496,11 @@
   // across a strip of sky. set(list) gives the flock, newest first, as
   // [{ id, when }], and the newest bird is drawn in the accent. Tapping a
   // bird, or picking one with the arrow keys, shows opts.say(bird), the
-  // words [name, how long ago]. Birds that arrive later fly in from the
-  // side; birds whose things have gone quiet fly off. For anyone who asks
-  // for less motion they sit still, and nothing moves while the sky is
-  // off the screen or the tab is hidden.
+  // words [what moved, how long ago, and a title for the first, if any].
+  // Birds that arrive later fly in from the side; birds whose things have
+  // gone quiet fly off. For anyone who asks for less motion they sit
+  // still, and nothing moves while the sky is off the screen or the tab
+  // is hidden.
   var flocks = [];
 
   function hash(s) {
@@ -563,7 +600,8 @@
       var w = opts.say(picked);
       var name = document.createElement('strong');
       name.className = 'live-flock-name';
-      name.textContent = w[0];
+      breakable(name, w[0]);
+      if (w[2]) name.title = w[2];
       say.appendChild(name);
       if (w[1]) {
         say.appendChild(document.createTextNode(' '));
@@ -851,6 +889,8 @@
     recall: recall,
     remember: remember,
     ago: ago,
+    moved: moved,
+    breakable: breakable,
     pulse: pulse,
     count: count,
     drawLine: drawLine,

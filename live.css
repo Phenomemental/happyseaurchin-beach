@@ -181,14 +181,16 @@
   margin: 0;
   padding: 0.15rem 0.5rem 0.15rem 0;
   background: var(--paper);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   pointer-events: none;
 }
 .live-flock-say:empty {
   display: none;
 }
+/* The name can be pointed at, to show the block's own name. */
 .live-flock-name {
   font-weight: 600;
+  pointer-events: auto;
 }
 .live-flock-ago {
   font-style: italic;
