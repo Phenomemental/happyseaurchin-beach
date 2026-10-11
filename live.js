@@ -1,7 +1,7 @@
 /* What lets a reader see, and touch, that a page is live: a count that
    pulses when it rises, lines that draw themselves as they are reached,
-   a line of time to tap along, and a flock of what has just moved on the
-   beach. Shared by the pages that read from the beach; every word stays
+   a line of time to tap along, and a sky with a flock of what has just
+   moved on the beach. Shared by the pages that read from the beach; every word stays
    the beach's, or the page's own short labels. Needs live.css. Nothing
    here is needed for the words to show, and all of it holds still for
    anyone who asks their device for less motion. */
@@ -491,17 +491,39 @@
     };
   }
 
-  // ---- A flock ------------------------------------------------------------
-  // One small bird for each thing that has just moved, drifting together
-  // across a strip of sky. set(list) gives the flock, newest first, as
-  // [{ id, when }], and the newest bird is drawn in the accent. Tapping a
-  // bird, or picking one with the arrow keys, shows opts.say(bird), the
-  // words [what moved, how long ago, and a title for the first, if any].
-  // Birds that arrive later fly in from the side; birds whose things have
-  // gone quiet fly off. For anyone who asks for less motion they sit
-  // still, and nothing moves while the sky is off the screen or the tab
-  // is hidden.
-  var flocks = [];
+  // ---- A scene ------------------------------------------------------------
+  // A sky at dusk over water, with a flock in it: a cream bird for each
+  // thing that has just moved, and a pink one for the reader, which flies
+  // in from the edge as the page opens. The sky is the element's own
+  // background (live.css), so it is there before any of this runs; the
+  // canvas laid over it carries the birds and the water's slow shimmer.
+  //
+  // Live.scene(box, opts):
+  //   opts.caption   an element under the sky, for the words of a bird
+  //   opts.say(b)    [what it is, how long ago, a title for the first],
+  //                  for a bird of the flock ({ id, when })
+  //   opts.me        the words for the reader's own bird
+  //   opts.label(n)  the sky's name, for anyone who can't see it
+  //   opts.horizon   where the sky meets the water, from the top (0.78)
+  //
+  // set(list) gives the flock, newest first, as [{ id, when, fresh }]. A
+  // bird new to the sky flies in from the side; one marked fresh has just
+  // moved, and the caption says the newest of those. Birds no longer in
+  // the list fly off. ring(on) puts a small ring on the reader's bird.
+  //
+  // Pressing or dragging in the sky draws the birds within 140px towards
+  // the finger; let go and they drift back into a loose flock. A mostly
+  // vertical drag is left to scroll the page. Tapping a bird, or picking
+  // one with the arrow keys, puts its words in the caption and rings it.
+  // For anyone who asks for less motion the birds sit still and the water
+  // lies flat, and taps still work. Nothing moves while the sky is off the
+  // screen or the tab is hidden.
+  var scenes = [];
+  var CREAM = '#f2e7d4';
+  var DUSK = '#1a0d20';
+  var REACH = 140; // how far a pressed finger draws the birds, in pixels
+  var TAP = 24; // how near a tap must come to a bird: a 48px target
+  var GLOW = 2.5; // seconds a bird that has just moved shows it
 
   function hash(s) {
     var h = 2166136261;
@@ -527,93 +549,127 @@
     return v || fallback;
   }
 
-  function flock(opts) {
+  // A hex colour taken part of the way towards another: the page's pink
+  // lightened for a dark sky, as the page itself lightens it at night.
+  function towards(hex, to, k) {
+    var a = /^#([0-9a-f]{6})$/i.exec(hex);
+    var b = /^#([0-9a-f]{6})$/i.exec(to);
+    if (!a || !b) return hex;
+    var out = '#';
+    for (var i = 0; i < 6; i += 2) {
+      var x = parseInt(a[1].slice(i, i + 2), 16);
+      var y = parseInt(b[1].slice(i, i + 2), 16);
+      out += ('0' + Math.round(x + (y - x) * k).toString(16)).slice(-2);
+    }
+    return out;
+  }
+
+  function scene(box, opts) {
     opts = opts || {};
-    var H = opts.height || 160;
-    var box = document.createElement('div');
-    box.className = 'live-flock';
-    box.hidden = true;
+    var horizon = opts.horizon || 0.78;
+    var say = opts.caption || null;
     var sky = document.createElement('canvas');
-    sky.className = 'live-flock-sky';
-    sky.style.height = H + 'px';
+    sky.className = 'live-scene-sky';
     sky.tabIndex = 0;
     sky.setAttribute('role', 'img');
-    var say = document.createElement('p');
-    say.className = 'live-flock-say';
-    say.setAttribute('aria-live', 'polite');
-    box.appendChild(sky);
-    box.appendChild(say);
+    box.insertBefore(sky, box.firstChild);
     var ctx = sky.getContext ? sky.getContext('2d') : null;
-    if (!ctx) return { el: box, set: function () {} };
+    if (!ctx) return { set: function () {}, ring: function () {} };
 
-    var birds = [];
+    var me = hatch({ id: '' }, true);
+    me.me = true;
+    me.enter = -1;
+    me.delay = 0;
+    var birds = [me];
     var order = [];
-    var newest = null;
-    var picked = null;
+    var picked = null; // the bird last tapped, or picked by key
+    var shown = null; // the bird the caption speaks of
+    var ringed = false;
+    var press = null; // where a finger or pointer is held in the sky
+    var gesture = null;
     var W = 0;
+    var H = 0;
     var dpr = 1;
     var time = 0;
     var running = false;
     var last = 0;
     var onScreen = !window.IntersectionObserver;
-    var ink = '#1d1a17';
     var accent = '#c21d4e';
+    var bright = '#ef5d85';
 
     function find(id) {
-      for (var i = 0; i < birds.length; i++) if (birds[i].id === id) return birds[i];
+      for (var i = 0; i < birds.length; i++) if (!birds[i].me && birds[i].id === id) return birds[i];
       return null;
     }
 
     function hatch(item, flyIn) {
-      var r = chance(hash(item.id));
-      var b = {
+      var r = chance(hash(item.id || 'you'));
+      return {
         id: item.id, when: item.when, r: r, a: r(), d: r(),
         phase: r() * 6.283, wander: r() * 6.283, pace: 16 + r() * 14,
-        x: null, y: null, vx: 0, vy: 0
+        enter: flyIn ? (r() < 0.5 ? -1 : 1) : 0, delay: r(),
+        x: null, y: null, vx: 0, vy: 0, glow: 0
       };
-      if (flyIn && W) {
-        var left = r() < 0.5;
-        b.x = left ? -10 : W + 10;
-        b.y = 25 + r() * (H - 50);
-        b.vx = left ? 30 : -30;
-        b.vy = (r() - 0.5) * 10;
-      }
-      return b;
     }
 
-    // Where a bird sits in a loose cloud: its place when the flock first
-    // appears, and always for anyone who asks for less motion.
+    // The band of sky the birds keep to, above the water.
+    function top() { return 16; }
+    function waterline() { return H * horizon; }
+    function bottom() { return waterline() - 18; }
+
+    // Where a bird sits in a loose cloud: its place in a still sky, and
+    // where a bird that doesn't fly in first appears.
     function home(b) {
       var a = b.a * Math.PI * 2;
       var d = Math.sqrt(b.d);
+      var mid = (top() + bottom()) / 2 + (bottom() - top()) * 0.08;
       b.x = W / 2 + Math.cos(a) * d * W * 0.36;
-      b.y = H / 2 + Math.sin(a) * d * H * 0.34;
+      b.y = mid + Math.sin(a) * d * (bottom() - top()) * 0.34;
       if (!b.vx && !b.vy) {
         b.vx = 24;
         b.vy = (b.a - 0.5) * 8;
       }
     }
 
+    // A bird's first place: beyond the edge, a little way out so the
+    // flock comes in over a few seconds, if it is to fly in.
+    function place(b) {
+      if (b.enter && !still()) {
+        b.x = b.enter < 0 ? -12 - b.delay * 140 : W + 12 + b.delay * 140;
+        b.y = 30 + b.d * Math.max(0, bottom() - 50);
+        b.vx = b.enter < 0 ? 42 : -42;
+        b.vy = (b.a - 0.5) * 8;
+      } else {
+        home(b);
+      }
+      b.enter = 0;
+    }
+
     function words() {
+      if (!say) return;
       say.textContent = '';
-      if (!picked || !opts.say) return;
-      var w = opts.say(picked);
+      if (!shown) return;
+      if (shown.me) {
+        say.textContent = opts.me || '';
+        return;
+      }
+      var w = opts.say ? opts.say(shown) : [shown.id];
       var name = document.createElement('strong');
-      name.className = 'live-flock-name';
+      name.className = 'live-scene-name';
       breakable(name, w[0]);
       if (w[2]) name.title = w[2];
       say.appendChild(name);
       if (w[1]) {
         say.appendChild(document.createTextNode(' '));
         var when = document.createElement('span');
-        when.className = 'live-flock-ago';
+        when.className = 'live-scene-ago';
         when.textContent = w[1];
         say.appendChild(when);
       }
     }
 
     function pick(b) {
-      picked = b;
+      picked = shown = b;
       words();
       draw();
     }
@@ -621,7 +677,7 @@
     function set(list) {
       list = list || [];
       var seen = {};
-      var first = !birds.some(function (b) { return !b.leaving; });
+      var fresh = null;
       list.forEach(function (item) {
         seen[item.id] = true;
         var b = find(item.id);
@@ -629,33 +685,49 @@
           b.when = item.when;
           b.leaving = false;
         } else {
-          birds.push(hatch(item, !first && !still()));
+          b = hatch(item, !still());
+          birds.push(b);
+        }
+        if (item.fresh) {
+          b.glow = GLOW;
+          if (!fresh) fresh = b;
         }
       });
       birds = birds.filter(function (b) {
-        if (seen[b.id]) return true;
-        if (still() || !W || !list.length) return false;
+        if (b.me || seen[b.id]) return true;
+        if (still() || !W || b.x == null) return false;
         b.leaving = true;
         return true;
       });
       order = list.map(function (item) { return item.id; });
-      newest = order.length ? order[0] : null;
-      if (picked && !seen[picked.id]) picked = null;
+      if (shown && !shown.me && !seen[shown.id]) shown = null;
+      if (picked && !picked.me && !seen[picked.id]) picked = null;
+      if (fresh) {
+        shown = fresh;
+        picked = null;
+      }
       words();
-      box.hidden = !list.length;
       if (opts.label) sky.setAttribute('aria-label', opts.label(list.length));
       measure();
       wake();
+      draw();
     }
 
     function measure() {
       var w = sky.clientWidth;
-      if (!w) return;
+      var h = sky.clientHeight;
+      if (!w || !h) return;
       var d = Math.min(window.devicePixelRatio || 1, 2);
-      if (w === W && d === dpr) return;
-      var k = W ? w / W : 1;
-      birds.forEach(function (b) { if (b.x != null) b.x *= k; });
+      if (w === W && h === H && d === dpr) return;
+      var kx = W ? w / W : 1;
+      var ky = H ? h / H : 1;
+      birds.forEach(function (b) {
+        if (b.x == null) return;
+        b.x *= kx;
+        b.y *= ky;
+      });
       W = w;
+      H = h;
       dpr = d;
       sky.width = Math.round(W * dpr);
       sky.height = Math.round(H * dpr);
@@ -663,28 +735,38 @@
     }
 
     function paints() {
-      ink = colour('--ink', ink);
-      accent = colour('--crimson', accent);
+      var pink = colour('--crimson', '#c21d4e');
+      accent = pink;
+      bright = towards(pink, '#ffe0e8', 0.3);
     }
 
     // The flock's rules, gently: keep a little apart, fly roughly the way
     // your neighbours fly, stay near them, each with a slow wandering of
     // its own; the whole drifts about the sky, never so far that it
-    // presses on the edge, and every bird turns back before it.
+    // presses on the edge, and every bird turns back before it. A finger
+    // held in the sky draws the birds near it.
     function step(dt) {
       time += dt;
+      var t = top();
+      var btm = bottom();
       var flying = 0;
       birds.forEach(function (b) { if (!b.leaving) flying++; });
-      var reach = 12 + 7 * Math.sqrt(flying);
-      var gx = W / 2 + Math.max(0, W / 2 - 22 - reach) * Math.sin(time * 0.09);
-      var gy = H / 2 + Math.max(0, H / 2 - 22 - reach * 0.8) * Math.sin(time * 0.13 + 1.3);
+      var spread = 12 + 7 * Math.sqrt(flying);
+      var gx = W / 2 + Math.max(0, W / 2 - 22 - spread) * Math.sin(time * 0.09);
+      var gy = (t + btm) / 2 + Math.max(0, (btm - t) / 2 - spread * 0.8) * Math.sin(time * 0.13 + 1.3);
       birds.forEach(function (b) {
-        if (b.x == null) home(b);
+        if (b.x == null) place(b);
+        if (b.glow) b.glow = Math.max(0, b.glow - dt);
+        b.drawn = false;
+        var entering = !b.leaving && (b.x < 0 || b.x > W);
         var fx = 0;
         var fy = 0;
         if (b.leaving) {
           fx = b.x < W / 2 ? -70 : 70;
           fy = -12;
+        } else if (entering) {
+          // Still beyond the edge: straight on in.
+          b.vx = b.x < 0 ? 42 : -42;
         } else {
           var n = 0, cx = 0, cy = 0, ax = 0, ay = 0, sx = 0, sy = 0;
           birds.forEach(function (o) {
@@ -711,23 +793,32 @@
           b.wander += (b.r() - 0.5) * dt * 4;
           fx += sx * 36 + (gx - b.x) * 0.05 + Math.cos(b.wander) * 12;
           fy += sy * 36 + (gy - b.y) * 0.05 + Math.sin(b.wander) * 12;
+          if (press) {
+            var px = press.x - b.x;
+            var py = press.y - b.y;
+            if (px * px + py * py < REACH * REACH) {
+              fx += px * 2.4;
+              fy += py * 2.4;
+              b.drawn = true;
+            }
+          }
           var m = 20;
           if (b.x < m) fx += (m - b.x) * 6;
           if (b.x > W - m) fx -= (b.x - W + m) * 6;
-          if (b.y < m) fy += (m - b.y) * 6;
-          if (b.y > H - m) fy -= (b.y - H + m) * 6;
+          if (b.y < t) fy += (t - b.y) * 6;
+          if (b.y > btm) fy -= (b.y - btm) * 6;
         }
         b.vx += fx * dt;
         b.vy += fy * dt;
         var s = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-        // Each bird keeps near a pace of its own.
-        if (!b.leaving && s > 0) {
+        // Each bird keeps near a pace of its own, unless drawn or passing.
+        if (!b.leaving && !b.drawn && !entering && s > 0) {
           var k = 1 + (b.pace / s - 1) * Math.min(1, dt * 0.8);
           b.vx *= k;
           b.vy *= k;
           s *= k;
         }
-        var max = b.leaving ? 70 : 34;
+        var max = b.leaving ? 70 : b.drawn ? 95 : entering ? 42 : 34;
         if (s > max) {
           b.vx *= max / s;
           b.vy *= max / s;
@@ -746,25 +837,76 @@
       });
     }
 
+    function stroke(x1, y, x2) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y);
+      ctx.lineTo(x2, y);
+      ctx.stroke();
+    }
+
+    // Below the horizon, faint lines on the water: the glow's reflection
+    // down the middle, cream glints either side, all slowly shimmering.
+    function water() {
+      var y0 = waterline();
+      var n = 9;
+      var t = still() ? 0 : time;
+      ctx.lineWidth = 1;
+      for (var k = 1; k <= n; k++) {
+        var f = k / (n + 1);
+        var y = Math.round(y0 + (H - y0) * Math.pow(f, 1.4)) + 0.5;
+        var a = 0.16 + 0.1 * Math.sin(t * 0.8 + k * 1.7);
+        var half = W * (0.06 + 0.2 * f);
+        var drift = Math.sin(t * 0.25 + k * 2.3) * 8;
+        ctx.strokeStyle = accent;
+        ctx.globalAlpha = a + 0.12 * (1 - f);
+        stroke(W / 2 - half + drift, y, W / 2 + half + drift);
+        ctx.strokeStyle = CREAM;
+        ctx.globalAlpha = a * 0.55;
+        stroke(W / 2 - half * 2.1 - drift * 0.5, y, W / 2 - half * 1.35 - drift * 0.5);
+        stroke(W / 2 + half * 1.4 + drift * 0.7, y, W / 2 + half * 2 + drift * 0.7);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // A bird far off, as a "v" with its wings beating; still birds hold
-    // their wings half raised.
-    function glyph(b, hot) {
+    // their wings half raised. The reader's is pink, edged in dusk so it
+    // shows against the glow.
+    function glyph(b) {
       var flap = still() ? 0.3 : Math.sin(b.phase);
-      var w = 4.6;
-      var tip = 0.6 - flap * 2.4;
+      var w = b.me ? 6 : 5.2;
+      var tip = 0.7 - flap * 2.6;
       var bank = clamp(Math.atan2(b.vy, Math.abs(b.vx) + 0.001) * 0.5, -0.45, 0.45);
       ctx.save();
       ctx.translate(b.x, b.y);
       ctx.rotate(b.vx < 0 ? -bank : bank);
-      ctx.strokeStyle = hot ? accent : ink;
-      ctx.globalAlpha = hot ? 1 : 0.72;
-      ctx.lineWidth = hot ? 1.6 : 1.3;
       ctx.beginPath();
       ctx.moveTo(-w, tip);
-      ctx.quadraticCurveTo(-w * 0.45, -1.6 + flap * 0.4, 0, 1);
-      ctx.quadraticCurveTo(w * 0.45, -1.6 + flap * 0.4, w, tip);
+      ctx.quadraticCurveTo(-w * 0.45, -1.7 + flap * 0.4, 0, 1);
+      ctx.quadraticCurveTo(w * 0.45, -1.7 + flap * 0.4, w, tip);
+      if (b.me) {
+        ctx.strokeStyle = DUSK;
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.strokeStyle = bright;
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 2.1;
+      } else {
+        ctx.strokeStyle = CREAM;
+        ctx.globalAlpha = 0.88;
+        ctx.lineWidth = 1.4;
+      }
       ctx.stroke();
       ctx.restore();
+    }
+
+    function ring(b, r, colourOf, alpha, width) {
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = colourOf;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
     function draw() {
@@ -773,24 +915,24 @@
       ctx.clearRect(0, 0, W, H);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      water();
       birds.forEach(function (b) {
-        if (b.x == null || still()) home(b);
-        glyph(b, b === picked || b.id === newest);
+        if (still()) home(b);
+        else if (b.x == null) place(b);
+        glyph(b);
+        if (b.glow && !still()) ring(b, 6 + (1 - b.glow / GLOW) * 16, CREAM, b.glow / GLOW * 0.7, 1);
       });
-      if (picked && picked.x != null) {
-        ctx.globalAlpha = 0.9;
-        ctx.strokeStyle = accent;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(picked.x, picked.y, 10, 0, Math.PI * 2);
-        ctx.stroke();
+      if (ringed) {
+        ring(me, 10, DUSK, 0.5, 3.4);
+        ring(me, 10, bright, 1, 1.5);
       }
+      if (shown && !shown.leaving) ring(shown, 14, CREAM, 0.85, 1);
       ctx.globalAlpha = 1;
     }
 
     function wake() {
       if (running) return;
-      if (still() || !onScreen || document.hidden || !birds.length || !W) {
+      if (still() || !onScreen || document.hidden || !W) {
         draw();
         return;
       }
@@ -800,7 +942,7 @@
     }
 
     function frame(ts) {
-      if (still() || !onScreen || document.hidden || !birds.length || !W) {
+      if (still() || !onScreen || document.hidden || !W) {
         running = false;
         draw();
         return;
@@ -812,37 +954,77 @@
       requestAnimationFrame(frame);
     }
 
-    // A tap finds the nearest bird within 24px: a 48px target, however
-    // small the bird.
-    sky.addEventListener('click', function (e) {
+    function at(e) {
       var r = sky.getBoundingClientRect();
-      var x = e.clientX - r.left;
-      var y = e.clientY - r.top;
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    // Hold the birds' attention at p, within the band of sky.
+    function hold(p) {
+      press = still() ? null : { x: clamp(p.x, 0, W), y: clamp(p.y, top(), bottom()) };
+      wake();
+    }
+
+    function tapAt(p) {
       var best = null;
-      var bd = 24 * 24;
+      var bd = TAP * TAP;
       birds.forEach(function (b) {
         if (b.leaving || b.x == null) return;
-        var d = (b.x - x) * (b.x - x) + (b.y - y) * (b.y - y);
+        var d = (b.x - p.x) * (b.x - p.x) + (b.y - p.y) * (b.y - p.y);
         if (d <= bd) {
           bd = d;
           best = b;
         }
       });
       pick(best);
+    }
+
+    // A press draws the birds at once. Once the finger has moved, a
+    // mostly vertical drag is the page being scrolled (touch-action lets
+    // the browser take it), and the birds are let go. A press that barely
+    // moves and is soon lifted is a tap.
+    sky.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      var p = at(e);
+      gesture = { id: e.pointerId, x: p.x, y: p.y, t: Date.now(), moved: false, decided: false, scroll: false };
+      try {
+        sky.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      hold(p);
     });
+    sky.addEventListener('pointermove', function (e) {
+      if (!gesture || e.pointerId !== gesture.id) return;
+      var p = at(e);
+      var dx = Math.abs(p.x - gesture.x);
+      var dy = Math.abs(p.y - gesture.y);
+      if (dx > 8 || dy > 8) gesture.moved = true;
+      if (!gesture.decided && (dx > 10 || dy > 10)) {
+        gesture.decided = true;
+        gesture.scroll = dy > dx;
+      }
+      if (gesture.scroll) press = null;
+      else hold(p);
+    });
+    function release(e) {
+      if (!gesture || e.pointerId !== gesture.id) return;
+      if (e.type === 'pointerup' && !gesture.moved && Date.now() - gesture.t < 600) tapAt(at(e));
+      gesture = null;
+      press = null;
+    }
+    sky.addEventListener('pointerup', release);
+    sky.addEventListener('pointercancel', release);
 
     sky.addEventListener('keydown', function (e) {
-      var live = order.map(find).filter(function (b) { return b && !b.leaving; });
-      if (!live.length) return;
-      var i = picked ? live.indexOf(picked) : -1;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = (i + 1) % live.length;
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = i <= 0 ? live.length - 1 : i - 1;
+      var all = [me].concat(order.map(find).filter(function (b) { return b && !b.leaving; }));
+      var i = picked ? all.indexOf(picked) : -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = (i + 1) % all.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = i <= 0 ? all.length - 1 : i - 1;
       else if (e.key === 'Home') i = 0;
-      else if (e.key === 'End') i = live.length - 1;
+      else if (e.key === 'End') i = all.length - 1;
       else if (e.key === 'Escape') i = -1;
       else return;
       e.preventDefault();
-      pick(i >= 0 ? live[i] : null);
+      pick(i >= 0 ? all[i] : null);
     });
 
     if (window.IntersectionObserver) {
@@ -863,9 +1045,14 @@
       });
     }
     paints();
-    var me = {
-      el: box,
+    measure();
+    wake();
+    var self = {
       set: set,
+      ring: function (on) {
+        ringed = !!on;
+        draw();
+      },
       refresh: function () {
         paints();
         words();
@@ -873,15 +1060,15 @@
         draw();
       }
     };
-    flocks.push(me);
-    return me;
+    scenes.push(self);
+    return self;
   }
 
   document.addEventListener('visibilitychange', function () {
-    flocks.forEach(function (f) { f.refresh(); });
+    scenes.forEach(function (s) { s.refresh(); });
   });
   onSettings(function () {
-    flocks.forEach(function (f) { f.refresh(); });
+    scenes.forEach(function (s) { s.refresh(); });
   });
 
   window.Live = {
@@ -895,6 +1082,6 @@
     count: count,
     drawLine: drawLine,
     timeline: timeline,
-    flock: flock
+    scene: scene
   };
 })();
