@@ -359,6 +359,7 @@
       }
     }
 
+    // An i that isn't on the line leaves no moment current.
     function select(i) {
       for (var j = 0; j < marks.length; j++) {
         if (marks[j].i === i) {
@@ -367,6 +368,10 @@
           return;
         }
       }
+      if (cur >= 0) mark(marks[cur], false);
+      cur = -1;
+      ring.style.display = 'none';
+      marks.forEach(function (m, q) { m.btn.tabIndex = q === 0 ? 0 : -1; });
     }
 
     function mark(k, on) {
@@ -656,11 +661,13 @@
   // ---- Chapters -------------------------------------------------------------
   // A page in chapters that start closed: each a full-width button with
   // the chapter's label, its opening line in italic and a mark at the
-  // right that turns when open. Opening one closes the others, keeping
-  // the chosen one where it was on the screen. A link to a chapter's
-  // address (#id) opens it and brings it into view; follow() does the
-  // same for the address the page was opened at, once it is showing.
-  //   list: [{ id, label, line, body: element, onOpen, onClose }]
+  // right that turns when open; with a small drawing at the left, when
+  // given (c.mini). Closed, the opening line shows at most two lines.
+  // Opening one closes the others, keeping the chosen one where it was on
+  // the screen. A link to a chapter's address (#id) opens it and brings
+  // it into view; follow() does the same for the address the page was
+  // opened at, once it is showing.
+  //   list: [{ id, label, line, mini, body: element, onOpen, onClose }]
   // Returns { open(id, bring, quick), opened() -> id or null, follow(),
   // destroy(), list: [{ id, label, el }] }.
   function chapters(box, list) {
@@ -684,6 +691,10 @@
         line.className = 'live-chapter-line';
         linkify(line, c.line, true);
         words.appendChild(line);
+      }
+      if (c.mini) {
+        c.mini.classList.add('live-chapter-mini');
+        b.appendChild(c.mini);
       }
       b.appendChild(words);
       b.appendChild(mark('live-chapter-mark'));
@@ -1104,6 +1115,831 @@
         });
         sync();
         soon();
+      }
+    };
+  }
+
+  // ---- Small drawings -----------------------------------------------------------
+  // A miniature of what is inside a chapter, in the page's colours, for
+  // the eye only: 'steps' (seven dots in a row), 'dial', 'birds', 'orbit'
+  // (a ringed centre with points round it) or 'bar' (two of seven).
+  function mini(name) {
+    var s = svg('svg', 'live-mini');
+    s.setAttribute('viewBox', '0 0 40 40');
+    s.setAttribute('aria-hidden', 'true');
+    s.setAttribute('focusable', 'false');
+    function add(tag, cls, at) {
+      var e = svg(tag, cls);
+      Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      s.appendChild(e);
+      return e;
+    }
+    var i;
+    if (name === 'steps') {
+      add('line', 'live-mini-line', { x1: 4, y1: 20, x2: 36, y2: 20 });
+      for (i = 0; i < 7; i++) add('circle', i === 0 ? 'live-mini-hot' : i === 1 ? 'live-mini-ring' : 'live-mini-dim', { cx: 4 + i * 5.33, cy: 20, r: i < 2 ? 2.4 : 2 });
+    } else if (name === 'dial') {
+      add('circle', 'live-mini-line', { cx: 20, cy: 20, r: 13, fill: 'none' });
+      for (i = 0; i < 6; i++) {
+        var a = (-90 + i * 60) * Math.PI / 180;
+        add('circle', i < 3 ? 'live-mini-hot' : 'live-mini-dim', { cx: 20 + 13 * Math.cos(a), cy: 20 + 13 * Math.sin(a), r: 2.4 });
+      }
+      add('line', 'live-mini-hand', { x1: 20, y1: 20, x2: 27, y2: 16 });
+    } else if (name === 'birds') {
+      [[9, 15, 'live-mini-ink'], [21, 24, 'live-mini-hand'], [30, 13, 'live-mini-ink']].forEach(function (b) {
+        add('path', b[2], { d: 'M' + (b[0] - 5) + ' ' + b[1] + ' q2.5 -3 5 0.8 q2.5 -3.8 5 -0.8', fill: 'none' });
+      });
+    } else if (name === 'orbit') {
+      add('circle', 'live-mini-line', { cx: 20, cy: 20, r: 13, fill: 'none' });
+      add('circle', 'live-mini-hot', { cx: 20, cy: 20, r: 4 });
+      for (i = 0; i < 6; i++) {
+        var b2 = (-90 + i * 60) * Math.PI / 180;
+        add('circle', i % 3 === 1 ? 'live-mini-hot' : 'live-mini-ink-dot', { cx: 20 + 13 * Math.cos(b2), cy: 20 + 13 * Math.sin(b2), r: i % 3 === 1 ? 2.6 : 1.9 });
+      }
+    } else if (name === 'bar') {
+      for (i = 0; i < 7; i++) add('rect', i < 2 ? 'live-mini-hot' : 'live-mini-dim', { x: 3 + i * 5, y: 17, width: 4, height: 6, rx: 0.8 });
+    }
+    return s;
+  }
+
+  // ---- A film -------------------------------------------------------------------
+  // How a thing was made, played as a film across a small universe. The
+  // model is read from a node of a spine, in the page's way of reading:
+  //   its own line             "Title. Opening"
+  //   at 1, the trail          moments, "HH:MM. words", each with, at 1, the
+  //                            label of the body that gave, and at 2 the
+  //                            label (or labels, comma-separated, in order)
+  //                            of where it went
+  //   at 2, who                the bodies, "Label. Body", each with its kind
+  //                            ("Person", "Device", "AI" or "Place") at 4
+  //   at 3, the conclusion
+  // Bodies are matched by label exactly. A moment without passes, or naming
+  // a label no body has, keeps its words and draws no arc.
+  function nodeWords(n) {
+    while (n && typeof n === 'object' && n._ && typeof n._ === 'object') n = n._;
+    if (typeof n === 'string') return n.trim();
+    return n && typeof n._ === 'string' ? n._.trim() : '';
+  }
+
+  function labelled(s) {
+    var i = s.indexOf('. ');
+    if (i < 0) return { label: s.replace(/\.$/, ''), body: '' };
+    return { label: s.slice(0, i), body: s.slice(i + 2).trim() };
+  }
+
+  function items(n) {
+    var out = [];
+    if (!n || typeof n !== 'object') return out;
+    for (var i = 1; i <= 9; i++) {
+      var t = nodeWords(n[String(i)]);
+      if (t) out.push({ node: n[String(i)], text: t });
+    }
+    return out;
+  }
+
+  // An accumulating node, oldest first ("_" first when older entries have
+  // been nested there).
+  function accumulated(n, out) {
+    out = out || [];
+    if (!n || typeof n !== 'object') return out;
+    if (n._ && typeof n._ === 'object') accumulated(n._, out);
+    return out.concat(items(n));
+  }
+
+  function filmModel(node) {
+    var open = labelled(nodeWords(node));
+    var bodies = items(node && node['2']).map(function (c) {
+      var p = labelled(c.text);
+      var kind = c.node && typeof c.node === 'object' ? nodeWords(c.node['4']) : '';
+      return { label: p.label, body: p.body, kind: kind };
+    });
+    var at = Object.create(null);
+    bodies.forEach(function (b, i) {
+      if (!(b.label in at)) at[b.label] = i;
+    });
+    var day = 0;
+    var last = null;
+    var moments = accumulated(node && node['1']).map(function (c, order) {
+      var p = labelled(c.text);
+      var pass = c.node && typeof c.node === 'object' ? c.node : {};
+      var from = nodeWords(pass['1']);
+      var to = nodeWords(pass['2']).split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      var chain = from && to.length ? [from].concat(to) : [];
+      var known = chain.every(function (l) { return l in at; });
+      var hops = [];
+      if (known) for (var h = 0; h + 1 < chain.length; h++) hops.push([at[chain[h]], at[chain[h + 1]]]);
+      // A time earlier than the one before by more than half a day has
+      // passed midnight; a moment without a time keeps its place.
+      var t = /^(\d{1,2}):(\d{2})$/.exec(p.label);
+      var mins = null;
+      if (t) {
+        mins = Number(t[1]) * 60 + Number(t[2]) + day;
+        if (last != null && mins < last - 720) {
+          day += 1440;
+          mins += 1440;
+        }
+        last = mins;
+      }
+      return { time: p.label, words: p.body || (t ? '' : p.label), at: mins, order: order, hops: hops };
+    });
+    var sortAt = null;
+    moments.forEach(function (m) {
+      if (m.at != null) sortAt = m.at;
+      m.sort = m.at != null ? m.at : sortAt == null ? -1 : sortAt;
+    });
+    moments.sort(function (a, b) { return a.sort - b.sort || a.order - b.order; });
+    return {
+      title: open.label,
+      opening: open.body || open.label,
+      trail: nodeWords(node && node['1']),
+      who: nodeWords(node && node['2']),
+      bodies: bodies,
+      moments: moments,
+      close: nodeWords(node && node['3'])
+    };
+  }
+
+  // Live.film(root, opts) draws the model in root: a square stage in the
+  // dusk hand (plum sky, a faint ember glow low down, a few still stars,
+  // cream ink, the page's pink for people), the body of kind "Place" at
+  // the centre and the rest on a slowly drifting ring round it; under it
+  // the caption, a panel for a tapped body, the controls and the line of
+  // time. The scenes: s1 the bodies arrive; one scene for each moment, in
+  // time order, a spark carrying it from giver to receiver hop by hop
+  // (arcs travelled stay faintly lit); the last, the whole constellation
+  // glowing, with a small named star for each who has responded and
+  // something to do.
+  //   opts.model      from Live.filmModel
+  //   opts.respond    { label, href } for the close
+  //   opts.star(name) what a responder's star does (else opts.starHref)
+  //   opts.onScene(n) hears each change of scene
+  //   opts.labels     { back, next, play, stop, present, leave, line }
+  // Returns { go(n), next(), back(), play(), stop(), responders(names),
+  // count, current(), destroy() }.
+  var FILM = { mid: 500, cy: 450, ring: 236, hop: 0.9, scene: 3000, drift: 0.8 };
+  var KINDS = {
+    Person: { r: 26, cls: 'person' },
+    AI: { r: 17, cls: 'ai' },
+    Device: { r: 10, cls: 'device' },
+    Place: { r: 34, cls: 'place' }
+  };
+
+  function film(root, opts) {
+    opts = opts || {};
+    var model = opts.model;
+    var L = opts.labels || {};
+    var G = window.gsap || null;
+    var id = uid('live-film');
+    var scenes = [{ kind: 'open' }].concat(model.moments.map(function (m, k) {
+      return { kind: 'moment', m: m, k: k };
+    }), [{ kind: 'close' }]);
+    var total = scenes.length;
+    var cur = 0;
+    var tl = null;
+    var ring = 0;
+    var active = false;
+    var onScreen = !window.IntersectionObserver;
+    var picked = -1;
+    var timer = 0;
+    var playing = false;
+
+    function moving() {
+      return !!G && !still();
+    }
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    function node(tag, cls, at, parent) {
+      var e = svg(tag, cls);
+      Object.keys(at || {}).forEach(function (k) { e.setAttribute(k, at[k]); });
+      if (parent) parent.appendChild(e);
+      return e;
+    }
+
+    root.classList.add('live-film');
+    root.textContent = '';
+    var stage = el('div', 'live-film-stage live-noprint');
+    var art = node('svg', 'live-film-art', { viewBox: '0 0 1000 1000', role: 'group', 'aria-label': model.title || '' });
+    stage.appendChild(art);
+    var defs = node('defs', null, {}, art);
+    defs.innerHTML = '' +
+      '<linearGradient id="' + id + '-sky" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#170b1d"/><stop offset="0.55" stop-color="#2a1131"/><stop offset="1" stop-color="#3c1437"/></linearGradient>' +
+      '<radialGradient id="' + id + '-ember" cx="0.5" cy="1" r="0.62">' +
+        '<stop offset="0" stop-color="#ff9a6b" stop-opacity="0.34"/><stop offset="0.45" stop-color="#e0566f" stop-opacity="0.12"/><stop offset="1" stop-color="#e0566f" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + '-soft">' +
+        '<stop offset="0" stop-color="#ffe9d6" stop-opacity="0.55"/><stop offset="0.35" stop-color="#f2b58f" stop-opacity="0.22"/><stop offset="1" stop-color="#f2b58f" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + '-pink">' +
+        '<stop offset="0" stop-color="#ff8fb0" stop-opacity="0.6"/><stop offset="1" stop-color="#ff8fb0" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + '-spark">' +
+        '<stop offset="0" stop-color="#fffaf0" stop-opacity="1"/><stop offset="0.3" stop-color="#ffe2c4" stop-opacity="0.7"/><stop offset="1" stop-color="#ffe2c4" stop-opacity="0"/></radialGradient>';
+    node('rect', null, { x: 0, y: 0, width: 1000, height: 1000, fill: 'url(#' + id + '-sky)' }, art);
+    node('rect', null, { x: 0, y: 0, width: 1000, height: 1000, fill: 'url(#' + id + '-ember)' }, art);
+    // A few still stars, the same each time.
+    var starRand = chance(hash(model.title || 'film'));
+    var still0 = node('g', 'live-film-sky', {}, art);
+    for (var s = 0; s < 34; s++) {
+      node('circle', null, { cx: (starRand() * 980 + 10).toFixed(1), cy: (starRand() * 640 + 10).toFixed(1), r: (0.8 + starRand() * 1.7).toFixed(2), opacity: (0.25 + starRand() * 0.5).toFixed(2) }, still0);
+    }
+    var glow = node('circle', null, { cx: FILM.mid, cy: FILM.cy, r: 430, fill: 'url(#' + id + '-soft)', opacity: 0 }, art);
+    var arcsG = node('g', 'live-film-arcs', {}, art);
+    var sparkG = node('g', 'live-film-spark', { opacity: 0 }, art);
+    node('circle', null, { r: 30, fill: 'url(#' + id + '-spark)' }, sparkG);
+    node('circle', null, { r: 7, fill: '#fffaf0' }, sparkG);
+    var bodiesG = node('g', 'live-film-bodies', {}, art);
+    var starsG = node('g', 'live-film-stars', {}, art);
+    var clock = el('div', 'live-film-clock');
+    clock.setAttribute('aria-hidden', 'true');
+    var counter = el('div', 'live-film-count');
+    counter.setAttribute('aria-hidden', 'true');
+    stage.appendChild(clock);
+    stage.appendChild(counter);
+    root.appendChild(stage);
+
+    var caption = el('div', 'live-film-caption live-noprint');
+    caption.setAttribute('aria-live', 'polite');
+    root.appendChild(caption);
+    var panel = el('div', 'live-film-panel live-noprint');
+    panel.hidden = true;
+    root.appendChild(panel);
+    var controls = el('div', 'live-film-controls live-noprint');
+    function button(text) {
+      var b = el('button', 'live-step-button', text);
+      b.type = 'button';
+      controls.appendChild(b);
+      return b;
+    }
+    var backB = button(L.back || 'Back');
+    var nextB = button(L.next || 'Next');
+    var playB = button(L.play || 'Play');
+    playB.setAttribute('aria-pressed', 'false');
+    var showB = button(L.present || 'Present');
+    showB.setAttribute('aria-pressed', 'false');
+    root.appendChild(controls);
+
+    // The bodies: the first of kind "Place" at the centre, the rest round
+    // the ring in block order.
+    var centre = -1;
+    model.bodies.forEach(function (b, i) {
+      if (centre < 0 && b.kind === 'Place') centre = i;
+    });
+    var onRing = model.bodies.map(function (b, i) { return i; }).filter(function (i) { return i !== centre; });
+    var bodies = model.bodies.map(function (b, i) {
+      var k = KINDS[b.kind] || { r: 13, cls: 'neutral' };
+      var g = node('g', 'live-film-body is-' + k.cls, { tabindex: '0', role: 'button', 'aria-label': b.label + (b.kind ? ', ' + b.kind : '') }, bodiesG);
+      // Something to tap, never under 44px on a phone's stage; the dot
+      // swells as the spark reaches it; the label stays as it is.
+      node('circle', 'live-film-hit', { r: Math.max(72, k.r + 30) }, g);
+      var dot = node('g', 'live-film-dot', {}, g);
+      if (k.cls === 'place') node('circle', 'live-film-halo', { r: 150, fill: 'url(#' + id + '-soft)' }, dot);
+      if (k.cls === 'person') node('circle', 'live-film-halo', { r: 58, fill: 'url(#' + id + '-pink)' }, dot);
+      node('circle', 'live-film-core', { r: k.r }, dot);
+      var t = node('text', 'live-film-label', {}, g);
+      t.textContent = b.label;
+      var at = onRing.indexOf(i);
+      return { i: i, g: g, dot: dot, text: t, r: k.r, angle: at < 0 ? null : -90 + at * 360 / Math.max(1, onRing.length), appear: 0, flash: 0, x: FILM.mid, y: FILM.cy };
+    });
+
+    // The arcs: one for each hop of each moment, bending more for a pair
+    // already joined the same way, so a return or a repeat stays apart.
+    var bends = {};
+    var arcs = [];
+    model.moments.forEach(function (m, k) {
+      m.hops.forEach(function (hop, h) {
+        if (hop[0] === hop[1]) return;
+        var key = hop[0] + '>' + hop[1];
+        bends[key] = (bends[key] || 0) + 1;
+        var g = node('g', 'live-film-arc', {}, arcsG);
+        var hit = node('path', 'live-film-arc-hit', {}, g);
+        var line = node('path', 'live-film-arc-line', { pathLength: '1' }, g);
+        arcs.push({ k: k, h: h, a: hop[0], b: hop[1], bend: 0.22 + 0.12 * (bends[key] - 1), g: g, hit: hit, line: line, draw: 0, op: 0 });
+        g.addEventListener('click', function (e) {
+          if (dragged) return;
+          stop();
+          go(nearestArc(e, k) + 2);
+        });
+      });
+    });
+    // Where tap areas overlap, the tap goes to the arc whose drawn line
+    // is nearest the finger, not merely the one drawn last.
+    function nearestArc(e, k) {
+      if (!document.elementsFromPoint || !e.clientX && !e.clientY) return k;
+      var best = k;
+      var near = Infinity;
+      document.elementsFromPoint(e.clientX, e.clientY).forEach(function (n) {
+        arcs.forEach(function (arc) {
+          if (arc.hit !== n) return;
+          var len = n.getTotalLength();
+          var m = n.getScreenCTM();
+          if (!len || !m) return;
+          for (var j = 0; j <= 40; j++) {
+            var pt = n.getPointAtLength(len * j / 40);
+            var dx = pt.x * m.a + pt.y * m.c + m.e - e.clientX;
+            var dy = pt.x * m.b + pt.y * m.d + m.f - e.clientY;
+            var d = dx * dx + dy * dy;
+            if (d < near) {
+              near = d;
+              best = arc.k;
+            }
+          }
+        });
+      });
+      return best;
+    }
+    var spark = { on: 0, p: 0, k: -1 };
+    var lit = { v: 0 };
+
+    // Responders: small named stars in an arc below the ring.
+    var stars = [];
+    function layoutStars() {
+      var n = stars.length;
+      stars.forEach(function (st, j) {
+        var f = n === 1 ? 0.5 : j / (n - 1);
+        var spread = Math.min(820, 260 * (n - 1));
+        st.x = FILM.mid - spread / 2 + f * spread;
+        st.y = 900 - Math.sin(f * Math.PI) * 30;
+        st.g.setAttribute('transform', 'translate(' + st.x.toFixed(1) + ',' + st.y.toFixed(1) + ')');
+        st.text.style.display = n > 8 ? 'none' : '';
+      });
+    }
+    function responders(names) {
+      var seen = {};
+      (names || []).forEach(function (name) {
+        if (!name || seen[name]) return;
+        seen[name] = true;
+        for (var j = 0; j < stars.length; j++) if (stars[j].name === name) return;
+        var link = !opts.star && opts.starHref;
+        var g = node(link ? 'a' : 'g', 'live-film-star', link ? { href: opts.starHref } : { tabindex: '0', role: 'button' }, starsG);
+        g.setAttribute('aria-label', name);
+        node('circle', 'live-film-hit', { r: 60 }, g);
+        node('circle', 'live-film-star-glow', { r: 16, fill: 'url(#' + id + '-soft)' }, g);
+        node('path', 'live-film-star-core', { d: 'M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2 Z' }, g);
+        var t = node('text', 'live-film-star-label', { y: 40 }, g);
+        // "name, a visitor" is shown on two lines.
+        var parts = name.split(/,\s*/);
+        t.textContent = '';
+        parts.slice(0, 2).forEach(function (p, i) {
+          var span = node('tspan', i ? 'live-film-star-also' : null, { x: 0, dy: i ? 30 : 0 }, t);
+          span.textContent = i ? parts.slice(1).join(', ') : p;
+        });
+        var st = { name: name, g: g, text: t, appear: 0, x: 0, y: 0 };
+        if (!link) {
+          var act = function () { if (opts.star) opts.star(name); };
+          g.addEventListener('click', function () { if (!dragged) act(); });
+          g.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              act();
+            }
+          });
+        }
+        stars.push(st);
+        // A new responder fades in while the close is showing.
+        if (scenes[cur] && scenes[cur].kind === 'close') {
+          if (moving()) G.to(st, { appear: 1, duration: 1.2, ease: 'power2.out', onUpdate: render });
+          else st.appear = 1;
+        }
+      });
+      layoutStars();
+      render();
+    }
+
+    // Where everything is, and how it looks, each frame.
+    function place(b) {
+      if (b.angle == null) {
+        b.x = FILM.mid;
+        b.y = FILM.cy;
+        return;
+      }
+      var a = (b.angle + ring) * Math.PI / 180;
+      b.x = FILM.mid + FILM.ring * Math.cos(a);
+      b.y = FILM.cy + FILM.ring * Math.sin(a);
+    }
+    function curve(arc) {
+      var p = bodies[arc.a];
+      var q = bodies[arc.b];
+      var dx = q.x - p.x;
+      var dy = q.y - p.y;
+      var len = Math.sqrt(dx * dx + dy * dy) || 1;
+      return { x0: p.x, y0: p.y, cx: (p.x + q.x) / 2 - dy / len * len * arc.bend, cy: (p.y + q.y) / 2 + dx / len * len * arc.bend, x1: q.x, y1: q.y };
+    }
+    function render() {
+      bodies.forEach(function (b) {
+        place(b);
+        b.g.setAttribute('transform', 'translate(' + b.x.toFixed(1) + ',' + b.y.toFixed(1) + ') scale(' + b.appear.toFixed(3) + ')');
+        b.dot.setAttribute('transform', 'scale(' + (1 + b.flash * 0.4).toFixed(3) + ')');
+        b.g.style.opacity = String(Math.min(1, b.appear));
+        // Labels outside the ring, away from the centre; the centre's below.
+        var t = b.text;
+        var ox = 0;
+        var oy = b.r + 34;
+        var anchor = 'middle';
+        if (b.angle != null) {
+          var a = (b.angle + ring) * Math.PI / 180;
+          var c = Math.cos(a);
+          var s2 = Math.sin(a);
+          ox = c * (b.r + 16);
+          oy = s2 * (b.r + 16) + (Math.abs(c) < 0.35 ? (s2 < 0 ? -14 : 30) : 12);
+          anchor = c > 0.35 ? 'start' : c < -0.35 ? 'end' : 'middle';
+        }
+        t.setAttribute('x', ox.toFixed(1));
+        t.setAttribute('y', oy.toFixed(1));
+        t.setAttribute('text-anchor', anchor);
+        b.g.classList.toggle('is-picked', picked === b.i);
+      });
+      var sc0 = scenes[cur];
+      arcs.forEach(function (arc) {
+        var c = curve(arc);
+        var d = 'M' + c.x0.toFixed(1) + ' ' + c.y0.toFixed(1) + ' Q' + c.cx.toFixed(1) + ' ' + c.cy.toFixed(1) + ' ' + c.x1.toFixed(1) + ' ' + c.y1.toFixed(1);
+        arc.line.setAttribute('d', d);
+        arc.hit.setAttribute('d', d);
+        var draw = arc.draw;
+        if (spark.k === arc.k && sc0 && sc0.kind === 'moment' && sc0.k === arc.k) draw = Math.max(0, Math.min(1, spark.p - arc.h));
+        arc.line.style.strokeDashoffset = String(1 - draw);
+        var near = picked >= 0 && (arc.a === picked || arc.b === picked);
+        var op = arc.op * (near && arc.op > 0 ? 1.8 : 1);
+        arc.g.style.opacity = String(Math.min(1, op));
+        arc.g.classList.toggle('is-near', near);
+        // The scene showing needs no jump, so its arcs let a tap through
+        // to the travelled ones beneath them.
+        var showing = sc0 && sc0.kind === 'moment' && sc0.k === arc.k;
+        var tappable = arc.op > 0.05 && draw > 0.5 && !showing;
+        arc.g.style.pointerEvents = tappable ? '' : 'none';
+        arc.hit.style.pointerEvents = tappable ? '' : 'none';
+      });
+      var sk = scenes[cur];
+      if (spark.on > 0 && sk && sk.kind === 'moment') {
+        var hops = arcs.filter(function (x) { return x.k === sk.k; });
+        var h = Math.min(hops.length - 1, Math.floor(spark.p));
+        var arc = hops[h];
+        if (arc) {
+          var c2 = curve(arc);
+          var t2 = Math.max(0, Math.min(1, spark.p - h));
+          var u = 1 - t2;
+          var x = u * u * c2.x0 + 2 * u * t2 * c2.cx + t2 * t2 * c2.x1;
+          var y = u * u * c2.y0 + 2 * u * t2 * c2.cy + t2 * t2 * c2.y1;
+          sparkG.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')');
+        }
+      }
+      sparkG.style.opacity = String(spark.on);
+      glow.style.opacity = String(lit.v);
+      stars.forEach(function (st) {
+        st.g.style.opacity = String(st.appear);
+        st.g.style.pointerEvents = st.appear > 0.5 ? '' : 'none';
+      });
+    }
+
+    // The ring drifts very slowly while the film is on screen.
+    function tick(time, delta) {
+      if (!still() && !dragging) ring += (delta / 1000) * FILM.drift;
+      render();
+    }
+    function setActive(on) {
+      if (on === active) return;
+      active = on;
+      if (G) {
+        if (on) G.ticker.add(tick);
+        else G.ticker.remove(tick);
+      }
+      if (tl) {
+        if (on) tl.resume();
+        else tl.pause();
+      }
+      if (playing) {
+        if (on) schedule();
+        else clearTimeout(timer);
+      }
+    }
+    function wake() {
+      setActive(onScreen && !document.hidden && root.getClientRects().length > 0);
+    }
+
+    function words(text, strongLabel) {
+      var p = el('p', 'live-film-words');
+      if (strongLabel) {
+        var lw = labelled(text);
+        var b = el('strong', null, lw.label + (lw.body ? '.' : ''));
+        p.appendChild(b);
+        if (lw.body) linkify(p, ' ' + lw.body);
+      } else {
+        linkify(p, text);
+      }
+      return p;
+    }
+
+    function go(n, how) {
+      n = Math.max(1, Math.min(total, n | 0 || 1));
+      var from = cur;
+      cur = n - 1;
+      if (tl) tl.kill();
+      tl = null;
+      var sc = scenes[cur];
+      var anim = moving() && how !== 'quiet';
+      // Caption, clock, count.
+      caption.textContent = '';
+      if (sc.kind === 'open') caption.appendChild(words(model.opening));
+      else if (sc.kind === 'moment') caption.appendChild(words(sc.m.words || sc.m.time));
+      else {
+        caption.appendChild(words(model.close, true));
+        if (opts.respond) {
+          var a = el('a', 'live-film-respond', opts.respond.label);
+          a.href = opts.respond.href;
+          caption.appendChild(a);
+        }
+      }
+      clock.textContent = sc.kind === 'moment' ? sc.m.time : '';
+      counter.textContent = n + ' / ' + total;
+      backB.disabled = n === 1;
+      nextB.disabled = n === total;
+      if (line) line.select(sc.kind === 'moment' ? sc.k : -1);
+      root.setAttribute('data-scene', String(n));
+
+      // Bodies: in the opening they arrive one by one.
+      if (anim) {
+        tl = G.timeline({ onUpdate: render });
+        if (sc.kind === 'open') {
+          bodies.forEach(function (b) { b.appear = 0; });
+          tl.to(bodies, { appear: 1, duration: 0.7, ease: 'back.out(1.6)', stagger: 0.32 }, 0.15);
+        } else {
+          tl.to(bodies, { appear: 1, duration: 0.35 }, 0);
+        }
+      } else {
+        bodies.forEach(function (b) { b.appear = 1; });
+      }
+      // Arcs: travelled ones faintly lit; this moment's carried by the
+      // spark, hop by hop; all of them glowing at the close.
+      arcs.forEach(function (arc) {
+        var op;
+        var draw;
+        if (sc.kind === 'close') {
+          op = 0.6;
+          draw = 1;
+        } else if (sc.kind === 'moment' && arc.k < sc.k) {
+          op = 0.26;
+          draw = 1;
+        } else if (sc.kind === 'moment' && arc.k === sc.k) {
+          op = 0.95;
+          draw = anim ? 0 : 1;
+        } else {
+          op = 0;
+          draw = 0;
+        }
+        arc.draw = draw;
+        if (anim) tl.to(arc, { op: op, duration: 0.4 }, 0);
+        else arc.op = op;
+      });
+      spark.k = -1;
+      spark.on = 0;
+      if (sc.kind === 'moment' && anim) {
+        var hops = arcs.filter(function (x) { return x.k === sc.k; });
+        if (hops.length) {
+          var per = Math.min(FILM.hop, 2.4 / hops.length);
+          spark.k = sc.k;
+          spark.p = 0;
+          tl.to(spark, { on: 1, duration: 0.2 }, 0.25);
+          hops.forEach(function (arc, h) {
+            tl.to(spark, { p: h + 1, duration: per, ease: 'power1.inOut' }, 0.3 + h * per);
+            tl.fromTo(bodies[arc.b], { flash: 1 }, { flash: 0, duration: 0.7, ease: 'power2.out' }, 0.3 + (h + 1) * per - 0.05);
+          });
+          tl.to(spark, { on: 0, duration: 0.35 }, 0.3 + hops.length * per);
+          tl.add(function () { hops.forEach(function (arc) { arc.draw = 1; }); spark.k = -1; });
+        }
+      }
+      // The close: the constellation glows; responders' stars come out.
+      var closing = sc.kind === 'close';
+      if (anim) {
+        tl.to(lit, { v: closing ? 1 : 0, duration: closing ? 1.4 : 0.4 }, 0);
+        tl.to(stars, { appear: closing ? 1 : 0, duration: closing ? 0.9 : 0.3, stagger: closing ? 0.25 : 0 }, closing ? 0.6 : 0);
+      } else {
+        lit.v = closing ? 1 : 0;
+        stars.forEach(function (st) { st.appear = closing ? 1 : 0; });
+      }
+      render();
+      if (tl && !active) tl.pause();
+      if (opts.onScene && from !== cur) opts.onScene(n);
+    }
+
+    // Playing: about three seconds a scene; any tap or key stops it.
+    function schedule() {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (!playing) return;
+        if (cur >= total - 1) return stop();
+        go(cur + 2);
+        schedule();
+      }, FILM.scene);
+    }
+    function play() {
+      if (playing) return;
+      playing = true;
+      playB.textContent = L.stop || 'Stop';
+      playB.setAttribute('aria-pressed', 'true');
+      if (cur >= total - 1) go(1);
+      if (active) schedule();
+    }
+    function stop() {
+      if (!playing) return false;
+      playing = false;
+      clearTimeout(timer);
+      playB.textContent = L.play || 'Play';
+      playB.setAttribute('aria-pressed', 'false');
+      return true;
+    }
+    function halt(e) {
+      if (!playing) return;
+      if (e.target === playB || (e.target.closest && e.target.closest('button') === playB)) return;
+      stop();
+    }
+    document.addEventListener('pointerdown', halt, true);
+    document.addEventListener('keydown', halt, true);
+
+    backB.addEventListener('click', function () { go(cur); });
+    nextB.addEventListener('click', function () { go(cur + 2); });
+    playB.addEventListener('click', function () {
+      if (playing) stop();
+      else play();
+    });
+
+    // Present: the film alone, filling the screen.
+    function presenting() {
+      return document.fullscreenElement === root || document.webkitFullscreenElement === root || root.classList.contains('is-presenting');
+    }
+    function syncPresent() {
+      var on = presenting();
+      showB.textContent = on ? (L.leave || 'Leave') : (L.present || 'Present');
+      showB.setAttribute('aria-pressed', on ? 'true' : 'false');
+      root.classList.toggle('is-full', on);
+    }
+    showB.addEventListener('click', function () {
+      if (presenting()) {
+        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+        root.classList.remove('is-presenting');
+        syncPresent();
+        return;
+      }
+      var req = root.requestFullscreen || root.webkitRequestFullscreen;
+      var p = null;
+      try {
+        p = req ? req.call(root) : null;
+      } catch (err) {
+        p = null;
+      }
+      if (!req) {
+        root.classList.add('is-presenting');
+        syncPresent();
+      } else if (p && p.catch) {
+        p.catch(function () {
+          root.classList.add('is-presenting');
+          syncPresent();
+        });
+      }
+    });
+    document.addEventListener('fullscreenchange', syncPresent);
+    document.addEventListener('webkitfullscreenchange', syncPresent);
+
+    // Arrow keys step the scenes (the line of time keeps its own); Escape
+    // leaves presenting.
+    function keys(e) {
+      if (e.defaultPrevented) return;
+      var inLine = e.target.closest && e.target.closest('[role="toolbar"]');
+      if (!inLine && e.key === 'ArrowRight') {
+        e.preventDefault();
+        go(cur + 2);
+      } else if (!inLine && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(cur);
+      } else if (e.key === 'Escape' && root.classList.contains('is-presenting')) {
+        root.classList.remove('is-presenting');
+        syncPresent();
+      }
+    }
+    root.addEventListener('keydown', keys);
+    function keysAnywhere(e) {
+      if (presenting() && !root.contains(e.target)) keys(e);
+    }
+    document.addEventListener('keydown', keysAnywhere);
+    swipe(caption, function () { go(cur + 2); }, function () { go(cur); });
+
+    // A tap on a body opens its panel and brightens its arcs; a sideways
+    // drag on the sky turns the ring (up and down is left to scroll).
+    var dragging = false;
+    var dragged = false;
+    var grip = null;
+    art.addEventListener('pointerdown', function (e) {
+      grip = { x: e.clientX, y: e.clientY, id: e.pointerId, turned: false };
+      dragged = false;
+    });
+    art.addEventListener('pointermove', function (e) {
+      if (!grip || e.pointerId !== grip.id) return;
+      var dx = e.clientX - grip.x;
+      var dy = e.clientY - grip.y;
+      if (!grip.turned && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) grip.turned = true;
+      if (grip.turned) {
+        dragging = dragged = true;
+        var w = art.getBoundingClientRect().width || 1;
+        ring += dx / w * 180;
+        grip.x = e.clientX;
+        grip.y = e.clientY;
+        render();
+      }
+    });
+    function letGo() {
+      grip = null;
+      dragging = false;
+    }
+    art.addEventListener('pointerup', letGo);
+    art.addEventListener('pointercancel', letGo);
+
+    function pick(i) {
+      picked = picked === i ? -1 : i;
+      panel.textContent = '';
+      panel.hidden = picked < 0;
+      if (picked >= 0) {
+        var b = model.bodies[picked];
+        panel.appendChild(el('h3', 'live-film-panel-title', b.label));
+        if (b.kind) panel.appendChild(el('span', 'tag live-film-kind', b.kind));
+        if (b.body) panel.appendChild(linkify(el('p', 'live-film-panel-body'), b.body));
+      }
+      render();
+    }
+    bodies.forEach(function (b) {
+      b.g.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!dragged) pick(b.i);
+      });
+      b.g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          pick(b.i);
+        }
+      });
+    });
+    art.addEventListener('click', function (e) {
+      if (dragged || e.target.closest('.live-film-body, .live-film-arc, .live-film-star')) return;
+      if (picked >= 0) pick(picked);
+    });
+
+    // The line of time, in step with the scenes.
+    var marks = [];
+    model.moments.forEach(function (m, k) {
+      if (m.at != null) marks.push({ label: m.time, at: m.at, i: k });
+    });
+    var line = marks.length ? timeline(marks, {
+      name: L.line || model.trail || '',
+      onPick: function (k) {
+        stop();
+        go(k + 2);
+      }
+    }) : null;
+    if (line) {
+      line.el.classList.add('live-film-line', 'live-noprint');
+      root.appendChild(line.el);
+    }
+
+    var io = null;
+    if (window.IntersectionObserver) {
+      io = new IntersectionObserver(function (es) {
+        onScreen = es[es.length - 1].isIntersecting;
+        wake();
+      });
+      io.observe(stage);
+    }
+    document.addEventListener('visibilitychange', wake);
+    var ro = window.ResizeObserver ? new ResizeObserver(wake) : null;
+    if (ro) ro.observe(root);
+
+    go(1, 'quiet');
+    wake();
+
+    return {
+      count: total,
+      go: function (n) {
+        stop();
+        go(n);
+      },
+      next: function () { go(cur + 2); },
+      back: function () { go(cur); },
+      play: play,
+      stop: stop,
+      current: function () { return cur + 1; },
+      responders: responders,
+      destroy: function () {
+        stop();
+        setActive(false);
+        if (tl) tl.kill();
+        if (io) io.disconnect();
+        if (ro) ro.disconnect();
+        if (line) line.destroy();
+        document.removeEventListener('pointerdown', halt, true);
+        document.removeEventListener('keydown', halt, true);
+        document.removeEventListener('keydown', keysAnywhere);
+        document.removeEventListener('visibilitychange', wake);
+        document.removeEventListener('fullscreenchange', syncPresent);
+        document.removeEventListener('webkitfullscreenchange', syncPresent);
       }
     };
   }
@@ -1709,6 +2545,9 @@
     swipe: swipe,
     countUp: countUp,
     bar: bar,
+    mini: mini,
+    filmModel: filmModel,
+    film: film,
     scene: scene
   };
 })();

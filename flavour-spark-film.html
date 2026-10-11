@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The experiment</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="The experiment">
+<meta property="og:url" content="https://phenomemental.github.io/happyseaurchin-beach/flavour-spark-film.html">
+<meta property="og:image" content="https://phenomemental.github.io/happyseaurchin-beach/flavour-spark-film.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://phenomemental.github.io/happyseaurchin-beach/flavour-spark-film.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<link rel="stylesheet" href="live.css?v=2026-10-11e">
+<style>
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  .sheet {
+    overflow-wrap: break-word;
+  }
+  .film-back {
+    font-size: 1rem;
+    font-style: italic;
+    margin: -0.8rem 0 1rem;
+  }
+  h1 {
+    font-weight: 400;
+    font-size: 2.4rem;
+    line-height: 1.05;
+    margin: 0 0 1.3rem;
+  }
+  .status,
+  .film-note {
+    font-style: italic;
+    color: var(--muted);
+    margin: 1.2rem 0 0;
+  }
+  @media (min-width: 560px) {
+    h1 { font-size: 2.8rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="sheet">
+    <!-- The film of "The experiment": every word is read live from the
+         beach (spine:flavour-spark, part 4; who has responded from the
+         readers' blocks and the room). -->
+    <p class="film-back"><a id="back" href="flavour-spark.html">Back</a></p>
+    <h1 id="title" hidden></h1>
+    <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
+    <div class="live-film-wide" id="film" hidden></div>
+    <p class="film-note" id="film-note" hidden></p>
+    <p class="live-note" id="live-note"></p>
+  </div>
+</main>
+<script src="vendor/gsap-3.13.0.min.js"></script>
+<script src="beach.js?v=2026-10-11e"></script>
+<script src="live.js?v=2026-10-11e"></script>
+<script>
+(function () {
+  var SPINE = 'spine:flavour-spark';
+  var ROOM = 'pool:flavour-spark';
+  // Each reader who answers on the walk page has a block named this and
+  // their handle.
+  var READERS = 'flavour-spark:';
+  var PAGE = 'flavour-spark.html';
+  var OFFLINE = 'This film reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
+  var UNREAD = 'Who has responded couldn’t be read from the beach just now.';
+
+  var status = document.getElementById('status');
+  var title = document.getElementById('title');
+  var back = document.getElementById('back');
+  var holder = document.getElementById('film');
+  var note = document.getElementById('film-note');
+  var film = null;
+  var sig = null;
+  var played = false;
+  var loaded = false;
+  var readers = null;
+  var names = null;
+
+  // A scene's address, #s1, #s2 and so on: the number, or 0.
+  function sceneOf(hash) {
+    var m = /^#s(\d+)$/.exec(hash || '');
+    return m ? Number(m[1]) : 0;
+  }
+
+  // A line's label: everything before its first full stop and space.
+  function labelOf(s) {
+    var i = s.indexOf('. ');
+    return (i < 0 ? s.replace(/\.$/, '') : s.slice(0, i)).trim();
+  }
+
+  // Who has responded: every reader's block, then each distinct name on
+  // a note in the room. Said on the page if neither can be read.
+  function responders() {
+    note.hidden = readers != null || names != null;
+    note.textContent = note.hidden ? '' : UNREAD;
+    if (film && (readers || names)) film.responders((readers || []).concat(names || []));
+  }
+
+  // The film, drawn again only when the block's part 4 or its title
+  // changes. The first time it plays by itself, from the address's scene.
+  function render(spine) {
+    if (!spine || typeof spine !== 'object' || !spine['4']) return false;
+    var name = labelOf(Beach.text(spine));
+    var s = name + '|' + JSON.stringify(spine['4']);
+    if (s === sig) return true;
+    sig = s;
+    var model = Live.filmModel(spine['4']);
+    if (!model.title) return false;
+    title.textContent = model.title;
+    document.title = model.title;
+    if (name) back.textContent = name;
+    if (film) film.destroy();
+    film = Live.film(holder, {
+      model: model,
+      respond: { label: 'Respond now', href: PAGE + '#note-form' },
+      starHref: PAGE + '#respond',
+      labels: { line: labelOf(model.trail || '') },
+      onScene: function (n) {
+        if (history.replaceState) history.replaceState(null, '', '#s' + n);
+      }
+    });
+    responders();
+    holder.hidden = false;
+    title.hidden = false;
+    status.hidden = true;
+    var n = sceneOf(location.hash) || 1;
+    film.go(n);
+    if (!played && !Live.still()) {
+      played = true;
+      if (n < film.count) film.play();
+    }
+    return true;
+  }
+
+  window.addEventListener('hashchange', function () {
+    var n = sceneOf(location.hash);
+    if (n && film) film.go(n);
+  });
+
+  Beach.live(function () {
+    var drawn = Beach.get(SPINE).then(function (spine) {
+      if (!render(spine)) throw new Error('nothing to show');
+    });
+    var who = Promise.all([
+      Beach.index().then(function (ix) {
+        if (!ix || !Array.isArray(ix.blocks)) return;
+        readers = ix.blocks.filter(function (b) {
+          return typeof b === 'string' && b.indexOf(READERS) === 0 && b.length > READERS.length;
+        }).map(function (b) { return b.slice(READERS.length); });
+      }, function () {}),
+      Beach.get(ROOM).then(function (pool) {
+        var seen = [];
+        Beach.entries(pool).forEach(function (e) {
+          [e.who].concat((e.replies || []).map(function (r) { return r.who; })).forEach(function (w) {
+            if (w && seen.indexOf(w) < 0) seen.push(w);
+          });
+        });
+        names = seen;
+      }, function () {})
+    ]);
+    return Promise.all([drawn, Promise.all([drawn.catch(function () {}), who]).then(responders)]).then(function () {
+      loaded = true;
+    }, function (e) {
+      // Never a blank page: one plain line instead.
+      if (!loaded) status.textContent = OFFLINE;
+      throw e;
+    });
+  }, document.getElementById('live-note'), function () {}, '');
+})();
+</script>
+</body>
+</html>

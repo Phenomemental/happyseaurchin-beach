@@ -544,6 +544,331 @@ body.has-live-bar {
   opacity: 0.9;
 }
 
+/* Closed chapters show at most two lines of their opening. */
+.live-chapter-button[aria-expanded="false"] .live-chapter-line {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+/* A small drawing of what a chapter holds, at its left. */
+.live-chapter-mini {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin: 0 0.8rem 0 0;
+}
+.live-mini-line {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 1.5;
+}
+.live-mini-hot {
+  fill: var(--crimson);
+}
+.live-mini-ring {
+  fill: var(--page);
+  stroke: var(--crimson);
+  stroke-width: 1.2;
+}
+.live-mini-dim {
+  fill: var(--frame);
+}
+.live-mini-hand,
+.live-mini-ink {
+  fill: none;
+  stroke: var(--crimson);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.live-mini-ink {
+  stroke: var(--muted);
+}
+.live-mini-ink-dot {
+  fill: var(--muted);
+}
+
+/* A film: a square stage in the dusk hand, with its caption, a panel for
+   a tapped body, the controls and the line of time beneath. */
+.live-film {
+  --film-ink: #f2e7d4;
+  --film-pink: #ef5d85;
+  --film-pink: color-mix(in srgb, var(--crimson) 70%, #ffe0e8);
+  position: relative;
+}
+.live-film-stage {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: #170b1d;
+  border-radius: 2px;
+  overflow: hidden;
+  container-type: inline-size;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.live-film-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.live-film-sky circle {
+  fill: var(--film-ink);
+}
+/* Only the bodies, arcs and stars take a tap; their tap areas are wider
+   than they look. */
+.live-film-art > rect,
+.live-film-art > circle,
+.live-film-sky,
+.live-film-spark,
+.live-film-halo {
+  pointer-events: none;
+}
+.live-film-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+.live-film-body {
+  cursor: pointer;
+  outline: none;
+}
+.live-film-core {
+  fill: var(--film-ink);
+  stroke: transparent;
+  stroke-width: 5;
+}
+.is-person .live-film-core {
+  fill: var(--film-pink);
+}
+.is-device .live-film-core {
+  opacity: 0.5;
+}
+.is-place .live-film-core {
+  fill: #ffe9d6;
+}
+.is-neutral .live-film-core {
+  fill: none;
+  stroke: #b9ad9a;
+  stroke-width: 2.5;
+}
+.live-film-label {
+  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  font-size: 38px;
+  fill: var(--film-ink);
+  dominant-baseline: middle;
+}
+/* Words on the sky keep a dusk edge, so an arc behind never blurs them. */
+.live-film-label,
+.live-film-star-label {
+  paint-order: stroke;
+  stroke: rgba(29, 14, 34, 0.8);
+  stroke-width: 7px;
+  stroke-linejoin: round;
+}
+.is-person .live-film-label {
+  fill: var(--film-pink);
+  font-weight: 600;
+}
+.is-device .live-film-label {
+  fill-opacity: 0.65;
+}
+.live-film-body.is-picked .live-film-core,
+.live-film-body:focus-visible .live-film-core {
+  stroke: #fffaf0;
+}
+.live-film-body:focus-visible .live-film-core {
+  stroke-dasharray: 7 5;
+}
+.live-film-arc-line {
+  fill: none;
+  stroke: var(--film-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+}
+.live-film-arc.is-near .live-film-arc-line {
+  stroke: var(--film-pink);
+  stroke-width: 4.5;
+}
+.live-film-arc-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 56;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.live-film-star {
+  cursor: pointer;
+  outline: none;
+}
+.live-film-star-core {
+  fill: #fff3e0;
+}
+.live-film-star:focus-visible .live-film-star-core {
+  stroke: var(--film-pink);
+  stroke-width: 3;
+}
+.live-film-star-label {
+  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  font-size: 32px;
+  fill: var(--film-ink);
+  text-anchor: middle;
+}
+.live-film-star-also {
+  font-size: 26px;
+  font-style: italic;
+  fill-opacity: 0.7;
+}
+.live-film-clock {
+  position: absolute;
+  left: 4%;
+  top: 3%;
+  font-size: 1.9rem;
+  font-size: 8cqw;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--film-ink);
+  font-variant-numeric: lining-nums tabular-nums;
+  text-shadow: 0 1px 10px rgba(20, 8, 24, 0.8);
+  pointer-events: none;
+}
+.live-film-count {
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  font-size: 0.9rem;
+  color: var(--film-ink);
+  opacity: 0.7;
+  font-variant-numeric: lining-nums;
+  pointer-events: none;
+}
+.live-film-caption {
+  max-width: 560px;
+  min-height: 6.6em;
+  margin: 0.9rem auto 0;
+  text-align: left;
+  touch-action: pan-y;
+}
+.live-film-words {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.live-film-respond {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--page);
+  background: var(--crimson);
+  border-radius: 2px;
+  padding: 0 1.3rem;
+  margin: 0.9rem 0 0;
+}
+.live-film-respond:hover {
+  border-bottom-color: transparent;
+  opacity: 0.9;
+}
+.live-film-respond:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+}
+.live-film-panel {
+  max-width: 560px;
+  margin: 0.8rem auto 0;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  background: var(--paper);
+  border-left: 3px solid var(--crimson);
+}
+.live-film-panel-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  margin: 0 0 0.2rem;
+}
+.live-film-kind {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--muted);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  padding: 0.05rem 0.5rem;
+  margin: 0 0 0.35rem;
+}
+.live-film-panel-body {
+  margin: 0;
+}
+.live-film-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+}
+.live-film-line {
+  max-width: 560px;
+  margin: 0.7rem auto 0;
+}
+/* A film on one of these sheets: its stage reaches the sheet's edges (as
+   far as 560px wide), the rest stays in the column. */
+.live-film-wide .live-film-stage {
+  max-width: none;
+  width: min(560px, calc(100% + 3rem));
+  margin-left: calc((100% - min(560px, calc(100% + 3rem))) / 2);
+}
+@media (min-width: 560px) {
+  .live-film-wide .live-film-stage {
+    width: min(560px, calc(100% + 6rem));
+    margin-left: calc((100% - min(560px, calc(100% + 6rem))) / 2);
+  }
+}
+/* Presenting: the film alone on the dusk, its words in cream. */
+.live-film.is-full {
+  --ink: #f2e7d4;
+  --muted: #b3a597;
+  --paper: #241329;
+  --page: #170b1d;
+  --frame: #5a4757;
+  --crimson: #ef5d85;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: var(--ink);
+  background: #170b1d;
+  padding: 2vh 4vw;
+  overflow: auto;
+}
+.live-film.is-presenting {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.live-film.is-full .live-film-stage,
+.live-film.is-full .live-film-caption,
+.live-film.is-full .live-film-panel,
+.live-film.is-full .live-film-line {
+  width: min(100%, 62vh);
+  max-width: none;
+}
+.live-film.is-full .live-film-stage {
+  margin: 0 auto;
+}
+.live-film.is-full .live-film-caption {
+  min-height: 0;
+}
+
 /* Only in print: the whole of what is shown one at a time on screen. */
 .live-print {
   display: none;

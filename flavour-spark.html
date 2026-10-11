@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-09-29a">
-<link rel="stylesheet" href="live.css?v=2026-10-11d">
+<link rel="stylesheet" href="live.css?v=2026-10-11e">
 <style>
   html {
     scroll-behavior: smooth;
@@ -414,36 +414,34 @@
     font-style: italic;
     margin: 0.2rem 0 0;
   }
-  /* The trail, one moment at a time under its line of time. */
-  .moment-view {
-    margin: 0.2rem 0 0;
-    padding: 0.85rem 1rem 0.75rem;
-    background: var(--paper);
-    border-left: 3px solid var(--crimson);
-    touch-action: pan-y;
+  /* The film of the experiment. */
+  .film-place {
+    margin: 1.2rem 0 0;
   }
-  .moment-at {
-    font-weight: 600;
-    font-size: 1.3rem;
-    line-height: 1.2;
-    color: var(--crimson);
-    font-variant-numeric: lining-nums tabular-nums;
-    margin: 0 0 0.3rem;
+  .film-list-way {
+    text-align: center;
+    margin: 0.9rem 0 0;
   }
-  .moment-words {
-    margin: 0 0 0.5rem;
+  .film-lists {
+    margin: 0.4rem 0 0;
   }
-  .moment-count {
-    font-size: 0.9rem;
+  .film-kind {
     color: var(--muted);
-    font-variant-numeric: lining-nums;
-    margin: 0;
+    border-color: var(--frame);
+    margin: 0 0.4rem 0 0.35rem;
+    vertical-align: 0.1em;
   }
-  .moment-steps {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 0.6rem 0 0;
+  /* A response a responder's star has led to. */
+  #respond [data-who] {
+    transition: background-color 0.6s;
+  }
+  #respond .is-found {
+    background: var(--paper);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #respond [data-who] {
+      transition: none;
+    }
   }
 
   /* Not built yet: how many of the ladder's steps are real. */
@@ -546,7 +544,7 @@
 
     <div id="doc" hidden>
       <nav class="ways" id="ways" aria-label="Ways in">
-        <a class="way" id="way-made" href="#part-4" hidden>How this was made</a>
+        <a class="way" id="way-made" href="#s1" hidden>How this was made</a>
         <a class="way way-act" href="#note-form">Respond now</a>
         <button class="way way-quiet" id="way-what" type="button" aria-expanded="false" aria-controls="welcome" hidden>What is this?</button>
       </nav>
@@ -597,8 +595,9 @@
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-11d"></script>
-<script src="live.js?v=2026-10-11d"></script>
+<script src="vendor/gsap-3.13.0.min.js"></script>
+<script src="beach.js?v=2026-10-11e"></script>
+<script src="live.js?v=2026-10-11e"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -725,24 +724,69 @@
   var followed = false;
   // Step two of the ladder, whose circle fills once a note is left.
   var stepTwo = null;
-  // The line of time over the trail, as last drawn, and the minutes from
-  // the trail's first moment to its last.
-  var trailLine = null;
+  // The minutes from the trail's first moment to its last; the film of
+  // the experiment, as last drawn; whether it has played by itself yet;
+  // the scene to open it at; and who has responded, for its closing stars.
   var madeIn = null;
-  // Playing through the trail stops at any tap or key: stopPlaying()
-  // stops it (true if it was playing), and the tap that stopped it isn't
-  // also taken as a tap on play.
-  var stopPlaying = null;
-  var halted = false;
-  function halt() {
-    if (stopPlaying && stopPlaying()) halted = true;
+  var film = null;
+  var filmPlayed = false;
+  var pendingScene = null;
+  var responderNames = null;
+  var readerHandles = null;
+  var noteNames = null;
+
+  // A scene's address, #s1, #s2 and so on: the number, or 0.
+  function sceneOf(hash) {
+    var m = /^#s(\d+)$/.exec(hash || '');
+    return m ? Number(m[1]) : 0;
   }
-  document.addEventListener('pointerdown', halt, true);
-  document.addEventListener('keydown', halt, true);
-  document.addEventListener('click', function () { halted = false; });
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden && stopPlaying) stopPlaying();
+
+  // Open the experiment at scene n.
+  function openScene(n) {
+    if (!book || !film || !document.getElementById('part-4')) return false;
+    var already = book.opened() === 'part-4';
+    pendingScene = n;
+    book.open('part-4', true);
+    if (already) {
+      pendingScene = null;
+      film.go(n);
+    }
+    return true;
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#s"]');
+    if (!a || e.defaultPrevented || e.button > 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    var n = sceneOf(a.getAttribute('href'));
+    if (!n || !openScene(n)) return;
+    e.preventDefault();
+    if (history.replaceState) history.replaceState(null, '', '#s' + n);
   });
+  window.addEventListener('hashchange', function () {
+    var n = sceneOf(location.hash);
+    if (n) openScene(n);
+  });
+
+  // Who has responded: every reader's block, then each distinct name on
+  // a note in the room. What was last read of either stands when a read
+  // fails.
+  function updateResponders() {
+    if (readerHandles == null && noteNames == null) return;
+    responderNames = (readerHandles || []).concat(noteNames || []);
+    if (film) film.responders(responderNames);
+  }
+
+  // A responder's star leads to what they wrote.
+  function toResponse(name) {
+    var target = null;
+    var all = document.querySelectorAll('#respond [data-who]');
+    for (var i = 0; i < all.length && !target; i++) {
+      if (all[i].getAttribute('data-who') === name) target = all[i];
+    }
+    target = target || document.getElementById('respond');
+    target.scrollIntoView({ block: 'start', behavior: Live.still() ? 'auto' : 'smooth' });
+    target.classList.add('is-found');
+    setTimeout(function () { target.classList.remove('is-found'); }, 2400);
+  }
 
   // The bar at the foot of the screen, once the scene has gone by: a dot
   // for each chapter, and Respond.
@@ -982,126 +1026,15 @@
     return d < 0 ? d + 1440 : d;
   }
 
-  // The trail, one moment at a time under its line of time: previous and
-  // next, a sideways swipe, or play, which steps through the moments
-  // about two seconds each, the ring moving along the line. Any tap or
-  // key stops it; there is no play for anyone who asks for less motion.
-  function trail(moments) {
-    var parts = moments.map(split);
-    var box = el('div', 'trail');
-    var marks = [];
-    var prev = null;
-    var day = 0;
-    // A time earlier than the one before it by more than half a day has
-    // passed midnight.
-    parts.forEach(function (p, i) {
-      var t = clockTime(p.label);
-      if (t == null) return;
-      if (prev != null && t + day < prev - 720) day += 1440;
-      prev = t + day;
-      marks.push({ label: p.label, at: prev, i: i });
-    });
-    var cur = 0;
-    var view = el('div', 'moment-view live-noprint');
-    view.setAttribute('aria-live', 'polite');
-    var at = el('p', 'moment-at');
-    var words = el('p', 'moment-words');
-    var count = el('p', 'moment-count');
-    view.appendChild(at);
-    view.appendChild(words);
-    view.appendChild(count);
-    var steps = el('div', 'moment-steps live-noprint');
-    var back = el('button', 'live-step-button', 'Previous');
-    back.type = 'button';
-    var play = el('button', 'live-step-button', 'Play');
-    play.type = 'button';
-    play.setAttribute('aria-pressed', 'false');
-    play.hidden = Live.still();
-    var on = el('button', 'live-step-button', 'Next');
-    on.type = 'button';
-    steps.appendChild(back);
-    steps.appendChild(play);
-    steps.appendChild(on);
-    var timer = 0;
-
-    function show(i, fromLine) {
-      cur = Math.max(0, Math.min(parts.length - 1, i));
-      var p = parts[cur];
-      at.textContent = p.label;
-      words.textContent = '';
-      put(words, p.body);
-      count.textContent = (cur + 1) + ' / ' + parts.length;
-      back.disabled = cur === 0;
-      on.disabled = cur === parts.length - 1;
-      if (!fromLine && trailLine) trailLine.select(cur);
-    }
-    function stop() {
-      if (!timer) return false;
-      clearInterval(timer);
-      timer = 0;
-      play.textContent = 'Play';
-      play.setAttribute('aria-pressed', 'false');
-      return true;
-    }
-    function start() {
-      if (Live.still()) return;
-      if (cur >= parts.length - 1) show(0);
-      play.textContent = 'Stop';
-      play.setAttribute('aria-pressed', 'true');
-      timer = setInterval(function () {
-        if (cur >= parts.length - 1) stop();
-        else show(cur + 1);
-      }, 2000);
-    }
-    stopPlaying = stop;
-
-    back.addEventListener('click', function () { show(cur - 1); });
-    on.addEventListener('click', function () { show(cur + 1); });
-    play.addEventListener('click', function () {
-      if (halted) return;
-      start();
-    });
-    Live.swipe(view, function () { show(cur + 1); }, function () { show(cur - 1); });
-
-    if (trailLine) trailLine.destroy();
-    trailLine = null;
-    if (marks.length) {
-      trailLine = extra(function () {
-        return Live.timeline(marks, {
-          name: 'The trail, by time',
-          onPick: function (i) {
-            stop();
-            show(i, true);
-          }
-        });
-      });
-      if (trailLine) {
-        trailLine.el.classList.add('live-noprint');
-        box.appendChild(trailLine.el);
-      }
-    }
-    box.appendChild(view);
-    box.appendChild(steps);
-    box.appendChild(printAll(moments));
-    show(0);
-    return {
-      el: box,
-      reset: function () {
-        stop();
-        show(0);
-      },
-      stop: stop
-    };
-  }
-
-  // The minutes it took, counted up each time the chapter opens; the
-  // trail; who did what, as tiles; and the conclusion.
+  // The experiment as a film: who did what as bodies, the trail's moments
+  // as scenes, the conclusion at the close. Above it the minutes it took,
+  // counted up as the chapter opens; beneath it the whole as plain lists,
+  // a tap away (and always, in print). The first time the chapter opens,
+  // the film plays by itself.
   function experimentBody(node) {
     var box = el('div', 'part');
     if (!node || typeof node !== 'object') return { body: box };
-    var trailNode = node['1'];
-    var moments = walk(trailNode);
-    var mins = span(moments);
+    var mins = span(walk(node['1']));
     madeIn = mins;
     var num = null;
     if (mins != null) {
@@ -1112,21 +1045,50 @@
       fig.appendChild(el('p', 'spark-line', 'from the voice note to the last moment below'));
       box.appendChild(fig);
     }
-    var tt = own(trailNode);
-    if (tt) heading(box, tt, 'h3');
-    var walkThrough = moments.length ? trail(moments) : null;
-    if (walkThrough) box.appendChild(walkThrough.el);
 
-    var whoNode = node['2'];
-    var wt = own(whoNode);
-    if (wt) heading(box, wt, 'h3');
-    var who = children(whoNode);
-    if (who.length) {
-      box.appendChild(Live.tiles(who.map(function (c) {
-        var p = split(c.text);
-        return { label: p.label, body: p.body ? said('p', null, p.body) : null };
-      })));
-    }
+    var model = Live.filmModel(node);
+    var holder = el('div', 'film-place live-film-wide');
+    box.appendChild(holder);
+    if (film) film.destroy();
+    film = extra(function () {
+      return Live.film(holder, {
+        model: model,
+        respond: { label: 'Respond now', href: '#note-form' },
+        star: toResponse,
+        labels: { line: split(model.trail || '').label },
+        onScene: function (n) {
+          if (book && book.opened() === 'part-4' && history.replaceState) history.replaceState(null, '', '#s' + n);
+        }
+      });
+    });
+    if (film && responderNames) film.responders(responderNames);
+
+    // Read it as a list: the moments, then the parts with their kinds.
+    var way = el('p', 'film-list-way live-noprint');
+    var toggle = el('button', 'way way-quiet', 'Read it as a list');
+    toggle.type = 'button';
+    way.appendChild(toggle);
+    var lists = el('div', 'film-lists');
+    lists.hidden = true;
+    var tt = own(node['1']);
+    if (tt) heading(lists, tt, 'h3');
+    var moments = el('ol', 'points');
+    walk(node['1']).forEach(function (t) { moments.appendChild(leadIn(el('li'), t)); });
+    lists.appendChild(moments);
+    var wt = own(node['2']);
+    if (wt) heading(lists, wt, 'h3');
+    var parts = el('ul', 'points');
+    model.bodies.forEach(function (b) {
+      var li = el('li');
+      li.appendChild(said('strong', null, b.label + (b.body ? '.' : '')));
+      if (b.kind) li.appendChild(el('span', 'tag film-kind', b.kind));
+      if (b.body) put(li, ' ' + b.body);
+      parts.appendChild(li);
+    });
+    lists.appendChild(parts);
+    Live.fold(toggle, lists);
+    box.appendChild(way);
+    box.appendChild(lists);
 
     var pt = own(node['3']);
     if (pt) box.appendChild(leadIn(el('p', 'point'), pt));
@@ -1134,10 +1096,17 @@
       body: box,
       onOpen: function () {
         if (num) Live.countUp(num, mins, 1000);
-        if (walkThrough) walkThrough.reset();
+        if (!film) return;
+        var n = pendingScene || 1;
+        pendingScene = null;
+        film.go(n);
+        if (!filmPlayed && !Live.still()) {
+          filmPlayed = true;
+          if (n < film.count) film.play();
+        }
       },
       onClose: function () {
-        if (walkThrough) walkThrough.stop();
+        if (film) film.stop();
       }
     };
   }
@@ -1201,8 +1170,8 @@
     // Parts 1 to 5, each a chapter.
     var keep = book ? book.opened() : null;
     if (book) book.destroy();
-    if (stopPlaying) stopPlaying();
-    stopPlaying = null;
+    if (film) film.destroy();
+    film = null;
     madeIn = null;
     var steps = children(spine['1']);
     var build = {
@@ -1219,7 +1188,15 @@
       if (!t && !(node && typeof node === 'object')) return;
       var p = split(t);
       var made = extra(function () { return build[pos](node); }) || { body: el('div', 'part') };
-      list.push({ id: 'part-' + pos, label: p.label, line: p.body, body: made.body, onOpen: made.onOpen, onClose: made.onClose });
+      list.push({
+        id: 'part-' + pos,
+        label: p.label,
+        line: p.body,
+        mini: extra(function () { return Live.mini(['steps', 'dial', 'birds', 'orbit', 'bar'][pos - 1]); }),
+        body: made.body,
+        onOpen: made.onOpen,
+        onClose: made.onClose
+      });
     });
     partsBox.textContent = '';
     book = Live.chapters(partsBox, list);
@@ -1230,7 +1207,8 @@
       }));
     }
 
-    // "How this was made" opens part 4, with the minutes the trail took.
+    // "How this was made" opens part 4 at its first scene, with the
+    // minutes the trail took.
     wayMade.textContent = 'How this was made' + (madeIn != null ? ' · ' + madeIn + (madeIn === 1 ? ' minute' : ' minutes') : '');
     wayMade.hidden = !document.getElementById('part-4');
     renderProvenance(own(spine['9']));
@@ -1425,6 +1403,7 @@
     }
     rows.forEach(function (r) {
       var div = el('div', 'comment answer');
+      div.setAttribute('data-who', r.who);
       var meta = el('p', 'comment-meta');
       meta.appendChild(el('strong', null, r.who));
       div.appendChild(meta);
@@ -1489,7 +1468,11 @@
     // The address the page was opened at, #part-N, opens that chapter.
     if (book && !followed) {
       followed = true;
-      book.follow();
+      var n = sceneOf(location.hash);
+      if (!(n && openScene(n)) && !book.follow()) {
+        var there = location.hash.length > 1 && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (there) there.scrollIntoView();
+      }
     }
   }
 
@@ -1508,6 +1491,19 @@
       Beach.renderThread(thread, pool);
       roomShown = true;
       roomNotes = countNotes(pool);
+      // Each note marked with who wrote it, and their names for the film.
+      Array.prototype.forEach.call(thread.querySelectorAll('.comment'), function (c) {
+        var who = c.querySelector('.comment-meta strong');
+        if (who && who.parentNode.parentNode === c) c.setAttribute('data-who', who.textContent);
+      });
+      var names = [];
+      Beach.entries(pool).forEach(function (e) {
+        [e.who].concat((e.replies || []).map(function (r) { return r.who; })).forEach(function (w) {
+          if (w && names.indexOf(w) < 0) names.push(w);
+        });
+      });
+      noteNames = names;
+      updateResponders();
     }, function () {
       if (roomShown) return;
       thread.textContent = '';
@@ -1519,6 +1515,14 @@
       idx.then(renderScene, function () {
         renderScene(null);
       }),
+      // Every reader's block is someone who has responded.
+      idx.then(function (ix) {
+        if (!ix || !Array.isArray(ix.blocks)) return;
+        readerHandles = ix.blocks.filter(function (b) {
+          return typeof b === 'string' && b.indexOf(READERS) === 0 && b.length > READERS.length;
+        }).map(function (b) { return b.slice(READERS.length); });
+        updateResponders();
+      }, function () {}),
       // The strip sits inside the block's part 3, and tells time by the
       // clock the block came with, so it waits for the block.
       Promise.all([drawn.catch(function () {}), idx]).then(function (r) {
