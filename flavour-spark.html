@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-09-29a">
-<link rel="stylesheet" href="live.css?v=2026-10-11c">
+<link rel="stylesheet" href="live.css?v=2026-10-11d">
 <style>
   html {
     scroll-behavior: smooth;
@@ -125,7 +125,6 @@
     outline: 2px solid var(--crimson);
     outline-offset: 2px;
   }
-  #trail,
   #note-form {
     scroll-margin-top: 1rem;
   }
@@ -162,83 +161,112 @@
     font-weight: 600;
   }
 
-  /* The ladder: seven rungs down a line, the first one lit. */
-  .ladder {
-    list-style: none;
-    padding: 0;
-    margin: 1.3rem 0 0;
+  /* The ladder: its steps as numbered circles in a row, joined by a
+     line (two rows on a narrow screen), the chosen one's words beneath. */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    row-gap: 0.5rem;
+    margin: 0.5rem 0 0;
   }
-  .rung {
+  .step {
     position: relative;
-    padding: 0 0 1.4rem 3.1rem;
-    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    background: none;
+    border: 0;
   }
-  .rung::before {
-    content: none;
-  }
-  .rung::after {
+  .step::after {
     content: "";
     position: absolute;
-    left: 1.05rem;
-    top: 2.3rem;
-    bottom: 0.15rem;
-    border-left: 1.5px solid var(--frame);
-    /* Drawn down as the ladder is reached (live.js); whole without it. */
-    transform-origin: top;
-    transform: scaleY(var(--live-draw, 1));
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    border-top: 1.5px solid var(--frame);
   }
-  .rung:last-child {
-    padding-bottom: 0;
-  }
-  .rung:last-child::after {
+  .step:last-child::after {
     content: none;
   }
-  .rung-num {
-    position: absolute;
-    left: 0;
-    top: 0;
+  @media (max-width: 399px) {
+    .steps {
+      grid-template-columns: repeat(var(--half), minmax(0, 1fr));
+    }
+    .step.row-end::after {
+      content: none;
+    }
+  }
+  .step-dot {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 2.15rem;
     height: 2.15rem;
     border-radius: 50%;
     border: 1.5px solid var(--crimson);
     background: var(--page);
     color: var(--crimson);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 1.1rem;
     font-weight: 600;
     font-variant-numeric: lining-nums;
-    transition: background-color 0.8s, color 0.8s;
+    transition: background-color 0.8s, color 0.8s, box-shadow 0.2s;
   }
-  .rung.here .rung-num,
-  .rung.done .rung-num {
+  .step.here .step-dot,
+  .step.done .step-dot {
     background: var(--crimson);
     color: var(--page);
   }
-  .rung-title {
-    font-weight: 600;
-    font-size: 1.3rem;
-    line-height: 1.25;
-    margin: 0.3rem 0 0.25rem;
-  }
-  .rung-body {
-    margin: 0 0 0.4rem;
-  }
-  .rung.later {
-    color: var(--muted);
-  }
-  .rung.later .rung-num {
+  .step.later .step-dot {
     border-color: var(--frame);
     color: var(--muted);
     font-weight: 500;
   }
-  .rung.later .rung-title {
-    font-weight: 500;
-    font-size: 1.2rem;
+  .step.is-current .step-dot {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4.5px var(--crimson);
   }
-  .rung.later .rung-body {
-    font-size: 1.05rem;
+  .step.later.is-current .step-dot {
+    box-shadow: 0 0 0 3px var(--page), 0 0 0 4.5px var(--muted);
+  }
+  .step:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  /* The panel for the chosen step, or the chosen station of the hour. */
+  .step-panel {
+    margin: 0.9rem 0 0;
+    padding: 0.85rem 1rem 0.9rem;
+    background: var(--paper);
+    border-left: 3px solid var(--crimson);
+  }
+  .step-panel.later {
+    border-left-color: var(--frame);
+    color: var(--muted);
+  }
+  .step-panel .tag {
+    margin: 0 0 0.2rem;
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    margin: 0.1rem 0 0.25rem;
+  }
+  .step-panel.later .step-title {
+    font-weight: 500;
+  }
+  .step-body {
+    margin: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .step-dot {
+      transition: none;
+    }
   }
   .tag {
     display: inline-block;
@@ -386,100 +414,60 @@
     font-style: italic;
     margin: 0.2rem 0 0;
   }
-  .trail {
-    list-style: none;
-    padding: 0;
-    margin: 0.9rem 0 0;
+  /* The trail, one moment at a time under its line of time. */
+  .moment-view {
+    margin: 0.2rem 0 0;
+    padding: 0.85rem 1rem 0.75rem;
+    background: var(--paper);
+    border-left: 3px solid var(--crimson);
+    touch-action: pan-y;
   }
-  .moment {
-    display: grid;
-    grid-template-columns: 3.3rem 1fr;
-    gap: 0 0.85rem;
-    padding: 0;
-    margin: 0;
-  }
-  .moment::before {
-    content: none;
-  }
-  .moment-time {
-    text-align: right;
+  .moment-at {
     font-weight: 600;
-    color: var(--crimson);
-    font-variant-numeric: lining-nums tabular-nums;
-    white-space: nowrap;
-  }
-  .moment-text {
-    position: relative;
-    border-left: 1.5px solid var(--frame);
-    padding: 0 0 1rem 0.95rem;
-    overflow-wrap: break-word;
-    min-width: 0;
-  }
-  .moment-text::before {
-    content: "";
-    position: absolute;
-    left: -0.3rem;
-    top: 0.55em;
-    width: 0.52rem;
-    height: 0.52rem;
-    border-radius: 50%;
-    background: var(--crimson);
-  }
-  .moment:last-child .moment-text {
-    padding-bottom: 0;
-  }
-  .moment {
-    scroll-margin: 1.5rem 0;
-  }
-  .moment-text {
-    transition: background-color 0.4s, border-color 0.4s;
-  }
-  .moment.live-current .moment-time {
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 3px;
-  }
-  .moment.live-current .moment-text {
-    background: var(--paper);
-    border-left-color: var(--crimson);
-  }
-  .moment.live-current .moment-text::before {
-    box-shadow: 0 0 0 0.16rem var(--paper), 0 0 0 0.28rem var(--crimson);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rung-num,
-    .moment-text {
-      transition: none;
-    }
-  }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: 0.7rem;
-    list-style: none;
-    padding: 0;
-    margin: 0.8rem 0 0;
-  }
-  .card {
-    border: 1px solid var(--frame);
-    background: var(--paper);
-    padding: 0.8rem 0.95rem 0.85rem;
-    margin: 0;
-  }
-  .card::before {
-    content: none;
-  }
-  .card-title {
-    font-style: italic;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     line-height: 1.2;
     color: var(--crimson);
+    font-variant-numeric: lining-nums tabular-nums;
     margin: 0 0 0.3rem;
   }
-  .card-body {
-    font-size: 1.05rem;
-    line-height: 1.45;
+  .moment-words {
+    margin: 0 0 0.5rem;
+  }
+  .moment-count {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-variant-numeric: lining-nums;
     margin: 0;
+  }
+  .moment-steps {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.6rem 0 0;
+  }
+
+  /* Not built yet: how many of the ladder's steps are real. */
+  .real-steps {
+    margin: 0.3rem 0 0.7rem;
+  }
+  .real-bar {
+    display: flex;
+    gap: 3px;
+  }
+  .real-bar span {
+    flex: 1;
+    height: 0.55rem;
+    border-radius: 1px;
+    background: var(--frame);
+  }
+  .real-bar .is-real {
+    background: var(--crimson);
+  }
+  .real-count {
+    font-size: 0.95rem;
+    color: var(--muted);
+    font-variant-numeric: lining-nums;
+    margin: 0.35rem 0 0;
   }
   .point {
     border-left: 3px solid var(--crimson);
@@ -558,11 +546,11 @@
 
     <div id="doc" hidden>
       <nav class="ways" id="ways" aria-label="Ways in">
-        <a class="way" id="way-made" href="#trail" hidden>How this was made</a>
+        <a class="way" id="way-made" href="#part-4" hidden>How this was made</a>
         <a class="way way-act" href="#note-form">Respond now</a>
         <button class="way way-quiet" id="way-what" type="button" aria-expanded="false" aria-controls="welcome" hidden>What is this?</button>
       </nav>
-      <div class="welcome" id="welcome" hidden>
+      <div class="welcome live-fold" id="welcome" hidden>
         <p class="lede" id="lede"></p>
       </div>
       <div id="parts"></div>
@@ -609,8 +597,8 @@
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-11c"></script>
-<script src="live.js?v=2026-10-11c"></script>
+<script src="beach.js?v=2026-10-11d"></script>
+<script src="live.js?v=2026-10-11d"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -731,15 +719,42 @@
   strip.appendChild(stripList);
   strip.appendChild(stripUnread);
 
-  // The ladder as last drawn, and whether its line has drawn itself yet.
-  var ladderList = null;
+  // The chapters as last drawn, and whether the page's own address has
+  // been followed to one yet.
+  var book = null;
+  var followed = false;
+  // Step two of the ladder, whose circle fills once a note is left.
   var stepTwo = null;
-  var ladderDrawn = false;
-  var stopDrawing = null;
   // The line of time over the trail, as last drawn, and the minutes from
   // the trail's first moment to its last.
   var trailLine = null;
   var madeIn = null;
+  // Playing through the trail stops at any tap or key: stopPlaying()
+  // stops it (true if it was playing), and the tap that stopped it isn't
+  // also taken as a tap on play.
+  var stopPlaying = null;
+  var halted = false;
+  function halt() {
+    if (stopPlaying && stopPlaying()) halted = true;
+  }
+  document.addEventListener('pointerdown', halt, true);
+  document.addEventListener('keydown', halt, true);
+  document.addEventListener('click', function () { halted = false; });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && stopPlaying) stopPlaying();
+  });
+
+  // The bar at the foot of the screen, once the scene has gone by: a dot
+  // for each chapter, and Respond.
+  var footBar = extra(function () {
+    return Live.bar({
+      name: 'Chapters',
+      after: document.getElementById('scene'),
+      hideWhile: [document.getElementById('respond')],
+      form: form,
+      action: { label: 'Respond', href: '#respond' }
+    });
+  });
 
   // A node's own words: a string, or its "_". When the beach has nested
   // older entries under "_", the words are further down it.
@@ -754,6 +769,16 @@
     var i = s.indexOf('. ');
     if (i < 0) return { label: s.replace(/\.$/, ''), body: '' };
     return { label: s.slice(0, i), body: s.slice(i + 2).trim() };
+  }
+
+  // Beach words into an element, any web address in them shown short, as
+  // a link.
+  function put(e, s) {
+    Live.linkify(e, s);
+    return e;
+  }
+  function said(tag, cls, s) {
+    return put(el(tag, cls), s);
   }
 
   // This page's own address as it might be written: no scheme, query or
@@ -809,99 +834,135 @@
   // A heading from the label, the body beneath it.
   function heading(parent, s, tag) {
     var p = split(s);
-    var h = parent.appendChild(el(tag || 'h2', null, p.label));
-    if (p.body) parent.appendChild(el('p', 'part-intro', p.body));
+    var h = parent.appendChild(said(tag || 'h2', null, p.label));
+    if (p.body) parent.appendChild(said('p', 'part-intro', p.body));
     return h;
   }
 
   // The label as a bold lead-in, the body after it.
   function leadIn(parent, s) {
     var p = split(s);
-    parent.appendChild(el('strong', null, p.label + (p.body ? '.' : '')));
-    if (p.body) parent.appendChild(document.createTextNode(' ' + p.body));
+    parent.appendChild(said('strong', null, p.label + (p.body ? '.' : '')));
+    if (p.body) put(parent, ' ' + p.body);
     return parent;
   }
 
-  function part(node) {
-    var t = own(node);
-    var sec = el('section', 'part');
-    if (t) heading(sec, t);
-    return sec;
+  // For print: every item of a part that the screen shows one at a time.
+  function printAll(texts) {
+    var ul = el('ul', 'points live-print');
+    texts.forEach(function (t) { ul.appendChild(leadIn(el('li'), t)); });
+    return ul;
+  }
+
+  // Items as rows: the label shown, its words a tap away.
+  function rowsOf(items) {
+    return Live.rows(items.map(function (c) {
+      var p = split(c.text);
+      return { label: p.label, body: p.body ? said('p', null, p.body) : null };
+    }));
+  }
+
+  // The label and words of one item, into a panel.
+  function fillPanel(panel, s) {
+    var p = split(s);
+    panel.appendChild(said('h3', 'step-title', p.label));
+    if (p.body) panel.appendChild(said('p', 'step-body', p.body));
   }
 
   // Step two's circle fills once a note has been left from this device.
   function markResponded() {
-    if (!stepTwo) return;
+    if (!stepTwo || stepTwo.classList.contains('done')) return;
     stepTwo.classList.add('done');
-    if (!stepTwo.querySelector('.visually-hidden')) {
-      stepTwo.insertBefore(el('span', 'visually-hidden', 'Done.'), stepTwo.querySelector('.rung-title'));
-    }
+    stepTwo.setAttribute('aria-label', stepTwo.getAttribute('aria-label') + ', done');
   }
 
-  // Position 1: the ladder. Step one's circle glows ("you are here"), and
-  // the line down it draws itself as the ladder is reached.
-  function ladder(node) {
-    var rungs = children(node).filter(function (c) { return c.pos <= 7; });
-    if (!own(node) && !rungs.length) return null;
-    var sec = part(node);
-    var ol = el('ol', 'ladder');
+  // ---- Part 1, the ladder ------------------------------------------------
+  // The steps as numbered circles in a row, joined by a line (two rows on
+  // a narrow screen); the chosen step's words in one panel beneath. Step
+  // one is where the reader is, and glows; step two is responding, its
+  // circle filled once a note is left; the rest are not built yet. Step
+  // one is chosen each time the chapter opens.
+  function ladderBody(node) {
+    var steps = children(node);
+    var box = el('div', 'part');
+    if (!steps.length) return { body: box };
+    var row = el('div', 'steps live-noprint');
+    row.setAttribute('aria-label', split(own(node)).label);
+    row.style.setProperty('--n', steps.length);
+    row.style.setProperty('--half', Math.ceil(steps.length / 2));
+    var panel = el('div', 'step-panel live-noprint');
     stepTwo = null;
-    rungs.forEach(function (c) {
-      var p = split(c.text);
-      var li = el('li', 'rung' + (c.pos === 1 ? ' here' : c.pos >= 3 ? ' later' : ''));
-      var num = el('span', 'rung-num' + (c.pos === 1 ? ' live-glow' : ''), String(c.pos));
-      num.setAttribute('aria-hidden', 'true');
-      li.appendChild(num);
-      if (c.pos === 1) li.appendChild(el('span', 'tag tag-here', 'You are here'));
-      if (c.pos >= 3) li.appendChild(el('span', 'tag tag-later', 'Not built yet'));
-      li.appendChild(el('h3', 'rung-title', p.label));
-      if (p.body) li.appendChild(el('p', 'rung-body', p.body));
-      if (c.pos === 2) {
-        var row = el('div', 'rung-actions');
-        var a = el('a', 'respond-now', 'Respond now');
-        a.href = '#respond';
-        row.appendChild(a);
-        row.appendChild(countOnLadder);
-        li.appendChild(row);
-        stepTwo = li;
-      }
-      ol.appendChild(li);
+    var buttons = steps.map(function (c, i) {
+      var b = el('button', 'step' + (c.pos === 1 ? ' here' : c.pos >= 3 ? ' later' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-label', c.pos + '. ' + split(c.text).label);
+      // Where the first of two rows ends, on a narrow screen.
+      if (i === Math.ceil(steps.length / 2) - 1) b.classList.add('row-end');
+      b.appendChild(el('span', 'step-dot' + (c.pos === 1 ? ' live-glow' : ''), String(c.pos)));
+      row.appendChild(b);
+      if (c.pos === 2) stepTwo = b;
+      return b;
     });
     if (Live.recall(LEFT_NOTE)) markResponded();
-    sec.appendChild(ol);
-    ladderList = ol;
-    return sec;
-  }
-
-  // Once the page is showing: the ladder's line draws itself, the first
-  // time it is drawn.
-  function drawLadder() {
-    if (!ladderList || ladderDrawn) return;
-    var rungs = ladderList.querySelectorAll('.rung:not(:last-child)');
-    ladderList = null;
-    if (stopDrawing) stopDrawing();
-    stopDrawing = Live.drawLine(rungs, function () { ladderDrawn = true; });
-  }
-
-  // A section whose children are a list; the live strip goes straight
-  // after the child at stripAfter, when there is one.
-  function list(node, stripAfter) {
-    var items = children(node);
-    if (!own(node) && !items.length) return null;
-    var sec = part(node);
-    var ul = el('ul', 'points');
-    items.forEach(function (c) {
-      ul.appendChild(leadIn(el('li'), c.text));
-      if (c.pos === stripAfter) {
-        sec.appendChild(ul);
-        sec.appendChild(strip);
-        ul = el('ul', 'points');
+    var choice = Live.tabs(buttons, panel, {
+      onSelect: function (i) {
+        var c = steps[i];
+        panel.textContent = '';
+        panel.classList.toggle('later', c.pos >= 3);
+        if (c.pos === 1) panel.appendChild(el('span', 'tag tag-here', 'You are here'));
+        if (c.pos >= 3) panel.appendChild(el('span', 'tag tag-later', 'Not built yet'));
+        fillPanel(panel, c.text);
+        if (c.pos === 2) {
+          var acts = el('div', 'rung-actions');
+          var a = el('a', 'respond-now', 'Respond now');
+          a.href = '#note-form';
+          acts.appendChild(a);
+          acts.appendChild(countOnLadder);
+          panel.appendChild(acts);
+        }
       }
     });
-    if (ul.childNodes.length) sec.appendChild(ul);
-    return sec;
+    box.appendChild(row);
+    box.appendChild(panel);
+    box.appendChild(printAll(steps.map(function (c) { return c.text; })));
+    choice.select(0);
+    return { body: box, onOpen: function () { choice.select(0); } };
   }
 
+  // ---- Part 2, the first hour --------------------------------------------
+  // An hour as a dial, a station for each item round the rim; the chosen
+  // item's words in a panel beneath. The first is chosen on open.
+  function hourBody(node) {
+    var items = children(node);
+    var box = el('div', 'part');
+    if (!items.length) return { body: box };
+    var panel = el('div', 'step-panel live-noprint');
+    var hour = Live.dial(items.length, panel, {
+      name: split(own(node)).label,
+      label: function (i) { return (i + 1) + '. ' + split(items[i].text).label; },
+      onSelect: function (i) {
+        panel.textContent = '';
+        fillPanel(panel, items[i].text);
+      }
+    });
+    hour.el.classList.add('live-noprint');
+    box.appendChild(hour.el);
+    box.appendChild(panel);
+    box.appendChild(printAll(items.map(function (c) { return c.text; })));
+    hour.select(0);
+    return { body: box, onOpen: function () { hour.select(0); } };
+  }
+
+  // ---- Part 3, seeing without being told ---------------------------------
+  // Each item a row, its words a tap away; beneath, what has just moved.
+  function seeingBody(node) {
+    var box = el('div', 'part');
+    box.appendChild(rowsOf(children(node)));
+    box.appendChild(strip);
+    return { body: box };
+  }
+
+  // ---- Part 4, the experiment --------------------------------------------
   // A trail line's time (its label, HH:MM) in minutes from midnight, or
   // null.
   function clockTime(label) {
@@ -921,81 +982,184 @@
     return d < 0 ? d + 1440 : d;
   }
 
-  // Position 4: the experiment.
-  function experiment(node) {
-    if (!own(node) && !(node && typeof node === 'object')) return null;
-    var sec = part(node);
-    if (!node || typeof node !== 'object') return sec;
+  // The trail, one moment at a time under its line of time: previous and
+  // next, a sideways swipe, or play, which steps through the moments
+  // about two seconds each, the ring moving along the line. Any tap or
+  // key stops it; there is no play for anyone who asks for less motion.
+  function trail(moments) {
+    var parts = moments.map(split);
+    var box = el('div', 'trail');
+    var marks = [];
+    var prev = null;
+    var day = 0;
+    // A time earlier than the one before it by more than half a day has
+    // passed midnight.
+    parts.forEach(function (p, i) {
+      var t = clockTime(p.label);
+      if (t == null) return;
+      if (prev != null && t + day < prev - 720) day += 1440;
+      prev = t + day;
+      marks.push({ label: p.label, at: prev, i: i });
+    });
+    var cur = 0;
+    var view = el('div', 'moment-view live-noprint');
+    view.setAttribute('aria-live', 'polite');
+    var at = el('p', 'moment-at');
+    var words = el('p', 'moment-words');
+    var count = el('p', 'moment-count');
+    view.appendChild(at);
+    view.appendChild(words);
+    view.appendChild(count);
+    var steps = el('div', 'moment-steps live-noprint');
+    var back = el('button', 'live-step-button', 'Previous');
+    back.type = 'button';
+    var play = el('button', 'live-step-button', 'Play');
+    play.type = 'button';
+    play.setAttribute('aria-pressed', 'false');
+    play.hidden = Live.still();
+    var on = el('button', 'live-step-button', 'Next');
+    on.type = 'button';
+    steps.appendChild(back);
+    steps.appendChild(play);
+    steps.appendChild(on);
+    var timer = 0;
 
+    function show(i, fromLine) {
+      cur = Math.max(0, Math.min(parts.length - 1, i));
+      var p = parts[cur];
+      at.textContent = p.label;
+      words.textContent = '';
+      put(words, p.body);
+      count.textContent = (cur + 1) + ' / ' + parts.length;
+      back.disabled = cur === 0;
+      on.disabled = cur === parts.length - 1;
+      if (!fromLine && trailLine) trailLine.select(cur);
+    }
+    function stop() {
+      if (!timer) return false;
+      clearInterval(timer);
+      timer = 0;
+      play.textContent = 'Play';
+      play.setAttribute('aria-pressed', 'false');
+      return true;
+    }
+    function start() {
+      if (Live.still()) return;
+      if (cur >= parts.length - 1) show(0);
+      play.textContent = 'Stop';
+      play.setAttribute('aria-pressed', 'true');
+      timer = setInterval(function () {
+        if (cur >= parts.length - 1) stop();
+        else show(cur + 1);
+      }, 2000);
+    }
+    stopPlaying = stop;
+
+    back.addEventListener('click', function () { show(cur - 1); });
+    on.addEventListener('click', function () { show(cur + 1); });
+    play.addEventListener('click', function () {
+      if (halted) return;
+      start();
+    });
+    Live.swipe(view, function () { show(cur + 1); }, function () { show(cur - 1); });
+
+    if (trailLine) trailLine.destroy();
+    trailLine = null;
+    if (marks.length) {
+      trailLine = extra(function () {
+        return Live.timeline(marks, {
+          name: 'The trail, by time',
+          onPick: function (i) {
+            stop();
+            show(i, true);
+          }
+        });
+      });
+      if (trailLine) {
+        trailLine.el.classList.add('live-noprint');
+        box.appendChild(trailLine.el);
+      }
+    }
+    box.appendChild(view);
+    box.appendChild(steps);
+    box.appendChild(printAll(moments));
+    show(0);
+    return {
+      el: box,
+      reset: function () {
+        stop();
+        show(0);
+      },
+      stop: stop
+    };
+  }
+
+  // The minutes it took, counted up each time the chapter opens; the
+  // trail; who did what, as tiles; and the conclusion.
+  function experimentBody(node) {
+    var box = el('div', 'part');
+    if (!node || typeof node !== 'object') return { body: box };
     var trailNode = node['1'];
     var moments = walk(trailNode);
     var mins = span(moments);
     madeIn = mins;
+    var num = null;
     if (mins != null) {
       var fig = el('div', 'spark-figure');
-      fig.appendChild(el('span', 'spark-num', String(mins)));
+      num = el('span', 'spark-num', String(mins));
+      fig.appendChild(num);
       fig.appendChild(el('span', 'spark-unit', mins === 1 ? 'minute' : 'minutes'));
-      fig.appendChild(el('p', 'spark-line', 'from the voice note to the last line below'));
-      sec.appendChild(fig);
+      fig.appendChild(el('p', 'spark-line', 'from the voice note to the last moment below'));
+      box.appendChild(fig);
     }
     var tt = own(trailNode);
-    var trailStart = tt ? heading(sec, tt, 'h3') : null;
-    if (trailLine) trailLine.destroy();
-    trailLine = null;
-    if (moments.length) {
-      var ol = el('ol', 'trail');
-      // Each moment with a time also goes on the line of time above the
-      // list. A time earlier than the one before it by more than half a
-      // day has passed midnight.
-      var marks = [];
-      var prev = null;
-      var day = 0;
-      moments.forEach(function (m, i) {
-        var p = split(m);
-        var li = el('li', 'moment');
-        li.id = 'moment-' + (i + 1);
-        li.appendChild(el('span', 'moment-time', p.label));
-        var said = el('span', 'moment-text', p.body);
-        said.id = 'moment-text-' + (i + 1);
-        li.appendChild(said);
-        ol.appendChild(li);
-        var t = clockTime(p.label);
-        if (t == null) return;
-        if (prev != null && t + day < prev - 720) day += 1440;
-        prev = t + day;
-        marks.push({ label: p.label, at: prev, target: li, note: said });
-      });
-      if (marks.length) {
-        trailLine = extra(function () {
-          return Live.timeline(marks, { name: 'The trail, by time' });
-        });
-        if (trailLine) sec.appendChild(trailLine.el);
-      }
-      sec.appendChild(ol);
-    }
-    // Where "How this was made" leads.
-    var trailAt = trailStart || sec.querySelector('.live-time, .trail');
-    if (trailAt) trailAt.id = 'trail';
+    if (tt) heading(box, tt, 'h3');
+    var walkThrough = moments.length ? trail(moments) : null;
+    if (walkThrough) box.appendChild(walkThrough.el);
 
     var whoNode = node['2'];
     var wt = own(whoNode);
-    if (wt) heading(sec, wt, 'h3');
-    var cards = children(whoNode);
-    if (cards.length) {
-      var ul = el('ul', 'cards');
-      cards.forEach(function (c) {
+    if (wt) heading(box, wt, 'h3');
+    var who = children(whoNode);
+    if (who.length) {
+      box.appendChild(Live.tiles(who.map(function (c) {
         var p = split(c.text);
-        var li = el('li', 'card');
-        li.appendChild(el('p', 'card-title', p.label));
-        if (p.body) li.appendChild(el('p', 'card-body', p.body));
-        ul.appendChild(li);
-      });
-      sec.appendChild(ul);
+        return { label: p.label, body: p.body ? said('p', null, p.body) : null };
+      })));
     }
 
     var pt = own(node['3']);
-    if (pt) sec.appendChild(leadIn(el('p', 'point'), pt));
-    return sec;
+    if (pt) box.appendChild(leadIn(el('p', 'point'), pt));
+    return {
+      body: box,
+      onOpen: function () {
+        if (num) Live.countUp(num, mins, 1000);
+        if (walkThrough) walkThrough.reset();
+      },
+      onClose: function () {
+        if (walkThrough) walkThrough.stop();
+      }
+    };
+  }
+
+  // ---- Part 5, not built yet ---------------------------------------------
+  // How many of the ladder's steps are real (steps one and two) out of
+  // all of them, then each item as a row.
+  function notBuiltBody(node, steps) {
+    var box = el('div', 'part');
+    if (steps.length) {
+      var real = steps.filter(function (c) { return c.pos <= 2; }).length;
+      var meter = el('div', 'real-steps');
+      meter.setAttribute('role', 'img');
+      meter.setAttribute('aria-label', real + ' of ' + steps.length);
+      var bar = el('div', 'real-bar');
+      steps.forEach(function (c) { bar.appendChild(el('span', c.pos <= 2 ? 'is-real' : null)); });
+      meter.appendChild(bar);
+      meter.appendChild(el('p', 'real-count', real + ' of ' + steps.length));
+      box.appendChild(meter);
+    }
+    box.appendChild(rowsOf(children(node)));
+    return { body: box };
   }
 
   function renderProvenance(s) {
@@ -1006,7 +1170,7 @@
   }
 
   // Draw the page; false if there is nothing to show. Drawn again only
-  // when the block itself has changed.
+  // when the block itself has changed, keeping the chapter that was open.
   function render(spine) {
     if (!spine || typeof spine !== 'object') return false;
     var root = own(spine);
@@ -1021,7 +1185,9 @@
     // The welcome lives inside "What is this?", without its last sentence
     // when that only says where this page is.
     var opening = withoutOwnAddress(r.body);
-    document.getElementById('lede').textContent = opening;
+    var lede = document.getElementById('lede');
+    lede.textContent = '';
+    put(lede, opening);
     wayWhat.hidden = !opening;
     if (!opening) {
       welcome.hidden = true;
@@ -1032,20 +1198,41 @@
     sceneLine.textContent = three;
     sceneLine.hidden = !three;
 
-    var frag = document.createDocumentFragment();
+    // Parts 1 to 5, each a chapter.
+    var keep = book ? book.opened() : null;
+    if (book) book.destroy();
+    if (stopPlaying) stopPlaying();
+    stopPlaying = null;
     madeIn = null;
-    [ladder(spine['1']), list(spine['2']), list(spine['3'], 5), experiment(spine['4']), list(spine['5'])]
-      .forEach(function (sec) {
-        if (!sec) return;
-        frag.appendChild(el('hr', 'rule'));
-        frag.appendChild(sec);
-      });
+    var steps = children(spine['1']);
+    var build = {
+      1: ladderBody,
+      2: hourBody,
+      3: seeingBody,
+      4: experimentBody,
+      5: function (node) { return notBuiltBody(node, steps); }
+    };
+    var list = [];
+    [1, 2, 3, 4, 5].forEach(function (pos) {
+      var node = spine[String(pos)];
+      var t = own(node);
+      if (!t && !(node && typeof node === 'object')) return;
+      var p = split(t);
+      var made = extra(function () { return build[pos](node); }) || { body: el('div', 'part') };
+      list.push({ id: 'part-' + pos, label: p.label, line: p.body, body: made.body, onOpen: made.onOpen, onClose: made.onClose });
+    });
     partsBox.textContent = '';
-    partsBox.appendChild(frag);
-    // "How this was made", with the minutes the trail took, when there
-    // is a trail to go to.
+    book = Live.chapters(partsBox, list);
+    if (keep) book.open(keep, false, true);
+    if (footBar) {
+      footBar.items(book.list.map(function (it) {
+        return { label: it.label, el: it.el, go: function () { book.open(it.id, true); } };
+      }));
+    }
+
+    // "How this was made" opens part 4, with the minutes the trail took.
     wayMade.textContent = 'How this was made' + (madeIn != null ? ' · ' + madeIn + (madeIn === 1 ? ' minute' : ' minutes') : '');
-    wayMade.hidden = !document.getElementById('trail');
+    wayMade.hidden = !document.getElementById('part-4');
     renderProvenance(own(spine['9']));
     return true;
   }
@@ -1191,15 +1378,16 @@
     var t = el('p', 'comment-text');
     div.appendChild(t);
     if (s.length <= 700) {
-      t.textContent = s;
+      put(t, s);
       return;
     }
     var cut = s.lastIndexOf(' ', 500);
-    t.textContent = s.slice(0, cut > 300 ? cut : 500) + '…';
+    put(t, s.slice(0, cut > 300 ? cut : 500) + '…');
     var more = el('button', 'comment-more', 'Read all');
     more.type = 'button';
     more.addEventListener('click', function () {
-      t.textContent = s;
+      t.textContent = '';
+      put(t, s);
       more.remove();
     });
     div.appendChild(more);
@@ -1298,7 +1486,11 @@
     ['doc', 'respond-rule', 'respond'].forEach(function (id) {
       document.getElementById(id).hidden = false;
     });
-    extra(drawLadder);
+    // The address the page was opened at, #part-N, opens that chapter.
+    if (book && !followed) {
+      followed = true;
+      book.follow();
+    }
   }
 
   var refresh = Beach.live(function () {
