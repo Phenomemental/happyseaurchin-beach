@@ -1,7 +1,9 @@
 /* What lets a reader see, and touch, that a page is live: a count that
    pulses when it rises, lines that draw themselves as they are reached,
-   a line of time to tap along, and a sky with a flock of what has just
-   moved on the beach. Shared by the pages that read from the beach; every word stays
+   a line of time to tap along, a sky with a flock of what has just moved
+   on the beach; and the pieces a long page is folded into: chapters,
+   rows, tiles, a dial, one-of-several, a bar at the foot of the screen,
+   and web addresses shown short. Shared by the pages that read from the beach; every word stays
    the beach's, or the page's own short labels. Needs live.css. Nothing
    here is needed for the words to show, and all of it holds still for
    anyone who asks their device for less motion. */
@@ -95,9 +97,11 @@
     return el;
   }
 
-  // One pulse on an element; none for anyone who asks for less motion.
+  // One pulse on an element; none for anyone who asks for less motion,
+  // nor for one not on the page just now (in a closed chapter), which
+  // would only pulse later, out of time.
   function pulse(el) {
-    if (still()) return;
+    if (still() || !el.getClientRects().length) return;
     el.classList.remove('live-pulse');
     void el.offsetWidth;
     el.classList.add('live-pulse');
@@ -264,8 +268,10 @@
   //
   // Tapping or focusing a time, or tapping near a dot, marks that moment
   // as the current one, here and in the page (class live-current), and
-  // brings it into view. Arrow keys move between times; Tab comes in at
-  // the current one. Returns { el, destroy }.
+  // brings it into view; opts.onPick(i) hears which (i is its place in
+  // moments). select(i) marks one from outside, quietly, the ring gliding
+  // along the line to it. Arrow keys move between times; Tab comes in at
+  // the current one. Returns { el, select, destroy }.
   var TARGET = 44; // the least a thing to tap can be, in pixels
   var LEAD = 16;
 
@@ -286,7 +292,7 @@
     art.appendChild(axis);
 
     var marks = moments.map(function (m, i) {
-      return { label: m.label, at: m.at, target: m.target, note: m.note, i: i };
+      return { label: m.label, at: m.at, target: m.target, note: m.note, i: m.i != null ? m.i : i };
     }).sort(function (a, b) {
       return a.at - b.at || a.i - b.i;
     });
@@ -319,16 +325,21 @@
     var shown = { j: -1, t: 0 };
     var axisY = 0;
 
+    function current(j) {
+      if (cur === j) return;
+      if (cur >= 0) mark(marks[cur], false);
+      cur = j;
+      mark(marks[j], true);
+      marks.forEach(function (m, q) { m.btn.tabIndex = q === j ? 0 : -1; });
+      placeRing();
+    }
+
     function pick(j) {
       var k = marks[j];
       if (!k) return;
-      if (cur !== j) {
-        if (cur >= 0) mark(marks[cur], false);
-        cur = j;
-        mark(k, true);
-        marks.forEach(function (m, q) { m.btn.tabIndex = q === j ? 0 : -1; });
-        placeRing();
-      }
+      var was = cur;
+      current(j);
+      if (was !== j && opts.onPick) opts.onPick(k.i);
       // A tap both focuses and clicks; bring the moment into view once.
       var now = Date.now();
       if (shown.j === j && now - shown.t < 400) return;
@@ -336,10 +347,24 @@
       if (k.target && k.target.scrollIntoView) {
         k.target.scrollIntoView({ block: 'nearest', behavior: still() ? 'auto' : 'smooth' });
       }
-      if (box.scrollWidth > box.clientWidth) {
-        var x = parseFloat(k.btn.style.left) || 0;
-        if (x - TARGET < box.scrollLeft || x + TARGET > box.scrollLeft + box.clientWidth) {
-          box.scrollLeft = x - box.clientWidth / 2;
+      sideways(k);
+    }
+
+    // On a line wider than the page, keep the current time in sight.
+    function sideways(k) {
+      if (box.scrollWidth <= box.clientWidth) return;
+      var x = parseFloat(k.btn.style.left) || 0;
+      if (x - TARGET < box.scrollLeft || x + TARGET > box.scrollLeft + box.clientWidth) {
+        box.scrollLeft = x - box.clientWidth / 2;
+      }
+    }
+
+    function select(i) {
+      for (var j = 0; j < marks.length; j++) {
+        if (marks[j].i === i) {
+          current(j);
+          sideways(marks[j]);
+          return;
         }
       }
     }
@@ -357,11 +382,11 @@
       }
     }
 
+    // The ring is moved, not redrawn, so it glides from dot to dot.
     function placeRing() {
       var k = marks[cur];
       if (!k || k.x == null) return;
-      ring.setAttribute('cx', k.x);
-      ring.setAttribute('cy', axisY);
+      ring.style.transform = 'translate(' + k.x + 'px,' + axisY + 'px)';
       ring.style.display = '';
     }
 
@@ -483,10 +508,602 @@
 
     return {
       el: box,
+      select: select,
       layout: function () { layout(true); },
       destroy: function () {
         if (ro) ro.disconnect();
         else window.removeEventListener('resize', relayout);
+      }
+    };
+  }
+
+  // ---- Web addresses in beach text ----------------------------------------------
+  // Text from the beach put into el, with every http or https address in it
+  // shown as a link whose words are the host and the last piece of the
+  // path, never the whole address. The link can break only after a slash,
+  // never inside a piece. Everything is set with textContent and href; no
+  // markup from the text is ever read. With plain, the short words are
+  // shown without a link (for inside a button, where a link can't go).
+  var ADDRESS = /\bhttps?:\/\/[^\s<>"'“”‘’]+/gi;
+
+  function address(raw) {
+    try {
+      var u = new URL(raw);
+      return u.protocol === 'http:' || u.protocol === 'https:' ? u : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Trailing punctuation belongs to the sentence, not the address; a
+  // closing bracket stays if the address opened one.
+  function trimAddress(raw) {
+    return raw.replace(/[.,;:!?'"’”\]]+$/, '').replace(/\)+$/, function (tail) {
+      return raw.indexOf('(') >= 0 ? tail : '';
+    }).replace(/[.,;:!?'"’”\]]+$/, '');
+  }
+
+  function shortAddress(el, u) {
+    var path = u.pathname.split('/').filter(Boolean);
+    var pieces = [u.host];
+    if (path.length > 1) pieces.push('…');
+    if (path.length) {
+      var last = path[path.length - 1];
+      try {
+        last = decodeURIComponent(last);
+      } catch (e) {}
+      pieces.push(last);
+    }
+    pieces.forEach(function (p, i) {
+      var s = document.createElement('span');
+      s.className = 'live-link-piece';
+      s.textContent = p + (i < pieces.length - 1 ? '/' : '');
+      el.appendChild(s);
+      if (i < pieces.length - 1) el.appendChild(document.createElement('wbr'));
+    });
+    return el;
+  }
+
+  function linkify(el, text, plain) {
+    text = text == null ? '' : String(text);
+    var at = 0;
+    var m;
+    ADDRESS.lastIndex = 0;
+    while ((m = ADDRESS.exec(text))) {
+      var raw = trimAddress(m[0]);
+      var u = address(raw);
+      if (!u) continue;
+      if (m.index > at) el.appendChild(document.createTextNode(text.slice(at, m.index)));
+      var a = document.createElement(plain ? 'span' : 'a');
+      a.className = 'live-link';
+      if (!plain) a.href = u.href;
+      el.appendChild(shortAddress(a, u));
+      at = m.index + raw.length;
+      ADDRESS.lastIndex = at;
+    }
+    if (at < text.length) el.appendChild(document.createTextNode(text.slice(at)));
+    return el;
+  }
+
+  // ---- Folds ----------------------------------------------------------------
+  // A button that opens and shuts a panel, the panel's height easing open
+  // and shut (at once, for anyone who asks for less motion). The button
+  // carries aria-expanded and aria-controls; the panel is hidden while
+  // shut, so nothing in it can be reached, and is always open in print.
+  // opts.onChange(open) hears each change. Returns
+  // { open(quick), close(quick), isOpen() }.
+  var made = 0;
+  function uid(prefix) {
+    made += 1;
+    return prefix + '-' + made;
+  }
+
+  function fold(button, panel, opts) {
+    opts = opts || {};
+    if (!panel.id) panel.id = uid('live-fold');
+    panel.classList.add('live-fold');
+    button.setAttribute('aria-controls', panel.id);
+    var open = !panel.hidden;
+    var anim = null;
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    function set(on, quick) {
+      if (on === open) return;
+      open = on;
+      button.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (anim) {
+        anim.cancel();
+        anim = null;
+      }
+      if (quick || still() || !panel.animate) {
+        panel.hidden = !on;
+      } else if (on) {
+        panel.hidden = false;
+        anim = panel.animate([
+          { height: '0px', overflow: 'hidden' },
+          { height: panel.scrollHeight + 'px', overflow: 'hidden' }
+        ], { duration: 320, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)' });
+        anim.onfinish = function () { anim = null; };
+      } else {
+        anim = panel.animate([
+          { height: panel.offsetHeight + 'px', overflow: 'hidden' },
+          { height: '0px', overflow: 'hidden' }
+        ], { duration: 220, easing: 'ease-in' });
+        anim.onfinish = function () {
+          anim = null;
+          panel.hidden = true;
+        };
+      }
+      if (opts.onChange) opts.onChange(on);
+    }
+
+    button.addEventListener('click', function () { set(!open); });
+    return {
+      open: function (quick) { set(true, quick); },
+      close: function (quick) { set(false, quick); },
+      isOpen: function () { return open; }
+    };
+  }
+
+  // A chevron that turns when its fold opens.
+  function mark(cls) {
+    var s = document.createElement('span');
+    s.className = 'live-mark' + (cls ? ' ' + cls : '');
+    s.setAttribute('aria-hidden', 'true');
+    return s;
+  }
+
+  // ---- Chapters -------------------------------------------------------------
+  // A page in chapters that start closed: each a full-width button with
+  // the chapter's label, its opening line in italic and a mark at the
+  // right that turns when open. Opening one closes the others, keeping
+  // the chosen one where it was on the screen. A link to a chapter's
+  // address (#id) opens it and brings it into view; follow() does the
+  // same for the address the page was opened at, once it is showing.
+  //   list: [{ id, label, line, body: element, onOpen, onClose }]
+  // Returns { open(id, bring, quick), opened() -> id or null, follow(),
+  // destroy(), list: [{ id, label, el }] }.
+  function chapters(box, list) {
+    var items = list.map(function (c) {
+      var sec = document.createElement('section');
+      sec.className = 'live-chapter';
+      sec.id = c.id;
+      var head = document.createElement('h2');
+      head.className = 'live-chapter-head';
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'live-chapter-button';
+      var words = document.createElement('span');
+      words.className = 'live-chapter-words';
+      var label = document.createElement('span');
+      label.className = 'live-chapter-label';
+      linkify(label, c.label, true);
+      words.appendChild(label);
+      if (c.line) {
+        var line = document.createElement('span');
+        line.className = 'live-chapter-line';
+        linkify(line, c.line, true);
+        words.appendChild(line);
+      }
+      b.appendChild(words);
+      b.appendChild(mark('live-chapter-mark'));
+      head.appendChild(b);
+      var panel = document.createElement('div');
+      panel.className = 'live-chapter-body';
+      panel.hidden = true;
+      panel.appendChild(c.body);
+      sec.appendChild(head);
+      sec.appendChild(panel);
+      box.appendChild(sec);
+      var it = { id: c.id, label: c.label, el: sec, button: b, c: c };
+      it.fold = fold(b, panel, {
+        onChange: function (on) {
+          if (on) {
+            others(it);
+            if (c.onOpen) c.onOpen();
+          } else if (c.onClose) {
+            c.onClose();
+          }
+        }
+      });
+      return it;
+    });
+
+    function find(id) {
+      for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i];
+      return null;
+    }
+
+    // Close the rest at once, and keep the chosen chapter's button where
+    // it was on the screen (the browser may already have done so).
+    function others(it) {
+      var before = it.button.getBoundingClientRect().top;
+      items.forEach(function (o) {
+        if (o !== it && o.fold.isOpen()) o.fold.close(true);
+      });
+      var shift = it.button.getBoundingClientRect().top - before;
+      if (Math.abs(shift) > 1) window.scrollBy(0, shift);
+    }
+
+    function open(id, bring, quick) {
+      var it = find(id);
+      if (!it) return false;
+      it.fold.open(quick);
+      if (bring) it.el.scrollIntoView({ block: 'start', behavior: still() || quick ? 'auto' : 'smooth' });
+      return true;
+    }
+
+    function fromHash(bring, quick) {
+      var id = decodeURIComponent((location.hash || '').slice(1));
+      return id && find(id) ? open(id, bring, quick) : false;
+    }
+
+    // Links to a chapter, wherever they are: open it, and say so in the
+    // address without the browser's own jump.
+    function onClick(e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a || e.defaultPrevented || e.button > 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      var id = decodeURIComponent(a.getAttribute('href').slice(1));
+      if (!find(id)) return;
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, '', '#' + id);
+      open(id, true);
+    }
+    function onHash() { fromHash(true); }
+    document.addEventListener('click', onClick);
+    window.addEventListener('hashchange', onHash);
+
+    return {
+      list: items,
+      open: open,
+      follow: function () { return fromHash(true, true); },
+      opened: function () {
+        for (var i = 0; i < items.length; i++) if (items[i].fold.isOpen()) return items[i].id;
+        return null;
+      },
+      destroy: function () {
+        document.removeEventListener('click', onClick);
+        window.removeEventListener('hashchange', onHash);
+      }
+    };
+  }
+
+  // ---- One of several ---------------------------------------------------------
+  // Buttons of which one is chosen at a time, each showing its own words
+  // in one panel (the tabs pattern): the chosen one is aria-selected and
+  // alone in the tab order; arrow keys, Home and End move between them.
+  // Choosing calls opts.onSelect(i), which fills the panel. The buttons'
+  // parent is the tablist. Returns { select(i), current() }.
+  function tabs(buttons, panel, opts) {
+    opts = opts || {};
+    var cur = -1;
+    if (!panel.id) panel.id = uid('live-panel');
+    panel.setAttribute('role', 'tabpanel');
+    if (buttons[0] && buttons[0].parentNode) buttons[0].parentNode.setAttribute('role', 'tablist');
+    buttons.forEach(function (b, i) {
+      if (!b.id) b.id = uid('live-tab');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-controls', panel.id);
+      b.setAttribute('aria-selected', 'false');
+      b.tabIndex = i === 0 ? 0 : -1;
+      b.addEventListener('click', function () { select(i, true); });
+      b.addEventListener('keydown', function (e) {
+        var n = buttons.length;
+        var j = i;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % n;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i - 1 + n) % n;
+        else if (e.key === 'Home') j = 0;
+        else if (e.key === 'End') j = n - 1;
+        else return;
+        e.preventDefault();
+        buttons[j].focus();
+        select(j, true);
+      });
+    });
+
+    function select(i, byUser) {
+      if (!buttons[i]) return;
+      cur = i;
+      buttons.forEach(function (b, j) {
+        b.setAttribute('aria-selected', j === i ? 'true' : 'false');
+        b.tabIndex = j === i ? 0 : -1;
+        b.classList.toggle('is-current', j === i);
+      });
+      panel.setAttribute('aria-labelledby', buttons[i].id);
+      if (opts.onSelect) opts.onSelect(i, !!byUser);
+    }
+
+    return { select: select, current: function () { return cur; } };
+  }
+
+  // ---- A dial -----------------------------------------------------------------
+  // An hour drawn as a dial: n stations evenly round the rim, numbered
+  // clockwise from the top, an arc filling from the first round to the
+  // chosen one and a hand pointing at it. Each station is a button at
+  // least 44px across, one of several (tabs); previous and next buttons
+  // sit beneath. opts.onSelect(i) fills the panel, opts.name names the
+  // dial and opts.label(i) a station, for anyone who can't see it.
+  // Returns { el, select(i) }.
+  var RIM = 80;
+
+  function dial(n, panel, opts) {
+    opts = opts || {};
+    var box = document.createElement('div');
+    box.className = 'live-dial';
+    var face = document.createElement('div');
+    face.className = 'live-dial-face';
+    var art = svg('svg', 'live-dial-art');
+    art.setAttribute('viewBox', '0 0 200 200');
+    art.setAttribute('aria-hidden', 'true');
+    art.setAttribute('focusable', 'false');
+    var rim = svg('circle', 'live-dial-rim');
+    rim.setAttribute('cx', '100');
+    rim.setAttribute('cy', '100');
+    rim.setAttribute('r', String(RIM));
+    art.appendChild(rim);
+    // The arc: the whole rim from the top, clockwise, shown as far as the
+    // chosen station by its dash.
+    var arc = svg('path', 'live-dial-arc');
+    arc.setAttribute('d', 'M100 ' + (100 - RIM) + ' A' + RIM + ' ' + RIM + ' 0 1 1 99.99 ' + (100 - RIM));
+    arc.setAttribute('pathLength', '1');
+    art.appendChild(arc);
+    var hand = svg('line', 'live-dial-hand');
+    hand.setAttribute('x1', '100');
+    hand.setAttribute('y1', '100');
+    hand.setAttribute('x2', '100');
+    hand.setAttribute('y2', String(100 - RIM + 26));
+    art.appendChild(hand);
+    var hub = svg('circle', 'live-dial-hub');
+    hub.setAttribute('cx', '100');
+    hub.setAttribute('cy', '100');
+    hub.setAttribute('r', '4');
+    art.appendChild(hub);
+    face.appendChild(art);
+
+    var ring = document.createElement('div');
+    ring.className = 'live-dial-stations';
+    if (opts.name) ring.setAttribute('aria-label', opts.name);
+    var stations = [];
+    for (var i = 0; i < n; i++) {
+      var a = (-90 + i * 360 / n) * Math.PI / 180;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'live-dial-station';
+      b.style.left = (100 + RIM * Math.cos(a)) / 2 + '%';
+      b.style.top = (100 + RIM * Math.sin(a)) / 2 + '%';
+      var dot = document.createElement('span');
+      dot.className = 'live-dial-dot';
+      dot.textContent = String(i + 1);
+      b.appendChild(dot);
+      if (opts.label) b.setAttribute('aria-label', opts.label(i));
+      ring.appendChild(b);
+      stations.push(b);
+    }
+    face.appendChild(ring);
+    box.appendChild(face);
+
+    var steps = document.createElement('div');
+    steps.className = 'live-dial-steps';
+    var prev = document.createElement('button');
+    prev.type = 'button';
+    prev.className = 'live-step-button';
+    prev.textContent = opts.prev || 'Previous';
+    var next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'live-step-button';
+    next.textContent = opts.next || 'Next';
+    steps.appendChild(prev);
+    steps.appendChild(next);
+    box.appendChild(steps);
+
+    var t = tabs(stations, panel, {
+      onSelect: function (i, byUser) {
+        arc.style.strokeDashoffset = String(1 - i / n);
+        hand.style.transform = 'rotate(' + i * 360 / n + 'deg)';
+        stations.forEach(function (s, j) { s.classList.toggle('is-past', j < i); });
+        prev.disabled = i === 0;
+        next.disabled = i === n - 1;
+        if (opts.onSelect) opts.onSelect(i, byUser);
+      }
+    });
+    prev.addEventListener('click', function () { t.select(Math.max(0, t.current() - 1), true); });
+    next.addEventListener('click', function () { t.select(Math.min(n - 1, t.current() + 1), true); });
+    return { el: box, select: t.select };
+  }
+
+  // ---- Rows and tiles ---------------------------------------------------------
+  // Each item shows only its label; tapping opens its words beneath it
+  // (in place, for a tile). Several may be open at once. An item with no
+  // words beyond its label is shown as the label alone.
+  //   items: [{ label, body: element or null }]
+  function folds(items, cls) {
+    var list = document.createElement('div');
+    list.className = 'live-' + cls + 's';
+    items.forEach(function (it) {
+      var row = document.createElement('div');
+      row.className = 'live-' + cls;
+      if (!it.body) {
+        var only = document.createElement('p');
+        only.className = 'live-' + cls + '-button';
+        linkify(only, it.label);
+        row.appendChild(only);
+        list.appendChild(row);
+        return;
+      }
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'live-' + cls + '-button';
+      var label = document.createElement('span');
+      label.className = 'live-' + cls + '-label';
+      linkify(label, it.label, true);
+      b.appendChild(label);
+      b.appendChild(mark());
+      var panel = document.createElement('div');
+      panel.className = 'live-' + cls + '-body';
+      panel.hidden = true;
+      panel.appendChild(it.body);
+      row.appendChild(b);
+      row.appendChild(panel);
+      list.appendChild(row);
+      fold(b, panel);
+    });
+    return list;
+  }
+
+  function rows(items) { return folds(items, 'row'); }
+  function tiles(items) { return folds(items, 'tile'); }
+
+  // ---- A swipe ----------------------------------------------------------------
+  // A sideways swipe across el calls onLeft or onRight; an up-and-down one
+  // is left to scroll the page.
+  function swipe(el, onLeft, onRight) {
+    var s = null;
+    el.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      s = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId };
+    });
+    function end(e) {
+      if (!s || e.pointerId !== s.id) return;
+      var dx = e.clientX - s.x;
+      var dy = e.clientY - s.y;
+      var quick = Date.now() - s.t < 900;
+      s = null;
+      if (e.type !== 'pointerup' || !quick || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (dx < 0) onLeft();
+      else onRight();
+    }
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+
+  // ---- Counting up --------------------------------------------------------------
+  // A number counted up from 0 into el over ms (about a second); simply
+  // shown, for anyone who asks for less motion.
+  function countUp(el, to, ms) {
+    if (el.liveCount) cancelAnimationFrame(el.liveCount);
+    el.liveCount = 0;
+    if (still() || !(to > 0)) {
+      el.textContent = String(to);
+      return;
+    }
+    ms = ms || 1000;
+    var start = null;
+    function tick(ts) {
+      if (start == null) start = ts;
+      var k = Math.min(1, (ts - start) / ms);
+      el.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 3))));
+      el.liveCount = k < 1 ? requestAnimationFrame(tick) : 0;
+    }
+    el.textContent = '0';
+    el.liveCount = requestAnimationFrame(tick);
+  }
+
+  // ---- The bar ------------------------------------------------------------------
+  // A slim bar fixed to the foot of the screen once opts.after has
+  // scrolled out of view: a dot for each chapter (the one in view filled;
+  // a tap goes there) and one action. It hides while any of opts.hideWhile
+  // is in view, and while a field in opts.form has the keyboard. The page
+  // gains bottom padding to match, so the bar never covers its last line.
+  //   items: [{ label, el, go() }]   action: { label, href }
+  // Returns { items(list) }.
+  function bar(opts) {
+    var el = document.createElement('nav');
+    el.className = 'live-bar';
+    if (opts.name) el.setAttribute('aria-label', opts.name);
+    var inner = document.createElement('div');
+    inner.className = 'live-bar-inner';
+    var dots = document.createElement('div');
+    dots.className = 'live-bar-dots';
+    inner.appendChild(dots);
+    if (opts.action) {
+      var act = document.createElement('a');
+      act.className = 'live-bar-action';
+      act.href = opts.action.href;
+      act.textContent = opts.action.label;
+      inner.appendChild(act);
+    }
+    el.appendChild(inner);
+    document.body.appendChild(el);
+    document.body.classList.add('has-live-bar');
+
+    var list = [];
+    var buttons = [];
+    var past = false;
+    var blocked = {};
+    var typing = false;
+    var raf = 0;
+
+    function sync() {
+      var shown = past && !typing && list.length > 0 && !Object.keys(blocked).some(function (k) { return blocked[k]; });
+      el.classList.toggle('is-shown', shown);
+      if (shown) el.removeAttribute('inert');
+      else el.setAttribute('inert', '');
+    }
+
+    // The chapter in view: the one across a line 40% down the screen.
+    function where() {
+      raf = 0;
+      var line = window.innerHeight * 0.4;
+      var cur = -1;
+      list.forEach(function (it, i) {
+        var r = it.el.getBoundingClientRect();
+        if (r.top <= line && r.bottom > line) cur = i;
+      });
+      buttons.forEach(function (b, i) {
+        b.classList.toggle('is-current', i === cur);
+        if (i === cur) b.setAttribute('aria-current', 'true');
+        else b.removeAttribute('aria-current');
+      });
+    }
+    function soon() {
+      if (!raf) raf = requestAnimationFrame(where);
+    }
+    window.addEventListener('scroll', soon, { passive: true });
+    window.addEventListener('resize', soon);
+
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) {
+        var e = es[es.length - 1];
+        past = !e.isIntersecting && e.boundingClientRect.bottom <= 0;
+        sync();
+      }).observe(opts.after);
+      (opts.hideWhile || []).forEach(function (w, i) {
+        new IntersectionObserver(function (es) {
+          blocked[i] = es[es.length - 1].isIntersecting;
+          sync();
+        }).observe(w);
+      });
+    }
+    if (opts.form) {
+      opts.form.addEventListener('focusin', function (e) {
+        if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
+          typing = true;
+          sync();
+        }
+      });
+      opts.form.addEventListener('focusout', function () {
+        typing = false;
+        sync();
+      });
+    }
+
+    return {
+      el: el,
+      items: function (next) {
+        list = next || [];
+        dots.textContent = '';
+        buttons = list.map(function (it) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'live-bar-dot';
+          b.setAttribute('aria-label', it.label);
+          b.appendChild(document.createElement('span'));
+          b.addEventListener('click', function () { it.go(); });
+          dots.appendChild(b);
+          return b;
+        });
+        sync();
+        soon();
       }
     };
   }
@@ -1082,6 +1699,16 @@
     count: count,
     drawLine: drawLine,
     timeline: timeline,
+    linkify: linkify,
+    fold: fold,
+    chapters: chapters,
+    tabs: tabs,
+    dial: dial,
+    rows: rows,
+    tiles: tiles,
+    swipe: swipe,
+    countUp: countUp,
+    bar: bar,
     scene: scene
   };
 })();

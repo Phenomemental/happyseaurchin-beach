@@ -132,6 +132,14 @@
     });
   }
 
+  // A note's words; web addresses in them are shown short, as links, when
+  // the page has live.js (which sets them by textContent and href only).
+  function noteWords(el, s) {
+    el.textContent = '';
+    if (window.Live && window.Live.linkify) window.Live.linkify(el, s);
+    else el.textContent = s;
+  }
+
   // One note: who and when, then its words. A very long note shows its
   // opening, with the rest a tap away.
   var LONG = 700;
@@ -153,19 +161,19 @@
     var full = c.text.trim();
     if (full.length > LONG) {
       var cut = full.lastIndexOf(' ', 500);
-      t.textContent = full.slice(0, cut > 300 ? cut : 500) + '\u2026';
+      noteWords(t, full.slice(0, cut > 300 ? cut : 500) + '\u2026');
       var more = document.createElement('button');
       more.type = 'button';
       more.className = 'comment-more';
       more.textContent = 'Read all';
       more.addEventListener('click', function () {
-        t.textContent = full;
+        noteWords(t, full);
         more.remove();
       });
       div.appendChild(t);
       div.appendChild(more);
     } else {
-      t.textContent = full;
+      noteWords(t, full);
       div.appendChild(t);
     }
     return div;
