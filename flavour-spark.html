@@ -331,6 +331,28 @@
   #thread {
     margin: 1.6rem 0 0;
   }
+
+  /* What readers wrote beside the block, on the walk page. */
+  #answers {
+    margin: 0 0 1.6rem;
+  }
+  .answers-where {
+    font-style: italic;
+    text-align: center;
+    margin: 0 0 1rem;
+  }
+  .answer-on {
+    font-style: italic;
+    color: var(--ink);
+  }
+  .answers-note {
+    font-style: italic;
+    color: var(--muted);
+    margin: 0;
+  }
+  #answer-list > .answers-note {
+    text-align: center;
+  }
   .provenance {
     font-size: 0.9rem;
     line-height: 1.5;
@@ -353,8 +375,9 @@
   </nav>
 
   <div class="sheet">
-    <!-- Every word below is read live from the beach (spine:flavour-spark);
-         nothing of the page itself is kept here. -->
+    <!-- Every word below is read live from the beach (spine:flavour-spark,
+         and the readers' flavour-spark:<handle> blocks); nothing of the
+         page itself is kept here. -->
     <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
 
     <div id="doc" hidden>
@@ -368,6 +391,13 @@
 
     <section id="respond" hidden>
       <h2>Respond</h2>
+
+      <!-- Readers who answer on the walk page write into a block of their
+           own, flavour-spark:<handle>; their words are read live from there. -->
+      <div id="answers">
+        <p class="answers-where">Answers written on <a href="https://happyseaurchin.com/walk/flavour-spark">the walk page</a> appear here too.</p>
+        <div id="answer-list" aria-live="polite"></div>
+      </div>
 
       <form id="note-form">
         <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
@@ -404,6 +434,11 @@
   var text = Beach.text;
   var SPINE = 'spine:flavour-spark';
   var ROOM = 'pool:flavour-spark';
+  // Each reader who answers on the walk page has a block named this and
+  // their handle.
+  var READERS = 'flavour-spark:';
+  var UNREAD_INDEX = 'The answers written on the walk page couldn’t be read from the beach just now.';
+  var UNREAD_READER = 'Couldn’t be read from the beach just now.';
   // Blocks left out of the live strip.
   var UNSHOWN = /^(grain|vault|ledger|history):/;
   var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
@@ -412,9 +447,14 @@
   var status = document.getElementById('status');
   var form = document.getElementById('note-form');
   var thread = document.getElementById('thread');
+  var answerList = document.getElementById('answer-list');
   var loaded = false;
   var lastSig = null;
   var stripSig = null;
+  var answersSig = null;
+  var answersShown = false;
+  // Each reader's block as last read: name -> { touched, block }.
+  var readers = {};
 
   function el(tag, cls, s) {
     var e = document.createElement(tag);
@@ -680,6 +720,128 @@
     strip.appendChild(ol);
   }
 
+  // ---- What readers wrote beside the block -------------------------------
+  // A reader's block, flavour-spark:<handle>: its "_" says what the block
+  // is, and each numbered entry is their words on the part of the spine
+  // at the same number, nested numbers going deeper the same way.
+
+  // Every reader's block named in the index, as [{ handle, block }], or
+  // { handle, unread: true } for one that can't be read. A block whose
+  // time in the index hasn't moved is kept from the last read, and so is
+  // one that was read before but can't be read this time. null if the
+  // index itself can't be read.
+  function readAnswers(idx) {
+    return idx.then(function (ix) {
+      if (!ix || !Array.isArray(ix.blocks)) return null;
+      var touched = ix.touched && typeof ix.touched === 'object' ? ix.touched : {};
+      var had = readers;
+      readers = {};
+      return Promise.all(ix.blocks.filter(function (b) {
+        return typeof b === 'string' && b.indexOf(READERS) === 0 && b.length > READERS.length;
+      }).map(function (name) {
+        var handle = name.slice(READERS.length);
+        var t = touched[name] || '';
+        var last = had[name];
+        if (last && t && last.touched === t) {
+          readers[name] = last;
+          return { handle: handle, block: last.block };
+        }
+        return Beach.get(name).then(function (block) {
+          readers[name] = { touched: t, block: block };
+          return { handle: handle, block: block };
+        }, function () {
+          if (!last) return { handle: handle, unread: true };
+          readers[name] = { touched: '', block: last.block };
+          return { handle: handle, block: last.block };
+        });
+      }));
+    }, function () { return null; });
+  }
+
+  // A reader's entries in number order, each with the label of the part
+  // it answers: the spine's line at the same number, or the number itself
+  // where the spine has no line there.
+  function answers(node, spine, addr, out) {
+    out = out || [];
+    if (!node || typeof node !== 'object') return out;
+    for (var i = 1; i <= 9; i++) {
+      var n = node[String(i)];
+      var s = spine && typeof spine === 'object' ? spine[String(i)] : null;
+      var a = addr ? addr + '.' + i : String(i);
+      var said = own(n);
+      var line = own(s);
+      if (said) out.push({ label: line ? split(line).label : a, text: said });
+      answers(n, s, a, out);
+    }
+    return out;
+  }
+
+  // A reader's words; a very long answer shows its opening, with the rest
+  // a tap away, as the room's notes do.
+  function words(div, s) {
+    var t = el('p', 'comment-text');
+    div.appendChild(t);
+    if (s.length <= 700) {
+      t.textContent = s;
+      return;
+    }
+    var cut = s.lastIndexOf(' ', 500);
+    t.textContent = s.slice(0, cut > 300 ? cut : 500) + '…';
+    var more = el('button', 'comment-more', 'Read all');
+    more.type = 'button';
+    more.addEventListener('click', function () {
+      t.textContent = s;
+      more.remove();
+    });
+    div.appendChild(more);
+  }
+
+  // Each entry as the reader's handle, the part it answers and their
+  // words. Drawn again only when something in them has changed. When the
+  // index can't be read, what was last read stays; if nothing has been
+  // read yet, one line says so.
+  function renderAnswers(spine, list) {
+    var rows = null;
+    if (list) {
+      rows = [];
+      list.forEach(function (r) {
+        if (r.unread) return rows.push({ who: r.handle, unread: true });
+        answers(r.block, spine).forEach(function (a) {
+          rows.push({ who: r.handle, label: a.label, text: a.text });
+        });
+      });
+    } else if (answersShown) {
+      return;
+    }
+    var sig = JSON.stringify(rows);
+    if (sig === answersSig) return;
+    answersSig = sig;
+    answerList.textContent = '';
+    if (!rows) {
+      answerList.appendChild(el('p', 'answers-note', UNREAD_INDEX));
+      return;
+    }
+    answersShown = true;
+    if (!rows.length) {
+      answerList.appendChild(el('p', 'answers-note', 'No answers yet.'));
+      return;
+    }
+    rows.forEach(function (r) {
+      var div = el('div', 'comment answer');
+      var meta = el('p', 'comment-meta');
+      meta.appendChild(el('strong', null, r.who));
+      div.appendChild(meta);
+      if (r.unread) {
+        div.appendChild(el('p', 'answers-note', UNREAD_READER));
+      } else {
+        meta.appendChild(document.createTextNode(' on '));
+        meta.appendChild(el('span', 'answer-on', r.label));
+        words(div, r.text);
+      }
+      answerList.appendChild(div);
+    });
+  }
+
   // A note someone cleared has no words left. Leave it out, with its name
   // and time, so it doesn't show as a blank note.
   function withoutCleared(node) {
@@ -702,14 +864,21 @@
   }
 
   var refresh = Beach.live(function () {
+    var spine = Beach.get(SPINE);
+    var idx = Beach.index();
     return Promise.all([
       Promise.all([
-        Beach.get(SPINE),
-        Beach.index().catch(function () { return null; })
+        spine,
+        idx.catch(function () { return null; })
       ]).then(function (r) {
         if (!render(r[0])) throw new Error('nothing to show');
         renderStrip(r[1]);
       }),
+      // The answers take their labels from the block, so they wait for it;
+      // if the block can't be read, the page already says so.
+      Promise.all([spine, readAnswers(idx)]).then(function (r) {
+        renderAnswers(r[0], r[1]);
+      }, function () {}),
       // The page still shows if the room can't be read.
       Beach.get(ROOM).then(function (pool) {
         Beach.renderThread(thread, withoutCleared(pool));
