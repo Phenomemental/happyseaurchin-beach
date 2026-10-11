@@ -30,10 +30,11 @@
   }
 
   // The beach's front door: every block's name ("blocks"), and when each
-  // last changed ("touched").
+  // last changed ("touched"). It carries the shared clock too.
   function index() {
     return fetch(BEACH, { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
+      readClock(r.headers.get('X-Pscale-Now'));
       return r.json();
     });
   }

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-09-29a">
-<link rel="stylesheet" href="live.css?v=2026-10-11b">
+<link rel="stylesheet" href="live.css?v=2026-10-11c">
 <style>
   html {
     scroll-behavior: smooth;
@@ -32,15 +32,117 @@
     color: var(--muted);
     margin: 1.6rem 0 0;
   }
-  .title-count {
-    margin: 0.9rem 0 0;
+
+  /* The opening scene: the sheet's full width from its top edge, about
+     70% of the window tall, the title over the sky. */
+  .scene {
+    height: 70vh;
+    height: clamp(420px, 70vh, 640px);
+    margin: -2.5rem -1.5rem 0;
   }
-  .lede {
-    font-size: 1.3rem;
-    line-height: 1.5;
+  .scene-title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 13%;
+    z-index: 1;
+    padding: 0 1.2rem;
+    color: #f4e9d8;
+    text-shadow: 0 1px 14px rgba(20, 8, 24, 0.7);
+    pointer-events: none;
+  }
+  /* Under the sky: the words for a bird (a line kept for them), the
+     block's line for part 3, and how much moved. */
+  .scene-say {
+    min-height: 1.4em;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    margin: 0.7rem 0 0;
+  }
+  .scene-line {
+    font-style: italic;
+    font-size: 1.45rem;
+    line-height: 1.3;
+    margin: 0.5rem 0 0;
+  }
+  .scene-count {
+    font-size: 0.95rem;
+    color: var(--muted);
+    font-variant-numeric: lining-nums;
+    margin: 0.2rem 0 0;
+  }
+
+  /* Four ways in, under the scene. */
+  .ways {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.3rem 0 0;
+  }
+  .way,
+  .ways .live-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    font: inherit;
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    font-variant-numeric: lining-nums;
+    line-height: 1.25;
+    color: var(--crimson);
+    background: transparent;
+    border: 1px solid var(--crimson);
+    border-radius: 2px;
+    padding: 0.3rem 0.9rem;
+    cursor: pointer;
+  }
+  .way:hover {
+    border-bottom-color: var(--crimson);
+    background: var(--paper);
+  }
+  .way-act,
+  .way-act:hover {
+    color: var(--page);
+    background: var(--crimson);
+  }
+  .way-act:hover {
+    opacity: 0.9;
+  }
+  .way-quiet,
+  .way-quiet:hover {
+    border-color: transparent;
+    background: transparent;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .way-quiet:hover,
+  .way-quiet[aria-expanded="true"] {
+    color: var(--ink);
+  }
+  .way:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  #trail,
+  #note-form {
+    scroll-margin-top: 1rem;
+  }
+
+  /* The welcome, opened in place by "What is this?". */
+  .welcome {
     text-align: left;
     max-width: 30rem;
-    margin: 0 auto;
+    background: var(--paper);
+    border-left: 3px solid var(--crimson);
+    padding: 0.9rem 1rem;
+    margin: 0.9rem auto 0;
+  }
+  .lede {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin: 0;
   }
   .part > h3 {
     font-weight: 500;
@@ -252,7 +354,6 @@
     font-size: 0.95rem;
     white-space: nowrap;
   }
-  .live-still,
   .live-unread {
     font-size: 1rem;
     font-style: italic;
@@ -426,6 +527,7 @@
   }
   @media (min-width: 560px) {
     h1 { font-size: 3rem; }
+    .scene { margin: -3rem -3rem 0; }
   }
 </style>
 </head>
@@ -442,13 +544,27 @@
     <!-- Every word below is read live from the beach (spine:flavour-spark,
          and the readers' flavour-spark:<handle> blocks); nothing of the
          page itself is kept here. -->
+    <!-- The opening scene: a sky at dusk over water, a bird for each
+         thing that moved on the beach in the last hour and one for you.
+         The sky is drawn by the stylesheet, so it shows at once. -->
+    <div class="scene live-scene" id="scene">
+      <h1 class="scene-title" id="title"></h1>
+    </div>
+    <p class="scene-say" id="scene-say" aria-live="polite"></p>
+    <p class="scene-line" id="scene-line" hidden></p>
+    <p class="scene-count" id="scene-count" hidden></p>
+
     <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
 
     <div id="doc" hidden>
-      <h1 id="title"></h1>
-      <p class="title-count" id="title-count"></p>
-      <hr class="rule">
-      <p class="lede" id="lede"></p>
+      <nav class="ways" id="ways" aria-label="Ways in">
+        <a class="way" id="way-made" href="#trail" hidden>How this was made</a>
+        <a class="way way-act" href="#note-form">Respond now</a>
+        <button class="way way-quiet" id="way-what" type="button" aria-expanded="false" aria-controls="welcome" hidden>What is this?</button>
+      </nav>
+      <div class="welcome" id="welcome" hidden>
+        <p class="lede" id="lede"></p>
+      </div>
       <div id="parts"></div>
     </div>
 
@@ -493,8 +609,8 @@
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-11a"></script>
-<script src="live.js?v=2026-10-11b"></script>
+<script src="beach.js?v=2026-10-11c"></script>
+<script src="live.js?v=2026-10-11c"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -507,6 +623,7 @@
   var UNREAD_READER = 'Couldn’t be read from the beach just now.';
   var UNREAD_ROOM = 'The notes left here couldn’t be read from the beach just now.';
   var UNREAD_STRIP = 'What has moved on the beach couldn’t be read just now.';
+  var UNREACHED = 'The beach can’t be reached just now.';
   // Blocks left out of the live strip.
   var UNSHOWN = /^(grain|vault|ledger|history):/;
   var HOUR = 3600000;
@@ -553,45 +670,64 @@
     return isNaN(t) ? Date.now() : t;
   }
 
-  // How many have responded: the notes in the room, replies too, and the
-  // entries in every reader's block. One count, shown under the title and
-  // on step two, kept from one drawing to the next.
-  var responses = Live.count('#respond', function (n) {
-    if (n == null) return 'Read responses';
-    return 'Read ' + n + (n === 1 ? ' response' : ' responses');
-  });
-  var countOnLadder = responses.make();
-  document.getElementById('title-count').appendChild(responses.make());
-  // Both halves of the count, as last read; null until read.
-  var roomNotes = null;
-  var readerEntries = null;
+  // Every name in the index as last read, for saying what moved.
+  var present = {};
 
-  // The live strip is kept from one drawing to the next, and put back in
-  // its place after position 3.5 each time the block is drawn: a flock of
-  // what has moved in the last hour, then the latest few by name.
-  var strip = el('div', 'live-strip');
-  strip.hidden = true;
-  var flock = extra(function () {
-    return Live.flock({
-      height: 160,
+  // ---- The opening scene -------------------------------------------------
+  // The sky is there at once (the stylesheet draws it), and the reader's
+  // bird flies in now; the flock arrives as the index is read.
+  var sceneSay = document.getElementById('scene-say');
+  var sceneLine = document.getElementById('scene-line');
+  var sceneCount = document.getElementById('scene-count');
+  var scene = extra(function () {
+    return Live.scene(document.getElementById('scene'), {
+      caption: sceneSay,
+      me: 'You, looking now',
       label: function (n) {
-        return n + (n === 1 ? ' block' : ' blocks') + ' moved on the beach in the last hour';
+        return n + (n === 1 ? ' bird' : ' birds') + ' for what moved on the beach in the last hour, and one for you';
       },
       say: function (b) {
         return [Live.moved(b.id, present), Live.ago(beachNow() - b.when), b.id];
       }
     });
   });
-  // Every name in the index as last read, for saying what moved.
-  var present = {};
-  var stripStill = el('p', 'live-still', 'Nothing has moved on the beach in the last hour.');
-  stripStill.hidden = true;
+  if (scene && Live.recall(LEFT_NOTE)) scene.ring(true);
+  // Every block's touched time as the scene last read it, to tell what
+  // has newly moved; null before the first read.
+  var sceneTouched = null;
+
+  // How many have responded: the notes in the room, replies too, and the
+  // entries in every reader's block. One count, shown among the ways in
+  // and on step two, kept from one drawing to the next.
+  var responses = Live.count('#respond', function (n) {
+    if (n == null) return 'Read responses';
+    return 'Read ' + n + (n === 1 ? ' response' : ' responses');
+  });
+  var countOnLadder = responses.make();
+  var wayMade = document.getElementById('way-made');
+  wayMade.parentNode.insertBefore(responses.make(), wayMade.nextSibling);
+  // Both halves of the count, as last read; null until read.
+  var roomNotes = null;
+  var readerEntries = null;
+
+  // "What is this?" opens the welcome in place, and closes it.
+  var wayWhat = document.getElementById('way-what');
+  var welcome = document.getElementById('welcome');
+  wayWhat.addEventListener('click', function () {
+    var open = welcome.hidden;
+    welcome.hidden = !open;
+    wayWhat.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  // The live strip is kept from one drawing to the next, and put back in
+  // its place after position 3.5 each time the block is drawn: the latest
+  // few things to move, in plain words.
+  var strip = el('div', 'live-strip');
+  strip.hidden = true;
   var stripList = el('div');
   stripList.setAttribute('aria-live', 'polite');
   var stripUnread = el('p', 'live-unread', UNREAD_STRIP);
   stripUnread.hidden = true;
-  if (flock) strip.appendChild(flock.el);
-  strip.appendChild(stripStill);
   strip.appendChild(stripList);
   strip.appendChild(stripUnread);
 
@@ -600,8 +736,10 @@
   var stepTwo = null;
   var ladderDrawn = false;
   var stopDrawing = null;
-  // The line of time over the trail, as last drawn.
+  // The line of time over the trail, as last drawn, and the minutes from
+  // the trail's first moment to its last.
   var trailLine = null;
+  var madeIn = null;
 
   // A node's own words: a string, or its "_". When the beach has nested
   // older entries under "_", the words are further down it.
@@ -671,8 +809,9 @@
   // A heading from the label, the body beneath it.
   function heading(parent, s, tag) {
     var p = split(s);
-    parent.appendChild(el(tag || 'h2', null, p.label));
+    var h = parent.appendChild(el(tag || 'h2', null, p.label));
     if (p.body) parent.appendChild(el('p', 'part-intro', p.body));
+    return h;
   }
 
   // The label as a bold lead-in, the body after it.
@@ -791,6 +930,7 @@
     var trailNode = node['1'];
     var moments = walk(trailNode);
     var mins = span(moments);
+    madeIn = mins;
     if (mins != null) {
       var fig = el('div', 'spark-figure');
       fig.appendChild(el('span', 'spark-num', String(mins)));
@@ -799,7 +939,7 @@
       sec.appendChild(fig);
     }
     var tt = own(trailNode);
-    if (tt) heading(sec, tt, 'h3');
+    var trailStart = tt ? heading(sec, tt, 'h3') : null;
     if (trailLine) trailLine.destroy();
     trailLine = null;
     if (moments.length) {
@@ -833,6 +973,9 @@
       }
       sec.appendChild(ol);
     }
+    // Where "How this was made" leads.
+    var trailAt = trailStart || sec.querySelector('.live-time, .trail');
+    if (trailAt) trailAt.id = 'trail';
 
     var whoNode = node['2'];
     var wt = own(whoNode);
@@ -875,12 +1018,22 @@
     var r = split(root);
     document.getElementById('title').textContent = r.label;
     document.title = r.label;
-    var lede = document.getElementById('lede');
+    // The welcome lives inside "What is this?", without its last sentence
+    // when that only says where this page is.
     var opening = withoutOwnAddress(r.body);
-    lede.textContent = opening;
-    lede.hidden = !opening;
+    document.getElementById('lede').textContent = opening;
+    wayWhat.hidden = !opening;
+    if (!opening) {
+      welcome.hidden = true;
+      wayWhat.setAttribute('aria-expanded', 'false');
+    }
+    // Under the sky: the label of part 3's opening line.
+    var three = split(own(spine['3']) || '').label;
+    sceneLine.textContent = three;
+    sceneLine.hidden = !three;
 
     var frag = document.createDocumentFragment();
+    madeIn = null;
     [ladder(spine['1']), list(spine['2']), list(spine['3'], 5), experiment(spine['4']), list(spine['5'])]
       .forEach(function (sec) {
         if (!sec) return;
@@ -889,23 +1042,20 @@
       });
     partsBox.textContent = '';
     partsBox.appendChild(frag);
+    // "How this was made", with the minutes the trail took, when there
+    // is a trail to go to.
+    wayMade.textContent = 'How this was made' + (madeIn != null ? ' · ' + madeIn + (madeIn === 1 ? ' minute' : ' minutes') : '');
+    wayMade.hidden = !document.getElementById('trail');
     renderProvenance(own(spine['9']));
     return true;
   }
 
-  // ---- The live strip ----------------------------------------------------
-  // A bird for every block touched in the last hour (up to forty), then
-  // the eight blocks touched most recently, newest first, each said in
-  // plain words with the block's name as its title. If the
-  // index can't be read, one line says so, beneath whatever was read
-  // before.
-  function renderStrip(idx) {
-    var read = !!(idx && Array.isArray(idx.blocks));
-    stripUnread.hidden = read;
-    strip.hidden = false;
-    if (!read) return;
+  // ---- What moved on the beach -------------------------------------------
+  // From the index: every block that shows (the strip and the sky leave
+  // out grain, vault, ledger and history blocks) with when it last moved,
+  // newest first. The names on the beach are kept for saying what moved.
+  function movements(idx) {
     var touched = idx.touched && typeof idx.touched === 'object' ? idx.touched : {};
-    var now = beachNow();
     present = {};
     idx.blocks.forEach(function (b) {
       if (typeof b === 'string') present[b] = true;
@@ -915,17 +1065,52 @@
     }).sort(function (a, b) {
       return Date.parse(touched[b]) - Date.parse(touched[a]);
     });
+    return { touched: touched, moved: moved };
+  }
 
-    var hour = moved.filter(function (b) {
-      return now - Date.parse(touched[b]) < HOUR;
-    }).slice(0, FLOCK_MAX).map(function (b) {
-      return { id: b, when: Date.parse(touched[b]) };
+  // The sky: a bird for each block that moved in the last hour (up to
+  // forty), and a line saying how many moved. A block that has moved
+  // since the last read is fresh: a new bird flies in for it, and the
+  // caption says it. If the index can't be read, the reader's bird is
+  // alone and one line says the beach can't be reached.
+  function renderScene(idx) {
+    if (!idx || !Array.isArray(idx.blocks)) {
+      if (scene) extra(function () { scene.set([]); });
+      sceneCount.textContent = UNREACHED;
+      sceneCount.hidden = false;
+      return;
+    }
+    var m = movements(idx);
+    var now = beachNow();
+    var hour = m.moved.filter(function (b) {
+      return now - Date.parse(m.touched[b]) < HOUR;
     });
-    if (flock) extra(function () { flock.set(hour); });
-    stripStill.hidden = hour.length > 0;
+    var before = sceneTouched;
+    var list = hour.slice(0, FLOCK_MAX).map(function (b) {
+      return { id: b, when: Date.parse(m.touched[b]), fresh: !!before && before[b] !== m.touched[b] };
+    });
+    sceneTouched = {};
+    Object.keys(m.touched).forEach(function (b) { sceneTouched[b] = m.touched[b]; });
+    if (scene) extra(function () { scene.set(list); });
+    var n = hour.length;
+    sceneCount.textContent = n ? n + (n === 1 ? ' thing' : ' things') + ' moved on the beach in the last hour'
+      : 'Nothing moved on the beach in the last hour';
+    sceneCount.hidden = false;
+  }
 
-    var latest = moved.slice(0, 8).map(function (b) {
-      return { name: b, said: Live.moved(b, present), ago: Live.ago(now - Date.parse(touched[b])) };
+  // ---- The live strip ----------------------------------------------------
+  // The eight blocks touched most recently, newest first, each said in
+  // plain words with the block's name as its title. If the index can't
+  // be read, one line says so, beneath whatever was read before.
+  function renderStrip(idx) {
+    var read = !!(idx && Array.isArray(idx.blocks));
+    stripUnread.hidden = read;
+    strip.hidden = false;
+    if (!read) return;
+    var m = movements(idx);
+    var now = beachNow();
+    var latest = m.moved.slice(0, 8).map(function (b) {
+      return { name: b, said: Live.moved(b, present), ago: Live.ago(now - Date.parse(m.touched[b])) };
     });
     var sig = JSON.stringify(latest);
     if (sig === stripSig) return;
@@ -1138,6 +1323,10 @@
     });
     return Promise.all([
       drawn,
+      // The sky waits for nothing but the index.
+      idx.then(renderScene, function () {
+        renderScene(null);
+      }),
       // The strip sits inside the block's part 3, and tells time by the
       // clock the block came with, so it waits for the block.
       Promise.all([drawn.catch(function () {}), idx]).then(function (r) {
@@ -1163,11 +1352,13 @@
     });
   }, document.getElementById('live-note'), show, '');
 
-  // After a note is sent: this device remembers it, step two fills, and
-  // the room is read again so the note appears at once.
+  // After a note is sent: this device remembers it, step two fills, the
+  // reader's bird gains its ring, and the room is read again so the note
+  // appears at once.
   Beach.wireNoteForm(form, ROOM, function () {
     Live.remember(LEFT_NOTE, new Date().toISOString());
     markResponded();
+    if (scene) scene.ring(true);
     return refresh();
   });
 })();

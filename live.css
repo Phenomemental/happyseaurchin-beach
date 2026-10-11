@@ -155,44 +155,54 @@
   outline-offset: -2px;
 }
 
-/* A flock: a strip of sky, and the words for the bird last tapped. */
-.live-flock {
+/* A scene: a sky at dusk over water. The sky is this background, deep
+   plum overhead down to an ember glow at the horizon, 78% down, in the
+   page's pink, so it shows before any script runs. The canvas over it
+   carries the birds and the shimmer on the water. */
+.live-scene {
   position: relative;
-  margin: 0.2rem 0 0.5rem;
+  overflow: hidden;
+  background-color: #1a0d20;
+  background-image:
+    radial-gradient(ellipse 80% 24% at 50% 78%, rgba(240, 120, 110, 0.45), rgba(240, 120, 110, 0) 70%),
+    linear-gradient(to bottom, #1a0d20 0%, #2b1232 30%, #48193f 55%, #8a2648 68%, #d9466a 75%, #f3957d 77.7%, #2c1231 78.1%, #1e0e24 87%, #120914 100%);
+  background-image:
+    radial-gradient(ellipse 80% 24% at 50% 78%, color-mix(in srgb, color-mix(in srgb, var(--crimson) 60%, #ffb37a) 50%, transparent), transparent 70%),
+    linear-gradient(to bottom,
+      #1a0d20 0%,
+      #2b1232 30%,
+      #48193f 55%,
+      color-mix(in srgb, var(--crimson) 45%, #48193f) 68%,
+      color-mix(in srgb, var(--crimson) 82%, #ff9a66) 75%,
+      color-mix(in srgb, var(--crimson) 45%, #ffc08a) 77.7%,
+      #2c1231 78.1%,
+      #1e0e24 87%,
+      #120914 100%);
 }
-.live-flock-sky {
+/* The birds' canvas: a drag across it moves the birds, a drag up or down
+   scrolls the page. */
+.live-scene-sky {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
+  height: 100%;
   cursor: pointer;
-  touch-action: manipulation;
-  border-radius: 2px;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
-.live-flock-sky:focus-visible {
-  outline: 2px solid var(--crimson);
-  outline-offset: 2px;
+.live-scene-sky:focus-visible {
+  outline: 2px solid #f2e7d4;
+  outline-offset: -4px;
 }
-.live-flock-say {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  max-width: 100%;
-  font-size: 0.95rem;
-  line-height: 1.35;
-  margin: 0;
-  padding: 0.15rem 0.5rem 0.15rem 0;
-  background: var(--paper);
-  overflow-wrap: break-word;
-  pointer-events: none;
-}
-.live-flock-say:empty {
-  display: none;
-}
-/* The name can be pointed at, to show the block's own name. */
-.live-flock-name {
+/* The words for a bird, under the sky. The name can be pointed at, to
+   show the block's own name. */
+.live-scene-name {
   font-weight: 600;
-  pointer-events: auto;
 }
-.live-flock-ago {
+.live-scene-ago {
   font-style: italic;
   color: var(--muted);
   white-space: nowrap;
