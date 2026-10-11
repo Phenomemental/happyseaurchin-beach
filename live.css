@@ -1,0 +1,205 @@
+/* What lets a reader see, and touch, that a page is live (live.js). The
+   colours are the page's own, from beach.css. Every animation here stops
+   for anyone who asks their device for less motion. */
+
+/* A count to tap: a quiet outlined button in the accent. However small
+   it looks, the area that takes a tap is never under 44px tall. */
+.live-count {
+  position: relative;
+  display: inline-block;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: lining-nums;
+  color: var(--crimson);
+  background: transparent;
+  border: 1px solid var(--crimson);
+  border-radius: 2px;
+  padding: 0.2rem 0.85rem;
+}
+.live-count:hover {
+  border-bottom-color: var(--crimson);
+  background: var(--paper);
+}
+.live-count:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+}
+.live-count::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  min-height: 100%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+/* When the count rises: one ring goes out from it. */
+.live-count::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--crimson);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+.live-count.live-pulse {
+  animation: live-bump 0.7s ease-out 1;
+}
+.live-count.live-pulse::after {
+  animation: live-ring 1.3s ease-out 1;
+}
+@keyframes live-bump {
+  35% {
+    transform: scale(1.05);
+    background: var(--paper);
+  }
+}
+@keyframes live-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14, 1.7);
+  }
+}
+
+/* A soft glow around where the reader is. The element must already be
+   positioned (absolute or relative). */
+.live-glow::after {
+  content: "";
+  position: absolute;
+  inset: -0.3rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0.8rem 0.15rem var(--crimson);
+  opacity: 0.4;
+  pointer-events: none;
+  animation: live-glow 3.6s ease-in-out infinite;
+}
+@keyframes live-glow {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.55; }
+}
+
+/* A line of time: dots on a line, each with its time hanging beside it. */
+.live-time {
+  margin: 0.7rem 0 1.1rem;
+}
+.live-time-wide {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.live-time-inner {
+  position: relative;
+}
+.live-time-art {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  cursor: pointer;
+}
+.live-time-axis {
+  stroke: var(--frame);
+  stroke-width: 1.5;
+}
+.live-time-lead {
+  stroke: var(--frame);
+  stroke-width: 1;
+}
+.live-time-lead.is-current {
+  stroke: var(--crimson);
+}
+.live-time-dot {
+  fill: var(--crimson);
+}
+.live-time-ring {
+  fill: none;
+  stroke: var(--crimson);
+  stroke-width: 1.25;
+}
+.live-time-mark {
+  position: absolute;
+  transform: translateX(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 0.25rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.live-time-mark:hover,
+.live-time-mark.is-current {
+  color: var(--crimson);
+}
+.live-time-mark.is-current {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.live-time-mark:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: -2px;
+}
+
+/* A flock: a strip of sky, and the words for the bird last tapped. */
+.live-flock {
+  position: relative;
+  margin: 0.2rem 0 0.5rem;
+}
+.live-flock-sky {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+  border-radius: 2px;
+}
+.live-flock-sky:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+}
+.live-flock-say {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: 100%;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin: 0;
+  padding: 0.15rem 0.5rem 0.15rem 0;
+  background: var(--paper);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+.live-flock-say:empty {
+  display: none;
+}
+.live-flock-name {
+  font-weight: 600;
+}
+.live-flock-ago {
+  font-style: italic;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-count.live-pulse,
+  .live-count.live-pulse::after,
+  .live-glow::after {
+    animation: none;
+  }
+}
