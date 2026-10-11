@@ -8,12 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<link rel="stylesheet" href="live.css?v=2026-10-11a">
 <style>
   html {
     scroll-behavior: smooth;
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+  }
+  /* Words read from the beach can hold a long address; it breaks rather
+     than pushing the sheet wider than a phone. */
+  .sheet {
+    overflow-wrap: break-word;
   }
   h1 {
     font-weight: 400;
@@ -25,6 +31,9 @@
     font-style: italic;
     color: var(--muted);
     margin: 1.6rem 0 0;
+  }
+  .title-count {
+    margin: 0.9rem 0 0;
   }
   .lede {
     font-size: 1.3rem;
@@ -72,6 +81,9 @@
     top: 2.3rem;
     bottom: 0.15rem;
     border-left: 1.5px solid var(--frame);
+    /* Drawn down as the ladder is reached (live.js); whole without it. */
+    transform-origin: top;
+    transform: scaleY(var(--live-draw, 1));
   }
   .rung:last-child {
     padding-bottom: 0;
@@ -95,8 +107,10 @@
     font-size: 1.1rem;
     font-weight: 600;
     font-variant-numeric: lining-nums;
+    transition: background-color 0.8s, color 0.8s;
   }
-  .rung.here .rung-num {
+  .rung.here .rung-num,
+  .rung.done .rung-num {
     background: var(--crimson);
     color: var(--page);
   }
@@ -144,6 +158,13 @@
     color: var(--muted);
     border-color: var(--frame);
   }
+  .rung-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0.2rem 0 0;
+  }
   .respond-now {
     display: inline-block;
     font-size: 1.1rem;
@@ -153,7 +174,12 @@
     border: 0;
     border-radius: 2px;
     padding: 0.55rem 1.3rem;
-    margin: 0.2rem 0 0;
+    margin: 0;
+  }
+  .rung-actions .live-count {
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    padding: calc(0.55rem - 1px) calc(1.3rem - 1px);
   }
   .respond-now:hover {
     border-bottom: 0;
@@ -218,6 +244,13 @@
     color: var(--muted);
     font-size: 0.95rem;
     white-space: nowrap;
+  }
+  .live-still,
+  .live-unread {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0.3rem 0;
   }
 
   /* The experiment: one figure, then the trail down a line. */
@@ -286,6 +319,30 @@
   }
   .moment:last-child .moment-text {
     padding-bottom: 0;
+  }
+  .moment {
+    scroll-margin: 1.5rem 0;
+  }
+  .moment-text {
+    transition: background-color 0.4s, border-color 0.4s;
+  }
+  .moment.live-current .moment-time {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .moment.live-current .moment-text {
+    background: var(--paper);
+    border-left-color: var(--crimson);
+  }
+  .moment.live-current .moment-text::before {
+    box-shadow: 0 0 0 0.16rem var(--paper), 0 0 0 0.28rem var(--crimson);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rung-num,
+    .moment-text {
+      transition: none;
+    }
   }
   .cards {
     display: grid;
@@ -382,6 +439,7 @@
 
     <div id="doc" hidden>
       <h1 id="title"></h1>
+      <p class="title-count" id="title-count"></p>
       <hr class="rule">
       <p class="lede" id="lede"></p>
       <div id="parts"></div>
@@ -428,7 +486,8 @@
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-10a"></script>
+<script src="beach.js?v=2026-10-11a"></script>
+<script src="live.js?v=2026-10-11a"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -439,9 +498,15 @@
   var READERS = 'flavour-spark:';
   var UNREAD_INDEX = 'The answers written on the walk page couldn’t be read from the beach just now.';
   var UNREAD_READER = 'Couldn’t be read from the beach just now.';
+  var UNREAD_ROOM = 'The notes left here couldn’t be read from the beach just now.';
+  var UNREAD_STRIP = 'What has moved on the beach couldn’t be read just now.';
   // Blocks left out of the live strip.
   var UNSHOWN = /^(grain|vault|ledger|history):/;
+  var HOUR = 3600000;
+  var FLOCK_MAX = 40;
   var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
+  // Kept on this device once a note has been left here from it.
+  var LEFT_NOTE = 'live:left-note:' + ROOM;
 
   var partsBox = document.getElementById('parts');
   var status = document.getElementById('status');
@@ -453,6 +518,7 @@
   var stripSig = null;
   var answersSig = null;
   var answersShown = false;
+  var roomShown = false;
   // Each reader's block as last read: name -> { touched, block }.
   var readers = {};
 
@@ -463,11 +529,70 @@
     return e;
   }
 
+  // What makes the page's liveness visible is extra: if any of it fails,
+  // the words still show.
+  function extra(fn) {
+    try {
+      return fn();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // The beach's own clock when it has said it, else this device's.
+  function beachNow() {
+    var c = Beach.clock();
+    var t = c ? Date.parse(c.iso) : NaN;
+    return isNaN(t) ? Date.now() : t;
+  }
+
+  // How many have responded: the notes in the room, replies too, and the
+  // entries in every reader's block. One count, shown under the title and
+  // on step two, kept from one drawing to the next.
+  var responses = Live.count('#respond', function (n) {
+    if (n == null) return 'Read responses';
+    return 'Read ' + n + (n === 1 ? ' response' : ' responses');
+  });
+  var countOnLadder = responses.make();
+  document.getElementById('title-count').appendChild(responses.make());
+  // Both halves of the count, as last read; null until read.
+  var roomNotes = null;
+  var readerEntries = null;
+
   // The live strip is kept from one drawing to the next, and put back in
-  // its place after position 3.5 each time the block is drawn.
+  // its place after position 3.5 each time the block is drawn: a flock of
+  // what has moved in the last hour, then the latest few by name.
   var strip = el('div', 'live-strip');
-  strip.setAttribute('aria-live', 'polite');
   strip.hidden = true;
+  var flock = extra(function () {
+    return Live.flock({
+      height: 160,
+      label: function (n) {
+        return n + (n === 1 ? ' block' : ' blocks') + ' moved on the beach in the last hour';
+      },
+      say: function (b) {
+        return [b.id, Live.ago(beachNow() - b.when)];
+      }
+    });
+  });
+  var stripStill = el('p', 'live-still', 'Nothing has moved on the beach in the last hour.');
+  stripStill.hidden = true;
+  var stripList = el('div');
+  stripList.setAttribute('aria-live', 'polite');
+  var stripUnread = el('p', 'live-unread', UNREAD_STRIP);
+  stripUnread.hidden = true;
+  if (flock) strip.appendChild(flock.el);
+  strip.appendChild(stripStill);
+  strip.appendChild(stripList);
+  strip.appendChild(stripUnread);
+
+  // The ladder as last drawn, and whether its line has drawn itself yet.
+  var ladderList = null;
+  var stepTwo = null;
+  var ladderDrawn = false;
+  var stopDrawing = null;
+  // The line of time over the trail, as last drawn.
+  var trailLine = null;
 
   // A node's own words: a string, or its "_". When the beach has nested
   // older entries under "_", the words are further down it.
@@ -530,16 +655,27 @@
     return sec;
   }
 
-  // Position 1: the ladder.
+  // Step two's circle fills once a note has been left from this device.
+  function markResponded() {
+    if (!stepTwo) return;
+    stepTwo.classList.add('done');
+    if (!stepTwo.querySelector('.visually-hidden')) {
+      stepTwo.insertBefore(el('span', 'visually-hidden', 'Done.'), stepTwo.querySelector('.rung-title'));
+    }
+  }
+
+  // Position 1: the ladder. Step one's circle glows ("you are here"), and
+  // the line down it draws itself as the ladder is reached.
   function ladder(node) {
     var rungs = children(node).filter(function (c) { return c.pos <= 7; });
     if (!own(node) && !rungs.length) return null;
     var sec = part(node);
     var ol = el('ol', 'ladder');
+    stepTwo = null;
     rungs.forEach(function (c) {
       var p = split(c.text);
       var li = el('li', 'rung' + (c.pos === 1 ? ' here' : c.pos >= 3 ? ' later' : ''));
-      var num = el('span', 'rung-num', String(c.pos));
+      var num = el('span', 'rung-num' + (c.pos === 1 ? ' live-glow' : ''), String(c.pos));
       num.setAttribute('aria-hidden', 'true');
       li.appendChild(num);
       if (c.pos === 1) li.appendChild(el('span', 'tag tag-here', 'You are here'));
@@ -547,14 +683,30 @@
       li.appendChild(el('h3', 'rung-title', p.label));
       if (p.body) li.appendChild(el('p', 'rung-body', p.body));
       if (c.pos === 2) {
+        var row = el('div', 'rung-actions');
         var a = el('a', 'respond-now', 'Respond now');
         a.href = '#respond';
-        li.appendChild(a);
+        row.appendChild(a);
+        row.appendChild(countOnLadder);
+        li.appendChild(row);
+        stepTwo = li;
       }
       ol.appendChild(li);
     });
+    if (Live.recall(LEFT_NOTE)) markResponded();
     sec.appendChild(ol);
+    ladderList = ol;
     return sec;
+  }
+
+  // Once the page is showing: the ladder's line draws itself, the first
+  // time it is drawn.
+  function drawLadder() {
+    if (!ladderList || ladderDrawn) return;
+    var rungs = ladderList.querySelectorAll('.rung:not(:last-child)');
+    ladderList = null;
+    if (stopDrawing) stopDrawing();
+    stopDrawing = Live.drawLine(rungs, function () { ladderDrawn = true; });
   }
 
   // A section whose children are a list; the live strip goes straight
@@ -576,12 +728,19 @@
     return sec;
   }
 
+  // A trail line's time (its label, HH:MM) in minutes from midnight, or
+  // null.
+  function clockTime(label) {
+    var t = label.match(/^(\d{1,2}):(\d{2})$/);
+    return t ? Number(t[1]) * 60 + Number(t[2]) : null;
+  }
+
   // Minutes from the first trail time (HH:MM) to the last.
   function span(moments) {
     var times = [];
     moments.forEach(function (m) {
-      var t = split(m).label.match(/^(\d{1,2}):(\d{2})$/);
-      if (t) times.push(Number(t[1]) * 60 + Number(t[2]));
+      var t = clockTime(split(m).label);
+      if (t != null) times.push(t);
     });
     if (times.length < 2) return null;
     var d = times[times.length - 1] - times[0];
@@ -606,15 +765,37 @@
     }
     var tt = own(trailNode);
     if (tt) heading(sec, tt, 'h3');
+    if (trailLine) trailLine.destroy();
+    trailLine = null;
     if (moments.length) {
       var ol = el('ol', 'trail');
-      moments.forEach(function (m) {
+      // Each moment with a time also goes on the line of time above the
+      // list. A time earlier than the one before it by more than half a
+      // day has passed midnight.
+      var marks = [];
+      var prev = null;
+      var day = 0;
+      moments.forEach(function (m, i) {
         var p = split(m);
         var li = el('li', 'moment');
+        li.id = 'moment-' + (i + 1);
         li.appendChild(el('span', 'moment-time', p.label));
-        li.appendChild(el('span', 'moment-text', p.body));
+        var said = el('span', 'moment-text', p.body);
+        said.id = 'moment-text-' + (i + 1);
+        li.appendChild(said);
         ol.appendChild(li);
+        var t = clockTime(p.label);
+        if (t == null) return;
+        if (prev != null && t + day < prev - 720) day += 1440;
+        prev = t + day;
+        marks.push({ label: p.label, at: prev, target: li, note: said });
       });
+      if (marks.length) {
+        trailLine = extra(function () {
+          return Live.timeline(marks, { name: 'The trail, by time' });
+        });
+        if (trailLine) sec.appendChild(trailLine.el);
+      }
       sec.appendChild(ol);
     }
 
@@ -677,38 +858,38 @@
   }
 
   // ---- The live strip ----------------------------------------------------
-  function plural(n, one) {
-    return n + ' ' + one + (n === 1 ? '' : 's') + ' ago';
-  }
-
-  function ago(ms) {
-    var m = Math.floor(ms / 60000);
-    if (m < 60) return plural(Math.max(m, 0), 'minute');
-    var h = Math.floor(m / 60);
-    if (h < 24) return plural(h, 'hour');
-    return plural(Math.floor(h / 24), 'day');
-  }
-
-  // The eight blocks touched most recently, newest first. Nothing shows
-  // if the index can't be read.
+  // A bird for every block touched in the last hour (up to forty), then
+  // the eight blocks touched most recently by name, newest first. If the
+  // index can't be read, one line says so, beneath whatever was read
+  // before.
   function renderStrip(idx) {
-    var blocks = idx && Array.isArray(idx.blocks) ? idx.blocks : [];
-    var touched = idx && idx.touched && typeof idx.touched === 'object' ? idx.touched : {};
-    var now = Date.now();
-    var c = Beach.clock();
-    if (c && !isNaN(Date.parse(c.iso))) now = Date.parse(c.iso);
-    var latest = blocks.filter(function (b) {
+    var read = !!(idx && Array.isArray(idx.blocks));
+    stripUnread.hidden = read;
+    strip.hidden = false;
+    if (!read) return;
+    var touched = idx.touched && typeof idx.touched === 'object' ? idx.touched : {};
+    var now = beachNow();
+    var moved = idx.blocks.filter(function (b) {
       return typeof b === 'string' && !UNSHOWN.test(b) && !isNaN(Date.parse(touched[b]));
     }).sort(function (a, b) {
       return Date.parse(touched[b]) - Date.parse(touched[a]);
-    }).slice(0, 8).map(function (b) {
-      return { name: b, ago: ago(now - Date.parse(touched[b])) };
+    });
+
+    var hour = moved.filter(function (b) {
+      return now - Date.parse(touched[b]) < HOUR;
+    }).slice(0, FLOCK_MAX).map(function (b) {
+      return { id: b, when: Date.parse(touched[b]) };
+    });
+    if (flock) extra(function () { flock.set(hour); });
+    stripStill.hidden = hour.length > 0;
+
+    var latest = moved.slice(0, 8).map(function (b) {
+      return { name: b, ago: Live.ago(now - Date.parse(touched[b])) };
     });
     var sig = JSON.stringify(latest);
     if (sig === stripSig) return;
     stripSig = sig;
-    strip.textContent = '';
-    strip.hidden = !latest.length;
+    stripList.textContent = '';
     if (!latest.length) return;
     var ol = el('ol', 'live-list');
     latest.forEach(function (x) {
@@ -717,7 +898,7 @@
       li.appendChild(el('span', 'live-ago', x.ago));
       ol.appendChild(li);
     });
-    strip.appendChild(ol);
+    stripList.appendChild(ol);
   }
 
   // ---- What readers wrote beside the block -------------------------------
@@ -863,26 +1044,73 @@
     return out;
   }
 
+  // Every note in the room, replies too.
+  function countNotes(pool) {
+    return Beach.entries(pool).reduce(function (n, e) {
+      return n + 1 + (e.replies ? e.replies.length : 0);
+    }, 0);
+  }
+
+  // Every entry with words in the readers' blocks; null while any of them
+  // can't be read. When the index can't be read, the last count stands,
+  // as the answers last read do.
+  function countAnswers(list) {
+    if (!list) return readerEntries;
+    var n = 0;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].unread) return null;
+      n += answers(list[i].block, null).length;
+    }
+    return n;
+  }
+
+  // The words show as soon as the block is read; nothing else waits for.
+  function show() {
+    status.hidden = true;
+    ['doc', 'respond-rule', 'respond'].forEach(function (id) {
+      document.getElementById(id).hidden = false;
+    });
+    extra(drawLadder);
+  }
+
   var refresh = Beach.live(function () {
     var spine = Beach.get(SPINE);
     var idx = Beach.index();
+    var drawn = spine.then(function (s) {
+      if (!render(s)) throw new Error('nothing to show');
+      show();
+    });
+    var answersRead = readAnswers(idx);
+    // The page still shows if the room can't be read; if it never has
+    // been, one line says so.
+    var roomRead = Beach.get(ROOM).then(function (pool) {
+      pool = withoutCleared(pool);
+      Beach.renderThread(thread, pool);
+      roomShown = true;
+      roomNotes = countNotes(pool);
+    }, function () {
+      if (roomShown) return;
+      thread.textContent = '';
+      thread.appendChild(el('p', 'thread-empty', UNREAD_ROOM));
+    });
     return Promise.all([
-      Promise.all([
-        spine,
-        idx.catch(function () { return null; })
-      ]).then(function (r) {
-        if (!render(r[0])) throw new Error('nothing to show');
+      drawn,
+      // The strip sits inside the block's part 3, and tells time by the
+      // clock the block came with, so it waits for the block.
+      Promise.all([drawn.catch(function () {}), idx]).then(function (r) {
         renderStrip(r[1]);
+      }, function () {
+        renderStrip(null);
       }),
       // The answers take their labels from the block, so they wait for it;
       // if the block can't be read, the page already says so.
-      Promise.all([spine, readAnswers(idx)]).then(function (r) {
+      Promise.all([spine, answersRead]).then(function (r) {
         renderAnswers(r[0], r[1]);
       }, function () {}),
-      // The page still shows if the room can't be read.
-      Beach.get(ROOM).then(function (pool) {
-        Beach.renderThread(thread, withoutCleared(pool));
-      }, function () {})
+      Promise.all([answersRead, roomRead]).then(function (r) {
+        readerEntries = countAnswers(r[0]);
+        responses.set(roomNotes != null && readerEntries != null ? roomNotes + readerEntries : null);
+      })
     ]).then(function () {
       loaded = true;
     }, function (e) {
@@ -890,15 +1118,15 @@
       if (!loaded) status.textContent = OFFLINE;
       throw e;
     });
-  }, document.getElementById('live-note'), function () {
-    status.hidden = true;
-    ['doc', 'respond-rule', 'respond'].forEach(function (id) {
-      document.getElementById(id).hidden = false;
-    });
-  }, '');
+  }, document.getElementById('live-note'), show, '');
 
-  // After a note is sent, read the room again so it appears at once.
-  Beach.wireNoteForm(form, ROOM, refresh);
+  // After a note is sent: this device remembers it, step two fills, and
+  // the room is read again so the note appears at once.
+  Beach.wireNoteForm(form, ROOM, function () {
+    Live.remember(LEFT_NOTE, new Date().toISOString());
+    markResponded();
+    return refresh();
+  });
 })();
 </script>
 </body>

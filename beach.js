@@ -332,6 +332,7 @@
     index: index,
     clock: function () { return clock; },
     text: text,
+    entries: entries,
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
     addMic: addMic,
