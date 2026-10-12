@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<link rel="stylesheet" href="beach.css?v=2026-10-12c">
 <style>
   h1 {
     font-weight: 400;
@@ -121,11 +121,23 @@
     font-style: italic;
     text-align: center;
   }
-  #thread {
-    margin: 1.6rem 0 0;
+  /* Answers that aren't beside a step, and notes from visitors, each
+     under its heading; neither shows when there are none. */
+  .respond-head {
+    font-weight: 500;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    margin: 0 0 0.6rem;
   }
-  .walk-link a {
-    overflow-wrap: anywhere;
+  #answers {
+    margin: 0 0 1.6rem;
+  }
+  #notes {
+    margin: 1.8rem 0 0;
+  }
+  .answer-on {
+    font-style: italic;
+    color: var(--ink);
   }
   .provenance {
     font-size: 0.9rem;
@@ -241,6 +253,14 @@
       <h2>Comments</h2>
       <p class="comments-intro">Leave a note: a comment, a question, or what you would need to see before you tried it.</p>
 
+      <!-- Readers with a handle answer in a block of their own,
+           capability-gap:<handle>. An answer at a step shows beside that
+           step; any other shows here, under its writer's handle. -->
+      <div id="answers" hidden>
+        <h3 class="respond-head">Answers</h3>
+        <div id="answer-list" aria-live="polite"></div>
+      </div>
+
       <form id="note-form">
         <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
         <input id="n-name" name="who" maxlength="40" autocomplete="name">
@@ -251,10 +271,26 @@
         <button type="submit">Leave a note</button>
         <p class="form-status" role="status"></p>
         <p class="form-foot">Notes are public, and appear below for everyone who reads this page.</p>
-        <p class="form-foot walk-link">If you have a name on the beach, you can answer beside any step there instead: <a href="https://happyseaurchin.com/walk/capability-gap">happyseaurchin.com/walk/capability-gap</a></p>
       </form>
 
-      <div class="thread" id="thread" aria-live="polite"></div>
+      <!-- Beside the note box: for those with a handle on the beach. -->
+      <div class="answer-door">
+        <a class="door" href="https://happyseaurchin.com/walk/capability-gap">
+          <span class="door-title">Answer as yourself</span>
+          <span class="door-text">Have a handle on the beach? Answer under your own name and key, on the walk page.</span>
+        </a>
+        <p class="door-ai">Your AI can answer as you at capability-gap:&lt;your handle&gt;</p>
+      </div>
+
+      <p class="talk-live">
+        <a href="https://mirror.onen.ai/?pool=capability-gap">Talk live in the room</a>
+        <span class="here-now" id="here-now" aria-live="polite"></span>
+      </p>
+
+      <div id="notes" hidden>
+        <h3 class="respond-head">Notes from visitors</h3>
+        <div class="thread" id="thread" aria-live="polite"></div>
+      </div>
     </section>
 
     <div id="provenance-box" hidden>
@@ -268,16 +304,16 @@
   </div>
 
   <footer class="site-footer">
+    <p class="site-where">This page reads spine:capability-gap; its room is pool:capability-gap; answers are capability-gap:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-10a"></script>
+<script src="beach.js?v=2026-10-12c"></script>
 <script>
 (function () {
   var text = Beach.text;
   var SPINE = 'spine:capability-gap';
   var ROOM = 'pool:capability-gap';
-  var READER = /^capability-gap:(.+)$/;
   var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
 
   var stepsBox = document.getElementById('steps');
@@ -426,7 +462,7 @@
   function answersBox(found) {
     var box = el('div', 'answers');
     if (!found.length) return box;
-    box.appendChild(el('p', 'answers-label', found.length === 1 ? 'A reader’s answer' : 'Readers’ answers'));
+    box.appendChild(el('p', 'answers-label', 'Answers'));
     found.forEach(function (x) {
       var c = el('div', 'comment');
       var meta = el('p', 'comment-meta');
@@ -511,6 +547,9 @@
     var steps = stepsOf(spine);
     if (!root && !steps.length) return false;
     var prov = text(spine['9']).trim();
+    try {
+      renderOtherAnswers(spine);
+    } catch (e) {}
     var sig = JSON.stringify([root, steps, prov]);
     if (sig === lastSig) return true;
     lastSig = sig;
@@ -520,16 +559,64 @@
     return true;
   }
 
+  // Answers that aren't beside a step or its figures, each under its
+  // writer's handle, with the part of the note it answers. None, and there
+  // is no heading.
+  var otherSig = null;
+  function renderOtherAnswers(spine) {
+    var shown = {};
+    var node = spine['1'];
+    var path = ['1'];
+    while (node != null && text(node).trim() && path.length <= 40) {
+      shown[path.join('.')] = true;
+      if (typeof node === 'object') {
+        for (var d = 2; d <= 9; d++) {
+          if (text(node[String(d)]).trim()) shown[path.concat(String(d)).join('.')] = true;
+        }
+      }
+      node = typeof node === 'object' ? node['1'] : null;
+      path = path.concat('1');
+    }
+    var rows = [];
+    Object.keys(readers).sort(function (a, b) {
+      return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+    }).forEach(function (handle) {
+      Beach.answersIn(readers[handle].block).forEach(function (a) {
+        if (shown[a.path.join('.')]) return;
+        rows.push({ who: handle, on: Beach.partName(spine, a.path), text: a.text });
+      });
+    });
+    var sig = JSON.stringify(rows);
+    if (sig === otherSig) return;
+    otherSig = sig;
+    var box = document.getElementById('answer-list');
+    box.textContent = '';
+    rows.forEach(function (r) {
+      var c = el('div', 'comment');
+      var meta = el('p', 'comment-meta');
+      meta.appendChild(el('strong', null, r.who));
+      meta.appendChild(document.createTextNode(' on '));
+      meta.appendChild(el('span', 'answer-on', r.on));
+      c.appendChild(meta);
+      c.appendChild(el('p', 'comment-text', r.text));
+      box.appendChild(c);
+    });
+    document.getElementById('answers').hidden = !rows.length;
+  }
+
   // Find the readers' blocks (capability-gap:<handle>) and read any that
-  // are new or have changed. A reader's block that can't be read keeps
-  // what we had; if the index can't be read, the note still shows.
+  // are new or have changed. Matthew's own (capability-gap:Phenomemental)
+  // is not an answer. A reader's block that can't be read keeps what we
+  // had; if the index can't be read, the note still shows.
   function loadReaders() {
     return Beach.index().then(function (idx) {
-      var names = (idx && Array.isArray(idx.blocks) ? idx.blocks : []).filter(function (b) { return READER.test(b); });
+      var names = (idx && Array.isArray(idx.blocks) ? idx.blocks : []).filter(function (b) {
+        return !!Beach.answerHandle(b, 'capability-gap');
+      });
       var touched = (idx && idx.touched) || {};
       var seen = {};
       return Promise.all(names.map(function (name) {
-        var handle = name.match(READER)[1];
+        var handle = Beach.answerHandle(name, 'capability-gap');
         seen[handle] = true;
         var had = readers[handle];
         if (had && touched[name] && had.touched === touched[name]) return null;
@@ -570,7 +657,9 @@
       }),
       // The note still shows if the comments can't be read.
       Beach.get(ROOM).then(function (pool) {
-        Beach.renderThread(thread, withoutCleared(pool));
+        pool = withoutCleared(pool);
+        Beach.renderThread(thread, pool);
+        document.getElementById('notes').hidden = !Beach.entries(pool).length;
       }, function () {})
     ]).then(function () {
       loaded = true;
@@ -585,6 +674,9 @@
       document.getElementById(id).hidden = false;
     });
   }, '');
+
+  // Who is in the room now, beside the link to talk there live.
+  Beach.watchHere(ROOM, document.getElementById('here-now'));
 
   // After a note is sent, read the room again so it appears at once.
   Beach.wireNoteForm(form, ROOM, refresh);

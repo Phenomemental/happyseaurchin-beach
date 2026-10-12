@@ -255,6 +255,9 @@ footer {
   font-size: 0.88rem;
 }
 footer p { margin: 0 0 0.5rem; }
+/* Where a page lives on the beach: a long address breaks rather than
+   widening the page. */
+footer .where { overflow-wrap: anywhere; }
 .home {
   display: block;
   width: max-content;
