@@ -869,6 +869,636 @@ body.has-live-bar {
   min-height: 0;
 }
 
+/* A shore scene (Live.scene with shore): dusk over the sea down to 36%,
+   the sea to its edge at 62%, then wet and dry sand, so it shows before
+   any script runs; the canvas carries the birds and the wash. */
+.live-scene.live-shore {
+  background-color: #2a1730;
+  background-image:
+    radial-gradient(ellipse 75% 16% at 50% 36%, rgba(240, 130, 110, 0.4), rgba(240, 130, 110, 0) 70%),
+    linear-gradient(to bottom,
+      #1a0d20 0%,
+      #2b1232 14%,
+      #5a1d45 27%,
+      #b83c5c 33%,
+      #f0937a 35.6%,
+      #3c1f3e 36.1%,
+      #2c1a36 48%,
+      #352240 61.6%,
+      #5b3d4a 62.2%,
+      #4c3443 68%,
+      #6b4d50 74%,
+      #84655a 100%);
+}
+
+/* A heart: two lights, a figure-of-eight between them, the "&" at the
+   crossing, and the line beneath. */
+.live-heart {
+  text-align: center;
+}
+.live-heart-stage {
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  aspect-ratio: 400 / 180;
+  margin: 0 auto;
+}
+.live-heart-stage[hidden] {
+  display: none;
+}
+.live-heart-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.live-heart-stop-core {
+  stop-color: #fff6ee;
+  stop-opacity: 0.95;
+}
+.live-heart-stop-mid {
+  stop-color: var(--crimson);
+  stop-opacity: 0.36;
+}
+.live-heart-stop-out {
+  stop-color: var(--crimson);
+  stop-opacity: 0;
+}
+.live-heart-light {
+  fill: #fffaf3;
+  stroke: var(--crimson);
+  stroke-width: 1.2;
+}
+.live-heart-path {
+  fill: none;
+  stroke: var(--crimson);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.live-heart-beat {
+  opacity: 0;
+}
+.live-heart.is-beating .live-heart-beat {
+  animation: live-heart-beat 2.8s ease-in-out infinite;
+}
+.live-heart-cross {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.3rem;
+  height: 3.3rem;
+  padding: 0 0 0.25rem;
+  font: inherit;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: var(--crimson);
+  background: radial-gradient(circle, var(--page) 48%, transparent 72%);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.live-heart.is-beating .live-heart-cross,
+.live-heart.is-beating .live-heart-amp {
+  animation: live-heart-glow 2.8s ease-in-out infinite;
+}
+.live-heart-cross:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+}
+.live-heart-line {
+  font-style: italic;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  min-height: 2.8em;
+  margin: 0.5rem auto 0;
+  max-width: 26rem;
+}
+.live-heart-amp {
+  color: var(--crimson);
+}
+.live-heart-typed.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: var(--crimson);
+  animation: live-heart-caret 1s steps(2) infinite;
+}
+@keyframes live-heart-beat {
+  0%, 100% { opacity: 0.2; }
+  10% { opacity: 0.95; }
+  22% { opacity: 0.4; }
+  32% { opacity: 0.8; }
+  52% { opacity: 0.25; }
+}
+@keyframes live-heart-glow {
+  0%, 52%, 100% { text-shadow: 0 0 0 rgba(194, 29, 78, 0); }
+  10% { text-shadow: 0 0 0.7rem rgba(194, 29, 78, 0.7); }
+  32% { text-shadow: 0 0 0.45rem rgba(194, 29, 78, 0.45); }
+}
+@keyframes live-heart-caret {
+  50% { opacity: 0; }
+}
+
+/* A shore of time: round sand, water at the centre, rings, shells. */
+.live-shore {
+  --shore-wet: #d6c5a7;
+  --shore-in: #e6d9c0;
+  --shore-out: #efe6d3;
+  --shore-sea: #5f8796;
+  --shore-sea-edge: #a3c2c6;
+  --shore-foam: #fffaf0;
+}
+.live-shore-stage {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  aspect-ratio: 1;
+  margin: 0.4rem auto 0;
+}
+.live-shore-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.live-shore-sand-wet { stop-color: var(--shore-wet); }
+.live-shore-sand-in { stop-color: var(--shore-in); }
+.live-shore-sand-out { stop-color: var(--shore-out); }
+.live-shore-sea-deep { stop-color: var(--shore-sea); }
+.live-shore-sea-edge { stop-color: var(--shore-sea-edge); }
+.live-shore-sand {
+  stroke: var(--frame);
+  stroke-width: 1;
+}
+.live-shore-ring {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 1.3;
+  transition: stroke 0.3s, stroke-width 0.3s;
+}
+.live-shore-ring.is-silent {
+  stroke-dasharray: 2 5;
+  opacity: 0.6;
+}
+.live-shore-ring.is-chosen {
+  stroke: var(--crimson);
+  stroke-width: 2.4;
+}
+.live-shore-ring-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.live-shore-water {
+  cursor: pointer;
+}
+.live-shore-foam {
+  fill: none;
+  stroke: var(--shore-foam);
+  stroke-width: 1.8;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.live-shore-shell {
+  pointer-events: none;
+}
+.live-shore-shell-body {
+  fill: var(--page);
+  stroke: var(--crimson);
+  stroke-width: 1;
+}
+.live-shore-shell-ribs {
+  fill: none;
+  stroke: var(--crimson);
+  stroke-width: 0.7;
+  opacity: 0.7;
+}
+.live-shore-shell.is-held .live-shore-shell-body {
+  fill: var(--crimson);
+}
+.live-shore-shell.is-held .live-shore-shell-ribs {
+  stroke: var(--page);
+}
+.live-shore-shell.is-chosen .live-shore-shell-body {
+  stroke-width: 1.9;
+  filter: drop-shadow(0 0 3px var(--crimson));
+}
+.live-shore-marks {
+  position: absolute;
+  inset: 0;
+}
+.live-shore-mark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.live-shore-name {
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--muted);
+  border-radius: 2px;
+  text-shadow: 0 0 3px var(--page), 0 0 6px var(--page), 0 0 9px var(--page);
+}
+.live-shore-name.is-chosen {
+  color: var(--crimson);
+  font-weight: 600;
+}
+.live-shore-name.is-silent {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+.live-shore-mark:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: -4px;
+}
+.live-shore-tag {
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.2rem;
+}
+.live-shore-words {
+  margin: 0;
+}
+.live-shore-note {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  margin: 0.3rem 0 0;
+}
+
+/* Shells for a count, in a row. */
+.live-shells {
+  height: 0.85rem;
+  vertical-align: -0.08em;
+  overflow: visible;
+}
+
+/* Footprints up the sand to the water's edge. */
+.live-prints {
+  margin: 0.4rem 0 0;
+}
+.live-prints-water {
+  position: relative;
+  height: 2.4rem;
+  margin: 0 0 0.4rem;
+}
+.live-prints-wave {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 1.6rem;
+}
+.live-prints-sea {
+  fill: var(--shore-sea, #5f8796);
+  opacity: 0.55;
+  animation: live-wash 7s linear infinite;
+}
+.live-prints-foam {
+  fill: none;
+  stroke: var(--shore-foam, #fffaf0);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  animation: live-wash 7s linear infinite;
+}
+@keyframes live-wash {
+  to { transform: translateX(-40px); }
+}
+.live-prints-today {
+  position: absolute;
+  right: 0.1rem;
+  bottom: 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.live-prints-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+li.live-print {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  column-gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+}
+li.live-print::before {
+  content: none;
+}
+.live-print-foot {
+  width: 1rem;
+  height: 2.2rem;
+  margin: 0.55rem 0 0 0.2rem;
+  fill: var(--frame);
+  opacity: var(--live-draw, 1);
+  transform: rotate(-9deg) scale(calc(0.75 + 0.25 * var(--live-draw, 1)));
+}
+.is-right .live-print-foot {
+  margin-left: 1.25rem;
+  transform: rotate(9deg) scale(calc(0.75 + 0.25 * var(--live-draw, 1)));
+}
+.is-newest .live-print-foot {
+  fill: color-mix(in srgb, var(--frame) 60%, var(--shore-sea, #5f8796));
+}
+.live-print-main {
+  min-width: 0;
+  border-bottom: 1px dotted var(--frame);
+}
+.live-print-head {
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  text-align: left;
+  color: inherit;
+  margin: 0;
+}
+.live-print-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 0.55rem 0.1rem;
+  cursor: pointer;
+}
+.live-print-words {
+  flex: 1;
+  min-width: 0;
+}
+.live-print-title {
+  display: block;
+  font-weight: 500;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+.live-print-when {
+  display: block;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0.1rem 0 0;
+}
+.live-print-button:hover .live-print-title,
+.live-print-button[aria-expanded="true"] .live-print-title {
+  color: var(--crimson);
+}
+.live-print-button:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 2px;
+}
+.live-print-body > * {
+  padding-bottom: 0.4rem;
+}
+
+/* A night sky of constellations. */
+.live-sky-stage {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+.live-sky-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.live-sky-heart {
+  pointer-events: none;
+}
+.live-sky-line {
+  fill: none;
+  stroke: #f2e7d4;
+  stroke-opacity: 0.3;
+  stroke-width: 1.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  pointer-events: none;
+}
+.live-sky.is-waiting .live-sky-line {
+  stroke-dashoffset: 1;
+}
+.live-sky.is-drawing .live-sky-line {
+  transition: stroke-dashoffset 2.6s ease-in-out;
+}
+.live-sky-name {
+  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  font-style: italic;
+  fill: #f2e7d4;
+  fill-opacity: 0.8;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.live-sky-name.is-core {
+  fill: #ffd3df;
+  fill-opacity: 1;
+  font-weight: 600;
+}
+.live-sky-star {
+  cursor: pointer;
+  outline: none;
+}
+.live-sky-hit {
+  fill: transparent;
+  stroke: transparent;
+}
+.live-sky-star.is-picked .live-sky-hit,
+.live-sky-star:focus-visible .live-sky-hit {
+  stroke: #ff9fb8;
+  stroke-width: 2.5;
+  stroke-dasharray: 5 6;
+}
+.live-sky-glow,
+.live-sky-orbit,
+.live-sky-veil,
+.live-sky-here,
+.live-sky-spark,
+.live-sky-core {
+  pointer-events: none;
+}
+.live-sky-core {
+  fill: #fffaf0;
+}
+.live-sky-core.is-held {
+  fill: #f2e7d4;
+  opacity: 0.4;
+}
+.live-sky-spark {
+  fill: #fff6e8;
+}
+.live-sky-orbit {
+  fill: none;
+  stroke: #f2e7d4;
+  stroke-opacity: 0.22;
+  stroke-width: 1;
+}
+.live-sky-veil {
+  fill: #120a1c;
+  stroke: #f2e7d4;
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+.live-sky-here {
+  fill: none;
+  stroke: #ff9fb8;
+  stroke-width: 2.5;
+}
+.live-sky-caption {
+  max-width: 560px;
+  min-height: 3em;
+  margin: 0.8rem auto 0;
+  text-align: left;
+}
+.live-sky-say {
+  margin: 0;
+}
+.live-sky-star-name {
+  font-weight: 600;
+}
+.live-sky-also {
+  font-style: italic;
+  color: var(--muted);
+}
+.live-sky-words {
+  margin: 0.25rem 0 0;
+}
+.live-sky-open {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-style: italic;
+}
+
+/* Lanterns round a lit doorway. */
+.live-lantern-stage {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 600 / 420;
+  margin: 0 auto;
+}
+.live-lantern-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.live-lantern-aura,
+.live-lantern-spill,
+.live-lantern-ground,
+.live-lantern-glow,
+.live-lantern-paper,
+.live-lantern-rib,
+.live-lantern-cap,
+.live-lantern-ring {
+  pointer-events: none;
+}
+.live-lantern-ground {
+  stroke: #f2e7d4;
+  stroke-opacity: 0.25;
+  stroke-width: 1.5;
+}
+.live-lantern-frame {
+  fill: none;
+  stroke: #f2e7d4;
+  stroke-opacity: 0.75;
+  stroke-width: 3;
+}
+.live-lantern-door {
+  cursor: pointer;
+  outline: none;
+}
+.live-lantern-door:focus-visible .live-lantern-frame {
+  stroke: #ff9fb8;
+  stroke-opacity: 1;
+  stroke-dasharray: 6 5;
+}
+.live-lantern {
+  cursor: pointer;
+  outline: none;
+}
+.live-lantern-hit {
+  fill: transparent;
+}
+.live-lantern-rib {
+  fill: none;
+  stroke: #b4553c;
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+.live-lantern-cap {
+  fill: #3a1d2a;
+}
+.live-lantern-ring {
+  fill: none;
+  stroke: #ff9fb8;
+  stroke-width: 2;
+  opacity: 0;
+}
+.live-lantern.is-picked .live-lantern-ring,
+.live-lantern:focus-visible .live-lantern-ring {
+  opacity: 1;
+}
+.live-lantern.is-picked .live-lantern-glow {
+  transform: scale(1.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  .live-shore {
+    --shore-wet: #4a3f30;
+    --shore-in: #3a3227;
+    --shore-out: #2c261e;
+    --shore-sea: #24485a;
+    --shore-sea-edge: #4f7d86;
+    --shore-foam: #dbe8e4;
+  }
+  .live-heart-stop-core {
+    stop-color: #ffe3ea;
+  }
+  .live-heart-light {
+    fill: #ffe9ef;
+  }
+}
+
 /* Only in print: the whole of what is shown one at a time on screen. */
 .live-print {
   display: none;
@@ -895,7 +1525,20 @@ body.has-live-bar {
   .live-glow::after {
     animation: none;
   }
+  .live-heart.is-beating .live-heart-cross,
+  .live-heart.is-beating .live-heart-amp,
+  .live-heart-typed.is-typing::after,
+  .live-prints-sea,
+  .live-prints-foam {
+    animation: none;
+  }
+  .live-heart.is-beating .live-heart-beat {
+    animation: none;
+    opacity: 0.7;
+  }
   .live-mark,
+  .live-shore-ring,
+  .live-sky.is-drawing .live-sky-line,
   .live-dial-arc,
   .live-dial-hand,
   .live-dial-dot,

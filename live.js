@@ -1,7 +1,10 @@
 /* What lets a reader see, and touch, that a page is live: a count that
    pulses when it rises, lines that draw themselves as they are reached,
    a line of time to tap along, a sky with a flock of what has just moved
-   on the beach; and the pieces a long page is folded into: chapters,
+   on the beach (or birds on a shore); a heart line drawn as a figure, a
+   round shore that is a clock of someone's time, footprints up the sand,
+   a night sky of constellations, lanterns round a lit doorway; and the
+   pieces a long page is folded into: chapters,
    rows, tiles, a dial, one-of-several, a bar at the foot of the screen,
    and web addresses shown short. Shared by the pages that read from the beach; every word stays
    the beach's, or the page's own short labels. Needs live.css. Nothing
@@ -110,9 +113,10 @@
   // ---- A count ------------------------------------------------------------
   // A link that says how many there are, kept up to date. make(cls) gives
   // one more copy of it, for a page that shows it in more than one place;
-  // set(n) changes the number in every copy, and each pulses once when it
-  // rises. words(n) gives the label, with n null when the count couldn't
-  // be read.
+  // make(cls, true) gives it as a button instead, for a count that opens
+  // something in place (the page gives the button its action). set(n)
+  // changes the number in every copy, and each pulses once when it rises.
+  // words(n) gives the label, with n null when the count couldn't be read.
   function count(href, words) {
     var n = null;
     var all = [];
@@ -120,9 +124,10 @@
       a.textContent = words(n);
     }
     return {
-      make: function (cls) {
-        var a = document.createElement('a');
-        a.href = href;
+      make: function (cls, button) {
+        var a = document.createElement(button ? 'button' : 'a');
+        if (button) a.type = 'button';
+        else a.href = href;
         a.className = 'live-count' + (cls ? ' ' + cls : '');
         a.addEventListener('animationend', function (e) {
           if (e.animationName === 'live-ring') a.classList.remove('live-pulse');
@@ -1971,6 +1976,21 @@
   // For anyone who asks for less motion the birds sit still and the water
   // lies flat, and taps still work. Nothing moves while the sky is off the
   // screen or the tab is hidden.
+  //
+  // On a shore (opts.shore, with the class live-shore on the box, whose
+  // background draws sky, sea and sand) the birds stand on the sand
+  // instead of flying, each in a stretch of its own along the water's
+  // edge (opts.edge, 0.62 down, to match live.css), named beneath. Each
+  // item in set(list) says how its bird is, { id, name, mode, when }:
+  //   'feed'   walks the wet sand and pecks: each bird has a bill of its
+  //            own length, and feeds at its own depth from the water
+  //   'rest'   sits still up the dry sand, its head tucked in
+  //   'still'  stands tall and still in the shallows, like a heron
+  // The reader's bird is away until land() is called: then it flies in
+  // and lands with the others (at once, and already standing, when
+  // opts.landed is given). opts.tell(b, el), when given, fills the caption
+  // for a bird itself (it may do so later; the bird it speaks of is
+  // b.id). For anyone who asks for less motion every bird stands still.
   var scenes = [];
   var CREAM = '#f2e7d4';
   var DUSK = '#1a0d20';
@@ -2019,7 +2039,9 @@
 
   function scene(box, opts) {
     opts = opts || {};
-    var horizon = opts.horizon || 0.78;
+    var shore = !!opts.shore;
+    var horizon = opts.horizon || (shore ? 0.36 : 0.78);
+    var edge = opts.edge || 0.62;
     var say = opts.caption || null;
     var sky = document.createElement('canvas');
     sky.className = 'live-scene-sky';
@@ -2027,12 +2049,15 @@
     sky.setAttribute('role', 'img');
     box.insertBefore(sky, box.firstChild);
     var ctx = sky.getContext ? sky.getContext('2d') : null;
-    if (!ctx) return { set: function () {}, ring: function () {} };
+    if (!ctx) return { set: function () {}, ring: function () {}, land: function () {} };
 
     var me = hatch({ id: '' }, true);
     me.me = true;
     me.enter = -1;
     me.delay = 0;
+    // On a shore the reader's bird is away until it lands.
+    me.away = shore && !opts.landed;
+    if (shore) me.name = opts.meName || '';
     var birds = [me];
     var order = [];
     var picked = null; // the bird last tapped, or picked by key
@@ -2061,7 +2086,11 @@
         id: item.id, when: item.when, r: r, a: r(), d: r(),
         phase: r() * 6.283, wander: r() * 6.283, pace: 16 + r() * 14,
         enter: flyIn ? (r() < 0.5 ? -1 : 1) : 0, delay: r(),
-        x: null, y: null, vx: 0, vy: 0, glow: 0
+        x: null, y: null, vx: 0, vy: 0, glow: 0,
+        // On a shore: how it is, its name, the length of its bill, the
+        // way it faces, where it is walking to and how long it stops.
+        mode: item.mode || 'feed', name: item.name || '',
+        bill: 4 + r() * 6, dir: r() < 0.5 ? -1 : 1, tx: null, pause: r() * 2, peck: 0
       };
     }
 
@@ -2106,6 +2135,10 @@
         say.textContent = opts.me || '';
         return;
       }
+      if (opts.tell) {
+        opts.tell(shown, say);
+        return;
+      }
       var w = opts.say ? opts.say(shown) : [shown.id];
       var name = document.createElement('strong');
       name.className = 'live-scene-name';
@@ -2137,8 +2170,11 @@
         if (b) {
           b.when = item.when;
           b.leaving = false;
+          if (item.mode) b.mode = item.mode;
+          if (item.name) b.name = item.name;
         } else {
-          b = hatch(item, !still());
+          // A shore's birds are already standing there.
+          b = hatch(item, !shore && !still());
           birds.push(b);
         }
         if (item.fresh) {
@@ -2148,11 +2184,15 @@
       });
       birds = birds.filter(function (b) {
         if (b.me || seen[b.id]) return true;
-        if (still() || !W || b.x == null) return false;
+        if (shore || still() || !W || b.x == null) return false;
         b.leaving = true;
         return true;
       });
+      var was = order.join('\n');
       order = list.map(function (item) { return item.id; });
+      // A shore's stretches move when its birds change: each walks on
+      // within its new one.
+      if (shore && was !== order.join('\n')) birds.forEach(function (b) { b.tx = null; });
       if (shown && !shown.me && !seen[shown.id]) shown = null;
       if (picked && !picked.me && !seen[picked.id]) picked = null;
       if (fresh) {
@@ -2178,6 +2218,7 @@
         if (b.x == null) return;
         b.x *= kx;
         b.y *= ky;
+        b.tx = null;
       });
       W = w;
       H = h;
@@ -2193,12 +2234,270 @@
       bright = towards(pink, '#ffe0e8', 0.3);
     }
 
+    // ---- On a shore ----
+    // The birds' size: as drawn on a phone, a little larger on a wide one.
+    function size() {
+      return clamp(W / 320, 1.1, 1.6);
+    }
+
+    // Each bird has a stretch of the shore of its own, in the order given,
+    // the reader's (once landed) last.
+    function stretch(b) {
+      var n = order.length + (me.away ? 0 : 1);
+      var i = b.me ? order.length : order.indexOf(b.id);
+      if (i < 0) i = 0;
+      return { mid: (i + 0.5) / Math.max(n, 1) * W, half: W / Math.max(n, 1) / 2 };
+    }
+
+    // Where the sea meets the sand, the wash moving it a little.
+    function seaLine() {
+      return H * edge + (still() ? 0 : Math.sin(time * 0.35) * 2.5);
+    }
+
+    // Where a bird's feet are: a feeder nearer the water the longer its
+    // bill; a heron in the shallows; a resting bird up the dry sand.
+    function footing(b) {
+      if (b.mode === 'rest') return H * edge + (H - H * edge) * 0.58;
+      if (b.mode === 'still') return seaLine() + 2;
+      return seaLine() + (4 + (10 - b.bill) * 1.7) * size();
+    }
+
+    // A bird at rest in its stretch, as it stands when nothing moves.
+    function settle(b) {
+      var s = stretch(b);
+      if (b.x == null || still() || b.mode !== 'feed') b.x = s.mid + (b.a - 0.5) * s.half * 0.5;
+      b.y = footing(b);
+      b.peck = 0;
+      b.flying = false;
+    }
+
+    // A feeder walks to a spot in its stretch, stops, pecks, and walks
+    // on; the reader's bird, landing, flies down to its stretch first.
+    function wade(dt) {
+      time += dt;
+      birds.forEach(function (b) {
+        if (b.away) return;
+        if (b.flying) {
+          var s0 = stretch(b);
+          var tx = s0.mid;
+          var ty = footing(b);
+          var dx = tx - b.x;
+          var dy = ty - b.y;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          var v = 70 * dt;
+          b.phase += dt * 11;
+          if (d <= v) {
+            b.flying = false;
+            b.x = tx;
+            b.y = ty;
+            b.pause = 1.2;
+          } else {
+            b.vx = dx / d * 70;
+            b.vy = dy / d * 70;
+            b.x += dx / d * v;
+            b.y += dy / d * v;
+          }
+          return;
+        }
+        if (b.x == null) settle(b);
+        b.y = footing(b);
+        if (b.mode !== 'feed') return;
+        var s = stretch(b);
+        if (b.pause > 0) {
+          b.pause -= dt;
+          b.peck = Math.max(0, Math.sin(time * 8 + b.phase));
+          return;
+        }
+        b.peck = 0;
+        if (b.tx == null) b.tx = s.mid + (b.r() - 0.5) * 1.3 * s.half;
+        var gap = b.tx - b.x;
+        var pace = (7 + b.pace * 0.45) * dt;
+        if (Math.abs(gap) <= pace) {
+          b.x = b.tx;
+          b.tx = null;
+          b.pause = 0.8 + b.r() * 2.4;
+        } else {
+          b.dir = gap < 0 ? -1 : 1;
+          b.x += b.dir * pace;
+          b.phase += dt * 12;
+        }
+      });
+    }
+
+    // The sea between the horizon and the sand, the wash at its edge, and
+    // a film of water drawing back down the wet sand.
+    function shoreWater() {
+      var t = still() ? 0 : time;
+      var y0 = H * horizon;
+      var y1 = seaLine();
+      ctx.lineWidth = 1;
+      for (var k = 1; k <= 6; k++) {
+        var f = k / 7;
+        var y = Math.round(y0 + (y1 - y0) * Math.pow(f, 1.3)) + 0.5;
+        var a = 0.14 + 0.08 * Math.sin(t * 0.8 + k * 1.7);
+        var half = W * (0.06 + 0.2 * f);
+        var drift = Math.sin(t * 0.25 + k * 2.3) * 8;
+        ctx.strokeStyle = accent;
+        ctx.globalAlpha = a + 0.1 * (1 - f);
+        stroke(W / 2 - half + drift, y, W / 2 + half + drift);
+        ctx.strokeStyle = CREAM;
+        ctx.globalAlpha = a * 0.5;
+        stroke(W / 2 - half * 2.1 - drift * 0.5, y, W / 2 - half * 1.35 - drift * 0.5);
+        stroke(W / 2 + half * 1.4 + drift * 0.7, y, W / 2 + half * 2 + drift * 0.7);
+      }
+      function edgeLine(y, alpha, width, wave) {
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = CREAM;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (var x = 0; x <= W + 8; x += 8) {
+          var yy = y + Math.sin(x * 0.031 + t * wave) * 1.6;
+          if (x === 0) ctx.moveTo(x, yy);
+          else ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+      }
+      edgeLine(y1, 0.6, 1.3, 0.6);
+      edgeLine(y1 + 7 + (still() ? 0 : (Math.sin(t * 0.35 + 1.4) + 1) * 3), 0.16, 1, -0.4);
+      ctx.globalAlpha = 1;
+    }
+
+    function line2(x1, y1, x2, y2) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    function blob(x, y, rx, ry, turn) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, turn, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // A bird standing on the shore, its feet at (b.x, b.y), facing the
+    // way it last walked; flip draws it as its reflection on the wet sand.
+    function standing(b, flip) {
+      var k = size();
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.scale(b.dir * k, flip ? -k * 0.55 : k);
+      ctx.lineWidth = 1.2;
+      if (b.mode === 'still') {
+        // A heron: long legs, an S of a neck, a long bill.
+        line2(-0.5, 0, 0.8, -15);
+        line2(2.5, 0, 2.2, -15);
+        blob(0, -19, 7.5, 4, -0.3);
+        line2(-6.5, -17.5, -10.5, -15.5);
+        ctx.beginPath();
+        ctx.moveTo(4, -21.5);
+        ctx.bezierCurveTo(9.5, -25, 1.5, -30, 6, -35);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.lineWidth = 1.2;
+        blob(7, -35.5, 2.3, 2, 0);
+        line2(8.6, -35.4, 17, -33.2);
+      } else if (b.mode === 'rest') {
+        // Settled on the sand, head tucked in.
+        blob(0, -3.8, 6.6, 3.6, 0);
+        blob(4.2, -6.6, 2.4, 2.2, 0);
+        line2(6.2, -6.4, 7.6, -5.6);
+      } else {
+        // Feeding: legs that step as it walks, the head down when it pecks.
+        var dip = b.peck || 0;
+        var swing = b.tx == null || still() ? 0 : Math.sin(b.phase) * 1.2;
+        line2(-0.8 + swing, 0, 0, -5);
+        line2(1.6 - swing, 0, 1, -5);
+        blob(0, -7.5, 6, 3.4, -0.15 + dip * 0.35);
+        var hx = 5 + dip * 1.5;
+        var hy = -10 + dip * 6;
+        blob(hx, hy, 2.3, 2.1, 0);
+        line2(hx + 1.6, hy + 0.4, hx + 1.6 + b.bill * 0.9, hy + 0.8 + dip * b.bill * 0.55);
+      }
+      ctx.restore();
+    }
+
+    // How tall a bird stands, for its name, its ring and a tap.
+    function height(b) {
+      return (b.mode === 'still' ? 36 : b.mode === 'rest' ? 9 : 12) * size();
+    }
+
+    function shoreDraw() {
+      shoreWater();
+      var near = H * edge + 14 * size();
+      birds.forEach(function (b) {
+        if (b.away) return;
+        if (b.x == null || still()) settle(b);
+        var colourOf = b.me ? bright : CREAM;
+        if (b.flying) {
+          glyph(b);
+          return;
+        }
+        ctx.fillStyle = colourOf;
+        ctx.strokeStyle = colourOf;
+        // Its reflection, where it stands on wet sand or in the shallows.
+        if (b.y <= near) {
+          ctx.globalAlpha = 0.14;
+          standing(b, true);
+        }
+        if (b.me) {
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = DUSK;
+          ctx.strokeStyle = DUSK;
+          ctx.lineWidth = 3;
+          standing(b, false);
+          ctx.fillStyle = colourOf;
+          ctx.strokeStyle = colourOf;
+        }
+        ctx.globalAlpha = b.me ? 1 : 0.92;
+        standing(b, false);
+        var label = b.me ? (opts.meName || '') : b.name;
+        if (label) {
+          ctx.globalAlpha = 0.8;
+          ctx.fillStyle = colourOf;
+          var fs = Math.round(13 * Math.min(size(), 1.25));
+          ctx.font = 'italic ' + fs + 'px "Cormorant Garamond", Garamond, serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          // A name wider than its stretch goes on two lines; none runs off
+          // the edge.
+          var lines = [label];
+          var room = stretch(b).half * 2 - 6;
+          if (ctx.measureText(label).width > room && label.indexOf(' ') > 0) {
+            var mid = label.length / 2;
+            var cut = -1;
+            for (var i = 0; i < label.length; i++) {
+              if (label.charAt(i) === ' ' && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i;
+            }
+            lines = [label.slice(0, cut), label.slice(cut + 1)];
+          }
+          var wide = 0;
+          lines.forEach(function (l) { wide = Math.max(wide, ctx.measureText(l).width); });
+          var lx = clamp(b.x, wide / 2 + 3, W - wide / 2 - 3);
+          // On a crowded shore every other name sits a line lower, so
+          // neighbours' names never run into each other.
+          var seat = b.me ? order.length : order.indexOf(b.id);
+          var drop = room < 92 && seat % 2 === 1 && lines.length === 1 ? fs * 1.05 : 0;
+          lines.forEach(function (l, k) { ctx.fillText(l, lx, b.y + 5 + drop + k * fs * 1.05); });
+        }
+      });
+      if (ringed && !me.away && !me.flying) {
+        var c = { x: me.x, y: me.y - height(me) / 2 };
+        ring(c, 13, DUSK, 0.5, 3.4);
+        ring(c, 13, bright, 1, 1.5);
+      }
+      if (shown && !shown.away && !shown.flying && shown.x != null) {
+        ring({ x: shown.x, y: shown.y - height(shown) / 2 }, Math.max(15, height(shown) / 2 + 6), CREAM, 0.85, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // The flock's rules, gently: keep a little apart, fly roughly the way
     // your neighbours fly, stay near them, each with a slow wandering of
     // its own; the whole drifts about the sky, never so far that it
     // presses on the edge, and every bird turns back before it. A finger
     // held in the sky draws the birds near it.
     function step(dt) {
+      if (shore) return wade(dt);
       time += dt;
       var t = top();
       var btm = bottom();
@@ -2368,6 +2667,7 @@
       ctx.clearRect(0, 0, W, H);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      if (shore) return shoreDraw();
       water();
       birds.forEach(function (b) {
         if (still()) home(b);
@@ -2422,8 +2722,10 @@
       var best = null;
       var bd = TAP * TAP;
       birds.forEach(function (b) {
-        if (b.leaving || b.x == null) return;
-        var d = (b.x - p.x) * (b.x - p.x) + (b.y - p.y) * (b.y - p.y);
+        if (b.leaving || b.away || b.x == null) return;
+        // A bird on the shore is tapped at its middle, not its feet.
+        var y = shore && !b.flying ? b.y - height(b) / 2 : b.y;
+        var d = (b.x - p.x) * (b.x - p.x) + (y - p.y) * (y - p.y);
         if (d <= bd) {
           bd = d;
           best = b;
@@ -2468,7 +2770,8 @@
     sky.addEventListener('pointercancel', release);
 
     sky.addEventListener('keydown', function (e) {
-      var all = [me].concat(order.map(find).filter(function (b) { return b && !b.leaving; }));
+      var all = (me.away ? [] : [me]).concat(order.map(find).filter(function (b) { return b && !b.leaving; }));
+      if (!all.length) return;
       var i = picked ? all.indexOf(picked) : -1;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') i = (i + 1) % all.length;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') i = i <= 0 ? all.length - 1 : i - 1;
@@ -2506,6 +2809,28 @@
         ringed = !!on;
         draw();
       },
+      // On a shore: the reader's bird flies in and lands with the others.
+      land: function () {
+        if (!shore || !me.away) return;
+        me.away = false;
+        me.tx = null;
+        birds.forEach(function (b) { b.tx = null; });
+        if (still() || !W) {
+          me.x = null;
+        } else {
+          me.flying = true;
+          me.x = W + 14;
+          me.y = H * horizon * 0.6;
+          me.vx = -70;
+          me.vy = 20;
+        }
+        if (opts.label) sky.setAttribute('aria-label', opts.label(order.length));
+        wake();
+        draw();
+      },
+      landed: function () {
+        return !me.away;
+      },
       refresh: function () {
         paints();
         words();
@@ -2523,6 +2848,950 @@
   onSettings(function () {
     scenes.forEach(function (s) { s.refresh(); });
   });
+
+  // ---- Shared by the drawings below -----------------------------------------
+  function html(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function vector(tag, cls, at, parent) {
+    var e = svg(tag, cls);
+    Object.keys(at || {}).forEach(function (k) { e.setAttribute(k, at[k]); });
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  // Something drawn that can be tapped, or reached with Tab and pressed
+  // with Enter or Space.
+  function pressable(e, label, act) {
+    e.setAttribute('tabindex', '0');
+    e.setAttribute('role', 'button');
+    if (label) e.setAttribute('aria-label', label);
+    e.addEventListener('click', act);
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        act(ev);
+      }
+    });
+    return e;
+  }
+  // Run fn(seconds since the last frame) on every frame while el is on
+  // the screen, the tab is showing and nobody has asked for less motion.
+  // Returns { wake() } for after a change; stops by itself otherwise.
+  function frames(el, fn) {
+    var onScreen = !window.IntersectionObserver;
+    var running = false;
+    var last = 0;
+    function tick(ts) {
+      if (!onScreen || document.hidden || still() || !document.documentElement.contains(el)) {
+        running = false;
+        return;
+      }
+      var dt = last ? Math.min((ts - last) / 1000, 0.05) : 1 / 60;
+      last = ts;
+      fn(dt);
+      requestAnimationFrame(tick);
+    }
+    function wake() {
+      if (running || !onScreen || document.hidden || still()) return;
+      running = true;
+      last = 0;
+      requestAnimationFrame(tick);
+    }
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) {
+        onScreen = es[es.length - 1].isIntersecting;
+        wake();
+      }).observe(el);
+    }
+    document.addEventListener('visibilitychange', wake);
+    onSettings(wake);
+    return { wake: wake };
+  }
+  // Ease a number towards another: k is how much of the way it goes in a
+  // second.
+  function toward(v, to, k, dt) {
+    return v + (to - v) * Math.min(1, k * dt);
+  }
+
+  // ---- A heart --------------------------------------------------------------
+  // A line held as a figure. When the line joins two halves with "&" and
+  // carries "∞" on both sides of it, two lights stand for the poles and a
+  // figure-of-eight is drawn slowly between them, crossing at the middle;
+  // the "&" stands at the crossing and glows with a slow, steady beat,
+  // and beneath, the line types itself in, its own "&" beating with the
+  // one above. A line without them is shown as it is, with no figure.
+  // The "&" at the crossing is a button (heart.cross) for the page to
+  // give an action to; opts.name is its name for anyone who can't see
+  // it. The figure is drawn when it first comes into view. For anyone who
+  // asks for less motion the figure stands finished, the "&" glows
+  // without beating, and the line is whole. The line is always there,
+  // whole, for a screen reader. Returns { el, cross, set(line) }.
+  var HEART = { w: 400, h: 180, cx: 200, cy: 90, a: 168 };
+
+  // The figure-of-eight (a lemniscate), from its crossing round the left
+  // loop and back, then round the right.
+  function eight(n) {
+    var d = '';
+    for (var i = 0; i <= n; i++) {
+      var t = Math.PI / 2 + i / n * Math.PI * 2;
+      var s = Math.sin(t);
+      var c = Math.cos(t);
+      var k = 1 + s * s;
+      d += (i ? ' L' : 'M') + (HEART.cx + HEART.a * c / k).toFixed(1) + ' ' + (HEART.cy + HEART.a * s * c / k).toFixed(1);
+    }
+    return d;
+  }
+
+  function heart(box, opts) {
+    opts = opts || {};
+    var id = uid('live-heart');
+    box.classList.add('live-heart');
+    box.textContent = '';
+    var stage = html('div', 'live-heart-stage');
+    stage.hidden = true;
+    var art = vector('svg', 'live-heart-art', { viewBox: '0 0 ' + HEART.w + ' ' + HEART.h, 'aria-hidden': 'true', focusable: 'false' }, stage);
+    var defs = vector('defs', null, {}, art);
+    var glow = vector('radialGradient', null, { id: id + '-glow' }, defs);
+    vector('stop', 'live-heart-stop-core', { offset: '0' }, glow);
+    vector('stop', 'live-heart-stop-mid', { offset: '0.28' }, glow);
+    vector('stop', 'live-heart-stop-out', { offset: '1' }, glow);
+    var foc = HEART.a / Math.SQRT2;
+    var poles = [-1, 1].map(function (side) {
+      var g = vector('g', 'live-heart-pole', {}, art);
+      vector('circle', 'live-heart-halo', { cx: HEART.cx + side * foc, cy: HEART.cy, r: 46, fill: 'url(#' + id + '-glow)' }, g);
+      vector('circle', 'live-heart-light', { cx: HEART.cx + side * foc, cy: HEART.cy, r: 4.5 }, g);
+      return g;
+    });
+    var path = vector('path', 'live-heart-path', { d: eight(160), pathLength: '1' }, art);
+    vector('circle', 'live-heart-beat', { cx: HEART.cx, cy: HEART.cy, r: 30, fill: 'url(#' + id + '-glow)' }, art);
+    var cross = html('button', 'live-heart-cross', '&');
+    cross.type = 'button';
+    if (opts.name) cross.setAttribute('aria-label', opts.name);
+    cross.style.left = HEART.cx / HEART.w * 100 + '%';
+    cross.style.top = HEART.cy / HEART.h * 100 + '%';
+    stage.appendChild(cross);
+    box.appendChild(stage);
+
+    var lineEl = html('p', 'live-heart-line');
+    var whole = html('span', 'visually-hidden');
+    var typed = html('span', 'live-heart-typed');
+    typed.setAttribute('aria-hidden', 'true');
+    lineEl.appendChild(whole);
+    lineEl.appendChild(typed);
+    box.appendChild(lineEl);
+
+    var line = null;
+    var pre = '';
+    var post = '';
+    var amp = false;
+    var figure = false;
+    var played = false;
+    var onScreen = !window.IntersectionObserver;
+    var anims = [];
+    var timer = 0;
+
+    // The first k characters of the line, its "&" in a span of its own.
+    function show(k) {
+      typed.textContent = '';
+      typed.appendChild(document.createTextNode(pre.slice(0, k)));
+      if (amp && k > pre.length) {
+        typed.appendChild(html('span', 'live-heart-amp', '&'));
+        typed.appendChild(document.createTextNode(post.slice(0, k - pre.length - 1)));
+      }
+      typed.classList.toggle('is-typing', k < pre.length + (amp ? 1 : 0) + post.length);
+    }
+
+    function stop() {
+      anims.forEach(function (a) { a.cancel(); });
+      anims = [];
+      clearInterval(timer);
+      timer = 0;
+    }
+
+    function finish() {
+      stop();
+      show(Infinity);
+      box.classList.add('is-drawn');
+      box.classList.toggle('is-beating', figure);
+    }
+
+    function play() {
+      played = true;
+      if (still() || !art.animate || !figure) return finish();
+      stop();
+      box.classList.remove('is-drawn', 'is-beating');
+      show(0);
+      poles.forEach(function (p, i) {
+        anims.push(p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1200, delay: i * 300, easing: 'ease-out', fill: 'both' }));
+      });
+      anims.push(path.animate([{ strokeDashoffset: '1' }, { strokeDashoffset: '0' }], { duration: 4800, delay: 500, easing: 'cubic-bezier(0.45, 0.05, 0.4, 1)', fill: 'both' }));
+      var come = cross.animate([{ opacity: 0, transform: 'translate(-50%, -50%) scale(0.6)' }, { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }], { duration: 1000, delay: 4900, easing: 'ease-out', fill: 'both' });
+      anims.push(come);
+      come.onfinish = function () {
+        box.classList.add('is-beating');
+      };
+      // The line types itself in while the figure closes.
+      var k = 0;
+      var total = pre.length + (amp ? 1 : 0) + post.length;
+      setTimeout(function () {
+        if (box.classList.contains('is-drawn')) return;
+        timer = setInterval(function () {
+          k += 1;
+          show(k);
+          if (k >= total) {
+            clearInterval(timer);
+            timer = 0;
+          }
+        }, 60);
+      }, 2400);
+    }
+
+    function set(s) {
+      s = (s || '').trim();
+      if (s === line) return;
+      line = s;
+      var at = s.indexOf('&');
+      amp = at >= 0;
+      pre = amp ? s.slice(0, at) : s;
+      post = amp ? s.slice(at + 1) : '';
+      figure = amp && (s.match(/∞/g) || []).length >= 2;
+      stage.hidden = !figure;
+      whole.textContent = s;
+      if (played || still()) finish();
+      else if (onScreen) play();
+      else show(0);
+    }
+
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) {
+        onScreen = es[es.length - 1].isIntersecting;
+        if (onScreen && line != null && !played) play();
+      }, { threshold: 0.3 }).observe(box);
+    }
+    onSettings(function () {
+      if (still()) finish();
+    });
+    return { el: box, cross: cross, set: set };
+  }
+
+  // ---- A shore of time ------------------------------------------------------
+  // A round shore seen from above, as a clock of someone's time: water at
+  // the centre, and rings of sand going out from it, one for each rung of
+  // their time (today at the water, then the week, the month, the season,
+  // the year). The tide line is where the water stands: model.tide is how
+  // far through the day the clock is (0 to 1), and the water rises with
+  // it. What they hold ahead lies on the sand as shells, each pile on its
+  // own ring: today's at the waterline, the rest further up the sand, and
+  // a card in hand on the tide line itself. A pile with no cards shows no
+  // shells. Tapping a ring (or its name) or a shell shows its words in
+  // the panel; a ring with no words is drawn faint and can't be tapped.
+  // The water laps a little at its edge; for anyone who asks for less
+  // motion it lies still.
+  //   model.rungs  [{ key, label, short, words, note }], the water's first
+  //   model.piles  [{ label, at, cards: [{ text, note, held }] }]: at is
+  //                where the pile lies, in rings: 0 the waterline, 1 the
+  //                second ring, 1.5 halfway to the third, and the number
+  //                of rings or more the rim
+  //   model.tide   0 to 1
+  //   opts.panel   where the chosen thing's words go (else one is made)
+  //   opts.chosen  the rung's key to show first (else the first with words)
+  // Returns { el, set(model), select(key) }.
+  var SHELL = 'M0 5.5 L-6.5 -1.5 Q-7 -5 -4.4 -6.4 Q-2.2 -8.2 0 -7 Q2.2 -8.2 4.4 -6.4 Q7 -5 6.5 -1.5 Z';
+  var RIBS = 'M0 5.5 L-3.8 -5.6 M0 5.5 L0 -6.8 M0 5.5 L3.8 -5.6';
+  var VB = { at: -14, size: 428 };
+  var TIDE = { centre: 200, inner: 60, outer: 182, rim: 196, low: 14 };
+
+  function tideClock(box, opts) {
+    opts = opts || {};
+    var id = uid('live-shore');
+    box.classList.add('live-shore');
+    box.textContent = '';
+    var stage = html('div', 'live-shore-stage');
+    var art = vector('svg', 'live-shore-art', { viewBox: VB.at + ' ' + VB.at + ' ' + VB.size + ' ' + VB.size, 'aria-hidden': 'true', focusable: 'false' }, stage);
+    var defs = vector('defs', null, {}, art);
+    defs.innerHTML = '' +
+      '<radialGradient id="' + id + '-sand"><stop offset="0.25" class="live-shore-sand-wet"/><stop offset="0.42" class="live-shore-sand-in"/><stop offset="1" class="live-shore-sand-out"/></radialGradient>' +
+      '<radialGradient id="' + id + '-sea"><stop offset="0" class="live-shore-sea-deep"/><stop offset="1" class="live-shore-sea-edge"/></radialGradient>';
+    var C = TIDE.centre;
+    vector('circle', 'live-shore-sand', { cx: C, cy: C, r: TIDE.rim + 8, fill: 'url(#' + id + '-sand)' }, art);
+    var ringsG = vector('g', null, {}, art);
+    var water = vector('circle', 'live-shore-water', { cx: C, cy: C, r: TIDE.low, fill: 'url(#' + id + '-sea)' }, art);
+    var foam = vector('circle', 'live-shore-foam', { cx: C, cy: C, r: TIDE.low }, art);
+    var shellsG = vector('g', null, {}, art);
+    var marks = html('div', 'live-shore-marks');
+    stage.appendChild(marks);
+    box.appendChild(stage);
+    var panel = opts.panel;
+    if (!panel) {
+      panel = html('div', 'live-shore-panel');
+      box.appendChild(panel);
+    }
+    panel.setAttribute('aria-live', 'polite');
+
+    var model = { rungs: [], piles: [], tide: 0 };
+    var R = [];
+    var tideAt = TIDE.low;
+    var shownAt = TIDE.low;
+    var wash = 0;
+    var chosen = opts.chosen ? 'rung-' + opts.chosen : null;
+    var items = {};
+
+    function pct(v) {
+      return (v - VB.at) / VB.size * 100 + '%';
+    }
+
+    // Where a pile lies, in rings, as a distance from the centre.
+    function radius(at) {
+      var n = R.length;
+      if (at <= 0) return tideAt + 10;
+      if (at >= n) return TIDE.rim;
+      var lo = Math.floor(at);
+      var f = at - lo;
+      return R[lo] + ((lo + 1 < n ? R[lo + 1] : TIDE.rim) - R[lo]) * f;
+    }
+
+    // Places round a circle for a run of shells, kept clear of the top
+    // and the bottom where the rings' names are, and far enough apart
+    // for a finger at the size the shore is drawn.
+    function angles(n, r, seat) {
+      var scale = (stage.clientWidth || 340) / VB.size;
+      var gap = Math.max(46 / (r * scale) * 180 / Math.PI, 22);
+      var span = 280;
+      var out = [];
+      var step = Math.min(gap * n > span ? span / n : gap, 40);
+      var mid = (seat * 113 + 70) % span;
+      for (var i = 0; i < n; i++) {
+        var u = ((mid + (i - (n - 1) / 2) * step) % span + span) % span;
+        out.push(u < 140 ? -70 + u : 110 + (u - 140));
+      }
+      return out;
+    }
+
+    function shell(x, y, turn, cls) {
+      var g = vector('g', 'live-shore-shell' + (cls ? ' ' + cls : ''), { transform: 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + turn.toFixed(0) + ') scale(1.15)' }, shellsG);
+      vector('path', 'live-shore-shell-body', { d: SHELL }, g);
+      vector('path', 'live-shore-shell-ribs', { d: RIBS }, g);
+      return g;
+    }
+
+    function markAt(cls, x, y, text, label, key) {
+      var b = html('button', 'live-shore-mark ' + cls, text);
+      b.type = 'button';
+      b.style.left = pct(x);
+      b.style.top = pct(y);
+      if (label) b.setAttribute('aria-label', label);
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', function () { select(key, true); });
+      marks.appendChild(b);
+      return b;
+    }
+
+    function layout() {
+      ringsG.textContent = '';
+      shellsG.textContent = '';
+      marks.textContent = '';
+      items = {};
+      var rungs = model.rungs || [];
+      var n = rungs.length;
+      R = rungs.map(function (r, k) {
+        return n > 1 ? TIDE.inner + k * (TIDE.outer - TIDE.inner) / (n - 1) : TIDE.inner;
+      });
+      tideAt = TIDE.low + (TIDE.inner - 12 - TIDE.low) * clamp(model.tide || 0, 0, 1);
+      if (still()) shownAt = tideAt;
+
+      // The rings, the water's own (today) innermost.
+      rungs.forEach(function (rung, k) {
+        var key = 'rung-' + rung.key;
+        var voiced = !!(rung.words && rung.words.trim());
+        var ring = vector('circle', 'live-shore-ring' + (voiced ? '' : ' is-silent') + (k ? '' : ' is-water'), { cx: C, cy: C, r: R[k] }, ringsG);
+        // Names on their rings, top and bottom by turns, so the water stays
+        // clear for a card in hand.
+        var x = C;
+        var y = k % 2 ? C + R[k] : C - R[k];
+        if (!voiced) {
+          var quiet = html('span', 'live-shore-mark live-shore-name is-silent', rung.short || rung.label);
+          quiet.setAttribute('aria-hidden', 'true');
+          quiet.style.left = pct(x);
+          quiet.style.top = pct(y);
+          marks.appendChild(quiet);
+          return;
+        }
+        var hit = vector('circle', 'live-shore-ring-hit', { cx: C, cy: C, r: R[k] }, ringsG);
+        hit.addEventListener('click', function () { select(key, true); });
+        items[key] = {
+          tag: rung.label + (rung.note ? ' · ' + rung.note : ''),
+          words: rung.words,
+          ring: ring,
+          button: markAt('live-shore-name', x, y, rung.short || rung.label, rung.label, key)
+        };
+      });
+      water.onclick = function () {
+        if (rungs[0]) select('rung-' + rungs[0].key, true);
+      };
+
+      // The shells: each pile on its ring; a card in hand on the tide line.
+      var held = [];
+      (model.piles || []).forEach(function (pile, p) {
+        var cards = (pile.cards || []).filter(function (c) { return c && c.text; });
+        var lying = cards.filter(function (c) { return !c.held; });
+        cards.forEach(function (c) { if (c.held) held.push({ pile: pile, card: c, p: p }); });
+        var r = radius(pile.at);
+        angles(lying.length, r, p).forEach(function (deg, i) {
+          var c = lying[i];
+          place(pile, c, p, cards.indexOf(c), r, deg, '');
+        });
+      });
+      var rHeld = tideAt;
+      angles(held.length, Math.max(rHeld, 20), 7).forEach(function (deg, i) {
+        var h = held[i];
+        place(h.pile, h.card, h.p, h.pile.cards.indexOf(h.card), rHeld, deg, 'is-held');
+      });
+
+      if (!chosen || !items[chosen]) {
+        chosen = null;
+        for (var k = 0; k < rungs.length && !chosen; k++) {
+          if (items['rung-' + rungs[k].key]) chosen = 'rung-' + rungs[k].key;
+        }
+      }
+      select(chosen, false);
+      foamAt();
+    }
+
+    function place(pile, c, p, i, r, deg, cls) {
+      var key = 'card-' + p + '-' + i;
+      var a = deg * Math.PI / 180;
+      var x = C + r * Math.cos(a);
+      var y = C + r * Math.sin(a);
+      var turn = (hash(c.text) % 70) - 35 + deg + 90;
+      var g = shell(x, y, turn, cls);
+      var label = c.text + (c.held ? ' (in hand)' : '') + ', ' + pile.label.toLowerCase();
+      items[key] = {
+        tag: pile.label + (c.held ? ', in hand' : ''),
+        words: c.text,
+        note: c.note,
+        shell: g,
+        button: markAt('live-shore-pick', x, y, '', label, key)
+      };
+    }
+
+    function select(key, byUser) {
+      chosen = key;
+      Object.keys(items).forEach(function (k) {
+        var it = items[k];
+        var on = k === key;
+        if (it.ring) it.ring.classList.toggle('is-chosen', on);
+        if (it.shell) it.shell.classList.toggle('is-chosen', on);
+        it.button.classList.toggle('is-chosen', on);
+        it.button.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      var it = items[key];
+      panel.textContent = '';
+      panel.hidden = !it;
+      if (!it) return;
+      panel.appendChild(html('p', 'live-shore-tag', it.tag));
+      panel.appendChild(linkify(html('p', 'live-shore-words'), it.words));
+      if (it.note) panel.appendChild(html('p', 'live-shore-note', it.note));
+      if (byUser && opts.onSelect) opts.onSelect(key);
+    }
+
+    function foamAt() {
+      var r = shownAt + (still() ? 0 : Math.sin(wash) * 1.4);
+      water.setAttribute('r', r.toFixed(2));
+      foam.setAttribute('r', (r + 1.2).toFixed(2));
+    }
+
+    var motion = frames(stage, function (dt) {
+      wash += dt * 0.55;
+      shownAt = toward(shownAt, tideAt, 1.5, dt);
+      foamAt();
+    });
+
+    var lastW = 0;
+    function resized() {
+      var w = stage.clientWidth;
+      if (!w || w === lastW) return;
+      lastW = w;
+      layout();
+    }
+    if (window.ResizeObserver) new ResizeObserver(resized).observe(stage);
+    onSettings(function () {
+      if (still()) {
+        shownAt = tideAt;
+        foamAt();
+      }
+    });
+
+    return {
+      el: box,
+      set: function (m) {
+        model = m || { rungs: [], piles: [], tide: 0 };
+        layout();
+        motion.wake();
+      },
+      select: function (key) { select('rung-' + key, false); }
+    };
+  }
+
+  // ---- Shells for a count -------------------------------------------------
+  // n small shells in a row, for the eye only (at most max, nine unless
+  // given); none for nothing.
+  function shells(n, max) {
+    n = Math.max(0, Math.min(n || 0, max || 9));
+    var s = vector('svg', 'live-shells', { viewBox: '0 0 ' + Math.max(n * 15, 1) + ' 16', 'aria-hidden': 'true', focusable: 'false' });
+    s.style.width = n * 0.8 + 'rem';
+    for (var i = 0; i < n; i++) {
+      var g = vector('g', 'live-shore-shell', { transform: 'translate(' + (7.5 + i * 15) + ' 8) rotate(' + ((i * 37) % 50 - 25) + ')' }, s);
+      vector('path', 'live-shore-shell-body', { d: SHELL }, g);
+      vector('path', 'live-shore-shell-ribs', { d: RIBS }, g);
+    }
+    if (!n) s.style.display = 'none';
+    return s;
+  }
+
+  // ---- Footprints -----------------------------------------------------------
+  // A walk's steps as footprints in the sand leading up to the water's
+  // edge, the newest nearest the water (at the top). Each step is a fold:
+  // its title and when, and its words a tap away; whatever else the page
+  // gives it (opts: step.extra) sits beneath, always showing. The prints
+  // press into the sand as the reader comes to them; for anyone who asks
+  // for less motion they are simply there, and the water lies still.
+  //   steps: newest first, [{ id, title, when, body: element, extra }]
+  //   opts.today   words for the water's edge (the day it is)
+  //   opts.heading the tag for each step's heading ('h3')
+  // Returns { el }.
+  var FOOT = 'M7 39 C2 38 1 31 2 25 C3 18 2 13 4 9 C6 5 11 5 13 9 C15 14 13 19 13 25 C13 31 12 38 7 39 Z';
+  var TOES = [[3.5, 3.6, 1.9], [7, 1.8, 1.7], [10.2, 1.9, 1.5], [12.8, 3.3, 1.3], [14.6, 5.6, 1.1]];
+
+  function foot(right) {
+    var s = vector('svg', 'live-print-foot', { viewBox: '-2 -2 22 44', 'aria-hidden': 'true', focusable: 'false' });
+    var g = vector('g', null, right ? { transform: 'translate(16 0) scale(-1 1)' } : {}, s);
+    vector('path', null, { d: FOOT }, g);
+    TOES.forEach(function (t) { vector('circle', null, { cx: t[0], cy: t[1] + 1.5, r: t[2] }, g); });
+    return s;
+  }
+
+  function footprints(box, steps, opts) {
+    opts = opts || {};
+    box.textContent = '';
+    box.classList.add('live-prints');
+    var water = html('div', 'live-prints-water');
+    var wave = vector('svg', 'live-prints-wave', { viewBox: '0 0 240 24', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' }, water);
+    vector('path', 'live-prints-sea', { d: 'M0 0 H480 V12 Q470 18 460 12 T440 12 T420 12 T400 12 T380 12 T360 12 T340 12 T320 12 T300 12 T280 12 T260 12 T240 12 T220 12 T200 12 T180 12 T160 12 T140 12 T120 12 T100 12 T80 12 T60 12 T40 12 T20 12 T0 12 Z' }, wave);
+    vector('path', 'live-prints-foam', { d: 'M0 12 Q10 6 20 12 T40 12 T60 12 T80 12 T100 12 T120 12 T140 12 T160 12 T180 12 T200 12 T220 12 T240 12 T260 12 T280 12 T300 12 T320 12 T340 12 T360 12 T380 12 T400 12 T420 12 T440 12 T460 12 T480 12' }, wave);
+    if (opts.today) water.appendChild(html('span', 'live-prints-today', opts.today));
+    box.appendChild(water);
+
+    var ol = html('ol', 'live-prints-list');
+    var feet = [];
+    steps.forEach(function (st, i) {
+      var li = html('li', 'live-print' + (i % 2 ? ' is-right' : ' is-left') + (i === 0 ? ' is-newest' : ''));
+      if (st.id) li.id = st.id;
+      var f = foot(i % 2 === 1);
+      feet.push(f);
+      var main = html('div', 'live-print-main');
+      var head = html(opts.heading || 'h3', 'live-print-head');
+      var b = html('button', 'live-print-button');
+      b.type = 'button';
+      var words = html('span', 'live-print-words');
+      words.appendChild(linkify(html('span', 'live-print-title'), st.title || '', true));
+      if (st.when) words.appendChild(html('span', 'live-print-when', st.when));
+      b.appendChild(words);
+      b.appendChild(mark());
+      head.appendChild(b);
+      main.appendChild(head);
+      var panel = html('div', 'live-print-body');
+      panel.hidden = true;
+      if (st.body) panel.appendChild(st.body);
+      main.appendChild(panel);
+      fold(b, panel);
+      if (st.extra) main.appendChild(st.extra);
+      li.appendChild(f);
+      li.appendChild(main);
+      ol.appendChild(li);
+    });
+    box.appendChild(ol);
+    drawLine(feet);
+    return { el: box };
+  }
+
+  // ---- A night sky ------------------------------------------------------------
+  // Groups of things as constellations: the core group at the centre, the
+  // rest on a ring round it, each its stars in a small spiral joined by a
+  // faint line, its name beneath. A star is one of four kinds:
+  //   page    a bright star that is a link (href); here marks this page
+  //   grain   a double star: two small stars circling each other
+  //   veiled  a star whose light is held in: shown as there, never opened
+  //   star    a plain star
+  // Tapping, focusing or pointing at a star puts its name and words in the
+  // caption. A page's star is a link: a mouse or a key follows it at once;
+  // on a touch screen the first tap shows its words and the link, and a
+  // second follows it. Stars twinkle and double stars turn while the sky
+  // is on screen; the lines draw themselves the first time it is seen.
+  // For anyone who asks for less motion it all holds still.
+  //   groups: [{ label, core, stars: [{ name, words, kind, href, here, also }] }]
+  //   opts.caption  where a star's words go (else one is made)
+  //   opts.name     the sky's name, for anyone who can't see it
+  // Returns { el, set(groups) }.
+  var SKY = { mid: 500, ring: 345, spread: 32 };
+  var XLINK = 'http://www.w3.org/1999/xlink';
+  var SPARK = 'M0 -13 L2.4 -2.4 L13 0 L2.4 2.4 L0 13 L-2.4 2.4 L-13 0 L-2.4 -2.4 Z';
+
+  // A name in one line, or two near its middle when it is long.
+  function twoLines(s, max) {
+    if (s.length <= max) return [s];
+    var mid = s.length / 2;
+    var best = -1;
+    for (var i = 0; i < s.length; i++) {
+      if (s.charAt(i) === ' ' && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+    }
+    return best < 0 ? [s] : [s.slice(0, best), s.slice(best + 1)];
+  }
+
+  function nightSky(box, opts) {
+    opts = opts || {};
+    var id = uid('live-sky');
+    box.classList.add('live-sky');
+    box.textContent = '';
+    var stage = html('div', 'live-sky-stage');
+    var art = vector('svg', 'live-sky-art', { viewBox: '0 0 1000 1000', role: 'group' }, stage);
+    if (opts.name) art.setAttribute('aria-label', opts.name);
+    var defs = vector('defs', null, {}, art);
+    defs.innerHTML = '' +
+      '<radialGradient id="' + id + '-glow"><stop offset="0" stop-color="#fffaf0" stop-opacity="0.95"/><stop offset="0.3" stop-color="#ffe9d6" stop-opacity="0.35"/><stop offset="1" stop-color="#ffe9d6" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + '-core"><stop offset="0" stop-color="#ff9fb8" stop-opacity="0.28"/><stop offset="1" stop-color="#ff9fb8" stop-opacity="0"/></radialGradient>';
+    var heartGlow = vector('circle', 'live-sky-heart', { cx: SKY.mid, cy: SKY.mid, r: 190, fill: 'url(#' + id + '-core)' }, art);
+    var linesG = vector('g', null, {}, art);
+    var namesG = vector('g', null, {}, art);
+    var starsG = vector('g', null, {}, art);
+    box.appendChild(stage);
+    var caption = opts.caption;
+    if (!caption) {
+      caption = html('div', 'live-sky-caption');
+      box.appendChild(caption);
+    }
+    caption.setAttribute('aria-live', 'polite');
+
+    var stars = [];
+    var picked = null;
+    var sig = '';
+    var touch = false;
+    var t = 0;
+    var seen = false;
+
+    function pick(star) {
+      picked = star;
+      stars.forEach(function (s) { s.g.classList.toggle('is-picked', s === star); });
+      caption.textContent = '';
+      if (!star) return;
+      var st = star.st;
+      var head = html('p', 'live-sky-say');
+      head.appendChild(breakable(html('strong', 'live-sky-star-name'), st.name));
+      if (st.also) head.appendChild(html('span', 'live-sky-also', ' · ' + st.also));
+      caption.appendChild(head);
+      if (st.words) caption.appendChild(linkify(html('p', 'live-sky-words'), st.words));
+      if (st.href && !st.here) {
+        var a = html('a', 'live-sky-open', 'Open ' + st.name);
+        a.href = st.href;
+        caption.appendChild(a);
+      }
+    }
+
+    function addStar(st, p) {
+      var page = st.kind === 'page' && st.href;
+      var g;
+      var star = { st: st, x: p.x, y: p.y, phase: hash(st.name || '') % 628 / 100 };
+      if (page) {
+        g = vector('a', 'live-sky-star is-page' + (st.here ? ' is-here' : ''), { href: st.href }, starsG);
+        g.setAttributeNS(XLINK, 'xlink:href', st.href);
+        g.setAttribute('aria-label', st.name);
+        if (st.here) g.setAttribute('aria-current', 'page');
+        g.addEventListener('pointerdown', function (e) { touch = e.pointerType === 'touch' || e.pointerType === 'pen'; });
+        g.addEventListener('click', function (e) {
+          if (touch && picked !== star) {
+            e.preventDefault();
+            pick(star);
+          }
+        });
+      } else {
+        g = pressable(vector('g', 'live-sky-star is-' + st.kind, {}, starsG), st.name + (st.also ? ', ' + st.also : ''), function () { pick(star); });
+      }
+      g.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')');
+      g.addEventListener('focus', function () { pick(star); });
+      g.addEventListener('mouseenter', function () { pick(star); });
+      vector('circle', 'live-sky-hit', { r: 40 }, g);
+      if (page) {
+        star.glow = vector('circle', 'live-sky-glow', { r: 36, fill: 'url(#' + id + '-glow)' }, g);
+        vector('path', 'live-sky-spark', { d: SPARK }, g);
+        vector('circle', 'live-sky-core', { r: 5.5 }, g);
+        if (st.here) vector('circle', 'live-sky-here', { r: 20 }, g);
+      } else if (st.kind === 'grain') {
+        vector('circle', 'live-sky-orbit', { r: 12 }, g);
+        star.pair = vector('g', null, { transform: 'rotate(' + (star.phase * 57).toFixed(0) + ')' }, g);
+        vector('circle', 'live-sky-core', { cx: -12, r: 5 }, star.pair);
+        vector('circle', 'live-sky-core', { cx: 12, r: 3.8 }, star.pair);
+      } else if (st.kind === 'veiled') {
+        vector('circle', 'live-sky-veil', { r: 15 }, g);
+        vector('circle', 'live-sky-core is-held', { r: 3.4 }, g);
+      } else {
+        star.glow = vector('circle', 'live-sky-glow', { r: 18, fill: 'url(#' + id + '-glow)' }, g);
+        vector('circle', 'live-sky-core', { r: 4 }, g);
+      }
+      star.g = g;
+      stars.push(star);
+    }
+
+    // Names about 13px tall on the screen, whatever size the sky is.
+    function nameSize() {
+      return clamp(13.5 * 1000 / (stage.clientWidth || 340), 24, 48);
+    }
+
+    var last = [];
+    function build(groups) {
+      last = groups;
+      var keep = picked ? picked.st.name : null;
+      var fs = nameSize();
+      namesG.setAttribute('font-size', fs.toFixed(1));
+      linesG.textContent = '';
+      namesG.textContent = '';
+      starsG.textContent = '';
+      stars = [];
+      picked = null;
+      var core = null;
+      groups.forEach(function (g) { if (!core && g.core) core = g; });
+      var around = groups.filter(function (g) { return g !== core; });
+      var places = [];
+      if (core) places.push({ g: core, x: SKY.mid, y: SKY.mid, turn: 0.4 });
+      heartGlow.style.display = core ? '' : 'none';
+      around.forEach(function (g, j) {
+        var a = (-90 + j * 360 / around.length) * Math.PI / 180;
+        var r = core ? SKY.ring : (around.length > 1 ? SKY.ring : 0);
+        places.push({ g: g, x: SKY.mid + r * Math.cos(a), y: SKY.mid + r * Math.sin(a), turn: j * 0.9 });
+      });
+      places.forEach(function (pl) {
+        var list = pl.g.stars || [];
+        var pts = list.map(function (st, i) {
+          var r = list.length === 1 ? 0 : SKY.spread * Math.sqrt(i + 0.6);
+          var a = i * 2.39996 + pl.turn;
+          return { x: pl.x + r * Math.cos(a), y: pl.y + r * Math.sin(a) };
+        });
+        if (pts.length > 1) {
+          vector('path', 'live-sky-line', {
+            d: 'M' + pts.map(function (p) { return p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join(' L'),
+            pathLength: '1'
+          }, linesG);
+        }
+        list.forEach(function (st, i) { addStar(st, pts[i]); });
+        var low = pl.y;
+        pts.forEach(function (p) { low = Math.max(low, p.y); });
+        var words = twoLines(pl.g.label || '', 15);
+        var wide = 0;
+        words.forEach(function (w) { wide = Math.max(wide, w.length * fs * 0.46); });
+        var x = clamp(pl.x, wide / 2 + 8, 1000 - wide / 2 - 8);
+        var text = vector('text', 'live-sky-name' + (pl.g.core ? ' is-core' : ''), { x: x.toFixed(1), y: (low + 18 + fs).toFixed(1) }, namesG);
+        words.forEach(function (w, k) {
+          var span = vector('tspan', null, { x: x.toFixed(1), dy: k ? '1.1em' : '0' }, text);
+          span.textContent = w;
+        });
+      });
+      if (keep) {
+        stars.forEach(function (s) { if (s.st.name === keep) pick(s); });
+      }
+      if (!seen && !still() && window.IntersectionObserver) box.classList.add('is-waiting');
+      twinkle(0);
+    }
+
+    function twinkle(dt) {
+      t += dt;
+      stars.forEach(function (s) {
+        if (s.glow) s.glow.setAttribute('opacity', still() ? '0.85' : (0.62 + 0.38 * Math.sin(t * 1.2 + s.phase)).toFixed(2));
+        if (s.pair) s.pair.setAttribute('transform', 'rotate(' + ((s.phase * 57 + (still() ? 0 : t * 26)) % 360).toFixed(1) + ')');
+      });
+    }
+    var motion = frames(stage, twinkle);
+
+    // A sky drawn at a new size lays its names out again.
+    var drawnAt = 0;
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () {
+        var w = stage.clientWidth;
+        if (!w || Math.abs(w - drawnAt) < 2) return;
+        drawnAt = w;
+        if (last.length) build(last);
+      }).observe(stage);
+    }
+
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) {
+        if (!es[es.length - 1].isIntersecting || seen) return;
+        seen = true;
+        box.classList.remove('is-waiting');
+        if (!still()) box.classList.add('is-drawing');
+      }, { threshold: 0.25 }).observe(stage);
+    }
+    onSettings(function () { twinkle(0); });
+
+    return {
+      el: box,
+      set: function (groups) {
+        var s = JSON.stringify(groups || []);
+        if (s === sig) return;
+        sig = s;
+        build(groups || []);
+        motion.wake();
+      }
+    };
+  }
+
+  // ---- Lanterns -----------------------------------------------------------------
+  // A lit doorway in the night (a room), with a small lantern for each of
+  // the notes left in it, hung in the air round it: the newest nearest the
+  // door, older ones further out. The lanterns bob a little; a note that
+  // arrives while the page is open rises from below to its place, and the
+  // others make way. Tapping or focusing a lantern calls opts.onPick(note)
+  // and marks it. The doorway is a link (opts.door: { href, label }).
+  // For anyone who asks for less motion the lanterns hang still and a new
+  // one is simply there.
+  //   notes: newest first, [{ id, label }], at most nine shown
+  // Returns { el, set(notes), pick(id) }.
+  function lanterns(box, opts) {
+    opts = opts || {};
+    var id = uid('live-lantern');
+    box.classList.add('live-lanterns');
+    box.textContent = '';
+    var stage = html('div', 'live-lantern-stage');
+    var art = vector('svg', 'live-lantern-art', { viewBox: '0 0 600 420', role: 'group' }, stage);
+    if (opts.name) art.setAttribute('aria-label', opts.name);
+    var defs = vector('defs', null, {}, art);
+    defs.innerHTML = '' +
+      '<linearGradient id="' + id + '-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9c4"/><stop offset="1" stop-color="#ffb07a"/></linearGradient>' +
+      '<linearGradient id="' + id + '-spill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc58e" stop-opacity="0.5"/><stop offset="1" stop-color="#ffc58e" stop-opacity="0"/></linearGradient>' +
+      '<radialGradient id="' + id + '-glow"><stop offset="0" stop-color="#ffd59a" stop-opacity="0.55"/><stop offset="0.45" stop-color="#ff9a6b" stop-opacity="0.16"/><stop offset="1" stop-color="#ff9a6b" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + '-lamp" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#fff3d6"/><stop offset="0.6" stop-color="#ffc27f"/><stop offset="1" stop-color="#e07a54"/></radialGradient>';
+    vector('circle', null, { cx: 300, cy: 330, r: 190, fill: 'url(#' + id + '-glow)', 'class': 'live-lantern-aura' }, art);
+    vector('path', null, { d: 'M258 392 L342 392 L480 420 L120 420 Z', fill: 'url(#' + id + '-spill)', 'class': 'live-lantern-spill' }, art);
+    vector('line', 'live-lantern-ground', { x1: 0, y1: 392, x2: 600, y2: 392 }, art);
+    var door = opts.door && opts.door.href ? vector('a', 'live-lantern-door', { href: opts.door.href }, art) : vector('g', 'live-lantern-door', {}, art);
+    if (opts.door && opts.door.href) door.setAttributeNS(XLINK, 'xlink:href', opts.door.href);
+    if (opts.door && opts.door.label) door.setAttribute('aria-label', opts.door.label);
+    vector('path', 'live-lantern-doorway', { d: 'M258 392 V292 A42 42 0 0 1 342 292 V392 Z', fill: 'url(#' + id + '-light)' }, door);
+    vector('path', 'live-lantern-frame', { d: 'M250 392 V292 A50 50 0 0 1 350 292 V392' }, door);
+    var lampsG = vector('g', null, {}, art);
+    box.appendChild(stage);
+
+    var lamps = [];
+    var chosen = null;
+    var started = false;
+    var t = 0;
+
+    function slot(k) {
+      var row = Math.floor(k / 2);
+      var side = k % 2 ? -1 : 1;
+      var r = 112 + row * 46;
+      var a = side * (30 + row * 15) * Math.PI / 180;
+      return { x: clamp(300 + r * Math.sin(a), 28, 572), y: Math.max(44, 312 - r * Math.cos(a)) };
+    }
+
+    function make(note) {
+      var lamp = { note: note, phase: hash(note.id || '') % 628 / 100 };
+      var g = pressable(vector('g', 'live-lantern', {}, lampsG), note.label, function () { pick(lamp); });
+      g.addEventListener('focus', function () { pick(lamp); });
+      vector('circle', 'live-lantern-hit', { r: 40 }, g);
+      vector('circle', 'live-lantern-glow', { r: 38, fill: 'url(#' + id + '-glow)' }, g);
+      vector('circle', 'live-lantern-ring', { r: 25 }, g);
+      vector('path', 'live-lantern-paper', { d: 'M-9 -13 Q-15 0 -9 13 L9 13 Q15 0 9 -13 Z', fill: 'url(#' + id + '-lamp)' }, g);
+      vector('path', 'live-lantern-rib', { d: 'M-4 -13 Q-6 0 -4 13 M4 -13 Q6 0 4 13' }, g);
+      vector('rect', 'live-lantern-cap', { x: -7, y: -16, width: 14, height: 3.4, rx: 1 }, g);
+      vector('rect', 'live-lantern-cap', { x: -6, y: 12.6, width: 12, height: 3.4, rx: 1 }, g);
+      lamp.g = g;
+      return lamp;
+    }
+
+    function pick(lamp) {
+      chosen = lamp ? lamp.note.id : null;
+      lamps.forEach(function (l) { l.g.classList.toggle('is-picked', l === lamp); });
+      if (lamp && opts.onPick) opts.onPick(lamp.note);
+    }
+
+    function render() {
+      lamps.forEach(function (l) {
+        var bob = still() ? 0 : Math.sin(t * 0.9 + l.phase) * 4;
+        l.g.setAttribute('transform', 'translate(' + l.x.toFixed(1) + ' ' + (l.y + bob).toFixed(1) + ')');
+      });
+    }
+
+    function step(dt) {
+      t += dt;
+      lamps.forEach(function (l) {
+        var k = l.rising ? 0.7 : 2.4;
+        l.x = toward(l.x, l.tx, k, dt);
+        l.y = toward(l.y, l.ty, k, dt);
+        if (l.rising && Math.abs(l.y - l.ty) < 1 && Math.abs(l.x - l.tx) < 1) l.rising = false;
+      });
+      render();
+    }
+    var motion = frames(stage, step);
+
+    function set(notes) {
+      notes = (notes || []).slice(0, 9);
+      var had = {};
+      lamps.forEach(function (l) { had[l.note.id] = l; });
+      var next = [];
+      notes.forEach(function (n, k) {
+        var s = slot(k);
+        var lamp = had[n.id];
+        if (!lamp) {
+          lamp = make(n);
+          if (started && !still()) {
+            lamp.x = 300;
+            lamp.y = 470;
+            lamp.rising = true;
+          } else {
+            lamp.x = s.x;
+            lamp.y = s.y;
+          }
+        }
+        delete had[n.id];
+        lamp.note = n;
+        lamp.g.setAttribute('aria-label', n.label);
+        lamp.tx = s.x;
+        lamp.ty = s.y;
+        if (still()) {
+          lamp.x = s.x;
+          lamp.y = s.y;
+        }
+        next.push(lamp);
+      });
+      Object.keys(had).forEach(function (k) { had[k].g.remove(); });
+      lamps = next;
+      started = true;
+      lamps.forEach(function (l) { l.g.classList.toggle('is-picked', l.note.id === chosen); });
+      render();
+      motion.wake();
+    }
+
+    onSettings(function () {
+      if (!still()) return;
+      lamps.forEach(function (l) {
+        l.x = l.tx;
+        l.y = l.ty;
+        l.rising = false;
+      });
+      render();
+    });
+
+    return {
+      el: box,
+      set: set,
+      pick: function (noteId) {
+        var found = null;
+        lamps.forEach(function (l) { if (l.note.id === noteId) found = l; });
+        pick(found);
+      }
+    };
+  }
 
   window.Live = {
     still: still,
@@ -2548,6 +3817,12 @@
     mini: mini,
     filmModel: filmModel,
     film: film,
-    scene: scene
+    scene: scene,
+    heart: heart,
+    shore: tideClock,
+    shells: shells,
+    footprints: footprints,
+    sky: nightSky,
+    lantern: lanterns
   };
 })();
