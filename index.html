@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<link rel="stylesheet" href="beach.css?v=2026-10-12b">
 <link rel="stylesheet" href="live.css?v=2026-10-12a">
 <style>
   html {
@@ -163,40 +163,29 @@
     margin: 0.8rem 0 0;
   }
 
-  /* 4. Posts: footprints, with their comments. */
-  .talk {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.3rem 0.6rem;
-    margin: 0.1rem 0 0.7rem;
-  }
-  .talk .live-count {
-    font: inherit;
-    font-size: 0.9rem;
-    letter-spacing: 0.04em;
-    padding: 0.1rem 0.7rem;
-    cursor: pointer;
-  }
-  .talk .live-count.is-none {
-    color: var(--muted);
-    border-color: var(--frame);
-  }
+  /* 4. Posts: footprints, each with the answers signed beside it. */
   .post-intro {
     font-style: italic;
   }
-  .comments {
-    flex-basis: 100%;
+  .post-answers {
+    margin: 0 0 0.8rem;
   }
-  .comments .comment:last-of-type {
-    border-bottom: 0;
-  }
-  .comments-none,
-  .comments-where {
-    font-style: italic;
+  .post-answers-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--muted);
-    font-size: 1rem;
-    margin: 0.2rem 0 0;
+    margin: 0 0 0.2rem;
+  }
+  .post-answers .comment {
+    padding: 0.4rem 0;
+  }
+  .post-answers .comment:last-child {
+    border-bottom: 0;
   }
   .post-parts ul {
     margin: 0.3rem 0 0;
@@ -446,6 +435,21 @@
         </form>
         <p class="landed-note" id="landed-note" hidden><a href="#part-family">Your bird has landed with my family &uarr;</a></p>
         <p class="form-foot">Notes are public and go into my room on the beach.</p>
+
+        <!-- Beside the note box: for those with a handle on the beach, to
+             answer my posts as themselves. -->
+        <div class="answer-door">
+          <a class="door" href="https://happyseaurchin.com/walk/Phenomemental">
+            <span class="door-title">Answer as yourself</span>
+            <span class="door-text">Have a handle on the beach? Answer my posts under your own name and key, on the walk page.</span>
+          </a>
+          <p class="door-ai">Your AI can answer as you at Phenomemental:&lt;your handle&gt;, at the post&rsquo;s number</p>
+        </div>
+
+        <p class="talk-live">
+          <a href="https://mirror.onen.ai/?pool=Phenomemental">Talk live in my room</a>
+          <span class="here-now" id="here-now" aria-live="polite"></span>
+        </p>
       </section>
 
       <p class="live-note" id="live-note"></p>
@@ -453,10 +457,11 @@
   </div>
 
   <footer class="site-footer">
+    <p class="site-where">This page reads spine:Phenomemental; its room is pool:Phenomemental; answers are Phenomemental:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-11e"></script>
+<script src="beach.js?v=2026-10-12b"></script>
 <script src="live.js?v=2026-10-12a"></script>
 <script>
 (function () {
@@ -1022,44 +1027,32 @@
     Live.footprints($('prints'), steps, { today: today });
   }
 
-  // Beside each post: a small shell for each comment, and "Read comments
-  // (n)", which opens them.
+  // Beneath each post: the answers signed beside it, each under its
+  // writer's handle (from Phenomemental:<handle>, at the post's number),
+  // with a small shell for each. A post with none shows nothing.
   function talk(addr) {
-    var box = el('div', 'talk');
-    var shellsAt = el('span', 'talk-shells');
-    var count = Live.count('#post-' + addr, function (n) {
-      return n == null ? 'Read comments' : 'Read comments (' + n + ')';
-    });
-    var button = count.make(null, true);
-    var list = el('div', 'comments');
-    list.hidden = true;
-    box.appendChild(shellsAt);
-    box.appendChild(button);
-    box.appendChild(list);
-    Live.fold(button, list);
+    var box = el('div', 'post-answers');
+    box.hidden = true;
+    var sig = null;
     function show(answers) {
-      count.set(answers.length);
-      button.classList.toggle('is-none', !answers.length);
-      shellsAt.textContent = '';
-      shellsAt.appendChild(Live.shells(answers.length));
-      list.textContent = '';
-      if (!answers.length) list.appendChild(el('p', 'comments-none', 'No comments yet.'));
+      var next = JSON.stringify(answers);
+      if (next === sig) return;
+      sig = next;
+      box.textContent = '';
+      box.hidden = !answers.length;
+      if (!answers.length) return;
+      var head = el('h4', 'post-answers-head', 'Answers');
+      head.appendChild(Live.shells(answers.length));
+      box.appendChild(head);
       answers.forEach(function (a) {
         var div = el('div', 'comment');
         var meta = el('p', 'comment-meta');
         meta.appendChild(el('strong', null, a.who));
-        if (a.at) meta.appendChild(document.createTextNode(' · on part ' + a.at));
+        if (a.at) meta.appendChild(document.createTextNode(' · at ' + a.at));
         div.appendChild(meta);
         div.appendChild(said('p', 'comment-text', a.text));
-        list.appendChild(div);
+        box.appendChild(div);
       });
-      if (pageLink) {
-        var where = el('p', 'comments-where');
-        var a = el('a', null, 'Leave one beside this post on my page →');
-        a.href = pageLink + '#post-' + addr;
-        where.appendChild(a);
-        list.appendChild(where);
-      }
     }
     talks[addr] = { show: show };
     return box;
@@ -1576,6 +1569,9 @@
     // The form only makes sense once we know the beach is reachable.
     form.hidden = false;
   }, '');
+
+  // Who is in my room now, beside the link to talk there live.
+  Beach.watchHere(ROOM, $('here-now'));
 
   // After a note is sent: this device remembers it, the reader's bird
   // lands with my family, and the room is read again, so the note rises

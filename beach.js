@@ -335,6 +335,64 @@
     return run;
   }
 
+  // Who is in a room right now. The beach's presence block holds a slot
+  // for each agent, overwritten at every heartbeat: {1: handle, 2: where
+  // it is, such as "pool:X", 3: when}. here(room) resolves to the handles
+  // whose slot names that room and is under two minutes old by the
+  // beach's own clock.
+  var FRESH = 120000;
+  function slots(node, out) {
+    out = out || [];
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') slots(node._, out);
+    for (var i = 1; i <= 9; i++) {
+      var s = node[String(i)];
+      if (!s || typeof s !== 'object') continue;
+      if (typeof s['1'] === 'string' && typeof s['3'] === 'string') out.push(s);
+      else slots(s, out);
+    }
+    return out;
+  }
+  function here(room) {
+    return get('presence').then(function (block) {
+      var now = clock ? Date.parse(clock.iso) : NaN;
+      if (isNaN(now)) now = Date.now();
+      var who = [];
+      slots(block).forEach(function (s) {
+        var at = typeof s['2'] === 'string' ? s['2'].trim() : '';
+        var handle = name(s['1']).trim();
+        var age = now - Date.parse(s['3']);
+        if (at !== room || !handle || !(age < FRESH && age > -FRESH)) return;
+        if (who.indexOf(handle) < 0) who.push(handle);
+      });
+      return who;
+    });
+  }
+
+  // Keep el saying "here now: <handles>" while anyone is in the room:
+  // read every minute while the page is showing, and again when it comes
+  // back into view. Otherwise, and whenever anything fails, el says
+  // nothing, and nothing else is touched.
+  function watchHere(room, el) {
+    if (!el) return;
+    function quiet() {
+      el.textContent = '';
+    }
+    function check() {
+      if (document.hidden) return;
+      try {
+        here(room).then(function (who) {
+          el.textContent = who.length ? 'here now: ' + who.join(', ') : '';
+        }, quiet);
+      } catch (e) {
+        quiet();
+      }
+    }
+    check();
+    setInterval(check, 60000);
+    document.addEventListener('visibilitychange', check);
+  }
+
   window.Beach = {
     get: get,
     point: point,
@@ -345,6 +403,8 @@
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
     addMic: addMic,
-    live: live
+    live: live,
+    here: here,
+    watchHere: watchHere
   };
 })();

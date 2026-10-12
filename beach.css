@@ -434,3 +434,44 @@ form button:disabled {
 @media (min-width: 560px) {
   .sheet { padding: 3rem 3rem 2.5rem; }
 }
+
+/* Beside a note box: a door for those with a handle on the beach, to
+   answer as themselves, with the line their AI can use beneath it. */
+.answer-door {
+  margin: 1.4rem 0 0;
+}
+.answer-door .door-ai {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0.45rem 0 0;
+}
+/* A link to talk live in a room, and who is there now. */
+.talk-live {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.7rem;
+  margin: 1rem 0 0;
+}
+.here-now {
+  font-style: italic;
+  color: var(--muted);
+}
+.here-now::before {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: 0 0.35rem 0.1rem 0;
+  border-radius: 50%;
+  background: var(--crimson);
+}
+.here-now:empty {
+  display: none;
+}
+/* At the foot of a page: where it lives on the beach. */
+.site-where {
+  overflow-wrap: anywhere;
+}
