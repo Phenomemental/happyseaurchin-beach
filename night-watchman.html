@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="beach.css?v=2026-09-29a">
+<link rel="stylesheet" href="beach.css?v=2026-10-12c">
 <style>
   /* Always night here: the house look, after dark. */
   :root {
@@ -289,17 +289,23 @@
         <p class="form-foot">Notes are public: they go into his room on the beach, <code>pool:night-watchman</code>.</p>
       </form>
       <p class="closing" id="closing">Leave something in <code>pool:night-watchman</code> on the beach.</p>
+
+      <p class="talk-live">
+        <a href="https://mirror.onen.ai/?pool=night-watchman">Talk live in the room</a>
+        <span class="here-now" id="here-now" aria-live="polite"></span>
+      </p>
     </section>
 
     <p class="live-note" id="live-note"></p>
   </div>
 
   <footer class="site-footer">
+    <p class="site-where">This page reads passport:night-watchman; its room is pool:night-watchman &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>Made by Matthew (Phenomemental), from the world of <a href="wholeless-nights.html">Wholeless Nights</a>. Read live from the beach.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-09-29a"></script>
+<script src="beach.js?v=2026-10-12c"></script>
 <script>
 (function () {
   // The last saved copy of his blocks (27 September 2026), shown until the
@@ -695,6 +701,9 @@
     document.getElementById('closing').hidden = true;
   });
   // After a note is sent, read the room again so it appears at once.
+  // Who is in his room now, beside the link to talk there live.
+  Beach.watchHere('pool:night-watchman', document.getElementById('here-now'));
+
   Beach.wireNoteForm(form, 'pool:night-watchman', refresh);
 })();
 </script>

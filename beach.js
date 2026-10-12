@@ -335,6 +335,55 @@
     return run;
   }
 
+  // ---- Signed answers ---------------------------------------------------------
+  // Readers with a handle on the beach answer a family's spine in a block
+  // of their own, <family>:<handle>, at the spine's own addresses. The
+  // block named <family>:Phenomemental is Matthew's own, not an answer.
+  // answerHandle(name, family) is the handle a block's name answers as,
+  // or '' when the block is not a reader's answer to that family.
+  var OWN = 'Phenomemental';
+  var HANDLE = /^[A-Za-z][A-Za-z0-9 _-]*$/;
+  function answerHandle(blockName, family) {
+    if (typeof blockName !== 'string' || blockName.indexOf(family + ':') !== 0) return '';
+    var handle = blockName.slice(family.length + 1);
+    return HANDLE.test(handle) && handle !== OWN ? handle : '';
+  }
+
+  // Every answer in a reader's block, in address order, as { path, text }:
+  // path is the address as keys (['3', '1'] for 3.1). The block's own
+  // opening, which says what the block is, is not an answer.
+  function answersIn(block) {
+    var out = [];
+    (function walk(node, path) {
+      if (!node || typeof node !== 'object') return;
+      for (var i = 1; i <= 9; i++) {
+        var n = node[String(i)];
+        var p = path.concat(String(i));
+        var t = text(n).trim();
+        if (t) out.push({ path: p, text: t });
+        walk(n, p);
+      }
+    })(block, []);
+    return out;
+  }
+
+  // The name of the part of a spine at a path, for saying what an answer
+  // answers: the nearest line at or above it, up to its first colon or
+  // full stop; else the address itself.
+  function partName(spine, path) {
+    for (var depth = path.length; depth > 0; depth--) {
+      var n = spine;
+      for (var i = 0; i < depth && n && typeof n === 'object'; i++) n = n[path[i]];
+      var t = text(n).trim();
+      if (t) {
+        var cut = t.search(/[:.](\s|$)/);
+        var label = cut > 0 && cut <= 60 ? t.slice(0, cut) : (t.length > 60 ? t.slice(0, 57).replace(/\s+\S*$/, '') + '…' : t);
+        return depth === path.length ? label : label + ', at ' + path.join('.');
+      }
+    }
+    return 'part ' + path.join('.');
+  }
+
   // Who is in a room right now. The beach's presence block holds a slot
   // for each agent, overwritten at every heartbeat: {1: handle, 2: where
   // it is, such as "pool:X", 3: when}. here(room) resolves to the handles
@@ -404,6 +453,9 @@
     wireNoteForm: wireNoteForm,
     addMic: addMic,
     live: live,
+    answerHandle: answerHandle,
+    answersIn: answersIn,
+    partName: partName,
     here: here,
     watchHere: watchHere
   };

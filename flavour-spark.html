@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="beach.css?v=2026-10-12b">
+<link rel="stylesheet" href="beach.css?v=2026-10-12c">
 <link rel="stylesheet" href="live.css?v=2026-10-11e">
 <style>
   html {
@@ -593,7 +593,7 @@
       </div>
 
       <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=flavour-spark">Talk live in my room</a>
+        <a href="https://mirror.onen.ai/?pool=flavour-spark">Talk live in the room</a>
         <span class="here-now" id="here-now" aria-live="polite"></span>
       </p>
 
@@ -619,7 +619,7 @@
   </footer>
 </main>
 <script src="vendor/gsap-3.13.0.min.js"></script>
-<script src="beach.js?v=2026-10-12b"></script>
+<script src="beach.js?v=2026-10-12c"></script>
 <script src="live.js?v=2026-10-11e"></script>
 <script>
 (function () {
@@ -628,7 +628,7 @@
   var ROOM = 'pool:flavour-spark';
   // Each reader who answers on the walk page has a block named this and
   // their handle.
-  var READERS = 'flavour-spark:';
+  var FAMILY = 'flavour-spark';
   var UNREAD_INDEX = 'The answers written on the walk page couldn’t be read from the beach just now.';
   var UNREAD_READER = 'Couldn’t be read from the beach just now.';
   var UNREAD_ROOM = 'The notes left here couldn’t be read from the beach just now.';
@@ -1334,9 +1334,10 @@
       var had = readers;
       readers = {};
       return Promise.all(ix.blocks.filter(function (b) {
-        return typeof b === 'string' && b.indexOf(READERS) === 0 && b.length > READERS.length;
+        // A reader's answers; Matthew's own block is not one.
+        return !!Beach.answerHandle(b, FAMILY);
       }).map(function (name) {
-        var handle = name.slice(READERS.length);
+        var handle = Beach.answerHandle(name, FAMILY);
         var t = touched[name] || '';
         var last = had[name];
         if (last && t && last.touched === t) {
@@ -1544,8 +1545,8 @@
       idx.then(function (ix) {
         if (!ix || !Array.isArray(ix.blocks)) return;
         readerHandles = ix.blocks.filter(function (b) {
-          return typeof b === 'string' && b.indexOf(READERS) === 0 && b.length > READERS.length;
-        }).map(function (b) { return b.slice(READERS.length); });
+          return !!Beach.answerHandle(b, FAMILY);
+        }).map(function (b) { return Beach.answerHandle(b, FAMILY); });
         updateResponders();
       }, function () {}),
       // The strip sits inside the block's part 3, and tells time by the
