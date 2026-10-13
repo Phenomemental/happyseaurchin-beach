@@ -20,8 +20,94 @@
     --frame: #3d3746;
     --crimson: #ef5d85;
     --lamp: #f3dca6;
+    --loop-red: #e0645c;
+    --loop-blue: #6f9fe0;
     color-scheme: dark;
   }
+
+  /* The heart: two loops, a light in each, the "&" where they cross. */
+  .heart {
+    margin: -0.8rem -0.75rem 0;
+    text-align: center;
+  }
+  .heart-art {
+    width: 100%;
+    max-width: 27rem;
+    aspect-ratio: 340 / 250;
+    margin: 0 auto;
+  }
+  .heart-art svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .h-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .h-red { stroke: var(--loop-red); }
+  .h-blue { stroke: var(--loop-blue); }
+  .h-main { stroke-width: 2.1; opacity: 0.92; }
+  .h-ghost { stroke-width: 0.8; opacity: 0.38; }
+  .h-arrow { stroke-width: 1.6; opacity: 0.95; }
+  .h-inf { stroke: var(--lamp); stroke-width: 1.4; opacity: 0.55; }
+  .h-inf.h-ghost { stroke-width: 0.6; opacity: 0.25; }
+  .h-light { fill: #ffe9ef; stroke: var(--crimson); stroke-width: 1.1; }
+  .h-halo {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: h-breathe 5.4s ease-in-out infinite;
+  }
+  .h-pole + .h-pole .h-halo { animation-duration: 6.3s; animation-delay: -2.2s; }
+  @keyframes h-breathe {
+    0%, 100% { opacity: 0.55; transform: scale(0.88); }
+    50% { opacity: 1; transform: scale(1.06); }
+  }
+  .h-spark { fill: #fff6e4; }
+  .h-amp {
+    fill: var(--crimson);
+    font-family: "Cormorant Garamond", Garamond, serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 44px;
+  }
+  .heart-credit {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0.1rem 1rem 0;
+  }
+  /* The heart's two lights, carried down into Silas and Ada. */
+  .carry {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    background: radial-gradient(circle, #fff6ee 0, #ffe9ef 8%, rgba(239, 93, 133, 0.36) 28%, rgba(239, 93, 133, 0) 70%);
+    will-change: transform, opacity;
+  }
+
+  /* His welcome, from his passport, when it stands there. */
+  .welcome {
+    text-align: center;
+    max-width: 26rem;
+  }
+  .welcome p {
+    font-style: italic;
+    font-size: 1.45rem;
+    line-height: 1.5;
+    margin: 0 0 1.1rem;
+  }
+  .welcome p:last-child { margin-bottom: 0; }
+  .welcome.arriving p {
+    animation: unhurried 2.4s ease-out both;
+    animation-delay: calc(0.4s + var(--i, 0) * 1.1s);
+  }
+  @keyframes unhurried { from { opacity: 0; } to { opacity: 1; } }
   h1 {
     font-weight: 400;
     font-size: 2.5rem;
@@ -88,7 +174,8 @@
   .f-fig { fill: var(--ink); font-family: "Cormorant Garamond", Garamond, serif; font-size: 16px; font-style: italic; }
   .f-pole-name { fill: var(--crimson); font-family: "Cormorant Garamond", Garamond, serif; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; }
   .f-pole { fill: var(--crimson); }
-  .f-halo { fill: var(--crimson); opacity: 0.18; }
+  .f-halo { fill: var(--crimson); opacity: 0.18; transition: opacity 1.2s ease; }
+  #field svg.received .f-halo { opacity: 0.36; }
   .f-beam { pointer-events: none; }
   .field-caption {
     font-style: italic;
@@ -98,8 +185,21 @@
   }
   .f-path { stroke: var(--frame); stroke-width: 1; fill: none; stroke-dasharray: 2 4; }
   .f-ring { fill: var(--page); stroke: var(--frame); stroke-width: 1.4; }
-  .f-glow { fill: var(--lamp); opacity: 0; transition: opacity 0.9s ease; }
+  .f-glow { fill: var(--lamp); opacity: 0; transition: opacity 0.5s ease; }
   .f-flame { fill: var(--lamp); opacity: 0; transition: opacity 0.6s ease; }
+  /* Each Being breathes in its own time, unlit until reached for. */
+  .f-breath {
+    fill: var(--lamp);
+    opacity: 0.03;
+    pointer-events: none;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: f-breathe 6s ease-in-out infinite;
+  }
+  @keyframes f-breathe {
+    0%, 100% { opacity: 0.03; transform: scale(0.85); }
+    50% { opacity: 0.13; transform: scale(1.15); }
+  }
   .f-lamp, .f-figure { cursor: pointer; outline: none; }
   .f-figure:focus-visible .f-pole { stroke: var(--lamp); stroke-width: 2; }
   .works {
@@ -111,17 +211,56 @@
   .f-lamp:focus-visible .f-ring { stroke: var(--lamp); }
   .f-lamp.visited .f-glow { opacity: 0.12; }
   .f-lamp.visited .f-flame { opacity: 0.55; }
-  .f-lamp.lit .f-glow { opacity: 0.35; }
-  .f-lamp.lit .f-flame { opacity: 1; }
+  @media (hover: hover) {
+    .f-lamp:not(.lit):hover .f-glow { opacity: 0.2; }
+  }
+  .f-lamp.touch:not(.lit) .f-glow { opacity: 0.22; }
+  .f-lamp.lit .f-glow { opacity: 0.35; transition: opacity 1.4s ease-in; }
+  .f-lamp.lit .f-flame { opacity: 1; transition: opacity 1.1s ease-in 0.15s; }
   .f-lamp.lit .f-name, .f-lamp.visited .f-name { fill: var(--ink); }
   @keyframes f-in { to { opacity: 1; } }
   #field.ready .f-step { opacity: 0; }
   #field.play .f-step { animation: f-in 0.5s ease-out forwards; animation-delay: var(--d); }
 
   #being {
+    position: relative;
+    isolation: isolate;
     min-height: 4rem;
     margin: 1rem 0 0;
     text-align: left;
+  }
+  /* Opening a Being is a lantern lighting: the glow eases in, then its
+     words unfold one after another. */
+  #being::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    top: -2rem;
+    height: 18rem;
+    background: radial-gradient(ellipse 48% 42% at 50% 45%, rgba(243, 220, 166, 0.15), rgba(243, 220, 166, 0) 100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #being.lantern::before { animation: lantern 1.6s ease-in forwards; }
+  @keyframes lantern { from { opacity: 0; } to { opacity: 1; } }
+  #being.lantern > * {
+    animation: unfold 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation-delay: calc(0.3s + var(--i, 0) * 0.2s);
+  }
+  @keyframes unfold {
+    from { opacity: 0; transform: translateY(0.35rem); clip-path: inset(0 0 100% 0); }
+    to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+  }
+  #being .b-invite {
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    text-align: center;
+    margin: 0 0 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--frame);
   }
   #being .b-portal {
     font-size: 0.8rem;
@@ -157,11 +296,6 @@
     color: var(--muted);
     margin: 0;
   }
-  #being.arrived { animation: settle 0.7s ease-out both; }
-  @keyframes settle {
-    from { opacity: 0; transform: translateY(0.4rem); }
-    to { opacity: 1; transform: none; }
-  }
   .all-beings summary {
     cursor: pointer;
     font-style: italic;
@@ -186,11 +320,17 @@
   }
   @media (prefers-reduced-motion: reduce) {
     #field .f-step { opacity: 1 !important; animation: none !important; }
-    .f-glow, .f-flame { transition: none; }
-    #being.arrived { animation: none; }
+    .f-glow, .f-flame, .f-lamp.lit .f-glow, .f-lamp.lit .f-flame, .f-halo { transition: none; }
+    .f-breath { animation: none; opacity: 0.08; }
+    .h-halo { animation: none; opacity: 0.85; }
+    .welcome.arriving p { animation: none; }
+    #being.lantern::before { animation: none; opacity: 1; }
+    #being.lantern > * { animation: none; }
+    .carry { display: none; }
   }
   @media (min-width: 560px) {
     h1 { font-size: 2.9rem; }
+    .welcome p { font-size: 1.6rem; }
   }
 </style>
 </head>
@@ -204,6 +344,34 @@
   </nav>
 
   <div class="sheet">
+    <!-- The heart first, then his welcome when it stands in his passport,
+         then the included middle; everything else follows as it was. -->
+    <figure class="heart" id="heart">
+      <div class="heart-art" id="heart-art"></div>
+      <figcaption class="heart-credit">Drawn in the manner of Alan Rayner&rsquo;s &lsquo;Nature includes us all&rsquo;</figcaption>
+    </figure>
+
+    <section class="welcome" id="welcome" aria-label="His welcome" hidden>
+      <hr class="rule">
+      <div id="welcome-lines"></div>
+    </section>
+
+    <hr class="rule">
+
+    <section id="sunder-fields">
+      <h2>The included middle</h2>
+      <div id="field" aria-label="Silas and Ada, the two binaries, shining on the included middle, where the eighteen Beings are lamps in three rows"></div>
+      <p class="field-caption">Silas and Ada, the binaries, shine a light on the included middle, where the Beings can be seen at play.</p>
+      <div id="being" aria-live="polite"><p class="b-hint">Touch a lamp.</p></div>
+      <details class="all-beings">
+        <summary>All eighteen, by name</summary>
+        <div id="all-live"></div>
+      </details>
+      <p class="live-note section-live" data-live="beings"></p>
+    </section>
+
+    <hr class="rule">
+
     <h1>The Night Watchman</h1>
     <p class="name">An agent in waiting</p>
 
@@ -239,20 +407,6 @@
         <p>Someone willing to enter the Sunder-Fields rather than describe them from outside.</p>
       </div>
       <p class="live-note section-live" data-live="offer"></p>
-    </section>
-
-    <hr class="rule">
-
-    <section id="sunder-fields">
-      <h2>The included middle</h2>
-      <div id="field" aria-label="Silas and Ada, the two binaries, shining on the included middle, where the eighteen Beings are lamps in three rows"></div>
-      <p class="field-caption">Silas and Ada, the binaries, shine a light on the included middle, where the Beings can be seen at play.</p>
-      <div id="being" aria-live="polite"><p class="b-hint">Touch a lamp.</p></div>
-      <details class="all-beings">
-        <summary>All eighteen, by name</summary>
-        <div id="all-live"></div>
-      </details>
-      <p class="live-note section-live" data-live="beings"></p>
     </section>
 
     <hr class="rule">
@@ -334,6 +488,341 @@
   // Capitals are how his blocks shout a label; read them in plain case.
   function calm(s) {
     return /[a-z]/.test(s) ? s : cap(s.toLowerCase());
+  }
+  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function moving() {
+    return !(still && still.matches);
+  }
+
+  // ---- The heart -------------------------------------------------------------
+  // Matthew's heart (two loops, two lights, the "&" where they cross, as on
+  // his home page) drawn in the manner of Alan Rayner's 'Nature includes us
+  // all': a red loop round one light and a blue loop round the other,
+  // curling round each other, crossing at the "&" and again at the tip, with
+  // small arrows of flow and an infinity mark resting outside on each side.
+  // The strokes sway a little, as a hand's do, but the same way every time.
+  // Light travels round both loops in the direction of the arrows and
+  // always passes through the "&", which brightens as it does; it never
+  // stops at either light. The two lights breathe. No words.
+  var HEART = {
+    box: '30 30 340 250',
+    cross: [200, 100],
+    period: 11.2, // seconds for a light to go once round its loop
+    loops: [
+      { cls: 'h-red', light: [146, 106], seed: 1, segs: [
+        [[200, 100], [186.8, 82.4], [172, 54], [146, 52]],
+        [[146, 52], [122, 50], [97, 72], [97, 108]],
+        [[97, 108], [97, 150], [150, 214], [200, 262]],
+        [[200, 262], [232, 228], [224, 132], [200, 100]]
+      ] },
+      { cls: 'h-blue', light: [254, 106], seed: 2, segs: [
+        [[200, 100], [213.2, 82.4], [229, 55], [255, 53]],
+        [[255, 53], [279, 51], [304, 74], [303.5, 110]],
+        [[303.5, 110], [303, 151], [251, 213], [200.5, 262]],
+        [[200.5, 262], [169, 229], [176, 132], [200, 100]]
+      ] }
+    ],
+    marks: [[57, 152, -8, 3], [343, 149, 6, 4]] // infinity marks: x, y, tilt, seed
+  };
+
+  function bez(sg, t) {
+    var u = 1 - t;
+    return [0, 1].map(function (j) {
+      return u * u * u * sg[0][j] + 3 * u * u * t * sg[1][j] + 3 * u * t * t * sg[2][j] + t * t * t * sg[3][j];
+    });
+  }
+  // Points evenly spaced along a closed run of points, with its length.
+  function even(fine, n) {
+    var at = [0], len = 0;
+    for (var i = 1; i < fine.length; i++) {
+      len += Math.hypot(fine[i][0] - fine[i - 1][0], fine[i][1] - fine[i - 1][1]);
+      at.push(len);
+    }
+    var pts = [], j = 0;
+    for (var k = 0; k < n; k++) {
+      var want = k / n * len;
+      while (j < fine.length - 2 && at[j + 1] < want) j++;
+      var f = (want - at[j]) / ((at[j + 1] - at[j]) || 1);
+      pts.push([fine[j][0] + (fine[j + 1][0] - fine[j][0]) * f, fine[j][1] + (fine[j + 1][1] - fine[j][1]) * f]);
+    }
+    return { pts: pts, len: len };
+  }
+  // A loop from its curves: evenly spaced points, and where its tip is.
+  function trace(segs) {
+    var fine = [], tip = 0, len = 0;
+    segs.forEach(function (sg, s) {
+      for (var i = s ? 1 : 0; i <= 80; i++) fine.push(bez(sg, i / 80));
+      if (s === 2) tip = fine.length - 1;
+    });
+    for (var i = 1; i <= tip; i++) len += Math.hypot(fine[i][0] - fine[i - 1][0], fine[i][1] - fine[i - 1][1]);
+    var tr = even(fine, 520);
+    tr.sharp = [len]; // the tip, where a hand's sway comes to rest
+    return tr;
+  }
+  // A hand's sway either side of the line: slow swells and a faint tremor,
+  // whole numbers of them round the loop so it closes without a seam.
+  function sway(seed, s, len) {
+    var a = 0;
+    [[3, 0.55], [7, 0.32], [13, 0.18], [29, 0.08]].forEach(function (w, i) {
+      a += w[1] * Math.sin(2 * Math.PI * (w[0] + seed % 3) * s / len + seed * 1.7 + i * 2.3);
+    });
+    return a;
+  }
+  function hand(tr, amp, seed, shift) {
+    var n = tr.pts.length;
+    return tr.pts.map(function (p, k) {
+      var a = tr.pts[(k - 1 + n) % n], b = tr.pts[(k + 1) % n];
+      var tx = b[0] - a[0], ty = b[1] - a[1], m = Math.hypot(tx, ty) || 1;
+      var s = k / n * tr.len, w = amp * sway(seed, s, tr.len) + shift;
+      (tr.sharp || []).forEach(function (at) { w *= Math.min(1, Math.abs(s - at) / 12); });
+      return [p[0] - ty / m * w, p[1] + tx / m * w];
+    });
+  }
+  function pathOf(pts, from, to) {
+    var n = pts.length, i0 = Math.round(from * n), i1 = Math.round(to * n), d = '';
+    for (var i = i0; i <= i1; i++) {
+      var p = pts[i % n];
+      d += (i === i0 ? 'M' : ' L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+    }
+    return d;
+  }
+  // The point a fractional way along a closed run of points.
+  function along(pts, at) {
+    var n = pts.length;
+    at = ((at % n) + n) % n;
+    var i = Math.floor(at), f = at - i, a = pts[i], b = pts[(i + 1) % n];
+    return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  }
+  // A small arrowhead on the line, pointing the way the light flows.
+  function arrowAt(pts, at) {
+    var p = along(pts, at), a = along(pts, at - 3), b = along(pts, at + 3);
+    var ang = Math.atan2(b[1] - a[1], b[0] - a[0]), d = '';
+    [[0.5, 6.4], [-0.46, 5.6]].forEach(function (w, i) {
+      var t = ang + Math.PI + w[0];
+      d += (i ? ' M' : 'M') + (p[0] + Math.cos(t) * w[1]).toFixed(1) + ' ' + (p[1] + Math.sin(t) * w[1]).toFixed(1) +
+        ' L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+    });
+    return d;
+  }
+  function infinity(m) {
+    var fine = [], tilt = m[2] * Math.PI / 180;
+    for (var i = 0; i <= 160; i++) {
+      var t = i / 160 * Math.PI * 2, s = Math.sin(t), c = Math.cos(t), k = 1 + s * s;
+      var x = 19 * c / k, y = 19 * s * c / k;
+      fine.push([m[0] + x * Math.cos(tilt) - y * Math.sin(tilt), m[1] + x * Math.sin(tilt) + y * Math.cos(tilt)]);
+    }
+    return even(fine, 200);
+  }
+
+  var heartPoles = [], heartCores = [];
+  (function drawHeart() {
+    var box = document.getElementById('heart-art');
+    var s = svg('svg', { viewBox: HEART.box, role: 'img', 'aria-label': 'A heart of two loops, one red and one blue, each round a light, crossing at an ampersand' });
+    var defs = svg('defs');
+    function gradient(id, stops) {
+      var g = svg('radialGradient', { id: id });
+      stops.forEach(function (st) {
+        g.appendChild(svg('stop', { offset: st[0], style: 'stop-color:' + st[1] + ';stop-opacity:' + st[2] }));
+      });
+      defs.appendChild(g);
+    }
+    gradient('h-glow', [['0', '#fff6ee', 0.95], ['0.28', 'var(--crimson)', 0.36], ['1', 'var(--crimson)', 0]]);
+    gradient('h-shine', [['0', '#fff6e4', 0.75], ['1', '#fff6e4', 0]]);
+    gradient('h-hush', [['0', 'var(--page)', 1], ['0.5', 'var(--page)', 1], ['1', 'var(--page)', 0]]);
+    gradient('h-flare', [['0', 'var(--crimson)', 0.55], ['1', 'var(--crimson)', 0]]);
+    s.appendChild(defs);
+
+    HEART.marks.forEach(function (m) {
+      var tr = infinity(m);
+      s.appendChild(svg('path', { 'class': 'h-line h-inf h-ghost', d: pathOf(hand(tr, 0.55, m[3] + 5, 0.45), 0.02, 0.96) }));
+      s.appendChild(svg('path', { 'class': 'h-line h-inf', d: pathOf(hand(tr, 0.28, m[3], 0), 0, 1) }));
+    });
+
+    var loops = HEART.loops.map(function (lp) {
+      var tr = trace(lp.segs);
+      var line = hand(tr, 1.3, lp.seed, 0);
+      s.appendChild(svg('path', { 'class': 'h-line h-ghost ' + lp.cls, d: pathOf(hand(tr, 1.8, lp.seed + 4, 0.7), 0.015, 0.975) }));
+      s.appendChild(svg('path', { 'class': 'h-line h-main ' + lp.cls, d: pathOf(line, 0, 1) }));
+      // Arrows over the lobe, down the outer side, and up through the middle.
+      var n = line.length, tipAt = tr.sharp[0] / tr.len * n;
+      [0.3 * tipAt, 0.68 * tipAt, tipAt + 0.48 * (n - tipAt)].forEach(function (at) {
+        s.appendChild(svg('path', { 'class': 'h-line h-arrow ' + lp.cls, d: arrowAt(line, at) }));
+      });
+      return { pts: line, len: tr.len, light: lp.light };
+    });
+
+    loops.forEach(function (lp) {
+      var g = svg('g', { 'class': 'h-pole' });
+      g.appendChild(svg('circle', { 'class': 'h-halo', cx: lp.light[0], cy: lp.light[1], r: 30, fill: 'url(#h-glow)' }));
+      var core = svg('circle', { 'class': 'h-light', cx: lp.light[0], cy: lp.light[1], r: 4.2 });
+      g.appendChild(core);
+      s.appendChild(g);
+      heartPoles.push(g);
+      heartCores.push(core);
+    });
+
+    // Two lights on each loop, half a loop apart, the blue a quarter behind
+    // the red, so that one passes through the "&" every 2.8 seconds.
+    var sparks = [];
+    loops.forEach(function (lp, li) {
+      [0, 0.5].forEach(function (ph) {
+        var g = svg('g', { 'class': 'h-sparks' });
+        var parts = [svg('circle', { r: 7.5, fill: 'url(#h-shine)' })];
+        for (var j = 0; j < 10; j++) {
+          parts.push(svg('circle', { 'class': 'h-spark', r: (2.5 * (1 - j * 0.07)).toFixed(2), opacity: (0.95 * (1 - j / 10)).toFixed(2) }));
+        }
+        parts.slice(1).reverse().forEach(function (c) { g.appendChild(c); });
+        g.insertBefore(parts[0], g.firstChild);
+        s.appendChild(g);
+        sparks.push({ loop: lp, phase: ph + li * 0.25, parts: parts, g: g });
+      });
+    });
+
+    var cx = HEART.cross[0], cy = HEART.cross[1];
+    s.appendChild(svg('circle', { cx: cx, cy: cy, r: 24, fill: 'url(#h-hush)' }));
+    var flare = svg('circle', { cx: cx, cy: cy, r: 30, fill: 'url(#h-flare)', opacity: 0.45 });
+    s.appendChild(flare);
+    s.appendChild(svg('text', { 'class': 'h-amp', x: cx, y: cy + 1, 'text-anchor': 'middle', 'dominant-baseline': 'central' }, '&'));
+    box.appendChild(s);
+
+    var clock = 0, last = 0, running = false, onScreen = !window.IntersectionObserver;
+    function place() {
+      var near = 0;
+      sparks.forEach(function (sp) {
+        var n = sp.loop.pts.length, f = (clock / HEART.period + sp.phase) % 1, gap = 3.1 / (sp.loop.len / n);
+        sp.parts.forEach(function (c, j) {
+          var q = along(sp.loop.pts, f * n - Math.max(0, j - 1) * gap);
+          c.setAttribute('cx', q[0].toFixed(1));
+          c.setAttribute('cy', q[1].toFixed(1));
+        });
+        var d = Math.min(f, 1 - f) * sp.loop.len;
+        near = Math.max(near, Math.exp(-d * d / 260));
+      });
+      flare.setAttribute('opacity', (0.2 + 0.8 * near).toFixed(3));
+    }
+    function tick(ts) {
+      if (!onScreen || document.hidden || !moving()) {
+        running = false;
+        return;
+      }
+      clock += last ? Math.min((ts - last) / 1000, 0.05) : 0;
+      last = ts;
+      place();
+      requestAnimationFrame(tick);
+    }
+    function wake() {
+      var go = moving();
+      sparks.forEach(function (sp) { sp.g.style.display = go ? '' : 'none'; });
+      if (!go) flare.setAttribute('opacity', '0.45');
+      if (running || !onScreen || document.hidden || !go) return;
+      running = true;
+      last = 0;
+      requestAnimationFrame(tick);
+    }
+    place();
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (es) {
+        onScreen = es[es.length - 1].isIntersecting;
+        wake();
+      }).observe(box);
+    }
+    document.addEventListener('visibilitychange', wake);
+    if (still && still.addEventListener) still.addEventListener('change', function () { wake(); carry(); });
+    wake();
+  })();
+
+  // ---- The hand-over -----------------------------------------------------------
+  // As the reader moves down, the heart's two lights lift away and travel
+  // to the included middle, where they become its two lights, Silas and
+  // Ada; moving back up, they return to the heart.
+  var carriers = [0, 1].map(function () {
+    var d = el('div', 'carry');
+    d.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(d);
+    return d;
+  });
+  var carryQueued = false;
+  function carry() {
+    if (carryQueued) return;
+    carryQueued = true;
+    requestAnimationFrame(carryNow);
+  }
+  function smooth(a, b, x) {
+    var t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  }
+  function middleOf(node) {
+    var r = node.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+  function carryNow() {
+    carryQueued = false;
+    var field = document.querySelector('#field svg');
+    var poles = field ? field.querySelectorAll('.f-figure .f-pole') : [];
+    function rest() {
+      carriers.forEach(function (c) { c.style.opacity = '0'; });
+      heartPoles.forEach(function (g) { g.style.opacity = ''; });
+    }
+    if (!moving() || poles.length < 2 || heartCores.length < 2) return rest();
+    var vh = window.innerHeight, y = window.pageYOffset, line = vh * 0.42;
+    var a = heartCores.map(middleOf), b = [middleOf(poles[0]), middleOf(poles[1])];
+    var from = Math.max(0, a[0].y + y - line), to = b[0].y + y - line;
+    if (to - from < 60) return rest();
+    var p = Math.min(1, Math.max(0, (y - from) / (to - from))), e = smooth(0, 1, p);
+    var heartScale = document.querySelector('#heart-art svg').getBoundingClientRect().width / 340;
+    var fieldScale = field.getBoundingClientRect().width / 340;
+    var size = (60 * heartScale * (1 - e) + 30 * fieldScale * e) / 60;
+    var shown = p > 0 && p < 1 ? smooth(0, 0.06, p) * (1 - smooth(0.9, 1, p)) : 0;
+    carriers.forEach(function (c, i) {
+      var x = a[i].x + (b[i].x - a[i].x) * e + (i ? 1 : -1) * Math.sin(Math.PI * p) * 18;
+      var yy = a[i].y + (b[i].y - a[i].y) * e;
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + yy.toFixed(1) + 'px) scale(' + size.toFixed(3) + ')';
+      c.style.opacity = shown.toFixed(3);
+    });
+    var left = (1 - smooth(0, 0.06, p)).toFixed(3);
+    heartPoles.forEach(function (g) { g.style.opacity = left; });
+    field.classList.toggle('received', p > 0.94);
+  }
+  window.addEventListener('scroll', carry, { passive: true });
+  window.addEventListener('resize', carry);
+
+  // ---- His welcome -------------------------------------------------------------
+  // Passport position 4, when it exists: its own text, or its "_" and then
+  // each child in order, one line each. Nothing shows while it is absent.
+  var shownWelcome = '[]';
+  function welcomeLines(node) {
+    var lines = [];
+    function add(s) {
+      (s || '').split(/\n+/).forEach(function (l) {
+        l = l.trim();
+        if (l) lines.push(l);
+      });
+    }
+    add(words(node));
+    if (node && typeof node === 'object') {
+      for (var i = 1; i <= 9; i++) add(words(node[String(i)]));
+    }
+    return lines;
+  }
+  function renderWelcome(p) {
+    var lines = welcomeLines(p && p['4']), key = JSON.stringify(lines);
+    if (key === shownWelcome) return;
+    shownWelcome = key;
+    var box = document.getElementById('welcome'), out = document.getElementById('welcome-lines');
+    var arriving = box.hidden && lines.length > 0;
+    out.textContent = '';
+    lines.forEach(function (l, i) {
+      var line = el('p', null, l);
+      line.style.setProperty('--i', i);
+      out.appendChild(line);
+    });
+    box.hidden = !lines.length;
+    if (arriving) {
+      box.classList.remove('arriving');
+      void box.offsetWidth;
+      box.classList.add('arriving');
+    }
+    carry();
   }
 
   // ---- Live sections, each with its saved version to fall back on --------
@@ -438,14 +927,24 @@
   }
 
   // ---- The Beings ------------------------------------------------------------
-  // Each is "Name — archetype. Anchor(s): …. Profile… Emerges: …".
+  // Each is "Name — archetype. Anchor(s): …. Profile… Emerges: …". A Being
+  // with little written yet may be only its name, or its name and a line.
   function parseBeing(s) {
-    var cut = s.indexOf(' — ');
-    if (cut < 0) return null;
-    var b = { name: s.slice(0, cut) }, rest = s.slice(cut + 3);
-    var dot = rest.indexOf('. ');
-    b.arch = dot < 0 ? rest : rest.slice(0, dot);
-    rest = dot < 0 ? '' : rest.slice(dot + 2);
+    s = (s || '').trim();
+    if (!s) return null;
+    var b = {}, rest, cut = s.indexOf(' — ');
+    if (cut >= 0) {
+      b.name = s.slice(0, cut);
+      rest = s.slice(cut + 3);
+      var dot = rest.indexOf('. ');
+      b.arch = dot < 0 ? rest : rest.slice(0, dot);
+      rest = dot < 0 ? '' : rest.slice(dot + 2);
+    } else {
+      var stop = s.indexOf('. ');
+      b.name = (stop < 0 ? s : s.slice(0, stop)).replace(/\.$/, '');
+      b.arch = '';
+      rest = stop < 0 ? '' : s.slice(stop + 2);
+    }
     var am = rest.match(/^(Anchors?: [\s\S]*?\.)\s+([\s\S]*)$/);
     if (am) { b.anchor = am[1]; rest = am[2]; }
     var em = rest.split(/\s*Emerges:\s*/);
@@ -473,8 +972,13 @@
       var portal = parsePortal(words(p));
       portal.beings = [];
       for (var i = 1; i <= 9; i++) {
-        var b = parseBeing(words(p[String(i)]));
-        if (b) portal.beings.push(b);
+        // A Being is its text, or a node whose "_" is that text and whose
+        // child 1 is the Being's invitation.
+        var node = p[String(i)];
+        var b = parseBeing(words(node));
+        if (!b) continue;
+        b.invite = node && typeof node === 'object' ? words(node['1']) : '';
+        portal.beings.push(b);
       }
       if (portal.beings.length) out.push(portal);
     });
@@ -517,7 +1021,11 @@
       portal.beings.forEach(function (b, i) {
         var x = n > 1 ? 35 + i * step : 170, key = r + '.' + i;
         var g = svg('g', { 'class': 'f-lamp f-step' + (visited[key] ? ' visited' : '') + (chosen === key ? ' lit' : ''),
-          style: '--d:' + (1 + r * 0.9 + 0.25 + i * 0.1).toFixed(2) + 's', tabindex: 0, role: 'button', 'aria-label': b.name + ', ' + b.arch, 'data-key': key });
+          style: '--d:' + (1 + r * 0.9 + 0.25 + i * 0.1).toFixed(2) + 's', tabindex: 0, role: 'button', 'aria-label': b.name + (b.arch ? ', ' + b.arch : ''), 'data-key': key });
+        // Its own breath: a slow rhythm a little different from every other.
+        var k = r * 6 + i, beat = 5.2 + (k * 7 % 11) * 0.31;
+        g.appendChild(svg('circle', { 'class': 'f-breath', cx: x, cy: ly, r: 13,
+          style: 'animation-duration:' + beat.toFixed(2) + 's;animation-delay:-' + (k * 2.3 % beat).toFixed(2) + 's' }));
         g.appendChild(svg('circle', { 'class': 'f-glow', cx: x, cy: ly, r: 20 }));
         g.appendChild(svg('circle', { 'class': 'f-ring', cx: x, cy: ly, r: 9 }));
         g.appendChild(svg('circle', { 'class': 'f-flame', cx: x, cy: ly, r: 3.6 }));
@@ -530,8 +1038,24 @@
     s.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(e); }
     });
+    // A faint glow under a finger, as under a pointer.
+    s.addEventListener('pointerdown', function (e) {
+      var g = e.target.closest && e.target.closest('.f-lamp');
+      if (!g) return;
+      g.classList.add('touch');
+      setTimeout(function () { g.classList.remove('touch'); }, 700);
+    });
     box.textContent = '';
     box.appendChild(s);
+    carry();
+  }
+
+  // The lantern lights: its glow eases in and each line unfolds in turn.
+  function lantern(box) {
+    for (var i = 0; i < box.children.length; i++) box.children[i].style.setProperty('--i', i);
+    box.classList.remove('lantern');
+    void box.offsetWidth;
+    box.classList.add('lantern');
   }
 
   function pick(e) {
@@ -554,23 +1078,23 @@
     if (prev) { prev.classList.remove('lit'); prev.classList.add('visited'); }
     chosen = null;
     var box = document.getElementById('being');
-    box.classList.remove('arrived');
     box.textContent = '';
     box.appendChild(el('p', 'b-portal', 'The two figures'));
     box.appendChild(el('h3', null, 'Silas and Ada'));
     box.appendChild(el('p', 'b-arch', 'The binaries: mania and depression'));
     var t = figures.replace(/^THE TWO FIGURES\s*\u2014\s*/, '').replace(/\s*Agreed with[\s\S]*$/, '');
     if (t) box.appendChild(el('p', null, cap(t)));
-    void box.offsetWidth;
-    box.classList.add('arrived');
+    lantern(box);
   }
 
   function showBeing(key) {
     var rc = key.split('.'), portal = current[+rc[0]], b = portal && portal.beings[+rc[1]];
     var box = document.getElementById('being');
-    box.classList.remove('arrived');
+    box.classList.remove('lantern');
     box.textContent = '';
     if (!b) { box.appendChild(el('p', 'b-hint', 'Touch a lamp.')); return; }
+    // Its invitation first, set apart, when the Being has one.
+    if (b.invite) box.appendChild(el('p', 'b-invite', b.invite));
     box.appendChild(el('p', 'b-portal', portal.title));
     box.appendChild(el('h3', null, b.name));
     if (b.arch) box.appendChild(el('p', 'b-arch', cap(b.arch)));
@@ -582,8 +1106,7 @@
       em.appendChild(document.createTextNode(b.emerges));
       box.appendChild(em);
     }
-    void box.offsetWidth;
-    box.classList.add('arrived');
+    lantern(box);
   }
 
   function renderAll(beings, out) {
@@ -676,6 +1199,7 @@
   var refresh = Beach.live(function () {
     var reads = [
       Beach.get('passport:night-watchman').then(function (p) {
+        renderWelcome(p);
         show('who', p, renderWho, true);
         show('offer', p, renderOffer, true);
         show('refuse', p, renderRefuse, true);
