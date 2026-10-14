@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="brand.css?v=2026-10-14b">
 <style>
-  /* ---- The bar: the script, following, presenting ------------------------ */
+  /* ---- The bar: reading more, following, presenting ---------------------- */
   :root { --bar-h: 3.4rem; }
   .bar {
     position: sticky;
@@ -64,8 +64,8 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     transition: transform 0.15s;
   }
-  .switch[aria-checked="true"] .knob { background: var(--cr-purple); }
-  .switch[aria-checked="true"] .knob::after { transform: translateX(1rem); }
+  .switch[aria-checked="true"] .knob, .switch[aria-expanded="true"] .knob { background: var(--cr-purple); }
+  .switch[aria-checked="true"] .knob::after, .switch[aria-expanded="true"] .knob::after { transform: translateX(1rem); }
   .switch:focus-visible, .present-btn:focus-visible, .tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
   .present-btn {
     margin-left: auto;
@@ -99,7 +99,7 @@
   }
   .opening:empty { display: none; }
 
-  /* ---- A slide, its script and its room ---------------------------------- */
+  /* ---- A slide, its fuller text and its room ----------------------------- */
   .unit { scroll-margin-top: var(--bar-h); }
   .slide {
     --s-head: var(--cr-head);
@@ -473,17 +473,17 @@
   .said-list li.redacted .said-where, .said-list li.redacted .said-meta { color: var(--cr-quiet-dark); }
   .said-empty { color: var(--s-quiet); font-style: italic; }
 
-  /* The speaker's script, shown with 'Show the script'. */
-  .script {
+  /* The fuller text under each slide (position 2), shown with 'Read more'. */
+  .fuller {
     display: none;
     background: var(--card);
     border-top: 4px solid var(--cr-purple);
     padding: 1.2rem 1rem;
   }
-  .show-script .script { display: block; }
-  .script-in { max-width: 42rem; margin: 0 auto; }
-  .script-head { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem; }
-  .script p { white-space: pre-line; margin: 0 0 0.8rem; color: var(--ink); }
+  .show-fuller .fuller { display: block; }
+  .fuller-in { max-width: 42rem; margin: 0 auto; }
+  .fuller-head { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem; }
+  .fuller p { white-space: pre-line; margin: 0 0 0.8rem; color: var(--ink); }
 
   /* The room under each slide. */
   .room {
@@ -580,11 +580,11 @@
   }
 
   /* ---- Present: one slide fills the screen -------------------------------- */
-  .hud, .present-script { display: none; }
+  .hud, .present-fuller { display: none; }
   .is-presenting { overflow: hidden; }
   .is-presenting body::before { display: none; }
   .is-presenting .masthead, .is-presenting .bar, .is-presenting footer, .is-presenting .opening,
-  .is-presenting .room, .is-presenting .script, .is-presenting .unit { display: none; }
+  .is-presenting .room, .is-presenting .fuller, .is-presenting .unit { display: none; }
   .is-presenting .unit.current { display: block; }
   .is-presenting .unit.current .slide {
     position: fixed;
@@ -659,7 +659,7 @@
     cursor: pointer;
   }
   .hud button:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 2px; }
-  .is-presenting .present-script.on {
+  .is-presenting .present-fuller.on {
     display: block;
     position: fixed;
     z-index: 35;
@@ -675,8 +675,8 @@
     font-size: max(1rem, min(1.2vw, 2.1vh));
     line-height: 1.5;
   }
-  .present-script p { white-space: pre-line; margin: 0 0 0.7em; max-width: 60em; }
-  .present-script .script-head { color: var(--cr-lilac); }
+  .present-fuller p { white-space: pre-line; margin: 0 0 0.7em; max-width: 60em; }
+  .present-fuller .fuller-head { color: var(--cr-lilac); }
 
   /* The presenter's code */
   dialog.code {
@@ -733,7 +733,7 @@
 
 <div class="bar" id="bar">
   <div class="bar-in">
-    <button class="switch" id="script-switch" type="button" role="switch" aria-checked="false"><span class="knob" aria-hidden="true"></span>Show the script</button>
+    <button class="switch" id="more-switch" type="button" aria-expanded="false"><span class="knob" aria-hidden="true"></span><span class="more-label">Read more</span></button>
     <button class="switch" id="follow-switch" type="button" role="switch" aria-checked="false"><span class="knob" aria-hidden="true"></span>Follow the presenter</button>
     <button class="present-btn" id="present-btn" type="button">Present</button>
   </div>
@@ -760,10 +760,10 @@
   <span class="hud-count" id="hud-count"></span>
   <button type="button" id="hud-next" aria-label="Next slide">&rsaquo;</button>
   <span class="hud-status" id="hud-status" role="status" aria-live="polite"></span>
-  <button type="button" id="hud-script" aria-pressed="false">Script (N)</button>
+  <button type="button" id="hud-more" aria-pressed="false">More (N)</button>
   <button type="button" id="hud-leave">Leave</button>
 </div>
-<div class="present-script" id="present-script" aria-live="polite"></div>
+<div class="present-fuller" id="present-fuller" aria-live="polite"></div>
 
 <dialog class="code" id="code-dialog" aria-labelledby="code-title">
   <form id="code-form" method="dialog">
@@ -786,7 +786,7 @@
   // ---- What this page reads, and where -------------------------------------
   // Everything on the slides is read live from Community Recovery's place:
   // spine:presentation (a slide's address is section.slide; its underscore
-  // is its id, 1 the words on screen, 2 the speaker's script), presenting
+  // is its id, 1 the words on screen, 2 the fuller text), presenting
   // (1 = the address now showing) and the room, pool:presentation (a note's
   // position 2 is the slide it is about). The rules are function:presentation;
   // the look is the block 'brand', carried by brand.css.
@@ -1162,7 +1162,7 @@
 
   // ---- The deck ---------------------------------------------------------------
   var order = [];       // addresses in order: '1.1', '1.2', ...
-  var units = {};       // address -> { unit, slide, script, room, notes, id }
+  var units = {};       // address -> { unit, slide, fuller, room, notes, id }
   var spine = null, spineSig = null;
   var room = null, roomReached = null;
 
@@ -1178,7 +1178,7 @@
           addr: s + '.' + k,
           id: typeof node._ === 'string' ? node._.trim() : '',
           words: Beach.text(node['1']),
-          script: Beach.text(node['2'])
+          fuller: Beach.text(node['2'])
         });
       }
     }
@@ -1204,12 +1204,12 @@
     add(slide, box, el('p', 'slide-num', seq(s.addr) + ' / ' + order.length));
     u.said = slide.querySelector('.said-list');
 
-    u.script.textContent = '';
-    var inner = add(el('div', 'script-in'), el('p', 'script-head', 'The script · slide ' + seq(s.addr)));
-    String(s.script || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
+    u.fuller.textContent = '';
+    var inner = add(el('div', 'fuller-in'), el('p', 'fuller-head', 'More about this slide'));
+    String(s.fuller || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
       .forEach(function (p) { inner.appendChild(el('p', null, p)); });
-    u.script.appendChild(inner);
-    u.scriptText = s.script || '';
+    u.fuller.appendChild(inner);
+    u.fullerText = s.fuller || '';
   }
 
   function makeUnit(addr) {
@@ -1218,10 +1218,10 @@
     unit.id = 'slide-' + key;
     unit.dataset.addr = addr;
     var slide = el('section', 'slide');
-    var script = el('div', 'script');
+    var fuller = el('div', 'fuller');
     var r = makeRoom(addr, key);
-    add(unit, slide, script, r.box);
-    return { unit: unit, slide: slide, script: script, room: r.box, notes: r.notes, form: r.form };
+    add(unit, slide, fuller, r.box);
+    return { unit: unit, slide: slide, fuller: fuller, room: r.box, notes: r.notes, form: r.form };
   }
 
   function renderSpine(b) {
@@ -1455,12 +1455,13 @@
     setInterval(function () { if (!document.hidden) fn(); }, ms);
   }
 
-  // ---- Show the script ------------------------------------------------------
-  var scriptSwitch = document.getElementById('script-switch');
-  scriptSwitch.addEventListener('click', function () {
-    var on = scriptSwitch.getAttribute('aria-checked') !== 'true';
-    scriptSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
-    document.body.classList.toggle('show-script', on);
+  // ---- Read more: the fuller text under every slide ---------------------------
+  var moreSwitch = document.getElementById('more-switch');
+  moreSwitch.addEventListener('click', function () {
+    var on = moreSwitch.getAttribute('aria-expanded') !== 'true';
+    moreSwitch.setAttribute('aria-expanded', on ? 'true' : 'false');
+    moreSwitch.querySelector('.more-label').textContent = on ? 'Read less' : 'Read more';
+    document.body.classList.toggle('show-fuller', on);
   });
 
   // ---- Follow the presenter -------------------------------------------------
@@ -1575,8 +1576,8 @@
   var hud = document.getElementById('hud');
   var hudCount = document.getElementById('hud-count');
   var hudStatus = document.getElementById('hud-status');
-  var hudScript = document.getElementById('hud-script');
-  var pScript = document.getElementById('present-script');
+  var hudMore = document.getElementById('hud-more');
+  var pFuller = document.getElementById('present-fuller');
   var dialog = document.getElementById('code-dialog');
   var codeInput = document.getElementById('code-input');
   var asked = false;
@@ -1612,13 +1613,13 @@
     });
   }
 
-  function drawPresentScript() {
+  function drawPresentFuller() {
     var u = units[order[current]];
-    pScript.textContent = '';
+    pFuller.textContent = '';
     if (!u) return;
-    pScript.appendChild(el('p', 'script-head', 'The script · slide ' + (current + 1)));
-    String(u.scriptText || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
-      .forEach(function (p) { pScript.appendChild(el('p', null, p)); });
+    pFuller.appendChild(el('p', 'fuller-head', 'More about this slide'));
+    String(u.fullerText || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
+      .forEach(function (p) { pFuller.appendChild(el('p', null, p)); });
   }
 
   function show(i, write) {
@@ -1628,7 +1629,7 @@
     var s = units[order[current]].slide;
     s.scrollTop = 0;
     hudCount.textContent = (current + 1) + ' / ' + order.length;
-    drawPresentScript();
+    drawPresentFuller();
     if (write !== false) tellRoom(order[current]);
   }
 
@@ -1659,8 +1660,8 @@
     presenting = false;
     document.documentElement.classList.remove('is-presenting');
     document.body.classList.remove('is-presenting');
-    pScript.classList.remove('on');
-    hudScript.setAttribute('aria-pressed', 'false');
+    pFuller.classList.remove('on');
+    hudMore.setAttribute('aria-pressed', 'false');
     order.forEach(function (a) { units[a].unit.classList.remove('current'); });
     var fs = document.fullscreenElement || document.webkitFullscreenElement;
     if (fs) {
@@ -1693,14 +1694,14 @@
     dialog.close();
   });
 
-  function toggleScript() {
-    var on = !pScript.classList.contains('on');
-    pScript.classList.toggle('on', on);
-    hudScript.setAttribute('aria-pressed', on ? 'true' : 'false');
+  function toggleFuller() {
+    var on = !pFuller.classList.contains('on');
+    pFuller.classList.toggle('on', on);
+    hudMore.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
   document.getElementById('hud-prev').addEventListener('click', function (e) { e.stopPropagation(); show(current - 1); });
   document.getElementById('hud-next').addEventListener('click', function (e) { e.stopPropagation(); show(current + 1); });
-  hudScript.addEventListener('click', function (e) { e.stopPropagation(); toggleScript(); });
+  hudMore.addEventListener('click', function (e) { e.stopPropagation(); toggleFuller(); });
   document.getElementById('hud-leave').addEventListener('click', function (e) { e.stopPropagation(); leave(); });
 
   document.addEventListener('keydown', function (ev) {
@@ -1712,7 +1713,7 @@
     else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { ev.preventDefault(); show(current - 1); }
     else if (k === 'Home') { ev.preventDefault(); show(0); }
     else if (k === 'End') { ev.preventDefault(); show(order.length - 1); }
-    else if (k === 'n' || k === 'N') { ev.preventDefault(); toggleScript(); }
+    else if (k === 'n' || k === 'N') { ev.preventDefault(); toggleFuller(); }
     else if (k === 'Escape') { leave(); }
   });
   // A click on the slide moves on; on its left quarter, back.
