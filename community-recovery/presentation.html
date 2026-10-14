@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Introducing Community Recovery · LEROs on the Commons</title>
+<title>Introducing Community Recovery</title>
 <meta name="description" content="Introducing Community Recovery: the presentation, read live from Community Recovery's own place on the beach. Follow it on your phone and leave a note about any slide.">
 <meta name="theme-color" content="#1B1424">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14a">
+<link rel="stylesheet" href="brand.css?v=2026-10-14b">
 <style>
   /* ---- The bar: the script, following, presenting ------------------------ */
   :root { --bar-h: 3.4rem; }
@@ -715,15 +715,18 @@
 <body>
 <header class="masthead">
   <div class="wrap">
-    <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>LEROs on the Commons</a>
-    <nav class="section-nav" aria-label="LEROs on the Commons">
-      <a href="./">The proposal</a>
+    <div class="brand-block">
+      <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+      <p class="brand-strap">Recovery, grown in the open.</p>
+      <p class="brand-sub">A digital social innovation, by and for a lived experience recovery community.</p>
+    </div>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="presentation.html" aria-current="page">The presentation</a>
       <a href="meet.html">Meet the LERO</a>
-      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
       <a href="https://pscale-commons.github.io/community-recovery/standards.html">The standards</a>
       <a href="where-we-stand.html">Where we stand</a>
-      <a href="presentation.html" aria-current="page">The presentation</a>
+      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
     </nav>
   </div>
 </header>
@@ -747,6 +750,7 @@
     <p class="where">This page reads spine:presentation, presenting and the room pool:presentation, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
     <p>The only things it writes are a note you choose to leave and, for the presenter, which slide is showing.</p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
+    <p class="made"><a href="proposal.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
@@ -1432,13 +1436,19 @@
     });
   }
 
-  // A link to a slide (#slide-2-4) lands on it once the slides have drawn.
+  // A link to a slide (#slide-2-4) lands on it once the slides have drawn,
+  // and again as the room's notes and the fonts settle the page beneath
+  // it, unless the reader has moved by then.
   var landed = false;
   function land() {
     landed = true;
     var id = decodeURIComponent(location.hash.slice(1));
     var t = id && document.getElementById(id);
-    if (t) t.scrollIntoView();
+    if (!t) return;
+    t.scrollIntoView();
+    function again() { if (!moved && !following && !presenting) t.scrollIntoView(); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
+    setTimeout(again, 1500);
   }
 
   function every(ms, fn) {
@@ -1747,7 +1757,12 @@
   if (window.ResizeObserver) new ResizeObserver(barHeight).observe(bar);
 
   // ---- Begin ----------------------------------------------------------------------
-  refreshSpine().then(refreshRoom);
+  refreshSpine().then(refreshRoom).then(function () {
+    if (landed && location.hash && !moved && !following && !presenting) {
+      var t = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (t) t.scrollIntoView();
+    }
+  });
   every(SPINE_MS, refreshSpine);
   every(ROOM_MS, refreshRoom);
   document.addEventListener('visibilitychange', function () {

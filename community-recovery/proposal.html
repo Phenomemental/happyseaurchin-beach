@@ -3,18 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The proposal · Community Recovery</title>
-<link rel="canonical" href="./">
-<meta http-equiv="refresh" content="0; url=./">
-<meta name="robots" content="noindex">
-<script>location.replace('./' + location.hash);</script>
+<title>Recovery, held by its own community · Community Recovery</title>
+<meta name="description" content="A digital home for lived experience recovery organisations: an open, free home for any LERO, from its first gathering to maturity, with Community Recovery shown as a LERO in the making.">
 <meta name="theme-color" content="#1B1424">
-<link rel="stylesheet" href="brand.css?v=2026-10-14a">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="brand.css?v=2026-10-14b">
 <style>
-  body { margin: 2rem 1rem; }
+  /* This page's drawings and marks, in the section's colours. */
+  :root {
+    --crimson: var(--accent);
+    --rule: var(--accent);
+    --frame: var(--faint);
+  }
+  :where(.outside) section h2 { margin-top: 0; }
+  :where(.outside) .kids > p:first-child { margin-top: 0.4rem; }
+  .outside section { scroll-margin-top: 1rem; }
+  :where(.outside) ol {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.9rem;
+    counter-reset: step;
+  }
+  :where(.outside) ol > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 1.8rem;
+  }
+  :where(.outside) ol > li::before {
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .closing {
+    font-style: italic;
+    margin: 0;
+  }
+  /* The pitch: six frames, each drawing itself as it scrolls into view,
+     then its words settling in. Still, and whole, for less motion. */
+  .pitch {
+    list-style: none;
+    padding: 0;
+    margin: 1.4rem 0 0;
+  }
+  .pitch-frame {
+    display: grid;
+    grid-template-columns: 3.6rem 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin: 0 0 1.5rem;
+  }
+  .pitch-frame svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .pitch-frame h3 {
+    font-size: 1.1rem;
+    margin: 0 0 0.2rem;
+  }
+  .pitch-frame p {
+    margin: 0;
+  }
+  .pitch-closing {
+    text-align: center;
+    font-style: italic;
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: var(--crimson);
+    margin: 0.4rem auto 0;
+    max-width: 24rem;
+  }
+  .pp-line { stroke: var(--frame); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-key { stroke: var(--rule); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .pp-faint { stroke: var(--frame); stroke-width: 2; fill: none; stroke-dasharray: 3 4; stroke-linecap: round; }
+  .pp-dot { fill: var(--crimson); }
+  @keyframes pp-draw { to { stroke-dashoffset: 0; } }
+  @keyframes pp-in { to { opacity: 1; transform: none; } }
+  #pitch.ready .pp-draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  #pitch.ready .pp-dot,
+  #pitch.ready .pitch-words,
+  #pitch.ready .pitch-closing { opacity: 0; }
+  #pitch.ready .pitch-words,
+  #pitch.ready .pitch-closing { transform: translateY(0.5rem); }
+  #pitch.ready .seen .pp-draw { animation: pp-draw 0.7s ease-in-out forwards; animation-delay: var(--d, 0s); }
+  #pitch.ready .seen .pp-dot { animation: pp-in 0.35s ease-out forwards; animation-delay: var(--d, 0.6s); }
+  #pitch.ready .seen .pitch-words,
+  #pitch.ready .pitch-closing.seen { animation: pp-in 0.6s ease-out forwards; animation-delay: 0.5s; }
+  /* The offer: the opening of the landing page. */
+  .offer-title {
+    font-size: 1.9rem;
+    line-height: 1.15;
+    margin: 0;
+  }
+  .offer-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin: 0.5rem 0 0;
+  }
+  .opening-pitch { margin-top: 1.4rem; }
+  /* What it does: eight cards, one column on a phone, two when there's room. */
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: var(--cr-edge);
+    border-radius: var(--cr-radius);
+    padding: 1rem 1.1rem;
+    margin: 0;
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+    margin: 0 0 0.3rem;
+  }
+  .card p { margin: 0; }
+  @media (min-width: 640px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+  }
+  .meet-button {
+    display: block;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--on-accent);
+    background: var(--accent);
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    padding: 0.8rem 1rem;
+    margin: 1.6rem 0 0.6rem;
+    text-decoration: none;
+  }
+  .meet-button:hover { filter: brightness(1.08); }
+  .meet-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (min-width: 600px) {
+    .offer-title { font-size: 2.3rem; }
+  }
+  .design-title { margin: 2.6rem 0 1rem; font-size: 1.6rem; line-height: 1.2; }
+  /* Who it's for: three lines, open. */
+  .for-lines {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .for-lines li {
+    border-left: 3px solid var(--accent-soft);
+    padding: 0.1rem 0 0.1rem 0.9rem;
+    margin: 0 0 0.9rem;
+  }
+  #more { margin-top: 2.4rem; }
+  .depth { margin: 2rem 0 0; }
 </style>
 </head>
 <body>
-<p><a href="./">The proposal is now the front page</a></p>
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand-block">
+      <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+      <p class="brand-strap">Recovery, grown in the open.</p>
+      <p class="brand-sub">A digital social innovation, by and for a lived experience recovery community.</p>
+    </div>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="presentation.html">The presentation</a>
+      <a href="meet.html">Meet the LERO</a>
+      <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
+      <a href="https://pscale-commons.github.io/community-recovery/standards.html">The standards</a>
+      <a href="where-we-stand.html">Where we stand</a>
+      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="outside" id="outside">
+    <h1 class="offer-title">Recovery, held by its own community</h1>
+    <p class="offer-sub">A digital home for lived experience recovery organisations</p>
+
+    <div class="opening-pitch" id="pitch">
+    <ol class="pitch" id="pitch-frames">
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="pp-faint" d="M6 52 C22 50 34 40 54 8"/>
+          <rect class="pp-key pp-draw" pathLength="1" x="4" y="38" width="16" height="18" rx="1.5"/>
+          <circle class="pp-dot" style="--d:0.7s" cx="12" cy="50.5" r="2.4"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Value nobody can see</h3>
+          <p>A LERO&rsquo;s worth compounds over years, but evaluation sees snapshots. Insight from groups evaporates, and people repeat their stories at every door.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <rect class="pp-line pp-draw" pathLength="1" x="14" y="6" width="32" height="46" rx="2"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M20 18 H40 M20 26 H40 M20 34 H34"/>
+          <circle class="pp-dot" style="--d:0.8s" cx="30" cy="45" r="3"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>What&rsquo;s theirs stays theirs</h3>
+          <p>Each member keeps their own account, in their own words, under their own key.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle class="pp-dot" style="--d:0s" cx="10" cy="10" r="3"/>
+          <circle class="pp-dot" style="--d:0.1s" cx="30" cy="6" r="3"/>
+          <circle class="pp-dot" style="--d:0.2s" cx="50" cy="10" r="3"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.3s" d="M12 13 L27 39 M30 9 V37 M48 13 L33 39"/>
+          <circle class="pp-key pp-draw" pathLength="1" style="--d:0.7s" cx="30" cy="46" r="9"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>What happens together is ours</h3>
+          <p>A shared question goes to everyone. The answers come together into one picture that nobody owns, and nobody&rsquo;s records are exposed.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <path class="pp-line pp-draw" pathLength="1" d="M4 44 H56"/>
+          <circle class="pp-dot" style="--d:0.4s" cx="12" cy="44" r="2.2"/>
+          <circle class="pp-dot" style="--d:0.6s" cx="30" cy="44" r="3.6"/>
+          <circle class="pp-dot" style="--d:0.8s" cx="48" cy="44" r="5.4"/>
+          <path class="pp-faint pp-draw" pathLength="1" style="--d:0.9s" d="M12 34 C24 32 36 26 48 14"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Growth, seen over time</h3>
+          <p>On one shared calendar, change becomes visible: relationships, confidence, people moving from receiving help to giving it.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <rect class="pp-line pp-draw" pathLength="1" x="12" y="6" width="36" height="48" rx="2"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M18 20 L21 23 L27 16"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.6s" d="M18 32 L21 35 L27 28"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.8s" d="M18 44 L21 47 L27 40"/>
+          <path class="pp-line pp-draw" pathLength="1" style="--d:0.5s" d="M31 20 H42 M31 32 H42 M31 44 H42"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>Evidence, in members&rsquo; own words</h3>
+          <p>What the standards ask of a LERO, shown by the people who live it. It&rsquo;s the picture that&rsquo;s been missing.</p>
+        </div>
+      </li>
+      <li class="pitch-frame">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle class="pp-dot" style="--d:0s" cx="14" cy="30" r="4"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.2s" d="M22 22 C26 26 26 34 22 38"/>
+          <path class="pp-key pp-draw" pathLength="1" style="--d:0.4s" d="M28 16 C35 23 35 37 28 44"/>
+          <circle class="pp-line pp-draw" pathLength="1" style="--d:0.6s" cx="46" cy="16" r="5"/>
+          <circle class="pp-line pp-draw" pathLength="1" style="--d:0.8s" cx="46" cy="44" r="5"/>
+        </svg>
+        <div class="pitch-words">
+          <h3>It travels by recognition</h3>
+          <p>An open, free offer to any LERO, from its first gathering to maturity: pull, not push.</p>
+        </div>
+      </li>
+    </ol>
+      <p class="pitch-closing">Below is a LERO in the making, so you can see it working rather than just read about it.</p>
+    </div>
+
+    <a class="meet-button" href="meet.html">Meet the LERO</a>
+  </div>
+
+  <section id="does" aria-labelledby="does-title">
+    <h2 class="design-title" id="does-title">What it does</h2>
+    <ul class="cards">
+      <li class="card"><h3>A front door in your members&rsquo; own words</h3><p>Your LERO&rsquo;s home page is written by its people, not about them, and it changes as they do.</p></li>
+      <li class="card"><h3>A welcome anyone can use</h3><p>From hello to &lsquo;you&rsquo;re in&rsquo; on a phone, with no technical knowledge needed. What should stay on paper, stays on paper.</p></li>
+      <li class="card"><h3>Your constitution, shaped together</h3><p>Members read it clause by clause and say yes, suggest a change, or say they&rsquo;re not sure. Decisions are made in the open.</p></li>
+      <li class="card"><h3>The standards, in your own words</h3><p>Read your LERO against CLERO&rsquo;s 33 national standards, at your own pace, without anyone monitoring you.</p></li>
+      <li class="card"><h3>Recovery capital, privately held</h3><p>Each person can see their own recovery grow, gently and privately. It belongs to them.</p></li>
+      <li class="card"><h3>Your journey over time</h3><p>What your LERO is aiming for this week, this season and this year, with everyone able to feed back.</p></li>
+      <li class="card"><h3>On the map</h3><p>Your LERO&rsquo;s place on the earth, beside the people and places that help recovery, and other LEROs walking the same road.</p></li>
+      <li class="card"><h3>Growth you can see</h3><p>The community&rsquo;s value made visible as it grows, so its worth is seen over years, not snapshots.</p></li>
+    </ul>
+  </section>
+
+  <section id="whom" aria-labelledby="whom-title">
+    <h2 class="design-title" id="whom-title">Who it&rsquo;s for</h2>
+    <ul class="for-lines">
+      <li><strong>For LEROs</strong> &mdash; proof that comes from members, not from the organisation&rsquo;s report about itself.</li>
+      <li><strong>For CLERO</strong> &mdash; a national picture of LEROs against the 33 standards, held by nobody, monitoring no one.</li>
+      <li><strong>For public bodies</strong> &mdash; evidence of value that grows over years, in members&rsquo; own words.</li>
+    </ul>
+  </section>
+
+  <div class="outside" id="more">
+    <section class="part" id="g-ground">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">The ground</span><span class="fold-gloss">LEROs across the UK</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+      <div class="kids" hidden>
+        <section class="sect" id="across">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs across the UK</span><span class="fold-gloss">Lived experience recovery organisations have grown across the country, built by people in recovery for people in…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>Lived experience recovery organisations have grown across the country, built by people in recovery for people in recovery. Some are twenty years established; many are just beginning. Yet there&rsquo;s still no consistent understanding of what a LERO is, or how its worth can be seen.</p>
+          </div>
+        </section>
+        <section class="sect" id="north">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">LEROs leading the way</span><span class="fold-gloss">Across the north and the Midlands, established LEROs are already leading the way, beacons for the movement: among them…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>Across the north and the Midlands, established LEROs are already leading the way, beacons for the movement: among them Sheffield Recovery Community, whose chair sits on CLERO&rsquo;s board; the long-standing LEROs of West Yorkshire; Chase Recovery; and DATUS in Birmingham, twenty years established.</p>
+          <p>They show what a LERO becomes when it is led by its members and given time.</p>
+          </div>
+        </section>
+        <section class="sect" id="support">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Support for LEROs in England</span><span class="fold-gloss">The LERO Capacity Building Project, funded by the Office for Health Improvement and Disparities, supports the development…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>The LERO Capacity Building Project, funded by the <a href="https://www.gov.uk/government/organisations/office-for-health-improvement-and-disparities">Office for Health Improvement and Disparities</a>, supports the development and sustainability of LEROs across England. It includes a mentorship programme delivered by <a href="https://imroc.org/">Imroc</a>, where LERO leaders mentor one another, and a fully funded LERO Leadership Programme with an accredited Level 3 qualification. <a href="https://clero.co.uk/">CLERO</a>&rsquo;s 33 national standards set out what a good LERO looks like.</p>
+          </div>
+        </section>
+        <section class="sect" id="invitation">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">An invitation</span><span class="fold-gloss">We&rsquo;d welcome CLERO, and the LEROs leading the way, to take this up, test it, and shape it as a toolkit for the…</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>We&rsquo;d welcome CLERO, and the LEROs leading the way, to take this up, test it, and shape it as a toolkit for the national network. CLERO&rsquo;s standards say implementation toolkits will follow; this could become one, a living way of meeting the standards.</p>
+          </div>
+        </section>
+        <section class="sect" id="honestly">
+          <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Honestly</span><span class="fold-gloss">This is a live proposal, not a finished design.</span></span><span class="chev" aria-hidden="true">&#x2304;</span></button>
+          <div class="kids" hidden>
+          <p>This is a live proposal, not a finished design. It&rsquo;s being tested with a LERO in the making, against real decisions with real members, before it&rsquo;s relied on further.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+    <section class="part" id="note">
+      <button class="fold" type="button" aria-expanded="false"><span class="fold-words"><span class="fold-title">Leave a note</span><span class="fold-gloss">Questions, challenges, a LERO that wants to talk: all welcome.</span></span><span class="chev" aria-hidden="true">⌄</span></button>
+      <div class="kids" hidden>
+      <p>
+        Questions, challenges, a LERO that wants to talk: all welcome. This
+        work goes by conversation, and anything complex gets time to reflect
+        and a proper answer.
+      </p>
+
+      <form id="note-form" hidden>
+        <label for="n-name">Your name (optional; shown as &ldquo;your name, a visitor&rdquo;)</label>
+        <input id="n-name" name="who" maxlength="40" autocomplete="name">
+        <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
+        <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label for="n-text">Your note</label>
+        <textarea id="n-text" name="note" maxlength="2000" required></textarea>
+        <button type="submit">Leave a note</button>
+        <p class="form-status" role="status"></p>
+        <p class="form-foot">Notes are public: they go into a room on the beach where anyone can read them. Please don't include anything personal about anyone's recovery, your own or anyone else's.</p>
+      </form>
+
+      <p class="closing" id="closing">The note form opens once the beach can be reached. Please don't include anything personal about anyone's recovery.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="calm depth">The full design, including privacy, safeguarding and how it&rsquo;s built, is kept on the beach for anyone who wants the depth.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>The only thing this page writes is a note you choose to leave.</p>
+    <p class="where">This page reads no block from the beach, <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a>; a note you leave goes into an open room there.</p>
+    <p class="made"><a href="proposal.html" aria-current="page">How this was made</a></p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+
+<script src="beach.js?v=2026-10-14a"></script>
+<script>
+// This page is an offer to any LERO, so what it reads live from the beach
+// never names the area it began in, its providers, or the person
+// coordinating it. A sentence that does is left out as it arrives.
+var Unsaid = /northamptonshire|forward trust|commission|matthew|bushell|phenomemental/i;
+function unsaid(v) {
+  if (typeof v === 'string') {
+    if (!Unsaid.test(v)) return v;
+    return v.split(/(\n[ \t]*\n+)/).map(function (p) {
+      if (/^\n/.test(p) || !Unsaid.test(p)) return p;
+      return (p.match(/[^.!?]+(?:[.!?]+["\u201d\u2019)]*\s*|$)/g) || [])
+        .filter(function (x) { return !Unsaid.test(x); }).join('').trim();
+    }).join('').replace(/(\n[ \t]*){3,}/g, '\n\n').trim();
+  }
+  if (v && typeof v === 'object') {
+    var out = Array.isArray(v) ? [] : {};
+    Object.keys(v).forEach(function (k) { out[k] = unsaid(v[k]); });
+    return out;
+  }
+  return v;
+}
+</script>
+<script>
+(function () {
+  // The ground and the note fold: wire them, and open the way to a linked part.
+  Beach.folds(document.getElementById('more'));
+  if (location.hash) Beach.landOnHash();
+
+  // The pitch plays frame by frame: each draws itself, then its words
+  // settle in, as it scrolls into view, once. Still, and whole, for anyone
+  // who prefers less motion.
+  (function () {
+    var list = document.getElementById('pitch-frames');
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!list || still || !('IntersectionObserver' in window)) return;
+    var pitch = document.getElementById('pitch');
+    var parts = Array.prototype.slice.call(pitch.querySelectorAll('.pitch-frame, .pitch-closing'));
+    pitch.classList.add('ready');
+    var io = new IntersectionObserver(function (seen) {
+      seen.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('seen');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.6 });
+    parts.forEach(function (p) { io.observe(p); });
+  })();
+
+  // The note form only makes sense once we know the beach is reachable.
+  var form = document.getElementById('note-form');
+  Beach.index().then(function () {
+    form.hidden = false;
+    document.getElementById('closing').hidden = true;
+  }, function () {});
+
+  Beach.wireNoteForm(form, 'pool:Phenomemental');
+})();
+</script>
 </body>
 </html>
