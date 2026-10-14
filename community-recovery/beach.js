@@ -350,9 +350,15 @@
   // for a locked position, its secret. A string at a spindle lands at
   // that position (whetstone 2.2, 6.2). The secret goes in this one
   // request and is kept nowhere. A refusal is thrown with .refused set.
-  function placeWrite(block, spindle, content, secret) {
-    var body = { block: block, spindle: spindle, content: content };
+  // newLock latches the block (or, with the same words as the secret,
+  // proves them and changes nothing), as the standards page's kit does;
+  // leave spindle or content undefined to send neither.
+  function placeWrite(block, spindle, content, secret, newLock) {
+    var body = { block: block };
+    if (spindle != null) body.spindle = spindle;
+    if (content !== undefined) body.content = content;
     if (secret) body.secret = secret;
+    if (newLock) body.new_lock = newLock;
     return fetch(PLACE + '?block=' + encodeURIComponent(block), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
