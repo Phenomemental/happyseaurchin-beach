@@ -1,0 +1,390 @@
+/* Community Recovery's own look, shared by every page in this section and
+   by nothing outside it.
+
+   THE SOURCE IS THE BLOCK 'brand' in Community Recovery's place on the
+   beach (https://beach.happyseaurchin.com/w/community-recovery, block
+   brand): its colours (brand 1), its three faces (brand 2), its marks
+   (brand 3) and its shapes (brand 5). Nothing here is borrowed from anyone's
+   personal pages or from other projects. When the block changes, change
+   this file to match it; the block wins.
+
+   One adjustment, made for brand 1.5 (body text keeps at least 4.5 to 1):
+   quiet notes on the light ground use #746882, a touch deeper than the
+   block's #7A6E88, which falls just short of 4.5 to 1 on #F6F2FA. */
+
+/* brand 2: Oswald for headings, Nunito Sans for everything else, Caveat for
+   one handwritten line at most. */
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Nunito+Sans:ital,wght@0,400;0,700;0,800;1,400&family=Oswald:wght@400..700&display=swap");
+
+:root {
+  /* brand 1.1: near-black, the dark panel, and the logo's own black */
+  --cr-night: #1B1424;
+  --cr-panel: #2A1F38;
+  --cr-logo-black: #000000;
+  /* brand 1.2: the purples */
+  --cr-purple: #7B3FBF;
+  --cr-deep: #4A2275;
+  --cr-bright: #9B5FE0;
+  --cr-lilac: #C9A6F0;
+  /* brand 1.3: the light ground */
+  --cr-ground: #F6F2FA;
+  --cr-card: #FDFBFF;
+  --cr-pale: #E9DDF6;
+  --cr-glow: #EADFF7;
+  /* brand 1.4: text on light, and on dark */
+  --cr-head: #1E1828;
+  --cr-body: #4A4156;
+  --cr-quiet: #746882;
+  --cr-head-dark: #F3EDF9;
+  --cr-body-dark: #DCD0EA;
+  --cr-quiet-dark: #A99BBB;
+  /* brand 2 */
+  --cr-display: "Oswald", "Arial Narrow", system-ui, sans-serif;
+  --cr-text: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cr-hand: "Caveat", "Segoe Print", cursive;
+  /* brand 5.1: rounded cards with a purple top edge */
+  --cr-radius: 14px;
+  --cr-edge: 4px solid var(--cr-purple);
+
+  /* The names every page here already uses, on the light ground. */
+  --bg: var(--cr-ground);
+  --card: var(--cr-card);
+  --ink: var(--cr-body);
+  --head: var(--cr-head);
+  --muted: var(--cr-quiet);
+  --faint: #D3C3E6;
+  --line: #E4D9F0;
+  --accent: var(--cr-purple);
+  --accent-soft: var(--cr-pale);
+  --quiet-bg: var(--cr-pale);
+  --on-accent: #ffffff;
+  --glow: var(--cr-glow);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--cr-night);
+    --card: var(--cr-panel);
+    --ink: var(--cr-body-dark);
+    --head: var(--cr-head-dark);
+    --muted: var(--cr-quiet-dark);
+    --faint: #4B3B60;
+    --line: #3A2D4C;
+    --accent: var(--cr-lilac);
+    --accent-soft: var(--cr-deep);
+    --quiet-bg: var(--cr-panel);
+    --on-accent: var(--cr-night);
+    --glow: rgba(74, 34, 117, 0.55);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--cr-text);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  position: relative;
+}
+/* brand 5.1: a soft lilac circle glowing in a corner of light pages. */
+body::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  width: min(26rem, 80vw);
+  height: 26rem;
+  background: radial-gradient(circle at 100% 0, var(--glow) 0%, var(--glow) 32%, transparent 62%);
+  pointer-events: none;
+}
+a { color: var(--accent); text-underline-offset: 0.15em; }
+h1, h2, h3 {
+  font-family: var(--cr-display);
+  color: var(--head);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+h1 { text-transform: uppercase; font-weight: 700; }
+.wrap {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+/* brand 2.2: eyebrows in capitals with wide letter-spacing. */
+.eyebrow {
+  font-family: var(--cr-text);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* brand 2.3: one handwritten line at most. */
+.hand {
+  font-family: var(--cr-hand);
+  font-weight: 600;
+  font-size: 1.6em;
+  line-height: 1.15;
+}
+/* brand 3.1: the logo always sits on black. */
+.logo-on-black {
+  display: block;
+  background: var(--cr-logo-black);
+}
+.logo-on-black img { display: block; width: 100%; height: auto; }
+
+/* Header: near-black, the name, and the section's pages. */
+.masthead {
+  background: var(--cr-night);
+  border-bottom: 3px solid var(--cr-purple);
+}
+.masthead .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1.2rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--cr-head-dark);
+  text-decoration: none;
+  font-family: var(--cr-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.brand svg { flex: none; }
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.1rem;
+  font-size: 0.98rem;
+}
+.section-nav a {
+  color: var(--cr-body-dark);
+  text-decoration: none;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+}
+.section-nav a:hover { color: var(--cr-lilac); }
+.section-nav a[aria-current="page"] {
+  color: var(--cr-head-dark);
+  font-weight: 700;
+  border-bottom-color: var(--cr-bright);
+}
+.masthead a:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
+
+main.wrap { padding-top: 1.8rem; padding-bottom: 2rem; }
+h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  margin: 2.4rem 0 0.8rem;
+}
+p { margin: 0 0 1rem; }
+code {
+  font-family: inherit;
+  font-weight: 700;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.calm, .none, .private {
+  color: var(--muted);
+  font-style: italic;
+}
+.none, .private { margin: 0; }
+
+/* Reflections, comments and notes */
+.reflection, .comment {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.reflection:last-child, .comment:last-child { border-bottom: 0; }
+.reflection-who, .comment-meta {
+  font-size: 0.92rem;
+  color: var(--muted);
+  margin: 0 0 0.2rem;
+}
+.reflection-who strong, .comment-meta strong { color: var(--head); }
+.reflection-who a strong { color: var(--accent); }
+.reflection-text, .comment-text {
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  margin: 0 0 0.5rem;
+}
+.replies {
+  margin-left: 1rem;
+  border-left: 2px solid var(--line);
+  padding-left: 0.8rem;
+}
+.thread-empty { color: var(--muted); font-style: italic; }
+.more, .comment-more {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Forms */
+.form-foot {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+form label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--head);
+  margin: 0.7rem 0 0.25rem;
+}
+form input,
+form textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--head);
+  background: var(--card);
+  border: 1px solid var(--faint);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+form textarea { min-height: 6rem; resize: vertical; }
+form input:focus,
+form textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.trap {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+form button[type=submit] {
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.55rem 1.5rem;
+  margin-top: 0.8rem;
+  cursor: pointer;
+}
+form button:disabled { opacity: 0.6; cursor: default; }
+.count { font-size: 0.85rem; color: var(--muted); margin: 0.2rem 0 0; }
+.count:empty { display: none; }
+.form-status { margin: 0.6rem 0 0; font-size: 0.95rem; }
+.form-status:empty { display: none; }
+.mic-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.4rem; flex-wrap: wrap; }
+form button.mic {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--faint);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  cursor: pointer;
+}
+form button.mic.listening { border-color: var(--accent); background: var(--accent-soft); }
+.mic-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
+.mic-note:empty { display: none; }
+
+/* brand 5.1: pill-shaped chips for short phrases. Folding follows the
+   pscale-commons Community Recovery pages (MIT licence), so these pages
+   fold as theirs do. */
+.pill {
+  display: inline-block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; color: var(--cr-deep);
+  background: var(--cr-pale); border: 0; border-radius: 999px; padding: 0.1rem 0.7rem; margin: 0.6rem 0 0;
+}
+@media (prefers-color-scheme: dark) {
+  .pill { color: var(--cr-head-dark); background: var(--cr-deep); }
+}
+a.pill { text-decoration: none; }
+.how { color: var(--muted); margin: 0.8rem 0 1.2rem; }
+
+/* A frame, folded: parts (cards with a purple top edge), then sections,
+   then the clauses themselves */
+.part { background: var(--card); border: 1px solid var(--line); border-top: var(--cr-edge); border-radius: var(--cr-radius); margin: 0 0 0.7rem; }
+button.fold {
+  display: flex; width: 100%; justify-content: space-between; align-items: flex-start; gap: 0.8rem;
+  text-align: left; font: inherit; color: inherit; background: none; border: 0; padding: 0.85rem 1rem; cursor: pointer;
+}
+button.fold:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--cr-radius); }
+.fold-words, .fold-title, .fold-gloss { display: block; }
+.fold-title { color: var(--head); }
+.part > .fold .fold-title { font-family: var(--cr-display); font-weight: 600; font-size: 1.12em; letter-spacing: 0.01em; }
+.fold-gloss { font-size: 0.9rem; color: var(--muted); font-weight: 400; margin-top: 0.1rem; }
+.chev { color: var(--accent); flex: none; transition: transform 0.15s; }
+.open > .fold .chev { transform: rotate(180deg); }
+.part.open > .fold { border-bottom: 1px solid var(--line); }
+.part > .kids { padding: 0 1rem 0.3rem; }
+.sect { border-top: 1px solid var(--line); }
+.part > .kids > .sect:first-child { border-top: 0; }
+.sect > .fold { padding: 0.75rem 0; }
+.sect.open > .fold .fold-title { color: var(--accent); font-weight: 700; }
+
+/* Footer, and a way home that only its owner looks for. */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 1.2rem 0 2.4rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+footer p { margin: 0 0 0.5rem; }
+/* Where a page lives on the beach: a long address breaks rather than
+   widening the page. */
+footer .where { overflow-wrap: anywhere; }
+.home {
+  display: block;
+  width: max-content;
+  margin: 1.6rem auto 0;
+  padding: 0.2rem 0.5rem;
+  color: var(--faint);
+  text-decoration: none;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.home:hover, .home:focus { color: var(--muted); }
+
+@keyframes settle {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to { opacity: 1; transform: none; }
+}
+.arrived { animation: settle 0.5s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .arrived { animation: none; }
+  .chev { transition: none; }
+}
+@media (min-width: 600px) {
+  body { font-size: 1.125rem; }
+  .brand { font-size: 1.4rem; }
+}

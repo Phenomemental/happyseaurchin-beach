@@ -93,7 +93,7 @@
     for (var i = 1; i <= 9; i++) {
       var e = node[String(i)];
       if (isEntry(e)) {
-        if (e._.trim()) out.push({ who: name(e['1']), when: e['3'], text: e._, replies: replies(e) });
+        if (e._.trim()) out.push({ who: name(e['1']), where: typeof e['2'] === 'string' ? e['2'] : '', when: e['3'], text: e._, replies: replies(e) });
       } else if (typeof e === 'string') {
         if (e.trim()) out.push({ who: '', when: '', text: e });
       } else {
@@ -337,6 +337,57 @@
       });
   }
 
+  // The place's front door: its blocks, and when each last changed.
+  function placeIndex() {
+    return fetch(PLACE, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  // Write into the place in the beach's own write shape: a POST to the
+  // place's endpoint naming the block, with body {spindle, content} and,
+  // for a locked position, its secret. A string at a spindle lands at
+  // that position (whetstone 2.2, 6.2). The secret goes in this one
+  // request and is kept nowhere. A refusal is thrown with .refused set.
+  function placeWrite(block, spindle, content, secret) {
+    var body = { block: block, spindle: spindle, content: content };
+    if (secret) body.secret = secret;
+    return fetch(PLACE + '?block=' + encodeURIComponent(block), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer'
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (r.ok && j && j.ok) return j;
+        var e = new Error((j && j.error) || ('HTTP ' + r.status));
+        e.refused = r.status >= 400 && r.status < 500;
+        throw e;
+      });
+    });
+  }
+
+  // A note in one of the place's rooms, in postNote's shape, located at
+  // an address (position 2), so a room can gather notes by where they
+  // were left.
+  function placeNote(pool, who, note, where) {
+    return fetch(PLACE + '?block=' + encodeURIComponent(pool), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        append: true,
+        content: { _: note, 1: who, 2: where || '', 3: new Date().toISOString() }
+      })
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      });
+    });
+  }
+
   // ---- The earth beach --------------------------------------------------------
   // A third reader, for the earth (earth.beach.happyseaurchin.com), where
   // places sit at their spatial addresses in spatial:earth. Reads openly.
@@ -435,13 +486,14 @@
     landOnHash: landOnHash,
     gloss: gloss,
     glossOf: glossOf,
-    place: { get: placeGet, at: at },
+    place: { get: placeGet, at: at, index: placeIndex, write: placeWrite, note: placeNote },
     earth: { get: earthGet },
     get: get,
     point: point,
     index: index,
     clock: function () { return clock; },
     text: text,
+    notes: function (pool) { return entries(pool); },
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
     addMic: addMic,
