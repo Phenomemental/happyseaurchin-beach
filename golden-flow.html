@@ -66,50 +66,97 @@
     h1 { font-size: 3rem; }
   }
 
-  /* (a) Where to stand, whom to narrow to, and the rung. */
-  .fields {
-    display: grid;
-    grid-template-columns: 1fr;
-    column-gap: 1rem;
-  }
-  @media (min-width: 560px) {
-    .fields { grid-template-columns: 1fr 1fr; }
-  }
-  .fields > div {
-    min-width: 0;
-  }
-  .opt {
-    font-style: italic;
-  }
-  .rungs {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 1rem;
-  }
-  .rungs-label {
+  /* (a) Who you stand as, who you are with, and the rung. */
+  .field-label {
     font-size: 0.95rem;
     color: var(--muted);
-    margin-right: 0.2rem;
+    margin: 0 0 0.3rem;
   }
-  form .rungs button {
+  form select {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 1.1rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    padding: 0.5rem 0.65rem;
+    margin: 0 0 0.9rem;
+  }
+  form select:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+  }
+  .someone {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+  }
+  .someone input {
+    flex: 1;
+    min-width: 0;
+  }
+  .someone button {
+    flex: none;
+  }
+  #stand-status:empty {
+    display: none;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--frame);
+    border-radius: 999px;
+    padding: 0.15rem 0.85rem;
+    min-height: 2.2rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+  }
+  .chip:focus-visible,
+  .seg button:focus-visible,
+  .switch:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--crimson);
+    border-radius: 2px;
+    margin: 0 0 0.4rem;
+  }
+  .seg button {
+    font: inherit;
     font-size: 1rem;
     letter-spacing: 0.06em;
     color: var(--crimson);
     background: transparent;
-    border: 1px solid var(--crimson);
-    padding: 0.25rem 0.9rem;
+    border: 0;
+    padding: 0.25rem 1rem;
     min-height: 2.2rem;
+    cursor: pointer;
   }
-  form .rungs button[aria-pressed="true"] {
+  .seg button + button {
+    border-left: 1px solid var(--crimson);
+  }
+  .seg button[aria-pressed="true"] {
     color: var(--page);
     background: var(--crimson);
-  }
-  form .rungs button:focus-visible,
-  form button:focus-visible {
-    outline: 2px solid var(--ink);
-    outline-offset: 2px;
   }
 
   /* (b) Three counts, from tidewright's latest entry. */
@@ -148,12 +195,20 @@
     text-align: center;
     margin: 0.6rem 0 0.4rem;
   }
-  .pool-note:empty {
+  .pool-note:empty,
+  .showing:empty {
     display: none;
   }
+  .appears {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0 0 0.6rem;
+  }
 
-  /* (c) The beach: one rock for the handle standing, the others around
-     it, open loops as amber pebbles on the side they wait in. */
+  /* (c) The beach: one rock for the one standing, the others around it,
+     open loops as amber pebbles on the side they wait in. */
   .shore {
     margin: 0.4rem -0.5rem 0.2rem;
   }
@@ -177,6 +232,22 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     fill: var(--muted);
+    cursor: pointer;
+    outline: none;
+  }
+  .shore .side.off {
+    opacity: 0.35;
+    text-decoration: line-through;
+  }
+  .shore .side:focus-visible {
+    fill: var(--crimson);
+  }
+  .shore .rock {
+    outline: none;
+    transition: opacity 0.5s ease;
+  }
+  .shore .rock.pickable {
+    cursor: pointer;
   }
   .shore .rock path {
     fill: var(--stone);
@@ -198,21 +269,40 @@
     font-weight: 600;
     fill: var(--page);
   }
-  .shore .rock.dim {
-    opacity: 0.45;
+  .shore.narrowed .rock:not(.centre):not(.chosen) {
+    opacity: 0.4;
+  }
+  .shore .rock.third path {
+    stroke: var(--gold);
+    stroke-width: 1.6;
+    stroke-dasharray: 3 3;
+  }
+  .shore .rock.chosen path {
+    stroke: var(--gold);
+    stroke-width: 2.4;
+    stroke-dasharray: none;
+  }
+  .shore .rock.chosen text {
+    font-weight: 600;
   }
   .shore .rock.near path {
     stroke: var(--ink);
     stroke-width: 1.6;
+    stroke-dasharray: none;
   }
   .shore .rock.lit path {
     stroke: var(--gold);
     stroke-width: 2.6;
+    stroke-dasharray: none;
     filter: drop-shadow(0 0 6px var(--gold));
   }
   .shore .rock.lit text {
     fill: var(--gold);
     font-weight: 600;
+  }
+  .shore .rock:focus-visible path {
+    stroke: var(--crimson);
+    stroke-width: 2.4;
   }
   .shore .resting {
     fill: var(--resting);
@@ -239,12 +329,24 @@
   @keyframes glint {
     50% { opacity: 0.6; }
   }
-  .shore .tie {
+  .shore .tie,
+  .shore .between {
     fill: none;
     stroke: var(--gold);
     stroke-width: 1.2;
     stroke-dasharray: 3 4;
     opacity: 0.9;
+  }
+  .shore .between {
+    opacity: 0.45;
+  }
+  .shore .flow-path {
+    fill: none;
+    stroke: none;
+  }
+  .shore .mote {
+    fill: var(--gold);
+    filter: drop-shadow(0 0 3px var(--gold));
   }
   .shore .route {
     fill: none;
@@ -270,7 +372,145 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .shore .pebble .stone { animation: none; }
-    .shore .rock path, .shore .rock text { transition: none; }
+    .shore .rock, .shore .rock path, .shore .rock text, .chip { transition: none; }
+  }
+
+  /* The toggles beneath the beach: each one is also the beach's key. */
+  .switches {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem 1rem;
+    margin: 0.5rem 0 0.4rem;
+  }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    padding: 0.2rem 0.1rem;
+    min-height: 2.4rem;
+    cursor: pointer;
+  }
+  .switch .track {
+    position: relative;
+    flex: none;
+    width: 2.1rem;
+    height: 1.2rem;
+    border-radius: 999px;
+    background: var(--frame);
+    transition: background-color 0.25s ease;
+  }
+  .switch .track::after {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--page);
+    transition: transform 0.25s ease;
+  }
+  .switch[aria-checked="true"] .track {
+    background: var(--gold);
+  }
+  .switch[aria-checked="true"] .track::after {
+    transform: translateX(0.9rem);
+  }
+  .switch svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+  }
+  .switch[disabled] {
+    opacity: 0.45;
+    cursor: default;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .switch .track, .switch .track::after { transition: none; }
+  }
+  .key-open { fill: var(--gold); stroke: var(--stone-edge); stroke-width: 0.8; }
+  .key-closed { fill: var(--resting); }
+  .key-line { fill: none; stroke: var(--gold); stroke-width: 1.6; stroke-dasharray: 2.5 2.5; }
+  .key-mote { fill: var(--gold); }
+  .key-third { fill: var(--stone); stroke: var(--gold); stroke-width: 1.4; stroke-dasharray: 2 2; }
+  .showing {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin: 0 0 0.4rem;
+  }
+
+  /* Expansion boxes: a heading to tap, the rest folded beneath it. */
+  .fold {
+    border-top: 1px solid var(--frame);
+    border-bottom: 1px solid var(--frame);
+  }
+  .fold + .fold {
+    border-top: 0;
+  }
+  .fold > summary,
+  .question summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.1rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .fold > summary::-webkit-details-marker,
+  .question summary::-webkit-details-marker {
+    display: none;
+  }
+  .fold > summary::after,
+  .question summary::after {
+    content: "+";
+    flex: none;
+    color: var(--crimson);
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .fold[open] > summary::after,
+  .question[open] summary::after {
+    content: "\2212";
+  }
+  .fold > summary:focus-visible,
+  .question summary:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .fold > summary .sum-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .fold > summary .badge {
+    flex: none;
+    font-size: 0.85rem;
+    color: var(--page);
+    background: var(--gold);
+    border-radius: 999px;
+    padding: 0 0.55rem;
+    line-height: 1.5;
+  }
+  .fold-body {
+    padding: 0.1rem 0 0.8rem;
+  }
+  .fold.quiet > summary {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .filter {
+    margin: 0.2rem 0 0.8rem;
   }
 
   /* A loop chosen on the beach, as tidewright wrote it. */
@@ -303,13 +543,12 @@
     font-weight: 500;
     margin: 0 0 0.6rem;
   }
-  .group-head {
+  .group > summary .sum-main {
     font-weight: 500;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 1.2rem 0 0.5rem;
   }
   .loop {
     border-left: 2px solid var(--frame);
@@ -350,52 +589,13 @@
     margin: 0;
   }
   .earlier {
-    border-top: 1px solid var(--frame);
-    border-bottom: 1px solid var(--frame);
     margin: 1.4rem 0 0;
-  }
-  .earlier summary,
-  .question summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.7rem;
-    min-height: 2.75rem;
-    padding: 0.45rem 0.1rem;
-    cursor: pointer;
-    list-style: none;
-  }
-  .earlier summary::-webkit-details-marker,
-  .question summary::-webkit-details-marker {
-    display: none;
-  }
-  .earlier summary::after,
-  .question summary::after {
-    content: "+";
-    flex: none;
-    color: var(--crimson);
-    font-size: 1.3rem;
-    line-height: 1;
-  }
-  .earlier[open] > summary::after,
-  .question[open] summary::after {
-    content: "\2212";
-  }
-  .earlier summary:focus-visible,
-  .question summary:focus-visible {
-    outline: 2px solid var(--crimson);
-    outline-offset: 2px;
   }
   .earlier .loop {
     cursor: default;
   }
   .earlier-tide {
     padding: 0 0 0.6rem;
-  }
-
-  /* Ask the beach a question. */
-  .ask form {
-    margin-top: 0.4rem;
   }
 
   /* Questions asked of the beach: one open at a time. */
@@ -468,31 +668,30 @@
       <p class="welcome" id="welcome"></p>
     </div>
 
-    <!-- The pool: one handle to stand as, a second to narrow to, a rung. -->
+    <!-- The pool: who you stand as, whom you are with, and the rung. -->
     <div id="pool-part" hidden>
       <hr class="rule">
       <section id="pool" aria-labelledby="pool-head">
         <h2 id="pool-head"></h2>
         <form id="stand-form" novalidate>
-          <div class="fields">
-            <div>
-              <label for="as">Stand as</label>
-              <input id="as" name="as" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
-            </div>
-            <div>
-              <label for="with">Narrow to <span class="opt">(optional)</span></label>
-              <input id="with" name="with" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
-            </div>
+          <label for="as-select">Stand as</label>
+          <select id="as-select" name="as"></select>
+          <div class="someone" id="someone" hidden>
+            <input id="as-other" name="other" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="A handle, as it is on the beach" placeholder="A handle">
+            <button type="submit">Stand here</button>
           </div>
-          <div class="rungs" role="group" aria-label="Read at">
-            <span class="rungs-label">Read at</span>
-            <button type="button" data-rung="day" aria-pressed="true">day</button>
-            <button type="button" data-rung="season" aria-pressed="false">season</button>
-            <button type="button" data-rung="year" aria-pressed="false">year</button>
-          </div>
-          <button type="submit">Stand here</button>
           <p class="form-status" id="stand-status" role="status"></p>
         </form>
+
+        <p class="field-label" id="with-label">With</p>
+        <div class="chips" id="with-chips" role="group" aria-labelledby="with-label"></div>
+
+        <p class="field-label" id="rung-label">Read at</p>
+        <div class="seg" id="rungs" role="group" aria-labelledby="rung-label">
+          <button type="button" data-rung="day" aria-pressed="true">day</button>
+          <button type="button" data-rung="season" aria-pressed="false">season</button>
+          <button type="button" data-rung="year" aria-pressed="false">year</button>
+        </div>
 
         <div class="counts" aria-live="polite">
           <div class="count"><span class="n" id="n-loops">&ndash;</span><span class="k">loops</span></div>
@@ -501,10 +700,52 @@
         </div>
         <p class="tide" id="tide"></p>
         <p class="pool-note" id="pool-note" role="status"></p>
+        <div class="appears" id="appears" hidden></div>
 
-        <div class="shore">
+        <div class="shore" id="shore">
           <svg id="beach" viewBox="0 0 400 340" role="group" aria-label="The beach"></svg>
         </div>
+
+        <!-- The toggles: what the beach shows. Each carries its own key. -->
+        <div class="switches" role="group" aria-label="Show on the beach">
+          <button type="button" class="switch" role="switch" data-show="open" aria-checked="true">
+            <span class="track" aria-hidden="true"></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-open" cx="8" cy="8" rx="5.5" ry="4.3"/></svg>
+            open loops
+          </button>
+          <button type="button" class="switch" role="switch" data-show="closed" aria-checked="true">
+            <span class="track" aria-hidden="true"></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-closed" cx="5" cy="9" r="2.4"/><circle class="key-closed" cx="11" cy="7" r="2.4"/></svg>
+            closed
+          </button>
+          <button type="button" class="switch" role="switch" data-show="between" aria-checked="false">
+            <span class="track" aria-hidden="true"></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path class="key-line" d="M1 12 Q8 2 15 12"/></svg>
+            between whom
+          </button>
+          <button type="button" class="switch" role="switch" data-show="flow" aria-checked="true">
+            <span class="track" aria-hidden="true"></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-mote" cx="11" cy="8" r="2.4"/><circle class="key-mote" cx="6" cy="8" r="1.6" opacity="0.55"/><circle class="key-mote" cx="2.5" cy="8" r="1" opacity="0.3"/></svg>
+            the flow
+          </button>
+          <button type="button" class="switch" role="switch" data-show="thirds" aria-checked="true">
+            <span class="track" aria-hidden="true"></span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-third" cx="8" cy="8" rx="6" ry="4.8"/></svg>
+            thirds
+          </button>
+        </div>
+        <p class="showing" id="showing" aria-live="polite"></p>
+
+        <details class="fold quiet filter" id="filter">
+          <summary><span class="sum-main">Filter by kind or surface</span><span class="badge" id="filter-badge" hidden></span></summary>
+          <div class="fold-body">
+            <p class="field-label" id="kind-label">Kind of loop</p>
+            <div class="chips" id="kind-chips" role="group" aria-labelledby="kind-label"></div>
+            <p class="field-label" id="side-label">Where it waits</p>
+            <div class="chips" id="side-chips" role="group" aria-labelledby="side-label"></div>
+          </div>
+        </details>
+
         <div class="picked" id="picked" aria-live="polite" hidden></div>
 
         <div class="telling" id="telling"></div>
@@ -515,17 +756,21 @@
          No passphrase is asked for or sent anywhere on this page. -->
     <div id="ask-part" hidden>
       <hr class="rule">
-      <section class="ask" id="ask" aria-labelledby="ask-head">
-        <h2 id="ask-head">Ask the beach</h2>
-        <form id="ask-form">
-          <label class="trap" for="q-web" aria-hidden="true">Leave this empty</label>
-          <input class="trap" id="q-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label for="q-text">Your question</label>
-          <textarea id="q-text" name="note" maxlength="1000" required></textarea>
-          <button type="submit">Ask the beach</button>
-          <p class="form-status" role="status"></p>
-          <p class="form-foot">Questions are public and go into the room, pool:golden-flow, where one of Matthew&rsquo;s agents answers on its next tide.</p>
-        </form>
+      <section class="ask" id="ask" aria-label="Ask the beach">
+        <details class="fold quiet" id="ask-fold">
+          <summary><span class="sum-main">Ask the beach a question</span></summary>
+          <div class="fold-body">
+            <form id="ask-form">
+              <label class="trap" for="q-web" aria-hidden="true">Leave this empty</label>
+              <input class="trap" id="q-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+              <label for="q-text">Your question</label>
+              <textarea id="q-text" name="note" maxlength="1000" required></textarea>
+              <button type="submit">Ask the beach</button>
+              <p class="form-status" role="status"></p>
+              <p class="form-foot">Questions are public and go into the room, pool:golden-flow, where one of Matthew&rsquo;s agents answers on its next tide.</p>
+            </form>
+          </div>
+        </details>
       </section>
     </div>
 
@@ -538,13 +783,17 @@
       </section>
     </div>
 
-    <!-- How to look, quiet, at the foot. -->
+    <!-- How to look, quiet, at the foot, folded. -->
     <div id="how-part" hidden>
       <hr class="rule">
-      <section class="how" id="how" aria-labelledby="how-head">
-        <h2 id="how-head"></h2>
-        <p class="how-intro" id="how-intro"></p>
-        <ol id="how-steps"></ol>
+      <section class="how" id="how" aria-label="How to look">
+        <details class="fold quiet" id="how-fold">
+          <summary><span class="sum-main" id="how-head"></span></summary>
+          <div class="fold-body">
+            <p class="how-intro" id="how-intro"></p>
+            <ol id="how-steps"></ol>
+          </div>
+        </details>
       </section>
     </div>
 
@@ -552,19 +801,24 @@
     <hr class="rule" id="comments-rule" hidden>
     <section id="comments" hidden>
       <h2>Comments</h2>
-      <p class="comments-intro">Leave a note: a comment on the golden flow or on an answer.</p>
       <div class="thread" id="thread" aria-live="polite"></div>
-      <form id="note-form">
-        <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
-        <input id="n-name" name="who" maxlength="40" autocomplete="name">
-        <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
-        <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <label for="n-text">Your note</label>
-        <textarea id="n-text" name="note" maxlength="2000" required></textarea>
-        <button type="submit">Leave a note</button>
-        <p class="form-status" role="status"></p>
-        <p class="form-foot">Notes are public, and appear above for everyone who reads this page.</p>
-      </form>
+      <details class="fold quiet" id="note-fold">
+        <summary><span class="sum-main">Leave a note</span></summary>
+        <div class="fold-body">
+          <p class="comments-intro">A comment on the golden flow or on an answer.</p>
+          <form id="note-form">
+            <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
+            <input id="n-name" name="who" maxlength="40" autocomplete="name">
+            <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
+            <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label for="n-text">Your note</label>
+            <textarea id="n-text" name="note" maxlength="2000" required></textarea>
+            <button type="submit">Leave a note</button>
+            <p class="form-status" role="status"></p>
+            <p class="form-foot">Notes are public, and appear above for everyone who reads this page.</p>
+          </form>
+        </div>
+      </details>
       <p class="talk-live">
         <a href="https://mirror.onen.ai/?pool=golden-flow">Talk live in the room</a>
         <span class="here-now" id="here-now" aria-live="polite"></span>
@@ -596,8 +850,10 @@
   var SITE = 'https://phenomemental.github.io/happyseaurchin-beach/';
   var HANDLE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/;
   var RUNGS = ['day', 'season', 'year'];
+  var OTHER = '\u0000someone';
   var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
   var SVG = 'http://www.w3.org/2000/svg';
+  var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   var text = Beach.text;
   var status = document.getElementById('status');
@@ -606,16 +862,21 @@
   var lastSig = null;
   var drawnSig = null;
 
-  // Where the page stands on this visit: a handle, a second to narrow to,
-  // and the rung. Nothing else about the visitor is kept.
-  var view = { as: ME, with: '', rung: 'day' };
+  // Where the page stands on this visit: who, with whom, and the rung,
+  // kept in the address so a view can be shared. What the beach shows
+  // (the toggles and the filter) lasts for the visit only.
+  var view = { as: ME, with: [], rung: 'day' };
+  var shown = { open: true, closed: true, between: false, flow: true, thirds: true };
+  var hideKind = {};
+  var hideSide = {};
   try {
     var q = new URLSearchParams(location.search);
     var qa = (q.get('as') || '').trim();
-    var qw = (q.get('with') || '').trim();
     var qr = (q.get('rung') || '').trim();
-    if (HANDLE.test(qa)) view.as = qa;
-    if (HANDLE.test(qw) && qw !== view.as) view.with = qw;
+    if (qa && qa.length <= 60) view.as = qa;
+    view.with = (q.get('with') || '').split(',').map(function (s) { return s.trim(); }).filter(function (s) {
+      return s && s.length <= 60 && s !== view.as;
+    });
     if (RUNGS.indexOf(qr) >= 0) view.rung = qr;
   } catch (e) {}
 
@@ -636,6 +897,19 @@
   }
   function cap(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  }
+  function press(e, on) {
+    e.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  // Enter and Space work on anything made to act like a button.
+  function activate(e, fn) {
+    e.addEventListener('click', fn);
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        fn(ev);
+      }
+    });
   }
   // A node's own words: a string, or its "_", followed down when the
   // beach has nested older entries there.
@@ -664,6 +938,17 @@
       if (t) out.push(t);
     }
     return out;
+  }
+  // An expansion box: a summary to tap, its body folded beneath.
+  function fold(cls, summary, badge) {
+    var d = el('details', 'fold ' + (cls || ''));
+    var s = el('summary');
+    s.appendChild(el('span', 'sum-main', summary));
+    if (badge != null) s.appendChild(el('span', 'badge', String(badge)));
+    d.appendChild(s);
+    var body = el('div', 'fold-body');
+    d.appendChild(body);
+    return { box: d, body: body };
   }
 
   // ---- Capitals into sentence case ----------------------------------------
@@ -774,7 +1059,7 @@
       return;
     }
     var l = capsLead(t);
-    $('how-head').textContent = l.caps ? sentenceCase(l.caps) : '';
+    $('how-head').textContent = l.caps ? sentenceCase(l.caps) : 'How to look';
     var intro = l.caps ? cap(l.rest) : t;
     $('how-intro').textContent = intro;
     $('how-intro').hidden = !intro;
@@ -889,7 +1174,7 @@
       id: id,
       text: t,
       head: head,
-      kind: head ? head.split(',')[0].trim() : '',
+      kind: head ? cap(head.split(',')[0].trim()) : '',
       group: group,
       ladder: ladderOf(group) || ladderOf(t),
       reads: readsOf(node),
@@ -912,6 +1197,7 @@
     });
     var head = own(entry);
     return {
+      id: eid,
       head: head,
       groups: groups,
       rung: /^\s*season\b/i.test(head) ? 'season' : /^\s*year\b/i.test(head) ? 'year' : 'day',
@@ -927,19 +1213,27 @@
     var m = /^([A-Za-z0-9][A-Za-z0-9_-]*)/.exec(own(r));
     return m ? m[1] : '';
   }
-  function readingFor(h) {
-    var found = null;
-    readings().forEach(function (r) {
-      if (handleOf(r) === h) found = r;
+  function entriesOf(r) {
+    return kids(r).filter(function (e) { return e && typeof e === 'object' && own(e); }).map(function (e, i) {
+      return parseEntry(e, String(i + 1));
     });
-    return found;
+  }
+  function latestDay(list) {
+    var days = list.filter(function (e) { return e.rung === 'day'; });
+    return days.length ? days[days.length - 1] : null;
+  }
+  function loopsOf(e) {
+    var out = [];
+    if (e) e.groups.forEach(function (g) { out = out.concat(g.loops); });
+    return out;
   }
 
   // Who is who. The readings' opening lines pair a handle with a name,
   // "Phenomemental (Matthew)", and the loops pair a name with a handle,
   // "Julie (happyhedgehog)": each person is one rock, by either word, and
   // a rock bears the name tidewright uses for them.
-  var alias = { up: {}, name: {} };
+  var alias = { up: {}, name: {}, handle: {} };
+  var everyone = [];
   function find(x) {
     var seen = 0;
     while (alias.up[x] && alias.up[x] !== x && seen++ < 50) x = alias.up[x];
@@ -959,19 +1253,31 @@
     return /^[A-Za-z][A-Za-z0-9_-]*$/.test(s);
   }
   function learnNames(list) {
-    alias = { up: {}, name: {} };
+    alias = { up: {}, name: {}, handle: {} };
+    var seen = [];
     list.forEach(function (r) {
       var m = /^([A-Za-z0-9][A-Za-z0-9_-]*)\s*\(([^)]+)\)/.exec(own(r));
       if (m && single(m[2].trim())) join(m[1], m[2].trim(), m[2].trim());
-      kids(r).forEach(function (entry) {
-        parseEntry(entry, '').groups.forEach(function (g) {
-          g.loops.forEach(function (l) {
-            l.parties.forEach(function (p) {
-              if (p.bracket && single(p.bracket) && single(p.name)) join(p.name, p.bracket, p.name);
-            });
+    });
+    list.forEach(function (r) {
+      entriesOf(r).forEach(function (entry) {
+        loopsOf(entry).forEach(function (l) {
+          l.parties.forEach(function (p) {
+            if (p.bracket && single(p.bracket) && single(p.name)) {
+              join(p.name, p.bracket, p.name);
+              alias.handle[p.name] = p.bracket;
+            }
+            seen.push(p.name);
           });
+          if (l.third) seen.push(l.third.name);
         });
       });
+    });
+    // Everyone tidewright names, once each, for choosing whom to stand as.
+    everyone = [];
+    seen.forEach(function (n) {
+      var k = key(n);
+      if (everyone.indexOf(k) < 0) everyone.push(k);
     });
   }
   function key(name) {
@@ -980,9 +1286,18 @@
   function label(k) {
     return alias.name[k] || k;
   }
+  function readingFor(h) {
+    var found = null;
+    var k = key(h);
+    readings().forEach(function (r) {
+      if (key(handleOf(r)) === k) found = r;
+    });
+    return found;
+  }
 
   // ---- The pool ---------------------------------------------------------------------
   var SIDES = { rooms: -90, grains: 180, projects: 0, family: 90 };
+  var SIDE_ORDER = ['rooms', 'grains', 'projects', 'family'];
   // The side of the surface a loop waits in: the family's own, the
   // tidewright group that says so, or the first block it read there.
   function sideOf(loop) {
@@ -1034,6 +1349,10 @@
   function short(s, n) {
     return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s;
   }
+  function names(keys) {
+    var l = keys.map(label);
+    return l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1];
+  }
 
   var W = 400, H = 340, CX = 200, CY = 170;
   var RING = { x: 150, y: 116 };
@@ -1042,77 +1361,91 @@
   // Everything the beach shows at this moment, drawn from the reading.
   var scene = null;
   var picked = null;
+  var openGroups = {};
+  var openFor = null;
 
   function buildScene() {
     var reading = readingFor(view.as);
-    var s = { reading: reading, entries: [], entry: null, day: [], season: [], year: [], rocks: [], centre: key(view.as) };
+    var s = {
+      reading: reading, entries: [], entry: null, centre: key(view.as),
+      all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: []
+    };
+    var chosen = view.with.map(key);
+    // A loop stands with the chosen when any of them is among those it is
+    // between, or is named in its opening.
+    s.near = function (l) {
+      if (!chosen.length) return true;
+      return chosen.some(function (c) {
+        if (l.parties.some(function (p) { return key(p.name) === c || (p.bracket && key(p.bracket) === c); })) return true;
+        var words = Object.keys(alias.up).filter(function (a) { return find(a) === c; });
+        if (words.indexOf(c) < 0) words.push(c);
+        return words.some(function (w) {
+          return new RegExp('(^|[^A-Za-z0-9_-])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-z0-9_-])').test(l.head || l.text);
+        });
+      });
+    };
     if (!reading) return s;
-    s.entries = kids(reading).filter(function (e) { return e && typeof e === 'object' && own(e); }).map(function (e, i) {
-      return parseEntry(e, String(i + 1));
-    });
-    var days = s.entries.filter(function (e) { return e.rung === 'day'; });
-    s.entry = days.length ? days[days.length - 1] : null;
+    s.entries = entriesOf(reading);
+    s.entry = latestDay(s.entries);
     function latest(rung) {
       var list = s.entries.filter(function (e) { return e.rung === rung; });
       return list.length ? list[list.length - 1] : null;
     }
-    function loopsOf(e) {
-      var out = [];
-      if (e) e.groups.forEach(function (g) { out = out.concat(g.loops); });
-      return out;
-    }
-    var narrow = view.with ? key(view.with) : '';
-    function near(l) {
-      if (!narrow) return true;
-      if (l.parties.some(function (p) { return key(p.name) === narrow || (p.bracket && key(p.bracket) === narrow); })) return true;
-      var words = Object.keys(alias.up).filter(function (a) { return find(a) === narrow; });
-      if (words.indexOf(view.with) < 0) words.push(view.with);
-      return words.some(function (w) {
-        return new RegExp('(^|[^A-Za-z0-9_-])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-z0-9_-])').test(l.head || l.text);
-      });
-    }
-    s.near = near;
-    s.day = loopsOf(s.entry).filter(function (l) { return !l.ladder && near(l); });
+    s.all.day = loopsOf(s.entry).filter(function (l) { return !l.ladder; });
     var se = latest('season');
-    s.season = (se ? loopsOf(se) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'route'; })).filter(near);
+    s.all.season = se ? loopsOf(se) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'route'; });
     var ye = latest('year');
-    s.year = (ye ? loopsOf(ye) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; })).filter(near);
-    s.year.forEach(function (l) { if (!l.ladder) l.ladder = 'trade'; });
-    s.season.forEach(function (l) { if (!l.ladder) l.ladder = 'route'; });
+    s.all.year = ye ? loopsOf(ye) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; });
+    s.all.season.forEach(function (l) { if (!l.ladder) l.ladder = 'route'; });
+    s.all.year.forEach(function (l) { if (!l.ladder) l.ladder = 'trade'; });
+    RUNGS.forEach(function (r) {
+      s.all[r].forEach(function (l) { l.side = sideOf(l); });
+      s[r] = s.all[r].filter(s.near);
+    });
+    // Everyone this rung's loops are between, and the thirds, each once:
+    // the rocks, and the people to be with.
+    s.all[view.rung].forEach(function (l) {
+      var add = function (n) {
+        var k = key(n);
+        if (k && k !== s.centre && s.people.indexOf(k) < 0) s.people.push(k);
+      };
+      l.parties.forEach(function (p) { add(p.name); });
+      if (l.third) add(l.third.name);
+    });
     return s;
   }
+  // The loops the beach draws: the rung's, with the chosen, through the
+  // filter.
+  function drawn() {
+    var list = scene[view.rung];
+    if (view.rung !== 'day') return list;
+    return list.filter(function (l) { return !hideKind[l.kind] && !hideSide[l.side]; });
+  }
 
-  // The rocks around the centre: everyone a shown loop is between, and
-  // the third where one was found. Each sits nearest the side of its first
-  // loop.
-  function placeRocks(loops) {
-    var order = [], pref = {};
-    function add(name, angle) {
-      var k = key(name);
-      if (!k || k === scene.centre) return;
-      if (order.indexOf(k) < 0) {
-        order.push(k);
-        pref[k] = angle;
-      }
-    }
-    loops.forEach(function (l) {
+  // Each rock sits nearest the side of its first loop.
+  function placeRocks() {
+    var pref = {};
+    scene.all[view.rung].forEach(function (l) {
       var a = SIDES[l.side || 'projects'];
-      l.parties.forEach(function (p) { add(p.name, a); });
-      if (l.third) add(l.third.name, a);
+      l.parties.forEach(function (p) {
+        var k = key(p.name);
+        if (pref[k] == null) pref[k] = a;
+      });
+      if (l.third && pref[key(l.third.name)] == null) pref[key(l.third.name)] = a;
     });
+    var order = scene.people;
     var n = order.length;
     var slots = [];
-    for (var i = 0; i < n; i++) slots.push(-90 + 180 / Math.max(n, 1) + i * 360 / Math.max(n, 1));
+    for (var i = 0; i < n; i++) slots.push(-90 + 180 / n + i * 360 / n);
     var at = {};
     function gap(a, b) {
-      var d = Math.abs(((a - b) % 360 + 540) % 360 - 180);
-      return d;
+      return Math.abs(((a - b) % 360 + 540) % 360 - 180);
     }
     order.forEach(function (k) {
       var best = -1, bestGap = 1e9;
       slots.forEach(function (sl, si) {
         if (sl == null) return;
-        var g = gap(sl, pref[k]);
+        var g = gap(sl, pref[k] == null ? 0 : pref[k]);
         if (g < bestGap) {
           bestGap = g;
           best = si;
@@ -1122,7 +1455,8 @@
       slots[best] = null;
       at[k] = { x: CX + Math.cos(ang) * RING.x, y: CY + Math.sin(ang) * RING.y };
     });
-    return { order: order, at: at };
+    at[scene.centre] = { x: CX, y: CY };
+    return at;
   }
 
   var rockEls = {};
@@ -1143,8 +1477,39 @@
     }
     var title = svg('title', {}, g);
     title.textContent = nm === k ? nm : nm + ' (' + k + ')';
+    if (!centre) {
+      // Tap a rock to be with them, again to let them go.
+      g.classList.add('pickable');
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', 'With ' + nm);
+      g.setAttribute('aria-pressed', view.with.some(function (w) { return key(w) === k; }) ? 'true' : 'false');
+      activate(g, function () { toggleWith(k); });
+    }
     rockEls[k] = g;
     return g;
+  }
+
+  // The path the light takes for a loop: from one it is between, through
+  // its pebble, to the other.
+  function flowPath(l) {
+    var ks = [];
+    l.parties.forEach(function (p) {
+      var k = key(p.name);
+      if (scene.at[k] && ks.indexOf(k) < 0) ks.push(k);
+    });
+    if (ks.length === 1 && ks[0] !== scene.centre) ks.unshift(scene.centre);
+    if (ks.length < 2 || l.x == null) return [];
+    var out = [];
+    for (var i = 1; i < ks.length; i++) {
+      var A = scene.at[ks[0]], B = scene.at[ks[i]];
+      var mx = (A.x + l.x) / 2 + (CX - (A.x + l.x) / 2) * 0.15;
+      var my = (A.y + l.y) / 2 + (CY - (A.y + l.y) / 2) * 0.15;
+      out.push('M' + A.x.toFixed(1) + ' ' + A.y.toFixed(1) +
+        ' Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + l.x.toFixed(1) + ' ' + l.y.toFixed(1) +
+        ' T' + B.x.toFixed(1) + ' ' + B.y.toFixed(1));
+    }
+    return out;
   }
 
   function drawBeach() {
@@ -1158,76 +1523,102 @@
       var y = CY - 120 + i * 78 + (i % 2 ? 6 : -4);
       svg('path', { 'class': 'ripple', d: 'M' + (CX - 150 + i * 6) + ' ' + y + ' q 50 -10 100 0 t 100 0 t 100 0' }, box);
     }
+    // The four sides name where loops wait; tap one to hide or show it.
     var sideAt = { rooms: [CX, 12, 0], family: [CX, H - 4, 0], grains: [10, CY, -90], projects: [W - 10, CY, 90] };
-    Object.keys(sideAt).forEach(function (k) {
+    SIDE_ORDER.forEach(function (k) {
       var p = sideAt[k];
       var t = svg('text', {
-        'class': 'side', x: p[0], y: p[1], 'text-anchor': 'middle',
-        transform: p[2] ? 'rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')' : ''
+        'class': 'side' + (hideSide[k] ? ' off' : ''), x: p[0], y: p[1], 'text-anchor': 'middle',
+        transform: p[2] ? 'rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')' : '',
+        tabindex: '0', role: 'switch', 'aria-checked': hideSide[k] ? 'false' : 'true', 'aria-label': 'Show loops waiting in ' + k
       }, box);
       t.textContent = k;
+      activate(t, function () { toggleSide(k); });
     });
 
     var rung = view.rung;
-    var loops = rung === 'day' ? scene.day : rung === 'season' ? scene.season : scene.year;
-    var shown = scene.reading && scene.entry || (scene.reading && loops.length);
-    loops.forEach(function (l) { l.side = sideOf(l); });
-    var rocks = placeRocks(shown ? loops : []);
+    var list = drawn();
+    var has = !!(scene.reading && (scene.entry || scene.all[rung].length));
+    scene.at = has ? placeRocks() : {};
+    scene.at[scene.centre] = { x: CX, y: CY };
     var routes = svg('g', {}, box);
+    var flows = svg('g', {}, box);
     tieLayer = svg('g', {}, box);
     var stones = svg('g', {}, box);
 
+    var chosen = view.with.map(key);
+    $('shore').classList.toggle('narrowed', chosen.length > 0);
     drawRock(stones, scene.centre, CX, CY, 30, true);
-    rocks.order.forEach(function (k) {
-      drawRock(stones, k, rocks.at[k].x, rocks.at[k].y, 17, false);
-    });
-    scene.at = rocks.at;
-    scene.at[scene.centre] = { x: CX, y: CY };
-
-    if (!shown) return;
+    if (has) {
+      scene.people.forEach(function (k) {
+        var g = drawRock(stones, k, scene.at[k].x, scene.at[k].y, 17, false);
+        if (chosen.indexOf(k) >= 0) g.classList.add('chosen');
+      });
+    }
+    if (!has) return;
 
     if (rung === 'day') {
       // Closed loops rest as small grey pebbles near the rock; they say
       // nothing.
-      var closed = Math.min(scene.entry && scene.entry.closed || 0, 60);
-      for (var c = 0; c < closed; c++) {
-        var a = c * 2.39996 + 0.4;
-        var rr = 39 + (c % 4) * 4.5 + Math.floor(c / 24) * 6;
-        svg('circle', { 'class': 'resting', cx: (CX + Math.cos(a) * rr).toFixed(1), cy: (CY + Math.sin(a) * rr * 0.8).toFixed(1), r: 2.6 }, stones);
+      if (shown.closed) {
+        var closed = Math.min(scene.entry && scene.entry.closed || 0, 60);
+        for (var c = 0; c < closed; c++) {
+          var a = c * 2.39996 + 0.4;
+          var rr = 39 + (c % 4) * 4.5 + Math.floor(c / 24) * 6;
+          svg('circle', { 'class': 'resting', cx: (CX + Math.cos(a) * rr).toFixed(1), cy: (CY + Math.sin(a) * rr * 0.8).toFixed(1), r: 2.6 }, stones);
+        }
       }
       // Open loops: amber pebbles on the side of the surface they wait in.
+      // Every loop has its place whether shown or not, so a pebble keeps
+      // its spot as the toggles change.
       var bySide = {};
-      loops.forEach(function (l) { (bySide[l.side] = bySide[l.side] || []).push(l); });
+      scene.all.day.forEach(function (l) { (bySide[l.side] = bySide[l.side] || []).push(l); });
       Object.keys(bySide).forEach(function (sd) {
-        var list = bySide[sd];
-        var n = list.length;
+        var group = bySide[sd];
+        var n = group.length;
         var step = Math.min(17, 84 / Math.max(n, 1));
-        list.forEach(function (l, j) {
+        group.forEach(function (l, j) {
           var band = BAND[n > 5 ? j % 2 : 1];
           var ang = (SIDES[sd] + (j - (n - 1) / 2) * step) * Math.PI / 180;
-          var x = CX + Math.cos(ang) * band.x;
-          var y = CY + Math.sin(ang) * band.y;
-          var g = svg('g', { 'class': 'pebble', tabindex: '0', role: 'button' }, stones);
-          g.setAttribute('aria-label', l.text);
-          svg('circle', { 'class': 'hit', cx: x.toFixed(1), cy: y.toFixed(1), r: 13 }, g);
-          var st = svg('ellipse', { 'class': 'stone', cx: x.toFixed(1), cy: y.toFixed(1), rx: 6.6, ry: 5.2, transform: 'rotate(' + Math.round(hash(l.id) * 60 - 30) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')' }, g);
-          st.style.animationDelay = (-hash(l.text) * 5).toFixed(2) + 's';
-          l.x = x;
-          l.y = y;
-          pebbleEls[l.id] = g;
-          g.addEventListener('click', function () { pick(l, false); });
-          g.addEventListener('keydown', function (ev) {
-            if (ev.key === 'Enter' || ev.key === ' ') {
-              ev.preventDefault();
-              pick(l, false);
-            }
-          });
+          l.x = CX + Math.cos(ang) * band.x;
+          l.y = CY + Math.sin(ang) * band.y;
         });
+      });
+      list.forEach(function (l) {
+        if (shown.thirds && l.third && rockEls[key(l.third.name)]) rockEls[key(l.third.name)].classList.add('third');
+        // Between whom, and the light moving between them through the
+        // pebble, never resting on either side.
+        flowPath(l).forEach(function (d, fi) {
+          if (shown.between) svg('path', { 'class': 'between', d: d }, flows);
+          if (shown.flow && !reduced.matches) {
+            var id = 'flow-' + l.id.replace(/\./g, '-') + '-' + fi;
+            svg('path', { 'class': 'flow-path', id: id, d: d }, flows);
+            var mote = svg('circle', { 'class': 'mote', r: 2.4 }, flows);
+            var dur = 7 + hash(l.text + fi) * 4;
+            var am = svg('animateMotion', {
+              dur: dur.toFixed(1) + 's', repeatCount: 'indefinite', calcMode: 'linear',
+              keyPoints: '0;1;0', keyTimes: '0;0.5;1', begin: (-hash(l.id + fi) * dur).toFixed(1) + 's'
+            }, mote);
+            var mp = svg('mpath', {}, am);
+            mp.setAttribute('href', '#' + id);
+            mp.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#' + id);
+          } else if (shown.flow && !shown.between) {
+            svg('path', { 'class': 'between', d: d }, flows);
+          }
+        });
+        if (!shown.open) return;
+        var g = svg('g', { 'class': 'pebble', tabindex: '0', role: 'button' }, stones);
+        g.setAttribute('aria-label', l.text);
+        svg('circle', { 'class': 'hit', cx: l.x.toFixed(1), cy: l.y.toFixed(1), r: 13 }, g);
+        var st = svg('ellipse', { 'class': 'stone', cx: l.x.toFixed(1), cy: l.y.toFixed(1), rx: 6.6, ry: 5.2, transform: 'rotate(' + Math.round(hash(l.id) * 60 - 30) + ' ' + l.x.toFixed(1) + ' ' + l.y.toFixed(1) + ')' }, g);
+        st.style.animationDelay = (-hash(l.text) * 5).toFixed(2) + 's';
+        pebbleEls[l.id] = g;
+        activate(g, function () { pick(l, false); });
       });
     } else {
       // Routes worn between the same two, as thick as the loops closed
       // between them; at the year, trades in amber and drains dashed red.
-      loops.forEach(function (l) {
+      list.forEach(function (l) {
         var ks = [];
         l.parties.forEach(function (p) {
           var k = key(p.name);
@@ -1237,20 +1628,13 @@
         var A = scene.at[ks[0]], B = scene.at[ks[1]];
         if (!A || !B) return;
         var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
-        var bend = 0.18;
-        var qx = mx + (CX - mx) * bend, qy = my + (CY - my) * bend;
+        var qx = mx + (CX - mx) * 0.18, qy = my + (CY - my) * 0.18;
         var d = 'M' + A.x.toFixed(1) + ' ' + A.y.toFixed(1) + ' Q' + qx.toFixed(1) + ' ' + qy.toFixed(1) + ' ' + B.x.toFixed(1) + ' ' + B.y.toFixed(1);
         var w = l.ladder === 'drain' ? 2 : Math.min(1.4 + weight(l.text) * 1.1, 12);
         svg('path', { 'class': 'route' + (l.ladder === 'trade' ? ' trade' : l.ladder === 'drain' ? ' drain' : ''), d: d, 'stroke-width': w.toFixed(1) }, routes);
         var hit = svg('path', { 'class': 'route-hit', d: d, tabindex: '0', role: 'button' }, routes);
         hit.setAttribute('aria-label', l.text);
-        hit.addEventListener('click', function () { pick(l, false); });
-        hit.addEventListener('keydown', function (ev) {
-          if (ev.key === 'Enter' || ev.key === ' ') {
-            ev.preventDefault();
-            pick(l, false);
-          }
-        });
+        activate(hit, function () { pick(l, false); });
         l.x = qx;
         l.y = qy;
         pebbleEls[l.id] = hit;
@@ -1295,10 +1679,16 @@
     box.appendChild(el('p', 'loop-text', l.text));
     readList(box, l.reads);
     box.hidden = false;
+    // Its place in the telling opens, so the two read together.
+    var row = document.querySelector('.telling .loop[data-id="' + l.id + '"]');
+    var grp = row && row.closest('details.group');
+    if (grp && !grp.open) {
+      grp.open = true;
+      openGroups[grp.dataset.key] = true;
+    }
     if (!quiet && window.matchMedia && !window.matchMedia('(min-width: 640px)').matches) {
-      var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var r = box.getBoundingClientRect();
-      if (r.bottom > window.innerHeight) box.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'nearest' });
+      if (r.bottom > window.innerHeight) box.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'nearest' });
     }
   }
   function readList(parent, reads) {
@@ -1309,16 +1699,27 @@
     parent.appendChild(ul);
   }
 
-  // tidewright's telling for the handle: the tide's opening line, then
-  // each open loop under who it waits on, the blocks read beneath it.
+  // tidewright's telling for the one standing: the tide's opening line,
+  // then each group of open loops in its own box, under who they wait on,
+  // with the blocks read beneath every loop.
   function telling(box, entry, loops, live) {
     if (entry.head) box.appendChild(el('p', 'tide-head', entry.head));
     var ids = {};
     loops.forEach(function (l) { ids[l.id] = l; });
-    entry.groups.forEach(function (g) {
+    entry.groups.forEach(function (g, gi) {
       var mine = g.loops.filter(function (l) { return ids[l.id]; });
       if (!mine.length) return;
-      if (g.head) box.appendChild(el('h3', 'group-head', g.head));
+      var host = box;
+      if (g.head) {
+        var f = fold('group', g.head, mine.length);
+        var gk = entry.id + ':' + g.head;
+        f.box.dataset.key = gk;
+        if (live && openGroups[gk] == null && !Object.keys(openGroups).length && gi === 0) openGroups[gk] = true;
+        f.box.open = live ? !!openGroups[gk] : false;
+        f.box.addEventListener('toggle', function () { openGroups[gk] = f.box.open; });
+        box.appendChild(f.box);
+        host = f.body;
+      }
       mine.forEach(function (l) {
         var d = el('div', 'loop');
         d.dataset.id = l.id;
@@ -1327,15 +1728,9 @@
         if (live && pebbleEls[l.id]) {
           d.tabIndex = 0;
           d.setAttribute('role', 'button');
-          d.addEventListener('click', function () { pick(l, true); });
-          d.addEventListener('keydown', function (ev) {
-            if (ev.key === 'Enter' || ev.key === ' ') {
-              ev.preventDefault();
-              pick(l, true);
-            }
-          });
+          activate(d, function () { pick(l, true); });
         }
-        box.appendChild(d);
+        host.appendChild(d);
       });
     });
   }
@@ -1344,21 +1739,256 @@
     $(id).textContent = n == null ? '–' : String(n);
   }
 
+  // ---- The controls -----------------------------------------------------------------
+  // Stand as: everyone tidewright has read, then everyone named in a loop,
+  // then anyone else by handle.
+  var asSelect = $('as-select');
+  function renderStandAs() {
+    var keep = key(view.as);
+    asSelect.textContent = '';
+    var readers = el('optgroup');
+    readers.label = 'Read by tidewright';
+    var readerKeys = [];
+    readings().forEach(function (r) {
+      var h = handleOf(r);
+      if (!h) return;
+      readerKeys.push(key(h));
+      var o = el('option', null, label(key(h)) === h ? h : label(key(h)) + ' (' + h + ')');
+      o.value = h;
+      readers.appendChild(o);
+    });
+    if (readers.children.length) asSelect.appendChild(readers);
+    var others = el('optgroup');
+    others.label = 'Named in a loop';
+    everyone.filter(function (k) { return readerKeys.indexOf(k) < 0; }).sort(function (a, b) {
+      return label(a).localeCompare(label(b));
+    }).forEach(function (k) {
+      var nm = label(k);
+      var h = alias.handle[nm];
+      var o = el('option', null, h && h !== nm ? nm + ' (' + h + ')' : nm);
+      o.value = k;
+      others.appendChild(o);
+    });
+    if (others.children.length) asSelect.appendChild(others);
+    var found = false;
+    Array.prototype.forEach.call(asSelect.querySelectorAll('option'), function (o) {
+      if (!found && key(o.value) === keep) {
+        o.selected = true;
+        found = true;
+      }
+    });
+    if (!found) {
+      var o = el('option', null, view.as);
+      o.value = view.as;
+      o.selected = true;
+      asSelect.insertBefore(o, asSelect.firstChild);
+    }
+    var some = el('option', null, 'Someone else…');
+    some.value = OTHER;
+    asSelect.appendChild(some);
+  }
+  function standAs(h) {
+    view.as = h;
+    view.with = [];
+    picked = null;
+    openGroups = {};
+    remember();
+    show();
+  }
+  asSelect.addEventListener('change', function () {
+    var v = asSelect.value;
+    $('stand-status').textContent = '';
+    if (v === OTHER) {
+      $('someone').hidden = false;
+      $('as-other').focus();
+      return;
+    }
+    $('someone').hidden = true;
+    standAs(v);
+  });
+  $('stand-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var h = $('as-other').value.trim();
+    if (!HANDLE.test(h)) {
+      $('stand-status').textContent = 'Please give a handle, as it is on the beach.';
+      return;
+    }
+    $('stand-status').textContent = '';
+    $('someone').hidden = true;
+    $('as-other').value = '';
+    standAs(h);
+  });
+
+  // With: everyone the loops are between, as chips; choose any number.
+  function toggleWith(k) {
+    var i = -1;
+    view.with.forEach(function (w, j) { if (key(w) === k) i = j; });
+    if (i >= 0) view.with.splice(i, 1);
+    else view.with.push(k);
+    remember();
+    show(true);
+  }
+  function renderWith() {
+    var box = $('with-chips');
+    box.textContent = '';
+    var chosen = view.with.map(key);
+    var all = el('button', 'chip', 'Everyone');
+    all.type = 'button';
+    press(all, !chosen.length);
+    all.addEventListener('click', function () {
+      view.with = [];
+      remember();
+      show(true);
+    });
+    box.appendChild(all);
+    var people = scene.people.slice();
+    chosen.forEach(function (k) { if (people.indexOf(k) < 0) people.push(k); });
+    people.forEach(function (k) {
+      var b = el('button', 'chip', label(k));
+      b.type = 'button';
+      press(b, chosen.indexOf(k) >= 0);
+      b.addEventListener('click', function () { toggleWith(k); });
+      box.appendChild(b);
+    });
+    $('with-label').hidden = box.hidden = !scene.people.length && !chosen.length;
+  }
+
+  // The rung.
+  var rungButtons = Array.prototype.slice.call(document.querySelectorAll('#rungs [data-rung]'));
+  function markRung() {
+    rungButtons.forEach(function (b) { press(b, b.dataset.rung === view.rung); });
+  }
+  rungButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      view.rung = b.dataset.rung;
+      markRung();
+      remember();
+      show();
+    });
+  });
+
+  // The toggles beneath the beach.
+  var switches = Array.prototype.slice.call(document.querySelectorAll('.switch[data-show]'));
+  switches.forEach(function (b) {
+    b.addEventListener('click', function () {
+      shown[b.dataset.show] = !shown[b.dataset.show];
+      b.setAttribute('aria-checked', shown[b.dataset.show] ? 'true' : 'false');
+      show(true);
+    });
+  });
+  function markSwitches() {
+    var day = view.rung === 'day';
+    switches.forEach(function (b) {
+      b.setAttribute('aria-checked', shown[b.dataset.show] ? 'true' : 'false');
+      b.disabled = !day;
+    });
+  }
+
+  // The filter: kinds of loop and the sides they wait in.
+  function toggleSide(k) {
+    hideSide[k] = !hideSide[k];
+    show(true);
+  }
+  function renderFilter() {
+    var kinds = [], sides = [];
+    scene.all.day.forEach(function (l) {
+      if (l.kind && kinds.indexOf(l.kind) < 0) kinds.push(l.kind);
+      if (sides.indexOf(l.side) < 0) sides.push(l.side);
+    });
+    sides.sort(function (a, b) { return SIDE_ORDER.indexOf(a) - SIDE_ORDER.indexOf(b); });
+    var kb = $('kind-chips');
+    kb.textContent = '';
+    kinds.forEach(function (k) {
+      var b = el('button', 'chip', k);
+      b.type = 'button';
+      press(b, !hideKind[k]);
+      b.addEventListener('click', function () {
+        hideKind[k] = !hideKind[k];
+        show(true);
+      });
+      kb.appendChild(b);
+    });
+    var sb = $('side-chips');
+    sb.textContent = '';
+    sides.forEach(function (k) {
+      var b = el('button', 'chip', k);
+      b.type = 'button';
+      press(b, !hideSide[k]);
+      b.addEventListener('click', function () { toggleSide(k); });
+      sb.appendChild(b);
+    });
+    var off = kinds.filter(function (k) { return hideKind[k]; }).length + sides.filter(function (k) { return hideSide[k]; }).length;
+    var badge = $('filter-badge');
+    badge.textContent = off ? off + ' off' : '';
+    badge.hidden = !off;
+    $('filter').hidden = view.rung !== 'day' || !scene.all.day.length;
+  }
+
+  // Where tidewright has not written for someone, the readings that name
+  // them, to see them from there.
+  function renderAppears() {
+    var box = $('appears');
+    box.textContent = '';
+    var k = key(view.as);
+    if (scene.reading) {
+      box.hidden = true;
+      return;
+    }
+    readings().forEach(function (r) {
+      var h = handleOf(r);
+      var e = latestDay(entriesOf(r));
+      var named = loopsOf(e).some(function (l) {
+        return l.parties.some(function (p) { return key(p.name) === k; }) || (l.third && key(l.third.name) === k);
+      });
+      if (!named) return;
+      var b = el('button', 'chip', label(k) + ' in ' + label(key(h)) + '’s loops');
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        view.as = h;
+        view.with = [k];
+        picked = null;
+        openGroups = {};
+        remember();
+        show();
+      });
+      box.appendChild(b);
+    });
+    box.hidden = !box.children.length;
+  }
+
+  function remember() {
+    try {
+      var q = new URLSearchParams();
+      if (view.as !== ME) q.set('as', view.as);
+      if (view.with.length) q.set('with', view.with.join(','));
+      if (view.rung !== 'day') q.set('rung', view.rung);
+      var s = q.toString();
+      history.replaceState(null, '', location.pathname + (s ? '?' + s : '') + location.hash);
+    } catch (e) {}
+  }
+
   function renderPool() {
     scene = buildScene();
+    renderStandAs();
+    renderWith();
+    markRung();
+    markSwitches();
+    renderFilter();
     var note = '';
     var who = label(scene.centre);
-    if (!scene.reading || !scene.entry && !scene.entries.length) {
-      note = 'tidewright has not yet written for ' + view.as + '. Handles are case-sensitive.';
-    } else if (view.rung !== 'day' && !(view.rung === 'season' ? scene.season : scene.year).length) {
-      note = 'tidewright has not yet read ' + (view.rung === 'season' ? 'the season' : 'the year') + ' for ' + who + (view.with ? ' with ' + label(key(view.with)) : '') + '.';
-    } else if (view.with) {
-      var list = view.rung === 'day' ? scene.day : view.rung === 'season' ? scene.season : scene.year;
-      note = list.length
-        ? 'Narrowed to the loops between ' + who + ' and ' + label(key(view.with)) + '.'
-        : 'No open loop between ' + who + ' and ' + label(key(view.with)) + ' in this tide.';
+    var chosen = view.with.map(key);
+    var rungList = scene[view.rung];
+    if (!scene.reading || !scene.entries.length) {
+      note = 'tidewright has not yet written for ' + who + '.' + (!scene.reading && everyone.indexOf(key(view.as)) < 0 ? ' Handles are case-sensitive.' : '');
+    } else if (view.rung !== 'day' && !scene.all[view.rung].length) {
+      note = 'tidewright has not yet read ' + (view.rung === 'season' ? 'the season' : 'the year') + ' for ' + who + '.';
+    } else if (chosen.length) {
+      note = rungList.length
+        ? who + '’s loops with ' + names(chosen) + '.'
+        : 'No open loop between ' + who + ' and ' + names(chosen) + ' in this tide.';
     }
     $('pool-note').textContent = note;
+    renderAppears();
     var e = scene.entry;
     setCount('n-loops', e ? e.loops : null);
     setCount('n-closed', e ? e.closed : null);
@@ -1367,38 +1997,50 @@
 
     drawBeach();
 
-    // The telling is the whole tide as tidewright wrote it, narrowed only
-    // by a second handle; a season or a year she read on its own follows.
-    function shownIn(x) {
+    var list = drawn();
+    var showing = '';
+    if (view.rung === 'day' && scene.day.length && (list.length < scene.day.length || !shown.open)) {
+      showing = shown.open ? 'Showing ' + list.length + ' of ' + scene.day.length + ' open loops.' : 'Open loops hidden.';
+    }
+    $('showing').textContent = showing;
+
+    // The telling is the tide as tidewright wrote it, narrowed to whom you
+    // are with and through the filter; a season or a year she read on its
+    // own follows.
+    var ids = {};
+    list.forEach(function (l) { ids[l.id] = true; });
+    function shownIn(x, live) {
       var out = [];
-      x.groups.forEach(function (g) { out = out.concat(g.loops.filter(scene.near)); });
+      x.groups.forEach(function (g) {
+        out = out.concat(g.loops.filter(function (l) {
+          return scene.near(l) && (!live || view.rung !== 'day' || l.ladder || ids[l.id]);
+        }));
+      });
       return out;
     }
     var box = $('telling');
     box.textContent = '';
     if (scene.reading) box.appendChild(el('p', 'reading-line', own(scene.reading)));
-    if (e) telling(box, e, shownIn(e), true);
+    if (e) telling(box, e, shownIn(e, true), true);
     if (view.rung !== 'day') {
       var src = scene.entries.filter(function (x) { return x.rung === view.rung; }).pop();
-      if (src) telling(box, src, shownIn(src), true);
+      if (src) telling(box, src, shownIn(src, true), true);
     }
     // Earlier tides, folded, newest first.
     var earlier = scene.entries.filter(function (x) { return x !== e && x.rung === 'day'; }).reverse();
     if (earlier.length) {
-      var d = el('details', 'earlier');
-      d.appendChild(el('summary', null, 'Earlier tides'));
+      var f = fold('quiet earlier', 'Earlier tides', earlier.length);
       earlier.forEach(function (x) {
         var t = el('div', 'earlier-tide');
-        telling(t, x, shownIn(x), false);
-        d.appendChild(t);
+        telling(t, x, shownIn(x, false), false);
+        f.body.appendChild(t);
       });
-      box.appendChild(d);
+      box.appendChild(f.box);
     }
 
-    // Keep the chosen loop chosen while it still stands.
+    // Keep the chosen loop chosen while it is still on the beach.
     var again = null;
-    var all = view.rung === 'day' ? scene.day : view.rung === 'season' ? scene.season : scene.year;
-    all.forEach(function (l) { if (l.text === picked) again = l; });
+    list.forEach(function (l) { if (l.text === picked) again = l; });
     pick(again, true);
   }
 
@@ -1421,60 +2063,13 @@
     show();
     return true;
   }
-  function show() {
+  function show(force) {
     var sig = JSON.stringify(view) + (lastSig ? lastSig.length : 0);
-    if (sig === drawnSig || !spine) return;
+    if (!spine || (!force && sig === drawnSig)) return;
     drawnSig = sig;
     renderPool();
   }
-
-  // ---- Where to stand -----------------------------------------------------------------
-  var form = $('stand-form');
-  var standStatus = $('stand-status');
-  form.as.value = view.as;
-  form.with.value = view.with;
-  var rungButtons = Array.prototype.slice.call(form.querySelectorAll('[data-rung]'));
-  function markRung() {
-    rungButtons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.rung === view.rung ? 'true' : 'false'); });
-  }
-  markRung();
-  function remember() {
-    try {
-      var q = new URLSearchParams();
-      if (view.as !== ME) q.set('as', view.as);
-      if (view.with) q.set('with', view.with);
-      if (view.rung !== 'day') q.set('rung', view.rung);
-      var s = q.toString();
-      history.replaceState(null, '', location.pathname + (s ? '?' + s : '') + location.hash);
-    } catch (e) {}
-  }
-  rungButtons.forEach(function (b) {
-    b.addEventListener('click', function () {
-      view.rung = b.dataset.rung;
-      markRung();
-      remember();
-      show();
-    });
-  });
-  form.addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var a = form.as.value.trim();
-    var w = form.with.value.trim();
-    if (!HANDLE.test(a)) {
-      standStatus.textContent = 'Please give a handle, as it is on the beach.';
-      return;
-    }
-    if (w && !HANDLE.test(w)) {
-      standStatus.textContent = 'The second handle should be a handle as it is on the beach, or left empty.';
-      return;
-    }
-    standStatus.textContent = '';
-    view.as = a;
-    view.with = w === a ? '' : w;
-    picked = null;
-    remember();
-    show();
-  });
+  if (reduced.addEventListener) reduced.addEventListener('change', function () { show(true); });
 
   // ---- Ask the beach ------------------------------------------------------------------
   // A question goes into the room, pool:golden-flow, as a note in the shape
