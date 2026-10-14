@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introducing Community Recovery · LEROs on the Commons</title>
+<meta name="description" content="Introducing Community Recovery: the presentation, read live from Community Recovery's own place on the beach. Follow it on your phone and leave a note about any slide.">
+<meta name="theme-color" content="#1B1424">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="brand.css?v=2026-10-14a">
+<style>
+  /* ---- The bar: the script, following, presenting ------------------------ */
+  :root { --bar-h: 3.4rem; }
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 2px 10px rgba(27, 20, 36, 0.08);
+  }
+  .bar-in {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+  }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--head);
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.1rem;
+    cursor: pointer;
+  }
+  .switch .knob {
+    flex: none;
+    position: relative;
+    width: 2.4rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: var(--faint);
+    transition: background 0.15s;
+  }
+  .switch .knob::after {
+    content: "";
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s;
+  }
+  .switch[aria-checked="true"] .knob { background: var(--cr-purple); }
+  .switch[aria-checked="true"] .knob::after { transform: translateX(1rem); }
+  .switch:focus-visible, .present-btn:focus-visible, .tap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+  .present-btn {
+    margin-left: auto;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--cr-purple);
+    border: 0;
+    border-radius: 999px;
+    padding: 0.45rem 1.2rem;
+    cursor: pointer;
+  }
+  .bar-line {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 0 1rem 0.5rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .bar-line:empty { display: none; }
+
+  .opening {
+    max-width: 42rem;
+    margin: 3rem auto;
+    padding: 0 1rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .opening:empty { display: none; }
+
+  /* ---- A slide, its script and its room ---------------------------------- */
+  .unit { scroll-margin-top: var(--bar-h); }
+  .slide {
+    --s-head: var(--cr-head);
+    --s-body: var(--cr-body);
+    --s-quiet: var(--cr-quiet);
+    --s-mark: var(--cr-purple);
+    --s-card: var(--cr-card);
+    position: relative;
+    overflow: hidden;
+    min-height: calc(100vh - var(--bar-h));
+    min-height: calc(100svh - var(--bar-h));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2.6em 1.15em 3em;
+    background: var(--cr-ground);
+    color: var(--s-body);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  /* brand 5.1: the soft lilac circle glowing in a corner of a light slide */
+  .slide.light::before {
+    content: "";
+    position: absolute;
+    top: -14em;
+    right: -14em;
+    width: 32em;
+    height: 32em;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--cr-glow) 0%, var(--cr-glow) 40%, rgba(234, 223, 247, 0) 70%);
+    pointer-events: none;
+  }
+  .slide.dark {
+    --s-head: var(--cr-head-dark);
+    --s-body: var(--cr-body-dark);
+    --s-quiet: var(--cr-quiet-dark);
+    --s-mark: var(--cr-lilac);
+    --s-card: var(--cr-panel);
+    background: var(--cr-night);
+  }
+  .slide.cover { background: linear-gradient(135deg, #1B1424 0%, #241A33 40%, #4A2275 100%); }
+  .unit + .unit .slide { border-top: 1px solid var(--line); }
+  .slide-in {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 68em;
+    margin: 0 auto;
+  }
+  .slide-num {
+    position: absolute;
+    z-index: 1;
+    right: 1.2em;
+    bottom: 0.9em;
+    margin: 0;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--s-quiet);
+  }
+  .slide h2, .slide h3 { color: var(--s-head); }
+  .slide p { margin: 0; }
+  .s-eyebrow {
+    font-weight: 800;
+    font-size: 0.85em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--s-mark);
+    margin: 0 0 0.4em;
+  }
+  .s-title {
+    font-family: var(--cr-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 2.1em;
+    line-height: 1.08;
+    letter-spacing: 0.01em;
+    margin: 0 0 0.35em;
+  }
+  .s-sub {
+    font-weight: 800;
+    font-size: 1.05em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--s-mark);
+    margin: 0 0 1em !important;
+  }
+  .s-lead {
+    font-size: 1.3em;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--s-head);
+    margin: 0 0 1em !important;
+  }
+  .s-hand {
+    font-family: var(--cr-hand);
+    font-weight: 600;
+    font-size: 1.9em;
+    line-height: 1.15;
+    color: var(--s-mark);
+  }
+  .s-intro { margin: 0 0 0.8em !important; max-width: 52em; }
+  .s-foot { font-size: 0.92em; color: var(--s-quiet); margin-top: 1.1em !important; }
+  .s-foot strong, .s-card strong, .s-tick strong { color: var(--s-head); }
+  .grid { display: grid; gap: 0.9em; }
+  .s-card {
+    background: var(--s-card);
+    border-radius: 14px;
+    border-top: 4px solid var(--cr-purple);
+    padding: 1em 1.1em 1.1em;
+    box-shadow: 0 1px 3px rgba(27, 20, 36, 0.08), 0 6px 18px rgba(74, 34, 117, 0.06);
+  }
+  .s-card h3 {
+    font-family: var(--cr-display);
+    font-weight: 600;
+    font-size: 1.25em;
+    line-height: 1.2;
+    margin: 0 0 0.3em;
+  }
+  .s-card.is-dark, .s-band {
+    --s-head: var(--cr-head-dark);
+    --s-body: var(--cr-body-dark);
+    --s-quiet: var(--cr-quiet-dark);
+    --s-mark: var(--cr-lilac);
+    background: var(--cr-night);
+    color: var(--cr-body-dark);
+  }
+  .slide.dark .s-card.is-dark, .slide.dark .s-band { background: var(--cr-panel); }
+  .s-band {
+    border-radius: 14px;
+    padding: 1.1em 1.2em;
+    margin-top: 1em;
+  }
+  .s-band h3 {
+    font-family: var(--cr-display);
+    font-weight: 600;
+    font-size: 1.2em;
+    margin: 0 0 0.25em;
+  }
+  .s-chips, .s-pills, .s-ticks, .s-lines, .s-list { list-style: none; padding: 0; margin: 0; }
+  .s-chips { display: flex; flex-wrap: wrap; gap: 0.45em; }
+  .s-chips li {
+    background: var(--cr-pale);
+    color: var(--cr-deep);
+    font-weight: 700;
+    font-size: 0.92em;
+    border-radius: 999px;
+    padding: 0.3em 0.85em;
+  }
+  .s-pills { display: flex; flex-wrap: wrap; gap: 0.55em; margin-top: 1.1em; }
+  .s-pills li {
+    background: var(--cr-purple);
+    color: #fff;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 0.45em 1.1em;
+  }
+  .ico { width: 1.6em; height: 1.6em; flex: none; color: var(--s-mark); }
+  .ico path, .ico circle, .ico rect, .ico polyline { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .s-ticks li, .s-lines li, .s-list li { display: flex; gap: 0.7em; align-items: flex-start; margin: 0 0 0.8em; }
+  .s-list li { margin: 0 0 0.45em; }
+  .s-list .ico { width: 1.25em; height: 1.25em; margin-top: 0.1em; }
+  .s-tick .ico { width: 1.7em; height: 1.7em; }
+  .s-tick .ico circle { fill: var(--cr-pale); stroke: none; }
+  .slide.dark .s-tick .ico circle, .is-dark .s-tick .ico circle { fill: var(--cr-deep); }
+  .unreached-slide { color: var(--s-quiet); font-style: italic; }
+
+  /* 1.1 cover */
+  .cover-grid { display: grid; gap: 1.6em; align-items: center; }
+  .cover-logo { width: min(100%, 16em); margin: 0 auto; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45); }
+  .cover-title { font-size: 2.7em; }
+  .cover-purpose { font-size: 1.15em; color: var(--s-head); margin: 0.9em 0 0 !important; max-width: 30em; }
+  .cover-foot { margin-top: 1em !important; font-weight: 700; letter-spacing: 0.06em; color: var(--s-quiet); }
+  .qr-box { display: flex; align-items: center; gap: 1em; margin-top: 1.6em; }
+  .qr-box svg { flex: none; width: 7.5em; height: 7.5em; border-radius: 8px; display: block; }
+  .qr-label { font-weight: 800; color: var(--s-head); }
+  .qr-addr { font-size: 0.8em; color: var(--s-quiet); overflow-wrap: anywhere; margin-top: 0.3em !important; }
+
+  /* 1.3 lero */
+  .lero-statement {
+    font-family: var(--cr-display);
+    font-weight: 500;
+    font-size: 1.8em;
+    line-height: 1.2;
+    color: var(--s-head);
+    border-left: 0.18em solid var(--cr-purple);
+    padding-left: 0.6em;
+  }
+
+  /* 1.4 partnership */
+  .logo-card { display: flex; flex-direction: column; gap: 0.5em; border-top-width: 4px; }
+  .logo-plate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4.2em;
+    padding: 0.5em 0.7em;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #ECE4F5;
+  }
+  .logo-plate img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+  .logo-plate.empty {
+    border: 2px dashed var(--cr-lilac);
+    color: var(--cr-deep);
+    font-family: var(--cr-display);
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .logo-name { font-weight: 800; color: var(--s-head); }
+  .logo-card p:last-child { font-size: 0.92em; }
+  .contact { display: flex; flex-wrap: wrap; gap: 0.4em 1.4em; margin-top: 0.7em !important; }
+  .contact a, .know-contact a { color: var(--cr-lilac); font-weight: 800; overflow-wrap: anywhere; }
+  .contact span, .know-contact span { display: inline-flex; align-items: center; gap: 0.45em; }
+
+  /* 1.5 began */
+  .abcd { margin: 0 0 1.2em !important; max-width: 46em; }
+  .steps { display: grid; gap: 0.6em; align-items: stretch; }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9em;
+    height: 1.9em;
+    border-radius: 50%;
+    background: var(--cr-purple);
+    color: #fff;
+    font-family: var(--cr-display);
+    font-weight: 700;
+    margin-bottom: 0.45em;
+  }
+  .is-dark .step-num { background: var(--cr-lilac); color: var(--cr-night); }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--cr-purple); }
+  .arrow svg { width: 1.8em; height: 1.8em; transform: rotate(90deg); }
+  .arrow path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 2.1 meet */
+  .meet-purpose {
+    font-family: var(--cr-display);
+    font-weight: 500;
+    font-size: 2em;
+    line-height: 1.2;
+    color: var(--s-head);
+    margin: 0.2em 0 1.1em !important;
+    max-width: 24em;
+  }
+  .bordered { border: 2px solid var(--cr-bright); border-radius: 14px; padding: 1em 1.15em; }
+  .bordered h3 { font-family: var(--cr-display); font-weight: 600; font-size: 1.25em; margin: 0 0 0.3em; color: var(--cr-lilac); }
+
+  /* 2.2 stands */
+  .chime-letter {
+    display: block;
+    font-family: var(--cr-display);
+    font-weight: 700;
+    font-size: 2.2em;
+    line-height: 1;
+    color: var(--cr-purple);
+    margin-bottom: 0.15em;
+  }
+
+  /* 2.3 belong */
+  .belong-lines li strong { display: block; color: var(--s-head); }
+  .agreement ol { margin: 0.4em 0 0; padding-left: 1.3em; }
+  .agreement li { margin: 0 0 0.35em; }
+  .agreement li::marker { color: var(--cr-lilac); font-weight: 800; }
+
+  /* 2.4 whatson */
+  .when { font-family: var(--cr-display); font-weight: 600; font-size: 1.3em; color: var(--s-head); }
+  .where-line { display: flex; gap: 0.45em; align-items: flex-start; margin: 0.45em 0 0.35em !important; font-weight: 700; color: var(--s-head); }
+  .where-line .ico { width: 1.2em; height: 1.2em; margin-top: 0.15em; }
+  .s-note { font-size: 0.92em; color: var(--s-quiet); }
+  .chips-head { font-family: var(--cr-display); font-weight: 600; font-size: 1.15em; margin: 1.1em 0 0.5em !important; color: var(--s-head); }
+
+  /* 3.1 grow: nested circles */
+  .rings {
+    container-type: inline-size;
+    position: relative;
+    width: min(100%, 24em);
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .ring { position: absolute; border-radius: 50%; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .ring b { font-family: var(--cr-display); font-weight: 600; font-size: 5cqi; line-height: 1.1; color: var(--cr-head); }
+  .ring small { font-size: 3.6cqi; line-height: 1.2; color: var(--cr-body); }
+  .ring.members { inset: 0; background: var(--cr-pale); padding-top: 7%; }
+  .ring.volunteers { left: 11%; right: 11%; bottom: 3%; top: 19%; background: var(--cr-card); border: 2px solid var(--cr-purple); padding-top: 6%; }
+  .ring b, .ring small { position: relative; z-index: 2; }
+  .ring.peer, .ring.lived { top: 43%; width: 40%; height: 40%; justify-content: center; }
+  .ring.peer { left: 15%; padding: 0 9% 0 3%; background: rgba(123, 63, 191, 0.92); }
+  .ring.lived { right: 15%; padding: 0 3% 0 9%; background: rgba(74, 34, 117, 0.9); }
+  .ring.peer b, .ring.lived b, .ring.peer small, .ring.lived small { color: #fff; }
+  .ring.peer b, .ring.lived b { font-size: 4.4cqi; }
+  .ring.peer small, .ring.lived small { font-size: 3.3cqi; }
+  .grow-text p { margin: 0 0 0.7em; }
+
+  /* 3.2 organisation */
+  .big33 {
+    font-family: var(--cr-display);
+    font-weight: 700;
+    font-size: 4.6em;
+    line-height: 0.9;
+    color: var(--cr-lilac);
+    flex: none;
+  }
+  .band-row { display: flex; gap: 1em; align-items: center; }
+
+  /* 3.3 together */
+  .person { display: grid; grid-template-columns: auto 1fr; gap: 0.2em 0.9em; align-items: start; }
+  .initials {
+    grid-row: span 3;
+    width: 3.2em;
+    height: 3.2em;
+    border-radius: 50%;
+    background: var(--cr-purple);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--cr-display);
+    font-weight: 600;
+    font-size: 1.05em;
+  }
+  .person .role { font-weight: 800; font-size: 0.8em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cr-purple); }
+  .s-band p + p { margin-top: 0.55em; }
+
+  /* 3.4 story */
+  .story-words { font-size: 1.12em; max-width: 46em; }
+  .story-hand { margin: 0.8em 0 1em !important; }
+  .chime-strip { display: grid; gap: 0.5em; }
+  .chime-tile { background: var(--cr-panel); border-radius: 12px; padding: 0.7em 0.85em; border-top: 3px solid var(--cr-bright); }
+  .chime-tile strong { display: block; color: var(--cr-lilac); font-family: var(--cr-display); font-weight: 600; font-size: 1.1em; }
+
+  /* 4.1 vision */
+  .vision-card .ico { width: 2.2em; height: 2.2em; margin-bottom: 0.4em; }
+  .vision-card .s-note { margin-top: 0.6em; }
+
+  /* 4.2 help */
+  .soon {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    background: var(--cr-pale);
+    border-radius: 14px;
+    padding: 0.9em 1.1em;
+    margin-top: 1em;
+    color: var(--cr-body);
+  }
+  .soon strong { color: var(--cr-head); }
+  .soon .logo-on-black { width: 5em; flex: none; border-radius: 10px; overflow: hidden; }
+
+  /* 4.3 know */
+  .tile { background: var(--cr-card); border-radius: 12px; border-top: 4px solid var(--cr-purple); padding: 0.8em 0.95em; box-shadow: 0 1px 3px rgba(27, 20, 36, 0.08); }
+  .tile strong { display: block; font-family: var(--cr-display); font-weight: 600; font-size: 1.1em; color: var(--cr-head); margin-bottom: 0.15em; }
+  .tile.logo-tile { padding: 0; overflow: hidden; border-top: 0; background: #000; display: flex; align-items: center; justify-content: center; }
+  .tile.logo-tile img { width: 100%; max-width: 12em; height: auto; display: block; }
+  .know-contact { display: flex; flex-wrap: wrap; gap: 0.5em 1.6em; }
+  .know-hand { margin-top: 0.8em !important; text-align: center; }
+
+  /* What the room said: beneath the last slide, in Present and Follow. */
+  .said { display: none; margin-top: 1.4em; }
+  .is-presenting .said, .is-following .said { display: block; }
+  .said h3 { font-family: var(--cr-display); font-weight: 600; font-size: 1.3em; margin: 0 0 0.5em; color: var(--s-head); }
+  .said-list { list-style: none; margin: 0; padding: 0; }
+  .said-list li { background: var(--cr-card); border-radius: 10px; padding: 0.55em 0.8em; margin: 0 0 0.45em; border-left: 4px solid var(--cr-purple); }
+  .said-where { font-size: 0.8em; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cr-purple); }
+  .said-text { white-space: pre-line; overflow-wrap: break-word; color: var(--cr-head); }
+  .said-meta { font-size: 0.82em; color: var(--cr-quiet); }
+  .said-list li.redacted { background: var(--cr-night); border-left-color: var(--cr-night); }
+  .said-list li.redacted .said-text { color: var(--cr-head-dark); }
+  .said-list li.redacted .said-where, .said-list li.redacted .said-meta { color: var(--cr-quiet-dark); }
+  .said-empty { color: var(--s-quiet); font-style: italic; }
+
+  /* The speaker's script, shown with 'Show the script'. */
+  .script {
+    display: none;
+    background: var(--card);
+    border-top: 4px solid var(--cr-purple);
+    padding: 1.2rem 1rem;
+  }
+  .show-script .script { display: block; }
+  .script-in { max-width: 42rem; margin: 0 auto; }
+  .script-head { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.5rem; }
+  .script p { white-space: pre-line; margin: 0 0 0.8rem; color: var(--ink); }
+
+  /* The room under each slide. */
+  .room {
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    padding: 1.2rem 1rem 1.6rem;
+  }
+  .room-in { max-width: 42rem; margin: 0 auto; }
+  .room-head { font-family: var(--cr-display); font-weight: 600; font-size: 1.15rem; color: var(--head); margin: 0 0 0.6rem; }
+  .taps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 0.4rem; }
+  .tap {
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--cr-deep);
+    background: var(--cr-pale);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+  }
+  .tap:hover { border-color: var(--cr-purple); }
+  .tap:disabled { opacity: 0.6; cursor: default; }
+  .room form textarea { min-height: 4.5rem; }
+  .room form label.note-label { font-weight: 400; color: var(--ink); }
+  .room form label.note-label strong { color: var(--head); }
+  .notes { margin-top: 1rem; }
+  .notes-list { list-style: none; margin: 0; padding: 0; }
+  .note { padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+  .note:last-child { border-bottom: 0; }
+  .note-meta { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.15rem; }
+  .note-meta strong { color: var(--head); }
+  .note-text { white-space: pre-line; overflow-wrap: break-word; margin: 0; color: var(--head); }
+  .note.tap-note .note-text {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--cr-deep);
+    background: var(--cr-pale);
+    border-radius: 999px;
+    padding: 0.1rem 0.7rem;
+  }
+  /* A note the keepers have redacted: a dark bar with those words. */
+  .note.redacted .note-text {
+    display: block;
+    background: var(--cr-night);
+    color: var(--cr-head-dark);
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .notes-quiet { color: var(--muted); font-style: italic; margin: 0; }
+  @media (prefers-color-scheme: dark) {
+    .tap { color: var(--cr-head-dark); background: var(--cr-deep); }
+    .tap:hover { border-color: var(--cr-lilac); }
+    .note.tap-note .note-text { color: var(--cr-head-dark); background: var(--cr-deep); }
+    .note.redacted .note-text { background: #000; }
+    .present-btn { background: var(--cr-lilac); color: var(--cr-night); }
+  }
+
+  /* ---- Wider screens ------------------------------------------------------ */
+  @media (min-width: 760px) {
+    .slide { font-size: 1.05rem; padding: 3em 2.2em 3.2em; }
+    .s-title { font-size: 2.6em; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-5 { grid-template-columns: repeat(5, 1fr); }
+    .grid-6 { grid-template-columns: repeat(3, 1fr); }
+    .cover-grid { grid-template-columns: 1.25fr 1fr; }
+    .cover-logo { width: 100%; max-width: 24em; order: 2; }
+    .cover-title { font-size: 3.6em; }
+    .lero-grid { grid-template-columns: 1.1fr 1fr; gap: 2.4em; align-items: center; }
+    .steps { grid-template-columns: 1fr auto 1fr auto 1fr; }
+    .arrow svg { transform: none; }
+    .grow-grid { grid-template-columns: 1fr 1fr; gap: 2em; align-items: center; }
+    .belong-grid { grid-template-columns: 1.1fr 1fr; gap: 1.6em; align-items: start; }
+    .chime-strip { grid-template-columns: repeat(5, 1fr); }
+    .know-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1100px) {
+    .slide { font-size: 1.15rem; }
+  }
+  @media (max-width: 759px) {
+    .logo-card { display: grid; grid-template-columns: 7.5em 1fr; gap: 0.2em 0.8em; align-items: center; }
+    .logo-card .logo-plate { grid-row: span 2; height: 3.6em; }
+    .grid-5 { grid-template-columns: 1fr 1fr; }
+    .chime-strip { grid-template-columns: 1fr 1fr; }
+    .know-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 420px) {
+    .grid-5, .know-grid { grid-template-columns: 1fr; }
+    .cover-title { font-size: 2.3em; }
+  }
+
+  /* ---- Present: one slide fills the screen -------------------------------- */
+  .hud, .present-script { display: none; }
+  .is-presenting { overflow: hidden; }
+  .is-presenting body::before { display: none; }
+  .is-presenting .masthead, .is-presenting .bar, .is-presenting footer, .is-presenting .opening,
+  .is-presenting .room, .is-presenting .script, .is-presenting .unit { display: none; }
+  .is-presenting .unit.current { display: block; }
+  .is-presenting .unit.current .slide {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    min-height: 0;
+    height: 100%;
+    font-size: min(1.5vw, 2.65vh);
+    padding: 2.8em 4em 3.2em;
+    border: 0;
+    cursor: pointer;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .is-presenting .unit.current .slide.dense { font-size: min(1.3vw, 2.3vh); }
+  .is-presenting .unit.current .slide.s-partnership { font-size: min(1.08vw, 1.9vh); }
+  .is-presenting .unit.current .slide.s-know { font-size: min(1.22vw, 2.14vh); }
+  .is-presenting .slide-in { max-width: none; }
+  .is-presenting .slide a { cursor: pointer; }
+  .is-presenting .grid-2 { grid-template-columns: 1fr 1fr; }
+  .is-presenting .grid-3, .is-presenting .grid-6, .is-presenting .know-grid { grid-template-columns: repeat(3, 1fr); }
+  .is-presenting .grid-5, .is-presenting .chime-strip { grid-template-columns: repeat(5, 1fr); }
+  .is-presenting .cover-grid { grid-template-columns: 1.25fr 1fr; }
+  .is-presenting .cover-logo { width: 100%; max-width: 28em; order: 2; }
+  .is-presenting .cover-title { font-size: 4em; }
+  .is-presenting .qr-box svg { width: 9em; height: 9em; }
+  .is-presenting .lero-grid { grid-template-columns: 1.1fr 1fr; gap: 2.4em; align-items: center; }
+  .is-presenting .steps { grid-template-columns: 1fr auto 1fr auto 1fr; }
+  .is-presenting .arrow svg { transform: none; }
+  .is-presenting .grow-grid { grid-template-columns: 1fr 1.1fr; gap: 2.4em; align-items: center; }
+  .is-presenting .rings { width: min(100%, 26em); }
+  .is-presenting .belong-grid { grid-template-columns: 1.1fr 1fr; gap: 1.6em; align-items: start; }
+  .is-presenting .logo-card { display: flex; }
+  .is-presenting .logo-card .logo-plate { height: 4.2em; }
+  .is-presenting .s-title { font-size: 2.7em; }
+  .is-presenting .know-layout { display: grid; grid-template-columns: 1.7fr 1fr; gap: 2em; align-items: start; }
+  .is-presenting .said { margin-top: 0; max-height: 80vh; overflow: auto; }
+  .is-presenting .slide-num { font-size: 0.9em; }
+
+  .is-presenting .hud {
+    display: flex;
+    position: fixed;
+    z-index: 40;
+    left: 50%;
+    bottom: 0.8rem;
+    transform: translateX(-50%);
+    align-items: center;
+    gap: 0.4rem 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100vw - 1.6rem);
+    background: rgba(27, 20, 36, 0.95);
+    color: var(--cr-body-dark);
+    border-radius: 1.4rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.88rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+  }
+  .is-presenting .hud:hover, .is-presenting .hud:focus-within, .is-presenting .hud.awake { opacity: 1; visibility: visible; }
+  .hud-count { font-weight: 800; letter-spacing: 0.08em; color: var(--cr-head-dark); }
+  .hud-status { color: var(--cr-body-dark); }
+  .hud button {
+    font: inherit;
+    font-weight: 700;
+    color: var(--cr-head-dark);
+    background: var(--cr-panel);
+    border: 1px solid #4B3B60;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    cursor: pointer;
+  }
+  .hud button:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 2px; }
+  .is-presenting .present-script.on {
+    display: block;
+    position: fixed;
+    z-index: 35;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 42vh;
+    overflow: auto;
+    background: rgba(27, 20, 36, 0.97);
+    color: var(--cr-body-dark);
+    border-top: 4px solid var(--cr-bright);
+    padding: 1rem 1.6rem 4rem;
+    font-size: max(1rem, min(1.2vw, 2.1vh));
+    line-height: 1.5;
+  }
+  .present-script p { white-space: pre-line; margin: 0 0 0.7em; max-width: 60em; }
+  .present-script .script-head { color: var(--cr-lilac); }
+
+  /* The presenter's code */
+  dialog.code {
+    border: 0;
+    border-top: 4px solid var(--cr-purple);
+    border-radius: 14px;
+    padding: 1.2rem 1.3rem;
+    width: min(26rem, calc(100vw - 2rem));
+    background: var(--card);
+    color: var(--ink);
+  }
+  dialog.code::backdrop { background: rgba(27, 20, 36, 0.6); }
+  dialog.code h2 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+  dialog.code p { font-size: 0.95rem; }
+  .code-buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .code-buttons .quiet-btn {
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--faint);
+    border-radius: 999px;
+    padding: 0.5rem 1.1rem;
+    margin-top: 0.8rem;
+    cursor: pointer;
+  }
+
+  footer .wrap { max-width: 42rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .switch .knob, .switch .knob::after, .hud { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>LEROs on the Commons</a>
+    <nav class="section-nav" aria-label="LEROs on the Commons">
+      <a href="./">The proposal</a>
+      <a href="meet.html">Meet the LERO</a>
+      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
+      <a href="https://pscale-commons.github.io/community-recovery/standards.html">The standards</a>
+      <a href="where-we-stand.html">Where we stand</a>
+      <a href="presentation.html" aria-current="page">The presentation</a>
+    </nav>
+  </div>
+</header>
+
+<div class="bar" id="bar">
+  <div class="bar-in">
+    <button class="switch" id="script-switch" type="button" role="switch" aria-checked="false"><span class="knob" aria-hidden="true"></span>Show the script</button>
+    <button class="switch" id="follow-switch" type="button" role="switch" aria-checked="false"><span class="knob" aria-hidden="true"></span>Follow the presenter</button>
+    <button class="present-btn" id="present-btn" type="button">Present</button>
+  </div>
+  <p class="bar-line" id="bar-line" role="status" aria-live="polite"></p>
+</div>
+
+<main id="deck">
+  <h1 class="visually-hidden">Introducing Community Recovery</h1>
+  <p class="opening" id="opening" role="status">Opening the presentation&hellip;</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="where">This page reads spine:presentation, presenting and the room pool:presentation, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
+    <p>The only things it writes are a note you choose to leave and, for the presenter, which slide is showing.</p>
+    <p>Kept on Pscale, the open commons built by David Pinto.</p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+
+<div class="hud" id="hud" role="group" aria-label="Presenting">
+  <button type="button" id="hud-prev" aria-label="Previous slide">&lsaquo;</button>
+  <span class="hud-count" id="hud-count"></span>
+  <button type="button" id="hud-next" aria-label="Next slide">&rsaquo;</button>
+  <span class="hud-status" id="hud-status" role="status" aria-live="polite"></span>
+  <button type="button" id="hud-script" aria-pressed="false">Script (N)</button>
+  <button type="button" id="hud-leave">Leave</button>
+</div>
+<div class="present-script" id="present-script" aria-live="polite"></div>
+
+<dialog class="code" id="code-dialog" aria-labelledby="code-title">
+  <form id="code-form" method="dialog">
+    <h2 id="code-title">Present</h2>
+    <p>Type the presenter&rsquo;s code, so the phones in the room follow your slides. It is used while you present and kept nowhere.</p>
+    <label for="code-input">The presenter&rsquo;s code</label>
+    <input id="code-input" name="code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="code-buttons">
+      <button type="submit">Start presenting</button>
+      <button type="button" class="quiet-btn" id="code-cancel">Cancel</button>
+    </div>
+    <p class="form-foot">With no code, you can still present; phones won&rsquo;t follow.</p>
+  </form>
+</dialog>
+
+<script src="beach.js?v=2026-10-14a"></script>
+<script src="vendor/qrcode-generator-1.4.4.js"></script>
+<script>
+(function () {
+  // ---- What this page reads, and where -------------------------------------
+  // Everything on the slides is read live from Community Recovery's place:
+  // spine:presentation (a slide's address is section.slide; its underscore
+  // is its id, 1 the words on screen, 2 the speaker's script), presenting
+  // (1 = the address now showing) and the room, pool:presentation (a note's
+  // position 2 is the slide it is about). The rules are function:presentation;
+  // the look is the block 'brand', carried by brand.css.
+  var SPINE = 'spine:presentation';
+  var PRESENTING = 'presenting';
+  var ROOM = 'pool:presentation';
+  var SPINE_MS = 30000;          // the slides' words
+  var ROOM_MS = 10000;           // the room's notes
+  var FOLLOW_MS = 2000;          // following the presenter
+  var LIVE_WINDOW_MS = 2 * 3600 * 1000;   // 'presenting' moved this recently: someone is presenting
+  var SAID_MS = 3 * 3600 * 1000;          // 'What the room said': the last three hours
+  var REDACTED = 'Redacted by the keepers';
+  var TAPS = ['This helped', 'I have a question', "I'd like to know more"];
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var deck = document.getElementById('deck');
+  var opening = document.getElementById('opening');
+  var barLine = document.getElementById('bar-line');
+
+  // ---- Small helpers ---------------------------------------------------------
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function add(parent) {
+    for (var i = 1; i < arguments.length; i++) if (arguments[i]) parent.appendChild(arguments[i]);
+    return parent;
+  }
+  function lines(s) {
+    return String(s || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+  // "Label: body" at the first colon-and-space; anything else is all body.
+  function split(s) {
+    var i = s.indexOf(': ');
+    if (i > 0 && i <= 60) return { label: s.slice(0, i), body: s.slice(i + 2) };
+    return { label: '', body: s };
+  }
+  // A line with its label in bold, when it has one.
+  function labelled(tag, cls, s) {
+    var e = el(tag, cls);
+    var p = split(s);
+    if (p.label) {
+      add(e, el('strong', null, p.label + ': '));
+      e.appendChild(document.createTextNode(p.body));
+    } else {
+      e.textContent = p.body;
+    }
+    return e;
+  }
+  // A line whose first sentence leads, in bold.
+  function lead(tag, s) {
+    var e = el(tag);
+    var m = s.match(/^(.+?[.!?])\s+(.+)$/);
+    if (m) {
+      add(e, el('strong', null, m[1]));
+      e.appendChild(document.createTextNode(' ' + m[2]));
+    } else {
+      add(e, el('strong', null, s));
+    }
+    return e;
+  }
+
+  // Icons, drawn from fixed shapes (no words from anywhere inside them).
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var ICONS = {
+    tick: [['circle', { cx: 12, cy: 12, r: 11 }], ['path', { d: 'M7 12.5l3.2 3.2L17 9' }]],
+    door: [['path', { d: 'M5 21V4.5A1.5 1.5 0 0 1 6.5 3h8A1.5 1.5 0 0 1 16 4.5V21M3 21h18M12.5 12.5h.01M16 7h3v14' }]],
+    hello: [['circle', { cx: 9, cy: 8, r: 3.2 }], ['path', { d: 'M3.5 20c.6-3.6 2.8-5.6 5.5-5.6s4.9 2 5.5 5.6M16 6.5c1.6 0 2.8 1.2 2.8 2.8 0 1.2-.7 2.2-1.8 2.6M19 20c-.3-2-1-3.4-2.2-4.3' }]],
+    back: [['path', { d: 'M9 14l-5-5 5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11' }]],
+    pin: [['path', { d: 'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z' }], ['circle', { cx: 12, cy: 9.5, r: 2.5 }]],
+    hub: [['path', { d: 'M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-5h4v5' }]],
+    walk: [['circle', { cx: 13, cy: 4.5, r: 1.8 }], ['path', { d: 'M10 21l2.2-6.2L15 17v4M12.2 14.8l.8-5.3-3.2 1.6L8.5 14M13 9.5l2.6 2.8 2.9.7' }]],
+    cup: [['path', { d: 'M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9zM16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8-.6 1.7 0 2.5M12 3.5c-.6.8-.6 1.7 0 2.5' }]],
+    mail: [['rect', { x: 3, y: 5, width: 18, height: 14, rx: 2 }], ['path', { d: 'M3.5 6.5l8.5 6.5 8.5-6.5' }]],
+    people: [['circle', { cx: 8, cy: 8.5, r: 2.8 }], ['circle', { cx: 16, cy: 8.5, r: 2.8 }], ['path', { d: 'M3 19c.5-3 2.4-4.8 5-4.8s4.5 1.8 5 4.8M11 19c.5-3 2.4-4.8 5-4.8s4.5 1.8 5 4.8' }]],
+    globe: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z' }]],
+    phone: [['path', { d: 'M6.5 3.5h3l1.5 4-2 1.3a10.5 10.5 0 0 0 6.2 6.2l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z' }]]
+  };
+  function icon(name, cls) {
+    var svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('class', 'ico' + (cls ? ' ' + cls : ''));
+    svg.setAttribute('aria-hidden', 'true');
+    (ICONS[name] || []).forEach(function (part) {
+      var n = document.createElementNS(SVGNS, part[0]);
+      Object.keys(part[1]).forEach(function (k) { n.setAttribute(k, part[1][k]); });
+      svg.appendChild(n);
+    });
+    return svg;
+  }
+  function arrow() {
+    var a = el('div', 'arrow');
+    a.setAttribute('aria-hidden', 'true');
+    var svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    var p = document.createElementNS(SVGNS, 'path');
+    p.setAttribute('d', 'M4 12h15M13 6l6 6-6 6');
+    svg.appendChild(p);
+    a.appendChild(svg);
+    return a;
+  }
+
+  // brand 3.1: the logo, always on black.
+  function crLogo(cls) {
+    var box = el('div', 'logo-on-black' + (cls ? ' ' + cls : ''));
+    var img = el('img');
+    img.src = 'img/community-recovery.jpg';
+    img.alt = 'Community Recovery: Stronger Together';
+    img.width = 600;
+    img.height = 600;
+    return add(box, img);
+  }
+
+  // The partnership's logos, as saved in img/. One with no file shows a
+  // neat empty box holding the organisation's name.
+  var LOGOS = {
+    'north northamptonshire council': 'img/north-northamptonshire-council.png',
+    'change grow live': 'img/change-grow-live.png',
+    'the forward trust': 'img/forward-trust.jpg',
+    'forward trust': 'img/forward-trust.jpg',
+    'family support link': 'img/family-support-link.png',
+    'release': 'img/release.gif'
+  };
+  function logoPlate(name) {
+    var file = LOGOS[name.toLowerCase().replace(/\s+/g, ' ').trim()];
+    if (!file) {
+      var box = el('div', 'logo-plate empty', name);
+      box.setAttribute('aria-hidden', 'true');
+      return box;
+    }
+    var plate = el('div', 'logo-plate');
+    var img = el('img');
+    img.src = file;
+    img.alt = '';
+    img.loading = 'lazy';
+    return add(plate, img);
+  }
+
+  // A QR code of this page's own address (qrcode-generator 1.4.4, MIT,
+  // vendored), drawn as dark squares on white with a quiet margin.
+  function pageAddress() { return location.origin + location.pathname; }
+  function qrSvg(text) {
+    var q = qrcode(0, 'M');
+    q.addData(text);
+    q.make();
+    var n = q.getModuleCount(), m = 4, size = n + 2 * m, d = '';
+    for (var y = 0; y < n; y++) {
+      for (var x = 0; x < n; x++) if (q.isDark(y, x)) d += 'M' + (x + m) + ' ' + (y + m) + 'h1v1h-1z';
+    }
+    var svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'QR code for this page');
+    svg.setAttribute('shape-rendering', 'crispEdges');
+    var bg = document.createElementNS(SVGNS, 'rect');
+    bg.setAttribute('width', size);
+    bg.setAttribute('height', size);
+    bg.setAttribute('fill', '#ffffff');
+    var p = document.createElementNS(SVGNS, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill', '#1B1424');
+    svg.appendChild(bg);
+    svg.appendChild(p);
+    return svg;
+  }
+
+  // ---- The slides, as drawn in the delivered deck ---------------------------
+  // Each layout takes the slide's lines (position 1, one per line) and
+  // draws them; the words are only ever the block's.
+  var DARK = { cover: 1, meet: 1, story: 1 };
+  var DENSE = { partnership: 1, whatson: 1, grow: 1, together: 1, help: 1, know: 1, stands: 1, belong: 1 };
+
+  function title(s, cls) { return s ? el('h2', 's-title' + (cls ? ' ' + cls : ''), s) : null; }
+  function para(s, cls) { return s ? el('p', cls || null, s) : null; }
+
+  var LAYOUTS = {
+    cover: function (L, box) {
+      var words = add(el('div', 'cover-words'),
+        para(L[0], 's-eyebrow'),
+        title(L[1], 'cover-title'),
+        para(L[2], 's-hand'),
+        para(L[3], 'cover-purpose'),
+        para(L[4], 'cover-foot'));
+      var qr = el('div', 'qr-box');
+      try { qr.appendChild(qrSvg(pageAddress())); } catch (e) { /* no code drawn; the words stay */ }
+      add(qr, add(el('div'), el('p', 'qr-label', 'Follow on your phone and leave a note'), el('p', 'qr-addr', pageAddress())));
+      words.appendChild(qr);
+      add(box, add(el('div', 'cover-grid'), crLogo('cover-logo'), words));
+    },
+    why: function (L, box) {
+      var cards = el('div', 'grid grid-3');
+      for (var i = 2; i < L.length; i += 2) {
+        add(cards, add(el('div', 's-card'), el('h3', null, L[i]), para(L[i + 1])));
+      }
+      add(box, title(L[0]), para(L[1], 's-lead'), cards);
+    },
+    lero: function (L, box) {
+      var ticks = el('ul', 's-ticks');
+      L.slice(3).forEach(function (s) {
+        add(ticks, add(el('li', 's-tick'), icon('tick'), labelled('span', null, s)));
+      });
+      add(box, title(L[0]), para(L[1], 's-sub'),
+        add(el('div', 'grid lero-grid'), para(L[2], 'lero-statement'), ticks));
+    },
+    partnership: function (L, box) {
+      var n = L.length;
+      var chips = el('ul', 's-chips');
+      (L[3] || '').split(/\s+·\s+/).filter(Boolean).forEach(function (c) { add(chips, el('li', null, c)); });
+      var logos = el('div', 'grid grid-6');
+      L.slice(4, n - 2).forEach(function (s, i) {
+        var p = split(s);
+        var name = p.label || s;
+        var card = el('div', 's-card logo-card' + (i === 0 ? ' is-dark' : ''));
+        add(card, logoPlate(name), el('p', 'logo-name', name), p.label ? para(p.body) : null);
+        logos.appendChild(card);
+      });
+      var fits = split(L[n - 2] || '');
+      var contact = el('p', 'contact');
+      (L[n - 1] || '').split(/\s+·\s+/).filter(Boolean).forEach(function (c) {
+        var a = el('a', null, c);
+        var kind = /@/.test(c) ? 'mail' : 'phone';
+        a.href = kind === 'mail' ? 'mailto:' + c : 'tel:' + c.replace(/[^\d+]/g, '');
+        add(contact, add(el('span'), icon(kind), a));
+      });
+      var band = add(el('div', 's-band'), fits.label ? el('h3', null, fits.label) : null, para(fits.body), contact);
+      add(box, para(L[0], 's-eyebrow'), title(L[1]), para(L[2], 's-intro'),
+        add(el('div', 'grid'), chips, logos), band);
+    },
+    began: function (L, box) {
+      var steps = el('div', 'steps');
+      L.slice(3).forEach(function (s, i, all) {
+        var m = s.match(/^(\d+)\s+(.*)$/);
+        var p = split(m ? m[2] : s);
+        var card = el('div', 's-card' + (i === all.length - 1 ? ' is-dark' : ''));
+        add(card, el('span', 'step-num', m ? m[1] : String(i + 1)), p.label ? el('h3', null, p.label) : null, para(p.body));
+        if (i) steps.appendChild(arrow());
+        steps.appendChild(card);
+      });
+      add(box, title(L[0]), para(L[1], 's-sub'), labelled('p', 'abcd', L[2] || ''), steps);
+    },
+    meet: function (L, box) {
+      var cols = el('div', 'grid grid-2');
+      for (var i = 2; i < L.length; i += 2) {
+        add(cols, add(el('div', 'bordered'), el('h3', null, L[i]), para(L[i + 1])));
+      }
+      add(box, title(L[0]), para(L[1], 'meet-purpose'), cols);
+    },
+    stands: function (L, box) {
+      var cards = el('div', 'grid grid-5');
+      for (var i = 2; i < 12 && i < L.length; i += 2) {
+        add(cards, add(el('div', 's-card'), el('span', 'chime-letter', L[i].charAt(0)), el('h3', null, L[i]), para(L[i + 1])));
+      }
+      cards.querySelectorAll('.chime-letter').forEach(function (c) { c.setAttribute('aria-hidden', 'true'); });
+      var pills = el('ul', 's-pills');
+      L.slice(12).forEach(function (s) { add(pills, el('li', null, s)); });
+      add(box, title(L[0]), para(L[1], 's-sub'), cards, pills);
+    },
+    belong: function (L, box) {
+      var n = L.length;
+      var ls = el('ul', 's-lines belong-lines');
+      ['door', 'hello', 'back'].forEach(function (ic, i) {
+        if (L[2 + i]) add(ls, add(el('li'), icon(ic), lead('span', L[2 + i])));
+      });
+      var card = el('div', 's-card is-dark agreement');
+      var ol = el('ol');
+      L.slice(6, n - 1).forEach(function (s) { add(ol, el('li', null, s)); });
+      add(card, el('h3', null, L[5] || ''), ol);
+      add(box, title(L[0]), para(L[1], 's-lead'), add(el('div', 'grid belong-grid'), ls, card), labelled('p', 's-foot', L[n - 1] || ''));
+    },
+    whatson: function (L, box) {
+      var n = L.length;
+      function place(a, b, c) {
+        return add(el('div', 's-card'), para(a, 'when'), b ? add(el('p', 'where-line'), icon('pin'), el('span', null, b)) : null, para(c, 's-note'));
+      }
+      var chips = el('ul', 's-chips');
+      L.slice(8, n - 1).forEach(function (s) { add(chips, el('li', null, s)); });
+      add(box, title(L[0]), add(el('div', 'grid grid-2'), place(L[1], L[2], L[3]), place(L[4], L[5], L[6])),
+        para(L[7], 'chips-head'), chips, labelled('p', 's-foot', L[n - 1] || ''));
+    },
+    grow: function (L, box) {
+      function ring(cls, s) {
+        var p = split(s || '');
+        return add(el('div', 'ring ' + cls), el('b', null, p.label || p.body), p.label ? el('small', null, p.body) : null);
+      }
+      var rings = add(el('div', 'rings'), ring('members', L[2]), ring('volunteers', L[3]), ring('peer', L[4]), ring('lived', L[5]));
+      rings.setAttribute('role', 'img');
+      rings.setAttribute('aria-label', [L[2], L[3], L[4], L[5]].filter(Boolean).join('; '));
+      Array.prototype.forEach.call(rings.children, function (c) { c.setAttribute('aria-hidden', 'true'); });
+      var text = el('div', 'grow-text');
+      L.slice(6, L.length - 1).forEach(function (s) { text.appendChild(labelled('p', null, s)); });
+      var now = split(L[L.length - 1] || '');
+      add(text, add(el('div', 's-card is-dark'), now.label ? el('h3', null, now.label) : null, para(now.body)));
+      add(box, title(L[0]), para(L[1], 's-sub'), add(el('div', 'grid grow-grid'), rings, text));
+    },
+    organisation: function (L, box) {
+      var cards = el('div', 'grid grid-3');
+      for (var i = 2; i < 8 && i < L.length; i += 2) {
+        add(cards, add(el('div', 's-card'), el('h3', null, L[i]), para(L[i + 1])));
+      }
+      var band = add(el('div', 's-band band-row'), para(L[8], 'big33'), para(L.slice(9).join(' ')));
+      add(box, title(L[0]), para(L[1], 's-sub'), cards, band);
+    },
+    together: function (L, box) {
+      function person(name, role, line) {
+        var initials = (name || '').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2);
+        var ini = el('span', 'initials', initials);
+        ini.setAttribute('aria-hidden', 'true');
+        return add(el('div', 's-card person'), ini, el('h3', null, name), para(role, 'role'), para(line));
+      }
+      var band = el('div', 's-band');
+      L.slice(8).forEach(function (s, i) { band.appendChild(i ? labelled('p', null, s) : add(el('p'), el('strong', null, s))); });
+      add(box, title(L[0]), para(L[1], 's-sub'),
+        add(el('div', 'grid grid-2'), person(L[2], L[3], L[4]), person(L[5], L[6], L[7])), band);
+    },
+    story: function (L, box) {
+      var n = L.length;
+      var strip = el('div', 'chime-strip');
+      L.slice(4, n - 1).forEach(function (s) {
+        var p = split(s);
+        add(strip, add(el('div', 'chime-tile'), el('strong', null, p.label || s), p.label ? el('span', null, p.body) : null));
+      });
+      add(box, para(L[0], 's-eyebrow'), title(L[1]), para(L[2], 'story-words'), para(L[3], 's-hand story-hand'), strip, para(L[n - 1], 's-foot'));
+    },
+    vision: function (L, box) {
+      var cards = el('div', 'grid grid-3');
+      add(cards,
+        add(el('div', 's-card vision-card is-dark'), icon('hub'), el('h3', null, L[2] || ''), para(L[3]), para(L[4], 's-note')),
+        add(el('div', 's-card vision-card'), icon('walk'), el('h3', null, L[5] || ''), para(L[6])),
+        add(el('div', 's-card vision-card'), icon('cup'), el('h3', null, L[7] || ''), para(L[8])));
+      add(box, para(L[0], 's-eyebrow'), title(L[1]), cards);
+    },
+    help: function (L, box) {
+      var n = L.length;
+      function card(head, items) {
+        var ul = el('ul', 's-list');
+        items.forEach(function (s) { add(ul, add(el('li'), icon('tick'), el('span', null, s))); });
+        return add(el('div', 's-card'), el('h3', null, head || ''), ul);
+      }
+      var soon = split(L[n - 2] || '');
+      var band = add(el('div', 'soon'), crLogo(), add(el('p'), soon.label ? el('strong', null, soon.label + ': ') : null, document.createTextNode(soon.body)));
+      add(box, para(L[0], 's-eyebrow'), title(L[1]),
+        add(el('div', 'grid grid-2'), card(L[2], L.slice(3, 7)), card(L[7], L.slice(8, n - 2))),
+        band, labelled('p', 's-foot', L[n - 1] || ''));
+    },
+    know: function (L, box) {
+      var n = L.length;
+      var tiles = el('div', 'grid know-grid');
+      L.slice(1, n - 4).forEach(function (s) {
+        var p = split(s);
+        add(tiles, add(el('div', 'tile'), p.label ? el('strong', null, p.label) : null, el('span', null, p.body)));
+      });
+      add(tiles, crLogo('tile logo-tile'));
+      var contact = el('p', 'know-contact');
+      L.slice(n - 4, n - 1).forEach(function (s) {
+        var a = el('a', null, s), kind;
+        if (/@/.test(s)) { kind = 'mail'; a.href = 'mailto:' + s; }
+        else if (/^facebook:/i.test(s)) { kind = 'people'; a.href = 'https://www.facebook.com/' + split(s).body.trim(); }
+        else { kind = 'globe'; a.href = /^https?:/.test(s) ? s : 'https://' + s; }
+        add(contact, add(el('span'), icon(kind), a));
+      });
+      var main = add(el('div', 'know-main'), title(L[0]), tiles, add(el('div', 's-band'), contact), para(L[n - 1], 's-hand know-hand'));
+      var said = add(el('section', 'said'), el('h3', null, 'What the room said'), el('ul', 'said-list'));
+      said.setAttribute('aria-label', 'What the room said');
+      add(box, add(el('div', 'know-layout'), main, said));
+    }
+  };
+  function generic(L, box) {
+    add(box, title(L[0]));
+    L.slice(1).forEach(function (s) { box.appendChild(para(s)); });
+  }
+
+  // ---- The deck ---------------------------------------------------------------
+  var order = [];       // addresses in order: '1.1', '1.2', ...
+  var units = {};       // address -> { unit, slide, script, room, notes, id }
+  var spine = null, spineSig = null;
+  var room = null, roomReached = null;
+
+  function slidesOf(b) {
+    var out = [];
+    for (var s = 1; s <= 9; s++) {
+      var sec = b && b[String(s)];
+      if (!sec || typeof sec !== 'object') continue;
+      for (var k = 1; k <= 9; k++) {
+        var node = sec[String(k)];
+        if (!node || typeof node !== 'object') continue;
+        out.push({
+          addr: s + '.' + k,
+          id: typeof node._ === 'string' ? node._.trim() : '',
+          words: Beach.text(node['1']),
+          script: Beach.text(node['2'])
+        });
+      }
+    }
+    return out;
+  }
+
+  function seq(addr) { return order.indexOf(addr) + 1; }
+  function slideTitle(addr) {
+    var u = units[addr];
+    return u ? u.title : '';
+  }
+
+  function drawSlide(u, s) {
+    var L = lines(s.words);
+    u.title = L[0] || '';
+    u.id = s.id;
+    var slide = u.slide;
+    slide.className = 'slide ' + (DARK[s.id] ? 'dark' : 'light') + (s.id ? ' s-' + s.id : '') + (DENSE[s.id] ? ' dense' : '') + (s.id === 'cover' ? ' cover' : '');
+    slide.textContent = '';
+    slide.setAttribute('aria-label', 'Slide ' + seq(s.addr) + ' of ' + order.length + (u.title ? ': ' + u.title : ''));
+    var box = el('div', 'slide-in');
+    (LAYOUTS[s.id] || generic)(L, box);
+    add(slide, box, el('p', 'slide-num', seq(s.addr) + ' / ' + order.length));
+    u.said = slide.querySelector('.said-list');
+
+    u.script.textContent = '';
+    var inner = add(el('div', 'script-in'), el('p', 'script-head', 'The script · slide ' + seq(s.addr)));
+    String(s.script || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
+      .forEach(function (p) { inner.appendChild(el('p', null, p)); });
+    u.script.appendChild(inner);
+    u.scriptText = s.script || '';
+  }
+
+  function makeUnit(addr) {
+    var key = addr.replace('.', '-');
+    var unit = el('article', 'unit');
+    unit.id = 'slide-' + key;
+    unit.dataset.addr = addr;
+    var slide = el('section', 'slide');
+    var script = el('div', 'script');
+    var r = makeRoom(addr, key);
+    add(unit, slide, script, r.box);
+    return { unit: unit, slide: slide, script: script, room: r.box, notes: r.notes, form: r.form };
+  }
+
+  function renderSpine(b) {
+    var slides = slidesOf(b);
+    if (!slides.length) return false;
+    order = slides.map(function (s) { return s.addr; });
+    var keep = {};
+    slides.forEach(function (s) {
+      var u = units[s.addr] || (units[s.addr] = makeUnit(s.addr));
+      keep[s.addr] = 1;
+      drawSlide(u, s);
+      deck.appendChild(u.unit);     // in order
+    });
+    Object.keys(units).forEach(function (a) {
+      if (!keep[a]) { units[a].unit.remove(); delete units[a]; }
+    });
+    opening.textContent = '';
+    renderRoom();
+    if (presenting) show(Math.max(0, Math.min(current, order.length - 1)), false);
+    return true;
+  }
+
+  // ---- The room ---------------------------------------------------------------
+  var nameNow = '';
+  function signed() {
+    var name = nameNow.replace(/\s+/g, ' ').trim().slice(0, 40);
+    return name ? name + ', a visitor' : 'a visitor';
+  }
+
+  function makeRoom(addr, key) {
+    var box = el('section', 'room');
+    box.setAttribute('aria-label', 'Notes on this slide');
+    var inner = el('div', 'room-in');
+    var taps = el('div', 'taps');
+    var form = el('form', 'note-form');
+    form.noValidate = true;
+    var status = el('p', 'form-status');
+    status.setAttribute('role', 'status');
+    TAPS.forEach(function (t) {
+      var b = el('button', 'tap', t);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        b.disabled = true;
+        status.textContent = 'Sending…';
+        Beach.place.note(ROOM, signed(), 'Tap: ' + t, addr).then(function () {
+          status.textContent = 'Thank you. ‘' + t + '’ is in the room.';
+          return refreshRoom();
+        }).catch(function () {
+          status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+        }).then(function () { b.disabled = false; });
+      });
+      taps.appendChild(b);
+    });
+
+    var noteLabel = el('label', 'note-label');
+    noteLabel.htmlFor = 'note-' + key;
+    add(noteLabel, el('strong', null, 'Leave a note about this slide.'), document.createTextNode(' No name needed. Please leave out anything personal about anyone’s recovery.'));
+    var note = el('textarea');
+    note.id = 'note-' + key;
+    note.name = 'note';
+    note.maxLength = 2000;
+    note.rows = 3;
+    var whoLabel = el('label', null, 'Your name (optional; without one, your note is signed ‘a visitor’)');
+    whoLabel.htmlFor = 'who-' + key;
+    var who = el('input');
+    who.id = 'who-' + key;
+    who.name = 'who';
+    who.maxLength = 40;
+    who.autocomplete = 'name';
+    who.className = 'who';
+    // One name, typed once, is offered under every slide (held only while the page is open).
+    who.addEventListener('input', function () {
+      nameNow = who.value;
+      Array.prototype.forEach.call(document.querySelectorAll('.room input.who'), function (w) { if (w !== who) w.value = nameNow; });
+    });
+    var trapLabel = el('label', 'trap', 'Leave this empty');
+    trapLabel.htmlFor = 'web-' + key;
+    trapLabel.setAttribute('aria-hidden', 'true');
+    var trap = el('input', 'trap');
+    trap.id = 'web-' + key;
+    trap.name = 'web';
+    trap.tabIndex = -1;
+    trap.autocomplete = 'off';
+    trap.setAttribute('aria-hidden', 'true');
+    var send = el('button', null, 'Leave the note');
+    send.type = 'submit';
+    add(form, noteLabel, note, whoLabel, who, trapLabel, trap, send, status);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var text = note.value.trim();
+      if (trap.value || !text) return;
+      send.disabled = true;
+      status.textContent = 'Sending…';
+      Beach.place.note(ROOM, signed(), text, addr).then(function () {
+        note.value = '';
+        status.textContent = 'Thank you. Your note is in the room.';
+        return refreshRoom();
+      }).catch(function () {
+        status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      }).then(function () { send.disabled = false; });
+    });
+
+    var notes = el('div', 'notes');
+    notes.setAttribute('aria-live', 'polite');
+    add(inner, el('h3', 'room-head', 'The room'), taps, form, notes);
+    box.appendChild(inner);
+    Beach.addMic(note);
+    return { box: box, notes: notes, form: form };
+  }
+
+  function clock(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var t = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return new Date().toDateString() === d.toDateString() ? t
+      : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) + ', ' + t;
+  }
+  function isRedacted(n) { return n.text.trim() === REDACTED; }
+  function isTap(n) { return /^Tap: /.test(n.text.trim()); }
+
+  function noteItem(n) {
+    var li = el('li', 'note' + (isRedacted(n) ? ' redacted' : isTap(n) ? ' tap-note' : ''));
+    var meta = el('p', 'note-meta');
+    if (n.who) meta.appendChild(el('strong', null, n.who));
+    var w = clock(n.when);
+    if (w) meta.appendChild(document.createTextNode((n.who ? ' · ' : '') + w));
+    if (meta.childNodes.length) li.appendChild(meta);
+    var text = isRedacted(n) ? REDACTED : isTap(n) ? n.text.trim().slice(5) : n.text.trim();
+    li.appendChild(el('p', 'note-text', text));
+    return li;
+  }
+
+  var roomSig = null;
+  function renderRoom() {
+    if (!order.length) return;
+    if (roomReached === false && !room) {
+      order.forEach(function (a) {
+        var box = units[a].notes;
+        box.textContent = '';
+        box.appendChild(el('p', 'notes-quiet', 'The room couldn’t be reached just now. Notes will show here when it can.'));
+      });
+      renderSaid([]);
+      return;
+    }
+    if (!room) return;
+    var all = Beach.notes(room).slice().reverse();     // newest first
+    var by = {};
+    all.forEach(function (n) { (by[n.where] = by[n.where] || []).push(n); });
+    order.forEach(function (a) {
+      var box = units[a].notes;
+      box.textContent = '';
+      var mine = by[a] || [];
+      if (!mine.length) {
+        box.appendChild(el('p', 'notes-quiet', 'No notes on this slide yet.'));
+        return;
+      }
+      var ul = el('ul', 'notes-list');
+      mine.forEach(function (n) { ul.appendChild(noteItem(n)); });
+      box.appendChild(ul);
+    });
+    renderSaid(all);
+  }
+
+  // What the room said: every note on any slide in the last three hours.
+  function renderSaid(all) {
+    var since = Date.now() - SAID_MS;
+    order.forEach(function (a) {
+      var list = units[a].said;
+      if (!list) return;
+      list.textContent = '';
+      var recent = (all || []).filter(function (n) {
+        var t = Date.parse(n.when);
+        return !isNaN(t) && t >= since;
+      });
+      if (!recent.length) {
+        list.appendChild(el('li', 'said-empty', room ? 'Nothing yet. Notes left on any slide in the last three hours show here.' : 'The room couldn’t be reached just now.'));
+        return;
+      }
+      recent.forEach(function (n) {
+        var red = isRedacted(n);
+        var li = el('li', red ? 'redacted' : null);
+        var where = units[n.where] ? 'Slide ' + seq(n.where) + (slideTitle(n.where) ? ' · ' + slideTitle(n.where) : '') : '';
+        if (where) li.appendChild(el('p', 'said-where', where));
+        li.appendChild(el('p', 'said-text', red ? REDACTED : isTap(n) ? n.text.trim().slice(5) : n.text.trim()));
+        li.appendChild(el('p', 'said-meta', [n.who, clock(n.when)].filter(Boolean).join(' · ')));
+        list.appendChild(li);
+      });
+    });
+  }
+
+  function refreshRoom() {
+    return Beach.place.get(ROOM).then(function (b) {
+      roomReached = true;
+      var sig = JSON.stringify(b);
+      room = b && typeof b === 'object' ? b : {};
+      if (sig !== roomSig) { roomSig = sig; renderRoom(); }
+    }, function () {
+      if (!room) { roomReached = false; renderRoom(); }
+    });
+  }
+
+  function refreshSpine() {
+    return Beach.place.get(SPINE).then(function (b) {
+      var sig = JSON.stringify(b);
+      if (sig === spineSig) return;
+      spineSig = sig;
+      spine = b;
+      if (!renderSpine(b)) opening.textContent = 'The presentation has no slides on the beach just now.';
+      else if (!landed) land();
+    }, function () {
+      if (!spine) opening.textContent = 'The presentation is kept on the beach and couldn’t be reached just now. It will appear here as soon as the beach answers.';
+    });
+  }
+
+  // A link to a slide (#slide-2-4) lands on it once the slides have drawn.
+  var landed = false;
+  function land() {
+    landed = true;
+    var id = decodeURIComponent(location.hash.slice(1));
+    var t = id && document.getElementById(id);
+    if (t) t.scrollIntoView();
+  }
+
+  function every(ms, fn) {
+    setInterval(function () { if (!document.hidden) fn(); }, ms);
+  }
+
+  // ---- Show the script ------------------------------------------------------
+  var scriptSwitch = document.getElementById('script-switch');
+  scriptSwitch.addEventListener('click', function () {
+    var on = scriptSwitch.getAttribute('aria-checked') !== 'true';
+    scriptSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    document.body.classList.toggle('show-script', on);
+  });
+
+  // ---- Follow the presenter -------------------------------------------------
+  var followSwitch = document.getElementById('follow-switch');
+  var following = false, followTimer = null, lastSeen = null, followed = null, held = null;
+
+  function say(s) { barLine.textContent = s || ''; }
+
+  function inView() {
+    var mid = window.innerHeight / 2;
+    for (var i = 0; i < order.length; i++) {
+      var r = units[order[i]].unit.getBoundingClientRect();
+      if (r.top <= mid && r.bottom > mid) return order[i];
+    }
+    return null;
+  }
+
+  function goTo(addr) {
+    var u = units[addr];
+    if (!u) return;
+    var active = document.activeElement;
+    if (active && active.closest && active.closest('.room') && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+      held = addr;
+      say('The presenter has moved to slide ' + seq(addr) + '. You’ll follow once you leave the note box.');
+      return;
+    }
+    held = null;
+    followed = addr;
+    moved = 0;
+    u.unit.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    say('Following the presenter · slide ' + seq(addr) + ' of ' + order.length);
+  }
+
+  document.addEventListener('focusout', function () {
+    setTimeout(function () {
+      var a = document.activeElement;
+      if (following && held && !(a && a.closest && a.closest('.room'))) goTo(held);
+    }, 0);
+  });
+
+  function followTick(first) {
+    return Promise.all([
+      Beach.place.get(PRESENTING),
+      first ? Beach.place.index().catch(function () { return null; }) : null
+    ]).then(function (r) {
+      if (!following) return;
+      var addr = Beach.text(r[0] && r[0]['1']).trim();
+      if (!units[addr]) {
+        if (first) say('Nobody is presenting just now. This will follow when someone does.');
+        lastSeen = addr;
+        return;
+      }
+      if (first) {
+        var t = r[1] && r[1].touched ? Date.parse(r[1].touched[PRESENTING]) : NaN;
+        lastSeen = addr;
+        if (!isNaN(t) && Date.now() - t > LIVE_WINDOW_MS) {
+          say('Nobody is presenting just now. This will follow when someone does.');
+          return;
+        }
+        goTo(addr);
+        return;
+      }
+      if (addr !== lastSeen) {
+        lastSeen = addr;
+        goTo(addr);
+      }
+    }, function () {
+      if (following) say('The presenter can’t be reached just now. Still trying…');
+    });
+  }
+
+  function followOn() {
+    following = true;
+    lastSeen = null;
+    followed = null;
+    held = null;
+    followSwitch.setAttribute('aria-checked', 'true');
+    document.body.classList.add('is-following');
+    say('Finding the presenter…');
+    followTick(true);
+    followTimer = setInterval(function () { if (!document.hidden) followTick(false); }, FOLLOW_MS);
+  }
+  function followOff(why) {
+    following = false;
+    clearInterval(followTimer);
+    followSwitch.setAttribute('aria-checked', 'false');
+    document.body.classList.remove('is-following');
+    say(why || '');
+  }
+  followSwitch.addEventListener('click', function () {
+    if (following) followOff();
+    else followOn();
+  });
+  // Scrolling away from the followed slide turns following off. Only the
+  // reader's own scrolling counts (a finger, a wheel, a key), never the
+  // page moving itself to follow.
+  var moved = 0;
+  function reader() { moved = Date.now(); }
+  ['wheel', 'touchmove', 'mousedown'].forEach(function (t) { window.addEventListener(t, reader, { passive: true }); });
+  window.addEventListener('keydown', function (ev) {
+    if (/^(Arrow|Page|Home|End| )/.test(ev.key) && !(ev.target && ev.target.closest && ev.target.closest('input, textarea'))) reader();
+  });
+  window.addEventListener('scroll', function () {
+    if (!following || !followed || Date.now() - moved > 1500) return;
+    var here = inView();
+    if (here && here !== followed) followOff('Following stopped because you scrolled away. Switch it on again to rejoin.');
+  }, { passive: true });
+
+  // ---- Present ------------------------------------------------------------------
+  var presenting = false, current = 0, code = null, refused = false;
+  var pending = null, writing = false, wentFull = false;
+  var hud = document.getElementById('hud');
+  var hudCount = document.getElementById('hud-count');
+  var hudStatus = document.getElementById('hud-status');
+  var hudScript = document.getElementById('hud-script');
+  var pScript = document.getElementById('present-script');
+  var dialog = document.getElementById('code-dialog');
+  var codeInput = document.getElementById('code-input');
+  var asked = false;
+
+  function hudSay(s) { hudStatus.textContent = s; wake(6000); }
+
+  // Tell the room which slide is showing: position 1 of 'presenting', with
+  // the presenter's code. One write at a time; the latest move wins.
+  function tellRoom(addr) {
+    if (!code || refused) return;
+    pending = addr;
+    if (!writing) flush();
+  }
+  function flush() {
+    if (pending == null || !code || refused) { writing = false; return; }
+    writing = true;
+    var addr = pending;
+    pending = null;
+    Beach.place.write(PRESENTING, '1', addr, code).then(function () {
+      hudSay('Phones are following');
+    }, function (e) {
+      if (e && e.refused) {
+        refused = true;
+        code = null;
+        pending = null;
+        hudSay('That code wasn’t accepted, so phones won’t follow. Carry on presenting.');
+      } else {
+        hudSay('The beach couldn’t be reached, so phones may not be following just now.');
+      }
+    }).then(function () {
+      writing = false;
+      if (pending != null) flush();
+    });
+  }
+
+  function drawPresentScript() {
+    var u = units[order[current]];
+    pScript.textContent = '';
+    if (!u) return;
+    pScript.appendChild(el('p', 'script-head', 'The script · slide ' + (current + 1)));
+    String(u.scriptText || '').split(/\n\s*\n/).map(function (x) { return x.trim(); }).filter(Boolean)
+      .forEach(function (p) { pScript.appendChild(el('p', null, p)); });
+  }
+
+  function show(i, write) {
+    if (!order.length) return;
+    current = Math.max(0, Math.min(order.length - 1, i));
+    order.forEach(function (a, k) { units[a].unit.classList.toggle('current', k === current); });
+    var s = units[order[current]].slide;
+    s.scrollTop = 0;
+    hudCount.textContent = (current + 1) + ' / ' + order.length;
+    drawPresentScript();
+    if (write !== false) tellRoom(order[current]);
+  }
+
+  function enter() {
+    if (!order.length) return;
+    if (following) followOff();
+    presenting = true;
+    var here = inView();
+    document.documentElement.classList.add('is-presenting');
+    document.body.classList.add('is-presenting');
+    var root = document.documentElement;
+    var full = root.requestFullscreen || root.webkitRequestFullscreen;
+    wentFull = false;
+    if (full) {
+      try {
+        var p = full.call(root);
+        wentFull = true;
+        if (p && p.catch) p.catch(function () { wentFull = false; });
+      } catch (e) { wentFull = false; }
+    }
+    hudSay(code ? 'Telling the phones…' : refused ? 'That code wasn’t accepted, so phones won’t follow. Carry on presenting.' : 'Presenting without a code: phones won’t follow.');
+    wake();
+    show(here ? order.indexOf(here) : 0);
+  }
+
+  function leave() {
+    if (!presenting) return;
+    presenting = false;
+    document.documentElement.classList.remove('is-presenting');
+    document.body.classList.remove('is-presenting');
+    pScript.classList.remove('on');
+    hudScript.setAttribute('aria-pressed', 'false');
+    order.forEach(function (a) { units[a].unit.classList.remove('current'); });
+    var fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fs) {
+      var exit = document.exitFullscreen || document.webkitExitFullscreen;
+      try { var p = exit.call(document); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+    }
+    var u = units[order[current]];
+    if (u) u.unit.scrollIntoView();
+  }
+
+  document.getElementById('present-btn').addEventListener('click', function () {
+    if (!order.length) return;
+    // Asked once; asked again only after a code was refused.
+    if (asked && !refused) { enter(); return; }
+    codeInput.value = '';
+    if (dialog.showModal) dialog.showModal();
+    else { asked = true; enter(); }
+  });
+  document.getElementById('code-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    code = codeInput.value.trim() || null;
+    codeInput.value = '';
+    refused = false;
+    asked = true;
+    dialog.close();
+    enter();
+  });
+  document.getElementById('code-cancel').addEventListener('click', function () {
+    codeInput.value = '';
+    dialog.close();
+  });
+
+  function toggleScript() {
+    var on = !pScript.classList.contains('on');
+    pScript.classList.toggle('on', on);
+    hudScript.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  document.getElementById('hud-prev').addEventListener('click', function (e) { e.stopPropagation(); show(current - 1); });
+  document.getElementById('hud-next').addEventListener('click', function (e) { e.stopPropagation(); show(current + 1); });
+  hudScript.addEventListener('click', function (e) { e.stopPropagation(); toggleScript(); });
+  document.getElementById('hud-leave').addEventListener('click', function (e) { e.stopPropagation(); leave(); });
+
+  document.addEventListener('keydown', function (ev) {
+    if (!presenting || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (dialog.open) return;
+    var k = ev.key;
+    if (ev.target && ev.target.closest && ev.target.closest('.hud') && (k === ' ' || k === 'Enter')) return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Spacebar') { ev.preventDefault(); show(current + 1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { ev.preventDefault(); show(current - 1); }
+    else if (k === 'Home') { ev.preventDefault(); show(0); }
+    else if (k === 'End') { ev.preventDefault(); show(order.length - 1); }
+    else if (k === 'n' || k === 'N') { ev.preventDefault(); toggleScript(); }
+    else if (k === 'Escape') { leave(); }
+  });
+  // A click on the slide moves on; on its left quarter, back.
+  deck.addEventListener('click', function (ev) {
+    if (!presenting) return;
+    if (ev.target.closest('a, button, input, textarea, .said')) return;
+    if (!ev.target.closest('.unit.current .slide')) return;
+    show(ev.clientX < window.innerWidth / 4 ? current - 1 : current + 1);
+  });
+  // A swipe on a touch screen moves too.
+  var touchX = null;
+  deck.addEventListener('touchstart', function (ev) {
+    if (presenting && ev.touches.length === 1) touchX = ev.touches[0].clientX;
+  }, { passive: true });
+  deck.addEventListener('touchend', function (ev) {
+    if (!presenting || touchX == null) return;
+    var dx = ev.changedTouches[0].clientX - touchX;
+    touchX = null;
+    if (Math.abs(dx) > 60) show(dx < 0 ? current + 1 : current - 1);
+  });
+  function onFull() {
+    var fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!fs && presenting && wentFull) leave();
+  }
+  document.addEventListener('fullscreenchange', onFull);
+  document.addEventListener('webkitfullscreenchange', onFull);
+  // The bar at the foot wakes when the pointer moves, then rests.
+  var restTimer = null;
+  function wake(ms) {
+    hud.classList.add('awake');
+    clearTimeout(restTimer);
+    restTimer = setTimeout(function () { hud.classList.remove('awake'); }, ms || 2500);
+  }
+  document.addEventListener('mousemove', function () { if (presenting) wake(); });
+
+  // The bar's real height (it wraps on a narrow phone), so a slide fills
+  // the screen beneath it and a followed slide lands just under it.
+  var bar = document.getElementById('bar');
+  function barHeight() { document.documentElement.style.setProperty('--bar-h', bar.offsetHeight + 'px'); }
+  barHeight();
+  window.addEventListener('resize', barHeight);
+  if (window.ResizeObserver) new ResizeObserver(barHeight).observe(bar);
+
+  // ---- Begin ----------------------------------------------------------------------
+  refreshSpine().then(refreshRoom);
+  every(SPINE_MS, refreshSpine);
+  every(ROOM_MS, refreshRoom);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) { refreshSpine(); refreshRoom(); }
+  });
+})();
+</script>
+</body>
+</html>
