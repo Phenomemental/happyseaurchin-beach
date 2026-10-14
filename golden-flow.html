@@ -75,15 +75,17 @@
     margin-top: 1.8rem;
   }
 
-  /* 4. From where you stand: pairs, side by side on a wide screen. */
+  /* 4. From where you stand: pairs, side by side on a wide screen, with
+     room between the columns for the golden threads. */
   .pair {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.8rem;
     margin: 0 0 1.2rem;
   }
   @media (min-width: 640px) {
-    .pair { grid-template-columns: 1fr 1fr; }
+    .pair { grid-template-columns: 1fr 1fr; column-gap: 5rem; }
   }
   .side {
     border-left: 2px solid var(--frame);
@@ -107,6 +109,168 @@
   .side-text.none {
     font-style: italic;
     color: var(--muted);
+  }
+
+  /* The golden threads: where the meaning of two people's words meets. */
+  .sentence {
+    border-radius: 2px;
+    transition: opacity 0.8s ease, background-color 0.8s ease;
+  }
+  .weighed .sentence {
+    opacity: 0.62;
+  }
+  .weighed .sentence.met {
+    opacity: 1;
+    background-color: var(--gold-soft);
+    box-shadow: 0 0 0.5em var(--gold-soft);
+    cursor: pointer;
+  }
+  .sentence.met:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+  .open-tag {
+    font-size: 0.75rem;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    border-bottom: 1px dotted var(--gold);
+    margin-left: 0.3em;
+    white-space: nowrap;
+  }
+  .threads {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .threads .thread {
+    fill: none;
+    stroke: var(--gold);
+    stroke-linecap: round;
+    transition: stroke-opacity 0.3s ease;
+  }
+  .threads .thread.drawing {
+    stroke-dasharray: 1;
+    animation: thread-draw var(--draw, 1.8s) ease-in-out var(--delay, 0s) both;
+  }
+  @keyframes thread-draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+  .threads .thread.lit {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 3px var(--gold));
+  }
+  .threads .hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    pointer-events: stroke;
+    cursor: pointer;
+    outline: none;
+  }
+  .threads .open-thread {
+    fill: none;
+    stroke: var(--gold);
+    stroke-opacity: 0.4;
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+  }
+  .threads .open-label {
+    font-size: 0.7rem;
+    font-style: italic;
+    fill: var(--muted);
+  }
+  .threads .amp-halo {
+    fill: var(--page);
+  }
+  .threads .amp {
+    font-size: 1.4rem;
+    font-style: italic;
+    fill: var(--gold);
+  }
+  @media (min-width: 640px) {
+    .threads { display: block; }
+    .matches { display: none !important; }
+    .open-tag { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sentence { transition: none; }
+    .threads .thread.drawing { animation: none; stroke-dasharray: none; }
+  }
+  .meet {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0 0 0.6rem;
+  }
+  .meet svg {
+    flex: none;
+    width: 2.2rem;
+    height: 1.3rem;
+  }
+  .meet .track,
+  .meet .fill {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .meet .track {
+    stroke: var(--frame);
+  }
+  .meet .fill {
+    stroke: var(--gold);
+  }
+  .matches {
+    margin: 0.2rem 0 1.4rem;
+  }
+  .matches li {
+    padding: 0;
+    margin: 0 0 1.1rem;
+  }
+  .matches li::before {
+    content: none;
+  }
+  .match-a,
+  .match-b {
+    margin: 0;
+  }
+  .match-line {
+    display: block;
+    width: 2px;
+    height: 1.4rem;
+    margin: 0.3rem 0 0.3rem 1.2rem;
+    border-radius: 1px;
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-soft);
+  }
+  .thread-detail {
+    border-left: 2px solid var(--gold);
+    padding: 0.2rem 0 0.1rem 0.8rem;
+    margin: -0.3rem 0 1.4rem;
+  }
+  .detail-from {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.2rem;
+  }
+  .detail-text {
+    margin: 0 0 0.7rem;
+  }
+  .threads-status,
+  .threads-note {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0 0 1rem;
   }
   .reading-head {
     font-weight: 500;
@@ -265,7 +429,8 @@
       <hr class="rule">
       <section id="stand" aria-labelledby="stand-head">
         <h2 id="stand-head">From where you stand</h2>
-        <div class="pair">
+        <p class="threads-status" id="threads-status" role="status" hidden></p>
+        <div class="pair" id="pair-1">
           <div class="side theirs">
             <p class="side-label">What you are looking for</p>
             <p class="side-text" id="s-their-seek"></p>
@@ -275,7 +440,7 @@
             <p class="side-text" id="s-his-offer"></p>
           </div>
         </div>
-        <div class="pair">
+        <div class="pair" id="pair-2">
           <div class="side">
             <p class="side-label">What Matthew is looking for</p>
             <p class="side-text" id="s-his-seek"></p>
@@ -285,7 +450,7 @@
             <p class="side-text" id="s-their-offer"></p>
           </div>
         </div>
-        <div class="pair">
+        <div class="pair" id="pair-3">
           <div class="side theirs">
             <p class="side-label">Your day</p>
             <p class="side-text" id="s-their-day"></p>
@@ -295,6 +460,7 @@
             <p class="side-text" id="s-his-day"></p>
           </div>
         </div>
+        <p class="threads-note" id="threads-note" hidden>These threads are found by the page, comparing the meaning of words. They show where to look; the meaning is yours.</p>
         <div id="reading" aria-live="polite"></div>
       </section>
     </div>
@@ -579,10 +745,37 @@
     }
     return node && typeof node === 'object' && typeof node._ === 'string' ? node._.trim() : '';
   }
+  // A text as its sentences, each in its own span, with whatever stood
+  // between them kept as it was, so the words show exactly as written.
+  // A sentence ends at . ! or ? before a capital or a digit, or at a line's
+  // end.
+  function pieces(s) {
+    var out = [];
+    var re = /[.!?]["'”’)\]]*(\s+)(?=["“‘(]?[A-Z0-9])|\s*\n\s*/g;
+    var start = 0, m;
+    while ((m = re.exec(s))) {
+      var end = m[1] != null ? m.index + m[0].length - m[1].length : m.index;
+      var gap = s.slice(end, m.index + m[0].length);
+      if (end > start) out.push({ t: s.slice(start, end), gap: gap });
+      else if (out.length) out[out.length - 1].gap += gap;
+      start = m.index + m[0].length;
+    }
+    if (start < s.length) out.push({ t: s.slice(start), gap: '' });
+    return out;
+  }
   function side(id, s, none) {
     var p = $(id);
-    p.textContent = s || none;
+    p.textContent = '';
+    p.classList.remove('weighed');
     p.classList.toggle('none', !s);
+    if (!s) {
+      p.textContent = none;
+      return;
+    }
+    pieces(s).forEach(function (x) {
+      p.appendChild(el('span', 'sentence', x.t));
+      if (x.gap) p.appendChild(document.createTextNode(x.gap));
+    });
   }
   // A reading in spine:golden-flow, beneath its second place, whose
   // opening line begins with the handle.
@@ -639,8 +832,350 @@
       readingSig = null;
       renderReading();
       $('stand-part').hidden = false;
+      weave();
     });
   }
+
+  // ---- The golden threads -------------------------------------------------------
+  // The page finds where the meaning of two people's words meets, in the
+  // visitor's own browser: a small sentence-embedding model, loaded only
+  // when someone asks to see from where they stand, and kept in the
+  // browser's cache by the library. No key, no server, and nothing is
+  // written to the beach.
+  var LIBRARY = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+  var MODEL = 'Xenova/all-MiniLM-L6-v2';
+  // Tuned on 14 October 2026, Matthew's passport beside happyseaurchin's,
+  // Dwayne's, happyhedgehog's, keel's and emojisword's, each sentence
+  // embedded on its own: from 0.30 the meetings read as real ones (0.31 to
+  // 0.46); at 0.28 and below they turn to noise.
+  var MEETS = 0.30;
+  var MOST = 7;
+  // How much the seeking is met, from the mean of each seeking sentence's
+  // best match.
+  var MUCH = 0.36;
+  var SOME = 0.27;
+  var PAIRS = [
+    { id: 'pair-1', left: 's-their-seek', right: 's-his-offer', seeking: true,
+      from: ['From your passport, what you are looking for', 'From Matthew’s passport, what he offers'],
+      words: ['Much of what you look for meets what Matthew offers.', 'Some of what you look for meets what Matthew offers.', 'Little of what you look for meets what Matthew offers yet.'] },
+    { id: 'pair-2', left: 's-his-seek', right: 's-their-offer', seeking: true,
+      from: ['From Matthew’s passport, what he is looking for', 'From your passport, what you offer'],
+      words: ['Much of what Matthew looks for meets what you offer.', 'Some of what Matthew looks for meets what you offer.', 'Little of what Matthew looks for meets what you offer yet.'] },
+    { id: 'pair-3', left: 's-their-day', right: 's-his-day', seeking: false,
+      from: ['From your day today', 'From Matthew’s day today'],
+      words: ['Much of your day meets his.', 'Some of your day meets his.', 'Little of your day meets his yet.'] }
+  ];
+  var SVG = 'http://www.w3.org/2000/svg';
+  var wide = window.matchMedia ? window.matchMedia('(min-width: 640px)') : { matches: true };
+  var moving = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  var extractor = null;
+  var woven = [];
+  var weaving = 0;
+
+  function model() {
+    if (!extractor) {
+      extractor = import(LIBRARY).then(function (t) {
+        t.env.allowLocalModels = false;
+        return t.pipeline('feature-extraction', MODEL);
+      });
+      extractor.catch(function () { extractor = null; });
+    }
+    return extractor;
+  }
+  function svg(tag, attrs) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+  // The pieces each pair keeps beside it: the dial above, the threads'
+  // layer over it, and below it the list for a phone and the detail of a
+  // chosen thread.
+  function parts(p) {
+    var pair = $(p.id);
+    if (!pair._parts) {
+      var meet = el('p', 'meet');
+      meet.hidden = true;
+      pair.parentNode.insertBefore(meet, pair);
+      var layer = svg('svg', { 'class': 'threads' });
+      pair.appendChild(layer);
+      var list = el('ol', 'matches');
+      list.hidden = true;
+      var detail = el('div', 'thread-detail');
+      detail.hidden = true;
+      detail.setAttribute('aria-live', 'polite');
+      pair.parentNode.insertBefore(detail, pair.nextSibling);
+      pair.parentNode.insertBefore(list, pair.nextSibling);
+      pair._parts = { pair: pair, meet: meet, layer: layer, list: list, detail: detail, shown: null };
+    }
+    return pair._parts;
+  }
+  function unweave() {
+    weaving++;
+    woven = [];
+    PAIRS.forEach(function (p) {
+      var x = parts(p);
+      x.meet.hidden = true;
+      x.layer.textContent = '';
+      x.list.textContent = '';
+      x.list.hidden = true;
+      x.detail.hidden = true;
+      x.shown = null;
+    });
+    $('threads-status').hidden = true;
+    $('threads-note').hidden = true;
+  }
+  function weave() {
+    unweave();
+    var token = weaving;
+    var jobs = PAIRS.map(function (p) {
+      return {
+        p: p,
+        a: Array.prototype.slice.call($(p.left).querySelectorAll('.sentence')),
+        b: Array.prototype.slice.call($(p.right).querySelectorAll('.sentence'))
+      };
+    }).filter(function (j) { return j.a.length && j.b.length; });
+    if (!jobs.length) return;
+    var st = $('threads-status');
+    st.textContent = 'reading the beach…';
+    st.hidden = false;
+    model().then(function (embed) {
+      var texts = [];
+      jobs.forEach(function (j) {
+        j.a.concat(j.b).forEach(function (e) { texts.push(e.textContent.trim()); });
+      });
+      // One sentence at a time, so a score never depends on what else is
+      // being read beside it (batched, the padding shifts it).
+      var vectors = [];
+      return texts.reduce(function (chain, t) {
+        return chain.then(function () {
+          if (token !== weaving) return;
+          return embed(t, { pooling: 'mean', normalize: true }).then(function (out) {
+            vectors.push(out.data);
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        if (token !== weaving) return;
+        var k = 0;
+        function next() {
+          return vectors[k++];
+        }
+        jobs.forEach(function (j) {
+          j.ea = j.a.map(next);
+          j.eb = j.b.map(next);
+          weigh(j);
+          woven.push(j);
+        });
+        st.hidden = true;
+        $('threads-note').hidden = false;
+      });
+    }).catch(function () {
+      if (token !== weaving) return;
+      st.textContent = 'The threads couldn’t be found just now; the words stand above as written.';
+    });
+  }
+  // The vectors are normalised, so their dot product is the cosine.
+  function cosine(a, b) {
+    var s = 0;
+    for (var i = 0; i < a.length; i++) s += a[i] * b[i];
+    return s;
+  }
+  function strength(sim) {
+    return Math.max(0, Math.min(1, (sim - MEETS) / 0.2));
+  }
+  function weigh(j) {
+    var all = [];
+    var best = j.ea.map(function (va, i) {
+      var top = -1;
+      j.eb.forEach(function (vb, k) {
+        var sim = cosine(va, vb);
+        all.push({ sim: sim, i: i, k: k });
+        if (sim > top) top = sim;
+      });
+      return top;
+    });
+    all.sort(function (x, y) { return y.sim - x.sim; });
+    j.met = all.filter(function (x) { return x.sim >= MEETS; }).slice(0, MOST);
+    j.open = j.p.seeking ? best.map(function (top, i) { return top < MEETS ? i : -1; }).filter(function (i) { return i >= 0; }) : [];
+    j.mean = best.reduce(function (s, top) { return s + top; }, 0) / best.length;
+    dial(j);
+    mark(j);
+    list(j);
+    draw(j, true);
+  }
+  // Above the pair: a quiet arc, and how much of the seeking is met, in
+  // plain words.
+  function dial(j) {
+    var x = parts(j.p);
+    var fill = Math.max(0.02, Math.min(1, (j.mean - 0.1) / 0.35));
+    var arc = svg('svg', { viewBox: '0 0 32 18', 'aria-hidden': 'true' });
+    arc.appendChild(svg('path', { 'class': 'track', d: 'M3 16 A13 13 0 0 1 29 16' }));
+    arc.appendChild(svg('path', { 'class': 'fill', d: 'M3 16 A13 13 0 0 1 29 16', pathLength: '1', 'stroke-dasharray': fill.toFixed(3) + ' 1' }));
+    x.meet.textContent = '';
+    x.meet.appendChild(arc);
+    x.meet.appendChild(el('span', null, j.p.words[j.mean >= MUCH ? 0 : j.mean >= SOME ? 1 : 2]));
+    x.meet.hidden = false;
+  }
+  // The sentences a thread touches glow; the rest dim a little; a seeking
+  // sentence nothing meets says so.
+  function mark(j) {
+    var touched = {};
+    j.met.forEach(function (x) {
+      touched['a' + x.i] = touched['a' + x.i] || x;
+      touched['b' + x.k] = touched['b' + x.k] || x;
+    });
+    [['a', j.a], ['b', j.b]].forEach(function (s) {
+      s[1].forEach(function (span, i) {
+        var x = touched[s[0] + i];
+        if (!x) return;
+        span.classList.add('met');
+        span.tabIndex = 0;
+        span.setAttribute('role', 'button');
+        span.addEventListener('click', function () { show(j, x); });
+        span.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            show(j, x);
+          }
+        });
+      });
+    });
+    j.open.forEach(function (i) {
+      j.a[i].parentNode.insertBefore(el('span', 'open-tag', 'still open'), j.a[i].nextSibling);
+    });
+    if (j.met.length) {
+      $(j.p.left).classList.add('weighed');
+      $(j.p.right).classList.add('weighed');
+    }
+  }
+  // On a phone: the meetings as pairs, strongest first, each with a short
+  // golden line between.
+  function list(j) {
+    var x = parts(j.p);
+    x.list.textContent = '';
+    j.met.forEach(function (m) {
+      var li = el('li');
+      li.appendChild(el('p', 'match-a', j.a[m.i].textContent));
+      var line = el('span', 'match-line');
+      var t = strength(m.sim);
+      line.style.opacity = (0.45 + 0.55 * t).toFixed(2);
+      line.style.width = (1.5 + 2 * t).toFixed(1) + 'px';
+      li.appendChild(line);
+      li.appendChild(el('p', 'match-b', j.b[m.k].textContent));
+      x.list.appendChild(li);
+    });
+    x.list.hidden = !j.met.length;
+  }
+  // Beneath the pair: the two sentences a thread joins, as written, and
+  // where each came from.
+  function show(j, m) {
+    var x = parts(j.p);
+    x.detail.textContent = '';
+    [[j.p.from[0], j.a[m.i].textContent], [j.p.from[1], j.b[m.k].textContent]].forEach(function (r) {
+      x.detail.appendChild(el('p', 'detail-from', r[0]));
+      x.detail.appendChild(el('p', 'detail-text', r[1]));
+    });
+    x.detail.hidden = false;
+    x.shown = m;
+    Array.prototype.forEach.call(x.layer.querySelectorAll('.thread'), function (t) {
+      t.classList.toggle('lit', t._m === m);
+    });
+  }
+  // On a wide screen: golden curves from each seeking sentence, through a
+  // small ampersand at the centre, to the sentence it meets. The strongest
+  // draws first, slowly; with reduced motion they are simply there.
+  function draw(j, first) {
+    var x = parts(j.p);
+    var layer = x.layer;
+    layer.textContent = '';
+    if (!wide.matches || (!j.met.length && !j.open.length)) return;
+    var box = x.pair.getBoundingClientRect();
+    var L = $(j.p.left).parentNode.getBoundingClientRect();
+    var R = $(j.p.right).parentNode.getBoundingClientRect();
+    var w = box.width, h = box.height;
+    layer.setAttribute('width', w);
+    layer.setAttribute('height', h);
+    layer.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    var x1 = L.right - box.left + 3;
+    var x2 = R.left - box.left - 3;
+    var cx = (x1 + x2) / 2;
+    function yOf(span) {
+      var r = span.getBoundingClientRect();
+      return r.top + r.height / 2 - box.top;
+    }
+    // The ampersand stands midway between the highest and lowest
+    // sentences the threads join, so they meet near where they start.
+    var ys = [];
+    j.met.forEach(function (m) { ys.push(yOf(j.a[m.i]), yOf(j.b[m.k])); });
+    var cy = ys.length ? (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2 : h / 2;
+    var reach = cx - x1;
+    // Still open: a faint thread trailing into the space between.
+    var lastLabel = -1e9;
+    j.open.forEach(function (i) {
+      var y = yOf(j.a[i]);
+      var ex = x1 + reach * 0.8;
+      var ey = y + (cy - y) * 0.25;
+      layer.appendChild(svg('path', { 'class': 'open-thread', d: 'M' + x1 + ' ' + y + ' C' + (x1 + reach * 0.5) + ' ' + y + ' ' + (ex - reach * 0.3) + ' ' + ey + ' ' + ex + ' ' + ey }));
+      if (y - lastLabel > 18) {
+        var label = svg('text', { 'class': 'open-label', x: x1 + 2, y: y - 4 });
+        label.textContent = 'still open';
+        layer.appendChild(label);
+        lastLabel = y;
+      }
+    });
+    j.met.forEach(function (m, n) {
+      var y1 = yOf(j.a[m.i]);
+      var y2 = yOf(j.b[m.k]);
+      var d = 'M' + x1 + ' ' + y1 +
+        ' C' + (x1 + reach * 0.6) + ' ' + y1 + ' ' + (cx - reach * 0.35) + ' ' + cy + ' ' + cx + ' ' + cy +
+        ' C' + (cx + reach * 0.35) + ' ' + cy + ' ' + (x2 - reach * 0.6) + ' ' + y2 + ' ' + x2 + ' ' + y2;
+      var t = strength(m.sim);
+      var thread = svg('path', {
+        'class': 'thread' + (first && !moving.matches ? ' drawing' : ''),
+        d: d,
+        pathLength: '1',
+        'stroke-width': (1 + 2.4 * t).toFixed(2),
+        'stroke-opacity': (0.4 + 0.6 * t).toFixed(2)
+      });
+      thread.style.setProperty('--delay', (n === 0 ? 0 : 1.6 + (n - 1) * 0.45).toFixed(2) + 's');
+      thread.style.setProperty('--draw', (n === 0 ? 2.8 : 1.8) + 's');
+      thread._m = m;
+      if (x.shown === m) thread.classList.add('lit');
+      layer.appendChild(thread);
+      var hit = svg('path', { 'class': 'hit', d: d, tabindex: '0', role: 'button' });
+      hit.setAttribute('aria-label', 'A thread: ' + j.a[m.i].textContent + ' — ' + j.b[m.k].textContent);
+      hit.addEventListener('click', function () { show(j, m); });
+      hit.addEventListener('focus', function () { show(j, m); });
+      hit.addEventListener('mouseenter', function () { thread.classList.add('lit'); });
+      hit.addEventListener('mouseleave', function () { thread.classList.toggle('lit', x.shown === m); });
+      layer.appendChild(hit);
+    });
+    if (j.met.length) {
+      layer.appendChild(svg('circle', { 'class': 'amp-halo', cx: cx, cy: cy, r: 11 }));
+      var amp = svg('text', { 'class': 'amp', x: cx, y: cy, 'text-anchor': 'middle', 'dominant-baseline': 'central' });
+      amp.textContent = '&';
+      layer.appendChild(amp);
+    }
+  }
+  // When the page changes width, or its fonts arrive, the threads are laid
+  // again where the sentences now stand, without drawing them in afresh.
+  var relay = null;
+  var laidAt = 0;
+  function relayout() {
+    if (relay) return;
+    relay = requestAnimationFrame(function () {
+      relay = null;
+      laidAt = $('stand').clientWidth;
+      woven.forEach(function (j) { draw(j, false); });
+    });
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if ($('stand').clientWidth !== laidAt) relayout();
+    }).observe($('stand'));
+  } else {
+    window.addEventListener('resize', relayout);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
 
   // ---- 3. Ask the beach ------------------------------------------------------------
   // See from where I stand: a handle's open passport and day beside
@@ -649,6 +1184,7 @@
   var seeForm = $('see-form');
   var seeStatus = $('see-status');
   function forget() {
+    unweave();
     stand = null;
     readingSig = null;
     $('stand-part').hidden = true;
