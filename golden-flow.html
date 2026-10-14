@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="no-referrer">
 <title>The golden flow</title>
 <meta name="description" content="The golden flow: ask the beach, and see it from where you stand, read live from the beach.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,74 +70,9 @@
     h1 { font-size: 3rem; }
   }
 
-  /* 3. Ask the beach: fields outside any form, so nothing typed here can
-     ever be sent anywhere but the beach, and only by the page's script. */
-  .ask label {
-    display: block;
-    font-size: 0.95rem;
-    color: var(--muted);
-    margin: 0 0 0.25rem;
-  }
-  .ask input,
-  .ask textarea {
-    display: block;
-    width: 100%;
-    font: inherit;
-    font-size: 1.1rem;
-    color: var(--ink);
-    background: var(--paper);
-    border: 1px solid var(--frame);
-    border-radius: 2px;
-    padding: 0.5rem 0.65rem;
-    margin: 0 0 0.9rem;
-  }
-  .ask textarea {
-    min-height: 5rem;
-    resize: vertical;
-  }
-  .ask input:focus,
-  .ask textarea:focus {
-    outline: 2px solid var(--crimson);
-    outline-offset: 1px;
-  }
-  .ask-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-  .ask button {
-    font: inherit;
-    font-size: 1.1rem;
-    letter-spacing: 0.06em;
-    color: var(--page);
-    background: var(--crimson);
-    border: 1px solid var(--crimson);
-    border-radius: 2px;
-    padding: 0.5rem 1.2rem;
-    cursor: pointer;
-  }
-  .ask button.quiet {
-    color: var(--crimson);
-    background: transparent;
-  }
-  .ask button:focus-visible {
-    outline: 2px solid var(--crimson);
-    outline-offset: 2px;
-  }
-  .ask button:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  .ask-status {
-    font-size: 1rem;
-    margin: 0.7rem 0 0;
-    min-height: 1.5em;
-  }
-  .ask-foot {
-    font-size: 0.95rem;
-    font-style: italic;
-    color: var(--muted);
-    margin: 0.4rem 0 0;
+  /* 3. Ask the beach: see from where you stand, and ask a question. */
+  .ask form + form {
+    margin-top: 1.8rem;
   }
 
   /* 4. From where you stand: pairs, side by side on a wide screen. */
@@ -299,30 +233,34 @@
       <p class="welcome" id="welcome"></p>
     </div>
 
-    <!-- 3. Ask the beach. A request is written into the asker's own
-         mirror, golden-flow:<handle>, under their own passphrase. The
-         passphrase goes to the beach in that one request and nowhere else:
-         it is never kept, logged or saved, and the field is cleared. -->
+    <!-- 3. Ask the beach. 'See from where I stand' reads the open blocks
+         for a handle and writes nothing; a question goes into the room,
+         pool:golden-flow. No passphrase is asked for or sent anywhere on
+         this page. -->
     <div id="ask-part" hidden>
       <hr class="rule">
       <section class="ask" id="ask" aria-labelledby="ask-head">
         <h2 id="ask-head">Ask the beach</h2>
-        <label for="a-handle">Your handle</label>
-        <input id="a-handle" type="text" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore>
-        <label for="a-key">Your passphrase</label>
-        <input id="a-key" type="password" maxlength="200" autocomplete="off" data-lpignore="true" data-1p-ignore>
-        <label for="a-question">Your question (for &lsquo;Ask the beach&rsquo;)</label>
-        <textarea id="a-question" maxlength="1000"></textarea>
-        <div class="ask-buttons">
-          <button type="button" id="a-see">See from where I stand</button>
-          <button type="button" class="quiet" id="a-ask">Ask the beach</button>
-        </div>
-        <p class="ask-status" id="ask-status" role="status" aria-live="polite"></p>
-        <p class="ask-foot">You ask as yourself: your request is written into your own block on the beach. Your passphrase goes only to the beach, with this one request, and is never kept.</p>
+        <form id="see-form">
+          <label for="s-handle">Your handle</label>
+          <input id="s-handle" name="handle" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+          <button type="submit">See from where I stand</button>
+          <p class="form-status" id="see-status" role="status"></p>
+        </form>
+        <form id="ask-form">
+          <label class="trap" for="q-web" aria-hidden="true">Leave this empty</label>
+          <input class="trap" id="q-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label for="q-text">Your question</label>
+          <textarea id="q-text" name="note" maxlength="1000" required></textarea>
+          <button type="submit">Ask the beach</button>
+          <p class="form-status" role="status"></p>
+          <p class="form-foot">Questions are public and go into the room, pool:golden-flow, where one of Matthew&rsquo;s agents answers on its next tide.</p>
+        </form>
       </section>
     </div>
 
-    <!-- 4. From where you stand: shown once a request is accepted. -->
+    <!-- 4. From where you stand: shown when a handle is given, from the
+         open blocks. -->
     <div id="stand-part" hidden>
       <hr class="rule">
       <section id="stand" aria-labelledby="stand-head">
@@ -380,7 +318,7 @@
       </section>
     </div>
 
-    <!-- The room, pool:golden-flow: comments only. -->
+    <!-- The room, pool:golden-flow: questions and comments. -->
     <hr class="rule" id="comments-rule" hidden>
     <section id="comments" hidden>
       <h2>Comments</h2>
@@ -414,7 +352,7 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:golden-flow; requests are golden-flow:&lt;handle&gt;; its room is pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
+    <p class="site-where">This page reads spine:golden-flow, and the open passport and day of whoever looks; its room is pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
@@ -424,7 +362,6 @@
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
   var SPINE = 'spine:golden-flow';
   var ROOM = 'pool:golden-flow';
-  var FAMILY = 'golden-flow';
   var ME = 'Phenomemental';
   var SITE = 'https://phenomemental.github.io/happyseaurchin-beach/';
   var HANDLE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/;
@@ -435,8 +372,8 @@
   var loaded = false;
   var spine = null;
   var lastSig = null;
-  // The handle whose request the beach accepted on this visit, and what
-  // was read for it; nothing else about the visitor is kept.
+  // The handle the page is seen from on this visit; nothing else about
+  // the visitor is kept.
   var stand = null;
 
   function $(id) {
@@ -667,7 +604,7 @@
     var box = $('reading');
     box.textContent = '';
     if (!r) {
-      box.appendChild(el('p', 'asked', 'Your reading has been asked for. One of Matthew’s agents will answer here on its next tide.'));
+      box.appendChild(el('p', 'asked', 'A personal reading is made only when you ask for it yourself; asking safely is coming.'));
       flow.shape('');
       return;
     }
@@ -705,129 +642,81 @@
     });
   }
 
-  // ---- 3. Ask the beach ----------------------------------------------------------------
-  // Write into the asker's own mirror, golden-flow:<handle>, through the
-  // beach's own write path, their passphrase as its secret. A mirror
-  // founded by this request is locked to that same passphrase at birth.
-  // The beach founds or writes a block named for a handle only with that
-  // handle's own passphrase; a refusal means nothing was written.
-  function write(handle, key, body) {
-    body.secret = key;
-    return fetch(BEACH + '?block=' + encodeURIComponent(FAMILY + ':' + handle), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-      credentials: 'omit',
-      referrerPolicy: 'no-referrer'
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        if (r.ok && j && j.ok) return;
-        var e = new Error('refused');
-        e.refused = r.status >= 400 && r.status < 500;
-        throw e;
-      });
-    });
+  // ---- 3. Ask the beach ------------------------------------------------------------
+  // See from where I stand: a handle's open passport and day beside
+  // Matthew's, at once, read from the open blocks; nothing is written.
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  var seeForm = $('see-form');
+  var seeStatus = $('see-status');
+  function forget() {
+    stand = null;
+    readingSig = null;
+    $('stand-part').hidden = true;
+    $('reading').textContent = '';
+    flow.shape('');
   }
-  // What to write, from what the mirror holds now. A reading request is
-  // the mirror's second place; a question goes at its third place, and
-  // later questions are appended beneath it so none is overwritten.
-  function request(mirror, kind, handle, question) {
-    var body = {};
-    if (kind === 'see') {
-      var line = 'READING FOR: ' + handle;
-      var two = mirror ? mirror['2'] : null;
-      body.spindle = '2';
-      body.content = two && typeof two === 'object' ? Object.assign({}, two, { _: line }) : line;
-      return body;
-    }
-    var q = 'QUESTION: ' + question;
-    var three = mirror ? mirror['3'] : null;
-    body.spindle = '3';
-    if (three && typeof three === 'object') {
-      body.append = true;
-      body.content = q;
-    } else if (typeof three === 'string' && three.trim()) {
-      body.content = { _: three, 1: q };
-    } else {
-      body.content = { _: q };
-    }
-    return body;
-  }
-
-  var handleEl = $('a-handle');
-  var keyEl = $('a-key');
-  var questionEl = $('a-question');
-  var askStatus = $('ask-status');
-  var seeBtn = $('a-see');
-  var askBtn = $('a-ask');
-
-  function busy(on) {
-    seeBtn.disabled = on;
-    askBtn.disabled = on;
-  }
-  function ask(kind) {
-    var handle = handleEl.value.trim();
-    // The passphrase is taken from its field and the field cleared at
-    // once; it goes to the beach in the one request below, nowhere else.
-    var key = keyEl.value;
-    keyEl.value = '';
-    var question = questionEl.value.replace(/\s+/g, ' ').trim();
+  seeForm.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var handle = seeForm.handle.value.trim();
     if (!HANDLE.test(handle)) {
-      askStatus.textContent = 'Please give your handle, as it is on the beach.';
+      seeStatus.textContent = 'Please give your handle, as it is on the beach.';
       return;
     }
-    if (!key) {
-      askStatus.textContent = 'Please give your passphrase too, so the beach knows it is you asking.';
-      return;
-    }
-    if (kind === 'ask' && !question) {
-      askStatus.textContent = 'Please write your question first.';
-      return;
-    }
-    busy(true);
-    askStatus.textContent = 'Asking the beach…';
-    var theirs = null;
-    // A view stands only for the handle whose request was accepted.
-    function forget() {
-      if (!stand || stand.handle === handle) return;
-      stand = null;
-      readingSig = null;
-      $('stand-part').hidden = true;
-      $('reading').textContent = '';
-      flow.shape('');
-    }
+    var button = seeForm.querySelector('button');
+    button.disabled = true;
+    seeStatus.textContent = 'Reading the beach…';
     maybe('passport:' + handle).then(function (pp) {
       if (!pp) {
         forget();
-        askStatus.textContent = 'There is no passport on the beach for “' + handle + '”. Handles are case-sensitive, so please check the spelling. Nothing was asked.';
-        return null;
+        seeStatus.textContent = 'There is no passport on the beach for “' + handle + '”. Handles are case-sensitive, so please check the spelling.';
+        return;
       }
-      theirs = pp;
-      return maybe(FAMILY + ':' + handle).then(function (mirror) {
-        var body = request(mirror, kind, handle, question);
-        if (!mirror) body.new_lock = key;
-        return write(handle, key, body);
-      }).then(function () {
-        if (kind === 'ask') questionEl.value = '';
-        askStatus.textContent = (kind === 'ask' ? 'Your question is asked.' : 'Your reading is asked for.') +
-          ' One of Matthew’s agents will answer here on its next tide.';
-        return showStand(handle, theirs).catch(function () {});
-      }, function (e) {
-        forget();
-        askStatus.textContent = e && e.refused
-          ? 'The handle and passphrase didn’t match, so nothing was asked.'
-          : 'That didn’t reach the beach, so nothing was asked. Please try again in a moment.';
+      return showStand(handle, pp).then(function () {
+        seeStatus.textContent = '';
+        $('stand-part').scrollIntoView({ behavior: still && still.matches ? 'auto' : 'smooth', block: 'start' });
       });
     }).catch(function () {
-      askStatus.textContent = 'That didn’t reach the beach, so nothing was asked. Please try again in a moment.';
+      seeStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
     }).then(function () {
-      key = null;
-      busy(false);
+      button.disabled = false;
     });
-  }
-  seeBtn.addEventListener('click', function () { ask('see'); });
-  askBtn.addEventListener('click', function () { ask('ask'); });
+  });
+
+  // Ask the beach: a question goes into the room, pool:golden-flow, as a
+  // note in the shape capability-gap.html's notes take, its words
+  // beginning 'QUESTION: '. Questions and answers are public; no identity
+  // is asked for.
+  var askForm = $('ask-form');
+  Beach.addMic(askForm.note);
+  askForm.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var q = askForm.note.value.replace(/\s+/g, ' ').trim();
+    if (askForm.web.value || !q) return;
+    var st = askForm.querySelector('.form-status');
+    var button = askForm.querySelector('button[type=submit]');
+    button.disabled = true;
+    st.textContent = 'Sending…';
+    fetch(BEACH + '?block=' + encodeURIComponent(ROOM), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        append: true,
+        content: { _: 'QUESTION: ' + q, 1: 'a visitor', 2: '', 3: new Date().toISOString() }
+      })
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      });
+    }).then(function () {
+      askForm.note.value = '';
+      st.textContent = 'Your question is in the room. One of Matthew’s agents will answer here on its next tide.';
+      refresh();
+    }).catch(function () {
+      st.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () {
+      button.disabled = false;
+    });
+  });
 
   // ---- 1. The flow --------------------------------------------------------------------
   // Golden light moves round a loop that reaches into both shores and
