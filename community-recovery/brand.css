@@ -414,3 +414,105 @@ footer .made a[aria-current="page"] { text-decoration: none; }
   body { font-size: 1.125rem; }
   .brand { font-size: 1.4rem; }
 }
+
+/* ---- brand 7: MOTION AND LIFE ------------------------------------------------
+   Motion drawn from what the beach holds, never pasted on; one orchestrated
+   moment per section, everything around it quiet, and every page complete at
+   rest. Lantern gold is the one colour added, for what is alive right now;
+   leaf green and petal pink belong to the garden only. */
+:root {
+  --cr-lantern: #F4C86A;
+  --cr-leaf: #8FD3A1;
+  --cr-petal: #F7A7C3;
+  --cr-live: #2E9E58;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --cr-live: #5BD08A; }
+}
+
+/* brand 7.7: the sprout mark stays with the reader once the masthead has
+   scrolled away, as a slim bar at the top. */
+.markbar {
+  position: fixed;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--cr-night);
+  border-bottom: 2px solid var(--cr-purple);
+  transform: translateY(-110%);
+  transition: transform 0.25s ease-out;
+}
+.markbar.shown { transform: none; }
+.markbar .wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+.markbar a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--cr-head-dark);
+  text-decoration: none;
+  font-family: var(--cr-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.markbar a { white-space: nowrap; font-size: 1rem; }
+.markbar .here {
+  margin-left: auto;
+  min-width: 0;
+  color: var(--cr-lilac);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.markbar a:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
+
+/* brand 7.7: a live dot in the footer that turns green once the page is
+   reading the beach now. */
+.live {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.live-dot {
+  flex: none;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+.live-dot.on {
+  background: var(--cr-live);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-live) 25%, transparent);
+}
+
+/* brand 7.5: a burst of gold sparks from a button that has just been
+   pressed. Each spark is placed by the page with --dx and --dy. */
+.spark {
+  position: absolute;
+  z-index: 5;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--cr-lantern);
+  box-shadow: 0 0 6px var(--cr-lantern);
+  pointer-events: none;
+  animation: spark 0.75s ease-out forwards;
+}
+@keyframes spark {
+  from { transform: translate(0, 0) scale(1); opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .markbar { transition: none; }
+  .spark { display: none; }
+}

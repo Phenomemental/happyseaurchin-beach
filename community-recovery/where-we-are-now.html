@@ -4,118 +4,336 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Where we are now · Community Recovery</title>
-<meta name="description" content="Where we are now: one link, always current. What has happened at Community Recovery, what is ahead, and members' own words about their week.">
+<meta name="description" content="Where we are now: Community Recovery's one progress page. Its path, its story so far, where it stands against CLERO's 33 standards, members' own words, and its place among recovery organisations on the map.">
 <meta name="theme-color" content="#1B1424">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14b">
+<link rel="stylesheet" href="brand.css?v=2026-10-14c">
 <style>
-  h1 {
-    font-size: 1.9rem;
-    line-height: 1.15;
-    margin: 0;
-  }
-  .intro {
-    font-size: 1.1rem;
-    margin: 0.8rem 0 0;
-  }
-  section h2 { margin-top: 2.4rem; }
+  /* The look of this page is brand 7 in Community Recovery's place: the sky,
+     the path, the stones, the garden, the lanterns and the ripples, in that
+     order. Shared pieces (lantern gold, the mark bar, the live dot, sparks)
+     are in brand.css. */
+  section h2 { margin-top: 2.6rem; }
+  .eyebrow { margin: 2.8rem 0 0.1rem; }
+  .eyebrow + h2 { margin-top: 0.1rem; }
   .section-lead { color: var(--muted); }
   .opening-note { color: var(--muted); font-style: italic; margin: 0.6rem 0 0; }
   .opening-note:empty { display: none; }
+  .plain-btn {
+    font: inherit;
+    font-weight: 700;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--faint);
+    border-radius: 999px;
+    padding: 0.3rem 0.95rem;
+    cursor: pointer;
+  }
+  .plain-btn:hover { border-color: var(--accent); }
+  .plain-btn:focus-visible, .chip:focus-visible, .plant:focus-visible, .rung:focus-visible, .stone-head:focus-visible, .tap:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 
-  /* The timeline: one vertical line, oldest at the top. What has happened
-     runs solid; a 'Now' marker stands between; what is ahead follows,
-     lighter and dashed, under its own marker. */
-  .timeline { margin: 1.2rem 0 0.4rem; }
-  .moments {
+  /* ---- 7.1 THE SKY -------------------------------------------------------- */
+  .sky {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(#0B0712 0%, #1B1424 45%, #2A1F38 75%, #4A2275 100%);
+    color: var(--cr-head-dark);
+    min-height: min(92vh, 640px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .sky canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .sky-in {
+    position: relative;
+    width: 100%;
+    padding-top: 1.6rem;
+    padding-bottom: 13rem;
+  }
+  .sky h1 {
+    color: var(--cr-head-dark);
+    font-size: 2.3rem;
+    line-height: 1.05;
+    margin: 0;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
+  }
+  .sky .hand {
+    color: var(--cr-lantern);
+    font-size: 1.85rem;
+    margin: 0.3rem 0 1.2rem;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7);
+  }
+  .sky-cards {
+    display: grid;
+    gap: 0.8rem;
+  }
+  .sky-card {
+    display: block;
+    background: rgba(27, 20, 36, 0.82);
+    border: 1px solid rgba(201, 166, 240, 0.28);
+    border-top: 4px solid var(--cr-purple);
+    border-radius: var(--cr-radius);
+    padding: 0.85rem 1rem 0.9rem;
+    color: var(--cr-body-dark);
+    text-decoration: none;
+    backdrop-filter: blur(2px);
+  }
+  .sky-card .eyebrow { margin: 0 0 0.3rem; color: var(--cr-lilac); }
+  .latest-when { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cr-lantern); margin: 0 0 0.15rem; }
+  .latest-what { font-size: 1.15rem; line-height: 1.4; color: var(--cr-head-dark); margin: 0; }
+  a.sky-card:hover { border-color: var(--cr-lilac); }
+  a.sky-card:focus-visible { outline: 2px solid var(--cr-lantern); outline-offset: 3px; }
+  .countdown { border-top-color: var(--cr-lantern); display: grid; grid-template-columns: auto 1fr; gap: 0 1rem; align-items: center; }
+  .cd-num {
+    grid-row: span 3;
+    font-family: var(--cr-display);
+    font-weight: 700;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--cr-lantern);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .cd-num.today { font-size: 2.4rem; }
+  .cd-unit { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cr-lilac); margin: 0; }
+  .cd-what { font-size: 1.1rem; color: var(--cr-head-dark); font-weight: 700; margin: 0; line-height: 1.3; }
+  .cd-when { font-size: 0.9rem; color: var(--cr-body-dark); margin: 0; }
+  .sky .opening-note { color: var(--cr-body-dark); }
+  .intro { font-size: 1.1rem; margin: 1.6rem 0 0; }
+  @media (min-width: 640px) {
+    .sky h1 { font-size: 3.2rem; }
+    .sky .hand { font-size: 2.3rem; }
+    .sky-cards { grid-template-columns: 1.4fr 1fr; }
+  }
+
+  /* ---- 7.2 THE PATH ------------------------------------------------------- */
+  .path {
+    position: relative;
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 1.2rem 0 0;
   }
+  .path svg.trail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .trail .dim { fill: none; stroke: var(--faint); stroke-width: 3; stroke-dasharray: 2 7; stroke-linecap: round; }
+  .trail .lit { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .trail .print { fill: var(--accent); opacity: 0.28; }
+  .trail .walker { fill: var(--cr-lantern); stroke: var(--bg); stroke-width: 2; }
+  .foot {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.6rem 1fr;
+    align-items: start;
+    min-height: 4.6rem;
+    padding: 0 0 1.1rem;
+  }
+  .stone {
+    position: relative;
+    z-index: 1;
+    justify-self: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 46% 54% 50% 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--cr-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: var(--card);
+    color: var(--muted);
+    border: 2px solid var(--faint);
+  }
+  .foot:nth-of-type(odd) .stone { transform: translateX(-0.9rem); }
+  .foot:nth-of-type(even) .stone { transform: translateX(0.9rem); }
+  .foot.reached .stone { background: var(--cr-purple); border-color: var(--cr-purple); color: #fff; box-shadow: 0 0 14px rgba(123, 63, 191, 0.55); }
+  .foot.on .stone { background: var(--card); border-color: var(--cr-lantern); color: var(--head); }
+  .foot.on .stone::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 3px solid var(--cr-lantern);
+    opacity: 0.6;
+    animation: halo 2.4s ease-in-out infinite;
+  }
+  @keyframes halo {
+    0%, 100% { transform: scale(0.92); opacity: 0.25; }
+    50% { transform: scale(1.12); opacity: 0.75; }
+  }
+  .foot.ahead .stone { opacity: 0.75; }
+  .foot-title { font-size: 1.12rem; font-weight: 800; color: var(--head); margin: 0.3rem 0 0.1rem; }
+  .foot.ahead .foot-title { color: var(--muted); }
+  .foot-state {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 0.05rem 0.55rem;
+    margin-left: 0.4rem;
+    vertical-align: 0.15em;
+    border: 1px solid var(--faint);
+    color: var(--muted);
+  }
+  .foot.reached .foot-state { border-color: var(--accent); color: var(--accent); }
+  .foot.on .foot-state { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .foot-line { margin: 0; }
+
+  /* ---- 7.3 THE STONES ----------------------------------------------------- */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0 1rem; }
+  .filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .stones { list-style: none; padding: 0; margin: 0; }
   .moment {
     position: relative;
-    padding: 0 0 1.3rem 2.2rem;
+    padding: 0 0 1.1rem 2.4rem;
+    scroll-margin-top: 4rem;
   }
   .moment::before {
-    /* the line from this moment down to the next */
     content: "";
     position: absolute;
-    left: 0.55rem;
-    top: 0.5rem;
-    bottom: -0.5rem;
-    border-left: 2px solid var(--accent);
+    left: 0.62rem;
+    top: 0.9rem;
+    bottom: -0.2rem;
+    border-left: 3px solid var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
   }
   .moment::after {
-    /* the moment's own dot */
     content: "";
     position: absolute;
-    left: 0.2rem;
-    top: 0.42rem;
-    width: 0.85rem;
-    height: 0.85rem;
+    left: 0.15rem;
+    top: 0.55rem;
+    width: 1.05rem;
+    height: 1.05rem;
     border-radius: 50%;
     background: var(--accent);
-    border: 2px solid var(--bg);
+    border: 3px solid var(--bg);
     box-shadow: 0 0 0 2px var(--accent);
   }
+  .moment.ahead::before { border-left: 3px dashed var(--faint); box-shadow: none; }
+  .moment.ahead::after { background: var(--bg); border: 3px solid var(--cr-lantern); box-shadow: 0 0 8px rgba(244, 200, 106, 0.6); }
+  .stones li:last-child.moment::before { display: none; }
+  .stones.continues li:last-child.moment::before { display: block; }
+  .moment.waiting .stone-card { transform: translateY(14px); opacity: 0.55; }
+  .stone-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--cr-radius);
+    box-shadow: 0 2px 10px rgba(27, 20, 36, 0.06);
+    transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+  }
+  .moment.ahead .stone-card { border-style: dashed; background: transparent; }
+  .moment:target .stone-card, .moment.open .stone-card { border-color: var(--accent); }
+  .stone-head {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0.75rem 0.95rem 0.4rem;
+    cursor: pointer;
+    border-radius: var(--cr-radius);
+  }
   .when {
-    font-family: var(--cr-text);
     font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--accent);
-    margin: 0 0 0.1rem;
+    margin: 0 0 0.15rem;
   }
-  .what {
-    color: var(--head);
-    margin: 0;
-    overflow-wrap: break-word;
+  .moment.ahead .when { color: var(--muted); }
+  .what { color: var(--head); margin: 0; overflow-wrap: break-word; }
+  .moment.ahead .what { color: var(--ink); }
+  .stone-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; padding: 0.1rem 0.95rem 0.75rem; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--cr-deep);
+    background: var(--cr-pale);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem 0.12rem 0.2rem;
+    cursor: pointer;
   }
-
-  /* Now: where the line stops being what happened. */
+  .chip b {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--cr-purple);
+    color: #fff;
+    font-size: 0.75rem;
+  }
+  .chip:hover { border-color: var(--cr-purple); }
+  .badge { font-size: 0.8rem; font-weight: 800; color: var(--muted); }
+  .badge + .badge::before { content: "· "; }
+  .stone-open { border-top: 1px solid var(--line); padding: 0.8rem 0.95rem 0.9rem; }
+  .stone-open[hidden] { display: none; }
+  .stone-open .notes-list { margin: 0.6rem 0 0; }
+  .share-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.8rem; font-size: 0.9rem; }
+  .share-row .status { color: var(--muted); }
   .now-mark {
     position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.1rem 0.7rem;
-    padding: 0.1rem 0 1.4rem 2.2rem;
+    padding: 0.2rem 0 1.4rem 2.4rem;
   }
   .now-mark::before {
     content: "";
     position: absolute;
-    left: 0.55rem;
-    top: 0.5rem;
+    left: 0.62rem;
+    top: 0.6rem;
     bottom: 0;
-    border-left: 2px dashed var(--faint);
+    border-left: 3px dashed var(--faint);
   }
+  .now-mark.last::before { display: none; }
   .now-dot {
     position: absolute;
-    left: 0;
-    top: 0.2rem;
-    width: 1.25rem;
-    height: 1.25rem;
+    left: -0.05rem;
+    top: 0.25rem;
+    width: 1.45rem;
+    height: 1.45rem;
     border-radius: 50%;
-    background: var(--bg);
-    border: 3px solid var(--accent);
-    box-shadow: 0 0 0 5px var(--accent-soft);
+    background: var(--cr-lantern);
+    box-shadow: 0 0 0 5px rgba(244, 200, 106, 0.3), 0 0 22px 6px rgba(244, 200, 106, 0.55);
+    animation: glow 3s ease-in-out infinite;
   }
-  .now-word {
-    font-family: var(--cr-display);
-    font-size: 1.35rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--head);
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(244, 200, 106, 0.25), 0 0 16px 4px rgba(244, 200, 106, 0.4); }
+    50% { box-shadow: 0 0 0 7px rgba(244, 200, 106, 0.35), 0 0 28px 9px rgba(244, 200, 106, 0.6); }
   }
+  .now-word { font-family: var(--cr-display); font-size: 1.4rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--head); }
   .now-date { color: var(--muted); font-size: 0.95rem; }
-  .now-mark.last { padding-bottom: 0; }
-  .now-mark.last::before { display: none; }
-
-  /* What's ahead: lighter, dashed, the dots still open. */
   .ahead-mark {
     position: relative;
     font-family: var(--cr-text);
@@ -125,74 +343,312 @@
     text-transform: uppercase;
     color: var(--muted);
     margin: 0;
-    padding: 0 0 0.9rem 2.2rem;
+    padding: 0 0 0.9rem 2.4rem;
   }
-  .ahead-mark::before {
-    content: "";
-    position: absolute;
-    left: 0.55rem;
-    top: 0;
-    bottom: 0;
-    border-left: 2px dashed var(--faint);
-  }
-  .ahead .moment::before { border-left: 2px dashed var(--faint); }
-  .ahead .moment::after {
-    background: var(--bg);
-    border: 2px dashed var(--muted);
-    box-shadow: none;
-  }
-  .ahead .when { color: var(--muted); }
-  .ahead .what { color: var(--ink); }
-  .moments .moment:last-child { padding-bottom: 0; }
-  .moments .moment:last-child::before { display: none; }
-  .past.continues .moment:last-child { padding-bottom: 1.3rem; }
-  .past.continues .moment:last-child::before { display: block; }
+  .ahead-mark::before { content: ""; position: absolute; left: 0.62rem; top: 0; bottom: 0; border-left: 3px dashed var(--faint); }
 
-  /* This week, in members' words. */
-  .week-form {
+  /* Taps and a short note: shared by the stones and the lanterns. */
+  .taps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.2rem 0 0.4rem; }
+  .tap {
+    position: relative;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--cr-deep);
+    background: var(--cr-pale);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+  }
+  .tap:hover { border-color: var(--cr-purple); }
+  .tap:disabled { opacity: 0.6; cursor: default; }
+  .tap .n { display: inline-block; margin-left: 0.35rem; min-width: 1ch; font-variant-numeric: tabular-nums; }
+  .tap .n:empty { display: none; }
+  .tap .n.bump { animation: bump 0.5s ease-out; }
+  @keyframes bump { 30% { transform: scale(1.5); } }
+  .short-form textarea { min-height: 4rem; }
+  .short-form label.care { font-weight: 400; color: var(--ink); }
+  .short-form label.care strong { color: var(--head); }
+  .notes-list { list-style: none; margin: 0; padding: 0; }
+  .note { padding: 0.55rem 0; border-bottom: 1px solid var(--line); }
+  .note:last-child { border-bottom: 0; }
+  .note-meta { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.1rem; }
+  .note-meta strong { color: var(--head); }
+  .note-text { white-space: pre-line; overflow-wrap: break-word; margin: 0; color: var(--head); }
+  .note.redacted .note-text { display: block; background: var(--cr-night); color: var(--cr-head-dark); border-radius: 6px; padding: 0.35rem 0.7rem; font-weight: 700; }
+  .notes-quiet { color: var(--muted); font-style: italic; margin: 0.4rem 0 0; }
+
+  /* ---- 7.4 THE GARDEN ----------------------------------------------------- */
+  .tally { font-size: 1.15rem; font-weight: 700; color: var(--head); margin: 1rem 0 0.3rem; }
+  .tally:empty { display: none; }
+  .legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; padding: 0; margin: 0.4rem 0 0.8rem; font-size: 0.9rem; color: var(--muted); }
+  .legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .legend svg { width: 1.4rem; height: 1.9rem; }
+  .evidence {
+    font-size: 0.95rem;
+    background: var(--card);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 var(--cr-radius) var(--cr-radius) 0;
+    padding: 0.6rem 0.9rem;
+    margin: 0.6rem 0 1.2rem;
+  }
+  .bed {
     background: var(--card);
     border: 1px solid var(--line);
     border-top: var(--cr-edge);
     border-radius: var(--cr-radius);
-    padding: 0.4rem 1rem 1rem;
-    margin: 1rem 0 1.4rem;
+    padding: 0.9rem 0.8rem 0;
+    margin: 0 0 0.9rem;
+    overflow: hidden;
   }
-  .week-form label.ask {
-    font-family: var(--cr-display);
-    font-size: 1.2rem;
-    font-weight: 600;
+  .bed h3 { font-size: 1.2rem; margin: 0 0.2rem 0.3rem; }
+  .bed h4 { font-family: var(--cr-text); font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0.4rem 0.2rem 0.1rem; }
+  .row { list-style: none; display: flex; flex-wrap: wrap; gap: 0 0.1rem; padding: 0; margin: 0; }
+  .soil {
+    height: 0.9rem;
+    margin: 0.2rem -0.8rem 0;
+    background: linear-gradient(var(--cr-pale), color-mix(in srgb, var(--cr-pale) 60%, var(--cr-lilac)));
+  }
+  .applies { font-size: 0.88rem; color: var(--muted); margin: 0.6rem 0.2rem 0.8rem; }
+  button.plant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 3.3rem;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 800;
     color: var(--head);
-    margin-top: 0.6rem;
+    background: none;
+    border: 0;
+    border-radius: 10px;
+    padding: 0.15rem 0 0.25rem;
+    cursor: pointer;
   }
-  .week-form .care { font-size: 0.95rem; color: var(--ink); margin: 0 0 0.4rem; }
-  .week-list { list-style: none; margin: 0; padding: 0; }
-  .note { padding: 0.7rem 0; border-bottom: 1px solid var(--line); }
-  .note:last-child { border-bottom: 0; }
-  .note-meta { font-size: 0.88rem; color: var(--muted); margin: 0 0 0.15rem; }
-  .note-meta strong { color: var(--head); }
-  .note-text { white-space: pre-line; overflow-wrap: break-word; margin: 0; color: var(--head); }
-  /* A note the keepers have redacted: a dark bar with those words. */
-  .note.redacted .note-text {
-    display: block;
-    background: var(--cr-night);
-    color: var(--cr-head-dark);
-    border-radius: 6px;
-    padding: 0.35rem 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
-  .notes-quiet { color: var(--muted); font-style: italic; margin: 0; }
-  .kept { font-size: 0.95rem; }
+  button.plant:hover { background: var(--accent-soft); }
+  .plant svg { width: 2.5rem; height: 3.5rem; display: block; overflow: visible; }
+  .p-ground { fill: color-mix(in srgb, var(--cr-lilac) 55%, var(--card)); }
+  .p-seed { fill: var(--cr-quiet); }
+  .p-crack { fill: none; stroke: var(--card); stroke-width: 0.9; }
+  .p-stem { fill: none; stroke: var(--cr-leaf); stroke-width: 2.4; stroke-linecap: round; }
+  .p-leaf, .p-bud { fill: var(--cr-leaf); stroke: rgba(30, 24, 40, 0.35); stroke-width: 0.6; }
+  .p-petal { fill: var(--cr-petal); stroke: rgba(30, 24, 40, 0.25); stroke-width: 0.5; }
+  .p-heart { fill: var(--cr-lantern); }
+  .p-gold { fill: var(--cr-lantern); stroke: rgba(30, 24, 40, 0.35); stroke-width: 0.5; }
+  .p-stem, .p-leaf, .p-bud, .p-petal, .p-heart, .p-gold, .p-seed { transform-box: fill-box; }
+  .p-stem { transform-origin: 50% 100%; }
+  .p-leaf { transform-origin: 50% 100%; }
+  .p-bud, .p-petal, .p-heart, .p-gold, .p-seed { transform-origin: 50% 50%; }
+  .bed.grow .p-stem { animation: grow-stem 0.7s ease-out both; animation-delay: calc(var(--i) * 70ms); }
+  .bed.grow .p-leaf, .bed.grow .p-gold { animation: pop 0.45s cubic-bezier(.3,1.6,.6,1) both; animation-delay: calc(var(--i) * 70ms + 0.45s); }
+  .bed.grow .p-bud, .bed.grow .p-seed { animation: pop 0.45s cubic-bezier(.3,1.6,.6,1) both; animation-delay: calc(var(--i) * 70ms + 0.6s); }
+  .bed.grow .p-petal, .bed.grow .p-heart { animation: bloom 0.6s ease-out both; animation-delay: calc(var(--i) * 70ms + 0.75s); }
+  @keyframes grow-stem { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes bloom { from { transform: scale(0) rotate(-40deg); } to { transform: scale(1) rotate(0); } }
   @media (prefers-color-scheme: dark) {
+    .soil { background: linear-gradient(var(--cr-deep), #3a1b5c); }
+    .chip { color: var(--cr-head-dark); background: var(--cr-deep); }
+    .chip b { background: var(--cr-lilac); color: var(--cr-night); }
+    .chip:hover { border-color: var(--cr-lilac); }
+    .tap { color: var(--cr-head-dark); background: var(--cr-deep); }
+    .tap:hover { border-color: var(--cr-lilac); }
     .note.redacted .note-text { background: #000; }
   }
-  @media (min-width: 600px) {
-    h1 { font-size: 2.3rem; }
+
+  /* One standard, opened: CLERO's words, each reading, the stones that moved
+     it, and a reading of your own. */
+  dialog.standard {
+    border: 0;
+    border-top: var(--cr-edge);
+    border-radius: var(--cr-radius);
+    padding: 0;
+    width: min(40rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 2rem);
+    background: var(--bg);
+    color: var(--ink);
+  }
+  dialog.standard::backdrop { background: rgba(27, 20, 36, 0.6); }
+  .std-in { padding: 1rem 1.1rem 1.2rem; }
+  .std-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .std-where { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.2rem; }
+  .std-num { font-size: 1.4rem; margin: 0; }
+  .std-words { font-size: 1.1rem; color: var(--head); margin: 0.4rem 0 0.2rem; }
+  .std-small { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.9rem; }
+  .std-in h3 { font-size: 1.1rem; margin: 1.2rem 0 0.5rem; }
+  .reading { background: var(--card); border: 1px solid var(--line); border-radius: var(--cr-radius); padding: 0.8rem 0.95rem; margin: 0 0 0.7rem; }
+  .reading-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; margin: 0 0 0.3rem; }
+  .reading-who { font-weight: 800; color: var(--head); }
+  .reading-kind { font-size: 0.82rem; color: var(--muted); }
+  .reading-state { font-size: 0.8rem; font-weight: 800; color: var(--cr-deep); background: var(--cr-pale); border-radius: 999px; padding: 0.05rem 0.6rem; }
+  .reading-sum { color: var(--head); margin: 0 0 0.5rem; }
+  .reading dl { margin: 0; }
+  .reading dt { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.04em; color: var(--accent); margin: 0.45rem 0 0.05rem; }
+  .reading dd { margin: 0; overflow-wrap: anywhere; }
+  .moved { list-style: none; padding: 0; margin: 0; }
+  .moved li { margin: 0 0 0.4rem; }
+  .moved a { font-weight: 700; }
+  .unread { color: var(--muted); font-style: italic; }
+  .words-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.3rem 0 0.2rem; }
+  .words-row button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .reading-form .pair { display: grid; gap: 0 0.8rem; }
+  @media (min-width: 560px) { .reading-form .pair { grid-template-columns: 1fr 1fr; } }
+  .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+  .form-actions button[type=submit] { margin-top: 0.8rem; }
+  .form-actions .plain-btn { margin-top: 0.8rem; }
+  .std-close { flex: none; }
+  @media (prefers-color-scheme: dark) {
+    .reading-state { color: var(--cr-head-dark); background: var(--cr-deep); }
+  }
+
+  /* ---- 7.5 THE LANTERNS --------------------------------------------------- */
+  .lantern-field {
+    position: relative;
+    height: 23rem;
+    overflow: hidden;
+    border-radius: var(--cr-radius);
+    background: radial-gradient(ellipse at 50% 120%, #4A2275 0%, #2A1F38 55%, #1B1424 100%);
+    margin: 1rem 0 0.9rem;
+  }
+  .lanterns { list-style: none; margin: 0; padding: 0; }
+  .lantern {
+    position: absolute;
+    top: 100%;
+    left: var(--x);
+    width: min(13rem, 62%);
+    animation: drift var(--dur) linear var(--delay) infinite;
+    will-change: transform, opacity;
+  }
+  .lantern-body {
+    position: relative;
+    background: radial-gradient(ellipse at 50% 35%, #5C2E8E 0%, #4A2275 70%);
+    border: 1px solid rgba(244, 200, 106, 0.55);
+    border-radius: 42% 42% 30% 30% / 30% 30% 22% 22%;
+    box-shadow: 0 0 22px rgba(244, 200, 106, 0.35), inset 0 0 18px rgba(244, 200, 106, 0.18);
+    padding: 0.8rem 0.9rem 0.7rem;
+    text-align: center;
+  }
+  .lantern-body::before, .lantern-body::after {
+    content: "";
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    height: 5px;
+    background: #2A1F38;
+    border: 1px solid rgba(244, 200, 106, 0.5);
+    border-radius: 3px;
+  }
+  .lantern-body::before { top: -4px; }
+  .lantern-body::after { bottom: -4px; }
+  .lantern-words { font-family: var(--cr-hand); font-weight: 600; font-size: 1.3rem; line-height: 1.15; color: var(--cr-lantern); margin: 0; overflow-wrap: break-word; }
+  .lantern-who { font-size: 0.78rem; color: var(--cr-body-dark); margin: 0.3rem 0 0; }
+  .lantern.redacted .lantern-body { background: #000; }
+  .lantern.redacted .lantern-words { font-family: var(--cr-text); font-size: 0.95rem; font-weight: 700; color: var(--cr-head-dark); }
+  .lantern-field:hover .lantern, .lantern-field:focus-within .lantern { animation-play-state: paused; }
+  @keyframes drift {
+    0% { transform: translateY(0) rotate(-1.5deg); opacity: 0; }
+    8% { opacity: 1; }
+    50% { transform: translateY(calc(-11.5rem - 50%)) rotate(1.5deg); }
+    82% { opacity: 1; }
+    100% { transform: translateY(calc(-23rem - 100%)) rotate(-1deg); opacity: 0; }
+  }
+  .field-empty {
+    position: absolute;
+    inset: auto 1rem 1.2rem;
+    text-align: center;
+    font-family: var(--cr-hand);
+    font-size: 1.5rem;
+    color: var(--cr-lantern);
+    margin: 0;
+  }
+  .week-form {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--cr-lantern);
+    border-radius: var(--cr-radius);
+    padding: 0.4rem 1rem 1rem;
+    margin: 0 0 1.2rem;
+  }
+  .week-form label.ask { font-family: var(--cr-display); font-size: 1.2rem; font-weight: 600; color: var(--head); margin-top: 0.6rem; }
+  .week-form .care { font-size: 0.95rem; color: var(--ink); margin: 0 0 0.4rem; }
+  .week-taps { margin: 0.2rem 0 1.2rem; }
+  .week-taps p { margin: 0 0 0.4rem; color: var(--muted); font-size: 0.95rem; }
+
+  /* ---- 7.6 THE RIPPLES ---------------------------------------------------- */
+  .map-grid { display: grid; gap: 1rem; margin-top: 1rem; }
+  @media (min-width: 720px) { .map-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+  .ripples { width: 100%; max-width: 26rem; margin: 0 auto; display: block; overflow: visible; }
+  .ring { fill: none; stroke: var(--faint); stroke-width: 1.5; }
+  .ring.sel { stroke: var(--accent); stroke-width: 3; }
+  .ring-label { font-family: var(--cr-text); font-size: 10px; font-weight: 800; fill: var(--muted); letter-spacing: 0.04em; }
+  .ring-label.sel { fill: var(--accent); }
+  .wave { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: 0; transform-origin: 160px 160px; animation: wave 6s ease-out infinite; }
+  .wave:nth-of-type(2) { animation-delay: 2s; }
+  .wave:nth-of-type(3) { animation-delay: 4s; }
+  @keyframes wave {
+    0% { transform: scale(0.05); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 0; }
+  }
+  .drop { fill: var(--cr-lantern); stroke: var(--cr-night); stroke-width: 1; }
+  .drop-pulse { fill: var(--cr-lantern); opacity: 0.4; transform-origin: 160px 160px; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(2.1); opacity: 0; } }
+  .drop-label { font-family: var(--cr-text); font-size: 10.5px; font-weight: 800; fill: var(--head); }
+  .ring-label, .drop-label { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+  .ladder { list-style: none; padding: 0; margin: 0; }
+  .ladder li { margin: 0 0 0.35rem; }
+  .rung {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.6rem;
+    font: inherit;
+    text-align: left;
+    color: var(--head);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+  }
+  .rung[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); font-weight: 800; }
+  .rung .count { font-size: 0.9rem; color: var(--muted); white-space: nowrap; }
+  .rung .here { font-size: 0.78rem; font-weight: 800; color: var(--cr-deep); background: var(--cr-lantern); border-radius: 999px; padding: 0 0.5rem; margin-left: 0.4rem; }
+  .leros { margin: 1rem 0 0; }
+  .leros h4 { font-family: var(--cr-text); font-size: 0.85rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0.9rem 0 0.3rem; }
+  .leros ul { list-style: none; padding: 0; margin: 0; }
+  .lero { padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
+  .lero:last-child { border-bottom: 0; }
+  .lero a { font-weight: 800; }
+  .lero .lero-what { font-size: 0.92rem; margin: 0.1rem 0 0; }
+  .lero .lero-standing { font-size: 0.82rem; color: var(--muted); margin: 0.05rem 0 0; }
+  .lero.ours { background: color-mix(in srgb, var(--cr-lantern) 22%, var(--card)); border-radius: 10px; padding: 0.55rem 0.7rem; border: 0; }
+  .lero.ours a { color: var(--head); }
+  .map-how { font-size: 0.95rem; color: var(--muted); margin: 1rem 0 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .foot.on .stone::after, .now-dot, .wave, .drop-pulse { animation: none; }
+    .wave { display: none; }
+    .moment.waiting .stone-card { transform: none; opacity: 1; }
+    .stone-card { transition: none; }
+    .bed.grow .p-stem, .bed.grow .p-leaf, .bed.grow .p-gold, .bed.grow .p-bud, .bed.grow .p-seed, .bed.grow .p-petal, .bed.grow .p-heart { animation: none; }
+    .tap .n.bump { animation: none; }
+    .lantern-field { height: auto; min-height: 8rem; padding: 1rem 0.6rem; }
+    .lanterns { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+    .lantern { position: static; animation: none; width: min(13rem, 100%); }
   }
 </style>
 </head>
 <body>
-<header class="masthead">
+<div class="markbar" id="markbar">
+  <div class="wrap">
+    <a href="#top"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+    <span class="here">Where we are now</span>
+  </div>
+</div>
+
+<header class="masthead" id="top">
   <div class="wrap">
     <div class="brand-block">
       <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
@@ -203,27 +659,86 @@
       <a href="presentation.html">The presentation</a>
       <a href="meet.html">Meet the LERO</a>
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
-      <a href="where-we-stand.html">Where we stand</a>
       <a href="where-we-are-now.html" aria-current="page">Where we are now</a>
       <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
     </nav>
   </div>
 </header>
 
-<main class="wrap">
-  <h1>Where we are now</h1>
-  <p class="intro">One link, always current: what has happened at Community Recovery, what is ahead, and how the week has been, in members&rsquo; own words.</p>
+<!-- 7.1 THE SKY -->
+<section class="sky" id="sky" aria-labelledby="page-title">
+  <canvas id="sky-canvas" aria-hidden="true"></canvas>
+  <div class="wrap sky-in">
+    <h1 id="page-title">Where we are now</h1>
+    <p class="hand">and where we&rsquo;re walking next</p>
+    <div class="sky-cards">
+      <a class="sky-card latest" id="latest" href="#timeline" hidden>
+        <p class="eyebrow">Latest from Community Recovery</p>
+        <p class="latest-when" id="latest-when"></p>
+        <p class="latest-what" id="latest-what"></p>
+      </a>
+      <div class="sky-card countdown" id="countdown" role="group" aria-labelledby="cd-what" hidden>
+        <p class="cd-num" id="cd-num"></p>
+        <p class="cd-unit" id="cd-unit"></p>
+        <p class="cd-what" id="cd-what"></p>
+        <p class="cd-when" id="cd-when"></p>
+      </div>
+    </div>
+    <p class="opening-note" id="sky-note" role="status">Opening the journey&hellip;</p>
+  </div>
+</section>
 
-  <section id="timeline" aria-labelledby="timeline-title">
-    <h2 id="timeline-title">The timeline</h2>
-    <div class="timeline" id="line"></div>
-    <p class="opening-note" id="timeline-note" role="status">Opening the timeline&hellip;</p>
+<main class="wrap">
+  <p class="intro">Community Recovery&rsquo;s one progress page, read live from its own place on the beach: the path it is walking, its story so far, where it stands against CLERO&rsquo;s 33 standards, members&rsquo; own words, and its place on the map.</p>
+
+  <!-- 7.2 THE PATH -->
+  <section id="footsteps" aria-labelledby="path-title">
+    <p class="eyebrow">The path</p>
+    <h2 id="path-title">Six footsteps on the journey</h2>
+    <p class="section-lead">From first gathering to maturity, towards CLERO&rsquo;s standards. Lit where it has been walked.</p>
+    <ol class="path" id="path"></ol>
+    <p class="opening-note" id="path-note" role="status">Opening the path&hellip;</p>
   </section>
 
+  <!-- 7.3 THE STONES -->
+  <section id="timeline" aria-labelledby="timeline-title">
+    <p class="eyebrow">The stones</p>
+    <h2 id="timeline-title">The story so far</h2>
+    <p class="section-lead">Every step, oldest first. Open a stone to cheer it, say something about it, or send it to someone. The chips are the standards it moved.</p>
+    <div class="filters" role="group" aria-label="Show">
+      <button type="button" class="plain-btn" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="plain-btn" data-filter="past" aria-pressed="false">What&rsquo;s happened</button>
+      <button type="button" class="plain-btn" data-filter="ahead" aria-pressed="false">What&rsquo;s ahead</button>
+    </div>
+    <div id="line"></div>
+    <p class="opening-note" id="timeline-note" role="status">Opening the story&hellip;</p>
+  </section>
+
+  <!-- 7.4 THE GARDEN -->
+  <section id="garden" aria-labelledby="garden-title">
+    <p class="eyebrow">The garden</p>
+    <h2 id="garden-title">Growing towards the standards</h2>
+    <p class="section-lead">CLERO&rsquo;s 33 national standards for lived experience recovery organisations, each a plant drawn from every open reading of it in Community Recovery&rsquo;s place. Tap a plant to read the standard, what each reader says, and to add your own reading.</p>
+    <p class="tally" id="tally"></p>
+    <ul class="legend" id="legend" aria-label="What the plants show"></ul>
+    <p class="evidence">sandpiper&rsquo;s reading is an evidence reading, written from what Community Recovery has said and done in public. Members&rsquo; own readings matter most: each one adds a gold leaf to its plant.</p>
+    <div id="beds"></div>
+    <p class="opening-note" id="garden-note" role="status">Opening the readings&hellip;</p>
+    <p class="std-small">What meeting each standard looks like is CLERO&rsquo;s to say, in <a href="https://www.clero.co.uk/clero-standards">CLERO&rsquo;s own document</a>. Readings can also be written on <a href="https://pscale-commons.github.io/community-recovery/standards.html">the standards page</a>.</p>
+  </section>
+
+  <dialog class="standard" id="standard" aria-labelledby="std-num">
+    <div class="std-in" id="std-in"></div>
+  </dialog>
+
+  <!-- 7.5 THE LANTERNS -->
   <section id="week" aria-labelledby="week-title">
+    <p class="eyebrow">The lanterns</p>
     <h2 id="week-title">This week, in members&rsquo; words</h2>
-    <p class="section-lead">What members have said about their week in the last thirty days, newest first.</p>
-    <div id="week-notes" aria-live="polite"></div>
+    <p class="section-lead">What members have said in the last thirty days, newest first. Hold still on a lantern to read it.</p>
+    <div class="lantern-field" id="lantern-field">
+      <ul class="lanterns" id="lanterns" aria-label="Members&rsquo; words"></ul>
+    </div>
     <p class="opening-note" id="week-note" role="status">Opening the room&hellip;</p>
 
     <form class="week-form" id="say" novalidate>
@@ -234,34 +749,63 @@
       <input id="week-who" name="who" maxlength="40" autocomplete="name">
       <label class="trap" for="week-web" aria-hidden="true">Leave this empty</label>
       <input class="trap" id="week-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <button type="submit">Post</button>
+      <button type="submit">Light a lantern</button>
       <p class="form-status" role="status"></p>
     </form>
+    <div class="week-taps">
+      <p>Or, for this week as a whole:</p>
+      <div class="taps" id="week-taps"></div>
+      <p class="form-status" id="week-taps-status" role="status"></p>
+    </div>
+  </section>
+
+  <!-- 7.6 THE RIPPLES -->
+  <section id="map" aria-labelledby="map-title">
+    <p class="eyebrow">The ripples</p>
+    <h2 id="map-title">Get your LERO on the map</h2>
+    <p class="section-lead">Lived experience recovery organisations, read live from the earth beach. Community Recovery is the gold drop at Wellingborough; step up a ring to see the others.</p>
+    <div class="map-grid">
+      <svg class="ripples" id="ripples" viewBox="0 0 320 320" role="img" aria-label="Rings spreading from Wellingborough"></svg>
+      <div>
+        <ul class="ladder" id="ladder" aria-label="From the UK down to Wellingborough"></ul>
+        <div class="leros" id="leros" aria-live="polite"></div>
+      </div>
+    </div>
+    <p class="opening-note" id="map-note" role="status">Opening the map&hellip;</p>
+    <p class="map-how" id="map-how">To put another LERO on the map, or to correct one, say so in weft&rsquo;s room, pool:weft, on <a href="https://beach.happyseaurchin.com">the beach</a>. <a href="https://happyseaurchin.com/globe?layer=lero#3,1,1,8,2,1">See the same LEROs on the globe</a>.</p>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
     <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="#say" id="to-say">Leave a note in the room.</a></p>
-    <p class="where">This page reads journey and the room pool:journey, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
-    <p>The only thing it writes is a note you choose to leave.</p>
+    <p class="where">This page reads journey, the room pool:journey, spine:standards and every standards notebook (the six footsteps are in standards:sandpiper at 9), live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>, and the map from lero:earth on the earth beach.</p>
+    <p>It writes only what you choose: a note, a cheer, or your own reading of a standard in your own notebook.</p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
-<script src="beach.js?v=2026-10-14a"></script>
+<script src="beach.js?v=2026-10-14b"></script>
 <script>
 (function () {
-  // Where Community Recovery is now, read live from its own place: the
-  // timeline in the block 'journey' (each entry's underscore is what
-  // happened, position 1 when, position 2 'past' or 'ahead'), and members'
-  // own words about their week in the room pool:journey.
-  var JOURNEY = 'journey';
-  var ROOM = 'pool:journey';
-  var DAYS = 30;
-  var REFRESH_MS = 30000;
-  var REDACTED = 'Redacted by the keepers';
+  'use strict';
+  // Community Recovery's one progress page. Everything is read live from its
+  // place: the journey block and its room pool:journey, spine:standards with
+  // every standards:<name> notebook (the six footsteps in sandpiper's at 9),
+  // function:standards for the three words, and lero:earth on the earth beach.
+  var JOURNEY = 'journey', ROOM = 'pool:journey', SPINE = 'spine:standards', LAW = 'function:standards';
+  var BOOK = 'standards:sandpiper', EVIDENCE = 'sandpiper';
+  var FAMILIES = ['constitution', 'agreement', 'standards'];   // a person's notebooks, as the standards page makes them
+  var DAYS = 30, REFRESH_MS = 30000, REDACTED = 'Redacted by the keepers';
+  var TAPS = ['Celebrate', 'I was there', 'Tell me more'];
+  var DAVID = 'https://pscale-commons.github.io/community-recovery/standards.html';
+  var PLACE_URL = 'https://beach.happyseaurchin.com/w/community-recovery/.well-known/pscale-beach?block=';
+  var BEACH_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach?block=';
+  var CR_PATH = ['3', '1', '1', '8', '2', '1'];   // where Community Recovery stands in lero:earth, if the listing does not say
+  var STILL = matchMedia('(prefers-reduced-motion: reduce)');
+  var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
   function el(tag, cls, t) {
     var e = document.createElement(tag);
@@ -273,77 +817,164 @@
     for (var i = 1; i < arguments.length; i++) if (arguments[i]) parent.appendChild(arguments[i]);
     return parent;
   }
-
-  // ---- The timeline ---------------------------------------------------------------
-  // An entry is a node whose underscore is text and whose positions 1 and 2
-  // are words. The block grows by append: when 1 to 9 fill, the beach nests
-  // the older entries under "_" and carries on one level deeper, so walk
-  // "_" first, then 1 to 9, to read them oldest to newest.
-  function isMoment(n) {
-    return n && typeof n === 'object' && typeof n._ === 'string' &&
-      (typeof n['1'] === 'string' || typeof n['2'] === 'string');
+  function $(id) { return document.getElementById(id); }
+  function capital(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function text(n) { while (n && typeof n === 'object') n = n._; return typeof n === 'string' ? n : ''; }
+  function at(block, digits) {
+    var n = block;
+    for (var i = 0; i < digits.length; i++) { if (!n || typeof n !== 'object') return undefined; n = n[digits.charAt(i)]; }
+    return n;
   }
-  function moments(node, out) {
-    out = out || [];
+  // An address in the frame, written as the beach writes it: one digit before the point.
+  function dotted(d) { return d.length <= 1 ? d : d.charAt(0) + '.' + d.slice(1); }
+  function undot(s) { return String(s).replace(/\./g, ''); }
+  // A journey address without its leading zeros, so "08" and "008" are one stone after a supernest.
+  function same(a) { return String(a || '').replace(/^0+/, ''); }
+  function today0() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function todayWords() { return new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem('cr:wwan:' + k)); localStorage.setItem('cr:wwan:' + k, JSON.stringify(v)); } catch (e) { return null; } }
+
+  // ---- What the place holds -------------------------------------------------------------
+  var data = { journey: null, room: null, spine: null, law: null, books: [], lero: null };
+  var frame = [], byAddr = {}, moments = [], notes = [];
+
+  // A moment of the journey: its underscore is what happened, 1 when, 2 'past' or
+  // 'ahead', 3 the standards it moved, 4 a link. The block grows by append and
+  // supernests, so walk "_" first, then 1 to 9; the path walked is its address.
+  function isMoment(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && (typeof n['1'] === 'string' || typeof n['2'] === 'string');
+  }
+  function walkMoments(node, path, out) {
     if (!node || typeof node !== 'object') return out;
-    if (node._ && typeof node._ === 'object') moments(node._, out);
+    if (node._ && typeof node._ === 'object') walkMoments(node._, path + '0', out);
     for (var i = 1; i <= 9; i++) {
       var e = node[String(i)];
       if (isMoment(e)) {
         if (e._.trim()) out.push({
+          addr: path + i,
           what: e._.trim(),
           when: typeof e['1'] === 'string' ? e['1'].trim() : '',
-          ahead: typeof e['2'] === 'string' && /^\s*ahead\s*$/i.test(e['2'])
+          ahead: typeof e['2'] === 'string' && /^\s*ahead\s*$/i.test(e['2']),
+          stds: standardsOf(e['3']),
+          link: typeof e['4'] === 'string' && /^https?:\/\//.test(e['4'].trim()) ? e['4'].trim() : ''
         });
       } else if (typeof e === 'string') {
-        if (e.trim()) out.push({ what: e.trim(), when: '', ahead: false });
+        if (e.trim()) out.push({ addr: path + i, what: e.trim(), when: '', ahead: false, stds: [], link: '' });
       } else {
-        moments(e, out);
+        walkMoments(e, path + i, out);
       }
     }
     return out;
   }
-
-  function momentItem(m) {
-    var li = el('li', 'moment');
-    add(li, m.when ? el('p', 'when', m.when) : null, el('p', 'what', m.what));
-    return li;
+  // "1.31 Asset-based; 2.33 The wider community" → the frame's addresses, with their short names.
+  function standardsOf(s) {
+    if (typeof s !== 'string' || /^\d{4}-\d\d-\d\dT/.test(s.trim())) return [];
+    var out = [];
+    s.split(/;\s*/).forEach(function (part) {
+      var m = part.trim().match(/^(\d(?:\.\d{1,2})?)\s*(.*)$/);
+      if (m) out.push({ addr: undot(m[1]), name: m[2].trim() });
+    });
+    return out;
+  }
+  // "20 October 2026" → that day; anything without a day of a month has no date.
+  function dateOf(when) {
+    var m = String(when || '').toLowerCase().match(/(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)\s+(\d{4})/);
+    if (!m || MONTHS.indexOf(m[2]) < 0) return null;
+    return new Date(+m[3], MONTHS.indexOf(m[2]), +m[1]);
   }
 
-  function today() {
-    return new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  function drawTimeline(block) {
-    var all = moments(block);
-    if (!all.length) return false;
-    var past = all.filter(function (m) { return !m.ahead; });
-    var ahead = all.filter(function (m) { return m.ahead; });
-    var line = document.getElementById('line');
-    line.textContent = '';
-    if (past.length) {
-      var ol = el('ol', 'moments past continues');
-      ol.setAttribute('aria-label', 'What has happened, oldest first');
-      past.forEach(function (m) { ol.appendChild(momentItem(m)); });
-      line.appendChild(ol);
+  // The frame: four sections (beds); A and B in clusters, C and D standing alone.
+  function frameOf(spine) {
+    var out = [];
+    byAddr = {};
+    for (var s = 1; s <= 9; s++) {
+      var sec = spine && spine[String(s)];
+      if (!sec || typeof sec !== 'object') continue;
+      var head = text(sec), cut = head.indexOf(' — ');
+      var bed = { addr: String(s), label: cut > 0 ? head.slice(0, cut) : head, applies: cut > 0 ? capital(head.slice(cut + 3)) : '', clusters: [] };
+      var loose = { label: '', items: [] };
+      for (var k = 1; k <= 9; k++) {
+        var child = sec[String(k)];
+        if (typeof child === 'string') loose.items.push(standard(s + '' + k, child, bed.label, ''));
+        else if (child && typeof child === 'object') {
+          var cl = { label: text(child).replace(/\.$/, ''), items: [] };
+          for (var j = 1; j <= 9; j++) if (typeof child[String(j)] === 'string') cl.items.push(standard(s + '' + k + j, child[String(j)], bed.label, cl.label));
+          if (cl.items.length) bed.clusters.push(cl);
+        }
+      }
+      if (loose.items.length) bed.clusters.push(loose);
+      out.push(bed);
     }
-    var now = el('div', 'now-mark' + (ahead.length ? '' : ' last'));
-    var dot = el('span', 'now-dot');
-    dot.setAttribute('aria-hidden', 'true');
-    add(now, dot, el('span', 'now-word', 'Now'), el('span', 'now-date', today()));
-    line.appendChild(now);
-    if (ahead.length) {
-      var head = el('h3', 'ahead-mark', 'What’s ahead');
-      head.id = 'ahead-title';
-      var ol2 = el('ol', 'moments ahead');
-      ol2.setAttribute('aria-labelledby', 'ahead-title');
-      ahead.forEach(function (m) { ol2.appendChild(momentItem(m)); });
-      add(line, head, ol2);
-    }
-    return true;
+    return out;
+  }
+  function standard(addr, t, bed, cluster) {
+    var lines = t.split('\n'), m = lines[0].match(/Standard\s+(\d+)/i);
+    var st = { addr: addr, num: m ? m[1] : '', words: (m ? lines.slice(1) : lines).join(' ').trim(), bed: bed, cluster: cluster };
+    byAddr[addr] = st;
+    return st;
   }
 
-  // ---- This week, in members' words ----------------------------------------------------
+  // ---- Readings ---------------------------------------------------------------------
+  // A reading leads with Spoken, Partly or Not yet. sandpiper's is a node with its
+  // parts beneath; the standards page writes one line, 'Partly. In place: …
+  // Not there yet: … Would show it: …'. An encrypted (gray) one is not open.
+  var HEADS = /\s*(?=(?:In place|Not there yet|What would show it|Would show it|Sources?):)/;
+  function readingOf(node) {
+    if (node == null) return null;
+    if (node && typeof node === 'object' && node['9'] && node['9']._ === 'gray') return null;
+    var t = text(node).trim();
+    var m = t.match(/^(spoken|partly|not yet)\b\s*[—–:.-]?\s*([\s\S]*)$/i);
+    if (!m) return null;
+    var parts = [], summary = m[2];
+    if (node && typeof node === 'object') {
+      for (var i = 1; i <= 8; i++) {
+        var v = node[String(i)];
+        if (typeof v === 'string' && v.trim() && !/^\d{4}-\d\d-\d\dT[\d:.]+Z?$/.test(v.trim())) parts.push(splitPart(v.trim()));
+      }
+    } else {
+      var bits = summary.split(HEADS);
+      summary = /^(In place|Not there yet|What would show it|Would show it|Sources?):/.test(bits[0]) ? '' : bits.shift();
+      bits.forEach(function (b) { if (b.trim()) parts.push(splitPart(b.trim())); });
+    }
+    return { state: m[1].toLowerCase().replace(' ', ''), summary: summary.trim(), parts: parts };
+  }
+  function splitPart(s) {
+    var i = s.indexOf(': ');
+    if (i > 0 && i <= 40) return { label: s.slice(0, i), body: s.slice(i + 2) };
+    return { label: '', body: s };
+  }
+  function readingsAt(addr) {
+    var out = [];
+    data.books.forEach(function (b) {
+      var r = readingOf(at(b.block, addr));
+      if (r) out.push({ who: b.who, name: b.name, reading: r });
+    });
+    return out.sort(function (a, b) {
+      if ((a.who === EVIDENCE) !== (b.who === EVIDENCE)) return a.who === EVIDENCE ? 1 : -1;
+      return a.who.localeCompare(b.who);
+    });
+  }
+  // function:standards 4: whole (in flower) when all who read it say Spoken, half
+  // (growing) where Partly, open (a seed) for Not yet or nobody, split where they differ.
+  function shapeOf(rs) {
+    if (!rs.length) return 'seed';
+    var first = rs[0].reading.state;
+    if (rs.some(function (r) { return r.reading.state !== first; })) return 'split';
+    return first === 'spoken' ? 'flower' : first === 'partly' ? 'sprout' : 'seed';
+  }
+  var SHAPE_WORD = { flower: 'In flower: Spoken', sprout: 'Growing: Partly', seed: 'A seed: Not yet, or not yet read', split: 'Readings differ' };
+  var STATE_WORD = { spoken: 'Spoken', partly: 'Partly', notyet: 'Not yet' };
+
+  // ---- Notes in the room ------------------------------------------------------------------
+  function isTap(n, t) { return n.text.trim() === 'Tap: ' + t; }
+  function anyTap(n) { return /^Tap: /.test(n.text.trim()); }
+  function notesAt(addr) { return notes.filter(function (n) { return same(n.where) === same(addr); }); }
+  function tapCount(list, t) { return list.filter(function (n) { return isTap(n, t); }).length; }
+  var nameNow = '';
+  function signed() {
+    var name = nameNow.replace(/\s+/g, ' ').trim().slice(0, 40);
+    return name ? name + ', a member' : 'a member';
+  }
   function stamp(iso) {
     var d = new Date(iso);
     if (isNaN(d)) return '';
@@ -351,104 +982,1035 @@
     return new Date().toDateString() === d.toDateString() ? 'today, ' + t
       : d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + ', ' + t;
   }
-
   function noteItem(n) {
-    var redacted = n.text.trim() === REDACTED;
-    var li = el('li', 'note' + (redacted ? ' redacted' : ''));
+    var red = n.text.trim() === REDACTED;
+    var li = el('li', 'note' + (red ? ' redacted' : ''));
     var meta = el('p', 'note-meta');
     if (n.who) meta.appendChild(el('strong', null, n.who));
     var w = stamp(n.when);
     if (w) meta.appendChild(document.createTextNode((n.who ? ' · ' : '') + w));
     if (meta.childNodes.length) li.appendChild(meta);
-    li.appendChild(el('p', 'note-text', redacted ? REDACTED : n.text.trim()));
+    li.appendChild(el('p', 'note-text', red ? REDACTED : n.text.trim()));
     return li;
   }
+  // A burst of gold sparks from a button (brand 7.5).
+  function sparks(btn) {
+    if (STILL.matches) return;
+    for (var i = 0; i < 12; i++) {
+      var s = el('span', 'spark');
+      var a = (Math.PI * 2 * i) / 12 + Math.random() * 0.4, r = 26 + Math.random() * 22;
+      s.style.left = (btn.offsetWidth / 2) + 'px';
+      s.style.top = (btn.offsetHeight / 2) + 'px';
+      s.style.setProperty('--dx', Math.round(Math.cos(a) * r) + 'px');
+      s.style.setProperty('--dy', Math.round(Math.sin(a) * r) + 'px');
+      btn.appendChild(s);
+      setTimeout(function (x) { return function () { x.remove(); }; }(s), 800);
+    }
+  }
+  // The three taps for a stone (located at its address) or for the week (unlocated).
+  function tapRow(where, list, status) {
+    var row = el('div', 'taps');
+    TAPS.forEach(function (t) {
+      var b = el('button', 'tap', t);
+      b.type = 'button';
+      var n = el('span', 'n', String(tapCount(list, t) || ''));
+      n.setAttribute('aria-hidden', 'true');
+      b.appendChild(n);
+      b.setAttribute('aria-label', t + (tapCount(list, t) ? ', ' + tapCount(list, t) + ' so far' : ''));
+      b.addEventListener('click', function () {
+        b.disabled = true;
+        sparks(b);
+        n.textContent = String((+n.textContent || 0) + 1);
+        n.classList.remove('bump'); void n.offsetWidth; n.classList.add('bump');
+        Beach.place.note(ROOM, signed(), 'Tap: ' + t, where).then(function () {
+          if (status) status.textContent = 'Thank you. ‘' + t + '’ is in the room.';
+          return refreshRoom(true);
+        }).catch(function () {
+          n.textContent = String(Math.max(0, (+n.textContent || 1) - 1) || '');
+          if (status) status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+        }).then(function () { b.disabled = false; });
+      });
+      row.appendChild(b);
+    });
+    return row;
+  }
 
-  function drawWeek(pool) {
-    var since = Date.now() - DAYS * 24 * 60 * 60 * 1000;
-    var recent = Beach.notes(pool).filter(function (n) {
-      var t = Date.parse(n.when);
-      return !isNaN(t) && t >= since;
-    }).reverse();     // newest first
-    var box = document.getElementById('week-notes');
+  // ---- 7.1 THE SKY ------------------------------------------------------------------------
+  var sky = { progress: 0.35, shown: 0, raf: 0, stars: [], last: 0, visible: true };
+  function drawSkyCards() {
+    var past = moments.filter(function (m) { return !m.ahead; });
+    var latest = past[past.length - 1];
+    if (latest) {
+      $('latest').hidden = false;
+      $('latest').href = '#' + latest.addr;
+      $('latest-when').textContent = latest.when;
+      $('latest-what').textContent = latest.what;
+    } else $('latest').hidden = true;
+    // The next 'ahead' entry that has a date, and how many days until it.
+    var t0 = today0(), next = null, days = 0;
+    moments.forEach(function (m) {
+      if (next || !m.ahead) return;
+      var d = dateOf(m.when);
+      if (d && d >= t0) { next = m; days = Math.round((d - t0) / 864e5); }
+    });
+    var cd = $('countdown');
+    if (next) {
+      cd.hidden = false;
+      var cut = next.what.indexOf(': ');
+      $('cd-num').textContent = days === 0 ? 'Today' : String(days);
+      $('cd-num').classList.toggle('today', days === 0);
+      $('cd-unit').textContent = days === 0 ? '' : days === 1 ? 'day to go' : 'days to go';
+      $('cd-what').textContent = cut > 0 && cut < 60 ? next.what.slice(0, cut) : next.what;
+      $('cd-when').textContent = next.when + (cut > 0 && cut < 60 ? ' · ' + next.what.slice(cut + 2) : '');
+      // The sun's height is the countdown: a little higher each day of the last
+      // fortnight, full on the day.
+      sky.progress = Math.max(0.08, Math.min(1, 1 - days / 14));
+    } else {
+      cd.hidden = true;
+      sky.progress = 0.35;
+    }
+  }
+  function sizeSky() {
+    var c = $('sky-canvas'), r = c.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = Math.round(r.width * dpr);
+    c.height = Math.round(r.height * dpr);
+    sky.dpr = dpr;
+    var n = Math.round(r.width * r.height / 4200);
+    sky.stars = [];
+    for (var i = 0; i < n; i++) sky.stars.push({ x: Math.random(), y: Math.random() * 0.72, r: Math.random() * 1.2 + 0.3, p: Math.random() * Math.PI * 2, s: 0.4 + Math.random() * 1.2 });
+  }
+  function hill(ctx, w, h, base, amp, phase, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    for (var x = 0; x <= w; x += w / 40) ctx.lineTo(x, base - amp * (0.55 + 0.45 * Math.sin(x / w * Math.PI * 2.2 + phase)) * (0.7 + 0.3 * Math.cos(x / w * 5 + phase)));
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function drawSky(t) {
+    var c = $('sky-canvas'), ctx = c.getContext('2d');
+    if (!ctx) return;
+    var w = c.width, h = c.height, d = sky.dpr || 1;
+    ctx.clearRect(0, 0, w, h);
+    // the stars, twinkling slowly
+    sky.stars.forEach(function (s) {
+      var a = STILL.matches ? 0.7 : 0.45 + 0.45 * Math.sin(t / 1000 * s.s + s.p);
+      ctx.fillStyle = 'rgba(243,237,249,' + a.toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(s.x * w, s.y * h, s.r * d, 0, Math.PI * 2); ctx.fill();
+    });
+    var horizon = h - 58 * d, css = w / d;
+    // Salem Hall: a plain hall on the near hill, its windows lit
+    var hw = Math.min(110, Math.max(64, css * 0.15)) * d, hh = hw * 0.42, roof = hw * 0.24;
+    var hx = w * 0.7 - hw / 2, hy = horizon + 14 * d, roofTop = hy - hh - roof;
+    // the sun, rising behind the hall to the height the countdown gives it: hidden
+    // below the hills at the start, clear of the roof on the day
+    var sunX = w * 0.7, sunR = Math.min(34, Math.max(22, css * 0.06)) * d;
+    var sunY = (horizon + sunR) - sky.shown * ((horizon + sunR) - (roofTop - sunR * 1.3));
+    var glow = ctx.createRadialGradient(sunX, sunY, sunR * 0.3, sunX, sunY, sunR * 4.2);
+    glow.addColorStop(0, 'rgba(244,200,106,0.55)');
+    glow.addColorStop(1, 'rgba(244,200,106,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 4.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#F4C86A';
+    ctx.beginPath(); ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2); ctx.fill();
+    // the hills, back and near
+    hill(ctx, w, h, horizon - 6 * d, 30 * d, 1.3, '#4A2275');
+    hill(ctx, w, h, horizon + 12 * d, 18 * d, 3.1, '#2A1F38');
+    ctx.fillStyle = '#120D1A';
+    ctx.beginPath();
+    ctx.moveTo(hx, hy); ctx.lineTo(hx, hy - hh); ctx.lineTo(hx + hw / 2, roofTop); ctx.lineTo(hx + hw, hy - hh); ctx.lineTo(hx + hw, hy);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#F4C86A';
+    for (var i = 0; i < 3; i++) ctx.fillRect(hx + hw * (0.16 + i * 0.27), hy - hh * 0.72, hw * 0.12, hh * 0.32);
+    ctx.fillRect(hx + hw * 0.44, hy - hh * 0.3, hw * 0.12, hh * 0.3);
+    hill(ctx, w, h, horizon + 34 * d, 10 * d, 0.4, '#1B1424');
+  }
+  function skyLoop(t) {
+    sky.raf = 0;
+    if (!sky.visible || document.hidden) return;
+    // one orchestrated moment: the sun climbs to its height, then the stars keep twinkling
+    sky.shown += (sky.progress - sky.shown) * 0.04;
+    if (t - sky.last > 45) { drawSky(t); sky.last = t; }
+    sky.raf = requestAnimationFrame(skyLoop);
+  }
+  function startSky() {
+    if (STILL.matches) { sky.shown = sky.progress; drawSky(0); return; }
+    if (!sky.raf) sky.raf = requestAnimationFrame(skyLoop);
+  }
+
+  // ---- 7.2 THE PATH -----------------------------------------------------------------------
+  var STEP_WORD = { reached: 'Reached', on: 'Under way', ahead: 'Ahead' };
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs) {
+    var n = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    return n;
+  }
+  function drawPath(book) {
+    var node = book && book['9'], steps = [];
+    for (var i = 1; i <= 9; i++) {
+      var t = text(node && node[String(i)]).trim();
+      if (!t) continue;
+      var m = t.match(/^(reached|on|ahead)\b\s*[—–-]?\s*([\s\S]*)$/i);
+      var p = splitPart(m ? m[2] : t);
+      steps.push({ state: m ? m[1].toLowerCase() : 'ahead', title: p.label || p.body, line: p.label ? p.body : '' });
+    }
+    if (!steps.length) return false;
+    var ol = $('path');
+    ol.textContent = '';
+    steps.forEach(function (st, k) {
+      var li = el('li', 'foot ' + st.state);
+      var stone = el('span', 'stone', String(k + 1));
+      stone.setAttribute('aria-hidden', 'true');
+      add(li, stone, add(el('div'), add(el('p', 'foot-title', st.title), el('span', 'foot-state', STEP_WORD[st.state])),
+        st.line ? el('p', 'foot-line', capital(st.line)) : null));
+      ol.appendChild(li);
+    });
+    trail(true);
+    return true;
+  }
+  // The trail winds through the stones; the walked part is lit and draws itself, a
+  // small gold walker going along it to the furthest step under way.
+  var walkAnim = 0;
+  function trail(play) {
+    var ol = $('path'), old = ol.querySelector('svg.trail');
+    if (old) old.remove();
+    var feet = ol.querySelectorAll('.foot');
+    if (!feet.length) return;
+    var box = ol.getBoundingClientRect(), pts = [];
+    Array.prototype.forEach.call(feet, function (f) {
+      var r = f.querySelector('.stone').getBoundingClientRect();
+      pts.push({ x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top, state: f.classList.contains('reached') ? 'reached' : f.classList.contains('on') ? 'on' : 'ahead' });
+    });
+    var d = 'M' + pts[0].x + ' ' + pts[0].y, lastLit = -1;
+    pts.forEach(function (p, i) { if (p.state !== 'ahead') lastLit = i; });
+    var dLit = d;
+    for (var i = 1; i < pts.length; i++) {
+      var a = pts[i - 1], b = pts[i], swing = (i % 2 ? 1 : -1) * 34;
+      var seg = ' C' + (a.x + swing) + ' ' + (a.y + (b.y - a.y) * 0.35) + ' ' + (b.x + swing) + ' ' + (b.y - (b.y - a.y) * 0.35) + ' ' + b.x + ' ' + b.y;
+      d += seg;
+      if (i <= lastLit) dLit += seg;
+    }
+    var svg = svgEl('svg', { 'class': 'trail', 'aria-hidden': 'true', width: box.width, height: box.height });
+    svg.appendChild(svgEl('path', { 'class': 'dim', d: d }));
+    if (lastLit > 0) {
+      var lit = svgEl('path', { 'class': 'lit', d: dLit });
+      svg.appendChild(lit);
+      ol.insertBefore(svg, ol.firstChild);
+      var len = lit.getTotalLength(), stop = Math.max(0, len - 24);   // the walker stops beside the stone, not under it
+      // faint footprints along the lit trail
+      for (var s = 22, k = 0; s < len - 14; s += 26, k++) {
+        var q = lit.getPointAtLength(s), q2 = lit.getPointAtLength(Math.min(len, s + 1));
+        var ang = Math.atan2(q2.y - q.y, q2.x - q.x), off = (k % 2 ? 5 : -5);
+        svg.appendChild(svgEl('ellipse', { 'class': 'print', cx: (q.x - Math.sin(ang) * off).toFixed(1), cy: (q.y + Math.cos(ang) * off).toFixed(1), rx: 3.2, ry: 2, transform: 'rotate(' + (ang * 180 / Math.PI).toFixed(0) + ' ' + (q.x - Math.sin(ang) * off).toFixed(1) + ' ' + (q.y + Math.cos(ang) * off).toFixed(1) + ')' }));
+      }
+      var walker = svgEl('circle', { 'class': 'walker', r: 6, cx: pts[0].x, cy: pts[0].y });
+      svg.appendChild(walker);
+      if (STILL.matches || !play) {
+        var end = lit.getPointAtLength(stop);
+        walker.setAttribute('cx', end.x); walker.setAttribute('cy', end.y);
+        return;
+      }
+      lit.style.strokeDasharray = len + ' ' + len;
+      lit.style.strokeDashoffset = len;
+      cancelAnimationFrame(walkAnim);
+      var t0 = null, dur = 2600;
+      (function step(t) {
+        if (t0 == null) t0 = t;
+        var k2 = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k2, 3);
+        lit.style.strokeDashoffset = (len * (1 - e)).toFixed(1);
+        var p = lit.getPointAtLength(stop * e);
+        walker.setAttribute('cx', p.x.toFixed(1)); walker.setAttribute('cy', p.y.toFixed(1));
+        if (k2 < 1) walkAnim = requestAnimationFrame(step);
+      })(performance.now());
+    } else ol.insertBefore(svg, ol.firstChild);
+  }
+
+  // ---- 7.3 THE STONES ---------------------------------------------------------------------
+  var filter = 'all', openStone = null, stoneSaid = {};
+  function chip(s) {
+    var st = byAddr[s.addr];
+    var b = el('button', 'chip');
+    b.type = 'button';
+    add(b, el('b', null, st ? st.num : dotted(s.addr)), document.createTextNode(s.name || (st ? st.words.slice(0, 40) : '')));
+    b.setAttribute('aria-label', 'Standard ' + (st ? st.num : dotted(s.addr)) + ': ' + (s.name || '') + '. Open it');
+    b.addEventListener('click', function () { openStandard(s.addr, b); });
+    return b;
+  }
+  function stoneItem(m) {
+    var li = el('li', 'moment' + (m.ahead ? ' ahead' : ''));
+    li.id = m.addr;
+    li.dataset.kind = m.ahead ? 'ahead' : 'past';
+    var card = el('div', 'stone-card');
+    var head = el('button', 'stone-head');
+    head.type = 'button';
+    head.setAttribute('aria-expanded', 'false');
+    add(head, m.when ? el('p', 'when', m.when) : null, el('p', 'what', m.what));
+    var foot = el('div', 'stone-foot');
+    m.stds.forEach(function (s) { foot.appendChild(chip(s)); });
+    var here = notesAt(m.addr);
+    TAPS.forEach(function (t) {
+      var n = tapCount(here, t);
+      if (n) foot.appendChild(el('span', 'badge', t + ' ' + n));
+    });
+    var said = here.filter(function (n) { return !anyTap(n); }).length;
+    if (said) foot.appendChild(el('span', 'badge', said + (said === 1 ? ' note' : ' notes')));
+    var body = el('div', 'stone-open');
+    body.hidden = true;
+    body.id = 'open-' + m.addr;
+    head.setAttribute('aria-controls', body.id);
+    head.addEventListener('click', function () { toggleStone(li, !li.classList.contains('open')); });
+    add(card, head, foot.childNodes.length ? foot : null, body);
+    li.appendChild(card);
+    li._m = m;
+    return li;
+  }
+  function fillStone(li) {
+    var m = li._m, body = li.querySelector('.stone-open');
+    body.textContent = '';
+    if (m.link) {
+      var a = el('a', null, 'Read more about this');
+      a.href = m.link;
+      body.appendChild(add(el('p'), a));
+    }
+    var status = el('p', 'form-status', stoneSaid[m.addr] || '');
+    status.setAttribute('role', 'status');
+    new MutationObserver(function () { stoneSaid[m.addr] = status.textContent; }).observe(status, { childList: true, characterData: true, subtree: true });
+    var here = notesAt(m.addr);
+    body.appendChild(tapRow(m.addr, here, status));
+    body.appendChild(shortForm(m.addr, 'Say something about this moment.', status));
+    body.appendChild(status);
+    var said = here.filter(function (n) { return !anyTap(n); }).reverse();
+    if (said.length) {
+      var ul = el('ul', 'notes-list');
+      said.forEach(function (n) { ul.appendChild(noteItem(n)); });
+      body.appendChild(ul);
+    }
+    var share = el('div', 'share-row');
+    var sb = el('button', 'plain-btn', 'Share this moment');
+    sb.type = 'button';
+    var st = el('span', 'status');
+    st.setAttribute('role', 'status');
+    sb.addEventListener('click', function () {
+      var url = location.href.split('#')[0] + '#' + m.addr;
+      if (navigator.share) {
+        navigator.share({ title: 'Community Recovery', text: m.what, url: url }).catch(function () {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function () { st.textContent = 'The link is copied.'; }, function () { st.textContent = url; });
+      } else st.textContent = url;
+    });
+    add(share, sb, st);
+    body.appendChild(share);
+  }
+  function toggleStone(li, open) {
+    li.classList.toggle('open', open);
+    var head = li.querySelector('.stone-head'), body = li.querySelector('.stone-open');
+    head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) fillStone(li);
+    body.hidden = !open;
+    openStone = open ? li._m.addr : (openStone === li._m.addr ? null : openStone);
+  }
+  // A short note box: unlocated for the week, located at a stone's address.
+  function shortForm(where, label, status) {
+    var form = el('form', 'short-form');
+    form.noValidate = true;
+    var id = 'n' + Math.random().toString(36).slice(2, 8);
+    var lab = el('label', 'care');
+    lab.htmlFor = id;
+    add(lab, el('strong', null, label), document.createTextNode(' No name needed. Please leave out anything personal about anyone’s recovery.'));
+    var ta = el('textarea');
+    ta.id = id; ta.name = 'note'; ta.maxLength = 1000; ta.rows = 2;
+    var send = el('button', null, 'Post');
+    send.type = 'submit';
+    add(form, lab, ta, send);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var t = ta.value.trim();
+      if (!t) return;
+      send.disabled = true;
+      status.textContent = 'Sending…';
+      Beach.place.note(ROOM, signed(), t, where).then(function () {
+        ta.value = '';
+        status.textContent = 'Thank you. Your words are in the room.';
+        return refreshRoom(true);
+      }).catch(function () {
+        status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      }).then(function () { send.disabled = false; });
+    });
+    Beach.addMic(ta);
+    return form;
+  }
+  var riser = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('waiting'); riser.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -8% 0px' }) : null;
+  function drawStones(firstTime) {
+    var line = $('line');
+    var keepOpen = openStone, draft = '';
+    var was = keepOpen && $(keepOpen), wasTa = was && was.querySelector('.stone-open textarea');
+    if (wasTa) draft = wasTa.value;
+    line.textContent = '';
+    if (!moments.length) return false;
+    var past = moments.filter(function (m) { return !m.ahead; }), ahead = moments.filter(function (m) { return m.ahead; });
+    if (past.length && filter !== 'ahead') {
+      var ol = el('ol', 'stones' + (filter === 'all' ? ' continues' : ''));
+      ol.setAttribute('aria-label', 'What has happened, oldest first');
+      past.forEach(function (m) { ol.appendChild(stoneItem(m)); });
+      line.appendChild(ol);
+    }
+    if (filter === 'all') {
+      var now = el('div', 'now-mark' + (ahead.length ? '' : ' last'));
+      var dot = el('span', 'now-dot');
+      dot.setAttribute('aria-hidden', 'true');
+      add(now, dot, el('span', 'now-word', 'Now'), el('span', 'now-date', todayWords()));
+      line.appendChild(now);
+    }
+    if (ahead.length && filter !== 'past') {
+      var h = el('h3', 'ahead-mark', 'What’s ahead');
+      h.id = 'ahead-title';
+      var ol2 = el('ol', 'stones');
+      ol2.setAttribute('aria-labelledby', 'ahead-title');
+      ahead.forEach(function (m) { ol2.appendChild(stoneItem(m)); });
+      add(line, h, ol2);
+    }
+    // each stone rises into view as the reader scrolls (never hidden: it waits half-lit)
+    if (firstTime && riser && !STILL.matches) {
+      Array.prototype.forEach.call(line.querySelectorAll('.moment'), function (li) {
+        var r = li.getBoundingClientRect();
+        if (r.top > innerHeight) { li.classList.add('waiting'); riser.observe(li); }
+      });
+    }
+    if (keepOpen) {
+      var li = $(keepOpen);
+      if (li && li._m) { toggleStone(li, true); var ta = li.querySelector('.stone-open textarea'); if (ta) ta.value = draft; }
+    }
+    return true;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.filters button'), function (b) {
+    b.addEventListener('click', function () {
+      filter = b.dataset.filter;
+      Array.prototype.forEach.call(document.querySelectorAll('.filters button'), function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      drawStones(false);
+    });
+  });
+  // A link to one moment (#08) lands on its stone, opened.
+  function landOnMoment() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!/^\d+$/.test(id)) return false;
+    var li = $(id);
+    if (!li) {
+      var want = moments.filter(function (m) { return same(m.addr) === same(id); })[0];
+      li = want && $(want.addr);
+    }
+    if (!li || !li._m) {
+      if (filter !== 'all') { filter = 'all'; drawStones(false); return landOnMoment(); }
+      return false;
+    }
+    li.classList.remove('waiting');
+    toggleStone(li, true);
+    li.scrollIntoView({ block: 'start' });
+    return true;
+  }
+  window.addEventListener('hashchange', landOnMoment);
+
+  // ---- 7.4 THE GARDEN ---------------------------------------------------------------------
+  function plant(shape, golds) {
+    var s = svgEl('svg', { viewBox: '0 0 40 56', 'aria-hidden': 'true' });
+    s.appendChild(svgEl('ellipse', { 'class': 'p-ground', cx: 20, cy: 52, rx: 15, ry: 3.5 }));
+    if (shape === 'seed') {
+      s.appendChild(svgEl('ellipse', { 'class': 'p-seed', cx: 20, cy: 48.5, rx: 4.6, ry: 3.4 }));
+      s.appendChild(svgEl('path', { 'class': 'p-crack', d: 'M18 47 L20 49 L22 47.5' }));
+      return s;
+    }
+    var top = shape === 'flower' ? 17 : 24;
+    s.appendChild(svgEl('path', { 'class': 'p-stem', d: 'M20 51 C19 42 21 33 20 ' + top }));
+    s.appendChild(svgEl('path', { 'class': 'p-leaf', d: 'M20 42 C14 42 10 38 8.5 32.5 C14.5 32.5 19 36 20 42 Z' }));
+    s.appendChild(svgEl('path', { 'class': 'p-leaf', d: 'M20 37 C26 37 30 33 31.5 27.5 C25.5 27.5 21 31 20 37 Z' }));
+    // a gold leaf for each member's own reading (three shown at most)
+    for (var g = 0; g < Math.min(golds, 3); g++) {
+      var y = 47 - g * 5.5, side = g % 2 ? 1 : -1;
+      s.appendChild(svgEl('path', { 'class': 'p-gold', d: 'M20 ' + y + ' q' + (side * 5) + ' -1 ' + (side * 7) + ' -5 q' + (side * -5) + ' 0 ' + (side * -7) + ' 5 z' }));
+    }
+    if (shape === 'sprout' || shape === 'split') {
+      s.appendChild(svgEl('ellipse', { 'class': 'p-bud', cx: 20, cy: 21, rx: 3.2, ry: 4.6 }));
+      if (shape === 'split') s.appendChild(svgEl('ellipse', { 'class': 'p-petal', cx: 23.6, cy: 18.6, rx: 2.4, ry: 4, transform: 'rotate(35 23.6 18.6)' }));
+      return s;
+    }
+    for (var p = 0; p < 5; p++) {
+      var a = p * 72 - 90, x = 20 + Math.cos(a * Math.PI / 180) * 5.6, yy = 13 + Math.sin(a * Math.PI / 180) * 5.6;
+      s.appendChild(svgEl('ellipse', { 'class': 'p-petal', cx: x.toFixed(2), cy: yy.toFixed(2), rx: 3.4, ry: 4.6, transform: 'rotate(' + (a + 90) + ' ' + x.toFixed(2) + ' ' + yy.toFixed(2) + ')' }));
+    }
+    s.appendChild(svgEl('circle', { 'class': 'p-heart', cx: 20, cy: 13, r: 3.1 }));
+    return s;
+  }
+  (function legend() {
+    var ul = $('legend');
+    [['flower', 'In flower: Spoken'], ['sprout', 'Growing: Partly'], ['seed', 'A seed: Not yet, or not yet read'], ['split', 'Readings differ']].forEach(function (x) {
+      add(ul, add(el('li'), plant(x[0], 0), el('span', null, x[1])));
+    });
+    add(ul, add(el('li'), plant('sprout', 1), el('span', null, 'A gold leaf: a member’s own reading')));
+  })();
+  var grower = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('grow'); grower.unobserve(e.target); } });
+  }, { threshold: 0.25 }) : null;
+  function drawGarden(firstTime) {
+    var beds = $('beds');
+    beds.textContent = '';
+    var tally = { flower: 0, sprout: 0, seed: 0, split: 0 };
+    frame.forEach(function (bed) {
+      var box = el('section', 'bed');
+      box.setAttribute('aria-label', bed.label);
+      box.appendChild(el('h3', null, bed.label));
+      var i = 0;
+      bed.clusters.forEach(function (cl) {
+        if (cl.label) box.appendChild(el('h4', null, cl.label));
+        var ul = el('ul', 'row');
+        cl.items.forEach(function (st) {
+          var rs = readingsAt(st.addr), shape = shapeOf(rs);
+          var golds = rs.filter(function (r) { return r.who !== EVIDENCE; }).length;
+          tally[shape]++;
+          var b = el('button', 'plant');
+          b.type = 'button';
+          b.style.setProperty('--i', String(i++));
+          b.setAttribute('aria-label', 'Standard ' + st.num + ': ' + SHAPE_WORD[shape] + (golds ? ', ' + golds + (golds === 1 ? ' member reading' : ' member readings') : '') + '. ' + st.words);
+          b.title = 'Standard ' + st.num + '. ' + st.words;
+          add(b, plant(shape, golds), el('span', null, st.num));
+          b.addEventListener('click', function () { openStandard(st.addr, b); });
+          add(ul, add(el('li'), b));
+        });
+        box.appendChild(ul);
+      });
+      box.appendChild(el('div', 'soil'));
+      if (bed.applies) box.appendChild(el('p', 'applies', bed.applies));
+      beds.appendChild(box);
+      if (firstTime && grower && !STILL.matches) grower.observe(box);
+    });
+    var said = [];
+    if (tally.flower) said.push(tally.flower + ' in flower');
+    if (tally.sprout) said.push(tally.sprout + ' growing');
+    if (tally.seed) said.push(tally.seed + (tally.seed === 1 ? ' seed' : ' seeds'));
+    if (tally.split) said.push(tally.split + ' where readings differ');
+    $('tally').textContent = said.join(' · ');
+  }
+
+  // ---- One standard, opened ---------------------------------------------------------------
+  var dialog = $('standard'), opener = null, openAddr = null;
+  var SOURCE = /^(this notebook|function:[\w-]+|spine:[\w-]+|proposal:[\w-]+|constitution|agreement|presentation|brand)\b/;
+  function sourceHref(key, book) {
+    if (key === 'this notebook') return PLACE_URL + encodeURIComponent(book);
+    if (key === 'constitution' || key === 'agreement' || key === 'presentation') return PLACE_URL + 'spine%3A' + key;
+    if (/^proposal:/.test(key)) return BEACH_URL + encodeURIComponent(key);
+    return PLACE_URL + encodeURIComponent(key);
+  }
+  function link(t, href) { var a = el('a', null, t); a.href = href; return a; }
+  function sources(dd, t, book) {
+    t.split(/;\s*/).forEach(function (group, gi) {
+      if (gi) dd.appendChild(document.createTextNode('; '));
+      var m = group.match(SOURCE);
+      if (!m) { dd.appendChild(document.createTextNode(group)); return; }
+      dd.appendChild(link(m[1], sourceHref(m[1], book)));
+      var rest = group.slice(m[1].length);
+      if (m[1] !== 'presentation') { dd.appendChild(document.createTextNode(rest)); return; }
+      var last = 0, re = /\b(\d)\.(\d)\b/g, x;
+      while ((x = re.exec(rest))) {
+        dd.appendChild(document.createTextNode(rest.slice(last, x.index)));
+        dd.appendChild(link(x[0], 'presentation.html#slide-' + x[1] + '-' + x[2]));
+        last = re.lastIndex;
+      }
+      dd.appendChild(document.createTextNode(rest.slice(last)));
+    });
+  }
+  function openStandard(addr, from) {
+    var st = byAddr[addr];
+    if (!st) return;
+    opener = from || null;
+    openAddr = addr;
+    drawStandard();
+    if (!dialog.open) { if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', ''); }
+    $('std-in').scrollTop = 0;
+  }
+  function drawStandard() {
+    var st = byAddr[openAddr], box = $('std-in');
+    if (!st) return;
     box.textContent = '';
-    if (!recent.length) {
-      box.appendChild(el('p', 'notes-quiet', 'Nobody has written in the last thirty days yet. How was your week?'));
+    var close = el('button', 'plain-btn std-close', 'Close');
+    close.type = 'button';
+    close.addEventListener('click', function () { dialog.close(); });
+    var num = el('h2', 'std-num', 'Standard ' + st.num);
+    num.id = 'std-num';
+    add(box, add(el('div', 'std-top'), add(el('div'), el('p', 'std-where', [st.bed, st.cluster].filter(Boolean).join(' · ')), num), close),
+      el('p', 'std-words', st.words));
+    var who = el('p', 'std-small', 'In CLERO’s words. What meeting it looks like is in ');
+    add(who, link('CLERO’s own document', 'https://www.clero.co.uk/clero-standards'), document.createTextNode('.'));
+    box.appendChild(who);
+    var rs = readingsAt(openAddr);
+    if (!rs.length) box.appendChild(el('p', 'unread', 'Nobody has read this standard yet.'));
+    rs.forEach(function (r) {
+      var card = el('div', 'reading');
+      add(card, add(el('p', 'reading-head'), el('span', 'reading-who', r.who), el('span', 'reading-state', STATE_WORD[r.reading.state]),
+        r.who === EVIDENCE ? el('span', 'reading-kind', 'an evidence reading, not a member’s voice') : null),
+        r.reading.summary ? el('p', 'reading-sum', capital(r.reading.summary)) : null);
+      if (r.reading.parts.length) {
+        var dl = el('dl');
+        r.reading.parts.forEach(function (p) {
+          var dd = el('dd');
+          if (/^sources?$/i.test(p.label)) sources(dd, p.body, r.name);
+          else dd.textContent = capital(p.body);
+          add(dl, p.label ? el('dt', null, p.label === 'Would show it' ? 'What would show it' : p.label) : null, dd);
+        });
+        card.appendChild(dl);
+      }
+      box.appendChild(card);
+    });
+    // the stones that moved it: the chips, read the other way
+    var moved = moments.filter(function (m) { return m.stds.some(function (s) { return s.addr === openAddr; }); });
+    if (moved.length) {
+      box.appendChild(el('h3', null, 'On the timeline'));
+      var ul = el('ul', 'moved');
+      moved.forEach(function (m) {
+        var a = link((m.when ? m.when + ': ' : '') + m.what, '#' + m.addr);
+        a.addEventListener('click', function () { dialog.close(); });
+        add(ul, add(el('li'), a, m.ahead ? el('span', 'reading-kind', ' (ahead)') : null));
+      });
+      box.appendChild(ul);
+    }
+    box.appendChild(readingForm(openAddr));
+  }
+  dialog.addEventListener('click', function (ev) { if (ev.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', function () { openAddr = null; if (opener && document.contains(opener)) opener.focus(); });
+
+  // ---- Add your own reading -------------------------------------------------------------
+  // Exactly as the standards page writes one: a person is a name and three words,
+  // made on that page; their notebook standards:<name> is latched with the words;
+  // a reading is one line at the standard's address, its word first ('Partly.'),
+  // then what they say. The words go to the beach in these requests only and are
+  // kept nowhere but in this open page, so a second reading needs no retyping.
+  var me = { name: '', words: '' };
+  function tidyName(typed) {
+    var s = String(typed || '');
+    try { s = s.normalize('NFC'); } catch (e) {}
+    s = s.replace(/\s+/g, ' ').trim().replace(/ /g, '-');
+    try { s = s.replace(new RegExp("[^\\p{L}\\p{N}'\\-]", 'gu'), ''); } catch (e) { s = s.replace(/[^A-Za-z0-9'\-]/g, ''); }
+    return s.replace(/^[-']+|[-']+$/g, '').slice(0, 24);
+  }
+  function tidyWords(typed) { return String(typed || '').toLowerCase().split(/[^a-z]+/).filter(Boolean); }
+  function blockNames(ix) {
+    var b = ix && ix.blocks;
+    if (Array.isArray(b)) return b.map(function (n) { return typeof n === 'string' ? n : (n && n.name) || ''; });
+    return b && typeof b === 'object' ? Object.keys(b) : [];
+  }
+  function lawWords() {
+    var n = data.law && data.law['2'], out = [];
+    for (var i = 1; i <= 9; i++) {
+      var t = text(n && n[String(i)]), cut = t.indexOf(' — ');
+      if (cut > 0 && cut <= 16) out.push({ word: t.slice(0, cut), means: t.slice(cut + 3) });
+    }
+    return out.length === 3 ? out : [{ word: 'Spoken', means: '' }, { word: 'Partly', means: '' }, { word: 'Not yet', means: '' }];
+  }
+  function fail(why) { var e = new Error(why); e.why = why; throw e; }
+  function prove(name, words) {
+    return Beach.place.index().then(function (ix) {
+      var have = blockNames(ix), low = name.toLowerCase(), real = null;
+      have.forEach(function (n) { if (n.indexOf('passport:') === 0 && n.slice(9).toLowerCase() === low) real = n.slice(9); });
+      if (!real) fail('noname');
+      // proves the words and changes nothing, as the standards page does
+      return Beach.place.write('passport:' + real, undefined, undefined, words, words).then(function () {
+        // the person's notebooks stand and are latched before a write, so a missing
+        // one never comes back unlatched
+        return FAMILIES.reduce(function (p, f) {
+          return p.then(function () {
+            var block = f + ':' + real;
+            if (have.indexOf(block) < 0) {
+              return Beach.place.write(block, undefined, { _: 'MIRROR — ' + real + '’s own notebook for ' + f + ', at the frame’s own addresses. Only ' + real + ' writes here.' }, undefined, words);
+            }
+            return Beach.place.write(block, undefined, undefined, words, words);
+          });
+        }, Promise.resolve()).then(function () { return real; });
+      }, function (e) { fail(e.refused ? 'words' : 'beach'); });
+    }, function (e) { if (e && e.why) throw e; fail('beach'); });
+  }
+  function readingForm(addr) {
+    var words = lawWords(), mineNow = null;
+    if (me.name) {
+      readingsAt(addr).forEach(function (r) { if (r.who === me.name) mineNow = r.reading; });
+    }
+    var form = el('form', 'reading-form');
+    form.noValidate = true;
+    form.appendChild(el('h3', null, mineNow ? 'Change your reading' : 'Add your own reading'));
+    form.appendChild(el('p', 'std-small', 'Where does Community Recovery stand on this, as you see it?'));
+    var chosen = mineNow ? mineNow.state : '';
+    var row = el('div', 'words-row');
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', 'Your word');
+    words.forEach(function (w) {
+      var key = w.word.toLowerCase().replace(' ', '');
+      var b = el('button', 'plain-btn', w.word);
+      b.type = 'button';
+      if (w.means) b.title = w.means;
+      b.setAttribute('aria-pressed', chosen === key ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        chosen = key;
+        Array.prototype.forEach.call(row.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      });
+      row.appendChild(b);
+    });
+    form.appendChild(row);
+    var taId = 'say-more-' + addr;
+    var lab = el('label', null, 'Say more, if you like');
+    lab.htmlFor = taId;
+    var ta = el('textarea');
+    ta.id = taId; ta.maxLength = 1500; ta.rows = 4;
+    ta.placeholder = 'What is in place? What is not there yet? What would show it?';
+    if (mineNow) {
+      var back = mineNow.summary;
+      mineNow.parts.forEach(function (p) { back += (back ? ' ' : '') + (p.label ? p.label + ': ' : '') + p.body; });
+      ta.value = back;
+    }
+    var pair = el('div', 'pair');
+    var nl = el('label', null, 'Your name'), ni = el('input');
+    nl.htmlFor = 'rd-name'; ni.id = 'rd-name'; ni.maxLength = 30; ni.autocomplete = 'off'; ni.value = me.name;
+    var wl = el('label', null, 'Your three words'), wi = el('input');
+    wl.htmlFor = 'rd-words'; wi.id = 'rd-words'; wi.type = 'password'; wi.autocomplete = 'off'; wi.value = me.words;
+    add(pair, add(el('div'), nl, ni), add(el('div'), wl, wi));
+    var save = el('button', null, 'Save my reading');
+    save.type = 'submit';
+    var gone = el('button', 'plain-btn', 'Remove my reading');
+    gone.type = 'button';
+    gone.hidden = !mineNow;
+    var status = el('p', 'form-status');
+    status.setAttribute('role', 'status');
+    var help = el('p', 'std-small', 'Your name and three words are the ones you made on the standards page. New here? ');
+    add(help, link('Make your name there', DAVID), document.createTextNode(', then come back. Your reading is public, under your name, and only your words can change it.'));
+    add(form, lab, ta, pair, add(el('div', 'form-actions'), save, gone), status, help);
+    Beach.addMic(ta);
+
+    function write(content) {
+      var name = tidyName(ni.value), toks = tidyWords(wi.value);
+      if (!name) { status.textContent = 'Please put your name.'; ni.focus(); return; }
+      if (toks.length !== 3) { status.textContent = 'Your three words, please: three words, as on your card.'; wi.focus(); return; }
+      save.disabled = gone.disabled = true;
+      status.textContent = 'Sending…';
+      var w3 = toks.join('-');
+      prove(name, w3).then(function (real) {
+        return Beach.place.write('standards:' + real, dotted(addr), content, w3).then(function () { return real; });
+      }).then(function (real) {
+        me.name = real; me.words = w3;
+        return refreshBooks().then(function () {
+          drawGarden(false);
+          if (openAddr === addr) drawStandard();
+          var s2 = dialog.querySelector('.reading-form .form-status');
+          if (s2) s2.textContent = content ? 'Thank you. Your reading is in your notebook, and the garden has it.' : 'Your reading is removed.';
+        });
+      }).catch(function (e) {
+        save.disabled = gone.disabled = false;
+        var why = e.why || (e.refused ? 'words' : 'beach');
+        status.textContent = why === 'noname' ? 'There’s no one by that name in Community Recovery’s place yet. Check the spelling, or make your name on the standards page.'
+          : why === 'words' ? 'Those three words don’t match that name, so nothing was written.'
+          : 'That didn’t reach the beach. Please try again in a moment.';
+      });
+    }
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!chosen) { status.textContent = 'Choose Spoken, Partly or Not yet first.'; return; }
+      var w = words.filter(function (x) { return x.word.toLowerCase().replace(' ', '') === chosen; })[0];
+      var rest = ta.value.trim();
+      write((w ? w.word : capital(chosen)) + '.' + (rest ? ' ' + rest : ''));
+    });
+    gone.addEventListener('click', function () { write(''); });
+    return form;
+  }
+
+  // ---- 7.5 THE LANTERNS -------------------------------------------------------------------
+  function drawLanterns() {
+    var since = Date.now() - DAYS * 864e5;
+    var lines = notes.filter(function (n) {
+      var t = Date.parse(n.when);
+      return !anyTap(n) && !isNaN(t) && t >= since;
+    }).reverse();     // newest first
+    var ul = $('lanterns'), field = $('lantern-field');
+    ul.textContent = '';
+    var old = field.querySelector('.field-empty');
+    if (old) old.remove();
+    if (!lines.length) {
+      field.appendChild(el('p', 'field-empty', 'No lanterns yet this month. Light the first.'));
       return;
     }
-    var ul = el('ul', 'week-list');
-    recent.forEach(function (n) { ul.appendChild(noteItem(n)); });
-    box.appendChild(ul);
-  }
-
-  // ---- Reading the place --------------------------------------------------------------
-  // Each part is drawn again only when what the beach holds has changed
-  // (or, for the timeline, when the day has).
-  var lineSig = null, weekSig = null, lineReached = false, weekReached = false;
-  function refreshLine() {
-    return Beach.place.get(JOURNEY).then(function (b) {
-      lineReached = true;
-      var s = JSON.stringify(b) + '|' + today();
-      if (s === lineSig) return;
-      lineSig = s;
-      document.getElementById('timeline-note').textContent =
-        drawTimeline(b) ? '' : 'The timeline isn’t written yet.';
-    }, function () {
-      if (lineReached) return;
-      document.getElementById('timeline-note').textContent =
-        'The timeline is kept on the beach and couldn’t be reached just now. It will show here as soon as the beach answers.';
+    var n = lines.length, dur = Math.max(20, Math.min(36, n * 7));
+    lines.forEach(function (line, i) {
+      var red = line.text.trim() === REDACTED;
+      var li = el('li', 'lantern' + (red ? ' redacted' : ''));
+      // spread across the field and along the rise, so most are always in view
+      li.style.setProperty('--x', (6 + ((i * 37) % 52)) + '%');
+      li.style.setProperty('--dur', dur + 's');
+      li.style.setProperty('--delay', (-(dur * i) / n).toFixed(2) + 's');
+      var body = el('div', 'lantern-body');
+      var words = red ? REDACTED : line.text.trim();
+      add(body, el('p', 'lantern-words', words.length > 160 ? words.slice(0, words.lastIndexOf(' ', 150)) + '…' : words),
+        el('p', 'lantern-who', [line.who, stamp(line.when)].filter(Boolean).join(' · ')));
+      li.tabIndex = 0;
+      li.setAttribute('aria-label', words + (line.who ? ', from ' + line.who : ''));
+      li.appendChild(body);
+      ul.appendChild(li);
     });
   }
-  function refreshWeek() {
+  function drawWeekTaps() {
+    var box = $('week-taps');
+    box.textContent = '';
+    var week = notes.filter(function (n) { return !same(n.where) && Date.parse(n.when) >= Date.now() - DAYS * 864e5; });
+    box.appendChild(tapRow('', week, $('week-taps-status')));
+  }
+  (function lanternForm() {
+    var form = $('say'), status = form.querySelector('.form-status'), send = form.querySelector('button[type=submit]');
+    Beach.addMic(form.note);
+    form.who.addEventListener('input', function () { nameNow = form.who.value; });
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var t = form.note.value.trim();
+      if (form.web.value || !t) return;
+      nameNow = form.who.value;
+      send.disabled = true;
+      status.textContent = 'Lighting…';
+      Beach.place.note(ROOM, signed(), t, '').then(function () {
+        form.note.value = '';
+        status.textContent = 'Thank you. Your lantern is lit.';
+        notes.push({ who: signed(), where: '', when: new Date().toISOString(), text: t });
+        drawLanterns();
+        return refreshRoom(true);
+      }).catch(function () {
+        status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      }).then(function () { send.disabled = false; });
+    });
+    $('to-say').addEventListener('click', function (ev) {
+      ev.preventDefault();
+      form.scrollIntoView({ behavior: STILL.matches ? 'auto' : 'smooth', block: 'start' });
+      form.note.focus({ preventScroll: true });
+    });
+  })();
+
+  // ---- 7.6 THE RIPPLES ----------------------------------------------------------------------
+  // lero:earth: at each place, '<Place> — N LEROs known at or beneath this place.',
+  // then the LEROs here, one '· ' line each: 'Name (where) — what — link — standing'.
+  function place(node) {
+    var t = text(node), first = t.split('\n')[0];
+    var m = first.match(/^(.+?)\s+—\s+(\d+)\s+LEROs?\b/);
+    var leros = [];
+    t.split('\n').forEach(function (l) {
+      if (!/^·\s/.test(l)) return;
+      var parts = l.slice(2).split(' — ');
+      var nm = parts[0] || '', open = nm.indexOf(' (');
+      var url = (l.match(/https?:\/\/[^\s,]+/) || [''])[0].replace(/[.)]+$/, '');
+      leros.push({
+        name: open > 0 ? nm.slice(0, open) : nm,
+        where: open > 0 ? nm.slice(open + 2).replace(/\)$/, '') : '',
+        what: parts.length > 1 ? parts[1] : '',
+        standing: parts.length > 3 ? parts[parts.length - 1] : '',
+        url: url
+      });
+    });
+    return { name: m ? m[1] : first, count: m ? +m[2] : 0, leros: leros };
+  }
+  function crPath(lero) {
+    var found = null;
+    (function walk(n, path) {
+      if (found || !n || typeof n !== 'object') return;
+      if (path.length && /·\s*Community Recovery \(/.test(text(n))) { found = path; return; }
+      for (var i = 1; i <= 9; i++) walk(n[String(i)], path.concat(String(i)));
+    })(lero, []);
+    return found || CR_PATH;
+  }
+  function gather(n, out) {
+    if (!n || typeof n !== 'object') return out;
+    var p = place(n);
+    if (p.leros.length) out.push(p);
+    for (var i = 1; i <= 9; i++) gather(n[String(i)], out);
+    return out;
+  }
+  var mapSel = null, rungs = [];
+  function drawRipples() {
+    var lero = data.lero;
+    var path = crPath(lero);
+    // the ladder: every place from the UK (the first place under Europe) down to where Community Recovery stands
+    rungs = [];
+    for (var k = 1; k <= path.length; k++) {
+      var node = at(lero, path.slice(0, k).join(''));
+      if (!node) break;
+      var p = place(node);
+      if (k >= 3) rungs.push({ path: path.slice(0, k).join(''), node: node, place: p });
+    }
+    if (!rungs.length) return false;
+    if (mapSel == null || !rungs.some(function (r) { return r.path === mapSel; })) mapSel = rungs[Math.max(0, rungs.length - 2)].path;   // open on North Northamptonshire
+    var svg = $('ripples');
+    svg.textContent = '';
+    var C = 160, rings = rungs.slice(0, -1).reverse();   // nearest ring first
+    var R = [58, 98, 138, 152];
+    for (var w = 0; w < 3; w++) svg.appendChild(svgEl('circle', { 'class': 'wave', cx: C, cy: C, r: 150 }));
+    rings.forEach(function (r, i) {
+      var rad = R[Math.min(i, R.length - 1)], sel = r.path === mapSel;
+      svg.appendChild(svgEl('circle', { 'class': 'ring' + (sel ? ' sel' : ''), cx: C, cy: C, r: rad }));
+      var lab = svgEl('text', { 'class': 'ring-label' + (sel ? ' sel' : ''), x: C, y: C - rad - 5, 'text-anchor': 'middle' });
+      lab.textContent = r.place.name + ' · ' + r.place.count;
+      svg.appendChild(lab);
+    });
+    var centre = rungs[rungs.length - 1];
+    svg.appendChild(svgEl('circle', { 'class': 'drop-pulse', cx: C, cy: C, r: 11 }));
+    svg.appendChild(svgEl('path', { 'class': 'drop', d: 'M160 146 C166 155 170 160 170 165 A10 10 0 0 1 150 165 C150 160 154 155 160 146 Z' }));
+    var dl = svgEl('text', { 'class': 'drop-label', x: C, y: C + 22, 'text-anchor': 'middle' });
+    dl.textContent = 'Community Recovery';
+    svg.appendChild(dl);
+    var dl2 = svgEl('text', { 'class': 'ring-label', x: C, y: C + 34, 'text-anchor': 'middle' });
+    dl2.textContent = centre.place.name;
+    svg.appendChild(dl2);
+    svg.setAttribute('aria-label', 'Rings spreading from ' + centre.place.name + ', where Community Recovery stands: ' + rings.map(function (r) { return r.place.name + ', ' + r.place.count + (r.place.count === 1 ? ' LERO' : ' LEROs'); }).join('; '));
+
+    var ladder = $('ladder');
+    ladder.textContent = '';
+    rungs.forEach(function (r) {
+      var b = el('button', 'rung');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', r.path === mapSel ? 'true' : 'false');
+      var nm = el('span', null, r.place.name);
+      if (r === centre) nm.appendChild(el('span', 'here', 'we are here'));
+      add(b, nm, el('span', 'count', r.place.count + (r.place.count === 1 ? ' LERO' : ' LEROs')));
+      b.addEventListener('click', function () { mapSel = r.path; drawRipples(); });
+      add(ladder, add(el('li'), b));
+    });
+    // the LEROs at or beneath the chosen place, by name and link
+    var chosen = rungs.filter(function (r) { return r.path === mapSel; })[0];
+    var box = $('leros');
+    box.textContent = '';
+    gather(chosen.node, []).forEach(function (p) {
+      box.appendChild(el('h4', null, p.name + ' · ' + p.leros.length));
+      var ul = el('ul');
+      p.leros.forEach(function (l) {
+        var ours = /^Community Recovery$/.test(l.name);
+        var li = el('li', 'lero' + (ours ? ' ours' : ''));
+        var name = l.url ? link(l.name, l.url) : el('strong', null, l.name);
+        add(li, name, l.where ? document.createTextNode(' (' + l.where + ')') : null,
+          l.what ? el('p', 'lero-what', capital(l.what)) : null, l.standing ? el('p', 'lero-standing', capital(l.standing)) : null);
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    });
+    return true;
+  }
+
+  // ---- Reading the place --------------------------------------------------------------------
+  var sigs = {}, reached = { place: false, earth: false }, liveAt = null, firstDraw = true;
+  function changed(k, v) { var s = JSON.stringify(v); if (sigs[k] === s) return false; sigs[k] = s; return true; }
+  function refreshBooks() {
+    return Beach.place.index().then(function (ix) {
+      var list = blockNames(ix).filter(function (n) { return /^standards:[^:]+$/.test(n); });
+      return list.length ? list : [BOOK];
+    }, function () { return [BOOK]; }).then(function (list) {
+      return Promise.all(list.map(function (n) {
+        return Beach.place.get(n).then(function (b) { return { name: n, who: n.slice(10), block: b }; }, function () { return null; });
+      }));
+    }).then(function (bs) {
+      bs = bs.filter(Boolean);
+      if (!bs.length) throw new Error('unreached');
+      data.books = bs;
+      return bs;
+    });
+  }
+  function refreshRoom(force) {
     return Beach.place.get(ROOM).then(function (p) {
-      weekReached = true;
-      document.getElementById('week-note').textContent = '';
-      var s = JSON.stringify(p) + '|' + new Date().toDateString();
-      if (s === weekSig) return;
-      weekSig = s;
-      drawWeek(p);
-    }, function () {
-      if (weekReached) return;
-      document.getElementById('week-note').textContent =
-        'Members’ words are kept on the beach and couldn’t be reached just now. They will show here as soon as the beach answers.';
+      data.room = p;
+      if (!changed('room', p) && !force) return;
+      notes = Beach.notes(p);
+      drawLanterns();
+      drawWeekTaps();
+      if (moments.length) drawStones(false);
+      $('week-note').textContent = '';
     });
   }
-  function refresh() { return Promise.all([refreshLine(), refreshWeek()]); }
+  function drawAll() {
+    if (data.spine) frame = frameOf(data.spine);
+    if (data.journey) moments = walkMoments(data.journey, '', []);
+    if (data.room) notes = Beach.notes(data.room);
+    drawSkyCards();
+    startSky();
+    $('sky-note').textContent = moments.length ? '' : $('sky-note').textContent;
+    var mine = data.books.filter(function (b) { return b.name === BOOK; })[0];
+    if (mine) $('path-note').textContent = drawPath(mine.block) ? '' : 'The path isn’t written yet.';
+    if (data.journey) $('timeline-note').textContent = drawStones(firstDraw) ? '' : 'The story isn’t written yet.';
+    if (frame.length) { drawGarden(firstDraw); $('garden-note').textContent = ''; }
+    if (data.room) { drawLanterns(); drawWeekTaps(); $('week-note').textContent = ''; }
+    if (dialog.open && openAddr) drawStandard();
+    if (firstDraw && moments.length) { firstDraw = false; landOnMoment(); }
+  }
+  function live(ok) {
+    if (ok) liveAt = new Date();
+    var on = liveAt && Date.now() - liveAt < 2 * REFRESH_MS + 5000;
+    $('live-dot').classList.toggle('on', !!on);
+    $('live-word').textContent = on
+      ? 'Live from the beach · read ' + liveAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+      : liveAt ? 'The beach is quiet just now · last read ' + liveAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        : 'The beach can’t be reached just now.';
+  }
+  function refresh() {
+    var place = Promise.all([
+      Beach.place.get(JOURNEY), Beach.place.get(ROOM), Beach.place.get(SPINE),
+      Beach.place.get(LAW).catch(function () { return null; }), refreshBooks()
+    ]).then(function (r) {
+      reached.place = true;
+      var any = changed('journey', r[0]) | changed('room', r[1]) | changed('spine', r[2]) | changed('law', r[3]) | changed('books', r[4]);
+      data.journey = r[0]; data.room = r[1]; data.spine = r[2]; data.law = r[3];
+      store('place', { journey: r[0], room: r[1], spine: r[2], law: r[3], books: r[4] });
+      if (any || firstDraw) drawAll();
+      live(true);
+    }, function () {
+      live(false);
+      if (reached.place) return;
+      // the built-in fallback: the last version this browser read, said plainly
+      var saved = store('place');
+      if (saved && saved.journey && !data.journey) {
+        data.journey = saved.journey; data.room = saved.room; data.spine = saved.spine; data.law = saved.law; data.books = saved.books || [];
+        drawAll();
+        ['sky-note', 'timeline-note'].forEach(function (id) { $(id).textContent = 'The beach is out of reach just now, so this is the last version this browser saw.'; });
+        return;
+      }
+      $('sky-note').textContent = 'The journey is kept on the beach and couldn’t be reached just now. It will show here as soon as the beach answers.';
+      $('path-note').textContent = 'The path is kept on the beach and couldn’t be reached just now.';
+      $('timeline-note').textContent = 'The story is kept on the beach and couldn’t be reached just now. It will show here as soon as the beach answers.';
+      $('garden-note').textContent = 'The readings are kept on the beach and couldn’t be reached just now. They will show here as soon as the beach answers.';
+      $('week-note').textContent = 'Members’ words are kept on the beach and couldn’t be reached just now.';
+    });
+    var earth = Beach.earth.get('lero:earth').then(function (b) {
+      reached.earth = true;
+      data.lero = b;
+      if (!changed('lero', b)) return;
+      $('map-note').textContent = drawRipples() ? '' : 'Community Recovery isn’t on the map yet.';
+    }, function () {
+      if (reached.earth) return;
+      $('map-note').textContent = 'The map is kept on the earth beach and couldn’t be reached just now. It will show here as soon as it answers.';
+    });
+    return Promise.all([place, earth]);
+  }
+
+  // ---- Starting, and staying live ------------------------------------------------------------
+  sizeSky();
+  drawSky(0);
+  var skySeen = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    sky.visible = es[0].isIntersecting;
+    if (sky.visible) startSky();
+  }) : null;
+  if (skySeen) skySeen.observe($('sky'));
+  var mastSeen = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    $('markbar').classList.toggle('shown', !es[0].isIntersecting);
+  }) : null;
+  if (mastSeen) mastSeen.observe(document.querySelector('.masthead'));
+  // the trail follows the stones once the faces have loaded
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if ($('path').querySelector('.foot')) trail(false); });
+  var resizeT = 0;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function () { sizeSky(); drawSky(performance.now()); trail(false); }, 150);
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) { startSky(); if (!dialog.open) refresh(); }
+  });
   refresh();
-  setInterval(function () { if (!document.hidden) refresh(); }, REFRESH_MS);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
-
-  // ---- The box ------------------------------------------------------------------------
-  // A note goes to the room unlocated, as placeNote writes it. A typed name
-  // is shown as a member's, never as a beach handle, so nobody can sign as
-  // someone else.
-  var form = document.getElementById('say');
-  var status = form.querySelector('.form-status');
-  var send = form.querySelector('button[type=submit]');
-  Beach.addMic(form.note);
-  form.addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var text = form.note.value.trim();
-    if (form.web.value || !text) return;
-    var name = form.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
-    send.disabled = true;
-    status.textContent = 'Sending…';
-    Beach.place.note(ROOM, name ? name + ', a member' : 'a member', text, '').then(function () {
-      form.note.value = '';
-      status.textContent = 'Thank you. Your words are in the room.';
-      weekSig = null;
-      return refreshWeek();
-    }).catch(function () {
-      status.textContent = 'That didn’t reach the beach. Please try again in a moment.';
-    }).then(function () { send.disabled = false; });
-  });
-
-  // 'Leave a note in the room' lands on the box, ready to write in.
-  document.getElementById('to-say').addEventListener('click', function (ev) {
-    ev.preventDefault();
-    form.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-    form.note.focus({ preventScroll: true });
-  });
+  setInterval(function () { if (!document.hidden && !dialog.open) refresh(); else live(false); }, REFRESH_MS);
 })();
 </script>
 </body>
