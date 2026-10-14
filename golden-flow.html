@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The golden flow</title>
-<meta name="description" content="The golden flow: ask the beach, and see it from where you stand, read live from the beach.">
+<meta name="description" content="The golden flow: the loops between people on the beach, from where you stand, as tidewright reads them on its tide.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -13,11 +13,21 @@
   :root {
     --gold: #b98219;
     --gold-soft: rgba(185, 130, 25, 0.16);
+    --sand: #ece0c8;
+    --sand-line: rgba(122, 104, 80, 0.2);
+    --stone: #a99e8f;
+    --stone-edge: #7a7064;
+    --resting: #b6afa4;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --gold: #f0c46a;
       --gold-soft: rgba(240, 196, 106, 0.14);
+      --sand: #29231b;
+      --sand-line: rgba(210, 190, 160, 0.12);
+      --stone: #5d554b;
+      --stone-edge: #948a7c;
+      --resting: #544e46;
     }
   }
   [hidden] {
@@ -27,21 +37,7 @@
     overflow-wrap: break-word;
   }
 
-  /* 1. The flow: golden light between two shores, on canvas. */
-  .flow {
-    margin: -0.5rem -0.25rem 1.4rem;
-  }
-  .flow canvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 2 / 1;
-  }
-  @media (min-width: 560px) {
-    .flow canvas { aspect-ratio: 5 / 2; }
-  }
-
-  /* 2. The welcome. */
+  /* The welcome. */
   h1 {
     font-weight: 400;
     font-size: 2.6rem;
@@ -70,239 +66,295 @@
     h1 { font-size: 3rem; }
   }
 
-  /* 3. Ask the beach: see from where you stand, and ask a question. */
-  .ask form + form {
-    margin-top: 1.8rem;
-  }
-
-  /* 4. From where you stand: pairs, side by side on a wide screen, with
-     room between the columns for the golden threads. */
-  .pair {
-    position: relative;
+  /* (a) Where to stand, whom to narrow to, and the rung. */
+  .fields {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.8rem;
-    margin: 0 0 1.2rem;
+    column-gap: 1rem;
   }
-  @media (min-width: 640px) {
-    .pair { grid-template-columns: 1fr 1fr; column-gap: 5rem; }
+  @media (min-width: 560px) {
+    .fields { grid-template-columns: 1fr 1fr; }
   }
-  .side {
-    border-left: 2px solid var(--frame);
-    padding: 0.1rem 0 0.1rem 0.8rem;
+  .fields > div {
     min-width: 0;
   }
-  .side.theirs {
-    border-left-color: var(--gold);
-  }
-  .side-label {
-    font-size: 0.8rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 0 0 0.3rem;
-  }
-  .side-text {
-    margin: 0;
-    white-space: pre-line;
-  }
-  .side-text.none {
+  .opt {
     font-style: italic;
+  }
+  .rungs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+  }
+  .rungs-label {
+    font-size: 0.95rem;
     color: var(--muted);
+    margin-right: 0.2rem;
+  }
+  form .rungs button {
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    color: var(--crimson);
+    background: transparent;
+    border: 1px solid var(--crimson);
+    padding: 0.25rem 0.9rem;
+    min-height: 2.2rem;
+  }
+  form .rungs button[aria-pressed="true"] {
+    color: var(--page);
+    background: var(--crimson);
+  }
+  form .rungs button:focus-visible,
+  form button:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
   }
 
-  /* The golden threads: where the meaning of two people's words meets. */
-  .sentence {
-    border-radius: 2px;
-    transition: opacity 0.8s ease, background-color 0.8s ease;
-  }
-  .weighed .sentence {
-    opacity: 0.62;
-  }
-  .weighed .sentence.met {
-    opacity: 1;
-    background-color: var(--gold-soft);
-    box-shadow: 0 0 0.5em var(--gold-soft);
-    cursor: pointer;
-  }
-  .sentence.met:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 1px;
-  }
-  .open-tag {
-    font-size: 0.75rem;
-    font-style: italic;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    border-bottom: 1px dotted var(--gold);
-    margin-left: 0.3em;
-    white-space: nowrap;
-  }
-  .threads {
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: none;
-    overflow: visible;
-    pointer-events: none;
-  }
-  .threads .thread {
-    fill: none;
-    stroke: var(--gold);
-    stroke-linecap: round;
-    transition: stroke-opacity 0.3s ease;
-  }
-  .threads .thread.drawing {
-    stroke-dasharray: 1;
-    animation: thread-draw var(--draw, 1.8s) ease-in-out var(--delay, 0s) both;
-  }
-  @keyframes thread-draw {
-    from { stroke-dashoffset: 1; }
-    to { stroke-dashoffset: 0; }
-  }
-  .threads .thread.lit {
-    stroke-opacity: 1;
-    filter: drop-shadow(0 0 3px var(--gold));
-  }
-  .threads .hit {
-    fill: none;
-    stroke: transparent;
-    stroke-width: 14;
-    pointer-events: stroke;
-    cursor: pointer;
-    outline: none;
-  }
-  .threads .open-thread {
-    fill: none;
-    stroke: var(--gold);
-    stroke-opacity: 0.4;
-    stroke-width: 1;
-    stroke-dasharray: 2 4;
-  }
-  .threads .open-label {
-    font-size: 0.7rem;
-    font-style: italic;
-    fill: var(--muted);
-  }
-  .threads .amp-halo {
-    fill: var(--page);
-  }
-  .threads .amp {
-    font-size: 1.4rem;
-    font-style: italic;
-    fill: var(--gold);
-  }
-  @media (min-width: 640px) {
-    .threads { display: block; }
-    .matches { display: none !important; }
-    .open-tag { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .sentence { transition: none; }
-    .threads .thread.drawing { animation: none; stroke-dasharray: none; }
-  }
-  .meet {
+  /* (b) Three counts, from tidewright's latest entry. */
+  .counts {
     display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 1rem;
-    font-style: italic;
-    color: var(--muted);
-    margin: 0 0 0.6rem;
+    justify-content: center;
+    gap: 2.2rem;
+    margin: 1.2rem 0 0.3rem;
+    text-align: center;
   }
-  .meet svg {
-    flex: none;
-    width: 2.2rem;
-    height: 1.3rem;
-  }
-  .meet .track,
-  .meet .fill {
-    fill: none;
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
-  .meet .track {
-    stroke: var(--frame);
-  }
-  .meet .fill {
-    stroke: var(--gold);
-  }
-  .matches {
-    margin: 0.2rem 0 1.4rem;
-  }
-  .matches li {
-    padding: 0;
-    margin: 0 0 1.1rem;
-  }
-  .matches li::before {
-    content: none;
-  }
-  .match-a,
-  .match-b {
-    margin: 0;
-  }
-  .match-line {
+  .count .n {
     display: block;
-    width: 2px;
-    height: 1.4rem;
-    margin: 0.3rem 0 0.3rem 1.2rem;
-    border-radius: 1px;
-    background: var(--gold);
-    box-shadow: 0 0 6px var(--gold-soft);
+    font-size: 2.7rem;
+    line-height: 1;
   }
-  .thread-detail {
-    border-left: 2px solid var(--gold);
-    padding: 0.2rem 0 0.1rem 0.8rem;
-    margin: -0.3rem 0 1.4rem;
-  }
-  .detail-from {
-    font-size: 0.8rem;
-    letter-spacing: 0.12em;
+  .count .k {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 0 0 0.2rem;
+    margin-top: 0.3rem;
   }
-  .detail-text {
-    margin: 0 0 0.7rem;
+  .count.waiting .n {
+    color: var(--gold);
   }
-  .threads-status,
-  .threads-note {
+  .tide {
     font-size: 0.95rem;
     font-style: italic;
     color: var(--muted);
-    margin: 0 0 1rem;
+    text-align: center;
+    margin: 0.2rem 0 0.4rem;
   }
-  .reading-head {
-    font-weight: 500;
-    font-size: 1.3rem;
-    line-height: 1.3;
-    margin: 1.6rem 0 0.6rem;
+  .pool-note {
+    font-style: italic;
+    text-align: center;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .pool-note:empty {
+    display: none;
+  }
+
+  /* (c) The beach: one rock for the handle standing, the others around
+     it, open loops as amber pebbles on the side they wait in. */
+  .shore {
+    margin: 0.4rem -0.5rem 0.2rem;
+  }
+  .shore svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  }
+  .shore .sand {
+    fill: var(--sand);
+  }
+  .shore .ripple {
+    fill: none;
+    stroke: var(--sand-line);
+    stroke-width: 1;
+  }
+  .shore .side {
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    fill: var(--muted);
+  }
+  .shore .rock path {
+    fill: var(--stone);
+    stroke: var(--stone-edge);
+    stroke-width: 1;
+    transition: stroke 0.6s ease, stroke-width 0.6s ease, filter 0.6s ease;
+  }
+  .shore .rock text {
+    font-size: 12px;
+    fill: var(--ink);
+    text-anchor: middle;
+    transition: fill 0.6s ease;
+  }
+  .shore .rock.centre path {
+    fill: var(--stone-edge);
+  }
+  .shore .rock.centre text {
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: var(--page);
+  }
+  .shore .rock.dim {
+    opacity: 0.45;
+  }
+  .shore .rock.near path {
+    stroke: var(--ink);
+    stroke-width: 1.6;
+  }
+  .shore .rock.lit path {
+    stroke: var(--gold);
+    stroke-width: 2.6;
+    filter: drop-shadow(0 0 6px var(--gold));
+  }
+  .shore .rock.lit text {
+    fill: var(--gold);
+    font-weight: 600;
+  }
+  .shore .resting {
+    fill: var(--resting);
+  }
+  .shore .pebble {
+    cursor: pointer;
+    outline: none;
+  }
+  .shore .pebble .hit {
+    fill: transparent;
+  }
+  .shore .pebble .stone {
+    fill: var(--gold);
+    stroke: var(--stone-edge);
+    stroke-width: 0.6;
+    animation: glint 5s ease-in-out infinite;
+  }
+  .shore .pebble:focus-visible .stone,
+  .shore .pebble.on .stone {
+    stroke: var(--crimson);
+    stroke-width: 2.2;
+    animation: none;
+  }
+  @keyframes glint {
+    50% { opacity: 0.6; }
+  }
+  .shore .tie {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 4;
+    opacity: 0.9;
+  }
+  .shore .route {
+    fill: none;
+    stroke: var(--stone-edge);
+    stroke-linecap: round;
+    opacity: 0.75;
+  }
+  .shore .route.trade {
+    stroke: var(--gold);
+    opacity: 0.95;
+  }
+  .shore .route.drain {
+    stroke: var(--crimson);
+    stroke-dasharray: 6 6;
+    opacity: 0.85;
+  }
+  .shore .route-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 16;
+    cursor: pointer;
+    outline: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shore .pebble .stone { animation: none; }
+    .shore .rock path, .shore .rock text { transition: none; }
+  }
+
+  /* A loop chosen on the beach, as tidewright wrote it. */
+  .picked {
+    border-left: 2px solid var(--gold);
+    padding: 0.2rem 0 0.1rem 0.8rem;
+    margin: 0.6rem 0 1.2rem;
+  }
+  .picked .group-of {
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.25rem;
+  }
+  .picked .loop-text {
+    margin: 0 0 0.4rem;
+  }
+
+  /* (d) tidewright's telling, the blocks it read beneath every line. */
+  .telling {
+    margin-top: 1rem;
   }
   .reading-line {
     font-style: italic;
+    color: var(--muted);
     margin: 0 0 0.9rem;
   }
-  .reading-part {
-    margin: 0 0 1rem;
-    white-space: pre-line;
+  .tide-head {
+    font-weight: 500;
+    margin: 0 0 0.6rem;
   }
-  .reading-part.image {
-    font-style: italic;
-    border-left: 2px solid var(--gold);
-    padding-left: 0.8rem;
-  }
-  .asked {
-    font-style: italic;
+  .group-head {
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--muted);
+    margin: 1.2rem 0 0.5rem;
   }
-
-  /* 5. Questions asked of the beach: one open at a time. */
-  .question {
+  .loop {
+    border-left: 2px solid var(--frame);
+    padding: 0.1rem 0 0.1rem 0.8rem;
+    margin: 0 0 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.4s ease;
+  }
+  .loop:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .loop.on {
+    border-left-color: var(--gold);
+  }
+  .loop-text {
+    margin: 0 0 0.25rem;
+  }
+  .reads li {
+    font-size: 0.92rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    margin: 0;
+    padding-left: 1rem;
+  }
+  .reads li::before {
+    background: var(--frame);
+    width: 0.35rem;
+    height: 0.25rem;
+    top: 0.68em;
+    left: 0.1rem;
+  }
+  .reads-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+  .earlier {
     border-top: 1px solid var(--frame);
-  }
-  .question:last-child {
     border-bottom: 1px solid var(--frame);
+    margin: 1.4rem 0 0;
   }
+  .earlier summary,
   .question summary {
     display: flex;
     align-items: center;
@@ -313,9 +365,11 @@
     cursor: pointer;
     list-style: none;
   }
+  .earlier summary::-webkit-details-marker,
   .question summary::-webkit-details-marker {
     display: none;
   }
+  .earlier summary::after,
   .question summary::after {
     content: "+";
     flex: none;
@@ -323,12 +377,33 @@
     font-size: 1.3rem;
     line-height: 1;
   }
+  .earlier[open] > summary::after,
   .question[open] summary::after {
     content: "\2212";
   }
+  .earlier summary:focus-visible,
   .question summary:focus-visible {
     outline: 2px solid var(--crimson);
     outline-offset: 2px;
+  }
+  .earlier .loop {
+    cursor: default;
+  }
+  .earlier-tide {
+    padding: 0 0 0.6rem;
+  }
+
+  /* Ask the beach a question. */
+  .ask form {
+    margin-top: 0.4rem;
+  }
+
+  /* Questions asked of the beach: one open at a time. */
+  .question {
+    border-top: 1px solid var(--frame);
+  }
+  .question:last-child {
+    border-bottom: 1px solid var(--frame);
   }
   .answer {
     padding: 0 0 0.5rem 0.8rem;
@@ -339,7 +414,7 @@
     white-space: pre-line;
   }
 
-  /* 6. How to look: quiet, at the foot. */
+  /* How to look: quiet, at the foot. */
   .how {
     color: var(--muted);
   }
@@ -380,14 +455,10 @@
   </nav>
 
   <div class="sheet">
-    <!-- 1. Golden light between two shores. When a reading is showing,
-         its image (its fourth part) shapes the picture. -->
-    <div class="flow">
-      <canvas id="flow" role="img" aria-label="Golden light moving between two shores"></canvas>
-    </div>
-
-    <!-- Every word below is read live from the beach (spine:golden-flow)
-         and the visitor's own blocks; nothing of it is kept in this page. -->
+    <!-- Every word below is read live from the beach: spine:golden-flow,
+         where tidewright writes each person's loops on its tide, and the
+         room pool:golden-flow. The page computes nothing: every pebble,
+         line and count is drawn from what tidewright wrote. -->
     <p class="status" id="status" role="status">Reading from the beach&hellip;</p>
 
     <div id="doc" hidden>
@@ -397,20 +468,55 @@
       <p class="welcome" id="welcome"></p>
     </div>
 
-    <!-- 3. Ask the beach. 'See from where I stand' reads the open blocks
-         for a handle and writes nothing; a question goes into the room,
-         pool:golden-flow. No passphrase is asked for or sent anywhere on
-         this page. -->
+    <!-- The pool: one handle to stand as, a second to narrow to, a rung. -->
+    <div id="pool-part" hidden>
+      <hr class="rule">
+      <section id="pool" aria-labelledby="pool-head">
+        <h2 id="pool-head"></h2>
+        <form id="stand-form" novalidate>
+          <div class="fields">
+            <div>
+              <label for="as">Stand as</label>
+              <input id="as" name="as" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+            </div>
+            <div>
+              <label for="with">Narrow to <span class="opt">(optional)</span></label>
+              <input id="with" name="with" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+            </div>
+          </div>
+          <div class="rungs" role="group" aria-label="Read at">
+            <span class="rungs-label">Read at</span>
+            <button type="button" data-rung="day" aria-pressed="true">day</button>
+            <button type="button" data-rung="season" aria-pressed="false">season</button>
+            <button type="button" data-rung="year" aria-pressed="false">year</button>
+          </div>
+          <button type="submit">Stand here</button>
+          <p class="form-status" id="stand-status" role="status"></p>
+        </form>
+
+        <div class="counts" aria-live="polite">
+          <div class="count"><span class="n" id="n-loops">&ndash;</span><span class="k">loops</span></div>
+          <div class="count"><span class="n" id="n-closed">&ndash;</span><span class="k">closed</span></div>
+          <div class="count waiting"><span class="n" id="n-waiting">&ndash;</span><span class="k">waiting</span></div>
+        </div>
+        <p class="tide" id="tide"></p>
+        <p class="pool-note" id="pool-note" role="status"></p>
+
+        <div class="shore">
+          <svg id="beach" viewBox="0 0 400 340" role="group" aria-label="The beach"></svg>
+        </div>
+        <div class="picked" id="picked" aria-live="polite" hidden></div>
+
+        <div class="telling" id="telling"></div>
+      </section>
+    </div>
+
+    <!-- Ask the beach a question: it goes into the room, pool:golden-flow.
+         No passphrase is asked for or sent anywhere on this page. -->
     <div id="ask-part" hidden>
       <hr class="rule">
       <section class="ask" id="ask" aria-labelledby="ask-head">
         <h2 id="ask-head">Ask the beach</h2>
-        <form id="see-form">
-          <label for="s-handle">Your handle</label>
-          <input id="s-handle" name="handle" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
-          <button type="submit">See from where I stand</button>
-          <p class="form-status" id="see-status" role="status"></p>
-        </form>
         <form id="ask-form">
           <label class="trap" for="q-web" aria-hidden="true">Leave this empty</label>
           <input class="trap" id="q-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -423,49 +529,7 @@
       </section>
     </div>
 
-    <!-- 4. From where you stand: shown when a handle is given, from the
-         open blocks. -->
-    <div id="stand-part" hidden>
-      <hr class="rule">
-      <section id="stand" aria-labelledby="stand-head">
-        <h2 id="stand-head">From where you stand</h2>
-        <p class="threads-status" id="threads-status" role="status" hidden></p>
-        <div class="pair" id="pair-1">
-          <div class="side theirs">
-            <p class="side-label">What you are looking for</p>
-            <p class="side-text" id="s-their-seek"></p>
-          </div>
-          <div class="side">
-            <p class="side-label">What Matthew offers</p>
-            <p class="side-text" id="s-his-offer"></p>
-          </div>
-        </div>
-        <div class="pair" id="pair-2">
-          <div class="side">
-            <p class="side-label">What Matthew is looking for</p>
-            <p class="side-text" id="s-his-seek"></p>
-          </div>
-          <div class="side theirs">
-            <p class="side-label">What you offer</p>
-            <p class="side-text" id="s-their-offer"></p>
-          </div>
-        </div>
-        <div class="pair" id="pair-3">
-          <div class="side theirs">
-            <p class="side-label">Your day</p>
-            <p class="side-text" id="s-their-day"></p>
-          </div>
-          <div class="side">
-            <p class="side-label">Matthew&rsquo;s day</p>
-            <p class="side-text" id="s-his-day"></p>
-          </div>
-        </div>
-        <p class="threads-note" id="threads-note" hidden>These threads are found by the page, comparing the meaning of words. They show where to look; the meaning is yours.</p>
-        <div id="reading" aria-live="polite"></div>
-      </section>
-    </div>
-
-    <!-- 5. Questions asked of the beach, answered, newest first. -->
+    <!-- Questions asked of the beach, answered, newest first. -->
     <div id="questions-part" hidden>
       <hr class="rule">
       <section id="questions" aria-labelledby="questions-head">
@@ -474,7 +538,7 @@
       </section>
     </div>
 
-    <!-- 6. How to look, quiet, at the foot. -->
+    <!-- How to look, quiet, at the foot. -->
     <div id="how-part" hidden>
       <hr class="rule">
       <section class="how" id="how" aria-labelledby="how-head">
@@ -518,7 +582,7 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:golden-flow, and the open passport and day of whoever looks; its room is pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
+    <p class="site-where">This page reads spine:golden-flow, where tidewright writes each person&rsquo;s loops on its tide; its room is pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
@@ -531,16 +595,29 @@
   var ME = 'Phenomemental';
   var SITE = 'https://phenomemental.github.io/happyseaurchin-beach/';
   var HANDLE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/;
+  var RUNGS = ['day', 'season', 'year'];
   var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
+  var SVG = 'http://www.w3.org/2000/svg';
 
   var text = Beach.text;
   var status = document.getElementById('status');
   var loaded = false;
   var spine = null;
   var lastSig = null;
-  // The handle the page is seen from on this visit; nothing else about
-  // the visitor is kept.
-  var stand = null;
+  var drawnSig = null;
+
+  // Where the page stands on this visit: a handle, a second to narrow to,
+  // and the rung. Nothing else about the visitor is kept.
+  var view = { as: ME, with: '', rung: 'day' };
+  try {
+    var q = new URLSearchParams(location.search);
+    var qa = (q.get('as') || '').trim();
+    var qw = (q.get('with') || '').trim();
+    var qr = (q.get('rung') || '').trim();
+    if (HANDLE.test(qa)) view.as = qa;
+    if (HANDLE.test(qw) && qw !== view.as) view.with = qw;
+    if (RUNGS.indexOf(qr) >= 0) view.rung = qr;
+  } catch (e) {}
 
   function $(id) {
     return document.getElementById(id);
@@ -549,6 +626,12 @@
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (s != null) e.textContent = s;
+    return e;
+  }
+  function svg(tag, attrs, parent) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (parent) parent.appendChild(e);
     return e;
   }
   function cap(s) {
@@ -629,18 +712,12 @@
     var self = SITE + 'golden-flow.html';
     return sentences(s).filter(function (x) { return x.indexOf(self) < 0; }).join(' ');
   }
-
-  // ---- Reading the beach ------------------------------------------------------
-  // A block, or null when the beach says there is none.
-  function maybe(name) {
-    return fetch(BEACH + '?block=' + encodeURIComponent(name), { cache: 'no-store' }).then(function (r) {
-      if (r.status === 404) return null;
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
+  function headingOf(node, fallback) {
+    var l = capsLead(own(node));
+    return l.caps ? sentenceCase(l.caps) : fallback;
   }
 
-  // ---- 2. The welcome -----------------------------------------------------------
+  // ---- The welcome ----------------------------------------------------------------
   function renderWelcome(root) {
     var parts = split(root);
     var l = capsLead(parts.label);
@@ -658,11 +735,7 @@
     $('welcome').textContent = withoutOwnAddress(parts.body);
   }
 
-  // ---- 5. Questions asked of the beach ------------------------------------------
-  function headingOf(node, fallback) {
-    var l = capsLead(own(node));
-    return l.caps ? sentenceCase(l.caps) : fallback;
-  }
+  // ---- Questions asked of the beach ---------------------------------------------
   function renderQuestions(node) {
     var answered = kids(node).filter(function (q) {
       return own(q) && partsOf(q).length;
@@ -692,7 +765,7 @@
     $('questions-part').hidden = !answered.length;
   }
 
-  // ---- 6. How to look -------------------------------------------------------------
+  // ---- How to look ----------------------------------------------------------------
   function renderHow(node) {
     var t = own(node);
     var steps = partsOf(node);
@@ -716,512 +789,697 @@
     $('provenance-box').hidden = !s;
   }
 
+  // ---- Reading what tidewright wrote -------------------------------------------
+  // Beneath the block's second place, one reading for each person, its
+  // opening line beginning with their handle; beneath a reading, one
+  // entry for each tide, newest last. An entry's opening line carries the
+  // three counts; beneath it, the open loops, gathered under who they
+  // wait on; beneath each loop, the line of the blocks it read.
+  var NUMS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+    'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+  var NUM = '(\\d+|none|no|' + NUMS.join('|') + ')';
+  function num(s) {
+    if (/^\d+$/.test(s)) return parseInt(s, 10);
+    s = s.toLowerCase();
+    if (s === 'none' || s === 'no') return 0;
+    var i = NUMS.indexOf(s);
+    return i >= 0 ? i : null;
+  }
+  // "Loops 19", "loops: 19", or "19 loops", as tidewright wrote it.
+  function counted(s, word) {
+    var m = new RegExp('\\b' + word + '\\b[\\s:]*' + NUM + '\\b', 'i').exec(s) ||
+      new RegExp('\\b' + NUM + '\\s+' + word + '\\b', 'i').exec(s);
+    return m ? num(m[1]) : null;
+  }
+
+  var READ = /^\s*read\b\s*:?\s*/i;
+  // The blocks read beneath a line, one by one.
+  function readsOf(node) {
+    var out = [];
+    if (!node || typeof node !== 'object') return out;
+    for (var i = 1; i <= 9; i++) {
+      var t = own(node[String(i)]);
+      if (!t || !READ.test(t)) continue;
+      t.replace(READ, '').split(/\s*;\s*/).forEach(function (b) {
+        b = b.replace(/\.\s*$/, '').trim();
+        if (b) out.push(b);
+      });
+    }
+    return out;
+  }
+  // The lines beneath a node that are lines of their own, not its reads.
+  function linesUnder(node) {
+    return kids(node).filter(function (n) {
+      var t = own(n);
+      return t && !READ.test(t);
+    });
+  }
+
+  // "Money, between keel (for David) and Matthew: ..." — the kind, and
+  // who the loop is between; a name keeps its bracket with it.
+  function parties(head) {
+    var m = /\b(?:between|within)\b\s*([\s\S]*)$/i.exec(head);
+    if (!m) return [];
+    var s = m[1];
+    var hands = /^(?:his|her|their|its|my|our)\s+own\s+hands\s*\(([^)]*)\)/i.exec(s);
+    if (hands) s = hands[1];
+    var out = [], cur = '', depth = 0;
+    for (var k = 0; k < s.length; k++) {
+      var c = s.charAt(k);
+      if (c === '(') depth++;
+      if (c === ')') depth = Math.max(0, depth - 1);
+      if (depth === 0 && (c === ',' || (c === ' ' && /^ and /i.test(s.slice(k, k + 5))))) {
+        out.push(cur);
+        cur = '';
+        if (c === ' ') k += 4;
+        continue;
+      }
+      cur += c;
+    }
+    out.push(cur);
+    return out.map(function (p) {
+      p = p.trim();
+      var b = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(p);
+      return b ? { name: b[1].trim(), bracket: b[2].trim() } : { name: p, bracket: '' };
+    }).filter(function (p) {
+      return p.name && !/^(his|her|their|its|my|our)\b/i.test(p.name);
+    });
+  }
+  // The third, where tidewright found one: "TOLD: keel, at ..." or "A
+  // third is found (Ada, ...)".
+  function thirdOf(t) {
+    var m = /\bTOLD:\s*([^,.;(]+)/.exec(t);
+    var told = !!m;
+    if (!m) m = /\bthird\b[^(:.]*?[(:]\s*([^,.;)]+)/i.exec(t);
+    if (!m) return null;
+    var name = m[1].trim();
+    if (!/^[A-Za-z]/.test(name) || name.length > 40 || /^(none|no one|nobody)$/i.test(name)) return null;
+    return { name: name, told: told };
+  }
+  var LADDER = { route: /^\s*(routes?|grooves?)\b/i, trade: /^\s*trades?\b/i, drain: /^\s*drains?\b/i };
+  function ladderOf(s) {
+    for (var k in LADDER) if (LADDER[k].test(s)) return k;
+    return '';
+  }
+  function parseLoop(node, group, id) {
+    var t = own(node);
+    var i = t.indexOf(': ');
+    var head = i > 0 && i < 200 ? t.slice(0, i) : '';
+    return {
+      id: id,
+      text: t,
+      head: head,
+      kind: head ? head.split(',')[0].trim() : '',
+      group: group,
+      ladder: ladderOf(group) || ladderOf(t),
+      reads: readsOf(node),
+      parties: parties(head),
+      third: thirdOf(t)
+    };
+  }
+  function parseEntry(entry, eid) {
+    var groups = [];
+    linesUnder(entry).forEach(function (g, gi) {
+      var under = linesUnder(g);
+      if (under.length) {
+        groups.push({
+          head: own(g),
+          loops: under.map(function (l, li) { return parseLoop(l, own(g), eid + '.' + (gi + 1) + '.' + (li + 1)); })
+        });
+      } else {
+        groups.push({ head: '', loops: [parseLoop(g, '', eid + '.' + (gi + 1))] });
+      }
+    });
+    var head = own(entry);
+    return {
+      head: head,
+      groups: groups,
+      rung: /^\s*season\b/i.test(head) ? 'season' : /^\s*year\b/i.test(head) ? 'year' : 'day',
+      loops: counted(head, 'loops?'),
+      closed: counted(head, 'closed'),
+      waiting: counted(head, 'waiting')
+    };
+  }
+  function readings() {
+    return spine ? kids(spine['2']).filter(function (r) { return r && typeof r === 'object' && own(r); }) : [];
+  }
+  function handleOf(r) {
+    var m = /^([A-Za-z0-9][A-Za-z0-9_-]*)/.exec(own(r));
+    return m ? m[1] : '';
+  }
+  function readingFor(h) {
+    var found = null;
+    readings().forEach(function (r) {
+      if (handleOf(r) === h) found = r;
+    });
+    return found;
+  }
+
+  // Who is who. The readings' opening lines pair a handle with a name,
+  // "Phenomemental (Matthew)", and the loops pair a name with a handle,
+  // "Julie (happyhedgehog)": each person is one rock, by either word, and
+  // a rock bears the name tidewright uses for them.
+  var alias = { up: {}, name: {} };
+  function find(x) {
+    var seen = 0;
+    while (alias.up[x] && alias.up[x] !== x && seen++ < 50) x = alias.up[x];
+    return x;
+  }
+  function join(a, b, name) {
+    if (!alias.up[a]) alias.up[a] = a;
+    if (!alias.up[b]) alias.up[b] = b;
+    var ra = find(a), rb = find(b);
+    if (ra !== rb) {
+      alias.up[rb] = ra;
+      if (!alias.name[ra] && alias.name[rb]) alias.name[ra] = alias.name[rb];
+    }
+    if (name && !alias.name[ra]) alias.name[ra] = name;
+  }
+  function single(s) {
+    return /^[A-Za-z][A-Za-z0-9_-]*$/.test(s);
+  }
+  function learnNames(list) {
+    alias = { up: {}, name: {} };
+    list.forEach(function (r) {
+      var m = /^([A-Za-z0-9][A-Za-z0-9_-]*)\s*\(([^)]+)\)/.exec(own(r));
+      if (m && single(m[2].trim())) join(m[1], m[2].trim(), m[2].trim());
+      kids(r).forEach(function (entry) {
+        parseEntry(entry, '').groups.forEach(function (g) {
+          g.loops.forEach(function (l) {
+            l.parties.forEach(function (p) {
+              if (p.bracket && single(p.bracket) && single(p.name)) join(p.name, p.bracket, p.name);
+            });
+          });
+        });
+      });
+    });
+  }
+  function key(name) {
+    return find(name);
+  }
+  function label(k) {
+    return alias.name[k] || k;
+  }
+
+  // ---- The pool ---------------------------------------------------------------------
+  var SIDES = { rooms: -90, grains: 180, projects: 0, family: 90 };
+  // The side of the surface a loop waits in: the family's own, the
+  // tidewright group that says so, or the first block it read there.
+  function sideOf(loop) {
+    if (/\bfamily\b/i.test(loop.group) || /\bown hands\b/i.test(loop.head)) return 'family';
+    for (var i = 0; i < loop.reads.length; i++) {
+      var p = (/^([A-Za-z][\w-]*):/.exec(loop.reads[i]) || [])[1];
+      if (!p) continue;
+      p = p.toLowerCase();
+      if (p === 'grain') return 'grains';
+      if (p === 'pool' || p === 'liquid') return 'rooms';
+      if (/^(task|purpose|conditions|surface|stash|reflexive|capabilities|relationships|cadence)$/.test(p)) return 'family';
+      if (/^(now|history|passport|availability|presence|marks)$/.test(p)) continue;
+      return 'projects';
+    }
+    return loop.reads.some(function (b) { return /^pool:/i.test(b); }) ? 'rooms' : 'projects';
+  }
+  // "loops 5 closed" on a route: how many closed between the two.
+  function weight(t) {
+    var m = new RegExp('\\b' + NUM + '\\s+(?:loops?\\s+)?(?:closed|times)\\b', 'i').exec(t) ||
+      new RegExp('\\bclosed\\b[\\s:]*' + NUM + '\\b', 'i').exec(t);
+    var n = m ? num(m[1]) : null;
+    return n == null || n < 1 ? 1 : n;
+  }
+
+  // A small steady number from words, so each rock keeps its shape.
+  function hash(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967295;
+  }
+  function rockPath(cx, cy, r, seed) {
+    var n = 9, pts = [];
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 + seed * 6.283;
+      var k = 0.8 + 0.2 * hash(seed + ':' + i);
+      pts.push([cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k * 0.8]);
+    }
+    var last = pts[n - 1];
+    var d = 'M' + ((last[0] + pts[0][0]) / 2).toFixed(1) + ' ' + ((last[1] + pts[0][1]) / 2).toFixed(1);
+    for (var j = 0; j < n; j++) {
+      var p = pts[j], q = pts[(j + 1) % n];
+      d += ' Q' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' ' + ((p[0] + q[0]) / 2).toFixed(1) + ' ' + ((p[1] + q[1]) / 2).toFixed(1);
+    }
+    return d + 'Z';
+  }
+  function short(s, n) {
+    return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s;
+  }
+
+  var W = 400, H = 340, CX = 200, CY = 170;
+  var RING = { x: 150, y: 116 };
+  var BAND = [{ x: 62, y: 52 }, { x: 78, y: 66 }];
+
+  // Everything the beach shows at this moment, drawn from the reading.
+  var scene = null;
+  var picked = null;
+
+  function buildScene() {
+    var reading = readingFor(view.as);
+    var s = { reading: reading, entries: [], entry: null, day: [], season: [], year: [], rocks: [], centre: key(view.as) };
+    if (!reading) return s;
+    s.entries = kids(reading).filter(function (e) { return e && typeof e === 'object' && own(e); }).map(function (e, i) {
+      return parseEntry(e, String(i + 1));
+    });
+    var days = s.entries.filter(function (e) { return e.rung === 'day'; });
+    s.entry = days.length ? days[days.length - 1] : null;
+    function latest(rung) {
+      var list = s.entries.filter(function (e) { return e.rung === rung; });
+      return list.length ? list[list.length - 1] : null;
+    }
+    function loopsOf(e) {
+      var out = [];
+      if (e) e.groups.forEach(function (g) { out = out.concat(g.loops); });
+      return out;
+    }
+    var narrow = view.with ? key(view.with) : '';
+    function near(l) {
+      if (!narrow) return true;
+      if (l.parties.some(function (p) { return key(p.name) === narrow || (p.bracket && key(p.bracket) === narrow); })) return true;
+      var words = Object.keys(alias.up).filter(function (a) { return find(a) === narrow; });
+      if (words.indexOf(view.with) < 0) words.push(view.with);
+      return words.some(function (w) {
+        return new RegExp('(^|[^A-Za-z0-9_-])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-z0-9_-])').test(l.head || l.text);
+      });
+    }
+    s.near = near;
+    s.day = loopsOf(s.entry).filter(function (l) { return !l.ladder && near(l); });
+    var se = latest('season');
+    s.season = (se ? loopsOf(se) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'route'; })).filter(near);
+    var ye = latest('year');
+    s.year = (ye ? loopsOf(ye) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; })).filter(near);
+    s.year.forEach(function (l) { if (!l.ladder) l.ladder = 'trade'; });
+    s.season.forEach(function (l) { if (!l.ladder) l.ladder = 'route'; });
+    return s;
+  }
+
+  // The rocks around the centre: everyone a shown loop is between, and
+  // the third where one was found. Each sits nearest the side of its first
+  // loop.
+  function placeRocks(loops) {
+    var order = [], pref = {};
+    function add(name, angle) {
+      var k = key(name);
+      if (!k || k === scene.centre) return;
+      if (order.indexOf(k) < 0) {
+        order.push(k);
+        pref[k] = angle;
+      }
+    }
+    loops.forEach(function (l) {
+      var a = SIDES[l.side || 'projects'];
+      l.parties.forEach(function (p) { add(p.name, a); });
+      if (l.third) add(l.third.name, a);
+    });
+    var n = order.length;
+    var slots = [];
+    for (var i = 0; i < n; i++) slots.push(-90 + 180 / Math.max(n, 1) + i * 360 / Math.max(n, 1));
+    var at = {};
+    function gap(a, b) {
+      var d = Math.abs(((a - b) % 360 + 540) % 360 - 180);
+      return d;
+    }
+    order.forEach(function (k) {
+      var best = -1, bestGap = 1e9;
+      slots.forEach(function (sl, si) {
+        if (sl == null) return;
+        var g = gap(sl, pref[k]);
+        if (g < bestGap) {
+          bestGap = g;
+          best = si;
+        }
+      });
+      var ang = slots[best] * Math.PI / 180;
+      slots[best] = null;
+      at[k] = { x: CX + Math.cos(ang) * RING.x, y: CY + Math.sin(ang) * RING.y };
+    });
+    return { order: order, at: at };
+  }
+
+  var rockEls = {};
+  var pebbleEls = {};
+  var tieLayer = null;
+
+  function drawRock(layer, k, x, y, r, centre) {
+    var g = svg('g', { 'class': 'rock' + (centre ? ' centre' : '') }, layer);
+    var nm = label(k);
+    svg('path', { d: rockPath(x, y, r, hash(k)) }, g);
+    var t = svg('text', centre
+      ? { x: x, y: y, 'dominant-baseline': 'central' }
+      : { x: x, y: y + r * 0.8 + 13 }, g);
+    t.textContent = short(nm, centre ? 16 : 18);
+    if (centre && nm.length > 8) {
+      t.setAttribute('textLength', String(r * 1.8));
+      t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    }
+    var title = svg('title', {}, g);
+    title.textContent = nm === k ? nm : nm + ' (' + k + ')';
+    rockEls[k] = g;
+    return g;
+  }
+
+  function drawBeach() {
+    var box = $('beach');
+    box.textContent = '';
+    rockEls = {};
+    pebbleEls = {};
+    // The sand, with a few ripples the tide left.
+    svg('ellipse', { 'class': 'sand', cx: CX, cy: CY, rx: 196, ry: 160 }, box);
+    for (var i = 0; i < 4; i++) {
+      var y = CY - 120 + i * 78 + (i % 2 ? 6 : -4);
+      svg('path', { 'class': 'ripple', d: 'M' + (CX - 150 + i * 6) + ' ' + y + ' q 50 -10 100 0 t 100 0 t 100 0' }, box);
+    }
+    var sideAt = { rooms: [CX, 12, 0], family: [CX, H - 4, 0], grains: [10, CY, -90], projects: [W - 10, CY, 90] };
+    Object.keys(sideAt).forEach(function (k) {
+      var p = sideAt[k];
+      var t = svg('text', {
+        'class': 'side', x: p[0], y: p[1], 'text-anchor': 'middle',
+        transform: p[2] ? 'rotate(' + p[2] + ' ' + p[0] + ' ' + p[1] + ')' : ''
+      }, box);
+      t.textContent = k;
+    });
+
+    var rung = view.rung;
+    var loops = rung === 'day' ? scene.day : rung === 'season' ? scene.season : scene.year;
+    var shown = scene.reading && scene.entry || (scene.reading && loops.length);
+    loops.forEach(function (l) { l.side = sideOf(l); });
+    var rocks = placeRocks(shown ? loops : []);
+    var routes = svg('g', {}, box);
+    tieLayer = svg('g', {}, box);
+    var stones = svg('g', {}, box);
+
+    drawRock(stones, scene.centre, CX, CY, 30, true);
+    rocks.order.forEach(function (k) {
+      drawRock(stones, k, rocks.at[k].x, rocks.at[k].y, 17, false);
+    });
+    scene.at = rocks.at;
+    scene.at[scene.centre] = { x: CX, y: CY };
+
+    if (!shown) return;
+
+    if (rung === 'day') {
+      // Closed loops rest as small grey pebbles near the rock; they say
+      // nothing.
+      var closed = Math.min(scene.entry && scene.entry.closed || 0, 60);
+      for (var c = 0; c < closed; c++) {
+        var a = c * 2.39996 + 0.4;
+        var rr = 39 + (c % 4) * 4.5 + Math.floor(c / 24) * 6;
+        svg('circle', { 'class': 'resting', cx: (CX + Math.cos(a) * rr).toFixed(1), cy: (CY + Math.sin(a) * rr * 0.8).toFixed(1), r: 2.6 }, stones);
+      }
+      // Open loops: amber pebbles on the side of the surface they wait in.
+      var bySide = {};
+      loops.forEach(function (l) { (bySide[l.side] = bySide[l.side] || []).push(l); });
+      Object.keys(bySide).forEach(function (sd) {
+        var list = bySide[sd];
+        var n = list.length;
+        var step = Math.min(17, 84 / Math.max(n, 1));
+        list.forEach(function (l, j) {
+          var band = BAND[n > 5 ? j % 2 : 1];
+          var ang = (SIDES[sd] + (j - (n - 1) / 2) * step) * Math.PI / 180;
+          var x = CX + Math.cos(ang) * band.x;
+          var y = CY + Math.sin(ang) * band.y;
+          var g = svg('g', { 'class': 'pebble', tabindex: '0', role: 'button' }, stones);
+          g.setAttribute('aria-label', l.text);
+          svg('circle', { 'class': 'hit', cx: x.toFixed(1), cy: y.toFixed(1), r: 13 }, g);
+          var st = svg('ellipse', { 'class': 'stone', cx: x.toFixed(1), cy: y.toFixed(1), rx: 6.6, ry: 5.2, transform: 'rotate(' + Math.round(hash(l.id) * 60 - 30) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')' }, g);
+          st.style.animationDelay = (-hash(l.text) * 5).toFixed(2) + 's';
+          l.x = x;
+          l.y = y;
+          pebbleEls[l.id] = g;
+          g.addEventListener('click', function () { pick(l, false); });
+          g.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+              ev.preventDefault();
+              pick(l, false);
+            }
+          });
+        });
+      });
+    } else {
+      // Routes worn between the same two, as thick as the loops closed
+      // between them; at the year, trades in amber and drains dashed red.
+      loops.forEach(function (l) {
+        var ks = [];
+        l.parties.forEach(function (p) {
+          var k = key(p.name);
+          if (ks.indexOf(k) < 0) ks.push(k);
+        });
+        if (ks.length < 2 && ks.indexOf(scene.centre) < 0) ks.unshift(scene.centre);
+        var A = scene.at[ks[0]], B = scene.at[ks[1]];
+        if (!A || !B) return;
+        var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+        var bend = 0.18;
+        var qx = mx + (CX - mx) * bend, qy = my + (CY - my) * bend;
+        var d = 'M' + A.x.toFixed(1) + ' ' + A.y.toFixed(1) + ' Q' + qx.toFixed(1) + ' ' + qy.toFixed(1) + ' ' + B.x.toFixed(1) + ' ' + B.y.toFixed(1);
+        var w = l.ladder === 'drain' ? 2 : Math.min(1.4 + weight(l.text) * 1.1, 12);
+        svg('path', { 'class': 'route' + (l.ladder === 'trade' ? ' trade' : l.ladder === 'drain' ? ' drain' : ''), d: d, 'stroke-width': w.toFixed(1) }, routes);
+        var hit = svg('path', { 'class': 'route-hit', d: d, tabindex: '0', role: 'button' }, routes);
+        hit.setAttribute('aria-label', l.text);
+        hit.addEventListener('click', function () { pick(l, false); });
+        hit.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            pick(l, false);
+          }
+        });
+        l.x = qx;
+        l.y = qy;
+        pebbleEls[l.id] = hit;
+      });
+    }
+    $('beach').setAttribute('aria-label', 'The beach from where ' + label(scene.centre) + ' stands');
+  }
+
+  // Choose a loop: its line as tidewright wrote it, the rocks it is
+  // between marked, and the third's rock lit.
+  function pick(l, quiet) {
+    picked = l ? l.text : null;
+    Object.keys(rockEls).forEach(function (k) { rockEls[k].classList.remove('lit', 'near'); });
+    Object.keys(pebbleEls).forEach(function (k) { pebbleEls[k].classList.remove('on'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.telling .loop'), function (d) {
+      d.classList.toggle('on', !!l && d.dataset.id === l.id);
+    });
+    if (tieLayer) tieLayer.textContent = '';
+    var box = $('picked');
+    box.textContent = '';
+    if (!l) {
+      box.hidden = true;
+      return;
+    }
+    if (pebbleEls[l.id]) pebbleEls[l.id].classList.add('on');
+    l.parties.forEach(function (p) {
+      var k = key(p.name);
+      if (rockEls[k]) rockEls[k].classList.add('near');
+      var to = scene.at && scene.at[k];
+      if (to && l.x != null && view.rung === 'day') {
+        svg('line', { 'class': 'tie', x1: l.x.toFixed(1), y1: l.y.toFixed(1), x2: to.x.toFixed(1), y2: to.y.toFixed(1) }, tieLayer);
+      }
+    });
+    if (l.third) {
+      var t = key(l.third.name);
+      if (rockEls[t]) {
+        rockEls[t].classList.remove('near');
+        rockEls[t].classList.add('lit');
+      }
+    }
+    if (l.group) box.appendChild(el('p', 'group-of', l.group));
+    box.appendChild(el('p', 'loop-text', l.text));
+    readList(box, l.reads);
+    box.hidden = false;
+    if (!quiet && window.matchMedia && !window.matchMedia('(min-width: 640px)').matches) {
+      var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var r = box.getBoundingClientRect();
+      if (r.bottom > window.innerHeight) box.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }
+  function readList(parent, reads) {
+    if (!reads.length) return;
+    parent.appendChild(el('p', 'reads-label', 'Read'));
+    var ul = el('ul', 'reads');
+    reads.forEach(function (b) { ul.appendChild(el('li', null, b)); });
+    parent.appendChild(ul);
+  }
+
+  // tidewright's telling for the handle: the tide's opening line, then
+  // each open loop under who it waits on, the blocks read beneath it.
+  function telling(box, entry, loops, live) {
+    if (entry.head) box.appendChild(el('p', 'tide-head', entry.head));
+    var ids = {};
+    loops.forEach(function (l) { ids[l.id] = l; });
+    entry.groups.forEach(function (g) {
+      var mine = g.loops.filter(function (l) { return ids[l.id]; });
+      if (!mine.length) return;
+      if (g.head) box.appendChild(el('h3', 'group-head', g.head));
+      mine.forEach(function (l) {
+        var d = el('div', 'loop');
+        d.dataset.id = l.id;
+        d.appendChild(el('p', 'loop-text', l.text));
+        readList(d, l.reads);
+        if (live && pebbleEls[l.id]) {
+          d.tabIndex = 0;
+          d.setAttribute('role', 'button');
+          d.addEventListener('click', function () { pick(l, true); });
+          d.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+              ev.preventDefault();
+              pick(l, true);
+            }
+          });
+        }
+        box.appendChild(d);
+      });
+    });
+  }
+
+  function setCount(id, n) {
+    $(id).textContent = n == null ? '–' : String(n);
+  }
+
+  function renderPool() {
+    scene = buildScene();
+    var note = '';
+    var who = label(scene.centre);
+    if (!scene.reading || !scene.entry && !scene.entries.length) {
+      note = 'tidewright has not yet written for ' + view.as + '. Handles are case-sensitive.';
+    } else if (view.rung !== 'day' && !(view.rung === 'season' ? scene.season : scene.year).length) {
+      note = 'tidewright has not yet read ' + (view.rung === 'season' ? 'the season' : 'the year') + ' for ' + who + (view.with ? ' with ' + label(key(view.with)) : '') + '.';
+    } else if (view.with) {
+      var list = view.rung === 'day' ? scene.day : view.rung === 'season' ? scene.season : scene.year;
+      note = list.length
+        ? 'Narrowed to the loops between ' + who + ' and ' + label(key(view.with)) + '.'
+        : 'No open loop between ' + who + ' and ' + label(key(view.with)) + ' in this tide.';
+    }
+    $('pool-note').textContent = note;
+    var e = scene.entry;
+    setCount('n-loops', e ? e.loops : null);
+    setCount('n-closed', e ? e.closed : null);
+    setCount('n-waiting', e ? e.waiting : null);
+    $('tide').textContent = e && e.head ? sentences(e.head)[0] || '' : '';
+
+    drawBeach();
+
+    // The telling is the whole tide as tidewright wrote it, narrowed only
+    // by a second handle; a season or a year she read on its own follows.
+    function shownIn(x) {
+      var out = [];
+      x.groups.forEach(function (g) { out = out.concat(g.loops.filter(scene.near)); });
+      return out;
+    }
+    var box = $('telling');
+    box.textContent = '';
+    if (scene.reading) box.appendChild(el('p', 'reading-line', own(scene.reading)));
+    if (e) telling(box, e, shownIn(e), true);
+    if (view.rung !== 'day') {
+      var src = scene.entries.filter(function (x) { return x.rung === view.rung; }).pop();
+      if (src) telling(box, src, shownIn(src), true);
+    }
+    // Earlier tides, folded, newest first.
+    var earlier = scene.entries.filter(function (x) { return x !== e && x.rung === 'day'; }).reverse();
+    if (earlier.length) {
+      var d = el('details', 'earlier');
+      d.appendChild(el('summary', null, 'Earlier tides'));
+      earlier.forEach(function (x) {
+        var t = el('div', 'earlier-tide');
+        telling(t, x, shownIn(x), false);
+        d.appendChild(t);
+      });
+      box.appendChild(d);
+    }
+
+    // Keep the chosen loop chosen while it still stands.
+    var again = null;
+    var all = view.rung === 'day' ? scene.day : view.rung === 'season' ? scene.season : scene.year;
+    all.forEach(function (l) { if (l.text === picked) again = l; });
+    pick(again, true);
+  }
+
   // Draw the block; false if there is nothing to show.
   function render(block) {
     if (!block || typeof block !== 'object') return false;
     var root = own(block);
     if (!root) return false;
-    spine = block;
     var sig = JSON.stringify(block);
     if (sig === lastSig) return true;
     lastSig = sig;
+    spine = block;
+    learnNames(readings());
     renderWelcome(root);
+    $('pool-head').textContent = headingOf(block['1'] && block['1']['6'], 'The pool');
     renderQuestions(block['3']);
     renderHow(block['1']);
     renderProvenance(own(block['9']));
-    if (stand) renderReading();
+    drawnSig = null;
+    show();
     return true;
   }
-
-  // ---- 4. From where you stand ----------------------------------------------------
-  // now:<handle> mirrors the beach's clock: the address is the date written
-  // digit by digit, a 0 digit the "_" branch; today is the eighth rung.
-  function today(now) {
-    var c = Beach.clock();
-    if (!c || !now || typeof now !== 'object') return '';
-    var node = now;
-    for (var i = 0; i < 8 && node && typeof node === 'object'; i++) {
-      node = node[c.address.charAt(i) === '0' ? '_' : c.address.charAt(i)];
-    }
-    return node && typeof node === 'object' && typeof node._ === 'string' ? node._.trim() : '';
-  }
-  // A text as its sentences, each in its own span, with whatever stood
-  // between them kept as it was, so the words show exactly as written.
-  // A sentence ends at . ! or ? before a capital or a digit, or at a line's
-  // end.
-  function pieces(s) {
-    var out = [];
-    var re = /[.!?]["'”’)\]]*(\s+)(?=["“‘(]?[A-Z0-9])|\s*\n\s*/g;
-    var start = 0, m;
-    while ((m = re.exec(s))) {
-      var end = m[1] != null ? m.index + m[0].length - m[1].length : m.index;
-      var gap = s.slice(end, m.index + m[0].length);
-      if (end > start) out.push({ t: s.slice(start, end), gap: gap });
-      else if (out.length) out[out.length - 1].gap += gap;
-      start = m.index + m[0].length;
-    }
-    if (start < s.length) out.push({ t: s.slice(start), gap: '' });
-    return out;
-  }
-  function side(id, s, none) {
-    var p = $(id);
-    p.textContent = '';
-    p.classList.remove('weighed');
-    p.classList.toggle('none', !s);
-    if (!s) {
-      p.textContent = none;
-      return;
-    }
-    pieces(s).forEach(function (x) {
-      p.appendChild(el('span', 'sentence', x.t));
-      if (x.gap) p.appendChild(document.createTextNode(x.gap));
-    });
-  }
-  // A reading in spine:golden-flow, beneath its second place, whose
-  // opening line begins with the handle.
-  function readingFor(handle) {
-    if (!spine) return null;
-    var found = null;
-    kids(spine['2']).forEach(function (r) {
-      var t = own(r);
-      if (t.indexOf(handle) === 0 && !/[A-Za-z0-9_-]/.test(t.charAt(handle.length))) found = r;
-    });
-    return found;
-  }
-  var readingSig = null;
-  function renderReading() {
-    var r = readingFor(stand.handle);
-    var sig = JSON.stringify([stand.handle, r]);
-    if (sig === readingSig) return;
-    readingSig = sig;
-    var box = $('reading');
-    box.textContent = '';
-    if (!r) {
-      box.appendChild(el('p', 'asked', 'A personal reading is made only when you ask for it yourself; asking safely is coming.'));
-      flow.shape('');
-      return;
-    }
-    box.appendChild(el('h3', 'reading-head', 'Your reading'));
-    box.appendChild(el('p', 'reading-line', own(r)));
-    for (var i = 1; i <= 4; i++) {
-      var part = r && typeof r === 'object' ? r[String(i)] : null;
-      var t = own(part);
-      if (!t) continue;
-      var p = el('p', 'reading-part' + (i === 4 ? ' image' : ''), t);
-      box.appendChild(p);
-      partsOf(part).forEach(function (sub) { box.appendChild(el('p', 'reading-part' + (i === 4 ? ' image' : ''), sub)); });
-    }
-    var image = own(r['4']);
-    if (image) partsOf(r['4']).forEach(function (sub) { image += ' ' + sub; });
-    flow.shape(image);
-  }
-  function showStand(handle, theirs) {
-    return Promise.all([
-      maybe('passport:' + ME),
-      maybe('now:' + handle).catch(function () { return null; }),
-      maybe('now:' + ME).catch(function () { return null; })
-    ]).then(function (r) {
-      var his = r[0] || {};
-      stand = { handle: handle };
-      side('s-their-seek', own(theirs['2']), 'Nothing is written there yet.');
-      side('s-his-offer', own(his['1']), 'Nothing is written there yet.');
-      side('s-his-seek', own(his['2']), 'Nothing is written there yet.');
-      side('s-their-offer', own(theirs['1']), 'Nothing is written there yet.');
-      side('s-their-day', today(r[1]), 'No line for today yet.');
-      side('s-his-day', today(r[2]), 'No line for today yet.');
-      readingSig = null;
-      renderReading();
-      $('stand-part').hidden = false;
-      weave();
-    });
+  function show() {
+    var sig = JSON.stringify(view) + (lastSig ? lastSig.length : 0);
+    if (sig === drawnSig || !spine) return;
+    drawnSig = sig;
+    renderPool();
   }
 
-  // ---- The golden threads -------------------------------------------------------
-  // The page finds where the meaning of two people's words meets, in the
-  // visitor's own browser: a small sentence-embedding model, loaded only
-  // when someone asks to see from where they stand, and kept in the
-  // browser's cache by the library. No key, no server, and nothing is
-  // written to the beach.
-  var LIBRARY = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
-  var MODEL = 'Xenova/all-MiniLM-L6-v2';
-  // Tuned on 14 October 2026, Matthew's passport beside happyseaurchin's,
-  // Dwayne's, happyhedgehog's, keel's and emojisword's, each sentence
-  // embedded on its own: from 0.30 the meetings read as real ones (0.31 to
-  // 0.46); at 0.28 and below they turn to noise.
-  var MEETS = 0.30;
-  var MOST = 7;
-  // How much the seeking is met, from the mean of each seeking sentence's
-  // best match.
-  var MUCH = 0.36;
-  var SOME = 0.27;
-  var PAIRS = [
-    { id: 'pair-1', left: 's-their-seek', right: 's-his-offer', seeking: true,
-      from: ['From your passport, what you are looking for', 'From Matthew’s passport, what he offers'],
-      words: ['Much of what you look for meets what Matthew offers.', 'Some of what you look for meets what Matthew offers.', 'Little of what you look for meets what Matthew offers yet.'] },
-    { id: 'pair-2', left: 's-his-seek', right: 's-their-offer', seeking: true,
-      from: ['From Matthew’s passport, what he is looking for', 'From your passport, what you offer'],
-      words: ['Much of what Matthew looks for meets what you offer.', 'Some of what Matthew looks for meets what you offer.', 'Little of what Matthew looks for meets what you offer yet.'] },
-    { id: 'pair-3', left: 's-their-day', right: 's-his-day', seeking: false,
-      from: ['From your day today', 'From Matthew’s day today'],
-      words: ['Much of your day meets his.', 'Some of your day meets his.', 'Little of your day meets his yet.'] }
-  ];
-  var SVG = 'http://www.w3.org/2000/svg';
-  var wide = window.matchMedia ? window.matchMedia('(min-width: 640px)') : { matches: true };
-  var moving = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-  var extractor = null;
-  var woven = [];
-  var weaving = 0;
-
-  function model() {
-    if (!extractor) {
-      extractor = import(LIBRARY).then(function (t) {
-        t.env.allowLocalModels = false;
-        return t.pipeline('feature-extraction', MODEL);
-      });
-      extractor.catch(function () { extractor = null; });
-    }
-    return extractor;
+  // ---- Where to stand -----------------------------------------------------------------
+  var form = $('stand-form');
+  var standStatus = $('stand-status');
+  form.as.value = view.as;
+  form.with.value = view.with;
+  var rungButtons = Array.prototype.slice.call(form.querySelectorAll('[data-rung]'));
+  function markRung() {
+    rungButtons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.rung === view.rung ? 'true' : 'false'); });
   }
-  function svg(tag, attrs) {
-    var e = document.createElementNS(SVG, tag);
-    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
-    return e;
+  markRung();
+  function remember() {
+    try {
+      var q = new URLSearchParams();
+      if (view.as !== ME) q.set('as', view.as);
+      if (view.with) q.set('with', view.with);
+      if (view.rung !== 'day') q.set('rung', view.rung);
+      var s = q.toString();
+      history.replaceState(null, '', location.pathname + (s ? '?' + s : '') + location.hash);
+    } catch (e) {}
   }
-  // The pieces each pair keeps beside it: the dial above, the threads'
-  // layer over it, and below it the list for a phone and the detail of a
-  // chosen thread.
-  function parts(p) {
-    var pair = $(p.id);
-    if (!pair._parts) {
-      var meet = el('p', 'meet');
-      meet.hidden = true;
-      pair.parentNode.insertBefore(meet, pair);
-      var layer = svg('svg', { 'class': 'threads' });
-      pair.appendChild(layer);
-      var list = el('ol', 'matches');
-      list.hidden = true;
-      var detail = el('div', 'thread-detail');
-      detail.hidden = true;
-      detail.setAttribute('aria-live', 'polite');
-      pair.parentNode.insertBefore(detail, pair.nextSibling);
-      pair.parentNode.insertBefore(list, pair.nextSibling);
-      pair._parts = { pair: pair, meet: meet, layer: layer, list: list, detail: detail, shown: null };
-    }
-    return pair._parts;
-  }
-  function unweave() {
-    weaving++;
-    woven = [];
-    PAIRS.forEach(function (p) {
-      var x = parts(p);
-      x.meet.hidden = true;
-      x.layer.textContent = '';
-      x.list.textContent = '';
-      x.list.hidden = true;
-      x.detail.hidden = true;
-      x.shown = null;
-    });
-    $('threads-status').hidden = true;
-    $('threads-note').hidden = true;
-  }
-  function weave() {
-    unweave();
-    var token = weaving;
-    var jobs = PAIRS.map(function (p) {
-      return {
-        p: p,
-        a: Array.prototype.slice.call($(p.left).querySelectorAll('.sentence')),
-        b: Array.prototype.slice.call($(p.right).querySelectorAll('.sentence'))
-      };
-    }).filter(function (j) { return j.a.length && j.b.length; });
-    if (!jobs.length) return;
-    var st = $('threads-status');
-    st.textContent = 'reading the beach…';
-    st.hidden = false;
-    model().then(function (embed) {
-      var texts = [];
-      jobs.forEach(function (j) {
-        j.a.concat(j.b).forEach(function (e) { texts.push(e.textContent.trim()); });
-      });
-      // One sentence at a time, so a score never depends on what else is
-      // being read beside it (batched, the padding shifts it).
-      var vectors = [];
-      return texts.reduce(function (chain, t) {
-        return chain.then(function () {
-          if (token !== weaving) return;
-          return embed(t, { pooling: 'mean', normalize: true }).then(function (out) {
-            vectors.push(out.data);
-          });
-        });
-      }, Promise.resolve()).then(function () {
-        if (token !== weaving) return;
-        var k = 0;
-        function next() {
-          return vectors[k++];
-        }
-        jobs.forEach(function (j) {
-          j.ea = j.a.map(next);
-          j.eb = j.b.map(next);
-          weigh(j);
-          woven.push(j);
-        });
-        st.hidden = true;
-        $('threads-note').hidden = false;
-      });
-    }).catch(function () {
-      if (token !== weaving) return;
-      st.textContent = 'The threads couldn’t be found just now; the words stand above as written.';
-    });
-  }
-  // The vectors are normalised, so their dot product is the cosine.
-  function cosine(a, b) {
-    var s = 0;
-    for (var i = 0; i < a.length; i++) s += a[i] * b[i];
-    return s;
-  }
-  function strength(sim) {
-    return Math.max(0, Math.min(1, (sim - MEETS) / 0.2));
-  }
-  function weigh(j) {
-    var all = [];
-    var best = j.ea.map(function (va, i) {
-      var top = -1;
-      j.eb.forEach(function (vb, k) {
-        var sim = cosine(va, vb);
-        all.push({ sim: sim, i: i, k: k });
-        if (sim > top) top = sim;
-      });
-      return top;
-    });
-    all.sort(function (x, y) { return y.sim - x.sim; });
-    j.met = all.filter(function (x) { return x.sim >= MEETS; }).slice(0, MOST);
-    j.open = j.p.seeking ? best.map(function (top, i) { return top < MEETS ? i : -1; }).filter(function (i) { return i >= 0; }) : [];
-    j.mean = best.reduce(function (s, top) { return s + top; }, 0) / best.length;
-    dial(j);
-    mark(j);
-    list(j);
-    draw(j, true);
-  }
-  // Above the pair: a quiet arc, and how much of the seeking is met, in
-  // plain words.
-  function dial(j) {
-    var x = parts(j.p);
-    var fill = Math.max(0.02, Math.min(1, (j.mean - 0.1) / 0.35));
-    var arc = svg('svg', { viewBox: '0 0 32 18', 'aria-hidden': 'true' });
-    arc.appendChild(svg('path', { 'class': 'track', d: 'M3 16 A13 13 0 0 1 29 16' }));
-    arc.appendChild(svg('path', { 'class': 'fill', d: 'M3 16 A13 13 0 0 1 29 16', pathLength: '1', 'stroke-dasharray': fill.toFixed(3) + ' 1' }));
-    x.meet.textContent = '';
-    x.meet.appendChild(arc);
-    x.meet.appendChild(el('span', null, j.p.words[j.mean >= MUCH ? 0 : j.mean >= SOME ? 1 : 2]));
-    x.meet.hidden = false;
-  }
-  // The sentences a thread touches glow; the rest dim a little; a seeking
-  // sentence nothing meets says so.
-  function mark(j) {
-    var touched = {};
-    j.met.forEach(function (x) {
-      touched['a' + x.i] = touched['a' + x.i] || x;
-      touched['b' + x.k] = touched['b' + x.k] || x;
-    });
-    [['a', j.a], ['b', j.b]].forEach(function (s) {
-      s[1].forEach(function (span, i) {
-        var x = touched[s[0] + i];
-        if (!x) return;
-        span.classList.add('met');
-        span.tabIndex = 0;
-        span.setAttribute('role', 'button');
-        span.addEventListener('click', function () { show(j, x); });
-        span.addEventListener('keydown', function (ev) {
-          if (ev.key === 'Enter' || ev.key === ' ') {
-            ev.preventDefault();
-            show(j, x);
-          }
-        });
-      });
-    });
-    j.open.forEach(function (i) {
-      j.a[i].parentNode.insertBefore(el('span', 'open-tag', 'still open'), j.a[i].nextSibling);
-    });
-    if (j.met.length) {
-      $(j.p.left).classList.add('weighed');
-      $(j.p.right).classList.add('weighed');
-    }
-  }
-  // On a phone: the meetings as pairs, strongest first, each with a short
-  // golden line between.
-  function list(j) {
-    var x = parts(j.p);
-    x.list.textContent = '';
-    j.met.forEach(function (m) {
-      var li = el('li');
-      li.appendChild(el('p', 'match-a', j.a[m.i].textContent));
-      var line = el('span', 'match-line');
-      var t = strength(m.sim);
-      line.style.opacity = (0.45 + 0.55 * t).toFixed(2);
-      line.style.width = (1.5 + 2 * t).toFixed(1) + 'px';
-      li.appendChild(line);
-      li.appendChild(el('p', 'match-b', j.b[m.k].textContent));
-      x.list.appendChild(li);
-    });
-    x.list.hidden = !j.met.length;
-  }
-  // Beneath the pair: the two sentences a thread joins, as written, and
-  // where each came from.
-  function show(j, m) {
-    var x = parts(j.p);
-    x.detail.textContent = '';
-    [[j.p.from[0], j.a[m.i].textContent], [j.p.from[1], j.b[m.k].textContent]].forEach(function (r) {
-      x.detail.appendChild(el('p', 'detail-from', r[0]));
-      x.detail.appendChild(el('p', 'detail-text', r[1]));
-    });
-    x.detail.hidden = false;
-    x.shown = m;
-    Array.prototype.forEach.call(x.layer.querySelectorAll('.thread'), function (t) {
-      t.classList.toggle('lit', t._m === m);
-    });
-  }
-  // On a wide screen: golden curves from each seeking sentence, through a
-  // small ampersand at the centre, to the sentence it meets. The strongest
-  // draws first, slowly; with reduced motion they are simply there.
-  function draw(j, first) {
-    var x = parts(j.p);
-    var layer = x.layer;
-    layer.textContent = '';
-    if (!wide.matches || (!j.met.length && !j.open.length)) return;
-    var box = x.pair.getBoundingClientRect();
-    var L = $(j.p.left).parentNode.getBoundingClientRect();
-    var R = $(j.p.right).parentNode.getBoundingClientRect();
-    var w = box.width, h = box.height;
-    layer.setAttribute('width', w);
-    layer.setAttribute('height', h);
-    layer.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
-    var x1 = L.right - box.left + 3;
-    var x2 = R.left - box.left - 3;
-    var cx = (x1 + x2) / 2;
-    function yOf(span) {
-      var r = span.getBoundingClientRect();
-      return r.top + r.height / 2 - box.top;
-    }
-    // The ampersand stands midway between the highest and lowest
-    // sentences the threads join, so they meet near where they start.
-    var ys = [];
-    j.met.forEach(function (m) { ys.push(yOf(j.a[m.i]), yOf(j.b[m.k])); });
-    var cy = ys.length ? (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2 : h / 2;
-    var reach = cx - x1;
-    // Still open: a faint thread trailing into the space between.
-    var lastLabel = -1e9;
-    j.open.forEach(function (i) {
-      var y = yOf(j.a[i]);
-      var ex = x1 + reach * 0.8;
-      var ey = y + (cy - y) * 0.25;
-      layer.appendChild(svg('path', { 'class': 'open-thread', d: 'M' + x1 + ' ' + y + ' C' + (x1 + reach * 0.5) + ' ' + y + ' ' + (ex - reach * 0.3) + ' ' + ey + ' ' + ex + ' ' + ey }));
-      if (y - lastLabel > 18) {
-        var label = svg('text', { 'class': 'open-label', x: x1 + 2, y: y - 4 });
-        label.textContent = 'still open';
-        layer.appendChild(label);
-        lastLabel = y;
-      }
-    });
-    j.met.forEach(function (m, n) {
-      var y1 = yOf(j.a[m.i]);
-      var y2 = yOf(j.b[m.k]);
-      var d = 'M' + x1 + ' ' + y1 +
-        ' C' + (x1 + reach * 0.6) + ' ' + y1 + ' ' + (cx - reach * 0.35) + ' ' + cy + ' ' + cx + ' ' + cy +
-        ' C' + (cx + reach * 0.35) + ' ' + cy + ' ' + (x2 - reach * 0.6) + ' ' + y2 + ' ' + x2 + ' ' + y2;
-      var t = strength(m.sim);
-      var thread = svg('path', {
-        'class': 'thread' + (first && !moving.matches ? ' drawing' : ''),
-        d: d,
-        pathLength: '1',
-        'stroke-width': (1 + 2.4 * t).toFixed(2),
-        'stroke-opacity': (0.4 + 0.6 * t).toFixed(2)
-      });
-      thread.style.setProperty('--delay', (n === 0 ? 0 : 1.6 + (n - 1) * 0.45).toFixed(2) + 's');
-      thread.style.setProperty('--draw', (n === 0 ? 2.8 : 1.8) + 's');
-      thread._m = m;
-      if (x.shown === m) thread.classList.add('lit');
-      layer.appendChild(thread);
-      var hit = svg('path', { 'class': 'hit', d: d, tabindex: '0', role: 'button' });
-      hit.setAttribute('aria-label', 'A thread: ' + j.a[m.i].textContent + ' — ' + j.b[m.k].textContent);
-      hit.addEventListener('click', function () { show(j, m); });
-      hit.addEventListener('focus', function () { show(j, m); });
-      hit.addEventListener('mouseenter', function () { thread.classList.add('lit'); });
-      hit.addEventListener('mouseleave', function () { thread.classList.toggle('lit', x.shown === m); });
-      layer.appendChild(hit);
-    });
-    if (j.met.length) {
-      layer.appendChild(svg('circle', { 'class': 'amp-halo', cx: cx, cy: cy, r: 11 }));
-      var amp = svg('text', { 'class': 'amp', x: cx, y: cy, 'text-anchor': 'middle', 'dominant-baseline': 'central' });
-      amp.textContent = '&';
-      layer.appendChild(amp);
-    }
-  }
-  // When the page changes width, or its fonts arrive, the threads are laid
-  // again where the sentences now stand, without drawing them in afresh.
-  var relay = null;
-  var laidAt = 0;
-  function relayout() {
-    if (relay) return;
-    relay = requestAnimationFrame(function () {
-      relay = null;
-      laidAt = $('stand').clientWidth;
-      woven.forEach(function (j) { draw(j, false); });
-    });
-  }
-  if (window.ResizeObserver) {
-    new ResizeObserver(function () {
-      if ($('stand').clientWidth !== laidAt) relayout();
-    }).observe($('stand'));
-  } else {
-    window.addEventListener('resize', relayout);
-  }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
-
-  // ---- 3. Ask the beach ------------------------------------------------------------
-  // See from where I stand: a handle's open passport and day beside
-  // Matthew's, at once, read from the open blocks; nothing is written.
-  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-  var seeForm = $('see-form');
-  var seeStatus = $('see-status');
-  function forget() {
-    unweave();
-    stand = null;
-    readingSig = null;
-    $('stand-part').hidden = true;
-    $('reading').textContent = '';
-    flow.shape('');
-  }
-  seeForm.addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var handle = seeForm.handle.value.trim();
-    if (!HANDLE.test(handle)) {
-      seeStatus.textContent = 'Please give your handle, as it is on the beach.';
-      return;
-    }
-    var button = seeForm.querySelector('button');
-    button.disabled = true;
-    seeStatus.textContent = 'Reading the beach…';
-    maybe('passport:' + handle).then(function (pp) {
-      if (!pp) {
-        forget();
-        seeStatus.textContent = 'There is no passport on the beach for “' + handle + '”. Handles are case-sensitive, so please check the spelling.';
-        return;
-      }
-      return showStand(handle, pp).then(function () {
-        seeStatus.textContent = '';
-        $('stand-part').scrollIntoView({ behavior: still && still.matches ? 'auto' : 'smooth', block: 'start' });
-      });
-    }).catch(function () {
-      seeStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
-    }).then(function () {
-      button.disabled = false;
+  rungButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      view.rung = b.dataset.rung;
+      markRung();
+      remember();
+      show();
     });
   });
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var a = form.as.value.trim();
+    var w = form.with.value.trim();
+    if (!HANDLE.test(a)) {
+      standStatus.textContent = 'Please give a handle, as it is on the beach.';
+      return;
+    }
+    if (w && !HANDLE.test(w)) {
+      standStatus.textContent = 'The second handle should be a handle as it is on the beach, or left empty.';
+      return;
+    }
+    standStatus.textContent = '';
+    view.as = a;
+    view.with = w === a ? '' : w;
+    picked = null;
+    remember();
+    show();
+  });
 
-  // Ask the beach: a question goes into the room, pool:golden-flow, as a
-  // note in the shape capability-gap.html's notes take, its words
-  // beginning 'QUESTION: '. Questions and answers are public; no identity
-  // is asked for.
+  // ---- Ask the beach ------------------------------------------------------------------
+  // A question goes into the room, pool:golden-flow, as a note in the shape
+  // capability-gap.html's notes take, its words beginning 'QUESTION: '.
+  // Questions and answers are public; no identity is asked for.
   var askForm = $('ask-form');
   Beach.addMic(askForm.note);
   askForm.addEventListener('submit', function (ev) {
@@ -1253,232 +1511,6 @@
       button.disabled = false;
     });
   });
-
-  // ---- 1. The flow --------------------------------------------------------------------
-  // Golden light moves round a loop that reaches into both shores and
-  // crosses in the space between, never stopping on either side. A
-  // reading's image (its fourth part) shapes it: colours it names, and
-  // the forms its words call up.
-  var flow = (function (canvas) {
-    var ctx = canvas.getContext('2d');
-    var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-    var W = 0, H = 0, dpr = 1;
-    var seen = true;
-    var raf = null;
-    var t0 = null;
-    var last = 9000;
-    var form = null;
-    var colours = {};
-
-    function css(name, fallback) {
-      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      return v || fallback;
-    }
-    // The page's colours, read again when the screen turns light or dark.
-    function readColours() {
-      colours = {
-        frame: css('--frame', '#b9ad9a'),
-        gold: css('--gold', '#b98219'),
-        soft: css('--gold-soft', 'rgba(185,130,25,0.16)'),
-        crimson: css('--crimson', '#c21d4e')
-      };
-    }
-    // A small steady number from words, so each image has its own picture.
-    function hash(s) {
-      var h = 2166136261;
-      for (var i = 0; i < s.length; i++) {
-        h ^= s.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return (h >>> 0) / 4294967295;
-    }
-    var COLOURS = [
-      [/\b(blue|sea|ocean|sky|indigo)\b/i, '#5b86b0'],
-      [/\b(green|leaf|leaves|moss|forest|grass)\b/i, '#6f9a5b'],
-      [/\b(red|rose|crimson|pink|blood|heart)\b/i, null],
-      [/\b(silver|moon|pearl|white)\b/i, '#c9c4bb'],
-      [/\b(violet|purple|lavender)\b/i, '#8d72b4'],
-      [/\b(amber|honey|orange|fire|ember)\b/i, '#d4842c']
-    ];
-    function shapeFrom(words) {
-      var w = words || '';
-      var seed = hash(w);
-      var tint = null;
-      for (var i = 0; i < COLOURS.length && !tint; i++) {
-        if (COLOURS[i][0].test(w)) tint = COLOURS[i][1] || 'crimson';
-      }
-      return {
-        tint: tint,
-        // Two crossings for a braid, a weave, a knot or a thread.
-        loops: /\b(braid|braided|weave|woven|weaving|knot|thread|threads|plait)\b/i.test(w) ? 2 : 1,
-        // A river, a current or a tide swells the path.
-        swell: /\b(river|stream|current|tide|wave|waves|water|flowing)\b/i.test(w) ? 0.16 : 0.08,
-        // A bridge or an arc lifts the crossing.
-        lift: /\b(bridge|arc|arch|rainbow)\b/i.test(w) ? -0.12 : 0,
-        // Stars, sparks or lanterns scatter light in the space between.
-        sparks: /\b(star|stars|spark|sparks|lantern|lanterns|firefl(y|ies)|glow)\b/i.test(w) ? 26 : 10,
-        // A spiral or a whirl turns the light as it travels.
-        whirl: /\b(spiral|whirl|vortex|turning|eddy)\b/i.test(w) ? 1 : 0,
-        phase: seed * Math.PI * 2,
-        shoreA: 0.5 + seed * 0.3,
-        shoreB: 0.8 - seed * 0.3
-      };
-    }
-
-    function size() {
-      var r = canvas.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = Math.max(1, Math.round(r.width));
-      H = Math.max(1, Math.round(r.height));
-      canvas.width = Math.round(W * dpr);
-      canvas.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    // A point on the loop at u (0..1): out across the space between on
-    // one path, back on the other, turning inside each shore.
-    function at(u, time) {
-      var a = u * Math.PI * 2;
-      var reach = W * 0.43;
-      var x = W / 2 + Math.sin(a) * reach;
-      // However the forms combine, the path stays inside the picture.
-      var k = H * Math.min(1, 0.4 / (0.22 + form.swell + Math.abs(form.lift)));
-      var y = H / 2 + k * (Math.sin(a * 2 * form.loops) * 0.22 +
-        Math.sin(a * 3 + form.phase + time * 0.0004) * form.swell +
-        form.lift * Math.cos(a * 2));
-      if (form.whirl) {
-        var turn = Math.sin(a * 6 + time * 0.0006) * H * 0.04;
-        x += turn;
-        y += turn;
-      }
-      return [x, y];
-    }
-
-    function shore(x0, dir, bulge, colour, time) {
-      ctx.beginPath();
-      ctx.moveTo(x0, 0);
-      for (var i = 0; i <= 24; i++) {
-        var y = (i / 24) * H;
-        var edge = x0 + dir * W * (0.07 + 0.035 * Math.sin(i / 24 * Math.PI * 2 * bulge + form.phase) +
-          0.01 * Math.sin(time * 0.0003 + i));
-        ctx.lineTo(edge, y);
-      }
-      ctx.lineTo(x0, H);
-      ctx.closePath();
-      ctx.fillStyle = colour;
-      ctx.fill();
-    }
-
-    function draw(time) {
-      var ink = colours.frame;
-      var gold = colours.gold;
-      var tint = form.tint === 'crimson' ? colours.crimson : form.tint;
-      ctx.clearRect(0, 0, W, H);
-
-      // The two shores, each with its own line.
-      ctx.globalAlpha = 0.55;
-      shore(0, 1, form.shoreA, ink, time);
-      shore(W, -1, form.shoreB, ink, time);
-      ctx.globalAlpha = 1;
-
-      // The space between: a soft glow where the paths cross.
-      var g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.min(W, H) * 0.5);
-      g.addColorStop(0, colours.soft);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-
-      // The path itself, faint.
-      ctx.beginPath();
-      for (var i = 0; i <= 200; i++) {
-        var p = at(i / 200, time);
-        if (i) ctx.lineTo(p[0], p[1]);
-        else ctx.moveTo(p[0], p[1]);
-      }
-      ctx.strokeStyle = gold;
-      ctx.globalAlpha = 0.22;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // The light: a train of motes travelling the loop, slowly, always.
-      var n = 46;
-      var speed = 1 / 26000;
-      for (var j = 0; j < n; j++) {
-        var u = (j / n + time * speed) % 1;
-        var q = at(u, time);
-        var pulse = 0.55 + 0.45 * Math.sin(j * 1.7 + time * 0.0012);
-        var r = 1.4 + 1.8 * pulse;
-        ctx.beginPath();
-        ctx.arc(q[0], q[1], r, 0, Math.PI * 2);
-        ctx.fillStyle = tint && j % 3 === 0 ? tint : gold;
-        ctx.globalAlpha = 0.35 + 0.55 * pulse;
-        ctx.fill();
-      }
-      // Sparks in the space between, drifting and fading.
-      for (var s = 0; s < form.sparks; s++) {
-        // Spread evenly over the space between, each rising slowly.
-        var sx = W * (0.28 + 0.44 * ((s * 0.7548776662 + form.phase) % 1));
-        var sy = H * (0.12 + 0.76 * ((s * 0.5698402910 + form.phase * 0.5) % 1)) - (time * 0.004 * (1 + s % 3)) % (H * 0.2);
-        var sa = 0.5 + 0.5 * Math.sin(time * 0.001 + s * 2.1);
-        ctx.beginPath();
-        ctx.arc(sx, sy, 1.1, 0, Math.PI * 2);
-        ctx.fillStyle = gold;
-        ctx.globalAlpha = 0.15 + 0.4 * sa;
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function frame(now) {
-      raf = null;
-      if (t0 == null) t0 = now;
-      last = now - t0;
-      draw(last);
-      if (!still.matches && seen && !document.hidden) raf = requestAnimationFrame(frame);
-    }
-    function go() {
-      if (raf != null) return;
-      if (still.matches) {
-        draw(9000);
-        return;
-      }
-      raf = requestAnimationFrame(frame);
-    }
-
-    form = shapeFrom('');
-    readColours();
-    size();
-    go();
-    // A resize clears the canvas; draw again at once, even off screen.
-    window.addEventListener('resize', function () {
-      size();
-      draw(still.matches ? 9000 : last);
-    });
-    var dark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-    if (dark && dark.addEventListener) {
-      dark.addEventListener('change', function () {
-        readColours();
-        if (still.matches) draw(9000);
-      });
-    }
-    document.addEventListener('visibilitychange', go);
-    if (still.addEventListener) still.addEventListener('change', go);
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) {
-        seen = es[0].isIntersecting;
-        if (seen) go();
-      }).observe(canvas);
-    }
-
-    return {
-      shape: function (words) {
-        form = shapeFrom(words);
-        canvas.setAttribute('aria-label', words || 'Golden light moving between two shores');
-        if (still.matches) draw(9000);
-      }
-    };
-  })($('flow'));
 
   // ---- Live ---------------------------------------------------------------------------
   // A note someone cleared has no words left: leave it out.
@@ -1520,7 +1552,7 @@
     });
   }, $('live-note'), function () {
     status.hidden = true;
-    ['doc', 'ask-part', 'comments-rule', 'comments'].forEach(function (id) {
+    ['doc', 'pool-part', 'ask-part', 'comments-rule', 'comments'].forEach(function (id) {
       $(id).hidden = false;
     });
   }, '');
