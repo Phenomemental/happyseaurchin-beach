@@ -144,19 +144,15 @@ h1 { text-transform: uppercase; font-weight: 700; }
 }
 .logo-on-black img { display: block; width: 100%; height: auto; }
 
-/* Header: near-black, the name, and the section's pages. */
+/* Header: near-black, the name with its strapline (brand 3.5), and the
+   menu, the same on every page. */
 .masthead {
   background: var(--cr-night);
   border-bottom: 3px solid var(--cr-purple);
 }
 .masthead .wrap {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem 1.2rem;
-  padding-top: 0.8rem;
-  padding-bottom: 0.8rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.7rem;
 }
 .brand {
   display: flex;
@@ -171,17 +167,43 @@ h1 { text-transform: uppercase; font-weight: 700; }
   text-transform: uppercase;
 }
 .brand svg { flex: none; }
+/* The strapline in Caveat (brand 2.3), the line beneath in Nunito Sans,
+   both set under the name. */
+.brand-strap,
+.brand-sub { margin: 0 0 0 calc(28px + 0.6rem); }
+.brand-strap {
+  font-family: var(--cr-hand);
+  font-weight: 600;
+  font-size: 1.45rem;
+  line-height: 1.15;
+  color: var(--cr-lilac);
+  margin-top: 0.1rem;
+}
+.brand-sub {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--cr-quiet-dark);
+  margin-top: 0.15rem;
+}
+/* The menu sits in even columns: two on a phone, three when wider. */
 .section-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 1.1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+  margin-top: 0.7rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #3A2D4C;
   font-size: 0.98rem;
 }
 .section-nav a {
+  justify-self: start;
   color: var(--cr-body-dark);
   text-decoration: none;
-  padding: 0.3rem 0;
+  padding: 0.35rem 0;
   border-bottom: 2px solid transparent;
+}
+@media (min-width: 560px) {
+  .section-nav { grid-template-columns: repeat(3, 1fr); }
 }
 .section-nav a:hover { color: var(--cr-lilac); }
 .section-nav a[aria-current="page"] {
@@ -363,6 +385,10 @@ footer p { margin: 0 0 0.5rem; }
 /* Where a page lives on the beach: a long address breaks rather than
    widening the page. */
 footer .where { overflow-wrap: anywhere; }
+/* How this was made: a quiet way to the proposal, at the foot of every page. */
+footer .made { margin-top: 0.9rem; }
+footer .made a { color: var(--muted); }
+footer .made a[aria-current="page"] { text-decoration: none; }
 .home {
   display: block;
   width: max-content;
