@@ -89,6 +89,88 @@
     color: var(--muted);
     margin: 0;
   }
+  #roles { margin-top: 2.2rem; }
+  .section-lead { color: var(--muted); margin: 0 0 0.4rem; }
+  /* brand 7.7: one hand-written line as the page's human voice. */
+  .sub.hand { font-size: 1.7rem; color: var(--accent); margin: 0.3rem 0 0; }
+
+  /* brand 7.7: the roles as a circle of lanterns, each lit as it is read. */
+  .circle-field {
+    position: relative;
+    border-radius: var(--cr-radius);
+    background: radial-gradient(ellipse at 50% 60%, #4A2275 0%, #2A1F38 58%, #1B1424 100%);
+    padding: 0.8rem 0.6rem 1rem;
+    margin: 0.8rem 0 0;
+  }
+  .circle {
+    position: relative;
+    width: min(23rem, 100%);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    list-style: none;
+    padding: 0;
+  }
+  .circle-heart {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4.2rem;
+    height: 4.2rem;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+  }
+  .circle-ring {
+    position: absolute;
+    inset: 15%;
+    border: 1px dashed rgba(244, 200, 106, 0.35);
+    border-radius: 50%;
+  }
+  .circle li { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); }
+  .role-lantern {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 6.4rem;
+    min-height: 4.4rem;
+    font: inherit;
+    font-family: var(--cr-hand);
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.05;
+    text-align: center;
+    color: var(--cr-head-dark);
+    background: radial-gradient(ellipse at 50% 35%, #3A2A4E 0%, #2A1F38 75%);
+    border: 1px solid rgba(244, 200, 106, 0.4);
+    border-radius: 42% 42% 30% 30% / 30% 30% 22% 22%;
+    padding: 0.5rem 0.45rem;
+    cursor: pointer;
+    transition: background 0.6s ease-out, box-shadow 0.6s ease-out, color 0.6s ease-out;
+  }
+  .role-lantern.lit {
+    color: var(--cr-lantern);
+    background: radial-gradient(ellipse at 50% 35%, #6A3A9E 0%, #4A2275 72%);
+    border-color: rgba(244, 200, 106, 0.8);
+    box-shadow: 0 0 22px rgba(244, 200, 106, 0.45), inset 0 0 16px rgba(244, 200, 106, 0.25);
+  }
+  .role-lantern[aria-pressed="true"] { outline: 2px solid var(--cr-lantern); outline-offset: 3px; }
+  .role-lantern:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
+  .role-words {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--cr-lantern);
+    border-radius: var(--cr-radius);
+    padding: 0.8rem 1rem 0.4rem;
+    margin: 0.9rem 0 0;
+  }
+  .role-words h3 { margin: 0 0 0.3rem; }
+  .role-words p { margin: 0 0 0.6rem; }
+  .role-hint { font-size: 0.9rem; color: var(--muted); margin: 0.6rem 0 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .role-lantern { transition: none; }
+  }
+  @media (min-width: 600px) {
+    .role-lantern { width: 7.4rem; font-size: 1.25rem; }
+  }
   .words > .sect:first-child { border-top: 0; }
   .words .kids p { margin: 0 0 0.9rem; }
   @media (min-width: 600px) {
@@ -97,7 +179,13 @@
 </style>
 </head>
 <body>
-<header class="masthead">
+<div class="markbar" id="markbar">
+  <div class="wrap">
+    <a href="#top"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+    <span class="here">Meet the LERO</span>
+  </div>
+</div>
+<header class="masthead" id="top">
   <div class="wrap">
     <div class="brand-block">
       <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
@@ -126,7 +214,7 @@
   </svg>
 
   <h1>Meet the LERO</h1>
-  <p class="sub">A lived experience recovery organisation in the making</p>
+  <p class="sub hand">A lived experience recovery organisation in the making</p>
   <p class="opening-note" id="opening-note" role="status">Opening their words&hellip;</p>
 
   <p class="welcome">LEROs rise from people who have lived it, and stay to hold the door open for others. This one is just beginning.</p>
@@ -157,6 +245,16 @@
     </div>
   </section>
 
+  <section id="roles" aria-labelledby="roles-title" hidden>
+    <h2 id="roles-title">Who we are to each other</h2>
+    <p class="section-lead" id="roles-lead"></p>
+    <div class="circle-field">
+      <ul class="circle" id="circle" aria-label="The roles"></ul>
+    </div>
+    <div class="role-words" id="role-words" aria-live="polite"></div>
+    <p class="role-hint">Tap a lantern to light it and read that role, in the words of the working draft constitution.</p>
+  </section>
+
   <p class="grounded">Grounded in connection, hope, identity, meaning and empowerment, and recovery first.</p>
 
   <a class="join-button" href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
@@ -166,6 +264,7 @@
 
 <footer>
   <div class="wrap">
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
     <p class="where">This page reads spine:constitution, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html">How this was made</a></p>
@@ -178,7 +277,7 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
   location.replace('proposal.html' + (location.hash === '#intro' ? '' : location.hash));
 }
 </script>
-<script src="beach.js?v=2026-10-14a"></script>
+<script src="beach.js?v=2026-10-14b"></script>
 <script>
 // This page is an offer to any LERO, so what it reads live from the beach
 // never names the area it began in, its providers, or the person
@@ -269,10 +368,85 @@ function unsaid(v) {
 
   // One quiet line while the words open; gone when they have, or saying
   // calmly that they couldn't be reached (the folds keep their titles).
+  // The roles, as a circle of lanterns (brand 7.7): members (3.1) and each
+  // level of volunteering (3.6), one line each, read from the constitution.
+  // Each lantern lights as it is read, and stays lit.
+  var MEMBERSHIP = '2.1.1', LEVELS = '2.1.6', ROLES_HEAD = '2';
+  function rolesOf(c) {
+    var out = [];
+    var m = clause(Beach.place.at(c, MEMBERSHIP));
+    if (m) out.push({ name: 'Members', words: m.text });
+    lines(Beach.text(Beach.place.at(c, LEVELS))).slice(2).forEach(function (l) {
+      var x = l.match(/^(.+?)\s+(?:may|are|is)\s/);
+      if (x) out.push({ name: x[1].charAt(0).toUpperCase() + x[1].slice(1), words: l });
+    });
+    return out;
+  }
+  function drawRoles(c) {
+    var roles = c ? rolesOf(c) : [];
+    if (roles.length < 2) return false;
+    var head = Beach.text(Beach.place.at(c, ROLES_HEAD)), cut = head.indexOf(' — ');
+    if (cut > 0) {
+      document.getElementById('roles-title').textContent = head.slice(0, cut);
+      document.getElementById('roles-lead').textContent = head.charAt(cut + 3).toUpperCase() + head.slice(cut + 4);
+    }
+    var ul = document.getElementById('circle'), words = document.getElementById('role-words');
+    ul.textContent = '';
+    var ring = el('li', 'circle-ring');
+    ring.setAttribute('aria-hidden', 'true');
+    ul.appendChild(ring);
+    var heart = document.querySelector('.brand svg').cloneNode(true);
+    heart.setAttribute('class', 'circle-heart');
+    var hli = el('li');
+    hli.setAttribute('aria-hidden', 'true');
+    hli.style.setProperty('--x', '50%');
+    hli.style.setProperty('--y', '50%');
+    hli.appendChild(heart);
+    ul.appendChild(hli);
+    var buttons = [];
+    function read(i) {
+      buttons.forEach(function (b, k) { b.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
+      buttons[i].classList.add('lit');
+      words.textContent = '';
+      words.appendChild(el('h3', null, roles[i].name));
+      words.appendChild(el('p', null, roles[i].words));
+      words.classList.remove('arrived'); void words.offsetWidth; words.classList.add('arrived');
+    }
+    roles.forEach(function (r, i) {
+      var a = (i * 360 / roles.length - 90) * Math.PI / 180;
+      var li = el('li');
+      li.style.setProperty('--x', (50 + Math.cos(a) * 36).toFixed(1) + '%');
+      li.style.setProperty('--y', (50 + Math.sin(a) * 36).toFixed(1) + '%');
+      var b = el('button', 'role-lantern', r.name);
+      b.type = 'button';
+      b.addEventListener('click', function () { read(i); });
+      buttons.push(b);
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    read(0);
+    document.getElementById('roles').hidden = false;
+    return true;
+  }
+
+  // The live dot turns green once the page has read the beach.
+  function live(ok) {
+    document.getElementById('live-dot').classList.toggle('on', ok);
+    document.getElementById('live-word').textContent = ok
+      ? 'Live from the beach · read ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+      : 'The beach can\u2019t be reached just now.';
+  }
+  var mast = document.querySelector('.masthead');
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) {
+    document.getElementById('markbar').classList.toggle('shown', !es[0].isIntersecting);
+  }).observe(mast);
+
   var note = document.getElementById('opening-note');
   read(CONSTITUTION).then(function (c) {
+    live(!!c);
     if (fillClauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE)) note.remove();
     else note.textContent = UNREACHED;
+    drawRoles(c);
   });
 })();
 </script>
