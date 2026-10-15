@@ -195,7 +195,17 @@
     text-align: center;
     margin: 0.6rem 0 0.4rem;
   }
+  /* When the newest tide is a paragraph, a quiet word on which tide the
+     beach is drawn from. */
+  .tide-note {
+    font-size: 0.82rem;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin: 0 0 0.4rem;
+  }
   .pool-note:empty,
+  .tide-note:empty,
   .showing:empty {
     display: none;
   }
@@ -699,6 +709,7 @@
           <div class="count waiting"><span class="n" id="n-waiting">&ndash;</span><span class="k">waiting</span></div>
         </div>
         <p class="tide" id="tide"></p>
+        <p class="tide-note" id="tide-note"></p>
         <p class="pool-note" id="pool-note" role="status"></p>
         <div class="appears" id="appears" hidden></div>
 
@@ -707,7 +718,7 @@
         </div>
 
         <!-- The toggles: what the beach shows. Each carries its own key. -->
-        <div class="switches" role="group" aria-label="Show on the beach">
+        <div class="switches" id="switches" role="group" aria-label="Show on the beach">
           <button type="button" class="switch" role="switch" data-show="open" aria-checked="true">
             <span class="track" aria-hidden="true"></span>
             <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-open" cx="8" cy="8" rx="5.5" ry="4.3"/></svg>
@@ -1112,11 +1123,15 @@
     }
     return out;
   }
+  // The beach stamps an appended entry with its arrival at place 3: a line
+  // that is only a time, "2026-10-15T14:33:34Z", with or without its
+  // "(+0 — ...)" beside it, is not a group, a loop or a read.
+  var STAMP = /^\s*\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:Z|[+-]\d{2}:?\d{2})?\s*(?:\([^)]*\))?\s*$/i;
   // The lines beneath a node that are lines of their own, not its reads.
   function linesUnder(node) {
     return kids(node).filter(function (n) {
       var t = own(n);
-      return t && !READ.test(t);
+      return t && !READ.test(t) && !STAMP.test(t);
     });
   }
 
@@ -1221,6 +1236,12 @@
   function latestDay(list) {
     var days = list.filter(function (e) { return e.rung === 'day'; });
     return days.length ? days[days.length - 1] : null;
+  }
+  // The latest day tide with its loops set out one by one beneath it: the
+  // one the beach can be drawn from. A tide written as one paragraph has
+  // none.
+  function latestDrawn(list) {
+    return latestDay(list.filter(function (e) { return loopsOf(e).length; }));
   }
   function loopsOf(e) {
     var out = [];
@@ -1411,7 +1432,7 @@
   function buildScene() {
     var reading = readingFor(view.as);
     var s = {
-      reading: reading, entries: [], entry: null, centre: key(view.as),
+      reading: reading, entries: [], entry: null, headline: null, centre: key(view.as),
       all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: [], family: []
     };
     var chosen = view.with.map(key);
@@ -1430,7 +1451,10 @@
     };
     if (!reading) return s;
     s.entries = entriesOf(reading);
-    s.entry = latestDay(s.entries);
+    // The counts and opening line come from the newest tide; the beach is
+    // drawn from the newest tide that sets its loops out one by one.
+    s.headline = latestDay(s.entries);
+    s.entry = latestDrawn(s.entries);
     function latest(rung) {
       var list = s.entries.filter(function (e) { return e.rung === rung; });
       return list.length ? list[list.length - 1] : null;
@@ -2005,7 +2029,7 @@
     }
     readings().forEach(function (r) {
       var h = handleOf(r);
-      var e = latestDay(entriesOf(r));
+      var e = latestDrawn(entriesOf(r));
       var named = loopsOf(e).some(function (l) {
         return l.parties.some(function (p) { return key(p.name) === k; }) || (l.third && key(l.third.name) === k);
       });
@@ -2058,11 +2082,21 @@
     }
     $('pool-note').textContent = note;
     renderAppears();
+    // The counts and opening line are the newest tide's. When that tide is
+    // one paragraph, the beach stays drawn from the last tide set out in
+    // full; when no tide is, a line stands where the beach would be.
     var e = scene.entry;
-    setCount('n-loops', e ? e.loops : null);
-    setCount('n-closed', e ? e.closed : null);
-    setCount('n-waiting', e ? e.waiting : null);
-    $('tide').textContent = e && e.head ? sentences(e.head)[0] || '' : '';
+    var h = scene.headline;
+    setCount('n-loops', h ? h.loops : null);
+    setCount('n-closed', h ? h.closed : null);
+    setCount('n-waiting', h ? h.waiting : null);
+    $('tide').textContent = h && h.head ? sentences(h.head)[0] || '' : '';
+    var bare = !!h && !e && !scene.all[view.rung].length;
+    $('tide-note').textContent = !h || h === e ? ''
+      : e ? 'The latest tide is written as a paragraph; the pool shows the last tide drawn in full.'
+      : bare ? 'tidewright’s tides for ' + who + ' are written as paragraphs so far, so there are no loops to set out on the beach yet; the latest is below.'
+      : '';
+    $('shore').hidden = $('switches').hidden = bare;
 
     drawBeach();
 
@@ -2090,13 +2124,14 @@
     var box = $('telling');
     box.textContent = '';
     if (scene.reading) box.appendChild(el('p', 'reading-line', own(scene.reading)));
+    if (h && h !== e) telling(box, h, [], false);
     if (e) telling(box, e, shownIn(e, true), true);
     if (view.rung !== 'day') {
       var src = scene.entries.filter(function (x) { return x.rung === view.rung; }).pop();
       if (src) telling(box, src, shownIn(src, true), true);
     }
     // Earlier tides, folded, newest first.
-    var earlier = scene.entries.filter(function (x) { return x !== e && x.rung === 'day'; }).reverse();
+    var earlier = scene.entries.filter(function (x) { return x !== e && x !== h && x.rung === 'day'; }).reverse();
     if (earlier.length) {
       var f = fold('quiet earlier', 'Earlier tides', earlier.length);
       earlier.forEach(function (x) {
