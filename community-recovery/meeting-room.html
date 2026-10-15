@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The meeting room · Community Recovery</title>
+<meta name="description" content="Community Recovery's meeting room, for the people who were not in it: its loops by exception, read live from the room's own record.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1B1424">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
+<style>
+  /* The meeting room's thin page (community-recovery-design:Phenomemental
+     8.1, part four): the room's loops by exception, drawn as the golden flow
+     page draws the day rung, with one rock for the room. It holds no words
+     of its own; everything it shows is read from pool:meeting-room. */
+  :root {
+    --sand: var(--cr-pale);
+    --sand-line: #D9C8EE;
+    --stone: #E2D4F3;
+    --stone-edge: var(--cr-deep);
+    --resting: #A99BBB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --sand: var(--cr-panel);
+      --sand-line: #3A2D4C;
+      --stone: #4B3B60;
+      --stone-edge: var(--cr-lilac);
+      --resting: #7A6E88;
+    }
+  }
+  h1 { font-size: 1.9rem; line-height: 1.15; margin: 0; }
+  .purpose { color: var(--muted); margin: 0.7rem 0 1.2rem; }
+  .calm { margin: 0.6rem 0; }
+
+  /* Three counts, read from the record: loops, closed, waiting. */
+  .counts { display: flex; justify-content: center; gap: 0.6rem; margin: 0.4rem 0 0.2rem; }
+  .count {
+    min-width: 5.4rem; text-align: center; background: var(--card); border: 1px solid var(--line);
+    border-top: var(--cr-edge); border-radius: var(--cr-radius); padding: 0.45rem 0.6rem 0.4rem;
+  }
+  .count .n { display: block; font-family: var(--cr-display); font-size: 1.7rem; line-height: 1.1; color: var(--head); }
+  .count .k { display: block; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .count.waiting .n { color: var(--cr-amber); }
+
+  /* The beach: one rock for the room, the people who spoke around it,
+     open loops as gold pebbles, closed loops resting grey. */
+  .shore { margin: 0.6rem -0.5rem 0.2rem; }
+  .shore svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--cr-text); }
+  .shore .sand { fill: var(--sand); }
+  .shore .ripple { fill: none; stroke: var(--sand-line); stroke-width: 1; }
+  .shore .rock path { fill: var(--stone); stroke: var(--stone-edge); stroke-width: 1; transition: stroke 0.6s ease, stroke-width 0.6s ease, filter 0.6s ease; }
+  .shore .rock text { font-size: 12px; fill: var(--head); text-anchor: middle; }
+  .shore .rock.centre path { fill: var(--cr-deep); stroke: var(--cr-purple); }
+  .shore .rock.centre text { font-family: var(--cr-display); font-size: 13px; letter-spacing: 0.04em; fill: var(--cr-head-dark); }
+  .shore .rock.near path { stroke: var(--head); stroke-width: 1.8; }
+  .shore .rock.third path { stroke: var(--cr-lantern); stroke-width: 1.6; stroke-dasharray: 3 3; }
+  .shore .rock.lit path { stroke: var(--cr-lantern); stroke-width: 2.6; stroke-dasharray: none; filter: drop-shadow(0 0 6px var(--cr-lantern)); }
+  .shore .resting { fill: var(--resting); }
+  .shore .pebble { cursor: pointer; outline: none; }
+  .shore .pebble .hit { fill: transparent; }
+  .shore .pebble .stone { fill: var(--cr-lantern); stroke: var(--stone-edge); stroke-width: 0.6; animation: glint 5s ease-in-out infinite; }
+  .shore .pebble:focus-visible .stone, .shore .pebble.on .stone { stroke: var(--cr-purple); stroke-width: 2.2; animation: none; }
+  .shore .tie { stroke: var(--cr-lantern); stroke-width: 1.2; stroke-dasharray: 2 3; }
+  @keyframes glint { 50% { opacity: 0.6; } }
+
+  /* What is open, beneath the beach: each loop as the record has it. */
+  .loops { list-style: none; padding: 0; margin: 1rem 0 0; }
+  .loop {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--cr-lantern);
+    border-radius: var(--cr-radius); padding: 0.7rem 0.9rem; margin: 0 0 0.6rem; cursor: pointer;
+  }
+  .loop.on { box-shadow: 0 0 0 2px var(--cr-lantern); }
+  .loop:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .step { margin: 0 0 0.35rem; overflow-wrap: break-word; }
+  .step:last-child { margin-bottom: 0; }
+  .step .who { color: var(--muted); font-size: 0.9rem; }
+  .step.redacted .words { display: inline-block; background: #000; color: var(--cr-head-dark); border-radius: 6px; padding: 0.1rem 0.6rem; font-weight: 700; }
+  .waits { font-size: 0.9rem; color: var(--muted); margin: 0.4rem 0 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shore .pebble .stone { animation: none; }
+    .shore .rock path { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead" id="top">
+  <div class="wrap">
+    <div class="brand-block">
+      <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+      <p class="brand-strap">Recovery, grown in the open.</p>
+      <p class="brand-sub">A digital social innovation, by and for a lived experience recovery community.</p>
+    </div>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="presentation.html">The presentation</a>
+      <a href="meet.html">Meet the LERO</a>
+      <a href="constitution.html">The constitution</a>
+      <a href="standards.html">The standards</a>
+      <a href="where-we-are-now.html">Where we are now</a>
+      <a href="join.html">Join us</a>
+      <a href="proposal.html">The proposal</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 id="room-name">The meeting room</h1>
+  <p class="purpose" id="purpose"></p>
+
+  <div class="counts" aria-live="polite">
+    <div class="count"><span class="n" id="n-loops">&ndash;</span><span class="k">loops</span></div>
+    <div class="count"><span class="n" id="n-closed">&ndash;</span><span class="k">closed</span></div>
+    <div class="count waiting"><span class="n" id="n-waiting">&ndash;</span><span class="k">waiting</span></div>
+  </div>
+
+  <div class="shore"><svg id="beach" viewBox="0 0 400 340" role="img" aria-label="The meeting room"></svg></div>
+
+  <p class="calm" id="state" aria-live="polite">Opening the room&hellip;</p>
+  <ul class="loops" id="loops"></ul>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
+    <p class="where">This page reads the meeting room&rsquo;s own record, pool:meeting-room, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>. It shows only the loops still open; closed ones rest and say nothing. It writes nothing.</p>
+    <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="where-we-are-now.html#say">Leave a note in the room on Where we are now.</a></p>
+    <p>Kept on Pscale, the open commons built by David Pinto.</p>
+    <p class="made"><a href="made.html">How this was made</a></p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+<script src="beach.js?v=2026-10-15b"></script>
+<script>
+(function () {
+  'use strict';
+  // THE RECORD AS THIS PAGE READS IT. The room's record is the pool itself.
+  // A loop opens with an entry whose words begin with one of the loop's
+  // steps (NEED, OFFER, MET, CHANGE, TOLD, as holder:meeting-room 1.4 names
+  // them), and its later steps are the replies beneath that entry, each
+  // beginning with its own step word. A loop that has been MET is closed and
+  // rests; any other is waiting, on whoever offered if someone has, or for an
+  // offer. TOLD names the third: "TOLD: <name>". Talk that is not a step is
+  // not a loop, and is not shown here.
+  var REFRESH_MS = 30000, REDACTED = 'Redacted by the keepers';
+  var STEP = /^\s*(NEED|OFFER|MET|CHANGED?|TOLD)\b\s*[:.—-]?\s*/i;
+  var $ = function (id) { return document.getElementById(id); };
+  var SVG = 'http://www.w3.org/2000/svg';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var W = 400, H = 340, CX = 200, CY = 170;
+  var picked = null, lastSig = null, scene = null;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function svg(tag, attrs, parent) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function activate(e, fn) {
+    e.addEventListener('click', fn);
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fn(ev); }
+    });
+  }
+  // A small steady number from words, so each rock keeps its shape (as on
+  // the golden flow page).
+  function hash(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0) / 4294967295;
+  }
+  function rockPath(cx, cy, r, seed) {
+    var n = 9, pts = [];
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 + seed * 6.283;
+      var k = 0.8 + 0.2 * hash(seed + ':' + i);
+      pts.push([cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k * 0.8]);
+    }
+    var last = pts[n - 1];
+    var d = 'M' + ((last[0] + pts[0][0]) / 2).toFixed(1) + ' ' + ((last[1] + pts[0][1]) / 2).toFixed(1);
+    for (var j = 0; j < n; j++) {
+      var p = pts[j], q = pts[(j + 1) % n];
+      d += ' Q' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' ' + ((p[0] + q[0]) / 2).toFixed(1) + ' ' + ((p[1] + q[1]) / 2).toFixed(1);
+    }
+    return d + 'Z';
+  }
+  function short(s, n) { return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s; }
+
+  // ---- reading the record ------------------------------------------------------
+  function stepOf(t) {
+    var m = STEP.exec(t || '');
+    return m ? m[1].toUpperCase().replace(/^CHANGED$/, 'CHANGE') : '';
+  }
+  function thirdOf(t) {
+    var m = /^\s*TOLD\b\s*[:.—-]?\s*([^,.;(]+)/i.exec(t || '');
+    var name = m ? m[1].trim() : '';
+    return name && name.length <= 40 && !/^(none|no one|nobody)$/i.test(name) ? name : '';
+  }
+  function loopsFrom(pool) {
+    var out = [];
+    Beach.notes(pool).forEach(function (n, i) {
+      if (!stepOf(n.text)) return;
+      var steps = [{ step: stepOf(n.text), who: n.who, text: n.text }];
+      (n.replies || []).forEach(function (r) { if (stepOf(r.text)) steps.push({ step: stepOf(r.text), who: r.who, text: r.text }); });
+      var has = function (s) { return steps.some(function (x) { return x.step === s; }); };
+      var offer = steps.filter(function (x) { return x.step === 'OFFER'; }).pop();
+      var told = steps.filter(function (x) { return x.step === 'TOLD'; }).map(function (x) { return thirdOf(x.text); }).filter(Boolean);
+      var people = [];
+      steps.forEach(function (x) { if (x.who && people.indexOf(x.who) < 0) people.push(x.who); });
+      out.push({
+        id: 'loop-' + (i + 1), steps: steps, closed: has('MET'),
+        waitsOn: has('MET') ? '' : offer && offer.who ? offer.who : '',
+        third: told.length ? told[told.length - 1] : '', people: people
+      });
+    });
+    return out;
+  }
+
+  // ---- drawing -----------------------------------------------------------------
+  function drawRock(layer, name, x, y, r, centre) {
+    var g = svg('g', { 'class': 'rock' + (centre ? ' centre' : '') }, layer);
+    svg('path', { d: rockPath(x, y, r, hash(name)) }, g);
+    var t = svg('text', centre ? { x: x, y: y, 'dominant-baseline': 'central' } : { x: x, y: y + r * 0.8 + 13 }, g);
+    t.textContent = short(name, centre ? 14 : 18);
+    if (centre && t.textContent.length > 7) {
+      t.setAttribute('textLength', String(r * 1.6));
+      t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    }
+    svg('title', {}, g).textContent = name;
+    return g;
+  }
+
+  function draw() {
+    var box = $('beach');
+    box.textContent = '';
+    svg('ellipse', { 'class': 'sand', cx: CX, cy: CY, rx: 196, ry: 160 }, box);
+    for (var i = 0; i < 4; i++) {
+      var y = CY - 120 + i * 78 + (i % 2 ? 6 : -4);
+      svg('path', { 'class': 'ripple', d: 'M' + (CX - 150 + i * 6) + ' ' + y + ' q 50 -10 100 0 t 100 0 t 100 0' }, box);
+    }
+    var ties = svg('g', {}, box), stones = svg('g', {}, box);
+    scene.rocks = {};
+    scene.ties = ties;
+    drawRock(stones, scene.room, CX, CY, 34, true);
+    // Everyone who took a step, and every third named, around the room.
+    var names = [];
+    scene.loops.forEach(function (l) {
+      l.people.concat(l.third ? [l.third] : []).forEach(function (p) { if (names.indexOf(p) < 0) names.push(p); });
+    });
+    scene.at = {};
+    names.forEach(function (p, k) {
+      var a = (-90 + 180 / names.length + k * 360 / names.length) * Math.PI / 180;
+      scene.at[p] = { x: CX + Math.cos(a) * 150, y: CY + Math.sin(a) * 116 };
+      scene.rocks[p] = drawRock(stones, p, scene.at[p].x, scene.at[p].y, 17, false);
+    });
+    // Closed loops rest as small grey pebbles near the rock; they say nothing.
+    var closed = scene.loops.filter(function (l) { return l.closed; }).length;
+    for (var c = 0; c < Math.min(closed, 60); c++) {
+      var ca = c * 2.39996 + 0.4, rr = 43 + (c % 4) * 4.5 + Math.floor(c / 24) * 6;
+      svg('circle', { 'class': 'resting', cx: (CX + Math.cos(ca) * rr).toFixed(1), cy: (CY + Math.sin(ca) * rr * 0.8).toFixed(1), r: 2.6 }, stones);
+    }
+    // Open loops: gold pebbles, each toward the one it waits on, or above
+    // the room while it waits for an offer.
+    var open = scene.loops.filter(function (l) { return !l.closed; });
+    var toward = {};
+    open.forEach(function (l) {
+      var who = l.waitsOn && scene.at[l.waitsOn] ? l.waitsOn : '';
+      (toward[who] = toward[who] || []).push(l);
+    });
+    Object.keys(toward).forEach(function (who) {
+      var group = toward[who];
+      var base = who ? Math.atan2((scene.at[who].y - CY) / 116, (scene.at[who].x - CX) / 150) * 180 / Math.PI : -90;
+      var step = Math.min(17, 84 / Math.max(group.length, 1));
+      group.forEach(function (l, j) {
+        var band = group.length > 5 && j % 2 ? { x: 62, y: 52 } : { x: 78, y: 66 };
+        var ang = (base + (j - (group.length - 1) / 2) * step) * Math.PI / 180;
+        l.x = CX + Math.cos(ang) * band.x;
+        l.y = CY + Math.sin(ang) * band.y;
+        if (l.third && scene.rocks[l.third]) scene.rocks[l.third].classList.add('third');
+        var g = svg('g', { 'class': 'pebble', tabindex: '0', role: 'button' }, stones);
+        g.setAttribute('aria-label', l.steps[0].text);
+        svg('circle', { 'class': 'hit', cx: l.x.toFixed(1), cy: l.y.toFixed(1), r: 13 }, g);
+        svg('ellipse', { 'class': 'stone', cx: l.x.toFixed(1), cy: l.y.toFixed(1), rx: 6.6, ry: 5.2, transform: 'rotate(' + Math.round(hash(l.steps[0].text) * 60 - 30) + ' ' + l.x.toFixed(1) + ' ' + l.y.toFixed(1) + ')' }, g)
+          .style.animationDelay = (-hash(l.steps[0].text) * 5).toFixed(2) + 's';
+        l.pebble = g;
+        activate(g, function () { pick(l); });
+      });
+    });
+    box.setAttribute('aria-label', scene.room + ': ' + open.length + ' loops waiting, ' + closed + ' closed');
+  }
+
+  // Choose a loop: its steps as the record has them, the rocks it is
+  // between marked, and the third's rock lit.
+  function pick(l) {
+    picked = l ? l.id : null;
+    Object.keys(scene.rocks).forEach(function (p) { scene.rocks[p].classList.remove('near', 'lit'); });
+    scene.ties.textContent = '';
+    scene.loops.forEach(function (x) {
+      if (x.pebble) x.pebble.classList.toggle('on', x === l);
+      if (x.card) x.card.classList.toggle('on', x === l);
+    });
+    if (!l) return;
+    l.people.forEach(function (p) {
+      if (scene.rocks[p]) scene.rocks[p].classList.add('near');
+      if (scene.at[p] && l.x != null) svg('line', { 'class': 'tie', x1: l.x.toFixed(1), y1: l.y.toFixed(1), x2: scene.at[p].x.toFixed(1), y2: scene.at[p].y.toFixed(1) }, scene.ties);
+    });
+    if (l.third && scene.rocks[l.third]) scene.rocks[l.third].classList.add('lit');
+  }
+
+  function list() {
+    var ul = $('loops');
+    ul.textContent = '';
+    scene.loops.filter(function (l) { return !l.closed; }).forEach(function (l) {
+      var li = el('li', 'loop');
+      li.tabIndex = 0;
+      l.steps.forEach(function (s) {
+        var red = s.text.trim() === REDACTED;
+        var p = el('p', 'step' + (red ? ' redacted' : ''));
+        p.appendChild(el('span', 'words', s.text));
+        if (s.who && !red) { p.appendChild(document.createTextNode(' ')); p.appendChild(el('span', 'who', '— ' + s.who)); }
+        li.appendChild(p);
+      });
+      li.appendChild(el('p', 'waits', l.waitsOn ? 'Waiting on ' + l.waitsOn + '.' : 'Waiting for an offer.'));
+      l.card = li;
+      activate(li, function () { pick(l); });
+      ul.appendChild(li);
+    });
+  }
+
+  function show(pool) {
+    var purpose = typeof pool._ === 'string' ? pool._ : (pool._ && typeof pool._._ === 'string' ? pool._._ : '');
+    var colon = purpose.indexOf(': ');
+    var room = colon > 0 && colon < 60 ? purpose.slice(0, colon) : 'The meeting room';
+    $('room-name').textContent = room;
+    var rest = colon > 0 && colon < 60 ? purpose.slice(colon + 2) : purpose;
+    $('purpose').textContent = rest.charAt(0).toUpperCase() + rest.slice(1);
+    var loops = loopsFrom(pool);
+    var closed = loops.filter(function (l) { return l.closed; }).length;
+    $('n-loops').textContent = loops.length;
+    $('n-closed').textContent = closed;
+    $('n-waiting').textContent = loops.length - closed;
+    scene = { room: room.replace(/^Community Recovery’s\s+|^Community Recovery's\s+/i, ''), loops: loops };
+    draw();
+    list();
+    var said = Beach.notes(pool).length;
+    $('state').textContent = !said ? 'The room is empty. Nobody has met in it yet.'
+      : !loops.length ? 'People have spoken in the room, and no loop has opened yet.'
+      : loops.length === closed ? 'Every loop opened in the room has closed.'
+      : '';
+    $('state').hidden = !$('state').textContent;
+    if (picked) pick(loops.filter(function (l) { return l.id === picked; })[0] || null);
+  }
+
+  function refresh() {
+    return Beach.place.get('pool:meeting-room').then(function (pool) {
+      Beach.dot(true);
+      var sig = JSON.stringify(pool);
+      if (sig === lastSig) return;
+      lastSig = sig;
+      show(pool && typeof pool === 'object' ? pool : {});
+    }, function () {
+      Beach.dot(false);
+      if (lastSig == null) $('state').textContent = 'The room can’t be read just now.';
+    });
+  }
+  refresh();
+  setInterval(function () { if (!document.hidden) refresh(); }, REFRESH_MS);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
+})();
+</script>
+</body>
+</html>
