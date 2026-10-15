@@ -451,37 +451,118 @@
   }
   // A microphone beside a box, as on Matthew's pages: the words land in the box to be read and
   // changed before anything is saved. Where a browser has none, no button appears.
+  // How it avoids the echo on phones (ways:dictation 2, the same fix as beach.js addMic): a phone's
+  // engine keeps revising the phrase it hears and hands back each revision, often marked final,
+  // repeating the words before it. So on every result the words are worked out again from all of
+  // the results, from 0: the finals in order, revisions collapsed, and only the last unfinished
+  // entry as the words still forming. The box is set to that, never added to.
+  var NOT_WORD;
+  try { NOT_WORD = new RegExp('[^\\p{L}\\p{N}\\s]', 'gu'); } catch (e) { NOT_WORD = /[^a-z0-9À-ɏ\s]/g; }
+  function spoken(s) { return String(s).toLowerCase().replace(NOT_WORD, ' ').split(/\s+/).filter(Boolean); }
+  // true when b says what a said, or begins with it: b is a revision of a
+  function revises(a, b) {
+    var x = spoken(a), y = spoken(b);
+    if (x.length > y.length) return false;
+    for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+    return true;
+  }
+  function collapse(list) {
+    var out = [];
+    list.forEach(function (p) {
+      p = String(p).trim();
+      if (!spoken(p).length) return;
+      if (out.length && revises(out[out.length - 1], p)) out[out.length - 1] = p; else out.push(p);
+    });
+    return out;
+  }
+  // bare words become sentences (ways:dictation 3); a phrase the engine punctuated stays as it came
+  var ENDS = /[.!?…]["”’)]*\s*$/;
+  function sentence(p, starts, ends) {
+    if (/[.,!?;:…]/.test(p)) return p;
+    p = p.replace(/(^|\s)i(?=\s|'|’|$)/g, '$1I');
+    if (starts) p = p.charAt(0).toUpperCase() + p.slice(1);
+    return ends ? p + '.' : p;
+  }
+  var listening = null;     // the one microphone listening now, as its stop
   function speakButton(box, note) {
     var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Rec) return null;
     var b = el('button', 'quiet', '🎙 Speak'); b.type = 'button';
-    var rec = null, base = '', said = '';
-    function fill(extra) { box.value = (base + said + extra).slice(0, box.maxLength > 0 ? box.maxLength : 100000); }
-    b.addEventListener('click', function () {
-      if (rec) { rec.stop(); return; }
-      rec = new Rec(); rec.lang = 'en-GB'; rec.continuous = true; rec.interimResults = true;
-      base = box.value && !/\s$/.test(box.value) ? box.value + ' ' : box.value; said = '';
-      rec.onresult = function (ev) {
-        var interim = '';
-        for (var i = ev.resultIndex; i < ev.results.length; i++) {
-          var t = ev.results[i][0].transcript;
-          if (ev.results[i].isFinal) said += t.trim() + ' '; else interim += t;
+    var rec = null, wanted = false, frozen = false, hooked = false;
+    var base = '', phrases = [], live = '', began = 0, heard = false, quiet = 0;
+    // the box's words before speaking, then the spoken phrases as sentences, then the words still forming
+    function compose(forming) {
+      var t = base, starts = !t.trim() || ENDS.test(t);
+      function put(w) { t += (t && !/\s$/.test(t) ? ' ' : '') + w; }
+      phrases.forEach(function (p) { var w = sentence(p, starts, true); put(w); starts = ENDS.test(w); });
+      if (live) put(sentence(live, starts, false) + (forming ? '…' : ''));
+      return t;
+    }
+    function show(t) { box.value = t.slice(0, box.maxLength > 0 ? box.maxLength : 100000); }
+    function stop() { wanted = false; if (rec) try { rec.stop(); } catch (e) {} }
+    function halt() { wanted = false; frozen = true; if (rec) try { rec.abort(); } catch (e) {} }
+    function done(msg) {
+      rec = null; if (listening === stop) listening = null;
+      b.textContent = '🎙 Speak';
+      if (!frozen) show(compose(false).replace(/\s+$/, ''));
+      if (msg) note.textContent = msg;
+      else if (/^Listening/.test(note.textContent)) note.textContent = 'Read it through and change anything before you save.';
+    }
+    function session() {
+      var r = new Rec(); rec = r;
+      r.lang = 'en-GB'; r.continuous = true; r.interimResults = true;
+      began = Date.now(); heard = false; phrases = []; live = '';
+      var fault = '';
+      r.onresult = function (ev) {
+        if (frozen || r !== rec) return;
+        heard = true; quiet = 0;
+        var finals = [], forming = '';
+        for (var i = 0; i < ev.results.length; i++) {
+          if (ev.results[i].isFinal) finals.push(ev.results[i][0].transcript); else forming = ev.results[i][0].transcript;
         }
-        fill(interim);
+        phrases = collapse(finals); live = forming.trim();
+        // words still forming that repeat the last finished phrase are its revision
+        if (live && phrases.length && revises(phrases[phrases.length - 1], live)) phrases.pop();
+        show(compose(true));
       };
-      rec.onerror = function (ev) {
-        note.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
+      r.onerror = function (ev) {
+        if (ev.error === 'no-speech' || ev.error === 'aborted') return;
+        wanted = false;
+        fault = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
           ? 'The microphone wasn’t allowed. You can type instead.' : 'Speaking didn’t work just now. You can type instead.';
       };
-      rec.onend = function () {
-        rec = null; fill(''); box.value = box.value.replace(/\s+$/, ''); b.textContent = '🎙 Speak';
-        if (/^Listening/.test(note.textContent)) note.textContent = 'Read it through and change anything before you save.';
+      r.onend = function () {
+        if (r !== rec) return;
+        // silence ends a session, sooner on a phone: while the person still wants to speak, start
+        // again with what was said as the new starting words; a session that dies at once is a fault
+        if (wanted && !frozen) {
+          if (Date.now() - began < 1000) return done('Speaking didn’t work just now. You can type instead.');
+          if (!heard && ++quiet >= 2) return done('I stopped listening after a long silence. Press Speak to go on.');
+          base = compose(false); show(base);
+          try { session(); return; } catch (e) { return done('Speaking didn’t work just now. You can type instead.'); }
+        }
+        done(fault);
       };
+      r.start();
+    }
+    b.addEventListener('click', function () {
+      if (rec) return stop();
+      if (listening) listening();      // one microphone at a time
+      // saving stops the microphone first, so what is saved has no ellipsis
+      if (!hooked && box.form) {
+        hooked = true;
+        box.form.addEventListener('submit', function () { if (rec) { show(compose(false).replace(/\s+$/, '')); halt(); } }, true);
+      }
+      listening = stop; wanted = true; frozen = false; quiet = 0;
+      base = box.value && !/\s$/.test(box.value) ? box.value + ' ' : box.value;
       try {
-        rec.start(); b.textContent = '■ Stop';
+        session(); b.textContent = '■ Stop';
         note.textContent = 'Listening… press Stop when you’re done. Your ' + DEVICE + ' may send your voice to its maker to turn it into text. Nothing is saved until you press Save.';
-      } catch (e) { rec = null; note.textContent = 'Speaking didn’t work just now. You can type instead.'; }
+      } catch (e) { rec = null; listening = null; note.textContent = 'Speaking didn’t work just now. You can type instead.'; }
     });
+    // typing takes over: the words heard so far stay, and listening stops
+    box.addEventListener('beforeinput', function (ev) { if (rec && ev.isTrusted) { box.value = compose(false); halt(); } });
+    box.addEventListener('blur', function (ev) { if (rec && ev.relatedTarget !== b) stop(); });
     return b;
   }
 
