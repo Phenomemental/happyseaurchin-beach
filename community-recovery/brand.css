@@ -144,74 +144,229 @@ h1 { text-transform: uppercase; font-weight: 700; }
 }
 .logo-on-black img { display: block; width: 100%; height: auto; }
 
-/* Header: near-black, the name with its strapline (brand 3.5), and the
-   menu, the same on every page. */
+/* THE NAVIGATION (nav.js draws it from one list). A slim bar on black, so the
+   logo is always on black (brand 3.1): the logo and the name on the left, a
+   purple Join us and the Menu button on the right. */
 .masthead {
-  background: var(--cr-night);
+  background: var(--cr-logo-black);
   border-bottom: 3px solid var(--cr-purple);
 }
-.masthead .wrap {
-  padding-top: 0.85rem;
-  padding-bottom: 0.7rem;
-}
-.brand {
+.cr-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
+  min-height: 3.6rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+.cr-home {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
   color: var(--cr-head-dark);
   text-decoration: none;
+}
+.cr-logo { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 6px; overflow: hidden; }
+.cr-logo img { width: 100%; height: 100%; }
+.cr-name {
   font-family: var(--cr-display);
-  font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.brand svg { flex: none; }
-/* The strapline in Caveat (brand 2.3), the line beneath in Nunito Sans,
-   both set under the name. */
-.brand-strap,
-.brand-sub { margin: 0 0 0 calc(28px + 0.6rem); }
+.cr-actions { display: flex; align-items: center; gap: 0.4rem; flex: none; }
+.cr-join, .cr-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--cr-text);
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.2;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cr-join {
+  color: #ffffff;
+  background: var(--cr-purple);
+  border: 1px solid var(--cr-purple);
+  text-decoration: none;
+}
+.cr-join:hover { background: var(--cr-bright); border-color: var(--cr-bright); }
+.cr-join[aria-current="page"] { box-shadow: 0 0 0 2px var(--cr-logo-black), 0 0 0 4px var(--cr-lilac); }
+.cr-menu-btn {
+  color: var(--cr-head-dark);
+  background: transparent;
+  border: 1px solid #5B4A73;
+}
+.cr-menu-btn:hover, .cr-menu-btn[aria-expanded="true"] { border-color: var(--cr-lilac); color: #ffffff; }
+.cr-burger { font-size: 1.05rem; line-height: 1; }
+.masthead a:focus-visible, .masthead button:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
+@media (min-width: 600px) {
+  .cr-name { font-size: 1.25rem; }
+}
+
+/* The menu panel: dark purple; a full-screen sheet on a phone, a panel that
+   drops from the bar on a wider screen. Each step is numbered, the page you are
+   on marked "You are here"; More sits small at the foot. */
+.cr-menu[hidden] { display: none; }
+.cr-menu-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.35); }
+.cr-menu-sheet {
+  position: fixed;
+  z-index: 61;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--cr-deep);
+  color: var(--cr-head-dark);
+  padding: 0.8rem 1rem 1.6rem;
+  font-family: var(--cr-text);
+}
+html.cr-menu-open { overflow: hidden; }
+@media (min-width: 720px) {
+  html.cr-menu-open { overflow: visible; }
+  .cr-menu-backdrop { background: transparent; }
+  .cr-menu-sheet {
+    inset: auto;
+    top: 4.2rem;
+    right: max(1rem, calc((100vw - 42rem) / 2 - 6rem));
+    width: 26rem;
+    max-height: calc(100vh - 5.2rem);
+    border-radius: var(--cr-radius);
+    border-top: var(--cr-edge);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  }
+}
+.cr-menu-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 0.6rem; }
+.cr-menu-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-lilac);
+}
+.cr-menu-close {
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--cr-head-dark);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.cr-menu-close:hover { border-color: var(--cr-lilac); }
+.cr-steps { list-style: none; margin: 0; padding: 0; }
+.cr-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.7rem 0.6rem;
+  margin: 0 -0.6rem;
+  border-radius: 10px;
+  color: var(--cr-head-dark);
+  text-decoration: none;
+}
+.cr-step:hover { background: rgba(255, 255, 255, 0.07); }
+.cr-step[aria-current="page"] { background: rgba(255, 255, 255, 0.1); box-shadow: inset 3px 0 0 var(--cr-lantern); }
+.cr-num {
+  flex: none;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--cr-lilac);
+  font-family: var(--cr-display);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1;
+}
+.cr-step[aria-current="page"] .cr-num { background: var(--cr-lilac); color: var(--cr-deep); }
+.cr-step-words { flex: 1; min-width: 0; }
+.cr-step-label {
+  display: block;
+  font-family: var(--cr-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+}
+.cr-step-line { display: block; font-size: 0.92rem; line-height: 1.4; color: var(--cr-body-dark); }
+.cr-here {
+  flex: none;
+  align-self: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--cr-lantern);
+}
+.cr-more { margin: 1rem 0 0; padding: 0.8rem 0 0; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.cr-more-title {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-quiet-dark);
+}
+.cr-more-link { display: inline-flex; gap: 0.6rem; align-items: center; font-size: 0.92rem; color: var(--cr-body-dark); }
+.cr-more-link:hover { color: #ffffff; }
+.cr-menu a:focus-visible, .cr-menu button:focus-visible { outline: 2px solid var(--cr-lantern); outline-offset: 2px; }
+
+/* The Next step card, at the foot of every page in the journey. */
+.cr-next { margin-top: 2rem; margin-bottom: 1.6rem; }
+.cr-next-card {
+  display: block;
+  padding: 1rem 1.1rem;
+  border-radius: var(--cr-radius);
+  background: var(--cr-deep);
+  color: var(--cr-head-dark);
+  text-decoration: none;
+  border-top: 4px solid var(--cr-bright);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.cr-next-card:hover { background: var(--cr-purple); }
+.cr-next-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.cr-next-k {
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cr-lilac);
+}
+.cr-next-label { font-family: var(--cr-display); font-weight: 600; font-size: 1.3rem; letter-spacing: 0.02em; }
+.cr-next-sep { color: var(--cr-body-dark); }
+.cr-next-line { color: var(--cr-body-dark); }
+.cr-next-arrow { font-weight: 800; color: var(--cr-lantern); }
+.cr-prev { margin: 0.7rem 0 0; font-size: 0.95rem; }
+.cr-prev a { color: var(--muted); }
+
+/* Present mode on the presentation hides the bar, the menu and the Next step card. */
+.is-presenting .cr-next, .is-presenting .cr-menu { display: none !important; }
+
+/* The site's strapline (brand 3.5), now kept on the index page only. */
 .brand-strap {
   font-family: var(--cr-hand);
   font-weight: 600;
   font-size: 1.45rem;
   line-height: 1.15;
-  color: var(--cr-lilac);
-  margin-top: 0.1rem;
+  color: var(--accent);
+  margin: 0.4rem 0 0;
 }
-.brand-sub {
-  font-size: 0.85rem;
-  line-height: 1.4;
-  color: var(--cr-quiet-dark);
-  margin-top: 0.15rem;
-}
-/* The menu sits in even columns: two on a phone, three when wider. */
-.section-nav {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 1rem;
-  margin-top: 0.7rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid #3A2D4C;
-  font-size: 0.98rem;
-}
-.section-nav a {
-  justify-self: start;
-  color: var(--cr-body-dark);
-  text-decoration: none;
-  padding: 0.35rem 0;
-  border-bottom: 2px solid transparent;
-}
-@media (min-width: 560px) {
-  .section-nav { grid-template-columns: repeat(3, 1fr); }
-}
-.section-nav a:hover { color: var(--cr-lilac); }
-.section-nav a[aria-current="page"] {
-  color: var(--cr-head-dark);
-  font-weight: 700;
-  border-bottom-color: var(--cr-bright);
-}
-.masthead a:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
+.brand-sub { font-size: 0.95rem; line-height: 1.4; color: var(--muted); margin: 0.2rem 0 0; }
 
 main.wrap { padding-top: 1.8rem; padding-bottom: 2rem; }
 h2 {
@@ -412,7 +567,6 @@ footer .made a[aria-current="page"] { text-decoration: none; }
 }
 @media (min-width: 600px) {
   body { font-size: 1.125rem; }
-  .brand { font-size: 1.4rem; }
 }
 
 /* ---- brand 7: MOTION AND LIFE ------------------------------------------------
