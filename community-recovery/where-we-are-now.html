@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14c">
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
 <style>
   /* The look of this page is brand 7 in Community Recovery's place: the sky,
      the path, the stones, the garden, the lanterns and the ripples, in that
@@ -620,12 +620,19 @@
   .leros ul { list-style: none; padding: 0; margin: 0; }
   .lero { padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
   .lero:last-child { border-bottom: 0; }
-  .lero a { font-weight: 800; }
+  .lero .lero-name { font-weight: 800; }
   .lero .lero-what { font-size: 0.92rem; margin: 0.1rem 0 0; }
+  .lero .lero-own { font-size: 0.88rem; margin: 0.05rem 0 0; }
   .lero .lero-standing { font-size: 0.82rem; color: var(--muted); margin: 0.05rem 0 0; }
+  .lero .lero-found { font-size: 0.82rem; color: var(--muted); margin: 0.05rem 0 0; overflow-wrap: anywhere; }
+  .lero .lero-found a { color: var(--muted); }
   .lero.ours { background: color-mix(in srgb, var(--cr-lantern) 22%, var(--card)); border-radius: 10px; padding: 0.55rem 0.7rem; border: 0; }
   .lero.ours a { color: var(--head); }
   .map-how { font-size: 0.95rem; color: var(--muted); margin: 1rem 0 0; }
+  /* the globe beside the ripples, as weft gives it */
+  .globe { margin: 1.2rem 0 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--cr-radius); overflow: hidden; }
+  .globe iframe { display: block; }
+  .globe figcaption { font-size: 0.9rem; color: var(--muted); padding: 0.55rem 0.9rem; border-top: 1px solid var(--line); }
 
   @media (prefers-reduced-motion: reduce) {
     .foot.on .stone::after, .now-dot, .wave, .drop-pulse { animation: none; }
@@ -661,6 +668,7 @@
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
       <a href="where-we-are-now.html" aria-current="page">Where we are now</a>
       <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="proposal.html">The proposal</a>
     </nav>
   </div>
 </header>
@@ -772,22 +780,25 @@
       </div>
     </div>
     <p class="opening-note" id="map-note" role="status">Opening the map&hellip;</p>
-    <p class="map-how" id="map-how">To put another LERO on the map, or to correct one, say so in weft&rsquo;s room, pool:weft, on <a href="https://beach.happyseaurchin.com">the beach</a>. <a href="https://happyseaurchin.com/globe?layer=lero#3,1,1,8,2,1">See the same LEROs on the globe</a>.</p>
+    <figure class="globe">
+      <iframe src="https://happyseaurchin.com/globe?layer=lero&embed=1#3,1,1,8,2,1" title="Lived experience recovery organisations" loading="lazy" style="width:100%;height:480px;border:0"></iframe>
+      <figcaption>The same LEROs on the globe, from the same listing. <a href="https://happyseaurchin.com/globe?layer=lero#3,1,1,8,2,1">Open the globe on its own</a>.</figcaption>
+    </figure>
+    <p class="map-how" id="map-how">To put another LERO on the map, or to correct one, say so in weft&rsquo;s room, pool:weft, on <a href="https://beach.happyseaurchin.com">the beach</a>.</p>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
     <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
+    <p class="where">This page reads journey, the room pool:journey, spine:standards and every standards notebook (the six footsteps are in standards:sandpiper at 9), live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>, and the map from lero:earth on the earth beach, with weft&rsquo;s globe of the same LEROs beside it from happyseaurchin.com. It writes only what you choose: a note, a cheer, or your own reading of a standard in your own notebook.</p>
     <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="#say" id="to-say">Leave a note in the room.</a></p>
-    <p class="where">This page reads journey, the room pool:journey, spine:standards and every standards notebook (the six footsteps are in standards:sandpiper at 9), live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>, and the map from lero:earth on the earth beach.</p>
-    <p>It writes only what you choose: a note, a cheer, or your own reading of a standard in your own notebook.</p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
-<script src="beach.js?v=2026-10-14b"></script>
+<script src="beach.js?v=2026-10-15a"></script>
 <script>
 (function () {
   'use strict';
@@ -801,8 +812,7 @@
   var DAYS = 30, REFRESH_MS = 30000, REDACTED = 'Redacted by the keepers';
   var TAPS = ['Celebrate', 'I was there', 'Tell me more'];
   var DAVID = 'https://pscale-commons.github.io/community-recovery/standards.html';
-  var PLACE_URL = 'https://beach.happyseaurchin.com/w/community-recovery/.well-known/pscale-beach?block=';
-  var BEACH_URL = 'https://beach.happyseaurchin.com/.well-known/pscale-beach?block=';
+  var DAVID_PAGES = 'https://pscale-commons.github.io/community-recovery/';
   var CR_PATH = ['3', '1', '1', '8', '2', '1'];   // where Community Recovery stands in lero:earth, if the listing does not say
   var STILL = matchMedia('(prefers-reduced-motion: reduce)');
   var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -828,6 +838,9 @@
   // An address in the frame, written as the beach writes it: one digit before the point.
   function dotted(d) { return d.length <= 1 ? d : d.charAt(0) + '.' + d.slice(1); }
   function undot(s) { return String(s).replace(/\./g, ''); }
+  // A link lands on a page a person can read, never on the beach's raw feed:
+  // an address into a place's feed opens the place itself.
+  function readable(url) { return String(url || '').replace(/\/\.well-known\/pscale-beach.*$/, ''); }
   // A journey address without its leading zeros, so "08" and "008" are one stone after a supernest.
   function same(a) { return String(a || '').replace(/^0+/, ''); }
   function today0() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
@@ -856,7 +869,7 @@
           when: typeof e['1'] === 'string' ? e['1'].trim() : '',
           ahead: typeof e['2'] === 'string' && /^\s*ahead\s*$/i.test(e['2']),
           stds: standardsOf(e['3']),
-          link: typeof e['4'] === 'string' && /^https?:\/\//.test(e['4'].trim()) ? e['4'].trim() : ''
+          link: typeof e['4'] === 'string' && /^https?:\/\//.test(e['4'].trim()) ? readable(e['4'].trim()) : ''
         });
       } else if (typeof e === 'string') {
         if (e.trim()) out.push({ addr: path + i, what: e.trim(), when: '', ahead: false, stds: [], link: '' });
@@ -1495,20 +1508,26 @@
 
   // ---- One standard, opened ---------------------------------------------------------------
   var dialog = $('standard'), opener = null, openAddr = null;
-  var SOURCE = /^(this notebook|function:[\w-]+|spine:[\w-]+|proposal:[\w-]+|constitution|agreement|presentation|brand)\b/;
-  function sourceHref(key, book) {
-    if (key === 'this notebook') return PLACE_URL + encodeURIComponent(book);
-    if (key === 'constitution' || key === 'agreement' || key === 'presentation') return PLACE_URL + 'spine%3A' + key;
-    if (/^proposal:/.test(key)) return BEACH_URL + encodeURIComponent(key);
-    return PLACE_URL + encodeURIComponent(key);
+  var SOURCE = /^(this notebook|standards:[\w-]+|function:[\w-]+|spine:[\w-]+|proposal:[\w-]+|constitution|agreement|presentation|standards|brand)\b/;
+  // Each source opens on the page a person reads it on, never on the beach's
+  // raw feed. The brand and the functions are named, not linked.
+  function sourceHref(key) {
+    var k = key.replace(/^spine:/, '');
+    if (k === 'constitution') return DAVID_PAGES + 'constitution.html';
+    if (k === 'agreement') return DAVID_PAGES + 'join.html';
+    if (k === 'this notebook' || k === 'standards' || /^standards:/.test(k)) return DAVID_PAGES + 'standards.html';
+    if (k === 'presentation') return 'presentation.html';
+    if (/^proposal:/.test(k)) return 'proposal.html';
+    return '';
   }
   function link(t, href) { var a = el('a', null, t); a.href = href; return a; }
-  function sources(dd, t, book) {
+  function sources(dd, t) {
     t.split(/;\s*/).forEach(function (group, gi) {
       if (gi) dd.appendChild(document.createTextNode('; '));
       var m = group.match(SOURCE);
       if (!m) { dd.appendChild(document.createTextNode(group)); return; }
-      dd.appendChild(link(m[1], sourceHref(m[1], book)));
+      var href = sourceHref(m[1]);
+      dd.appendChild(href ? link(m[1], href) : document.createTextNode(m[1]));
       var rest = group.slice(m[1].length);
       if (m[1] !== 'presentation') { dd.appendChild(document.createTextNode(rest)); return; }
       var last = 0, re = /\b(\d)\.(\d)\b/g, x;
@@ -1554,7 +1573,7 @@
         var dl = el('dl');
         r.reading.parts.forEach(function (p) {
           var dd = el('dd');
-          if (/^sources?$/i.test(p.label)) sources(dd, p.body, r.name);
+          if (/^sources?$/i.test(p.label)) sources(dd, p.body);
           else dd.textContent = capital(p.body);
           add(dl, p.label ? el('dt', null, p.label === 'Would show it' ? 'What would show it' : p.label) : null, dd);
         });
@@ -1789,7 +1808,16 @@
 
   // ---- 7.6 THE RIPPLES ----------------------------------------------------------------------
   // lero:earth: at each place, '<Place> — N LEROs known at or beneath this place.',
-  // then the LEROs here, one '· ' line each: 'Name (where) — what — link — standing'.
+  // then the LEROs here, one '· ' line each. A line in weft's new shape says
+  // which link is the LERO's own: 'Name (where) — what — its own website or
+  // place — standing — found at: <source>'. An older line carries only where
+  // the LERO was found: 'Name (where) — what — <source> — standing'.
+  function urls(s) {
+    return (String(s).match(/https?:\/\/[^\s,]+/g) || []).map(function (u) { return readable(u.replace(/[.)]+$/, '')); });
+  }
+  function domain(u) {
+    try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; }
+  }
   function place(node) {
     var t = text(node), first = t.split('\n')[0];
     var m = first.match(/^(.+?)\s+—\s+(\d+)\s+LEROs?\b/);
@@ -1798,13 +1826,23 @@
       if (!/^·\s/.test(l)) return;
       var parts = l.slice(2).split(' — ');
       var nm = parts[0] || '', open = nm.indexOf(' (');
-      var url = (l.match(/https?:\/\/[^\s,]+/) || [''])[0].replace(/[.)]+$/, '');
+      var f = -1;
+      parts.forEach(function (p, i) { if (i > 0 && /^found at\b/i.test(p.trim())) f = i; });
+      var body = f > 0 ? parts.slice(1, f) : parts.slice(1);
+      var links = [], standing = '';
+      body.slice(1).forEach(function (p) {
+        var u = urls(p);
+        if (u.length) links = links.concat(u);
+        else standing = p;
+      });
       leros.push({
         name: open > 0 ? nm.slice(0, open) : nm,
         where: open > 0 ? nm.slice(open + 2).replace(/\)$/, '') : '',
-        what: parts.length > 1 ? parts[1] : '',
-        standing: parts.length > 3 ? parts[parts.length - 1] : '',
-        url: url
+        what: body.length ? body[0] : '',
+        standing: standing,
+        shaped: f > 0,                      // the line says which link is its own
+        links: links,                       // its own links, in the new shape; where it was found, in the old
+        found: f > 0 ? (urls(parts[f])[0] || '') : ''
       });
     });
     return { name: m ? m[1] : first, count: m ? +m[2] : 0, leros: leros };
@@ -1883,10 +1921,23 @@
       var ul = el('ul');
       p.leros.forEach(function (l) {
         var ours = /^Community Recovery$/.test(l.name);
+        // The name opens the LERO's own website or place, only once its line
+        // says which that is (Community Recovery's own line always does).
+        // Where weft found it is a separate, smaller link, never the name.
+        var own = l.shaped || ours ? l.links : [];
+        var found = l.shaped ? l.found : ours ? '' : (l.links[0] || '');
         var li = el('li', 'lero' + (ours ? ' ours' : ''));
-        var name = l.url ? link(l.name, l.url) : el('strong', null, l.name);
+        var name = own.length ? link(l.name, own[0]) : el('strong', null, l.name);
+        name.className = 'lero-name';
+        var more = own.slice(1).map(function (u) {
+          return add(el('p', 'lero-own'), link(/^https:\/\/beach\.happyseaurchin\.com\/w\//.test(u) ? 'Its place on the beach' : domain(u), u));
+        });
         add(li, name, l.where ? document.createTextNode(' (' + l.where + ')') : null,
-          l.what ? el('p', 'lero-what', capital(l.what)) : null, l.standing ? el('p', 'lero-standing', capital(l.standing)) : null);
+          found && l.shaped ? add(el('span', 'lero-found'), document.createTextNode(' · '), link('source', found)) : null,
+          l.what ? el('p', 'lero-what', capital(l.what)) : null);
+        more.forEach(function (x) { li.appendChild(x); });
+        add(li, l.standing ? el('p', 'lero-standing', capital(l.standing)) : null,
+          found && !l.shaped ? add(el('p', 'lero-found'), document.createTextNode('found at '), link(domain(found), found)) : null);
         ul.appendChild(li);
       });
       box.appendChild(ul);
@@ -1895,7 +1946,7 @@
   }
 
   // ---- Reading the place --------------------------------------------------------------------
-  var sigs = {}, reached = { place: false, earth: false }, liveAt = null, firstDraw = true;
+  var sigs = {}, reached = { place: false, earth: false }, firstDraw = true;
   function changed(k, v) { var s = JSON.stringify(v); if (sigs[k] === s) return false; sigs[k] = s; return true; }
   function refreshBooks() {
     return Beach.place.index().then(function (ix) {
@@ -1938,15 +1989,6 @@
     if (dialog.open && openAddr) drawStandard();
     if (firstDraw && moments.length) { firstDraw = false; landOnMoment(); }
   }
-  function live(ok) {
-    if (ok) liveAt = new Date();
-    var on = liveAt && Date.now() - liveAt < 2 * REFRESH_MS + 5000;
-    $('live-dot').classList.toggle('on', !!on);
-    $('live-word').textContent = on
-      ? 'Live from the beach · read ' + liveAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-      : liveAt ? 'The beach is quiet just now · last read ' + liveAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-        : 'The beach can’t be reached just now.';
-  }
   function refresh() {
     var place = Promise.all([
       Beach.place.get(JOURNEY), Beach.place.get(ROOM), Beach.place.get(SPINE),
@@ -1957,9 +1999,9 @@
       data.journey = r[0]; data.room = r[1]; data.spine = r[2]; data.law = r[3];
       store('place', { journey: r[0], room: r[1], spine: r[2], law: r[3], books: r[4] });
       if (any || firstDraw) drawAll();
-      live(true);
+      Beach.dot(true);
     }, function () {
-      live(false);
+      Beach.dot(false);
       if (reached.place) return;
       // the built-in fallback: the last version this browser read, said plainly
       var saved = store('place');
@@ -2010,7 +2052,7 @@
     if (!document.hidden) { startSky(); if (!dialog.open) refresh(); }
   });
   refresh();
-  setInterval(function () { if (!document.hidden && !dialog.open) refresh(); else live(false); }, REFRESH_MS);
+  setInterval(function () { if (!document.hidden && !dialog.open) refresh(); }, REFRESH_MS);
 })();
 </script>
 </body>

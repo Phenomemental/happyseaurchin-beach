@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14c">
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
 <style>
   /* ---- The bar: reading more, following, presenting ---------------------- */
   :root { --bar-h: 3.4rem; }
@@ -726,6 +726,7 @@
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
       <a href="where-we-are-now.html">Where we are now</a>
       <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="proposal.html">The proposal</a>
     </nav>
   </div>
 </header>
@@ -746,8 +747,9 @@
 
 <footer>
   <div class="wrap">
-    <p class="where">This page reads spine:presentation, presenting and the room pool:presentation, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
-    <p>The only things it writes are a note you choose to leave and, for the presenter, which slide is showing.</p>
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
+    <p class="where">This page reads spine:presentation, presenting and the room pool:presentation, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>. The only things it writes are a note you choose to leave and, for the presenter, which slide is showing.</p>
+    <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="#deck" id="to-say">Leave a note in the room beneath any slide.</a></p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
@@ -778,7 +780,7 @@
   </form>
 </dialog>
 
-<script src="beach.js?v=2026-10-14a"></script>
+<script src="beach.js?v=2026-10-15a"></script>
 <script src="vendor/qrcode-generator-1.4.4.js"></script>
 <script>
 (function () {
@@ -1414,16 +1416,19 @@
   function refreshRoom() {
     return Beach.place.get(ROOM).then(function (b) {
       roomReached = true;
+      Beach.dot(true);
       var sig = JSON.stringify(b);
       room = b && typeof b === 'object' ? b : {};
       if (sig !== roomSig) { roomSig = sig; renderRoom(); }
     }, function () {
+      Beach.dot(false);
       if (!room) { roomReached = false; renderRoom(); }
     });
   }
 
   function refreshSpine() {
     return Beach.place.get(SPINE).then(function (b) {
+      Beach.dot(true);
       var sig = JSON.stringify(b);
       if (sig === spineSig) return;
       spineSig = sig;
@@ -1431,6 +1436,7 @@
       if (!renderSpine(b)) opening.textContent = 'The presentation has no slides on the beach just now.';
       else if (!landed) land();
     }, function () {
+      Beach.dot(false);
       if (!spine) opening.textContent = 'The presentation is kept on the beach and couldn’t be reached just now. It will appear here as soon as the beach answers.';
     });
   }
@@ -1755,6 +1761,17 @@
   barHeight();
   window.addEventListener('resize', barHeight);
   if (window.ResizeObserver) new ResizeObserver(barHeight).observe(bar);
+
+  // The footer's way to leave a note: the room beneath the slide nearest
+  // the reader, else the last slide's, which sits just above the footer.
+  document.getElementById('to-say').addEventListener('click', function (ev) {
+    var boxes = Array.prototype.slice.call(deck.querySelectorAll('.room textarea'));
+    if (!boxes.length) return;
+    ev.preventDefault();
+    var near = boxes.filter(function (b) { var r = b.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; })[0] || boxes[boxes.length - 1];
+    near.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    near.focus({ preventScroll: true });
+  });
 
   // ---- Begin ----------------------------------------------------------------------
   refreshSpine().then(refreshRoom).then(function () {

@@ -323,6 +323,18 @@
     return run;
   }
 
+  // The live dot in every page's one footer (brand 7.7), with one wording
+  // and one set of colours on every page: grey 'Opening the beach…' as the
+  // page opens (written in the page itself), green once it is reading the
+  // beach now, amber if the read failed.
+  function dot(ok) {
+    var d = document.getElementById('live-dot'), w = document.getElementById('live-word');
+    if (!d || !w) return;
+    d.classList.toggle('on', !!ok);
+    d.classList.toggle('off', !ok);
+    w.textContent = ok ? 'Reading the beach now' : 'The beach can’t be reached just now';
+  }
+
   // ---- Community Recovery's own place --------------------------------------
   // A second reader, for the place that carries the organisation's name
   // (beach.happyseaurchin.com/w/community-recovery). Its blocks read
@@ -503,6 +515,7 @@
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
     addMic: addMic,
-    live: live
+    live: live,
+    dot: dot
   };
 })();

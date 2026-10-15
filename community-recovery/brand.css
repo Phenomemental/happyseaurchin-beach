@@ -425,9 +425,10 @@ footer .made a[aria-current="page"] { text-decoration: none; }
   --cr-leaf: #8FD3A1;
   --cr-petal: #F7A7C3;
   --cr-live: #2E9E58;
+  --cr-amber: #C77A12;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --cr-live: #5BD08A; }
+  :root { --cr-live: #5BD08A; --cr-amber: #F0A541; }
 }
 
 /* brand 7.7: the sprout mark stays with the reader once the masthead has
@@ -474,8 +475,9 @@ footer .made a[aria-current="page"] { text-decoration: none; }
 }
 .markbar a:focus-visible { outline: 2px solid var(--cr-lilac); outline-offset: 3px; }
 
-/* brand 7.7: a live dot in the footer that turns green once the page is
-   reading the beach now. */
+/* brand 7.7: a live dot in the footer, the same on every page: grey while
+   the page opens the beach, green once it is reading the beach now, amber
+   if the read failed (Beach.dot in beach.js sets it, and its word). */
 .live {
   display: flex;
   align-items: center;
@@ -492,6 +494,10 @@ footer .made a[aria-current="page"] { text-decoration: none; }
 .live-dot.on {
   background: var(--cr-live);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-live) 25%, transparent);
+}
+.live-dot.off {
+  background: var(--cr-amber);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-amber) 25%, transparent);
 }
 
 /* brand 7.5: a burst of gold sparks from a button that has just been
