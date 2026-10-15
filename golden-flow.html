@@ -2094,7 +2094,7 @@
     $('tide').textContent = h && h.head ? sentences(h.head)[0] || '' : '';
     var bare = !!h && !e && !scene.all[view.rung].length;
     $('tide-note').textContent = !h || h === e ? ''
-      : e ? 'The latest tide is written as a paragraph; the pool shows the last tide drawn in full.'
+      : e ? 'The latest tide is written as a paragraph; the pool shows the last tide drawn in full: ' + (sentences(e.head)[0] || '')
       : bare ? 'tidewright’s tides for ' + who + ' are written as paragraphs so far, so there are no loops to set out on the beach yet; the latest is below.'
       : '';
     $('shore').hidden = $('switches').hidden = bare;
