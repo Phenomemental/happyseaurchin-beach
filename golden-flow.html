@@ -1295,6 +1295,50 @@
     return found;
   }
 
+  // ---- Who is on the beach -------------------------------------------------------
+  // The beach's front door names every passport, and which of them are
+  // agents (a reflexive or orientation block beside the passport). An
+  // agent's passport says whose it is in its opening line: "one of the four
+  // agents in the family of Phenomemental (Matthew)", "hatched ... for David
+  // (happyseaurchin)", "curated by David Pinto". The page reads that line
+  // and no more.
+  var beach = { handles: [], agents: [], opening: {}, read: false, reading: null };
+  function readBeach() {
+    if (beach.read) return Promise.resolve();
+    if (beach.reading) return beach.reading;
+    beach.reading = Beach.index().then(function (ix) {
+      var names = ix && Array.isArray(ix.blocks) ? ix.blocks : [];
+      var has = {};
+      names.forEach(function (n) { if (typeof n === 'string') has[n] = true; });
+      var handles = Object.keys(has).filter(function (n) { return n.indexOf('passport:') === 0; }).map(function (n) {
+        return n.slice(9);
+      }).filter(function (h) { return h && !/\d{6,}/.test(h); });
+      var agents = handles.filter(function (h) { return has['reflexive:' + h] || has['orientation:' + h]; });
+      return Promise.all(agents.map(function (h) {
+        return Beach.get('passport:' + h).then(function (pp) { beach.opening[h] = own(pp); }, function () {});
+      })).then(function () {
+        beach.handles = handles;
+        beach.agents = agents;
+        beach.read = true;
+        show(true);
+      });
+    }).then(null, function () {
+      beach.reading = null;
+    });
+    return beach.reading;
+  }
+  // The agents whose passports name this person as theirs.
+  function familyOf(k) {
+    var words = Object.keys(alias.up).filter(function (a) { return find(a) === k; });
+    if (words.indexOf(k) < 0) words.push(k);
+    var re = new RegExp('\\b(?:family of|for|curated by|kept by)\\s+(?:' + words.map(function (w) {
+      return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }).join('|') + ')(?![A-Za-z0-9_-])');
+    return beach.agents.filter(function (h) {
+      return key(h) !== k && re.test(beach.opening[h] || '');
+    });
+  }
+
   // ---- The pool ---------------------------------------------------------------------
   var SIDES = { rooms: -90, grains: 180, projects: 0, family: 90 };
   var SIDE_ORDER = ['rooms', 'grains', 'projects', 'family'];
@@ -1368,7 +1412,7 @@
     var reading = readingFor(view.as);
     var s = {
       reading: reading, entries: [], entry: null, centre: key(view.as),
-      all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: []
+      all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: [], family: []
     };
     var chosen = view.with.map(key);
     // A loop stands with the chosen when any of them is among those it is
@@ -1412,6 +1456,14 @@
       l.parties.forEach(function (p) { add(p.name); });
       if (l.third) add(l.third.name);
     });
+    // The agents whose passports say they are this person's stand beside
+    // them as rocks too, even with no loop open: present, and resting.
+    familyOf(s.centre).forEach(function (h) {
+      var k = key(h);
+      if (k === s.centre) return;
+      s.family.push(k);
+      if (s.people.indexOf(k) < 0) s.people.push(k);
+    });
     return s;
   }
   // The loops the beach draws: the rung's, with the chosen, through the
@@ -1445,7 +1497,7 @@
       var best = -1, bestGap = 1e9;
       slots.forEach(function (sl, si) {
         if (sl == null) return;
-        var g = gap(sl, pref[k] == null ? 0 : pref[k]);
+        var g = gap(sl, pref[k] == null ? (scene.family.indexOf(k) >= 0 ? SIDES.family : 0) : pref[k]);
         if (g < bestGap) {
           bestGap = g;
           best = si;
@@ -1770,6 +1822,23 @@
       others.appendChild(o);
     });
     if (others.children.length) asSelect.appendChild(others);
+    // Then every agent and everyone else with a passport on the beach.
+    var listed = readerKeys.concat(everyone);
+    [['Agents on the beach', beach.handles.filter(function (h) { return beach.agents.indexOf(h) >= 0; })],
+     ['Others on the beach', beach.handles.filter(function (h) { return beach.agents.indexOf(h) < 0; })]].forEach(function (g) {
+      var og = el('optgroup');
+      og.label = g[0];
+      g[1].filter(function (h) { return listed.indexOf(key(h)) < 0; }).sort(function (a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      }).forEach(function (h) {
+        listed.push(key(h));
+        var nm = label(key(h));
+        var o = el('option', null, nm === h ? h : nm + ' (' + h + ')');
+        o.value = h;
+        og.appendChild(o);
+      });
+      if (og.children.length) asSelect.appendChild(og);
+    });
     var found = false;
     Array.prototype.forEach.call(asSelect.querySelectorAll('option'), function (o) {
       if (!found && key(o.value) === keep) {
@@ -1979,7 +2048,7 @@
     var chosen = view.with.map(key);
     var rungList = scene[view.rung];
     if (!scene.reading || !scene.entries.length) {
-      note = 'tidewright has not yet written for ' + who + '.' + (!scene.reading && everyone.indexOf(key(view.as)) < 0 ? ' Handles are case-sensitive.' : '');
+      note = 'tidewright has not yet written for ' + who + '.' + (!scene.reading && everyone.indexOf(key(view.as)) < 0 && beach.handles.indexOf(view.as) < 0 ? ' Handles are case-sensitive.' : '');
     } else if (view.rung !== 'day' && !scene.all[view.rung].length) {
       note = 'tidewright has not yet read ' + (view.rung === 'season' ? 'the season' : 'the year') + ' for ' + who + '.';
     } else if (chosen.length) {
@@ -2133,6 +2202,7 @@
     return Promise.all([
       Beach.get(SPINE).then(function (block) {
         if (!render(block)) throw new Error('nothing to show');
+        readBeach();
       }),
       // The page still shows if the room can't be read.
       Beach.get(ROOM).then(function (pool) {
