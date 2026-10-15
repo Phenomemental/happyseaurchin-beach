@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14c">
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
 <style>
   h1 {
     font-size: 1.9rem;
@@ -198,6 +198,7 @@
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
       <a href="where-we-are-now.html">Where we are now</a>
       <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="proposal.html">The proposal</a>
     </nav>
   </div>
 </header>
@@ -265,7 +266,8 @@
 <footer>
   <div class="wrap">
     <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
-    <p class="where">This page reads spine:constitution, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a></p>
+    <p class="where">This page reads spine:constitution, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>. It writes nothing.</p>
+    <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="where-we-are-now.html#say">Leave a note in the room on Where we are now.</a></p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
@@ -277,7 +279,7 @@ if (/^#(chapter-\d+|builders|contents-wrap|room-wrap|opening|intro|pitch|vision|
   location.replace('proposal.html' + (location.hash === '#intro' ? '' : location.hash));
 }
 </script>
-<script src="beach.js?v=2026-10-14b"></script>
+<script src="beach.js?v=2026-10-15a"></script>
 <script>
 // This page is an offer to any LERO, so what it reads live from the beach
 // never names the area it began in, its providers, or the person
@@ -429,13 +431,6 @@ function unsaid(v) {
     return true;
   }
 
-  // The live dot turns green once the page has read the beach.
-  function live(ok) {
-    document.getElementById('live-dot').classList.toggle('on', ok);
-    document.getElementById('live-word').textContent = ok
-      ? 'Live from the beach · read ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-      : 'The beach can\u2019t be reached just now.';
-  }
   var mast = document.querySelector('.masthead');
   if ('IntersectionObserver' in window) new IntersectionObserver(function (es) {
     document.getElementById('markbar').classList.toggle('shown', !es[0].isIntersecting);
@@ -443,7 +438,7 @@ function unsaid(v) {
 
   var note = document.getElementById('opening-note');
   read(CONSTITUTION).then(function (c) {
-    live(!!c);
+    Beach.dot(!!c);
     if (fillClauses(document.getElementById('who-we-are-words'), c, WHO_WE_ARE)) note.remove();
     else note.textContent = UNREACHED;
     drawRoles(c);

@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="brand.css?v=2026-10-14c">
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
 <style>
   /* This page's drawings and marks, in the section's colours. */
   :root {
@@ -179,6 +179,7 @@
       <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
       <a href="where-we-are-now.html">Where we are now</a>
       <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="proposal.html" aria-current="page">The proposal</a>
     </nav>
   </div>
 </header>
@@ -363,14 +364,16 @@
 
 <footer>
   <div class="wrap">
-    <p>The only thing this page writes is a note you choose to leave.</p>
-    <p class="where">This page reads no block from the beach, <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a>; a note you leave goes into an open room there.</p>
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
+    <p class="where">This page reads nothing live: its words are written in the page. Its dot reads only the front door of Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>, and turns green when the place answers. The only thing it writes is a note you choose to leave, into an open room on <a href="https://beach.happyseaurchin.com">the beach</a>.</p>
+    <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="#note" id="to-say">Leave a note.</a></p>
+    <p>Kept on Pscale, the open commons built by David Pinto.</p>
     <p class="made"><a href="proposal.html" aria-current="page">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
 
-<script src="beach.js?v=2026-10-14a"></script>
+<script src="beach.js?v=2026-10-15a"></script>
 <script>
 // This page is an offer to any LERO, so what it reads live from the beach
 // never names the area it began in, its providers, or the person
@@ -418,6 +421,10 @@ function unsaid(v) {
     }, { threshold: 0.6 });
     parts.forEach(function (p) { io.observe(p); });
   })();
+
+  // The page reads nothing live, so its dot reads the front door of
+  // Community Recovery's place, and turns green when the place answers.
+  Beach.place.index().then(function () { Beach.dot(true); }, function () { Beach.dot(false); });
 
   // The note form only makes sense once we know the beach is reachable.
   var form = document.getElementById('note-form');
