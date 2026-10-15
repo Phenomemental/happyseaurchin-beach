@@ -940,13 +940,18 @@
     }
     return out;
   }
+  // The beach stamps an appended entry with its arrival at place 3: a line
+  // that is only a time, "2026-10-15T14:33:34Z", with or without its
+  // "(+0 — ...)" beside it, is not part of an answer, a group, a loop or a
+  // read.
+  var STAMP = /^\s*\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:Z|[+-]\d{2}:?\d{2})?\s*(?:\([^)]*\))?\s*$/i;
   // The words beneath a node, in order: each child's own words.
   function partsOf(node) {
     var out = [];
     if (!node || typeof node !== 'object') return out;
     for (var i = 1; i <= 9; i++) {
       var t = own(node[String(i)]);
-      if (t) out.push(t);
+      if (t && !STAMP.test(t)) out.push(t);
     }
     return out;
   }
@@ -1123,10 +1128,6 @@
     }
     return out;
   }
-  // The beach stamps an appended entry with its arrival at place 3: a line
-  // that is only a time, "2026-10-15T14:33:34Z", with or without its
-  // "(+0 — ...)" beside it, is not a group, a loop or a read.
-  var STAMP = /^\s*\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:Z|[+-]\d{2}:?\d{2})?\s*(?:\([^)]*\))?\s*$/i;
   // The lines beneath a node that are lines of their own, not its reads.
   function linesUnder(node) {
     return kids(node).filter(function (n) {
