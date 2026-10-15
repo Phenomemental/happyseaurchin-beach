@@ -665,9 +665,10 @@
     <nav class="section-nav" aria-label="Community Recovery">
       <a href="presentation.html">The presentation</a>
       <a href="meet.html">Meet the LERO</a>
-      <a href="https://pscale-commons.github.io/community-recovery/constitution.html">The constitution</a>
+      <a href="constitution.html">The constitution</a>
+      <a href="standards.html">The standards</a>
       <a href="where-we-are-now.html" aria-current="page">Where we are now</a>
-      <a href="https://pscale-commons.github.io/community-recovery/join.html">Join us</a>
+      <a href="join.html">Join us</a>
       <a href="proposal.html">The proposal</a>
     </nav>
   </div>
@@ -732,7 +733,7 @@
     <p class="evidence">sandpiper&rsquo;s reading is an evidence reading, written from what Community Recovery has said and done in public. Members&rsquo; own readings matter most: each one adds a gold leaf to its plant.</p>
     <div id="beds"></div>
     <p class="opening-note" id="garden-note" role="status">Opening the readings&hellip;</p>
-    <p class="std-small">What meeting each standard looks like is CLERO&rsquo;s to say, in <a href="https://www.clero.co.uk/clero-standards">CLERO&rsquo;s own document</a>. Readings can also be written on <a href="https://pscale-commons.github.io/community-recovery/standards.html">the standards page</a>.</p>
+    <p class="std-small">What meeting each standard looks like is CLERO&rsquo;s to say, in <a href="https://www.clero.co.uk/clero-standards">CLERO&rsquo;s own document</a>. Readings can also be written on <a href="standards.html">the standards page</a>.</p>
   </section>
 
   <dialog class="standard" id="standard" aria-labelledby="std-num">
@@ -794,7 +795,7 @@
     <p class="where">This page reads journey, the room pool:journey, spine:standards and every standards notebook (the six footsteps are in standards:sandpiper at 9), live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>, and the map from lero:earth on the earth beach, with weft&rsquo;s globe of the same LEROs beside it from happyseaurchin.com. It writes only what you choose: a note, a cheer, or your own reading of a standard in your own notebook.</p>
     <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="#say" id="to-say">Leave a note in the room.</a></p>
     <p>Kept on Pscale, the open commons built by David Pinto.</p>
-    <p class="made"><a href="proposal.html">How this was made</a></p>
+    <p class="made"><a href="made.html">How this was made</a></p>
     <a class="home" href="../">&middot;</a>
   </div>
 </footer>
@@ -811,8 +812,8 @@
   var FAMILIES = ['constitution', 'agreement', 'standards'];   // a person's notebooks, as the standards page makes them
   var DAYS = 30, REFRESH_MS = 30000, REDACTED = 'Redacted by the keepers';
   var TAPS = ['Celebrate', 'I was there', 'Tell me more'];
-  var DAVID = 'https://pscale-commons.github.io/community-recovery/standards.html';
-  var DAVID_PAGES = 'https://pscale-commons.github.io/community-recovery/';
+  // The pages where people make a name and write in their notebooks stand in this folder.
+  var STANDARDS_PAGE = 'standards.html';
   var CR_PATH = ['3', '1', '1', '8', '2', '1'];   // where Community Recovery stands in lero:earth, if the listing does not say
   var STILL = matchMedia('(prefers-reduced-motion: reduce)');
   var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -1513,9 +1514,9 @@
   // raw feed. The brand and the functions are named, not linked.
   function sourceHref(key) {
     var k = key.replace(/^spine:/, '');
-    if (k === 'constitution') return DAVID_PAGES + 'constitution.html';
-    if (k === 'agreement') return DAVID_PAGES + 'join.html';
-    if (k === 'this notebook' || k === 'standards' || /^standards:/.test(k)) return DAVID_PAGES + 'standards.html';
+    if (k === 'constitution') return 'constitution.html';
+    if (k === 'agreement') return 'join.html';
+    if (k === 'this notebook' || k === 'standards' || /^standards:/.test(k)) return STANDARDS_PAGE;
     if (k === 'presentation') return 'presentation.html';
     if (/^proposal:/.test(k)) return 'proposal.html';
     return '';
@@ -1699,7 +1700,7 @@
     var status = el('p', 'form-status');
     status.setAttribute('role', 'status');
     var help = el('p', 'std-small', 'Your name and three words are the ones you made on the standards page. New here? ');
-    add(help, link('Make your name there', DAVID), document.createTextNode(', then come back. Your reading is public, under your name, and only your words can change it.'));
+    add(help, link('Make your name there', STANDARDS_PAGE), document.createTextNode(', then come back. Your reading is public, under your name, and only your words can change it.'));
     add(form, lab, ta, pair, add(el('div', 'form-actions'), save, gone), status, help);
     Beach.addMic(ta);
 

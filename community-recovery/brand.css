@@ -385,7 +385,7 @@ footer p { margin: 0 0 0.5rem; }
 /* Where a page lives on the beach: a long address breaks rather than
    widening the page. */
 footer .where { overflow-wrap: anywhere; }
-/* How this was made: a quiet way to the proposal, at the foot of every page. */
+/* How this was made: a quiet way to made.html, at the foot of every page. */
 footer .made { margin-top: 0.9rem; }
 footer .made a { color: var(--muted); }
 footer .made a[aria-current="page"] { text-decoration: none; }

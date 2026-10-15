@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join us &middot; Community Recovery</title>
+<meta name="description" content="Join Community Recovery's place on the beach: choose a name, read the community agreement, and agree to it in your own time.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1B1424">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%237B3FBF'/%3E%3Cpath d='M16 25V14' stroke='%23F6F2FA' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z' fill='%23F6F2FA'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="brand.css?v=2026-10-15a">
+<link rel="stylesheet" href="kit.css?v=2026-10-15c">
+</head>
+<body>
+<header class="masthead" id="top">
+  <div class="wrap">
+    <div class="brand-block">
+      <a class="brand" href="./"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#7B3FBF"/><path d="M16 25V14" stroke="#F6F2FA" stroke-width="2.4" stroke-linecap="round"/><path d="M16 17c0-5 3-8 8-8 0 5-3 8-8 8zM16 20c0-4-2.5-6.5-6.5-6.5 0 4 2.5 6.5 6.5 6.5z" fill="#F6F2FA"/></svg>Community Recovery</a>
+      <p class="brand-strap">Recovery, grown in the open.</p>
+      <p class="brand-sub">A digital social innovation, by and for a lived experience recovery community.</p>
+    </div>
+    <nav class="section-nav" aria-label="Community Recovery">
+      <a href="presentation.html">The presentation</a>
+      <a href="meet.html">Meet the LERO</a>
+      <a href="constitution.html">The constitution</a>
+      <a href="standards.html">The standards</a>
+      <a href="where-we-are-now.html">Where we are now</a>
+      <a href="join.html" aria-current="page">Join us</a>
+      <a href="proposal.html">The proposal</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Join us</h1>
+  <p class="how">Choose a name. Read our agreement. Say yes in your own time.</p>
+  <div id="status" aria-live="polite"><p class="calm">Opening&hellip;</p></div>
+
+  <section class="card-box" id="hello" hidden>
+    <h2>Hello</h2>
+    <div id="hello-body"></div>
+  </section>
+
+  <div id="notes"></div>
+  <div id="parts"></div>
+
+  <section class="card-box about" id="about" hidden>
+    <h2>About you, if you like</h2>
+    <p class="small">Everyone can read this. Leave any of it empty.</p>
+    <form id="about-form" novalidate>
+      <label for="line">A line about you</label>
+      <input id="line" type="text" maxlength="160" autocomplete="off">
+      <label for="bring">Strengths, skills, interests or experiences I may like to bring</label>
+      <textarea id="bring" maxlength="600"></textarea>
+      <label for="hope">Something I hope will be different or stronger through taking part</label>
+      <textarea id="hope" maxlength="600"></textarea>
+      <div class="btns"><button type="submit" class="ans on">Save</button></div>
+      <p class="form-status" id="about-status" role="status"></p>
+    </form>
+  </section>
+
+  <p class="me" id="leave" hidden><button type="button" class="plain" id="leave-ask">Leave: remove my name and everything I wrote here</button></p>
+
+  <section class="card-box" id="in" hidden>
+    <h2>You&rsquo;re in</h2>
+    <div id="paper"></div>
+    <a class="go" href="constitution.html">Read our constitution</a>
+  </section>
+
+  <p class="me" id="me"></p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="live"><span class="live-dot" id="live-dot" aria-hidden="true"></span><span id="live-word">Opening the beach&hellip;</span></p>
+    <p class="where">This page reads the community agreement (spine:agreement) and its law (function:agreement), and your own card and agreement once you have a name, live from Community Recovery&rsquo;s own place on the beach, <a href="https://beach.happyseaurchin.com/w/community-recovery">https://beach.happyseaurchin.com/w/community-recovery</a>. It writes only what you choose: your card, and your agreement in your own notebook. What you write here is public, under the name you chose. You can change it or remove it at any time.</p>
+    <p class="kept">Kept by Community Recovery&rsquo;s keepers. Something missing? <a href="where-we-are-now.html#say">Leave a note in the room on Where we are now.</a></p>
+    <p>Kept on Pscale, the open commons built by David Pinto.</p>
+    <p class="made"><a href="made.html">How this was made</a></p>
+    <a class="home" href="../">&middot;</a>
+  </div>
+</footer>
+<script src="config.js?v=2026-10-15c"></script>
+<script src="words.js?v=2026-10-15c"></script>
+<script src="kit.js?v=2026-10-15c"></script>
+<script>
+(function () {
+  var el = Kit.el, $ = function (id) { return document.getElementById(id); };
+  var FAM = 'agreement', spine = null, mine = null, wording = '';
+
+  function numbered(n) { return n && typeof n === 'object' && /^\d+\.\s/.test(Kit.text(n)); }
+  function agreedAt(k) {
+    var t = mine ? Kit.text(Kit.at(mine, k)) : '';
+    var m = /^Agreed\b/.test(t) && t.match(/(\d{4}-\d{2}-\d{2})/);
+    return /^Agreed\b/.test(t) ? (m ? m[1] : true) : null;
+  }
+  function lines(box, n) {                 // a part's own lines, its small headings above them
+    var ul = el('ul');
+    Kit.digits(n).forEach(function (k) {
+      var c = n[k];
+      if (typeof c === 'string') ul.appendChild(el('li', null, c));
+      else { if (ul.childNodes.length) { box.appendChild(ul); ul = el('ul'); } box.appendChild(el('p', 'theme-title', Kit.split(Kit.text(c)).title)); lines(box, c); }
+    });
+    if (ul.childNodes.length) box.appendChild(ul);
+  }
+
+  function hello() {
+    var box = $('hello-body'), m = Kit.me(); box.textContent = '';
+    if (m) {
+      var p = el('p'); p.appendChild(document.createTextNode('You\u2019re ')); p.appendChild(el('strong', null, m.name)); p.appendChild(document.createTextNode('.'));
+      box.appendChild(p);
+    } else {
+      var b = el('button', 'go', 'Choose a name'); b.type = 'button';
+      b.addEventListener('click', function () { Kit.nameSheet().then(refresh, function () {}); });
+      box.appendChild(b);
+    }
+    $('hello').hidden = false;
+    $('leave').hidden = !m;
+  }
+
+  function parts() {
+    var notes = $('notes'), box = $('parts'); notes.textContent = ''; box.textContent = '';
+    Kit.digits(spine).forEach(function (k) {
+      var n = spine[k];
+      if (typeof n === 'string') return;                        // the closing line: shown under You're in
+      var sp = Kit.split(Kit.text(n));
+      if (!numbered(n)) {                                        // read first
+        var note = el('section', 'card-box');
+        note.appendChild(el('h2', null, sp.title));
+        Kit.digits(n).forEach(function (j) {
+          var t = Kit.text(n[j]), nl = t.indexOf('\n'), p = el('p');
+          if (nl > 0) { p.appendChild(el('strong', null, t.slice(0, nl) + ' ')); p.appendChild(document.createTextNode(t.slice(nl + 1))); } else p.textContent = t;
+          note.appendChild(p);
+        });
+        notes.appendChild(note);
+        return;
+      }
+      var card = el('section', 'card-box'); card.id = 'part-' + k;
+      card.appendChild(el('h2', null, sp.title));
+      if (sp.gloss) card.appendChild(el('p', null, Kit.cap(sp.gloss)));
+      lines(card, n);
+      var foot = el('div'); card.appendChild(foot);
+      (function draw() {
+        foot.textContent = '';
+        var on = agreedAt(k);
+        if (on) {
+          var p = el('p', 'done', '\u2713 Agreed' + (on === true ? '' : ' on ' + Kit.when(on)));
+          foot.appendChild(p);
+          var w = el('button', 'plain', 'Withdraw'); w.type = 'button';
+          w.addEventListener('click', function () { write(k, '').then(function (ok) { if (ok) { set(k, ''); draw(); finish(); } }); });
+          foot.appendChild(w);
+        } else {
+          var b = el('button', 'go', 'I agree'); b.type = 'button';
+          var s = el('p', 'form-status'); s.setAttribute('role', 'status');
+          b.addEventListener('click', function () {
+            Kit.name().then(function () {
+              hello(); about();
+              b.disabled = true;
+              var t = 'Agreed. ' + Kit.today() + (wording ? ', the ' + wording + ' wording.' : '.');
+              write(k, t).then(function (ok) {
+                b.disabled = false;
+                if (!ok) { s.textContent = 'That didn\u2019t reach the beach. Please try again in a moment.'; return; }
+                set(k, t); draw(); finish();
+              });
+            }, function () {});
+          });
+          foot.appendChild(b); foot.appendChild(s);
+        }
+      })();
+      box.appendChild(card);
+    });
+  }
+  function set(k, t) { mine = mine && typeof mine === 'object' ? mine : {}; var cur = mine[k]; if (cur && typeof cur === 'object') cur._ = t; else mine[k] = t; }
+  function write(k, t) {
+    var m = Kit.me();
+    return Kit.ready(m).then(function () {
+      return Kit.post({ block: FAM + ':' + m.name, spindle: k, content: t, secret: m.words });
+    }).then(function (r) { return r.ok; });
+  }
+
+  function about() {
+    var m = Kit.me(); $('about').hidden = !m;
+    if (!m || about.loaded === m.name) return;
+    about.loaded = m.name;
+    Kit.read('passport:' + m.name).then(function (p) {
+      if (!p) return;
+      var line = Kit.text(p);
+      $('line').value = line === m.name ? '' : line;
+      $('bring').value = typeof p['1'] === 'string' ? p['1'] : '';
+      $('hope').value = typeof p['2'] === 'string' ? p['2'] : '';
+    }, function () {});
+  }
+  $('about-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var m = Kit.me(); if (!m) return;
+    var st = $('about-status'); st.textContent = 'Saving\u2026';
+    var block = 'passport:' + m.name;
+    Promise.all([
+      Kit.post({ block: block, spindle: '0', content: $('line').value.trim() || m.name, secret: m.words }),
+      Kit.post({ block: block, spindle: '1', content: $('bring').value.trim(), secret: m.words }),
+      Kit.post({ block: block, spindle: '2', content: $('hope').value.trim(), secret: m.words })
+    ]).then(function (rs) {
+      st.textContent = rs.every(function (r) { return r.ok; }) ? 'Saved.' : 'That didn\u2019t reach the beach. Please try again in a moment.';
+    });
+  });
+
+  function finish() {
+    var all = Kit.digits(spine).filter(function (k) { return numbered(spine[k]); });
+    var inn = all.length && all.every(function (k) { return agreedAt(k); });
+    $('in').hidden = !inn;
+    var paper = $('paper'); paper.textContent = '';
+    Kit.digits(spine).forEach(function (k) {
+      if (typeof spine[k] !== 'string') return;
+      var t = spine[k], nl = t.indexOf('\n');
+      if (nl > 0) { paper.appendChild(el('p', 'label', t.slice(0, nl))); paper.appendChild(el('p', null, t.slice(nl + 1))); } else paper.appendChild(el('p', null, t));
+    });
+  }
+
+  $('leave-ask').addEventListener('click', function () {
+    var p = $('leave'), m = Kit.me(); if (!m) return;
+    p.textContent = 'Remove ' + m.name + ' and everything ' + m.name + ' wrote here? It cannot be brought back. ';
+    var yes = el('button', 'plain', 'Yes, remove it'); yes.type = 'button';
+    var no = el('button', 'plain', 'No, keep it'); no.type = 'button';
+    p.appendChild(yes); p.appendChild(document.createTextNode(' \u00b7 ')); p.appendChild(no);
+    no.addEventListener('click', function () { location.reload(); });
+    yes.addEventListener('click', function () {
+      yes.disabled = true;
+      Kit.leave().then(function (ok) {
+        if (ok) { location.reload(); return; }
+        p.textContent = 'That didn\u2019t reach the beach. Please try again in a moment.';
+      });
+    });
+  });
+
+  function refresh() {
+    var m = Kit.me();
+    var job = m ? Kit.read(FAM + ':' + m.name).then(function (b) { mine = b; }, function () { mine = null; }) : Promise.resolve();
+    return job.then(function () { hello(); parts(); about(); finish(); });
+  }
+
+  Promise.all([Kit.read('spine:' + FAM), Kit.read('function:' + FAM)]).then(function (r) {
+    spine = r[0];
+    if (!spine) throw new Error('no frame');
+    var law = r[1], m = law && Kit.text(law['1']).match(/wording standing now is the ([^.]+?) wording/);
+    wording = m ? m[1] : '';
+    $('status').textContent = '';
+    Kit.dot(true);
+    Kit.whoLine($('me'));
+    return refresh();
+  }).catch(function () {
+    Kit.dot(false);
+    $('status').textContent = '';
+    $('status').appendChild(el('p', 'calm', 'This can\u2019t be reached just now. Please try again in a little while.'));
+  });
+})();
+</script>
+</body>
+</html>

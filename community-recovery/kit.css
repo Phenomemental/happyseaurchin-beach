@@ -1,0 +1,99 @@
+/* kit.css — what these pages add to Community Recovery's own look (brand.css, whose source is
+   the block 'brand' in Community Recovery's place). Copied from the pscale-commons Community
+   Recovery pages (MIT licence); brand.css already carries the pills and the folding, so they are
+   not repeated here. Three of brand 1's purples stand for a family's three answers, in the order
+   its law gives them: the strongest first, the quietest last. */
+:root { --first: #7B3FBF; --second: #C9A6F0; --third: #746882; --on-first: #ffffff; --on-second: #1B1424; --on-third: #ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root { --first: #C9A6F0; --second: #7B3FBF; --third: #A99BBB; --on-first: #1B1424; --on-second: #ffffff; --on-third: #1B1424; }
+}
+
+h1 { font-size: 1.9rem; line-height: 1.15; margin: 0; }
+.lead { font-size: 1.12rem; }
+
+/* A frame, folded: brand.css draws the parts and sections; these are the clauses themselves */
+.theme-title { font-size: 0.92rem; font-weight: 700; color: var(--muted); margin: 1.1rem 0 0; }
+.part > .kids > .theme:first-child .theme-title { margin-top: 0.8rem; }
+
+.clause { border-top: 1px solid var(--line); padding: 0.9rem 0 1rem; scroll-margin-top: 1rem; }
+.kids > .clause:first-child, .theme-title + .kids > .clause:first-child { border-top: 0; }
+main > .clause { background: var(--card); border: 1px solid var(--line); border-top: var(--cr-edge); border-radius: var(--cr-radius); padding: 0.9rem 1rem 1rem; margin: 0 0 0.6rem; }
+.clause-head { display: flex; gap: 0.6rem; align-items: flex-start; }
+.clause-title { display: block; }
+.clause-head p { margin: 0.25rem 0 0.4rem; overflow-wrap: break-word; }
+.dot { flex: none; margin-top: 0.15rem; }
+.dot circle, .dot path { vector-effect: non-scaling-stroke; }
+.btns { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; margin-top: 0.5rem; }
+
+button.ans, form button.ans[type=submit] {
+  font: inherit; font-size: 0.95rem; font-weight: 400; border-radius: 999px; border: 1px solid var(--faint);
+  background: var(--card); color: var(--ink); padding: 0.42rem 1rem; margin: 0; cursor: pointer;
+}
+button.ans.on, form button.ans.on[type=submit] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+button.quiet { font: inherit; font-size: 0.92rem; border: 0; background: none; color: var(--muted); padding: 0.42rem 0.3rem; cursor: pointer; }
+button.plain { font: inherit; border: 0; background: none; padding: 0; margin: 0; color: var(--accent); text-decoration: underline; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+form.saymore textarea, .keepbox textarea, .about textarea { min-height: 5.2rem; margin-top: 0.7rem; background: var(--card); border-radius: 10px; }
+.voices, .keepbox { margin: 0.8rem 0 0; font-size: 0.95rem; }
+summary { color: var(--muted); cursor: pointer; }
+.voice { display: flex; flex-wrap: wrap; gap: 0.15rem 0.5rem; align-items: baseline; padding: 0.4rem 0 0; }
+.who { font-weight: 700; }
+.tag { font-size: 0.8rem; font-weight: 700; border-radius: 999px; padding: 0 0.5rem; white-space: nowrap; }
+.t0 { background: var(--first); color: var(--on-first); } .t1 { background: var(--second); color: var(--on-second); } .t2 { background: var(--third); color: var(--on-third); }
+.said { flex: 1 1 14rem; min-width: 0; overflow-wrap: break-word; }
+.said .bit { display: block; margin-top: 0.2rem; }
+.kept { background: var(--quiet-bg); border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 0.92rem; margin: 0.7rem 0 0; }
+.kept p { margin: 0 0 0.3rem; }
+.kept-when { color: var(--muted); }
+.me { color: var(--muted); font-size: 0.9rem; padding: 1.4rem 0 0; text-align: center; margin: 0; }
+
+/* The sheet that asks a name, once */
+.veil { position: fixed; inset: 0; background: rgba(27, 20, 36, 0.55); z-index: 20; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--card); color: var(--ink);
+  border-top: var(--cr-edge); border-radius: 18px 18px 0 0; padding: 1.3rem 1.1rem 1.4rem; max-width: 42rem; margin: 0 auto;
+  max-height: 94vh; overflow: auto; box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.18);
+}
+body.sheet-up { overflow: hidden; }
+.sheet label, .sheet .label { display: block; font-size: 1rem; font-weight: 700; margin: 0.5rem 0 0.3rem; }
+.sheet .label:first-child { margin-top: 0; }
+.sheet form input[type=text] { border-radius: 10px; padding: 0.6rem 0.7rem; }
+.words { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.1rem 0 0.4rem; }
+.words span { background: var(--accent-soft); color: var(--head); border-radius: 8px; padding: 0.35rem 0.7rem; font-weight: 700; }
+.small { color: var(--muted); font-size: 0.92rem; margin: 0.3rem 0 0.7rem; }
+.tick { display: flex; gap: 0.55rem; align-items: center; margin: 0.35rem 0; }
+form .tick input[type=checkbox] { display: inline-block; width: 1.25rem; height: 1.25rem; flex: none; padding: 0; accent-color: var(--accent); }
+form .tick label, .tick label { margin: 0; font-weight: 400; font-size: 1rem; }
+.go, form button.go[type=submit] {
+  display: block; width: 100%; text-align: center; font: inherit; font-size: 1.05rem; font-weight: 800; color: var(--on-accent);
+  background: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0.7rem; margin: 0.7rem 0 0; cursor: pointer; text-decoration: none;
+}
+.go.quiet { background: none; color: var(--accent); border-color: var(--faint); }
+.alt { text-align: center; margin: 0.9rem 0 0; font-size: 0.92rem; }
+.sheet-shut { position: absolute; top: 0.4rem; right: 0.6rem; font-size: 1.6rem; line-height: 1; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0.2rem 0.4rem; }
+img.card { display: block; width: 100%; border-radius: 12px; border: 1px solid var(--line); margin: 0.3rem 0 0.5rem; }
+
+/* The front door */
+.doors { list-style: none; padding: 0; margin: 1.4rem 0 0; display: grid; gap: 0.6rem; }
+.doors a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0.85rem 1rem; color: var(--ink); text-decoration: none; }
+.doors a:hover, .doors a:focus-visible { border-color: var(--accent); }
+.doors strong { display: block; color: var(--accent); font-family: var(--cr-display); font-weight: 600; }
+.doors span { display: block; font-size: 0.95rem; color: var(--muted); }
+.people { list-style: none; padding: 0; margin: 0; }
+.people li { padding: 0.55rem 0; border-bottom: 1px solid var(--line); }
+.people li:last-child { border-bottom: 0; }
+.people .line { display: block; font-size: 0.95rem; color: var(--muted); }
+.people .agreed { font-size: 0.8rem; color: var(--accent); margin-left: 0.4rem; white-space: nowrap; }
+.card-box { background: var(--card); border: 1px solid var(--line); border-top: var(--cr-edge); border-radius: var(--cr-radius); padding: 1rem 1rem 1.1rem; margin: 0 0 0.8rem; }
+.card-box h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+.card-box ul { padding-left: 1.2rem; margin: 0.3rem 0 0.8rem; }
+.card-box li { margin: 0 0 0.45rem; }
+.done { color: var(--accent); font-weight: 700; }
+.card-box .label { font-weight: 700; margin: 0 0 0.25rem; }
+.note { background: var(--quiet-bg); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.95rem; }
+.note p:last-child { margin-bottom: 0; }
+table.plain { border-collapse: collapse; width: 100%; font-size: 0.95rem; margin: 0 0 1rem; }
+table.plain th, table.plain td { text-align: left; vertical-align: top; padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid var(--line); }
+@media (min-width: 600px) { h1 { font-size: 2.2rem; } }
+@media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
