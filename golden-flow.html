@@ -204,6 +204,14 @@
     text-align: center;
     margin: 0 0 0.4rem;
   }
+  /* Beneath the note, for someone with no reading of their own: how to
+     ask for one. */
+  .pool-ask {
+    font-size: 0.88rem;
+    color: var(--muted);
+    text-align: center;
+    margin: -0.2rem 0 0.6rem;
+  }
   .pool-note:empty,
   .tide-note:empty,
   .showing:empty {
@@ -711,6 +719,7 @@
         <p class="tide" id="tide"></p>
         <p class="tide-note" id="tide-note"></p>
         <p class="pool-note" id="pool-note" role="status"></p>
+        <p class="pool-ask" id="pool-ask" hidden></p>
         <div class="appears" id="appears" hidden></div>
 
         <div class="shore" id="shore">
@@ -851,7 +860,7 @@
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-15b"></script>
+<script src="beach.js?v=2026-10-16a"></script>
 <script>
 (function () {
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
@@ -859,6 +868,10 @@
   var ROOM = 'pool:golden-flow';
   var ME = 'Phenomemental';
   var SITE = 'https://phenomemental.github.io/happyseaurchin-beach/';
+  // One person, two handles, and the name they go by: each pair is one
+  // rock and one entry to stand as. A pair joins beneath its first word,
+  // the one tidewright's loops already use, so a rock keeps its shape.
+  var SAME = [['happyhedgehog', 'JulieJ', 'Julie'], ['Mark', 'MarkBeall', 'Mark']];
   var HANDLE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/;
   var RUNGS = ['day', 'season', 'year'];
   var OTHER = '\u0000someone';
@@ -1277,6 +1290,7 @@
   function learnNames(list) {
     alias = { up: {}, name: {}, handle: {} };
     var seen = [];
+    SAME.forEach(function (p) { join(p[0], p[1], p[2]); });
     list.forEach(function (r) {
       var m = /^([A-Za-z0-9][A-Za-z0-9_-]*)\s*\(([^)]+)\)/.exec(own(r));
       if (m && single(m[2].trim())) join(m[1], m[2].trim(), m[2].trim());
@@ -1315,6 +1329,16 @@
       if (key(handleOf(r)) === k) found = r;
     });
     return found;
+  }
+  // A loop names someone when they are among those it is between, or are
+  // named in its opening, by any word they go by.
+  function naming(l, c) {
+    if (l.parties.some(function (p) { return key(p.name) === c || (p.bracket && key(p.bracket) === c); })) return true;
+    var words = Object.keys(alias.up).filter(function (a) { return find(a) === c; });
+    if (words.indexOf(c) < 0) words.push(c);
+    return words.some(function (w) {
+      return new RegExp('(^|[^A-Za-z0-9_-])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-z0-9_-])').test(l.head || l.text);
+    });
   }
 
   // ---- Who is on the beach -------------------------------------------------------
@@ -1434,37 +1458,55 @@
     var reading = readingFor(view.as);
     var s = {
       reading: reading, entries: [], entry: null, headline: null, centre: key(view.as),
-      all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: [], family: []
+      all: { day: [], season: [], year: [] }, day: [], season: [], year: [], people: [], family: [],
+      through: false, from: []
     };
     var chosen = view.with.map(key);
     // A loop stands with the chosen when any of them is among those it is
     // between, or is named in its opening.
     s.near = function (l) {
       if (!chosen.length) return true;
-      return chosen.some(function (c) {
-        if (l.parties.some(function (p) { return key(p.name) === c || (p.bracket && key(p.bracket) === c); })) return true;
-        var words = Object.keys(alias.up).filter(function (a) { return find(a) === c; });
-        if (words.indexOf(c) < 0) words.push(c);
-        return words.some(function (w) {
-          return new RegExp('(^|[^A-Za-z0-9_-])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^A-Za-z0-9_-])').test(l.head || l.text);
-        });
-      });
+      return chosen.some(function (c) { return naming(l, c); });
     };
-    if (!reading) return s;
-    s.entries = entriesOf(reading);
-    // The counts and opening line come from the newest tide; the beach is
-    // drawn from the newest tide that sets its loops out one by one.
-    s.headline = latestDay(s.entries);
-    s.entry = latestDrawn(s.entries);
     function latest(rung) {
       var list = s.entries.filter(function (e) { return e.rung === rung; });
       return list.length ? list[list.length - 1] : null;
     }
-    s.all.day = loopsOf(s.entry).filter(function (l) { return !l.ladder; });
-    var se = latest('season');
-    s.all.season = se ? loopsOf(se) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'route'; });
-    var ye = latest('year');
-    s.all.year = ye ? loopsOf(ye) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; });
+    if (reading) {
+      s.entries = entriesOf(reading);
+      // The counts and opening line come from the newest tide; the beach is
+      // drawn from the newest tide that sets its loops out one by one.
+      s.headline = latestDay(s.entries);
+      s.entry = latestDrawn(s.entries);
+      s.all.day = loopsOf(s.entry).filter(function (l) { return !l.ladder; });
+      var se = latest('season');
+      s.all.season = se ? loopsOf(se) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'route'; });
+      var ye = latest('year');
+      s.all.year = ye ? loopsOf(ye) : loopsOf(s.entry).filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; });
+    } else {
+      // Seen through others: with no reading of their own, the loops that
+      // name them in the newest tide drawn of every reading, as tidewright
+      // wrote them there. Each keeps its reading's mark in its id, so two
+      // readings' loops never share one.
+      s.through = true;
+      readings().forEach(function (r, ri) {
+        var e = latestDrawn(entriesOf(r));
+        if (!e) return;
+        var mark = 'r' + (ri + 1) + '.';
+        var groups = [];
+        e.groups.forEach(function (g) {
+          var mine = g.loops.filter(function (l) { return naming(l, s.centre); });
+          mine.forEach(function (l) { l.id = mark + l.id; });
+          if (mine.length) groups.push({ head: g.head, loops: mine });
+        });
+        if (groups.length) s.from.push({ reading: r, entry: { id: mark + e.id, head: e.head, groups: groups } });
+      });
+      var seen = [];
+      s.from.forEach(function (f) { seen = seen.concat(loopsOf(f.entry)); });
+      s.all.day = seen.filter(function (l) { return !l.ladder; });
+      s.all.season = seen.filter(function (l) { return l.ladder === 'route'; });
+      s.all.year = seen.filter(function (l) { return l.ladder === 'trade' || l.ladder === 'drain'; });
+    }
     s.all.season.forEach(function (l) { if (!l.ladder) l.ladder = 'route'; });
     s.all.year.forEach(function (l) { if (!l.ladder) l.ladder = 'trade'; });
     RUNGS.forEach(function (r) {
@@ -1615,7 +1657,7 @@
 
     var rung = view.rung;
     var list = drawn();
-    var has = !!(scene.reading && (scene.entry || scene.all[rung].length));
+    var has = !!((scene.reading || scene.through) && (scene.entry || scene.all[rung].length));
     scene.at = has ? placeRocks() : {};
     scene.at[scene.centre] = { x: CX, y: CY };
     var routes = svg('g', {}, box);
@@ -1856,6 +1898,8 @@
       g[1].filter(function (h) { return listed.indexOf(key(h)) < 0; }).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       }).forEach(function (h) {
+        // Two handles for one person stand as one entry.
+        if (listed.indexOf(key(h)) >= 0) return;
         listed.push(key(h));
         var nm = label(key(h));
         var o = el('option', null, nm === h ? h : nm + ' (' + h + ')');
@@ -2072,8 +2116,15 @@
     var who = label(scene.centre);
     var chosen = view.with.map(key);
     var rungList = scene[view.rung];
-    if (!scene.reading || !scene.entries.length) {
-      note = 'tidewright has not yet written for ' + who + '.' + (!scene.reading && everyone.indexOf(key(view.as)) < 0 && beach.handles.indexOf(view.as) < 0 ? ' Handles are case-sensitive.' : '');
+    // Seen through others, said plainly; at a season or year with nothing
+    // drawn while the day has loops, the rung's own note stands instead.
+    var named = RUNGS.some(function (r) { return scene.all[r].length; });
+    if (scene.through && (view.rung === 'day' || !named || scene.all[view.rung].length)) {
+      note = named
+        ? who + ' has no reading of their own yet. These are the loops that name them in others’ readings.'
+        : who + ' has no reading of their own yet, and no one else’s reading names them.' + (everyone.indexOf(key(view.as)) < 0 && beach.handles.indexOf(view.as) < 0 ? ' Handles are case-sensitive.' : '');
+    } else if (!scene.through && !scene.entries.length) {
+      note = 'tidewright has not yet written for ' + who + '.';
     } else if (view.rung !== 'day' && !scene.all[view.rung].length) {
       note = 'tidewright has not yet read ' + (view.rung === 'season' ? 'the season' : 'the year') + ' for ' + who + '.';
     } else if (chosen.length) {
@@ -2082,6 +2133,14 @@
         : 'No open loop between ' + who + ' and ' + names(chosen) + ' in this tide.';
     }
     $('pool-note').textContent = note;
+    // The handle they stand as: the one chosen, or for a name, the handle
+    // tidewright pairs with it.
+    var ask = $('pool-ask');
+    var mine = alias.handle[view.as] || view.as;
+    ask.textContent = scene.through
+      ? 'tidewright reads someone only when they ask, as themselves: leave ‘READING FOR: ' + mine + '’ at the second place of your own golden-flow:' + mine + ' on the beach, and it reads you on its next tide.'
+      : '';
+    ask.hidden = !scene.through;
     renderAppears();
     // The counts and opening line are the newest tide's. When that tide is
     // one paragraph, the beach stays drawn from the last tide set out in
@@ -2131,6 +2190,14 @@
       var src = scene.entries.filter(function (x) { return x.rung === view.rung; }).pop();
       if (src) telling(box, src, shownIn(src, true), true);
     }
+    // Seen through others: each reading that names them, under its own
+    // opening line, with only the loops that name them.
+    scene.from.forEach(function (f) {
+      var those = shownIn(f.entry, true);
+      if (!those.length) return;
+      box.appendChild(el('p', 'reading-line', own(f.reading)));
+      telling(box, f.entry, those, true);
+    });
     // Earlier tides, folded, newest first.
     var earlier = scene.entries.filter(function (x) { return x !== e && x !== h && x.rung === 'day'; }).reverse();
     if (earlier.length) {
