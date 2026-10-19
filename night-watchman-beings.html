@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Beings · The Night Watchman</title>
+<meta name="description" content="Eighteen who keep the Night Watchman company in the dark: characters drawn for the page, ways a person can be, given a face and a name.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css?v=2026-10-12c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-19a">
+</head>
+<body>
+<main>
+  <nav class="site-nav" aria-label="Site">
+    <a href="index.html">Phenomemental</a>
+    <a href="wholeless-nights.html">Wholeless Nights</a>
+    <a href="night-watchman.html" aria-current="page">The Night Watchman</a>
+    <a href="golden-flow.html">Golden Flow</a>
+    <a href="map.html">My map</a>
+  </nav>
+
+  <!-- The Beings. Every word here is Dorylus's, read live from
+       beings:night-watchman 8.8363 (the Beings at 3), and each Being's name
+       from its own place in that block; what is written below is the saved
+       copy, shown until the beach answers. -->
+  <div class="sheet">
+    <h1 id="title">The Beings</h1>
+    <p class="byline" id="line">eighteen who keep him company in the dark</p>
+
+    <p class="opening" id="opening">They are characters, drawn for the page: ways a person can be, given a face and a name. Not diagnoses, and not parts of you. Wander among them. If one speaks to you, it may come with you into a watch.</p>
+
+    <svg class="middle" id="middle" viewBox="0 0 360 330" role="group" aria-label="Two lights, Silas and Ada, shining down on three rows of six Beings: the Head, the Heart and the Hand">
+      <defs>
+        <radialGradient id="gS" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
+        <linearGradient id="coneS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".16"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="coneA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".16"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
+      </defs>
+      <path d="M96,52 L18,320 L250,320 Z" fill="url(#coneS)"/>
+      <path d="M264,52 L110,320 L342,320 Z" fill="url(#coneA)"/>
+      <circle class="glow" cx="96" cy="44" r="30" fill="url(#gS)"><animate attributeName="r" values="28;33;28" dur="7s" repeatCount="indefinite"/></circle>
+      <circle cx="96" cy="44" r="7" fill="var(--crimson)"/>
+      <circle class="glow" cx="264" cy="44" r="30" fill="url(#gA)"><animate attributeName="r" values="33;28;33" dur="7s" repeatCount="indefinite"/></circle>
+      <circle cx="264" cy="44" r="7" fill="var(--indigo)"/>
+      <text class="light-label" id="light-1" x="96" y="92" text-anchor="middle">Silas</text>
+      <text class="light-label" id="light-2" x="264" y="92" text-anchor="middle">Ada</text>
+      <text x="180" y="50" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="24" fill="var(--crimson)">&amp;</text>
+      <g id="rows"></g>
+    </svg>
+    <p class="hint" id="hint">Touch a Being to meet it.</p>
+
+    <div class="being" id="being" hidden aria-live="polite">
+      <p class="portal" id="bportal"></p>
+      <h3 id="bname"></h3>
+      <p class="epithet" id="bepithet"></p>
+      <p class="invite" id="binvite"></p>
+    </div>
+
+    <hr class="rule">
+
+    <section class="portals" aria-labelledby="all-head">
+      <h2 id="all-head">All eighteen</h2>
+      <div id="all"></div>
+    </section>
+
+    <hr class="rule">
+
+    <section class="more" id="more" aria-label="About the two lights">
+      <details>
+        <summary>Silas and Ada, the two lights</summary>
+        <p>Above the Beings shine two lights, Silas and Ada: the two poles a night can swing between. They are not Beings. Every Being stands somewhere in their light, and the &amp; between them is where a watch is kept.</p>
+      </details>
+      <details>
+        <summary>Where they come from</summary>
+        <p>The Beings grew out of the book Wholeless Nights, and the world of its watches. Each one carries a story; the stories stay with the book, and what you meet here is the Being itself.</p>
+      </details>
+    </section>
+
+    <hr class="rule">
+    <p class="back"><a href="night-watchman.html">&larr; back to the Night Watchman</a></p>
+  </div>
+</main>
+<script src="beach.js?v=2026-10-19a"></script>
+<script src="night-watchman.js?v=2026-10-19a"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, s) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (s != null) e.textContent = s;
+    return e;
+  }
+  function flat(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+  var NS = 'http://www.w3.org/2000/svg';
+  function svg(tag, attrs) {
+    var e = document.createElementNS(NS, tag);
+    Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+
+  // Three rows of six: each Being's name, its epithet and its one line of
+  // invitation. This is the saved copy; the beach's own replaces it.
+  var ROWS = [
+    { portal: 'The Head', beings: [
+      ['The Abstract Being', 'the Ruler', 'The part of us that wants it measured, reduced and made certain.'],
+      ['The Hypothetical Being', 'the Theorist', 'Lives in what if, thinking about life instead of living it.'],
+      ['The Predictable Being', 'the Bureaucrat', 'Wants things safe and the same, and fears what moves.'],
+      ['The Anxious Being', 'the Glitch', 'The alarm that sounds when control gives way.'],
+      ['The Objective Being', 'the Observer', 'Watches life from behind the glass.'],
+      ['The Categorical Being', 'the Judge', 'Sorts everything into this or that, and nothing between.']] },
+    { portal: 'The Heart', beings: [
+      ['The Feeling Being', 'the Moving Form', 'Sensation and emotion, met as one.'],
+      ['The Dreaming Being', 'the Night Navigator', 'Finds by night what logic cannot reach by day.'],
+      ['The Religious Being', 'the Mystic', 'Senses something sacred in what holds us together.'],
+      ['The Relational Being', 'the Kin', 'I am because we are.'],
+      ['The Alien Being', 'the Exile', 'The ache of not belonging, felt in the body.'],
+      ['The Sensory Being', 'the Body', 'Speaks before the mind has words.']] },
+    { portal: 'The Hand', beings: [
+      ['The Compulsive Being', 'the Guardian', 'Moves fast, connects everything, stands guard.'],
+      ['The Creative Being', 'the Alchemist', 'Turns the swing between poles into making.'],
+      ['The Inclusional Being', 'the Mapmaker', 'Sees space as a welcome, not an emptiness.'],
+      ['The Performative Being', 'the Mask', 'The self we built to get through.'],
+      ['The Intentioned Being', 'the Pilgrim', 'Walks on purpose, one step and then another.'],
+      ['The Wholeless Being', 'the House', 'Holds what is missing, without needing a cure.']] }
+  ];
+
+  // Each Being breathes at its own pace and opens like a lantern.
+  var lit = null, litKey = null;
+  function open(row, b, oc, key) {
+    if (lit) lit.setAttribute('fill', 'var(--page)');
+    oc.setAttribute('fill', 'var(--crimson)');
+    lit = oc;
+    litKey = key;
+    $('bportal').textContent = row.portal;
+    $('bname').textContent = b[0];
+    $('bepithet').textContent = b[1];
+    $('binvite').textContent = b[2];
+    var card = $('being');
+    card.hidden = false;
+    card.classList.remove('lit');
+    void card.offsetWidth;
+    card.classList.add('lit');
+    $('hint').hidden = true;
+  }
+  function draw() {
+    var g = $('rows'), ys = [150, 212, 274];
+    g.textContent = '';
+    ROWS.forEach(function (row, r) {
+      g.appendChild(svg('text', { 'class': 'row-label', x: '180', y: String(ys[r] - 26), 'text-anchor': 'middle' }));
+      g.lastChild.textContent = row.portal.replace(/^The\s+/i, '').toUpperCase();
+      row.beings.forEach(function (b, i) {
+        var x = 45 + i * 54, y = ys[r], key = r + '.' + i;
+        var o = svg('g', { 'class': 'orb', tabindex: '0', role: 'button', 'aria-label': b[0] + ', ' + b[1] });
+        o.style.setProperty('--d', (5 + ((i * 7 + r * 3) % 5) * 0.9) + 's');
+        o.style.setProperty('--l', (-(i + r) * 0.7) + 's');
+        var oc = svg('circle', { 'class': 'o', cx: x, cy: y, r: '11', fill: key === litKey ? 'var(--crimson)' : 'var(--page)' });
+        o.appendChild(svg('circle', { 'class': 'breath', cx: x, cy: y, r: '13', fill: 'var(--frame)', opacity: '.45' }));
+        o.appendChild(oc);
+        o.appendChild(svg('circle', { 'class': 'ring', cx: x, cy: y, r: '11', fill: 'none', stroke: 'var(--ink)', 'stroke-width': '1.1' }));
+        // A wider touch for a finger than the drawn circle.
+        o.appendChild(svg('circle', { cx: x, cy: y, r: '22', fill: 'transparent' }));
+        if (key === litKey) lit = oc;
+        function go() { open(row, b, oc, key); }
+        o.addEventListener('click', go);
+        o.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+        });
+        g.appendChild(o);
+      });
+    });
+    // All eighteen, as a list that opens by portal.
+    var all = $('all'), openNow = {};
+    Array.prototype.forEach.call(all.querySelectorAll('details'), function (d) { openNow[d.dataset.k] = d.open; });
+    all.textContent = '';
+    ROWS.forEach(function (row) {
+      var d = el('details');
+      d.dataset.k = row.portal;
+      d.open = !!openNow[row.portal];
+      d.appendChild(el('summary', null, row.portal));
+      var ul = el('ul');
+      row.beings.forEach(function (b) {
+        var li = el('li');
+        li.appendChild(el('b', null, b[0]));
+        li.appendChild(document.createTextNode(', ' + b[1] + ': ' + b[2]));
+        ul.appendChild(li);
+      });
+      d.appendChild(ul);
+      all.appendChild(d);
+    });
+  }
+
+  // A Being's name is the opening of its own place in the block: "The
+  // Abstract Being — the Ruler. …".
+  function nameAt(block, r, i) {
+    var t = NW.own(NW.at(block, [String(r), String(i)]));
+    var cut = t.indexOf(' — ');
+    return cut > 0 ? t.slice(0, cut).trim() : '';
+  }
+  function render(words, block) {
+    var beings = words['3'];
+    if (!beings) return;
+    var f = NW.fields(NW.own(beings), ['Title', 'Line', 'Opening', 'Hint']);
+    if (f.Title) f.Title = NW.bare(f.Title);
+    NW.set($('title'), f.Title);
+    if (f.Title) document.title = f.Title + ' · The Night Watchman';
+    NW.set($('line'), NW.bare(f.Line));
+    NW.set($('opening'), f.Opening);
+    NW.set($('hint'), f.Hint);
+
+    // "The Head: 1.1 the Ruler, The part of us …. 1.2 …. The Heart: 2.1 …"
+    var inv = NW.own(beings['1']), rows = [];
+    var heads = [], re = /(?:^|[.:]\s)(The [A-Z][a-z]+):\s/g, m;
+    while ((m = re.exec(inv))) heads.push({ name: m[1], at: m.index + m[0].length });
+    heads.forEach(function (h, k) {
+      var part = inv.slice(h.at, k + 1 < heads.length ? heads[k + 1].at - h.name.length - 2 : inv.length);
+      var items = [], ire = /(\d)\.(\d) (the [^,]+), ([\s\S]*?)(?=\s\d\.\d |\s*$)/g, n;
+      while ((n = ire.exec(part))) items.push({ r: +n[1], i: +n[2], epithet: n[3], line: n[4].replace(/\s*The [A-Z][a-z]+:\s*$/, '').trim() });
+      if (!items.length) return;
+      rows[items[0].r - 1] = {
+        portal: h.name,
+        beings: items.map(function (it) {
+          var saved = ROWS[it.r - 1] && ROWS[it.r - 1].beings[it.i - 1];
+          return [nameAt(block, it.r, it.i) || (saved && saved[0]) || '', it.epithet, it.line];
+        })
+      };
+    });
+    if (rows.length === 3 && rows.every(Boolean) && JSON.stringify(rows) !== JSON.stringify(ROWS)) {
+      ROWS = rows;
+      draw();
+      if (litKey) {
+        var rc = litKey.split('.'), row = ROWS[+rc[0]], b = row && row.beings[+rc[1]];
+        if (b) {
+          $('bportal').textContent = row.portal;
+          $('bname').textContent = b[0];
+          $('bepithet').textContent = b[1];
+          $('binvite').textContent = b[2];
+        }
+      }
+    }
+
+    // "ON REQUEST. Silas and Ada, the two lights: …. Where they come from: …"
+    var parts = $('more').querySelectorAll('details');
+    var labels = Array.prototype.map.call(parts, function (d) { return d.querySelector('summary').textContent; });
+    var more = NW.fields(NW.own(beings['2']), labels);
+    Array.prototype.forEach.call(parts, function (d, i) {
+      var t = more[labels[i]], p = d.querySelector('p');
+      if (t && p && flat(t) !== flat(p.textContent)) p.textContent = t;
+    });
+    var two = /^(\S+) and (\S+),/.exec(labels[0] || '');
+    if (two) {
+      NW.set($('light-1'), two[1]);
+      NW.set($('light-2'), two[2]);
+    }
+  }
+
+  // The two lights are still for anyone who asks for less motion.
+  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function hush() {
+    var m = $('middle');
+    if (!m.pauseAnimations) return;
+    if (still && still.matches) m.pauseAnimations();
+    else m.unpauseAnimations();
+  }
+  if (still && still.addEventListener) still.addEventListener('change', hush);
+  hush();
+
+  draw();
+  NW.follow(render);
+})();
+</script>
+</body>
+</html>

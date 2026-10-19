@@ -1,0 +1,569 @@
+/* The Night Watchman's three pages (the front door, Begin, the Beings), in
+   the Wholeless Nights book look on top of beach.css: paper and ink, the
+   framed sheet, Cormorant Garamond, crimson as the one accent, with an ink
+   blue for the second of the heart's loops and the second light. */
+
+:root {
+  --indigo: #2f4a86;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --indigo: #8fa8e0;
+  }
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+.sheet {
+  padding: 2.2rem 1.4rem 2rem;
+}
+.rule {
+  margin: 1.6rem auto;
+}
+h1 {
+  font-weight: 500;
+  font-size: clamp(2rem, 7vw, 2.6rem);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin: 0.4rem 0 0.2rem;
+  text-wrap: balance;
+}
+.byline {
+  font-style: italic;
+  color: var(--muted);
+  margin: 0;
+}
+.opening {
+  font-size: 1.3rem;
+  line-height: 1.5;
+  text-align: left;
+  max-width: 30rem;
+  margin: 1.4rem auto 0.6rem;
+}
+.opening::first-letter {
+  font-size: 3.1em;
+  line-height: 0.8;
+  float: left;
+  padding: 0.06em 0.1em 0 0;
+  color: var(--crimson);
+}
+.care {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--muted);
+  max-width: 28rem;
+  margin: 0.4rem auto 0;
+}
+.care strong,
+.prose strong {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}
+a.tel {
+  color: inherit;
+}
+.begin-link {
+  display: inline-block;
+  margin-top: 1.1rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--page);
+  background: var(--crimson);
+  border: 0;
+  border-radius: 2px;
+  padding: 0.5rem 1.4rem;
+}
+.begin-link:hover {
+  border-bottom: 0;
+}
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+textarea:focus-visible,
+canvas:focus-visible {
+  outline: 2px solid var(--crimson);
+  outline-offset: 3px;
+}
+
+/* The heart, drawn in ink: two loops, light moving slowly through the &. */
+.heart {
+  width: min(15rem, 66vw);
+  max-width: 100%;
+  aspect-ratio: 300 / 250;
+  display: block;
+  margin: 0 auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow { display: none; }
+}
+
+/* His invitation, as a poem. */
+blockquote.poem {
+  font-style: italic;
+  font-size: 1.35rem;
+  line-height: 1.45;
+  margin: 0 auto;
+  max-width: 26rem;
+}
+blockquote.poem span {
+  display: block;
+}
+blockquote.poem .gap {
+  height: 0.7rem;
+}
+
+/* The spinner. */
+section.begin {
+  text-align: center;
+}
+.begin p.lede {
+  font-style: italic;
+  color: var(--muted);
+  max-width: 26rem;
+  margin: 0 auto 0.4rem;
+}
+.pointer {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 11px solid var(--crimson);
+  margin: 0.8rem auto -6px;
+}
+canvas.spinner {
+  width: min(19rem, 82vw);
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  touch-action: none;
+  cursor: grab;
+  display: block;
+  margin: 0 auto;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  canvas.spinner { touch-action: manipulation; cursor: pointer; }
+}
+.flick {
+  font-family: inherit;
+  font-style: italic;
+  font-size: 1.1rem;
+  background: none;
+  border: 0;
+  color: var(--crimson);
+  cursor: pointer;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  min-height: 2.4rem;
+}
+.answer {
+  text-align: left;
+  max-width: 30rem;
+  margin: 1.2rem auto 0;
+  border-top: 1px solid var(--frame);
+  border-bottom: 1px solid var(--frame);
+  padding: 1rem 0.2rem;
+}
+.portal {
+  font-size: 0.9rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.2rem;
+  text-align: center;
+}
+.question {
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+  margin: 0 0 0.7rem;
+}
+.stay {
+  font-size: 1rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 0.6rem;
+}
+details.line summary {
+  cursor: pointer;
+  font-style: italic;
+  color: var(--crimson);
+  text-align: center;
+  list-style: none;
+  font-size: 1.05rem;
+  padding: 0.3rem 0;
+}
+details.line summary::-webkit-details-marker {
+  display: none;
+}
+details.line textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 1.1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  padding: 0.5rem 0.65rem;
+  margin: 0.7rem 0 0.4rem;
+  min-height: 6rem;
+  resize: vertical;
+}
+.small {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+}
+.btn {
+  font-family: inherit;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: var(--page);
+  background: var(--crimson);
+  border: 0;
+  border-radius: 2px;
+  padding: 0.45rem 1.3rem;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.line-status {
+  font-size: 0.95rem;
+  font-style: italic;
+  margin: 0.5rem 0 0;
+}
+.line-status:empty {
+  display: none;
+}
+.left-lines {
+  margin: 0.9rem 0 0;
+}
+.left-lines p {
+  margin: 0;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--frame);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.left-lines time {
+  display: block;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.again {
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+
+/* Doors onward, set like the watches list. */
+.doors {
+  display: block;
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+  border-top: 1px solid var(--frame);
+}
+/* A ruled line, not beach.css's card. */
+.door {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+  padding: 0.8rem 0.2rem;
+  border: 0;
+  border-bottom: 1px solid var(--frame);
+  background: none;
+  color: var(--ink);
+}
+.door:hover,
+.door:focus-visible {
+  border-color: var(--frame);
+}
+.door:hover .title {
+  color: var(--crimson);
+}
+.door .num,
+.way .num {
+  flex: 0 0 1.6rem;
+  color: var(--muted);
+  font-variant-numeric: oldstyle-nums;
+  font-size: 0.95rem;
+}
+.door .t,
+.way .t {
+  flex: 1;
+  min-width: 0;
+}
+.door .title,
+.way .title {
+  font-size: 1.3rem;
+  display: block;
+}
+.door .desc {
+  font-size: 1rem;
+  color: var(--muted);
+  font-style: italic;
+  display: block;
+}
+.door .arrow {
+  color: var(--crimson);
+}
+
+/* Parts that open only on request. */
+.more {
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+.more details,
+.portals details {
+  border-bottom: 1px solid var(--frame);
+  padding: 0.6rem 0.2rem;
+}
+.more summary,
+.portals summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.15rem;
+  min-height: 2.2rem;
+  align-items: center;
+}
+.more summary::-webkit-details-marker,
+.portals summary::-webkit-details-marker {
+  display: none;
+}
+.more summary::after,
+.portals summary::after {
+  content: "+";
+  color: var(--crimson);
+}
+.more details[open] summary::after,
+.portals details[open] summary::after {
+  content: "\2013";
+}
+.more details p {
+  color: var(--muted);
+  margin: 0.6rem 0 0.2rem;
+  font-size: 1.1rem;
+}
+
+/* Begin. */
+.ways {
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+  border-top: 1px solid var(--frame);
+}
+.way {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+  padding: 0.8rem 0.2rem;
+  border-bottom: 1px solid var(--frame);
+}
+.way .desc {
+  font-size: 1.05rem;
+  color: var(--muted);
+  font-style: italic;
+  display: block;
+}
+.soon {
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  font-style: normal;
+  margin-left: 0.4rem;
+}
+.prose {
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.6rem;
+  text-align: left;
+}
+.steps li {
+  position: relative;
+  padding: 0.35rem 0 0.35rem 2.1rem;
+  margin: 0;
+}
+.steps li::before {
+  content: attr(data-n) ".";
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  width: 1.6rem;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--crimson);
+  font-style: italic;
+  text-align: right;
+}
+.addr {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0.4rem 0 0.9rem;
+}
+.addr code {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1.05rem;
+  white-space: normal;
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  padding: 0.25rem 0.6rem;
+  overflow-wrap: anywhere;
+}
+.copy {
+  font-family: inherit;
+  font-style: italic;
+  font-size: 1rem;
+  background: none;
+  border: 1px solid var(--crimson);
+  color: var(--crimson);
+  border-radius: 2px;
+  padding: 0.2rem 0.8rem;
+  min-height: 2.2rem;
+  cursor: pointer;
+}
+.say {
+  font-style: italic;
+  font-size: 1.25rem;
+  text-align: center;
+  margin: 0.4rem auto 0.9rem;
+  max-width: 26rem;
+}
+.say-more {
+  text-align: center;
+}
+.plain li {
+  margin-bottom: 0.5rem;
+}
+.back {
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+}
+
+/* The Beings: the included middle, drawn in ink. */
+.middle {
+  width: 100%;
+  max-width: 32rem;
+  display: block;
+  margin: 0.4rem auto 0;
+}
+.orb {
+  cursor: pointer;
+}
+.orb circle.o {
+  transition: fill 0.5s ease;
+}
+.orb:focus {
+  outline: none;
+}
+.orb:focus-visible circle.ring {
+  stroke: var(--crimson);
+  stroke-width: 2;
+}
+.orb .breath {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe var(--d, 6s) ease-in-out infinite;
+  animation-delay: var(--l, 0s);
+}
+@keyframes breathe {
+  50% { transform: scale(1.18); opacity: 0.25; }
+}
+.row-label {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  fill: var(--muted);
+}
+.light-label {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-style: italic;
+  font-size: 14px;
+  fill: var(--ink);
+}
+.being {
+  text-align: center;
+  max-width: 28rem;
+  margin: 1rem auto 0;
+  border-top: 1px solid var(--frame);
+  border-bottom: 1px solid var(--frame);
+  padding: 1rem 0.4rem;
+}
+.being .portal {
+  margin-bottom: 0.1rem;
+}
+.being h3 {
+  font-weight: 500;
+  font-size: 1.7rem;
+  margin: 0;
+}
+.being .epithet {
+  font-style: italic;
+  color: var(--crimson);
+  margin: 0 0 0.6rem;
+}
+.being .invite {
+  font-size: 1.25rem;
+  font-style: italic;
+  margin: 0;
+}
+.being.lit {
+  animation: lantern 0.9s ease-out;
+}
+@keyframes lantern {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+.hint {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.6rem 0 0;
+}
+.portals {
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+.portals ul {
+  margin: 0.5rem 0 0.2rem;
+}
+.portals li {
+  padding: 0.2rem 0;
+  color: var(--muted);
+}
+.portals li::before {
+  content: none;
+}
+.portals li b {
+  color: var(--ink);
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb .breath { animation: none; }
+  .being.lit { animation: none; }
+}
