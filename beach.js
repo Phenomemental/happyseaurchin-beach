@@ -94,7 +94,8 @@
     for (var i = 1; i <= 9; i++) {
       var e = node[String(i)];
       if (isEntry(e)) {
-        if (e._.trim()) out.push({ who: name(e['1']), when: e['3'], text: e._, replies: replies(e) });
+        if (e._.trim()) out.push({ who: name(e['1']), when: e['3'], text: e._, replies: replies(e),
+          where: typeof e['2'] === 'string' ? e['2'] : '' });
       } else if (typeof e === 'string') {
         if (e.trim()) out.push({ who: '', when: '', text: e });
       } else {
@@ -179,14 +180,15 @@
     return div;
   }
 
-  // Append a note to a pool, in the same shape an assistant would write it.
-  function postNote(pool, who, note) {
+  // Append a note to a pool, in the same shape an assistant would write it,
+  // located at an address in the pool's own tree when where is given.
+  function postNote(pool, who, note, where) {
     return fetch(BEACH + '?block=' + encodeURIComponent(pool), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         append: true,
-        content: { _: note, 1: who, 2: '', 3: new Date().toISOString() }
+        content: { _: note, 1: who, 2: where || '', 3: new Date().toISOString() }
       })
     }).then(function (r) {
       return r.json().then(function (j) {
@@ -608,6 +610,7 @@
     entries: entries,
     renderThread: renderThread,
     wireNoteForm: wireNoteForm,
+    note: postNote,
     addMic: addMic,
     live: live,
     answerHandle: answerHandle,
