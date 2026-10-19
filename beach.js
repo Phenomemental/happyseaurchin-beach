@@ -3,7 +3,31 @@
 (function () {
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
   var REFRESH_MS = 30000;
+  var LIMIT_MS = 6000;
   var clock = null;
+
+  // A read waits about six seconds at most: a slow beach fails like an
+  // absent one, so a page shows its saved words rather than waiting on.
+  function read(url) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer;
+    var late = new Promise(function (resolve, reject) {
+      timer = setTimeout(function () {
+        if (ctl) ctl.abort();
+        reject(new Error('the beach took too long'));
+      }, LIMIT_MS);
+    });
+    var asked = fetch(url, ctl ? { cache: 'no-store', signal: ctl.signal } : { cache: 'no-store' });
+    return Promise.race([asked, late]).then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      readClock(r.headers.get('X-Pscale-Now'));
+      return r.json();
+    }, function (e) {
+      clearTimeout(timer);
+      throw e;
+    });
+  }
 
   // Read a block, or only part of it: opts.spindle is an address such as
   // "19" (position 1.9), which returns that node and what's beneath it;
@@ -12,12 +36,7 @@
     var q = '?block=' + encodeURIComponent(block);
     if (opts && opts.spindle != null) q += '&spindle=' + encodeURIComponent(opts.spindle);
     if (opts && opts.pscale != null) q += '&pscale=' + encodeURIComponent(opts.pscale);
-    return fetch(BEACH + q, { cache: 'no-store' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        readClock(r.headers.get('X-Pscale-Now'));
-        return r.json();
-      });
+    return read(BEACH + q);
   }
 
   // One node's own text, without anything beneath it. The pscale counts
@@ -32,11 +51,7 @@
   // The beach's front door: every block's name ("blocks"), and when each
   // last changed ("touched"). It carries the shared clock too.
   function index() {
-    return fetch(BEACH, { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      readClock(r.headers.get('X-Pscale-Now'));
-      return r.json();
-    });
+    return read(BEACH);
   }
 
   // Every beach response carries the shared clock as
@@ -601,6 +616,37 @@
     document.addEventListener('visibilitychange', check);
   }
 
+  function human(slug) {
+    return slug.replace(/[-_]+/g, ' ');
+  }
+  function titled(s) {
+    return s.replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+  }
+  // Words read from the beach, told in plain names: a raw block name
+  // ("pool:weft", "task:Dorylus"), a channel's number, a list of an agent's
+  // blocks, a note of where a key is kept, never show. Web addresses are
+  // left as they are.
+  function plain(s) {
+    return s.split(/(https?:\/\/\S+)/).map(function (part, i) {
+      if (i % 2) return part;
+      return part
+        .split(/(?=\S)(?<=[.;]\s)/).filter(function (x) { return !/\b(latch(es)?|vault)\b|\bKey in\b/i.test(x); }).join('')
+        .replace(/LEROs on the Commons/g, 'Community Recovery')
+        .replace(/\s*\((?:a |an )?genus-one agent[^)]*\)/gi, '')
+        .replace(/\s*\(([a-z][\w-]*)\)/g, '')
+        .replace(/,? from [a-z]+:[\w-]+ to [a-z]+:[\w-]+/g, '')
+        .replace(/\b[a-z][\w-]*:([\w-]+)(?:(?:, | and )[a-z][\w-]*:\1)+/g, function (m, n) { return 'the ' + titled(human(n)) + '’s blocks'; })
+        .replace(/\barchive:[\w:.-]+/g, 'an earlier copy')
+        .replace(/\bgrain:[0-9a-f]+/g, 'a private channel')
+        .replace(/\bpool:([\w-]+)/g, function (m, n) { return 'the ' + human(n) + ' room'; })
+        .replace(/\btask:([\w-]+)/g, function (m, n) { return human(n) + '’s task list'; })
+        .replace(/\b([a-z][\w-]*):<handle>/g, function (m, f) { return 'each reader’s own ' + human(f) + ' block'; })
+        .replace(/\b([a-z][\w-]*):([A-Z][\w-]*)/g, function (m, f) { return human(f); })
+        .replace(/\b[a-z][\w-]*:([\w-]+)/g, function (m, n) { return human(n); })
+        .replace(/\s{2,}/g, ' ');
+    }).join('').trim();
+  }
+
   window.Beach = {
     get: get,
     point: point,
@@ -617,6 +663,7 @@
     answersIn: answersIn,
     partName: partName,
     here: here,
-    watchHere: watchHere
+    watchHere: watchHere,
+    plain: plain
   };
 })();

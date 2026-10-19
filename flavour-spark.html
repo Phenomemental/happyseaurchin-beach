@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="live.css?v=2026-10-11e">
+<link rel="stylesheet" href="live.css?v=2026-10-19b">
 <style>
   html {
     scroll-behavior: smooth;
@@ -47,8 +47,7 @@
     top: 13%;
     z-index: 1;
     padding: 0 1.2rem;
-    color: #f4e9d8;
-    text-shadow: 0 1px 14px rgba(20, 8, 24, 0.7);
+    color: var(--ink);
     pointer-events: none;
   }
   /* Under the sky: the words for a bird (a line kept for them), the
@@ -527,24 +526,32 @@
     <a href="index.html">Phenomemental</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="night-watchman.html">The Night Watchman</a>
+    <a href="golden-flow.html">Golden Flow</a>
     <a href="map.html">My map</a>
   </nav>
 
   <div class="sheet">
     <!-- Every word below is read live from the beach (spine:flavour-spark,
-         and the readers' flavour-spark:<handle> blocks); nothing of the
-         page itself is kept here. -->
-    <!-- The opening scene: a sky at dusk over water, a bird for each
+         and the readers' flavour-spark:<handle> blocks); only the title and
+         a short opening are kept here, for when it can't be read. -->
+    <!-- The opening scene: a sky over water, a bird for each
          thing that moved on the beach in the last hour and one for you.
          The sky is drawn by the stylesheet, so it shows at once. -->
     <div class="scene live-scene" id="scene">
-      <h1 class="scene-title" id="title"></h1>
+      <h1 class="scene-title" id="title">Bringing the flavour</h1>
     </div>
     <p class="scene-say" id="scene-say" aria-live="polite"></p>
     <p class="scene-line" id="scene-line" hidden></p>
     <p class="scene-count" id="scene-count" hidden></p>
 
     <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
+
+    <!-- What the page is for, kept here for when the beach can't be read:
+         from the opening of spine:flavour-spark. -->
+    <div class="saved" id="saved" hidden>
+      <p>People who work together cannot see what each other is doing unless someone stops to tell them. What is tried here is a change of practice, not a new tool: do the work in the open, let it leave its own trail, and let anyone read it and answer.</p>
+      <p class="status">The rest of the page is read live from the beach. Please come back in a few minutes.</p>
+    </div>
 
     <div id="doc" hidden>
       <nav class="ways" id="ways" aria-label="Ways in">
@@ -589,13 +596,8 @@
           <span class="door-title">Answer as yourself</span>
           <span class="door-text">Have a handle on the beach? Answer under your own name and key, on the walk page.</span>
         </a>
-        <p class="door-ai">Your AI can answer as you at flavour-spark:&lt;your handle&gt;</p>
       </div>
 
-      <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=flavour-spark">Talk live in the room</a>
-        <span class="here-now" id="here-now" aria-live="polite"></span>
-      </p>
 
       <div id="notes" hidden>
         <h3 class="respond-head">Notes from visitors</h3>
@@ -614,13 +616,12 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:flavour-spark; its room is pool:flavour-spark; answers are flavour-spark:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
 <script src="vendor/gsap-3.13.0.min.js"></script>
-<script src="beach.js?v=2026-10-15b"></script>
-<script src="live.js?v=2026-10-11e"></script>
+<script src="beach.js?v=2026-10-19b"></script>
+<script src="live.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -638,7 +639,6 @@
   var UNSHOWN = /^(grain|vault|ledger|history):/;
   var HOUR = 3600000;
   var FLOCK_MAX = 40;
-  var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
   // Kept on this device once a note has been left here from it.
   var LEFT_NOTE = 'live:left-note:' + ROOM;
 
@@ -1486,6 +1486,7 @@
   // The words show as soon as the block is read; nothing else waits for.
   function show() {
     status.hidden = true;
+    document.getElementById('saved').hidden = true;
     ['doc', 'respond-rule', 'respond'].forEach(function (id) {
       document.getElementById(id).hidden = false;
     });
@@ -1568,8 +1569,11 @@
     ]).then(function () {
       loaded = true;
     }, function (e) {
-      // Never a blank page: one plain line instead.
-      if (!loaded) status.textContent = OFFLINE;
+      // Never a blank page: the saved words instead.
+      if (!loaded) {
+        status.hidden = true;
+        document.getElementById('saved').hidden = false;
+      }
       throw e;
     });
   }, document.getElementById('live-note'), show, '');
@@ -1577,9 +1581,6 @@
   // After a note is sent: this device remembers it, step two fills, the
   // reader's bird gains its ring, and the room is read again so the note
   // appears at once.
-  // Who is in the room now, beside the link to talk there live.
-  Beach.watchHere(ROOM, document.getElementById('here-now'));
-
   Beach.wireNoteForm(form, ROOM, function () {
     Live.remember(LEFT_NOTE, new Date().toISOString());
     markResponded();

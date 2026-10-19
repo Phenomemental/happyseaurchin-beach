@@ -156,29 +156,32 @@
   outline-offset: -2px;
 }
 
-/* A scene: a sky at dusk over water. The sky is this background, deep
-   plum overhead down to an ember glow at the horizon, 78% down, in the
-   page's pink, so it shows before any script runs. The canvas over it
-   carries the birds and the shimmer on the water. */
+/* A scene: a sky over water, drawn in the page's paper and ink: paper
+   overhead, a fine crimson line at the horizon, 78% down, and the water
+   beneath it a shade deeper, so it shows before any script runs. The
+   canvas over it carries the birds and the shimmer on the water. */
 .live-scene {
   position: relative;
   overflow: hidden;
-  background-color: #1a0d20;
+  background-color: var(--paper);
   background-image:
-    radial-gradient(ellipse 80% 24% at 50% 78%, rgba(240, 120, 110, 0.45), rgba(240, 120, 110, 0) 70%),
-    linear-gradient(to bottom, #1a0d20 0%, #2b1232 30%, #48193f 55%, #8a2648 68%, #d9466a 75%, #f3957d 77.7%, #2c1231 78.1%, #1e0e24 87%, #120914 100%);
-  background-image:
-    radial-gradient(ellipse 80% 24% at 50% 78%, color-mix(in srgb, color-mix(in srgb, var(--crimson) 60%, #ffb37a) 50%, transparent), transparent 70%),
     linear-gradient(to bottom,
-      #1a0d20 0%,
-      #2b1232 30%,
-      #48193f 55%,
-      color-mix(in srgb, var(--crimson) 45%, #48193f) 68%,
-      color-mix(in srgb, var(--crimson) 82%, #ff9a66) 75%,
-      color-mix(in srgb, var(--crimson) 45%, #ffc08a) 77.7%,
-      #2c1231 78.1%,
-      #1e0e24 87%,
-      #120914 100%);
+      var(--page) 0%,
+      var(--paper) 77.7%,
+      var(--crimson) 77.7%,
+      var(--crimson) 78.1%,
+      var(--paper) 78.1%,
+      var(--paper) 100%);
+  background-image:
+    linear-gradient(to bottom,
+      var(--page) 0%,
+      var(--paper) 77.7%,
+      var(--crimson) 77.7%,
+      var(--crimson) 78.1%,
+      color-mix(in srgb, var(--paper) 90%, var(--ink)) 78.1%,
+      color-mix(in srgb, var(--paper) 95%, var(--ink)) 100%);
+  border-top: 1px solid var(--frame);
+  border-bottom: 1px solid var(--frame);
 }
 /* The birds' canvas: a drag across it moves the birds, a drag up or down
    scrolls the page. */
@@ -195,7 +198,7 @@
   user-select: none;
 }
 .live-scene-sky:focus-visible {
-  outline: 2px solid #f2e7d4;
+  outline: 2px solid var(--crimson);
   outline-offset: -4px;
 }
 /* The words for a bird, under the sky. The name can be pointed at, to
@@ -589,12 +592,12 @@ body.has-live-bar {
   fill: var(--muted);
 }
 
-/* A film: a square stage in the dusk hand, with its caption, a panel for
-   a tapped body, the controls and the line of time beneath. */
+/* A film: a square stage drawn in the page's ink on its paper, with its
+   caption, a panel for a tapped body, the controls and the line of time
+   beneath. */
 .live-film {
-  --film-ink: #f2e7d4;
-  --film-pink: #ef5d85;
-  --film-pink: color-mix(in srgb, var(--crimson) 70%, #ffe0e8);
+  --film-ink: var(--ink);
+  --film-pink: var(--crimson);
   position: relative;
 }
 .live-film-stage {
@@ -603,7 +606,8 @@ body.has-live-bar {
   max-width: 560px;
   aspect-ratio: 1;
   margin: 0 auto;
-  background: #170b1d;
+  background: var(--paper);
+  border: 1px solid var(--frame);
   border-radius: 2px;
   overflow: hidden;
   container-type: inline-size;
@@ -619,6 +623,9 @@ body.has-live-bar {
 }
 .live-film-sky circle {
   fill: var(--film-ink);
+}
+.live-film-spark-core {
+  fill: var(--film-pink);
 }
 /* Only the bodies, arcs and stars take a tap; their tap areas are wider
    than they look. */
@@ -649,11 +656,11 @@ body.has-live-bar {
   opacity: 0.5;
 }
 .is-place .live-film-core {
-  fill: #ffe9d6;
+  fill: var(--muted);
 }
 .is-neutral .live-film-core {
   fill: none;
-  stroke: #b9ad9a;
+  stroke: var(--muted);
   stroke-width: 2.5;
 }
 .live-film-label {
@@ -662,11 +669,12 @@ body.has-live-bar {
   fill: var(--film-ink);
   dominant-baseline: middle;
 }
-/* Words on the sky keep a dusk edge, so an arc behind never blurs them. */
+/* Words on the stage keep an edge of paper, so an arc behind never blurs
+   them. */
 .live-film-label,
 .live-film-star-label {
   paint-order: stroke;
-  stroke: rgba(29, 14, 34, 0.8);
+  stroke: var(--paper);
   stroke-width: 7px;
   stroke-linejoin: round;
 }
@@ -679,7 +687,7 @@ body.has-live-bar {
 }
 .live-film-body.is-picked .live-film-core,
 .live-film-body:focus-visible .live-film-core {
-  stroke: #fffaf0;
+  stroke: var(--film-pink);
 }
 .live-film-body:focus-visible .live-film-core {
   stroke-dasharray: 7 5;
@@ -707,7 +715,7 @@ body.has-live-bar {
   outline: none;
 }
 .live-film-star-core {
-  fill: #fff3e0;
+  fill: var(--film-ink);
 }
 .live-film-star:focus-visible .live-film-star-core {
   stroke: var(--film-pink);
@@ -734,7 +742,6 @@ body.has-live-bar {
   line-height: 1;
   color: var(--film-ink);
   font-variant-numeric: lining-nums tabular-nums;
-  text-shadow: 0 1px 10px rgba(20, 8, 24, 0.8);
   pointer-events: none;
 }
 .live-film-count {
@@ -832,21 +839,15 @@ body.has-live-bar {
     margin-left: calc((100% - min(560px, calc(100% + 6rem))) / 2);
   }
 }
-/* Presenting: the film alone on the dusk, its words in cream. */
+/* Presenting: the film alone on the page. */
 .live-film.is-full {
-  --ink: #f2e7d4;
-  --muted: #b3a597;
-  --paper: #241329;
-  --page: #170b1d;
-  --frame: #5a4757;
-  --crimson: #ef5d85;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0;
   color: var(--ink);
-  background: #170b1d;
+  background: var(--page);
   padding: 2vh 4vw;
   overflow: auto;
 }
@@ -869,26 +870,30 @@ body.has-live-bar {
   min-height: 0;
 }
 
-/* A shore scene (Live.scene with shore): dusk over the sea down to 36%,
-   the sea to its edge at 62%, then wet and dry sand, so it shows before
-   any script runs; the canvas carries the birds and the wash. */
+/* A shore scene (Live.scene with shore), in paper and ink: paper sky
+   down to a fine line at 36%, the sea as a light wash of ink to its edge
+   at 62%, then the sand a shade warmer, so it shows before any script
+   runs; the canvas carries the birds and the wash. */
 .live-scene.live-shore {
-  background-color: #2a1730;
+  background-color: var(--paper);
   background-image:
-    radial-gradient(ellipse 75% 16% at 50% 36%, rgba(240, 130, 110, 0.4), rgba(240, 130, 110, 0) 70%),
     linear-gradient(to bottom,
-      #1a0d20 0%,
-      #2b1232 14%,
-      #5a1d45 27%,
-      #b83c5c 33%,
-      #f0937a 35.6%,
-      #3c1f3e 36.1%,
-      #2c1a36 48%,
-      #352240 61.6%,
-      #5b3d4a 62.2%,
-      #4c3443 68%,
-      #6b4d50 74%,
-      #84655a 100%);
+      var(--page) 0%,
+      var(--paper) 35.8%,
+      var(--frame) 35.8%,
+      var(--frame) 36.2%,
+      var(--paper) 36.2%,
+      var(--paper) 100%);
+  background-image:
+    linear-gradient(to bottom,
+      var(--page) 0%,
+      var(--paper) 35.8%,
+      var(--frame) 35.8%,
+      var(--frame) 36.2%,
+      color-mix(in srgb, var(--paper) 88%, var(--ink)) 36.2%,
+      color-mix(in srgb, var(--paper) 92%, var(--ink)) 61.8%,
+      color-mix(in srgb, var(--paper) 85%, var(--frame)) 62.2%,
+      color-mix(in srgb, var(--paper) 70%, var(--frame)) 100%);
 }
 
 /* A heart: two lights, a figure-of-eight between them, the "&" at the
@@ -1285,7 +1290,7 @@ li.live-print::before {
   padding-bottom: 0.4rem;
 }
 
-/* A night sky of constellations. */
+/* A sky of constellations, drawn in ink on the page's paper. */
 .live-sky-stage {
   position: relative;
   width: 100%;
@@ -1305,7 +1310,7 @@ li.live-print::before {
 }
 .live-sky-line {
   fill: none;
-  stroke: #f2e7d4;
+  stroke: var(--ink);
   stroke-opacity: 0.3;
   stroke-width: 1.6;
   stroke-dasharray: 1;
@@ -1321,13 +1326,13 @@ li.live-print::before {
 .live-sky-name {
   font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
   font-style: italic;
-  fill: #f2e7d4;
+  fill: var(--ink);
   fill-opacity: 0.8;
   text-anchor: middle;
   pointer-events: none;
 }
 .live-sky-name.is-core {
-  fill: #ffd3df;
+  fill: var(--crimson);
   fill-opacity: 1;
   font-weight: 600;
 }
@@ -1341,7 +1346,7 @@ li.live-print::before {
 }
 .live-sky-star.is-picked .live-sky-hit,
 .live-sky-star:focus-visible .live-sky-hit {
-  stroke: #ff9fb8;
+  stroke: var(--crimson);
   stroke-width: 2.5;
   stroke-dasharray: 5 6;
 }
@@ -1354,31 +1359,31 @@ li.live-print::before {
   pointer-events: none;
 }
 .live-sky-core {
-  fill: #fffaf0;
+  fill: var(--ink);
 }
 .live-sky-core.is-held {
-  fill: #f2e7d4;
+  fill: var(--ink);
   opacity: 0.4;
 }
 .live-sky-spark {
-  fill: #fff6e8;
+  fill: var(--crimson);
 }
 .live-sky-orbit {
   fill: none;
-  stroke: #f2e7d4;
+  stroke: var(--ink);
   stroke-opacity: 0.22;
   stroke-width: 1;
 }
 .live-sky-veil {
-  fill: #120a1c;
-  stroke: #f2e7d4;
+  fill: var(--page);
+  stroke: var(--ink);
   stroke-opacity: 0.5;
   stroke-width: 1.5;
   stroke-dasharray: 2 4;
 }
 .live-sky-here {
   fill: none;
-  stroke: #ff9fb8;
+  stroke: var(--crimson);
   stroke-width: 2.5;
 }
 .live-sky-caption {
@@ -1407,7 +1412,7 @@ li.live-print::before {
   font-style: italic;
 }
 
-/* Lanterns round a lit doorway. */
+/* Lanterns round a lit doorway, on the page's paper. */
 .live-lantern-stage {
   position: relative;
   width: 100%;
@@ -1433,13 +1438,13 @@ li.live-print::before {
   pointer-events: none;
 }
 .live-lantern-ground {
-  stroke: #f2e7d4;
+  stroke: var(--ink);
   stroke-opacity: 0.25;
   stroke-width: 1.5;
 }
 .live-lantern-frame {
   fill: none;
-  stroke: #f2e7d4;
+  stroke: var(--ink);
   stroke-opacity: 0.75;
   stroke-width: 3;
 }
@@ -1448,7 +1453,7 @@ li.live-print::before {
   outline: none;
 }
 .live-lantern-door:focus-visible .live-lantern-frame {
-  stroke: #ff9fb8;
+  stroke: var(--crimson);
   stroke-opacity: 1;
   stroke-dasharray: 6 5;
 }
@@ -1466,11 +1471,11 @@ li.live-print::before {
   stroke-width: 1;
 }
 .live-lantern-cap {
-  fill: #3a1d2a;
+  fill: var(--ink);
 }
 .live-lantern-ring {
   fill: none;
-  stroke: #ff9fb8;
+  stroke: var(--crimson);
   stroke-width: 2;
   opacity: 0;
 }

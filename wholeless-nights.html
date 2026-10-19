@@ -165,6 +165,21 @@
     text-transform: uppercase;
     color: var(--muted);
   }
+  /* The care line: quiet, near the top. */
+  .care {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    max-width: 30rem;
+    margin: 1rem auto 0;
+  }
+  .care a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.15em;
+  }
 </style>
 </head>
 <body>
@@ -173,6 +188,7 @@
     <a href="index.html">Phenomemental</a>
     <a href="wholeless-nights.html" aria-current="page">Wholeless Nights</a>
     <a href="night-watchman.html">The Night Watchman</a>
+    <a href="golden-flow.html">Golden Flow</a>
     <a href="map.html">My map</a>
   </nav>
 
@@ -191,6 +207,7 @@
       books, old names, old selves are brought into the night one by one and
       tested. What survives goes in.
     </p>
+    <p class="care">If a night is more than you can hold, reach a person first. <a href="tel:116123">Samaritans, 116 123</a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
     <p class="walk"><a href="https://happyseaurchin.com/walk/wholeless-nights/Phenomemental">Walk it on the beach</a></p>
 
     <hr class="rule">
@@ -487,10 +504,10 @@
         <textarea id="c-text" name="note" maxlength="2000" required></textarea>
         <button type="submit">Leave a note</button>
         <p class="form-status" role="status"></p>
-        <p class="form-foot">Notes are public: they go into the book's room on the beach, <code>pool:wholeless-nights</code>.</p>
+        <p class="form-foot">Notes are public: they go into the book's room on the beach.</p>
       </form>
 
-      <p class="closing" id="closing">Comments welcome at <code>pool:wholeless-nights</code> on the beach.</p>
+      <p class="closing" id="closing">The book's room can't be reached just now. Notes are welcome here again in a few minutes.</p>
 
       <!-- Beside the note box: for those with a handle on the beach. -->
       <div class="answer-door">
@@ -498,23 +515,15 @@
           <span class="door-title">Answer as yourself</span>
           <span class="door-text">Have a handle on the beach? Answer under your own name and key, on the walk page.</span>
         </a>
-        <p class="door-ai">Your AI can answer as you at wholeless-nights:&lt;your handle&gt;</p>
       </div>
 
-      <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=wholeless-nights">Talk live in the room</a>
-        <span class="here-now" id="here-now" aria-live="polite"></span>
-      </p>
     </section>
 
     <p class="live-note" id="live-note"></p>
   </div>
 
-  <footer class="site-footer">
-    <p class="site-where">This page reads spine:wholeless-nights; its room is pool:wholeless-nights; answers are wholeless-nights:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
-  </footer>
 </main>
-<script src="beach.js?v=2026-10-15b"></script>
+<script src="beach.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var text = Beach.text;
@@ -753,8 +762,6 @@
     document.getElementById('closing').hidden = true;
   });
 
-  // Who is in the book's room now, beside the link to talk there live.
-  Beach.watchHere('pool:wholeless-nights', document.getElementById('here-now'));
 
   Beach.wireNoteForm(form, 'pool:wholeless-nights', refresh);
 })();

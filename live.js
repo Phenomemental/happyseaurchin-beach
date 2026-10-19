@@ -1265,8 +1265,8 @@
   }
 
   // Live.film(root, opts) draws the model in root: a square stage in the
-  // dusk hand (plum sky, a faint ember glow low down, a few still stars,
-  // cream ink, the page's pink for people), the body of kind "Place" at
+  // page's paper and ink (a faint crimson glow low down, a few still
+  // stars, the page's crimson for people), the body of kind "Place" at
   // the centre and the rest on a slowly drifting ring round it; under it
   // the caption, a panel for a tapped body, the controls and the line of
   // time. The scenes: s1 the bodies arrive; one scene for each moment, in
@@ -1332,15 +1332,15 @@
     var defs = node('defs', null, {}, art);
     defs.innerHTML = '' +
       '<linearGradient id="' + id + '-sky" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="#170b1d"/><stop offset="0.55" stop-color="#2a1131"/><stop offset="1" stop-color="#3c1437"/></linearGradient>' +
+        '<stop offset="0" style="stop-color:var(--page)"/><stop offset="1" style="stop-color:var(--paper)"/></linearGradient>' +
       '<radialGradient id="' + id + '-ember" cx="0.5" cy="1" r="0.62">' +
-        '<stop offset="0" stop-color="#ff9a6b" stop-opacity="0.34"/><stop offset="0.45" stop-color="#e0566f" stop-opacity="0.12"/><stop offset="1" stop-color="#e0566f" stop-opacity="0"/></radialGradient>' +
+        '<stop offset="0" style="stop-color:var(--crimson);stop-opacity:0.1"/><stop offset="1" style="stop-color:var(--crimson);stop-opacity:0"/></radialGradient>' +
       '<radialGradient id="' + id + '-soft">' +
-        '<stop offset="0" stop-color="#ffe9d6" stop-opacity="0.55"/><stop offset="0.35" stop-color="#f2b58f" stop-opacity="0.22"/><stop offset="1" stop-color="#f2b58f" stop-opacity="0"/></radialGradient>' +
+        '<stop offset="0" style="stop-color:var(--crimson);stop-opacity:0.12"/><stop offset="1" style="stop-color:var(--crimson);stop-opacity:0"/></radialGradient>' +
       '<radialGradient id="' + id + '-pink">' +
-        '<stop offset="0" stop-color="#ff8fb0" stop-opacity="0.6"/><stop offset="1" stop-color="#ff8fb0" stop-opacity="0"/></radialGradient>' +
+        '<stop offset="0" style="stop-color:var(--crimson);stop-opacity:0.3"/><stop offset="1" style="stop-color:var(--crimson);stop-opacity:0"/></radialGradient>' +
       '<radialGradient id="' + id + '-spark">' +
-        '<stop offset="0" stop-color="#fffaf0" stop-opacity="1"/><stop offset="0.3" stop-color="#ffe2c4" stop-opacity="0.7"/><stop offset="1" stop-color="#ffe2c4" stop-opacity="0"/></radialGradient>';
+        '<stop offset="0" style="stop-color:var(--crimson);stop-opacity:0.6"/><stop offset="1" style="stop-color:var(--crimson);stop-opacity:0"/></radialGradient>';
     node('rect', null, { x: 0, y: 0, width: 1000, height: 1000, fill: 'url(#' + id + '-sky)' }, art);
     node('rect', null, { x: 0, y: 0, width: 1000, height: 1000, fill: 'url(#' + id + '-ember)' }, art);
     // A few still stars, the same each time.
@@ -1353,7 +1353,7 @@
     var arcsG = node('g', 'live-film-arcs', {}, art);
     var sparkG = node('g', 'live-film-spark', { opacity: 0 }, art);
     node('circle', null, { r: 30, fill: 'url(#' + id + '-spark)' }, sparkG);
-    node('circle', null, { r: 7, fill: '#fffaf0' }, sparkG);
+    node('circle', 'live-film-spark-core', { r: 7 }, sparkG);
     var bodiesG = node('g', 'live-film-bodies', {}, art);
     var starsG = node('g', 'live-film-stars', {}, art);
     var clock = el('div', 'live-film-clock');
@@ -1950,8 +1950,8 @@
   }
 
   // ---- A scene ------------------------------------------------------------
-  // A sky at dusk over water, with a flock in it: a cream bird for each
-  // thing that has just moved, and a pink one for the reader, which flies
+  // A sky over water, with a flock in it: a bird in ink for each thing
+  // that has just moved, and a crimson one for the reader, which flies
   // in from the edge as the page opens. The sky is the element's own
   // background (live.css), so it is there before any of this runs; the
   // canvas laid over it carries the birds and the water's slow shimmer.
@@ -1992,8 +1992,10 @@
   // for a bird itself (it may do so later; the bird it speaks of is
   // b.id). For anyone who asks for less motion every bird stands still.
   var scenes = [];
-  var CREAM = '#f2e7d4';
-  var DUSK = '#1a0d20';
+  // The birds are drawn in the page's ink on its paper (set from the page
+  // when a scene is painted, so they follow it into the dark).
+  var INK = '#1d1a17';
+  var PAPER = '#f6f0e4';
   var REACH = 140; // how far a pressed finger draws the birds, in pixels
   var TAP = 24; // how near a tap must come to a bird: a 48px target
   var GLOW = 2.5; // seconds a bird that has just moved shows it
@@ -2020,21 +2022,6 @@
   function colour(name, fallback) {
     var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     return v || fallback;
-  }
-
-  // A hex colour taken part of the way towards another: the page's pink
-  // lightened for a dark sky, as the page itself lightens it at night.
-  function towards(hex, to, k) {
-    var a = /^#([0-9a-f]{6})$/i.exec(hex);
-    var b = /^#([0-9a-f]{6})$/i.exec(to);
-    if (!a || !b) return hex;
-    var out = '#';
-    for (var i = 0; i < 6; i += 2) {
-      var x = parseInt(a[1].slice(i, i + 2), 16);
-      var y = parseInt(b[1].slice(i, i + 2), 16);
-      out += ('0' + Math.round(x + (y - x) * k).toString(16)).slice(-2);
-    }
-    return out;
   }
 
   function scene(box, opts) {
@@ -2231,7 +2218,9 @@
     function paints() {
       var pink = colour('--crimson', '#c21d4e');
       accent = pink;
-      bright = towards(pink, '#ffe0e8', 0.3);
+      bright = pink;
+      INK = colour('--ink', '#1d1a17');
+      PAPER = colour('--page', '#f6f0e4');
     }
 
     // ---- On a shore ----
@@ -2340,14 +2329,14 @@
         ctx.strokeStyle = accent;
         ctx.globalAlpha = a + 0.1 * (1 - f);
         stroke(W / 2 - half + drift, y, W / 2 + half + drift);
-        ctx.strokeStyle = CREAM;
+        ctx.strokeStyle = INK;
         ctx.globalAlpha = a * 0.5;
         stroke(W / 2 - half * 2.1 - drift * 0.5, y, W / 2 - half * 1.35 - drift * 0.5);
         stroke(W / 2 + half * 1.4 + drift * 0.7, y, W / 2 + half * 2 + drift * 0.7);
       }
       function edgeLine(y, alpha, width, wave) {
         ctx.globalAlpha = alpha;
-        ctx.strokeStyle = CREAM;
+        ctx.strokeStyle = INK;
         ctx.lineWidth = width;
         ctx.beginPath();
         for (var x = 0; x <= W + 8; x += 8) {
@@ -2427,7 +2416,7 @@
       birds.forEach(function (b) {
         if (b.away) return;
         if (b.x == null || still()) settle(b);
-        var colourOf = b.me ? bright : CREAM;
+        var colourOf = b.me ? bright : INK;
         if (b.flying) {
           glyph(b);
           return;
@@ -2441,8 +2430,8 @@
         }
         if (b.me) {
           ctx.globalAlpha = 0.5;
-          ctx.fillStyle = DUSK;
-          ctx.strokeStyle = DUSK;
+          ctx.fillStyle = PAPER;
+          ctx.strokeStyle = PAPER;
           ctx.lineWidth = 3;
           standing(b, false);
           ctx.fillStyle = colourOf;
@@ -2482,11 +2471,11 @@
       });
       if (ringed && !me.away && !me.flying) {
         var c = { x: me.x, y: me.y - height(me) / 2 };
-        ring(c, 13, DUSK, 0.5, 3.4);
+        ring(c, 13, PAPER, 0.5, 3.4);
         ring(c, 13, bright, 1, 1.5);
       }
       if (shown && !shown.away && !shown.flying && shown.x != null) {
-        ring({ x: shown.x, y: shown.y - height(shown) / 2 }, Math.max(15, height(shown) / 2 + 6), CREAM, 0.85, 1);
+        ring({ x: shown.x, y: shown.y - height(shown) / 2 }, Math.max(15, height(shown) / 2 + 6), INK, 0.85, 1);
       }
       ctx.globalAlpha = 1;
     }
@@ -2612,7 +2601,7 @@
         ctx.strokeStyle = accent;
         ctx.globalAlpha = a + 0.12 * (1 - f);
         stroke(W / 2 - half + drift, y, W / 2 + half + drift);
-        ctx.strokeStyle = CREAM;
+        ctx.strokeStyle = INK;
         ctx.globalAlpha = a * 0.55;
         stroke(W / 2 - half * 2.1 - drift * 0.5, y, W / 2 - half * 1.35 - drift * 0.5);
         stroke(W / 2 + half * 1.4 + drift * 0.7, y, W / 2 + half * 2 + drift * 0.7);
@@ -2621,8 +2610,8 @@
     }
 
     // A bird far off, as a "v" with its wings beating; still birds hold
-    // their wings half raised. The reader's is pink, edged in dusk so it
-    // shows against the glow.
+    // their wings half raised. The reader's is crimson, edged in paper so
+    // it shows against the others.
     function glyph(b) {
       var flap = still() ? 0.3 : Math.sin(b.phase);
       var w = b.me ? 6 : 5.2;
@@ -2636,7 +2625,7 @@
       ctx.quadraticCurveTo(-w * 0.45, -1.7 + flap * 0.4, 0, 1);
       ctx.quadraticCurveTo(w * 0.45, -1.7 + flap * 0.4, w, tip);
       if (b.me) {
-        ctx.strokeStyle = DUSK;
+        ctx.strokeStyle = PAPER;
         ctx.globalAlpha = 0.55;
         ctx.lineWidth = 4;
         ctx.stroke();
@@ -2644,7 +2633,7 @@
         ctx.globalAlpha = 1;
         ctx.lineWidth = 2.1;
       } else {
-        ctx.strokeStyle = CREAM;
+        ctx.strokeStyle = INK;
         ctx.globalAlpha = 0.88;
         ctx.lineWidth = 1.4;
       }
@@ -2673,13 +2662,13 @@
         if (still()) home(b);
         else if (b.x == null) place(b);
         glyph(b);
-        if (b.glow && !still()) ring(b, 6 + (1 - b.glow / GLOW) * 16, CREAM, b.glow / GLOW * 0.7, 1);
+        if (b.glow && !still()) ring(b, 6 + (1 - b.glow / GLOW) * 16, INK, b.glow / GLOW * 0.7, 1);
       });
       if (ringed) {
-        ring(me, 10, DUSK, 0.5, 3.4);
+        ring(me, 10, PAPER, 0.5, 3.4);
         ring(me, 10, bright, 1, 1.5);
       }
-      if (shown && !shown.leaving) ring(shown, 14, CREAM, 0.85, 1);
+      if (shown && !shown.leaving) ring(shown, 14, INK, 0.85, 1);
       ctx.globalAlpha = 1;
     }
 

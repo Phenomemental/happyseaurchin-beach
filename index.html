@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="live.css?v=2026-10-12a">
+<link rel="stylesheet" href="live.css?v=2026-10-19b">
 <style>
   html {
     scroll-behavior: smooth;
@@ -232,24 +232,9 @@
     font-size: 0.95rem;
   }
 
-  /* 6 and 7: the page darkens into night, for the map and the lanterns.
-     The night has its own colours for everything in it. */
+  /* 6 and 7: the map and the lanterns, on the page's own paper. */
   .night {
-    --ink: #f2e7d4;
-    --muted: #b9aa9b;
-    --paper: #22122a;
-    --page: #160b1d;
-    --frame: #5a4757;
-    --crimson: #ef6b90;
-    --rule: #d0525a;
-    color: var(--ink);
-    background: linear-gradient(to bottom, var(--sheet-page) 0, #3a1b3b 3.5rem, #1a0d22 8rem, #0f0715 100%);
-    margin: 1.3rem -1.5rem -2rem;
-    padding: 7rem 1.5rem 2rem;
-  }
-  .night .door:hover,
-  .night .door:focus-visible {
-    border-color: var(--crimson);
+    margin: 1.3rem 0 0;
   }
   .doors {
     grid-template-columns: minmax(0, 1fr);
@@ -295,16 +280,21 @@
   @media (min-width: 560px) {
     h1 { font-size: 3rem; }
     .family-scene { margin: 0.4rem -3rem 0; }
-    .night {
-      margin: 1.3rem -3rem -2.5rem;
-      padding: 8rem 3rem 2.5rem;
-    }
   }
-  @media print {
-    .night {
-      color: var(--ink);
-      background: none;
-    }
+  /* The care line: quiet, near the top. */
+  .care {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    max-width: 30rem;
+    margin: 1rem auto 0;
+  }
+  .care a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.15em;
   }
 </style>
 </head>
@@ -314,6 +304,7 @@
     <a href="index.html" aria-current="page">Phenomemental</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="night-watchman.html">The Night Watchman</a>
+    <a href="golden-flow.html">Golden Flow</a>
     <a href="map.html">My map</a>
   </nav>
 
@@ -336,6 +327,8 @@
     </section>
     <p class="lede" id="lede" hidden></p>
 
+    <p class="care">If a night is more than you can hold, reach a person first. <a href="tel:116123">Samaritans, 116 123</a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
+
     <p class="status" id="status" role="status">Reading from the beach&hellip;</p>
 
     <div class="offline" id="offline">
@@ -344,8 +337,9 @@
       <ul class="doors">
         <li><a class="door" href="wholeless-nights.html"><span class="door-title">Wholeless Nights</span></a></li>
         <li><a class="door" href="night-watchman.html"><span class="door-title">The Night Watchman</span></a></li>
+        <li><a class="door" href="golden-flow.html"><span class="door-title">Golden Flow</span></a></li>
         <li><a class="door" href="map.html"><span class="door-title">My map</span></a></li>
-        <li><a class="door" href="community-recovery/"><span class="door-title">LEROs on the Commons</span></a></li>
+        <li><a class="door" href="community-recovery/"><span class="door-title">Community Recovery</span></a></li>
         <li><a class="door" href="capability-gap.html"><span class="door-title">The Capability Gap</span></a></li>
         <li><a class="door" href="flavour-spark.html"><span class="door-title">Bringing the flavour</span></a></li>
       </ul>
@@ -444,13 +438,8 @@
             <span class="door-title">Answer as yourself</span>
             <span class="door-text">Have a handle on the beach? Answer my posts under your own name and key, on the walk page.</span>
           </a>
-          <p class="door-ai">Your AI can answer as you at Phenomemental:&lt;your handle&gt;, at the post&rsquo;s number</p>
         </div>
 
-        <p class="talk-live">
-          <a href="https://mirror.onen.ai/?pool=Phenomemental">Talk live in the room</a>
-          <span class="here-now" id="here-now" aria-live="polite"></span>
-        </p>
       </section>
 
       <p class="live-note" id="live-note"></p>
@@ -458,12 +447,11 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:Phenomemental; its room is pool:Phenomemental; answers are Phenomemental:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-15b"></script>
-<script src="live.js?v=2026-10-12a"></script>
+<script src="beach.js?v=2026-10-19b"></script>
+<script src="live.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var ME = 'Phenomemental';
@@ -618,11 +606,21 @@
   var cache = {};
   var touched = null;
   var present = null;
+  function plainBlock(n) {
+    if (typeof n === 'string') return Beach.plain(n);
+    if (!n || typeof n !== 'object') return n;
+    var out = {};
+    Object.keys(n).forEach(function (k) { out[k] = plainBlock(n[k]); });
+    return out;
+  }
   function want(name) {
     var t = touched ? touched[name] : undefined;
     var c = cache[name];
     if (c && t && c.touched === t) return Promise.resolve(c.block);
     return Beach.get(name).then(function (b) {
+      // The map's own names are drawn as words in the sky, a line at a
+      // time, so they are made plain before they are drawn.
+      if (name === ARTIFACTS) b = plainBlock(b);
       cache[name] = { touched: t || '', block: b };
       return b;
     }, function (e) {
@@ -639,7 +637,7 @@
   }
 
   // ---- 1. The heart ----------------------------------------------------------
-  var heart = Live.heart($('heart-figure'), { name: 'The crossing: open my passport’s opening' });
+  var heart = Live.heart($('heart-figure'), { name: 'The crossing' });
   Live.fold(heart.cross, $('opening'));
 
   // The line from its anchor: the block's opening, when it has its "&".
@@ -1511,6 +1509,33 @@
     return true;
   }
 
+  // ---- Plain names ------------------------------------------------------------
+  // Whatever the blocks say, the page says it in plain names (Beach.plain):
+  // every piece of text as it arrives, including a caption shown on a tap.
+  var NAMED = /\b[a-z][\w-]*:[A-Za-z<]|LEROs on the Commons|genus-one/;
+  function plainText(n) {
+    var v = n.nodeValue;
+    if (!NAMED.test(v) || (n.parentNode && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName))) return;
+    var p = /^\s*/.exec(v)[0] + Beach.plain(v) + /\s*$/.exec(v)[0];
+    if (p !== v) n.nodeValue = p;
+  }
+  function plainWithin(root) {
+    if (root.nodeType === 3) return plainText(root);
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) plainText(n);
+  }
+  var sheet = document.querySelector('.sheet');
+  plainWithin(sheet);
+  if (window.MutationObserver) {
+    new MutationObserver(function (changes) {
+      changes.forEach(function (c) {
+        if (c.type === 'characterData') plainText(c.target);
+        else Array.prototype.forEach.call(c.addedNodes, plainWithin);
+      });
+    }).observe(sheet, { childList: true, subtree: true, characterData: true });
+  }
+
   // ---- Every 30 seconds ------------------------------------------------------
   var everShown = false;
   function settle(p) {
@@ -1519,6 +1544,13 @@
       return false;
     });
   }
+  // However slow the beach, the plain page shows about six seconds in;
+  // the live one takes its place if the words arrive after.
+  setTimeout(function () {
+    if (everShown) return;
+    status.hidden = true;
+    document.documentElement.classList.add('beach-out');
+  }, 6500);
   var refresh = Beach.live(function () {
     var ix = Beach.index().then(function (i) {
       if (!i || !Array.isArray(i.blocks)) throw new Error('no index');
@@ -1569,8 +1601,6 @@
     form.hidden = false;
   }, '');
 
-  // Who is in my room now, beside the link to talk there live.
-  Beach.watchHere(ROOM, $('here-now'));
 
   // After a note is sent: this device remembers it, the reader's bird
   // lands with my family, and the room is read again, so the note rises
