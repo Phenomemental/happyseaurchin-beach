@@ -3,298 +3,288 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phenomemental</title>
-<meta name="description" content="Phenomemental (Matthew Bushell): who I am, my day, my posts, my family of agents and my map, read live from my blocks on the beach.">
-<script>document.documentElement.classList.add('js');</script>
+<title>Matthew Bushell · Phenomemental</title>
+<meta name="description" content="Matthew Bushell (Phenomemental): writer, coach, and builder of places where people meet. What I'm making, my day, my latest posts, and a place to leave me a note.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="live.css?v=2026-10-19b">
 <style>
+  /* My front door, in the Wholeless Nights book look (beach.css): the heart
+     drawn in ink, my name and line, the opening, two ways on, the care
+     line; then what I'm making, today, lately, three parts on request, and
+     the note box. */
+  :root {
+    --indigo: #2f4a86;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --indigo: #8fa8e0;
+    }
+  }
   html {
     scroll-behavior: smooth;
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-  }
-  /* Words read from the beach can hold a long address; it breaks rather
-     than pushing the sheet wider than a phone. The page's own colour is
-     kept, for the night to darken from. */
-  .sheet {
-    --sheet-page: var(--page);
-    overflow-wrap: break-word;
-    overflow: hidden;
-  }
-  h1 {
-    font-weight: 400;
-    font-size: 2.6rem;
-    line-height: 1.05;
-    margin: 0;
-  }
-  .name {
-    font-weight: 500;
-    font-size: 1.1rem;
-    letter-spacing: 0.3em;
-    margin: 0.7rem 0 0;
-  }
-  .lede {
-    font-style: italic;
-    font-size: 1.35rem;
-    line-height: 1.4;
-    margin: 1rem auto 0;
-    max-width: 28rem;
-  }
-  .status {
-    font-style: italic;
-    color: var(--muted);
-    margin: 1.6rem 0 0;
+    .flow { display: none; }
   }
   [hidden] {
     display: none !important;
   }
-
-  /* The plain page for when the beach can't be reached (or there is no
-     script): shown only then. */
-  .js .offline {
-    display: none;
+  .sheet {
+    padding: 2.2rem 1.4rem 2rem;
   }
-  .js.beach-out .offline {
-    display: block;
+  .rule {
+    margin: 1.6rem auto;
   }
-  .offline {
-    text-align: left;
-    max-width: 30rem;
-    margin: 1.4rem auto 0;
+  h1 {
+    font-weight: 500;
+    font-size: clamp(2rem, 7vw, 2.6rem);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    margin: 0.4rem 0 0.2rem;
+    text-wrap: balance;
   }
-  .offline .lede {
-    text-align: center;
-    margin: 0 auto 1.2rem;
-  }
-
-  /* 1. The heart. */
-  .heart-place {
-    max-width: none;
-    margin: 1.4rem 0 0;
-  }
-  .opening {
-    text-align: left;
-    max-width: 30rem;
-    background: var(--paper);
-    border-left: 3px solid var(--crimson);
-    padding: 0.9rem 1rem;
-    margin: 0.4rem auto 0;
-  }
-  .opening p {
+  .byline {
+    font-style: italic;
+    color: var(--muted);
     margin: 0;
   }
-
-  /* 2. My day: the shore, its panel, the clock. */
-  .day-panel {
-    margin: 0.9rem 0 0;
-    padding: 0.85rem 1rem 0.9rem;
-    background: var(--paper);
-    border-left: 3px solid var(--crimson);
-    min-height: 5.5rem;
-  }
-  .clock {
-    text-align: center;
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--muted);
-    margin: 0.7rem 0 0;
-  }
-  .list-way {
-    text-align: center;
-    margin: 0.6rem 0 0;
-  }
-  .list-way button {
-    min-height: 44px;
-    font: inherit;
-    font-style: italic;
-    font-size: 1.05rem;
-    color: var(--muted);
-    background: none;
-    border: 0;
-    padding: 0.3rem 0.6rem;
-    cursor: pointer;
-  }
-  .list-way button:hover,
-  .list-way button[aria-expanded="true"] {
-    color: var(--ink);
-  }
-  .list-way button:focus-visible {
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
     outline: 2px solid var(--crimson);
-    outline-offset: 2px;
-  }
-  .as-list {
-    text-align: left;
-    margin: 0.4rem 0 0;
-  }
-  .as-list h3 {
-    font-weight: 500;
-    font-size: 1.15rem;
-    margin: 1rem 0 0.3rem;
-  }
-  .as-list dl {
-    margin: 0;
-  }
-  .as-list dt {
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 0.6rem 0 0.1rem;
-  }
-  .as-list dd {
-    margin: 0;
-  }
-  .card-note {
-    font-style: italic;
-    color: var(--muted);
-    font-size: 0.95rem;
+    outline-offset: 3px;
   }
 
-  /* 3. Who I am. */
-  .about {
-    margin: 1rem 0 0;
-  }
-  #who .live-rows {
-    margin: 0.8rem 0 0;
-  }
-
-  /* 4. Posts: footprints, each with the answers signed beside it. */
-  .post-intro {
-    font-style: italic;
-  }
-  .post-answers {
-    margin: 0 0 0.8rem;
-  }
-  .post-answers-head {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    font-size: 0.85rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 0 0 0.2rem;
-  }
-  .post-answers .comment {
-    padding: 0.4rem 0;
-  }
-  .post-answers .comment:last-child {
-    border-bottom: 0;
-  }
-  .post-parts ul {
-    margin: 0.3rem 0 0;
-  }
-  .post-parts li {
-    margin-bottom: 0.4rem;
-  }
-  .post-parts p {
-    margin: 0 0 0.4rem;
-  }
-  .more {
-    font-style: italic;
-    text-align: center;
-    margin: 1rem 0 0;
-  }
-
-  /* 5. My family, on the shore. */
-  .family-scene {
-    height: clamp(250px, 58vw, 340px);
-    margin: 0.4rem -1.5rem 0;
-  }
-  .family-say {
-    min-height: 3.2em;
-    font-size: 1.05rem;
-    line-height: 1.45;
-    margin: 0.8rem 0 0;
-  }
-  .family-say p {
-    margin: 0.2rem 0 0;
-  }
-  .family-list {
-    margin: 0.8rem 0 0;
-  }
-  .family-list li {
-    margin-bottom: 0.6rem;
-  }
-  .family-list strong {
-    font-weight: 600;
-  }
-  .family-how {
+  /* The heart, drawn in ink: two loops, light moving slowly through the &. */
+  .heart {
+    width: min(15rem, 66vw);
+    max-width: 100%;
+    aspect-ratio: 300 / 250;
     display: block;
-    font-style: italic;
-    color: var(--muted);
-    font-size: 0.95rem;
+    margin: 0 auto;
   }
 
-  /* 6 and 7: the map and the lanterns, on the page's own paper. */
-  .night {
-    margin: 1.3rem 0 0;
-  }
-  .doors {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .doors-head {
-    font-weight: 500;
-    font-size: 1.15rem;
-    margin: 1.4rem 0 0.6rem;
-  }
-  .room-line {
-    font-style: italic;
-    color: var(--muted);
-    text-align: center;
-    margin: 0.6rem 0 0;
-  }
-  .note-panel {
+  .opening {
+    font-size: 1.3rem;
+    line-height: 1.5;
     text-align: left;
-    background: var(--paper);
-    border-left: 3px solid var(--crimson);
-    padding: 0.8rem 1rem;
-    margin: 0.6rem 0 0;
+    max-width: 30rem;
+    margin: 1.4rem auto 0.6rem;
   }
-  .note-panel .comment {
-    padding: 0;
-    border: 0;
+  .opening::first-letter {
+    font-size: 3.1em;
+    line-height: 0.8;
+    float: left;
+    padding: 0.06em 0.1em 0 0;
+    color: var(--crimson);
   }
-  .welcome {
-    font-size: 1.2rem;
-    line-height: 1.5;
-    margin: 1.2rem 0 1rem;
+  .two {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin: 1.1rem 0 0;
   }
-  .landed-note {
-    font-style: italic;
-    margin: 0.4rem 0 0;
+  /* On a shorter phone the heart and the opening draw a little smaller,
+     so the first step is still in view without scrolling. */
+  @media (max-width: 480px) and (max-height: 800px) {
+    .sheet { padding-top: 1.4rem; }
+    .heart { width: min(10.5rem, 46vw); }
+    h1 { margin-top: 0.2rem; }
+    .opening { font-size: 1.15rem; margin-top: 1rem; }
+    .two { margin-top: 0.8rem; }
   }
-  #note-form {
-    scroll-margin-top: 1rem;
+  @media (max-width: 480px) and (max-height: 700px) {
+    .heart { width: min(8.5rem, 40vw); }
+    .opening { line-height: 1.42; }
   }
-  .night .live-note {
-    margin-top: 2rem;
+  .go,
+  .go-quiet {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    border-radius: 2px;
+    padding: 0 1.3rem;
   }
-
-  @media (min-width: 560px) {
-    h1 { font-size: 3rem; }
-    .family-scene { margin: 0.4rem -3rem 0; }
+  .go {
+    color: var(--page);
+    background: var(--crimson);
+    border: 1px solid var(--crimson);
   }
-  /* The care line: quiet, near the top. */
+  .go-quiet {
+    color: var(--crimson);
+    border: 1px solid var(--crimson);
+  }
+  .go:hover,
+  .go-quiet:hover {
+    border-bottom-color: var(--crimson);
+    opacity: 0.9;
+  }
   .care {
+    font-size: 1rem;
     font-style: italic;
     color: var(--muted);
-    font-size: 0.98rem;
-    line-height: 1.5;
-    max-width: 30rem;
+    max-width: 28rem;
     margin: 1rem auto 0;
   }
   .care a {
     color: inherit;
-    text-decoration: underline;
-    text-decoration-color: var(--frame);
-    text-underline-offset: 0.15em;
+  }
+  .care strong {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* What I'm making: a ruled list, numbered like the watches. */
+  .makes {
+    border-top: 1px solid var(--frame);
+  }
+  .make {
+    display: flex;
+    gap: 0.8rem;
+    align-items: baseline;
+    padding: 0.8rem 0.2rem;
+    border-bottom: 1px solid var(--frame);
+    color: var(--ink);
+  }
+  a.make:hover {
+    border-bottom-color: var(--frame);
+  }
+  a.make:hover .title {
+    color: var(--crimson);
+  }
+  .make .num {
+    flex: 0 0 1.6rem;
+    color: var(--muted);
+    font-variant-numeric: oldstyle-nums;
+    font-size: 0.95rem;
+  }
+  .make .t {
+    flex: 1;
+    min-width: 0;
+  }
+  .make .title {
+    font-size: 1.3rem;
+    display: block;
+  }
+  .make .desc {
+    font-size: 1.02rem;
+    color: var(--muted);
+    font-style: italic;
+    display: block;
+  }
+  .make .arrow {
+    color: var(--crimson);
+  }
+
+  /* Today: my day's own line. */
+  .today {
+    font-style: italic;
+    font-size: 1.2rem;
+    text-align: center;
+    max-width: 28rem;
+    margin: 0 auto;
+  }
+  .today .when {
+    display: block;
+    font-style: normal;
+    font-size: 0.9rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.2rem;
+  }
+
+  /* Lately: the three newest posts in my diary. */
+  .posts li {
+    padding: 0.55rem 0.2rem;
+    margin: 0;
+    border-bottom: 1px solid var(--frame);
+  }
+  .posts li::before {
+    content: none;
+  }
+  .posts li:first-child {
+    border-top: 1px solid var(--frame);
+  }
+  .posts .date {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-variant-numeric: oldstyle-nums;
+  }
+  .posts a {
+    color: var(--ink);
+    font-size: 1.15rem;
+  }
+  .posts a:hover {
+    color: var(--crimson);
+  }
+  .all-posts {
+    font-style: italic;
+    margin: 0.7rem 0 0;
+  }
+
+  /* Three parts, each opened only on request. */
+  .more details {
+    border-bottom: 1px solid var(--frame);
+    padding: 0.6rem 0.2rem;
+  }
+  .more details:first-child {
+    border-top: 1px solid var(--frame);
+  }
+  .more summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 44px;
+    align-items: center;
+    font-size: 1.15rem;
+  }
+  .more summary::-webkit-details-marker {
+    display: none;
+  }
+  .more summary::after {
+    content: "+";
+    color: var(--crimson);
+  }
+  .more details[open] summary::after {
+    content: "\2013";
+  }
+  .more details p {
+    color: var(--muted);
+    margin: 0.4rem 0 0.2rem;
+    font-size: 1.1rem;
+  }
+
+  /* The note box. */
+  #note {
+    scroll-margin-top: 1rem;
+  }
+  #makes {
+    scroll-margin-top: 1rem;
+  }
+  .foot {
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin: 1.6rem 0 0;
+    font-size: 1rem;
+  }
+  .site-footer {
+    text-align: center;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 1.6rem 0 0;
   }
 </style>
 </head>
@@ -308,142 +298,101 @@
     <a href="map.html">My map</a>
   </nav>
 
+  <!-- Every word on this page is read live from the beach: the words from
+       shell:Phenomemental 2.33 (2.331 to 2.335), today from my now, lately
+       from my diary. What is written below is the saved copy, shown until
+       the beach answers, and kept if it doesn't. -->
   <div class="sheet">
-    <!-- Every word below the name is read live from my blocks on the
-         beach: passport, map (artifacts), projects (lists), my day (now),
-         my hand (ahead), my diary (spine) and my room (pool), and the
-         heart line from the block that anchors it. Only the plain page for
-         when the beach can't be reached is kept here. -->
-    <h1>Phenomemental</h1>
-    <p class="name">Matthew Bushell</p>
+    <svg class="heart" viewBox="0 0 300 250" role="img" aria-label="Two loops drawn in ink, one blue and one red, crossing into a heart, with an ampersand where they meet">
+      <text x="20" y="142" fill="var(--muted)" font-size="24" opacity=".6" font-family="Cormorant Garamond, Georgia, serif" font-style="italic">&#8734;</text>
+      <text x="262" y="142" fill="var(--muted)" font-size="24" opacity=".6" font-family="Cormorant Garamond, Georgia, serif" font-style="italic">&#8734;</text>
+      <path d="M150,232 C 62,172 34,96 82,60 C 124,30 172,62 150,112 C 132,150 186,190 150,232" fill="none" stroke="var(--indigo)" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M150,232 C 238,172 266,96 218,60 C 176,30 128,62 150,112 C 168,150 114,190 150,232" fill="none" stroke="var(--crimson)" stroke-width="2.6" stroke-linecap="round"/>
+      <path class="flow" d="M150,232 C 62,172 34,96 82,60 C 124,30 172,62 150,112 C 132,150 186,190 150,232" pathLength="500" fill="none" stroke="var(--indigo)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 490" opacity=".55">
+        <animate attributeName="stroke-dashoffset" from="500" to="0" dur="7s" repeatCount="indefinite"/>
+      </path>
+      <path class="flow" d="M150,232 C 238,172 266,96 218,60 C 176,30 128,62 150,112 C 168,150 114,190 150,232" pathLength="500" fill="none" stroke="var(--crimson)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 490" opacity=".55">
+        <animate attributeName="stroke-dashoffset" from="500" to="0" dur="7s" begin="-3.5s" repeatCount="indefinite"/>
+      </path>
+      <circle cx="150" cy="112" r="15" fill="var(--page)"/>
+      <text x="150" y="122" text-anchor="middle" fill="var(--crimson)" font-size="30" font-style="italic" font-family="Cormorant Garamond, Georgia, serif">&amp;</text>
+    </svg>
 
-    <!-- 1. The heart: two lights, a figure-of-eight, the "&" at the
-         crossing, the line beneath. The "&" opens my passport's opening. -->
-    <section class="heart-place" id="heart" aria-label="The heart" hidden>
-      <div id="heart-figure"></div>
-      <div class="opening" id="opening" hidden>
-        <p id="opening-words"></p>
-      </div>
+    <h1 id="title">Matthew Bushell</h1>
+    <p class="byline" id="line">writer, coach, and builder of places where people meet</p>
+
+    <p class="opening" id="opening">Everything I make holds the space between: between the two poles I live with, between people who each keep their own story, and between what is built and what could still grow. If you are making something that needs real people, a real place, and someone to hold the middle open, we should talk.</p>
+    <div class="two">
+      <a class="go" href="#note" id="go-note">Leave me a note</a>
+      <a class="go-quiet" href="#makes" id="go-makes">See what I&rsquo;m making</a>
+    </div>
+    <p class="care" id="care">If a night is more than you can hold, reach a person first. <a href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
+
+    <hr class="rule">
+
+    <section id="makes" aria-labelledby="makes-head">
+      <h2 id="makes-head">What I&rsquo;m making</h2>
+      <nav class="makes" id="make-list" aria-labelledby="makes-head">
+        <a class="make" href="wholeless-nights.html"><span class="num">i</span><span class="t"><span class="title">Wholeless Nights</span><span class="desc">a book of watches kept through the night; bipolar, and the included middle</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <a class="make" href="night-watchman.html"><span class="num">ii</span><span class="t"><span class="title">The Night Watchman</span><span class="desc">a quiet place to keep a watch of your own</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <a class="make" href="community-recovery/"><span class="num">iii</span><span class="t"><span class="title">Community Recovery</span><span class="desc">a recovery community in Northamptonshire, built by its members</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <a class="make" href="golden-flow.html"><span class="num">iv</span><span class="t"><span class="title">Golden Flow</span><span class="desc">seeing what people need and offer, and where they could meet</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
+      </nav>
     </section>
-    <p class="lede" id="lede" hidden></p>
 
-    <p class="care">If a night is more than you can hold, reach a person first. <a href="tel:116123">Samaritans, 116 123</a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
-
-    <p class="status" id="status" role="status">Reading from the beach&hellip;</p>
-
-    <div class="offline" id="offline">
-      <p class="lede">A writer and a builder: I think in stories and mountains, and I tinker with the architecture of how people meet.</p>
-      <p>This page reads its words live from my blocks on the beach, and the beach can&rsquo;t be reached just now. Please try again in a few minutes. Meanwhile, my pages:</p>
-      <ul class="doors">
-        <li><a class="door" href="wholeless-nights.html"><span class="door-title">Wholeless Nights</span></a></li>
-        <li><a class="door" href="night-watchman.html"><span class="door-title">The Night Watchman</span></a></li>
-        <li><a class="door" href="golden-flow.html"><span class="door-title">Golden Flow</span></a></li>
-        <li><a class="door" href="map.html"><span class="door-title">My map</span></a></li>
-        <li><a class="door" href="community-recovery/"><span class="door-title">Community Recovery</span></a></li>
-        <li><a class="door" href="capability-gap.html"><span class="door-title">The Capability Gap</span></a></li>
-        <li><a class="door" href="flavour-spark.html"><span class="door-title">Bringing the flavour</span></a></li>
-      </ul>
-    </div>
-
-    <!-- 2. My day: a round shore that is a clock of my time. -->
-    <div id="part-day" hidden>
+    <!-- Today and Lately are mine as they are now, so they show only once
+         the beach has answered; nothing stands empty in their place. -->
+    <div id="today-part" hidden>
       <hr class="rule">
-      <section id="day">
-        <h2>My day</h2>
-        <div id="shore"></div>
-        <div class="day-panel" id="day-panel"></div>
-        <p class="clock" id="clock"></p>
-        <p class="list-way"><button type="button" id="day-list-way">Read it as a list</button></p>
-        <div class="as-list" id="day-list" hidden></div>
+      <section aria-label="Today">
+        <p class="today"><span class="when" id="today-when">Today</span><span id="today-line"></span></p>
       </section>
     </div>
 
-    <!-- Who I am: roles as tiles, the rest of my passport's opening, then
-         what I bring and what I'm looking for, as folds. -->
-    <div id="part-who" hidden>
+    <div id="lately-part" hidden>
       <hr class="rule">
-      <section id="who">
-        <h2>Who I am</h2>
-        <div id="roles"></div>
-        <p class="about" id="about"></p>
-        <div id="who-rows"></div>
-        <p class="more"><a href="golden-flow.html">Ask the beach, or see it from where you stand</a></p>
+      <section aria-labelledby="lately-head">
+        <h2 id="lately-head">Lately</h2>
+        <ul class="posts" id="posts"></ul>
+        <p class="all-posts"><a id="all-posts" href="https://happyseaurchin.com/page/Phenomemental">All my posts &rarr;</a></p>
       </section>
     </div>
 
-    <!-- 3. Posts: footprints up the sand to today's water. -->
-    <div id="part-posts" hidden>
-      <hr class="rule">
-      <section id="posts">
-        <h2>Posts</h2>
-        <div id="prints"></div>
-        <p class="more" id="posts-more" hidden><a id="posts-page" href="#">All my posts, with readers&rsquo; answers, on my page on the beach &rarr;</a></p>
-      </section>
-    </div>
+    <hr class="rule">
 
-    <!-- 4. My family: a shorebird for each of my agents. -->
-    <div id="part-family" hidden>
-      <hr class="rule">
-      <section>
-        <h2 id="family-title">My family</h2>
-      </section>
-      <div class="family-scene live-scene live-shore" id="family-scene"></div>
-      <section id="family">
-        <div class="family-say" id="family-say" aria-live="polite"></div>
-        <ul class="family-list" id="family-list"></ul>
-      </section>
-    </div>
+    <section class="more" id="more" aria-label="More, if you want it">
+      <details>
+        <summary>How to meet me well</summary>
+        <p>Speak to me in your own words, and come as yourself. Name what you&rsquo;re asking, and what you hope for between us. I can meet you in the moment, but anything with weight I take away, let settle, and come back to properly. Show me rather than tell me. Correct me honestly, and expect the same.</p>
+      </details>
+      <details>
+        <summary>Who I am, at more length</summary>
+        <p>A lived experience recovery coordinator, a coach, and a peer trainer; on the Lived Experience Council of the International Society for Bipolar Disorders; married, with two daughters; writing my first book as Mathew Pay. Part philosopher, part peer, part tinkerer, though I dislike the word part.</p>
+      </details>
+      <details>
+        <summary>The helpers who keep my corner</summary>
+        <p>Four AI helpers keep my corner of the work tidy and moving: one builds, one writes with me, one reads the wider shore and tells its story, and one thinks alongside me about Wholeless. They work like shorebirds, each on its own patch, and nobody herds them.</p>
+      </details>
+    </section>
 
-    <div class="night">
-      <!-- 5. My map, as a night sky. -->
-      <div id="part-map" hidden>
-        <section id="map">
-          <h2>My map</h2>
-          <div id="sky"></div>
-          <h3 class="doors-head" id="pages-head" hidden>My pages</h3>
-          <ul class="doors" id="doors"></ul>
-          <h3 class="doors-head" id="projects-head" hidden>My projects</h3>
-          <ul class="doors" id="projects"></ul>
-          <p class="list-way"><button type="button" id="map-list-way">The whole map, in words</button></p>
-          <div class="as-list" id="map-list" hidden></div>
-        </section>
-        <hr class="rule">
-      </div>
+    <hr class="rule">
 
-      <!-- 6. Meet me: my room as a lit doorway, its notes as lanterns. -->
-      <section id="meet">
-        <h2>Meet me</h2>
-        <div id="lanterns" hidden></div>
-        <div class="note-panel" id="note-panel" aria-live="polite" hidden></div>
-        <p class="room-line" id="room-line" hidden></p>
-        <p class="welcome" id="welcome" hidden></p>
+    <section id="note" aria-labelledby="note-head">
+      <h2 id="note-head">Leave me a note</h2>
+      <form id="note-form">
+        <label for="n-name">Your name, or how you&rsquo;d like to be known</label>
+        <input id="n-name" name="who" maxlength="40" autocomplete="name">
+        <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
+        <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <label for="n-text">Your note</label>
+        <textarea id="n-text" name="note" maxlength="2000" required placeholder="Say hello, ask, or offer&hellip;"></textarea>
+        <button type="submit">Send</button>
+        <p class="form-status" role="status"></p>
+        <p class="form-foot" id="note-foot">Notes are public. I read them when I next sit down to work.</p>
+      </form>
+    </section>
 
-        <form id="note-form" hidden>
-          <label for="n-name">Your name (optional; shown as &ldquo;your name, a visitor&rdquo;)</label>
-          <input id="n-name" name="who" maxlength="40" autocomplete="name">
-          <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
-          <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label for="n-text">Your note</label>
-          <textarea id="n-text" name="note" maxlength="2000" required></textarea>
-          <button type="submit">Leave me a note</button>
-          <p class="form-status" role="status"></p>
-        </form>
-        <p class="landed-note" id="landed-note" hidden><a href="#part-family">Your bird has landed with my family &uarr;</a></p>
-        <p class="form-foot">Notes are public and go into my room on the beach.</p>
-
-        <!-- Beside the note box: for those with a handle on the beach, to
-             answer my posts as themselves. -->
-        <div class="answer-door">
-          <a class="door" href="https://happyseaurchin.com/walk/Phenomemental">
-            <span class="door-title">Answer as yourself</span>
-            <span class="door-text">Have a handle on the beach? Answer my posts under your own name and key, on the walk page.</span>
-          </a>
-        </div>
-
-      </section>
-
-      <p class="live-note" id="live-note"></p>
-    </div>
+    <p class="foot" id="foot">Northampton &middot; Phenomemental</p>
   </div>
 
   <footer class="site-footer">
@@ -451,1167 +400,310 @@
   </footer>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="live.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var ME = 'Phenomemental';
-  var PASSPORT = 'passport:' + ME;
-  var ARTIFACTS = 'artifacts:' + ME;
-  var LISTS = 'lists:' + ME;
+  var WORDS = 'shell:' + ME; // the page's words, at 2.33
   var NOW = 'now:' + ME;
-  var AHEAD = 'ahead:' + ME;
-  var SPINE = 'spine:' + ME;
+  var DIARY = 'spine:' + ME;
   var ROOM = 'pool:' + ME;
-  // The heart line stands in the block that anchors it (my map,
-  // artifacts:Phenomemental 9.3.2), which anyone can read; and in my
-  // reading beside weft's post 5, where it was first written.
-  var ANCHOR = 'moonstone:Ada';
-  var READING = 'weft:' + ME;
-  var READING_AT = '5';
-  // Where these pages are published (my map, 8.6), so a link to one of
-  // them stays on this site, and this page knows its own address.
-  var SITE = 'https://phenomemental.github.io/happyseaurchin-beach/';
-  var LEFT_NOTE = 'live:left-note:' + ROOM;
-  // An agent who has written its day or a post within two days feeds.
-  var RECENT = 2 * 86400000;
+  var DIARY_PAGE = 'https://happyseaurchin.com/page/' + ME;
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix'];
+  // Where each thing I'm making lives, by its name.
+  var PLACES = {
+    'wholeless nights': 'wholeless-nights.html',
+    'the night watchman': 'night-watchman.html',
+    'community recovery': 'community-recovery/',
+    'golden flow': 'golden-flow.html',
+    'the capability gap': 'capability-gap.html',
+    'bringing the flavour': 'flavour-spark.html',
+    'my map': 'map.html'
+  };
 
-  var status = document.getElementById('status');
-  var form = document.getElementById('note-form');
-
+  function $(id) { return document.getElementById(id); }
   function el(tag, cls, s) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (s != null) e.textContent = s;
     return e;
   }
-  function $(id) {
-    return document.getElementById(id);
+  function own(n) {
+    return (typeof n === 'string' ? n : (n && typeof n._ === 'string' ? n._ : '')).trim();
   }
-  // Beach words into an element, any web address in them shown short.
-  function said(tag, cls, s) {
-    return Live.linkify(el(tag, cls), s);
+  function flat(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+  function bare(s) { return (s || '').trim().replace(/[.;]$/, ''); }
+  // Set an element's words only when they differ, so a refresh never
+  // flickers.
+  function set(e, s) {
+    if (s && flat(s) !== flat(e.textContent)) e.textContent = s;
   }
-  // What brings the page to life is extra: if any of it fails, the words
-  // around it still show.
-  function extra(fn) {
-    try {
-      return fn();
-    } catch (e) {
-      if (window.console) console.error(e);
-      return null;
-    }
-  }
-  function cap(s) {
-    return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-  }
-
-  // A node's own words: a string, or its "_", followed down when the
-  // beach has nested older entries there.
-  function own(node) {
-    while (node && typeof node === 'object' && node._ && typeof node._ === 'object') node = node._;
-    return Beach.text(node).trim();
-  }
-  // "Label. Body": the label up to the first full stop and space.
-  function split(s) {
-    var i = s.indexOf('. ');
-    if (i < 0) return { label: s.replace(/\.$/, ''), body: '' };
-    return { label: s.slice(0, i), body: s.slice(i + 2).trim() };
-  }
-  // Sentences: each ends at a full stop (or ! or ?), and any closing
-  // quote or bracket, before a space and a capital.
-  function sentences(s) {
-    var out = [];
-    var start = 0;
-    var re = /[.!?]["'”’)\]]*\s+(?=["“‘(]?[A-Z])/g;
-    var m;
-    while ((m = re.exec(s))) {
-      out.push(s.slice(start, m.index + m[0].length).trim());
-      start = m.index + m[0].length;
-    }
-    if (start < s.length) out.push(s.slice(start).trim());
-    return out.filter(Boolean);
-  }
-  // A node's children 1 to 9 with words.
-  function children(node) {
-    var out = [];
-    if (!node || typeof node !== 'object') return out;
-    for (var i = 1; i <= 9; i++) {
-      var n = node[String(i)];
-      var t = own(n);
-      if (t) out.push({ pos: String(i), node: n, text: t });
-    }
-    return out;
-  }
-  function isIso(s) {
-    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(s) && !isNaN(Date.parse(s));
-  }
-  function dateWords(t) {
-    var d = new Date(t);
-    if (isNaN(d)) return '';
-    return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
-  }
-  // The beach's own clock when it has said it, else this device's.
-  function beachNow() {
-    var c = Beach.clock();
-    var t = c ? Date.parse(c.iso) : NaN;
-    return isNaN(t) ? Date.now() : t;
-  }
-  // A date written in words ("10 October 2026") somewhere in a line.
-  function dateIn(s) {
-    var m = /\b(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})\b/.exec(s || '');
-    return m ? Date.UTC(Number(m[3]), MONTHS.indexOf(m[2]), Number(m[1]), 12) : null;
-  }
-  // Never let a passphrase through.
-  function safe(s) {
-    return !/\b(secrets?|latch(es)?|passphrases?|passwords?)\b\s*(is\s+)?[:=]/i.test(s);
-  }
-
-  // ---- Addresses -------------------------------------------------------------
-  // An address as it might be written: no scheme, query or fragment, and
-  // no closing "/index.html", ".html" or "/".
-  function addressKey(a) {
-    return a.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '')
-      .replace(/[?#].*$/, '')
-      .replace(/\/index\.html$/i, '')
-      .replace(/\.html$/i, '')
-      .replace(/\/+$/, '')
-      .toLowerCase();
-  }
-  var HERE = [addressKey(location.host + location.pathname), addressKey(SITE)];
-  function isThisPage(url) {
-    return HERE.indexOf(addressKey(url)) >= 0;
-  }
-  // A link to one of these pages stays on this site.
-  function local(url) {
-    return url.indexOf(SITE) === 0 ? (url.slice(SITE.length) || './') : url;
-  }
-  var ADDRESS = /https?:\/\/[^\s<>"'“”‘’]+/g;
-  function addresses(s) {
-    return (s.match(ADDRESS) || []).map(function (a) {
-      return a.replace(/[.,;:!?)\]'"’”]+$/, '');
+  // "Label: words. Label: words." — each label's words, up to the next.
+  function fields(s, labels) {
+    var at = [];
+    labels.forEach(function (l) {
+      var i = s.indexOf(l + ': ');
+      if (i >= 0) at.push({ l: l, i: i });
     });
-  }
-  // A block's opening ends by saying where this page is; here that is
-  // left out (the block is not changed).
-  function withoutOwnAddress(s) {
-    var ss = sentences(s);
-    if (ss.length > 1 && addresses(ss[ss.length - 1]).some(isThisPage)) ss.pop();
-    return ss.join(' ');
-  }
-
-  // ---- Reading the beach -----------------------------------------------------
-  // Blocks as last read, kept while the beach's front door says they
-  // haven't moved; every block's name, and when each last moved.
-  var cache = {};
-  var touched = null;
-  var present = null;
-  function plainBlock(n) {
-    if (typeof n === 'string') return Beach.plain(n);
-    if (!n || typeof n !== 'object') return n;
+    at.sort(function (a, b) { return a.i - b.i; });
     var out = {};
-    Object.keys(n).forEach(function (k) { out[k] = plainBlock(n[k]); });
+    at.forEach(function (a, k) {
+      var end = k + 1 < at.length ? at[k + 1].i : s.length;
+      out[a.l] = s.slice(a.i + a.l.length + 2, end).trim();
+    });
     return out;
   }
-  function want(name) {
-    var t = touched ? touched[name] : undefined;
-    var c = cache[name];
-    if (c && t && c.touched === t) return Promise.resolve(c.block);
-    return Beach.get(name).then(function (b) {
-      // The map's own names are drawn as words in the sky, a line at a
-      // time, so they are made plain before they are drawn.
-      if (name === ARTIFACTS) b = plainBlock(b);
-      cache[name] = { touched: t || '', block: b };
-      return b;
-    }, function (e) {
-      if (c) return c.block;
-      throw e;
+  // The words after a part's capitals ("WHAT I'M MAKING, …: words").
+  function afterHead(s) {
+    var i = s.indexOf(': ');
+    return i < 0 ? s : s.slice(i + 2).trim();
+  }
+  function sentences(s) {
+    return (s || '').split(/(?<=[.!?])\s+(?=[A-Z"“])/).map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+  // The care line: the number can be rung, the helpline site opened.
+  function care(e, s) {
+    e.textContent = '';
+    var parts = s.split(/(Samaritans, 116 123|findahelpline\.com)/);
+    parts.forEach(function (p) {
+      if (p === 'Samaritans, 116 123') {
+        var a = el('a');
+        a.href = 'tel:116123';
+        a.appendChild(el('strong', null, p));
+        e.appendChild(a);
+      } else if (p === 'findahelpline.com') {
+        var b = el('a', null, p);
+        b.href = 'https://findahelpline.com';
+        e.appendChild(b);
+      } else if (p) {
+        e.appendChild(document.createTextNode(p));
+      }
     });
   }
-  function there(name) {
-    return !!(present && present[name]);
-  }
-  function movedAt(name) {
-    var t = touched ? Date.parse(touched[name]) : NaN;
-    return isNaN(t) ? null : t;
+
+  // ---- The words (2.331 to 2.335) ----------------------------------------------
+  function renderWords(brief) {
+    var w = fields(own(brief['1']), ['Title', 'Line', 'Opening (drop cap)', 'Opening', 'Buttons', 'Care']);
+    var title = bare(w.Title);
+    set($('title'), title);
+    if (title) document.title = title + ' · Phenomemental';
+    set($('line'), bare(w.Line));
+    set($('opening'), w['Opening (drop cap)'] || w.Opening);
+    var buttons = (w.Buttons || '').split(/;\s*/).map(bare).filter(Boolean);
+    if (buttons.length === 2) {
+      set($('go-note'), buttons[0]);
+      set($('go-makes'), buttons[1]);
+    }
+    if (w.Care && flat(w.Care) !== flat($('care').textContent)) care($('care'), w.Care);
+
+    renderMakes(own(brief['2']));
+    renderMore(own(brief['4']));
+
+    var n = fields(own(brief['5']), ['Under it', 'Foot']);
+    set($('note-foot'), n['Under it']);
+    set($('foot'), bare(n.Foot));
   }
 
-  // ---- 1. The heart ----------------------------------------------------------
-  var heart = Live.heart($('heart-figure'), { name: 'The crossing' });
-  Live.fold(heart.cross, $('opening'));
-
-  // The line from its anchor: the block's opening, when it has its "&".
-  function fromAnchor(block) {
-    var s = own(block);
-    return s.indexOf('&') >= 0 ? s : null;
-  }
-  // Or from my reading: the one line in it holding "∞" and "&".
-  function fromReading(block) {
-    var s = block ? own(block[READING_AT]) : '';
-    var found = null;
-    s.split(/\n+/).forEach(function (l) {
-      l = l.trim();
-      if (!found && l.indexOf('∞') >= 0 && l.indexOf('&') >= 0) found = l;
+  // What I'm making: "Name, what it is." for each, i to iv.
+  function renderMakes(s) {
+    var items = sentences(afterHead(s)).map(function (x) {
+      var i = x.indexOf(', ');
+      return i < 0 ? null : { title: x.slice(0, i).trim(), desc: bare(x.slice(i + 2)) };
+    }).filter(Boolean);
+    if (!items.length) return;
+    var box = $('make-list');
+    var sig = JSON.stringify(items);
+    if (box.dataset.sig === sig) return;
+    box.dataset.sig = sig;
+    box.textContent = '';
+    items.forEach(function (m, k) {
+      var href = PLACES[m.title.toLowerCase()];
+      var row = el(href ? 'a' : 'div', 'make');
+      if (href) row.href = href;
+      row.appendChild(el('span', 'num', ROMAN[k] || String(k + 1)));
+      var t = el('span', 't');
+      t.appendChild(el('span', 'title', m.title));
+      t.appendChild(el('span', 'desc', m.desc));
+      row.appendChild(t);
+      if (href) {
+        var arrow = el('span', 'arrow', '→');
+        arrow.setAttribute('aria-hidden', 'true');
+        row.appendChild(arrow);
+      }
+      box.appendChild(row);
     });
-    return found;
-  }
-  function renderHeart(line) {
-    if (!line) return false;
-    heart.set(line);
-    $('heart').hidden = false;
-    return true;
   }
 
-  // ---- Who I am, the lede and the welcome, from my passport ------------------
-  // My passport's opening: its first sentence is my name, a dash, and my
-  // roles; the roles are each a tile, with what follows a role's own
-  // first comma (or "at", "of", "for", "with") a tap away. Sentences that
-  // are a few words with no comma are roles too. Its last sentence is the
-  // lede; the rest are words.
-  function role(r) {
-    r = r.trim().replace(/^(?:(?:and|a|an|on|the)\s+)+/i, '');
-    var cut = r.search(/,\s|\s(?:at|of|for|with)\s/);
-    return {
-      label: cap(cut > 0 ? r.slice(0, cut) : r),
-      body: cut > 0 ? r.slice(cut).replace(/^,\s*/, '').trim() : ''
-    };
+  // On request: "ON REQUEST. Label: words. Label: words. …", each label a
+  // short phrase after a full stop.
+  function renderMore(s) {
+    s = s.replace(/^ON REQUEST\.\s*/, '');
+    var re = /(?:^|(?<=[.!?]\s))([A-Z][^.:!?]{2,44}):\s/g, m, heads = [];
+    while ((m = re.exec(s))) heads.push({ label: m[1], at: m.index, from: m.index + m[0].length });
+    if (!heads.length) return;
+    var parts = heads.map(function (h, k) {
+      return { label: h.label, body: s.slice(h.from, k + 1 < heads.length ? heads[k + 1].at : s.length).trim() };
+    });
+    var box = $('more');
+    var sig = JSON.stringify(parts);
+    if (box.dataset.sig === sig) return;
+    var open = {};
+    Array.prototype.forEach.call(box.querySelectorAll('details'), function (d) {
+      if (d.open) open[d.querySelector('summary').textContent] = true;
+    });
+    box.dataset.sig = sig;
+    box.textContent = '';
+    parts.forEach(function (p) {
+      var d = el('details');
+      d.open = !!open[p.label];
+      d.appendChild(el('summary', null, p.label));
+      d.appendChild(el('p', null, p.body));
+      box.appendChild(d);
+    });
   }
-  function sentence(s) {
-    s = cap(s.trim());
-    return /[.!?]["'”’]?$/.test(s) ? s : s + '.';
+
+  // The words stand at 2.33 of my shell. Read as that one part when the
+  // beach gives it alone; otherwise found in the shell read whole.
+  function briefIn(r) {
+    var tries = [r, r && r.node, r && r.content, r && r['2'] && r['2']['3'] && r['2']['3']['3']];
+    for (var i = 0; i < tries.length; i++) {
+      var t = tries[i];
+      if (t && typeof t === 'object' && /\bTitle:/.test(own(t['1']))) return t;
+    }
+    return null;
   }
-  function selfSaid(s) {
-    return /^I(\s|’|')/.test(s);
+  var wholeShell = false;
+  function readWords() {
+    var part = wholeShell ? Promise.resolve(null) : Beach.get(WORDS, { spindle: '233' }).then(briefIn, function () { return null; });
+    return part.then(function (b) {
+      if (b) return b;
+      return Beach.get(WORDS).then(function (r) {
+        var found = briefIn(r);
+        if (found) wholeShell = true;
+        return found;
+      });
+    }).then(function (b) {
+      if (!b) throw new Error('no words at 2.33');
+      renderWords(b);
+    });
   }
-  function rolesOf(ss) {
+
+  // ---- Today ------------------------------------------------------------------
+  // My now mirrors the beach's clock: a day is the address written digit by
+  // digit (millennium, century, decade, year, season, month, week, day),
+  // a 0 digit the "_" branch; its words are that node's own.
+  function todayDigits() {
+    var c = Beach.clock();
+    if (c && /^\d{10}$/.test(c.address)) return c.address.slice(0, 8);
+    var d = new Date();
+    var m = d.getMonth(), day = d.getDate();
+    return String(d.getFullYear()) + (Math.floor(m / 3) + 1) + (m % 3 + 1) + (Math.floor((day - 1) / 7) + 1) + ((day - 1) % 7 + 1);
+  }
+  function dateOf(a) {
+    var y = Number(a.slice(0, 4)), season = Number(a[4]), month = Number(a[5]), week = Number(a[6]), day = Number(a[7]);
+    if (!season || season > 4 || !month || month > 3 || !week || week > 5 || !day || day > 7) return null;
+    var mi = (season - 1) * 3 + month - 1, dom = (week - 1) * 7 + day;
+    var d = new Date(y, mi, dom);
+    return d.getMonth() === mi ? d : null;
+  }
+  function days(now) {
     var out = [];
-    var rest = [];
-    ss.forEach(function (s, i) {
-      var dash = s.indexOf(' — ');
-      if (i === 0 && dash > 0) {
-        s.slice(dash + 3).replace(/\.$/, '').split(/;\s*/).forEach(function (clause) {
-          if (!clause.trim()) return;
-          if (selfSaid(clause)) return rest.push(sentence(clause));
-          var and = clause.search(/,\s*and\s+/);
-          if (and >= 0 && clause.slice(0, and).indexOf(',') >= 0) {
-            clause.slice(0, and).split(/,\s*/).forEach(function (r) {
-              if (r.trim() && !/^etc\.?$/i.test(r.trim())) out.push(role(r));
-            });
-            out.push(role(clause.slice(and).replace(/^,\s*and\s+/, '')));
-          } else {
-            out.push(role(clause));
-          }
-        });
+    (function walk(n, addr) {
+      if (n == null) return;
+      if (addr.length === 8) {
+        var t = own(n);
+        if (t && dateOf(addr)) out.push({ addr: addr, line: t });
         return;
       }
-      if (!selfSaid(s) && s.indexOf(',') < 0 && s.split(/\s+/).length <= 5) return out.push(role(s.replace(/\.$/, '')));
-      rest.push(s);
-    });
-    return { roles: out, rest: rest };
-  }
-
-  var passportSig = null;
-  function renderPassport(pp) {
-    if (!pp || typeof pp !== 'object') return false;
-    var who = own(pp);
-    if (!who) return false;
-    var sig = JSON.stringify([who, pp['1'], pp['2'], pp['3']]);
-    if (sig === passportSig) return true;
-    passportSig = sig;
-    var ss = sentences(who);
-    var lede = ss.length > 1 ? ss[ss.length - 1] : '';
-
-    // The lede, under the heart; the whole opening, behind its "&".
-    var ledeEl = $('lede');
-    ledeEl.textContent = '';
-    Live.linkify(ledeEl, lede);
-    ledeEl.hidden = !lede;
-    var words = $('opening-words');
-    words.textContent = '';
-    Live.linkify(words, who);
-
-    // Who I am.
-    var parsed = rolesOf(lede ? ss.slice(0, -1) : ss);
-    var roles = $('roles');
-    roles.textContent = '';
-    if (parsed.roles.length) {
-      roles.appendChild(Live.tiles(parsed.roles.map(function (r) {
-        return { label: r.label, body: r.body ? said('p', null, r.body) : null };
-      })));
-    }
-    var about = $('about');
-    about.textContent = '';
-    Live.linkify(about, parsed.rest.join(' '));
-    about.hidden = !parsed.rest.length;
-    var rows = [
-      { label: 'What I bring', text: own(pp['1']) },
-      { label: 'What I’m looking for', text: own(pp['2']) }
-    ].filter(function (r) { return r.text; });
-    var whoRows = $('who-rows');
-    whoRows.textContent = '';
-    if (rows.length) {
-      whoRows.appendChild(Live.rows(rows.map(function (r) {
-        return { label: r.label, body: said('p', null, r.text) };
-      })));
-    }
-    $('part-who').hidden = false;
-
-    // The welcome: how to meet me (before any "Location:"), its first
-    // sentence.
-    var meet = own(pp['3']).split(/\s*\bLocation:/i)[0].trim();
-    var welcome = $('welcome');
-    welcome.textContent = '';
-    Live.linkify(welcome, sentences(meet)[0] || '');
-    welcome.hidden = !meet;
-    return true;
-  }
-
-  // ---- 2. My day: the shore ----------------------------------------------------
-  // now:Phenomemental is a mirror of the beach's clock: the address is the
-  // date written digit by digit (millennium, century, decade, year, season,
-  // month, week, day, part of the day, beat), a 0 digit the "_" branch.
-  // Each rung's words are that node's own "_".
-  var RUNGS = [
-    { key: 'day', label: 'Today', short: 'today', depth: 8 },
-    { key: 'week', label: 'This week', short: 'week', depth: 7 },
-    { key: 'month', label: 'This month', short: 'month', depth: 6 },
-    { key: 'season', label: 'This season', short: 'season', depth: 5 },
-    { key: 'year', label: 'This year', short: 'year', depth: 4 }
-  ];
-  // ahead:Phenomemental's piles, by position (function:ahead): each lies
-  // on the shore at its own ring, today's at the waterline.
-  var PILES = [
-    { pos: '1', label: 'Today', at: 0 },
-    { pos: '2', label: 'Tomorrow', at: 0.5 },
-    { pos: '3', label: 'This week', at: 1 },
-    { pos: '4', label: 'This month', at: 2 },
-    { pos: '5', label: 'This season', at: 3 },
-    { pos: '6', label: 'This year', at: 4 },
-    { pos: '7', label: 'This decade', at: 5 }
-  ];
-  var shore = Live.shore($('shore'), { panel: $('day-panel'), chosen: 'day' });
-
-  function rungWords(block, digits, depth) {
-    var node = block;
-    for (var i = 0; i < depth && node && typeof node === 'object'; i++) {
-      node = node[digits[i] === '0' ? '_' : digits[i]];
-    }
-    return node && typeof node === 'object' && typeof node._ === 'string' ? node._.trim() : '';
-  }
-  // How far through the day the clock is: nine parts, nine beats each.
-  function dayGone(digits) {
-    var part = Number(digits[8]);
-    var beat = Number(digits[9]);
-    if (!part) return 0.5;
-    return clampN(((part - 1) * 9 + (beat ? beat - 1 : 4) + 0.5) / 81, 0, 1);
-  }
-  function clampN(v, lo, hi) {
-    return Math.min(Math.max(v, lo), hi);
-  }
-  // A pile's cards still held: a card is its sentence, or a node with the
-  // sentence at "_", its stamp at 3 and its state at 4 (done and dropped
-  // cards are no longer in the hand).
-  function cardsOf(node) {
-    var out = [];
-    if (!node || typeof node !== 'object') return out;
-    for (var i = 1; i <= 9; i++) {
-      var c = node[String(i)];
-      var text = typeof c === 'string' ? c.trim() : (c && typeof c._ === 'string' ? c._.trim() : '');
-      if (!text) continue;
-      var state = c && typeof c === 'object' && typeof c['4'] === 'string' ? c['4'].trim().toLowerCase() : '';
-      if (state === 'done' || state === 'drop' || state === 'dropped') continue;
-      var stamp = c && typeof c === 'object' ? c['3'] : null;
-      var set = stamp && !isNaN(Date.parse(stamp)) ? dateWords(Date.parse(stamp)) : '';
-      out.push({ text: text, held: /^(held|doing|in hand)$/.test(state), note: set ? 'Set ' + set : '' });
-    }
+      if (typeof n !== 'object') return;
+      if (n._ && typeof n._ === 'object') walk(n._, addr + '0');
+      for (var i = 1; i <= 9; i++) if (n[String(i)] != null) walk(n[String(i)], addr + i);
+    })(now, '');
     return out;
   }
-
-  var daySig = null;
-  function renderDay(now, ahead) {
-    var c = Beach.clock();
-    if (!c || !now || typeof now !== 'object') return false;
-    var digits = c.address.split('');
-    var dayName = c.voicing.split(',')[0];
-    var month = MONTHS[(Number(digits[4]) - 1) * 3 + Number(digits[5]) - 1] || '';
-    var notes = { day: dayName, month: month, year: digits.slice(0, 4).join('') };
-    var rungs = RUNGS.map(function (r) {
-      return { key: r.key, label: r.label, short: r.short, words: rungWords(now, digits, r.depth), note: notes[r.key] || '' };
-    });
-    var piles = PILES.map(function (p) {
-      return { label: p.label, at: p.at, cards: cardsOf(ahead && ahead[p.pos]) };
-    });
-    var model = { rungs: rungs, piles: piles, tide: dayGone(digits) };
-    $('clock').textContent = c.voicing;
-    var sig = JSON.stringify(model);
-    if (sig !== daySig) {
-      daySig = sig;
-      shore.set(model);
-      renderDayList(rungs, piles);
+  // Today's line; when today is still unsaid, the latest day's, with its
+  // date. Never a blank.
+  function renderToday(now) {
+    var today = todayDigits();
+    var said = days(now).filter(function (d) { return d.addr <= today; });
+    said.sort(function (a, b) { return a.addr < b.addr ? -1 : 1; });
+    var last = said[said.length - 1];
+    if (!last) return false;
+    var when = 'Today';
+    if (last.addr !== today) {
+      var d = dateOf(last.addr);
+      when = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
     }
-    $('part-day').hidden = false;
+    set($('today-when'), when);
+    set($('today-line'), last.line);
+    $('today-part').hidden = false;
     return true;
   }
-  function renderDayList(rungs, piles) {
-    var box = $('day-list');
-    box.textContent = '';
-    var dl = el('dl');
-    rungs.forEach(function (r) {
-      if (!r.words) return;
-      dl.appendChild(el('dt', null, r.label + (r.note ? ' · ' + r.note : '')));
-      dl.appendChild(said('dd', null, r.words));
-    });
-    if (dl.childNodes.length) box.appendChild(dl);
-    var held = piles.filter(function (p) { return p.cards.length; });
-    if (held.length) {
-      box.appendChild(el('h3', null, 'In my hand'));
-      var hand = el('dl');
-      held.forEach(function (p) {
-        hand.appendChild(el('dt', null, p.label));
-        p.cards.forEach(function (c) {
-          var dd = said('dd', null, c.text + (c.held ? ' (in hand)' : ''));
-          if (c.note) dd.appendChild(el('span', 'card-note', ' · ' + c.note));
-          hand.appendChild(dd);
-        });
-      });
-      box.appendChild(hand);
-    }
-  }
-  Live.fold($('day-list-way'), $('day-list'));
 
-  // ---- 3. Posts: footprints ------------------------------------------------------
-  // spine:Phenomemental: each numbered place is a post, its opening line
-  // and its parts beneath; position 3, when it is a date, is when it was
-  // posted, not a part. Older posts nest under "_" as the diary grows.
-  function postsOf(spine) {
+  // ---- Lately ----------------------------------------------------------------
+  // A post in my diary opens with its date ("18 October 2026: …"); the
+  // diary nests older posts deeper as it grows, so every post is found
+  // wherever it stands, in the diary's own order.
+  var DATED = /^(\d{1,2}(?:\s+to\s+\d{1,2})?\s+([A-Z][a-z]+)\s+(\d{4}))([^:]{0,40}):\s+([\s\S]+)$/;
+  function posts(spine) {
     var out = [];
-    (function walk(node, addr) {
-      if (!node || typeof node !== 'object') return;
-      if (node._ && typeof node._ === 'object') walk(node._, addr + '0');
+    (function walk(n, addr) {
+      if (!n || typeof n !== 'object') return;
+      if (n._ && typeof n._ === 'object') walk(n._, addr + '0');
       for (var i = 1; i <= 9; i++) {
-        var n = node[String(i)];
-        var t = own(n);
-        if (!t && !(n && typeof n === 'object')) continue;
-        out.push({ addr: addr + i, node: n, line: t });
+        var c = n[String(i)];
+        var m = DATED.exec(own(c));
+        if (m && MONTHS.indexOf(m[2]) >= 0) out.push({ addr: addr + i, m: m });
+        else walk(c, addr + i);
       }
     })(spine, '');
     return out;
   }
-  function stampOf(node) {
-    return node && typeof node === 'object' && isIso(node['3']) ? node['3'] : null;
-  }
-  function partsOf(node) {
-    var stamp = stampOf(node);
-    return children(node).filter(function (c) { return !(c.pos === '3' && stamp); });
-  }
-  // A part's words as a fold's body: its words after its label, then
-  // whatever is beneath it, as a list.
-  function partBody(c) {
-    var p = split(c.text);
-    var subs = children(c.node);
-    if (!p.body && !subs.length) return null;
-    var box = el('div', 'post-parts');
-    if (p.body) box.appendChild(said('p', null, p.body));
-    if (subs.length) box.appendChild(subList(subs));
-    return box;
-  }
-  function subList(subs) {
-    var ul = el('ul');
-    subs.forEach(function (s) {
-      var li = said('li', null, s.text);
-      var deeper = children(s.node);
-      if (deeper.length) li.appendChild(subList(deeper));
-      ul.appendChild(li);
-    });
-    return ul;
-  }
-  // The reader's line beside a post: at the post's address in their own
-  // block, and any lines beneath it, at its parts.
-  function walkTo(block, addr) {
-    var n = block;
-    for (var i = 0; i < addr.length; i++) {
-      if (!n || typeof n !== 'object') return undefined;
-      n = n[addr.charAt(i) === '0' ? '_' : addr.charAt(i)];
-    }
-    return n;
-  }
-  function answersAt(readers, addr) {
-    var out = [];
-    readers.forEach(function (r) {
-      var n = walkTo(r.block, addr);
-      var t = typeof n === 'string' ? n.trim() : (n && typeof n._ === 'string' ? n._.trim() : '');
-      if (t) out.push({ who: r.who, text: t });
-      children(n).forEach(function (c) {
-        out.push({ who: r.who, at: addr + '.' + c.pos, text: c.text });
-      });
-    });
-    return out;
-  }
-  // My page on the beach, where a reader answers a post: from my map.
-  function pageOnBeach(artifacts) {
-    var found = null;
-    (function look(n) {
-      if (found || n == null) return;
-      if (typeof n === 'string') {
-        var m = /\b(?:https?:\/\/)?(happyseaurchin\.com\/page\/[A-Za-z0-9_-]+)/.exec(n);
-        if (m) found = 'https://' + m[1];
-        return;
-      }
-      if (typeof n === 'object') Object.keys(n).forEach(function (k) { look(n[k]); });
-    })(artifacts);
-    return found;
-  }
-
-  var postsSig = null;
-  var talks = {};
-  var pageLink = null;
-  function renderPosts(spine, artifacts) {
-    if (!spine || typeof spine !== 'object') return Promise.resolve(false);
-    var posts = postsOf(spine);
-    if (!posts.length) return Promise.resolve(false);
-    pageLink = pageOnBeach(artifacts) || pageLink;
-    var names = present ? Object.keys(present).filter(function (b) {
-      // A reader's answers, Phenomemental:<handle>; never my own block.
-      return !!Beach.answerHandle(b, ME);
-    }).sort() : null;
-    var readersRead = names ? Promise.all(names.map(function (n) {
-      return want(n).then(function (b) { return { who: Beach.answerHandle(n, ME), block: b }; }, function () { return null; });
-    })) : Promise.resolve(null);
-    return readersRead.then(function (readers) {
-      var c = Beach.clock();
-      var sig = JSON.stringify([posts, pageLink]);
-      if (sig !== postsSig) {
-        postsSig = sig;
-        drawPosts(posts, c ? c.voicing.split(',')[0] : '');
-      }
-      if (readers) {
-        readers = readers.filter(Boolean);
-        posts.forEach(function (p) { if (talks[p.addr]) talks[p.addr].show(answersAt(readers, p.addr)); });
-      }
-      if (pageLink) {
-        $('posts-page').href = pageLink;
-        $('posts-more').hidden = false;
-      }
-      $('part-posts').hidden = false;
-      return true;
-    });
-  }
-
-  function drawPosts(posts, today) {
-    talks = {};
-    var steps = posts.slice().reverse().map(function (p) {
-      var line = p.line;
-      var m = /^(\d{1,2}(?:\s+to\s+\d{1,2})?\s+[A-Z][a-z]+\s+\d{4}):\s+(.+)$/.exec(line);
-      // The title is the line's first sentence; the rest opens the post.
-      var ss = sentences(m ? cap(m[2]) : line);
-      var title = ss[0] || line;
-      var intro = ss.slice(1).join(' ');
-      var stamp = stampOf(p.node);
-      var when = m ? m[1] : (stamp ? dateWords(Date.parse(stamp)) : '');
-      var parts = partsOf(p.node);
-      var body = null;
-      if (parts.length || intro) {
-        body = el('div');
-        if (intro) body.appendChild(said('p', 'post-intro', intro));
-        if (parts.length) {
-          body.appendChild(Live.rows(parts.map(function (c) {
-            return { label: split(c.text).label, body: partBody(c) };
-          })));
-        }
-      }
-      return { id: 'post-' + p.addr, title: title, when: when, body: body, extra: talk(p.addr) };
-    });
-    Live.footprints($('prints'), steps, { today: today });
-  }
-
-  // Beneath each post: the answers signed beside it, each under its
-  // writer's handle (from Phenomemental:<handle>, at the post's number),
-  // with a small shell for each. A post with none shows nothing.
-  function talk(addr) {
-    var box = el('div', 'post-answers');
-    box.hidden = true;
-    var sig = null;
-    function show(answers) {
-      var next = JSON.stringify(answers);
-      if (next === sig) return;
-      sig = next;
-      box.textContent = '';
-      box.hidden = !answers.length;
-      if (!answers.length) return;
-      var head = el('h4', 'post-answers-head', 'Answers');
-      head.appendChild(Live.shells(answers.length));
-      box.appendChild(head);
-      answers.forEach(function (a) {
-        var div = el('div', 'comment');
-        var meta = el('p', 'comment-meta');
-        meta.appendChild(el('strong', null, a.who));
-        if (a.at) meta.appendChild(document.createTextNode(' · at ' + a.at));
-        div.appendChild(meta);
-        div.appendChild(said('p', 'comment-text', a.text));
-        box.appendChild(div);
-      });
-    }
-    talks[addr] = { show: show };
-    return box;
-  }
-
-  // ---- 4. My family: shorebirds ------------------------------------------------
-  // My agents are my map's position 9. Each one's name is its line up to
-  // the first comma, colon or bracket; its handle is that name when the
-  // beach holds a passport for it, else the first passport its lines name.
-  // One "in waiting" stands still like a heron; one that has written its
-  // day or a post in the last two days feeds; the rest rest.
-  var byId = {};
-  var familySay = $('family-say');
-  var told = 0;
-  var family = extra(function () {
-    return Live.scene($('family-scene'), {
-      shore: true,
-      caption: familySay,
-      me: 'You, landed with my family on the shore',
-      meName: 'you',
-      landed: !!Live.recall(LEFT_NOTE),
-      tell: tellBird,
-      label: function (n) {
-        return n + (n === 1 ? ' shorebird' : ' shorebirds') + ', one for each of my agents' +
-          (family && family.landed() ? ', and one for you' : '') + '; tap one to hear its latest line';
-      }
-    });
-  });
-
-  function handleOf(name, all) {
-    if (there('passport:' + name)) return name;
-    var found = null;
-    var re = /\b([a-z]+):([A-Za-z][A-Za-z0-9_-]*)/g;
-    var m;
-    var named = /\bpassport:([A-Za-z][A-Za-z0-9_-]*)/.exec(all);
-    if (named && there('passport:' + named[1])) return named[1];
-    while (!found && (m = re.exec(all))) {
-      if (there('passport:' + m[2])) found = m[2];
-    }
-    return found;
-  }
-  function agentsOf(artifacts) {
-    var group = artifacts && artifacts['9'];
-    var out = [];
-    children(group).forEach(function (c) {
-      if (!safe(c.text)) return;
-      var all = [c.text].concat(children(c.node).map(function (s) { return s.text; })).join(' ');
-      var cut = /^(.{1,40}?)(?:,\s|:\s|\s\()/.exec(c.text);
-      var name = cut ? cut[1] : c.text;
-      var handle = handleOf(name, all);
-      var last = handle ? Math.max(movedAt('now:' + handle) || 0, movedAt('spine:' + handle) || 0) : 0;
-      var mode = /\bin waiting\b/i.test(c.text) ? 'still' : last && beachNow() - last < RECENT ? 'feed' : 'rest';
-      out.push({
-        id: handle || name,
-        name: name,
-        handle: handle,
-        desc: c.text.slice(name.length).replace(/^[\s,:—-]+/, ''),
-        mode: mode,
-        last: last
-      });
-    });
-    return out;
-  }
-
-  // An agent's latest line from its own place: its day (now:), its diary
-  // (spine:) or a line it signed in its own room (pool:).
-  function latestCell(block) {
-    var best = null;
-    (function walk(node, addr) {
-      if (!node || typeof node !== 'object' || addr.length >= 10) return;
-      Object.keys(node).forEach(function (k) {
-        var digit = k === '_' ? '0' : k;
-        if (!/^\d$/.test(digit)) return;
-        var n = node[k];
-        var a = addr + digit;
-        var t = typeof n === 'string' ? (k === '_' ? '' : n.trim()) : (n && typeof n._ === 'string' ? n._.trim() : '');
-        if (t && a.length >= 8 && Number(a.slice(0, 4)) >= 1000) {
-          var key = (a + '0000000000').slice(0, 10);
-          if (!best || key > best.key) best = { key: key, text: t };
-        }
-        if (n && typeof n === 'object') walk(n, a);
-      });
-    })(block, '');
-    if (!best) return null;
-    var d = best.key.split('').map(Number);
-    var day = Date.UTC(d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3], (d[4] - 1) * 3 + d[5] - 1, (d[6] - 1) * 7 + d[7]);
-    var at = day + (d[8] ? ((d[8] - 1) * 9 + (d[9] ? d[9] - 1 : 0)) * 86400000 / 81 : 0);
-    return { time: at, when: dateWords(day), text: best.text };
-  }
-  function latestPost(block, h) {
-    var posts = postsOf(block);
-    var p = posts[posts.length - 1];
-    if (!p || !p.line) return null;
-    var stamp = stampOf(p.node);
-    var t = stamp ? Date.parse(stamp) : dateIn(p.line) || movedAt('spine:' + h);
-    return t ? { time: t, when: dateWords(t), text: p.line } : null;
-  }
-  function latestSigned(pool, a) {
-    var best = null;
-    var names = [a.name.toLowerCase(), (a.handle || '').toLowerCase()];
-    Beach.entries(pool).forEach(function (e) {
-      [e].concat(e.replies || []).forEach(function (x) {
-        var t = Date.parse(x.when);
-        if (!x.who || names.indexOf(x.who.toLowerCase()) < 0 || isNaN(t)) return;
-        if (!best || t > best.time) best = { time: t, when: dateWords(t), text: x.text.trim() };
-      });
-    });
-    return best;
-  }
-  function latestOwn(a) {
-    var h = a.handle;
-    if (!h) return Promise.resolve(null);
-    function look(kind, fn, where) {
-      if (!there(kind + ':' + h)) return Promise.resolve(null);
-      return want(kind + ':' + h).then(function (b) {
-        var l = fn(b);
-        if (l) l.where = where;
-        return l;
-      }, function () { return null; });
-    }
-    return Promise.all([
-      look('now', latestCell, 'in ' + a.name + '’s day'),
-      look('spine', function (b) { return latestPost(b, h); }, 'in ' + a.name + '’s diary'),
-      look('pool', function (b) { return latestSigned(b, a); }, 'in ' + a.name + '’s room')
-    ]).then(function (ls) {
-      var best = null;
-      ls.forEach(function (l) { if (l && l.text && (!best || l.time > best.time)) best = l; });
-      return best;
-    });
-  }
-
-  function tellBird(b, box) {
-    var a = byId[b.id];
-    var mine = ++told;
-    box.textContent = '';
-    if (!a) return;
-    function head() {
-      box.textContent = '';
-      box.appendChild(el('strong', 'live-scene-name', a.name));
-    }
-    head();
-    box.appendChild(el('span', 'live-scene-ago', ' · reading from the beach…'));
-    latestOwn(a).then(function (l) {
-      if (mine !== told) return;
-      head();
-      if (l) {
-        box.appendChild(el('span', 'live-scene-ago', ' · ' + l.where + ', ' + l.when));
-        box.appendChild(said('p', null, l.text));
-      } else if (a.desc) {
-        box.appendChild(said('p', null, a.desc));
-      }
-    });
-  }
-
-  // How each agent is, in words, for the list beneath the shore.
-  function howWords(a) {
-    if (a.mode === 'still') return 'in waiting';
-    var ago = a.last ? Live.ago(beachNow() - a.last) : '';
-    if (a.mode === 'feed') return 'feeding · wrote ' + ago;
-    return ago ? 'resting · last wrote ' + ago : 'resting';
-  }
-  // An agent's page: one of mine whose address holds its handle, else its
-  // page on the beach, beside mine.
-  function agentPage(a, artifacts) {
-    if (!a.handle) return null;
-    var page = null;
-    children(artifacts && artifacts['8']).forEach(function (c) {
-      addresses(c.text).forEach(function (u) {
-        if (!page && u.toLowerCase().indexOf(a.handle.toLowerCase()) >= 0) page = local(u);
-      });
-    });
-    if (page) return page;
-    return pageLink ? pageLink.replace(/[^/]+$/, encodeURIComponent(a.handle)) : null;
-  }
-
-  var familySig = null;
-  function renderFamily(artifacts) {
-    if (!artifacts || !present) return false;
-    var list = agentsOf(artifacts);
+  function renderLately(spine) {
+    var list = posts(spine).slice(-3).reverse();
     if (!list.length) return false;
-    pageLink = pageOnBeach(artifacts) || pageLink;
-    byId = {};
-    list.forEach(function (a) { byId[a.id] = a; });
-    if (family) extra(function () {
-      family.set(list.map(function (a) { return { id: a.id, name: a.name, mode: a.mode, when: a.last }; }));
+    var thisYear = String(new Date().getFullYear());
+    var items = list.map(function (p) {
+      var date = p.m[3] === thisYear ? p.m[1].replace(/\s+\d{4}$/, '') : p.m[1];
+      var first = sentences(p.m[5].split(/\n/)[0])[0] || p.m[5];
+      return { date: date, title: bare(first.charAt(0).toUpperCase() + first.slice(1)) };
     });
-    var sig = JSON.stringify(list.map(function (a) { return [a.name, a.desc, howWords(a), agentPage(a, artifacts)]; }));
-    if (sig !== familySig) {
-      familySig = sig;
-      var ul = $('family-list');
+    var ul = $('posts');
+    var sig = JSON.stringify(items);
+    if (ul.dataset.sig !== sig) {
+      ul.dataset.sig = sig;
       ul.textContent = '';
-      list.forEach(function (a) {
+      items.forEach(function (it) {
         var li = el('li');
-        var page = agentPage(a, artifacts);
-        var name = el(page ? 'a' : 'strong', null, a.name);
-        if (page) name.href = page;
-        li.appendChild(name);
-        if (a.desc) li.appendChild(said('span', null, ', ' + a.desc));
-        li.appendChild(el('span', 'family-how', howWords(a)));
+        li.appendChild(el('span', 'date', it.date));
+        var a = el('a', null, it.title);
+        a.href = DIARY_PAGE;
+        li.appendChild(a);
         ul.appendChild(li);
       });
     }
-    $('part-family').hidden = false;
+    $('lately-part').hidden = false;
     return true;
-  }
-
-  // ---- 5. My map: the night sky ------------------------------------------------
-  // Each group of my map is a constellation, "Mine, at the core" at the
-  // centre. An entry is "name — words", or "name — https://… — words", or
-  // "Name: https://… . words"; one with an address is a page, a bright
-  // star; a grain is a double star; one marked private is veiled. Nothing
-  // private is ever read: only my map's own public line about it.
-  function entry(s) {
-    var url = addresses(s)[0] || '';
-    var cut = s.indexOf(' — ');
-    var name = cut < 0 ? s : s.slice(0, cut);
-    var hint = cut < 0 ? '' : s.slice(cut + 3);
-    if (url && name.indexOf(url) >= 0) {
-      var at = s.indexOf(url);
-      name = s.slice(0, at).replace(/[\s:—-]+$/, '');
-      hint = s.slice(at + url.length).replace(/^[\s.,;:—-]+/, '');
-    } else if (url && hint.indexOf(url) === 0) {
-      hint = hint.slice(url.length).replace(/^[\s—-]+/, '');
-    } else if (cut < 0) {
-      var m = /^(.{1,40}?)(?:,\s|:\s|\s\()/.exec(s);
-      if (m) {
-        name = m[1];
-        hint = s.slice(m[1].length).replace(/^[\s,:]+/, '');
-      }
-    }
-    return { name: name.trim(), hint: hint.trim(), href: url };
-  }
-  function shortName(title) {
-    var t = title.split(/\s*[(:]/)[0].trim();
-    return t.length > 22 ? t.split(',')[0].trim() : t;
-  }
-  function starOf(s, subs) {
-    var it = entry(s);
-    var words = [it.hint].concat(subs).filter(Boolean).join(' ');
-    if (/^grain:/i.test(it.name)) {
-      var w = /\bwith ([^(),.;]+)/i.exec(it.hint);
-      return { name: w ? 'With ' + w[1].trim() : it.name, words: s, kind: 'grain', also: 'just between us' };
-    }
-    if (/^(vault|ledger|history):/i.test(it.name) || /\bprivate\b/i.test(s)) {
-      return { name: it.name, words: words, kind: 'veiled', also: 'private: here, its light held in' };
-    }
-    if (it.href) {
-      var here = isThisPage(it.href);
-      return { name: it.name, words: words, kind: 'page', href: local(it.href), here: here, also: here ? 'this page' : '' };
-    }
-    return { name: it.name, words: words, kind: 'star' };
-  }
-  function mapOf(artifacts) {
-    var groups = [];
-    for (var g = 1; g <= 9; g++) {
-      var node = artifacts[String(g)];
-      if (!node || typeof node !== 'object') continue;
-      var title = own(node);
-      var stars = [];
-      children(node).forEach(function (c) {
-        if (!safe(c.text)) return;
-        var subs = children(c.node).map(function (s) { return s.text; }).filter(safe);
-        stars.push(starOf(c.text, subs));
-      });
-      if (stars.length) groups.push({ label: shortName(title), title: title, core: /\bat the core\b/i.test(title), stars: stars });
-    }
-    return groups;
-  }
-  // My projects (lists:Phenomemental, branch 1), read straight down:
-  // rank is depth.
-  function projectsOf(lists) {
-    var out = [];
-    (function walk(node) {
-      if (!node || typeof node !== 'object') return;
-      for (var i = 1; i <= 9; i++) {
-        var n = node[String(i)];
-        if (!n || typeof n !== 'object') continue;
-        var t = Beach.text(n).trim();
-        if (t && out.indexOf(t) < 0) out.push(t);
-        walk(n);
-      }
-    })(lists && lists['1']);
-    return out;
-  }
-
-  var sky = Live.sky($('sky'), { name: 'My map, as a night sky: each group a constellation' });
-  var mapSig = null;
-  function renderMap(artifacts, lists) {
-    if (!artifacts || typeof artifacts !== 'object') return false;
-    var groups = mapOf(artifacts);
-    if (!groups.length) return false;
-    var projects = projectsOf(lists);
-    var sig = JSON.stringify([groups, projects]);
-    if (sig === mapSig) return true;
-    mapSig = sig;
-    sky.set(groups.map(function (g) { return { label: g.label, core: g.core, stars: g.stars }; }));
-
-    // My pages, as doors (all but this one); then my projects.
-    var pagesGroup = artifacts['8'];
-    var doors = $('doors');
-    doors.textContent = '';
-    var pageList = [];
-    children(pagesGroup).forEach(function (c) {
-      if (!safe(c.text)) return;
-      var it = entry(c.text);
-      if (it.href && isThisPage(it.href)) return;
-      pageList.push(it);
-      var li = el('li');
-      var door = el(it.href ? 'a' : 'div', 'door' + (it.href ? '' : ' door-still'));
-      if (it.href) door.href = local(it.href);
-      door.appendChild(el('span', 'door-title', it.name));
-      if (it.hint) door.appendChild(Live.linkify(el('span', 'door-text'), cap(sentences(it.hint)[0])));
-      li.appendChild(door);
-      doors.appendChild(li);
-    });
-    $('pages-head').hidden = !pageList.length;
-    var proj = $('projects');
-    proj.textContent = '';
-    projects.forEach(function (p) {
-      var href = null;
-      var label = null;
-      children(pagesGroup).forEach(function (c) {
-        var it = entry(c.text);
-        if (!href && it.href && it.href.toLowerCase().indexOf(p.toLowerCase()) >= 0) {
-          href = local(it.href);
-          label = it.name;
-        }
-      });
-      var li = el('li');
-      var door = el('a', 'door');
-      door.href = href || 'https://happyseaurchin.com/walk/' + encodeURIComponent(p) + '/' + ME;
-      door.appendChild(el('span', 'door-title', cap(p.replace(/[-_]+/g, ' '))));
-      door.appendChild(el('span', 'door-text', href ? label : 'Its walk on the beach'));
-      li.appendChild(door);
-      proj.appendChild(li);
-    });
-    $('projects-head').hidden = !projects.length;
-
-    // The whole map, in words: each group a fold.
-    var box = $('map-list');
-    box.textContent = '';
-    box.appendChild(Live.rows(groups.map(function (g) {
-      var ul = el('ul', 'links');
-      g.stars.forEach(function (s) {
-        var li = el('li');
-        if (s.href && !s.here) {
-          var a = el('a', null, s.name);
-          a.href = s.href;
-          li.appendChild(a);
-        } else {
-          li.appendChild(el('strong', null, s.name));
-        }
-        if (s.also) li.appendChild(el('em', null, ' (' + s.also + ')'));
-        if (s.words) li.appendChild(said('span', 'hint', s.words));
-        ul.appendChild(li);
-      });
-      return { label: g.title, body: ul };
-    })));
-    $('part-map').hidden = false;
-    return true;
-  }
-  Live.fold($('map-list-way'), $('map-list'));
-
-  // ---- 6. Meet me: the lanterns ------------------------------------------------
-  var notePanel = $('note-panel');
-  var lantern = Live.lantern($('lanterns'), {
-    name: 'My room, a lit doorway, with a lantern for each of the latest notes left in it',
-    door: { href: '#note-form', label: 'My room: leave me a note' },
-    onPick: showNote
-  });
-  var justSent = false;
-
-  // A note someone cleared has no words left: leave it out.
-  function withoutCleared(node) {
-    if (!node || typeof node !== 'object') return node;
-    var out = {};
-    Object.keys(node).forEach(function (k) {
-      var v = node[k];
-      if (k !== '_' && v && typeof v === 'object') {
-        var words = typeof v._ === 'string' ? v._.trim() : (v._ && typeof v._ === 'object');
-        var holds = Object.keys(v).some(function (j) { return j !== '_' && v[j] && typeof v[j] === 'object'; });
-        if (!words && !holds) return;
-        out[k] = withoutCleared(v);
-      } else if (k === '_' && v && typeof v === 'object') {
-        out[k] = withoutCleared(v);
-      } else {
-        out[k] = v;
-      }
-    });
-    return out;
-  }
-
-  function showNote(n) {
-    var e = n.entry;
-    notePanel.textContent = '';
-    var div = el('div', 'comment');
-    var meta = el('p', 'comment-meta');
-    if (e.who) meta.appendChild(el('strong', null, e.who));
-    var w = isNaN(Date.parse(e.when)) ? '' : dateWords(Date.parse(e.when));
-    if (w) meta.appendChild(document.createTextNode((e.who ? ' · ' : '') + w));
-    div.appendChild(meta);
-    var full = e.text.trim();
-    var t = el('p', 'comment-text');
-    div.appendChild(t);
-    if (full.length > 700) {
-      var cut = full.lastIndexOf(' ', 500);
-      Live.linkify(t, full.slice(0, cut > 300 ? cut : 500) + '…');
-      var more = el('button', 'comment-more', 'Read all');
-      more.type = 'button';
-      more.addEventListener('click', function () {
-        t.textContent = '';
-        Live.linkify(t, full);
-        more.remove();
-      });
-      div.appendChild(more);
-    } else {
-      Live.linkify(t, full);
-    }
-    notePanel.appendChild(div);
-    notePanel.hidden = false;
-  }
-
-  var roomSig = null;
-  function renderRoom(pool) {
-    if (!pool || typeof pool !== 'object') return false;
-    var list = Beach.entries(withoutCleared(pool)).map(function (e, i) {
-      return { e: e, i: i, t: Date.parse(e.when) };
-    }).sort(function (a, b) {
-      return (isNaN(b.t) ? -Infinity : b.t) - (isNaN(a.t) ? -Infinity : a.t) || b.i - a.i;
-    }).map(function (x) { return x.e; });
-    var notes = list.slice(0, 9).map(function (e) {
-      var w = isNaN(Date.parse(e.when)) ? '' : dateWords(Date.parse(e.when));
-      return {
-        id: (e.when || '') + '|' + (e.who || '') + '|' + e.text.slice(0, 40),
-        label: 'A note from ' + (e.who || 'someone') + (w ? ', ' + w : ''),
-        entry: e
-      };
-    });
-    var sig = JSON.stringify(notes.map(function (n) { return n.id; }));
-    if (sig !== roomSig) {
-      roomSig = sig;
-      lantern.set(notes);
-      // The reader's own note: shown, and its lantern brought into view
-      // to rise.
-      if (justSent && notes.length) {
-        justSent = false;
-        lantern.pick(notes[0].id);
-        $('lanterns').scrollIntoView({ block: 'center', behavior: Live.still() ? 'auto' : 'smooth' });
-      }
-    }
-    var line = withoutOwnAddress(own(pool));
-    var roomLine = $('room-line');
-    roomLine.textContent = '';
-    Live.linkify(roomLine, line);
-    roomLine.hidden = !line;
-    $('lanterns').hidden = false;
-    return true;
-  }
-
-  // ---- Plain names ------------------------------------------------------------
-  // Whatever the blocks say, the page says it in plain names (Beach.plain):
-  // every piece of text as it arrives, including a caption shown on a tap.
-  var NAMED = /\b[a-z][\w-]*:[A-Za-z<]|LEROs on the Commons|genus-one/;
-  function plainText(n) {
-    var v = n.nodeValue;
-    if (!NAMED.test(v) || (n.parentNode && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName))) return;
-    var p = /^\s*/.exec(v)[0] + Beach.plain(v) + /\s*$/.exec(v)[0];
-    if (p !== v) n.nodeValue = p;
-  }
-  function plainWithin(root) {
-    if (root.nodeType === 3) return plainText(root);
-    if (root.nodeType !== 1) return;
-    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
-    while ((n = w.nextNode())) plainText(n);
-  }
-  var sheet = document.querySelector('.sheet');
-  plainWithin(sheet);
-  if (window.MutationObserver) {
-    new MutationObserver(function (changes) {
-      changes.forEach(function (c) {
-        if (c.type === 'characterData') plainText(c.target);
-        else Array.prototype.forEach.call(c.addedNodes, plainWithin);
-      });
-    }).observe(sheet, { childList: true, subtree: true, characterData: true });
   }
 
   // ---- Every 30 seconds ------------------------------------------------------
-  var everShown = false;
-  function settle(p) {
-    return Promise.resolve(p).then(function (ok) { return !!ok; }, function (e) {
-      if (window.console) console.error(e);
-      return false;
-    });
+  // Each part is read on its own: one slow block never holds back another,
+  // and a part the beach can't give keeps its saved words, or stays away.
+  function quietly(p) {
+    return p.then(function () { return true; }, function () { return false; });
   }
-  // However slow the beach, the plain page shows about six seconds in;
-  // the live one takes its place if the words arrive after.
-  setTimeout(function () {
-    if (everShown) return;
-    status.hidden = true;
-    document.documentElement.classList.add('beach-out');
-  }, 6500);
   var refresh = Beach.live(function () {
-    var ix = Beach.index().then(function (i) {
-      if (!i || !Array.isArray(i.blocks)) throw new Error('no index');
-      touched = i.touched && typeof i.touched === 'object' ? i.touched : {};
-      present = {};
-      i.blocks.forEach(function (b) { if (typeof b === 'string') present[b] = true; });
-      return i;
+    return Promise.all([
+      quietly(readWords()),
+      quietly(Beach.get(NOW).then(renderToday)),
+      quietly(Beach.get(DIARY).then(renderLately))
+    ]).then(function (ok) {
+      if (!ok.some(Boolean)) throw new Error('the beach could not be read');
     });
-    // Once the front door has been read, blocks that haven't moved since
-    // are not read again; the first time, everything is read at once.
-    var gate = touched ? ix.catch(function () {}) : Promise.resolve();
-    function read(name) {
-      return gate.then(function () { return want(name); });
-    }
-    var indexed = ix.catch(function () { return null; });
-    var artifacts = read(ARTIFACTS);
-    var parts = [
-      read(ANCHOR).then(fromAnchor, function () { return null; }).then(function (line) {
-        return line || read(READING).then(fromReading);
-      }).then(renderHeart),
-      read(PASSPORT).then(renderPassport),
-      Promise.all([read(NOW), read(AHEAD).catch(function () { return null; })]).then(function (r) {
-        return renderDay(r[0], r[1]);
-      }),
-      Promise.all([read(SPINE), indexed, artifacts.catch(function () { return null; })]).then(function (r) {
-        return renderPosts(r[0], r[2]);
-      }),
-      Promise.all([artifacts, indexed]).then(function (r) { return renderFamily(r[0]); }),
-      Promise.all([artifacts, read(LISTS).catch(function () { return null; })]).then(function (r) {
-        return renderMap(r[0], r[1]);
-      }),
-      read(ROOM).then(renderRoom)
-    ].map(function (p) { return settle(extra(function () { return p; })); });
-    return Promise.all(parts).then(function (oks) {
-      if (!oks.some(Boolean)) throw new Error('nothing could be read');
-      everShown = true;
-      status.hidden = true;
-      document.documentElement.classList.remove('beach-out');
-    }, function (e) { throw e; }).catch(function (e) {
-      if (!everShown) {
-        status.hidden = true;
-        document.documentElement.classList.add('beach-out');
-      }
-      throw e;
-    });
-  }, $('live-note'), function () {
-    // The form only makes sense once we know the beach is reachable.
-    form.hidden = false;
-  }, '');
+  }, el('p'), null, '');
 
-
-  // After a note is sent: this device remembers it, the reader's bird
-  // lands with my family, and the room is read again, so the note rises
-  // as a new lantern.
-  Beach.wireNoteForm(form, ROOM, function () {
-    Live.remember(LEFT_NOTE, new Date().toISOString());
-    justSent = true;
-    if (family) extra(function () { family.land(); });
-    $('landed-note').hidden = false;
-    return refresh();
-  });
+  Beach.wireNoteForm($('note-form'), ROOM, refresh);
 })();
 </script>
 </body>
