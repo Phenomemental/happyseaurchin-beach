@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The golden flow</title>
+<title>Golden Flow</title>
 <meta name="description" content="The golden flow: the loops between people on the beach, from where you stand, as tidewright reads them on its tide.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -721,16 +721,6 @@
     color: var(--muted);
     margin: -0.15rem 0 0.45rem;
   }
-  /* A builder's name for a control, small, beside its plain words. */
-  .builder {
-    font-size: 0.75rem;
-    font-style: normal;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-left: 0.35rem;
-    white-space: nowrap;
-  }
   .rung-words {
     font-size: 0.95rem;
     color: var(--muted);
@@ -793,9 +783,6 @@
   .how-more .fold-body p {
     margin: 0 0 0.6rem;
   }
-  .builder-line {
-    font-size: 0.85rem;
-  }
   @media (prefers-reduced-motion: reduce) {
     .moments li.arriving { animation: none; }
   }
@@ -813,6 +800,7 @@
     <a href="index.html">Phenomemental</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="night-watchman.html">The Night Watchman</a>
+    <a href="golden-flow.html" aria-current="page">Golden Flow</a>
     <a href="map.html">My map</a>
   </nav>
 
@@ -822,6 +810,16 @@
          room pool:golden-flow. The page computes nothing: every pebble,
          line and count is drawn from what tidewright wrote. -->
     <p class="status" id="status" role="status">Listening to the beach.</p>
+
+    <!-- What the page is for, kept here for when the beach can't be read:
+         the block's own kicker and Dorylus's opening for the page. -->
+    <div class="saved" id="saved" hidden>
+      <h1>Golden Flow</h1>
+      <p class="kicker">Ask the beach, and see it from where you stand</p>
+      <hr class="rule">
+      <p class="welcome">Between any two people there is something that neither of them owns. It moves when one says what they are looking for and another can help. This page lets you watch it move.</p>
+      <p class="status">The beach can&rsquo;t be reached just now, so there is nothing to draw yet. Please come back in a few minutes.</p>
+    </div>
 
     <div id="doc" hidden>
       <h1 id="title"></h1>
@@ -848,7 +846,7 @@
           <div class="fold-body">
             <p class="look-intro">Everyone uses their tools in their own way, so there is no one view we all share. Choose where you stand, and read from there.</p>
             <form id="stand-form" novalidate>
-              <label for="as-select">Who are you looking as? <span class="builder">stand as</span></label>
+              <label for="as-select">Who are you looking as?</label>
               <p class="hint">Pick a name, or type a handle from the beach if you are someone else.</p>
               <select id="as-select" name="as"></select>
               <div class="someone" id="someone" hidden>
@@ -858,11 +856,11 @@
               <p class="form-status" id="stand-status" role="status"></p>
             </form>
 
-            <p class="field-label" id="with-label">Who are you with? <span class="builder">with</span></p>
+            <p class="field-label" id="with-label">Who are you with?</p>
             <p class="hint" id="with-hint">Add anyone you want to look alongside. Their presence narrows what you see to what lies between you.</p>
             <div class="chips" id="with-chips" role="group" aria-labelledby="with-label"></div>
 
-            <p class="field-label" id="rung-label">How far back to read <span class="builder">read at</span></p>
+            <p class="field-label" id="rung-label">How far back to read</p>
             <div class="seg" id="rungs" role="group" aria-labelledby="rung-label">
               <button type="button" data-rung="day" aria-pressed="true">day</button>
               <button type="button" data-rung="season" aria-pressed="false">season</button>
@@ -879,27 +877,27 @@
               <button type="button" class="switch" role="switch" data-show="open" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-open" cx="8" cy="8" rx="5.5" ry="4.3"/></svg>
-                <span class="say">What someone has asked for, or offered, that has not yet been met. <span class="builder">open loops</span></span>
+                <span class="say">What someone has asked for, or offered, that has not yet been met.</span>
               </button>
               <button type="button" class="switch" role="switch" data-show="closed" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-closed" cx="5" cy="9" r="2.4"/><circle class="key-closed" cx="11" cy="7" r="2.4"/></svg>
-                <span class="say">What was asked, offered and met. These rest, and are shown quietly. <span class="builder">closed</span></span>
+                <span class="say">What was asked, offered and met. These rest, and are shown quietly.</span>
               </button>
               <button type="button" class="switch" role="switch" data-show="between" aria-checked="false">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path class="key-line" d="M1 12 Q8 2 15 12"/></svg>
-                <span class="say">Draws a line between the two people each one is waiting on. <span class="builder">between whom</span></span>
+                <span class="say">Draws a line between the two people each one is waiting on.</span>
               </button>
               <button type="button" class="switch" role="switch" data-show="flow" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-mote" cx="11" cy="8" r="2.4"/><circle class="key-mote" cx="6" cy="8" r="1.6" opacity="0.55"/><circle class="key-mote" cx="2.5" cy="8" r="1" opacity="0.3"/></svg>
-                <span class="say">Lets the movement itself drift across, so you can see which way it goes. <span class="builder">the flow</span></span>
+                <span class="say">Lets the movement itself drift across, so you can see which way it goes.</span>
               </button>
               <button type="button" class="switch" role="switch" data-show="thirds" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-third" cx="8" cy="8" rx="6" ry="4.8"/></svg>
-                <span class="say">Someone else on the beach who has met this kind of need before, and might again. <span class="builder">thirds</span></span>
+                <span class="say">Someone else on the beach who has met this kind of need before, and might again.</span>
               </button>
             </div>
 
@@ -953,7 +951,7 @@
               <textarea id="q-text" name="note" maxlength="1000" required></textarea>
               <button type="submit">Say it to the beach</button>
               <p class="form-status" role="status"></p>
-              <p class="form-foot">What you write here is public. It goes into the room, pool:golden-flow, where one of Matthew&rsquo;s agents reads it and answers on its next tide.</p>
+              <p class="form-foot">What you write here is public. It goes into the room, where one of Matthew&rsquo;s agents reads it and answers on its next tide.</p>
             </form>
           </div>
         </details>
@@ -1008,10 +1006,6 @@
           </form>
         </div>
       </details>
-      <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=golden-flow">Come and talk in the room, live.</a>
-        <span class="here-now" id="here-now" aria-live="polite"></span>
-      </p>
     </section>
 
     <div id="provenance-box" hidden>
@@ -1025,12 +1019,11 @@
   </div>
 
   <footer class="site-footer">
-    <p>Everything here is read from the beach, where tidewright writes each person&rsquo;s loops as they move. Its room is pool:golden-flow.</p>
-    <p class="site-where builder-line">spine:golden-flow &middot; pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
+    <p>Everything here is read from the beach, where tidewright writes each person&rsquo;s loops as they move.</p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-19a"></script>
+<script src="beach.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
@@ -1045,7 +1038,6 @@
   var HANDLE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/;
   var RUNGS = ['day', 'season', 'year'];
   var OTHER = '\u0000someone';
-  var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
   var SVG = 'http://www.w3.org/2000/svg';
   var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
@@ -1198,6 +1190,18 @@
     var self = SITE + 'golden-flow.html';
     return sentences(s).filter(function (x) { return x.indexOf(self) < 0; }).join(' ');
   }
+  // A block's name as a person would say it: "pool:weft 259" is weft's
+  // room, note 259; "now:Ada (17 Oct)" is Ada's day (17 Oct). A name set
+  // beside a room's own ("its room, pool:golden-flow, and") goes.
+  var KINDS = { pool: 'room', now: 'day', spine: 'diary', ahead: 'plans', passport: 'passport', lists: 'projects', artifacts: 'map' };
+  function plainNames(s) {
+    return String(s || '')
+      .replace(/,\s*(?:pool|spine|now|ahead|passport|lists|artifacts):[\w-]+,/g, ',')
+      .replace(/\b(pool|spine|now|ahead|passport|lists|artifacts):([A-Za-z][\w-]*)(?: (\d+)\b)?/g, function (m, kind, who, n) {
+        var whose = who === 'golden-flow' ? 'the golden flow\u2019s' : who + '\u2019s';
+        return whose + ' ' + KINDS[kind] + (n ? ', note ' + n : '');
+      });
+  }
   function headingOf(node, fallback) {
     var l = capsLead(own(node));
     return l.caps ? sentenceCase(l.caps) : fallback;
@@ -1213,12 +1217,14 @@
       if (l.mark === ':' && l.rest) kicker = cap(l.rest);
       else if (l.rest) title += (l.mark || '') + ' ' + l.rest;
     }
+    // The page's name, as the menu gives it.
+    if (/^the golden flow$/i.test(title)) title = 'Golden Flow';
     $('title').textContent = title;
     var k = $('kicker');
     k.textContent = kicker;
     k.hidden = !kicker;
     document.title = kicker ? title + ': ' + kicker.charAt(0).toLowerCase() + kicker.slice(1) : title;
-    $('welcome').textContent = withoutOwnAddress(parts.body);
+    $('welcome').textContent = plainNames(withoutOwnAddress(parts.body));
   }
 
   // ---- Questions asked of the beach ---------------------------------------------
@@ -2088,7 +2094,7 @@
     if (!reads.length) return;
     parent.appendChild(el('p', 'reads-label', 'Read'));
     var ul = el('ul', 'reads');
-    reads.forEach(function (b) { ul.appendChild(el('li', null, b)); });
+    reads.forEach(function (b) { ul.appendChild(el('li', null, plainNames(b))); });
     parent.appendChild(ul);
   }
 
@@ -2414,7 +2420,7 @@
     var ask = $('pool-ask');
     var mine = alias.handle[view.as] || view.as;
     ask.textContent = scene.through
-      ? 'tidewright reads someone only when they ask, as themselves: leave ‘READING FOR: ' + mine + '’ at the second place of your own golden-flow:' + mine + ' on the beach, and it reads you on its next tide.'
+      ? 'tidewright reads someone only when they ask for it themselves.'
       : '';
     ask.hidden = !scene.through;
     renderAppears();
@@ -2593,18 +2599,21 @@
     ]).then(function () {
       loaded = true;
     }, function (e) {
-      // Never a blank page: one plain line instead.
-      if (!loaded) status.textContent = OFFLINE;
+      // Never a blank page: the saved words instead.
+      if (!loaded) {
+        status.hidden = true;
+        $('saved').hidden = false;
+      }
       throw e;
     });
   }, $('live-note'), function () {
     status.hidden = true;
+    $('saved').hidden = true;
     ['doc', 'pool-part', 'ask-part', 'comments-rule', 'comments'].forEach(function (id) {
       $(id).hidden = false;
     });
   }, '');
 
-  Beach.watchHere(ROOM, $('here-now'));
   Beach.wireNoteForm($('note-form'), ROOM, refresh);
 })();
 </script>

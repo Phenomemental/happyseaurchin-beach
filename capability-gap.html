@@ -230,6 +230,7 @@
     <a href="index.html">Phenomemental</a>
     <a href="wholeless-nights.html">Wholeless Nights</a>
     <a href="night-watchman.html">The Night Watchman</a>
+    <a href="golden-flow.html">Golden Flow</a>
     <a href="map.html">My map</a>
   </nav>
 
@@ -240,6 +241,14 @@
     <!-- Every word below is read live from the beach (spine:capability-gap);
          nothing of the note itself is kept in this page. -->
     <p class="status" id="status" role="status">Reading the latest version from the beach&hellip;</p>
+
+    <!-- What the note is for, kept here for when the beach can't be read:
+         the opening of spine:capability-gap. -->
+    <div class="saved" id="saved" hidden>
+      <hr class="rule">
+      <p class="lede">A note for a chief executive: UK organisations are adopting AI widely but shallowly, because the skills, the data and the people are not joined up, and this is how a shared beach, read by any AI assistant, helps close that gap.</p>
+      <p class="status">The note is read live from the beach, which can&rsquo;t be reached just now. Please come back in a few minutes to read it.</p>
+    </div>
 
     <div id="doc" hidden>
       <hr class="rule">
@@ -279,13 +288,8 @@
           <span class="door-title">Answer as yourself</span>
           <span class="door-text">Have a handle on the beach? Answer under your own name and key, on the walk page.</span>
         </a>
-        <p class="door-ai">Your AI can answer as you at capability-gap:&lt;your handle&gt;</p>
       </div>
 
-      <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=capability-gap">Talk live in the room</a>
-        <span class="here-now" id="here-now" aria-live="polite"></span>
-      </p>
 
       <div id="notes" hidden>
         <h3 class="respond-head">Notes from visitors</h3>
@@ -304,17 +308,15 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:capability-gap; its room is pool:capability-gap; answers are capability-gap:&lt;handle&gt; &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-15b"></script>
+<script src="beach.js?v=2026-10-19b"></script>
 <script>
 (function () {
   var text = Beach.text;
   var SPINE = 'spine:capability-gap';
   var ROOM = 'pool:capability-gap';
-  var OFFLINE = 'This page reads its words live from the beach, and the beach can’t be reached just now. Please try again in a few minutes.';
 
   var stepsBox = document.getElementById('steps');
   var status = document.getElementById('status');
@@ -533,9 +535,18 @@
     stepsBox.appendChild(frag);
   }
 
+  // The provenance as a reader needs it: a sentence about where on the
+  // beach the note is kept (its block names) is the builders', not theirs.
+  function readable(s) {
+    return (s || '').split(/(?<=[.!?])\s+/).filter(function (x) {
+      return !/\b[a-z-]+:(?:[A-Za-z<][\w<>-]*)/.test(x);
+    }).join(' ');
+  }
+
   function renderProvenance(s) {
     var p = document.getElementById('provenance');
     p.textContent = '';
+    s = readable(s);
     if (s) leadIn(p, s);
     document.getElementById('provenance-box').hidden = !s;
   }
@@ -664,19 +675,21 @@
     ]).then(function () {
       loaded = true;
     }, function (e) {
-      // Never a blank page or old words: one plain line instead.
-      if (!loaded) status.textContent = OFFLINE;
+      // Never a blank page: the saved words instead.
+      if (!loaded) {
+        status.hidden = true;
+        document.getElementById('saved').hidden = false;
+      }
       throw e;
     });
   }, document.getElementById('live-note'), function () {
     status.hidden = true;
+    document.getElementById('saved').hidden = true;
     ['doc', 'comments-rule', 'comments'].forEach(function (id) {
       document.getElementById(id).hidden = false;
     });
   }, '');
 
-  // Who is in the room now, beside the link to talk there live.
-  Beach.watchHere(ROOM, document.getElementById('here-now'));
 
   // After a note is sent, read the room again so it appears at once.
   Beach.wireNoteForm(form, ROOM, refresh);
