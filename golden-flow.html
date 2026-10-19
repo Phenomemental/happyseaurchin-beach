@@ -655,6 +655,150 @@
     font-style: italic;
     text-align: center;
   }
+
+  /* What it is for, and where it came from: two folds near the top. */
+  .story {
+    margin: 1.4rem auto 0;
+  }
+  .story-from {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0.2rem 0 0.7rem;
+  }
+  .story p.said {
+    margin: 0 0 0.8rem;
+  }
+  .moments {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .moments li {
+    padding: 0 0 0 1.1rem;
+    margin: 0 0 0.9rem;
+    border-left: 2px solid var(--gold);
+  }
+  .moments li::before {
+    content: none;
+  }
+  .moments li.arriving {
+    animation: moment-in 0.9s ease-out both;
+  }
+  @keyframes moment-in {
+    from { opacity: 0; transform: translateY(0.3rem); }
+    to { opacity: 1; transform: none; }
+  }
+  .moment-next {
+    font: inherit;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--crimson);
+    background: none;
+    border: 1px solid var(--crimson);
+    border-radius: 999px;
+    padding: 0.25rem 1rem;
+    min-height: 2.4rem;
+    cursor: pointer;
+  }
+  .moment-next:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  /* The invitation to look, and the need: folds that read as an
+     invitation, not as small print. */
+  .fold.look > summary {
+    font-size: 1.25rem;
+    font-style: italic;
+  }
+  .look-intro {
+    font-style: italic;
+    color: var(--muted);
+    margin: 0.1rem 0 1rem;
+  }
+  .hint {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: -0.15rem 0 0.45rem;
+  }
+  /* A builder's name for a control, small, beside its plain words. */
+  .builder {
+    font-size: 0.75rem;
+    font-style: normal;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-left: 0.35rem;
+    white-space: nowrap;
+  }
+  .rung-words {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0.5rem 0 1rem;
+  }
+  .rung-words li {
+    padding-left: 0;
+    margin-bottom: 0.15rem;
+  }
+  .rung-words li::before {
+    content: none;
+  }
+  .rung-words strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  #look-fold .switches {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.1rem;
+  }
+  #look-fold .switch {
+    text-align: left;
+    align-items: flex-start;
+    padding: 0.45rem 0.1rem;
+  }
+  #look-fold .switch .track,
+  #look-fold .switch svg {
+    margin-top: 0.25rem;
+  }
+  .switch .say {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+  }
+  .count .d {
+    display: block;
+    max-width: 6.5rem;
+    margin: 0.15rem auto 0;
+    font-size: 0.8rem;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+  .empty-line,
+  .no-third {
+    font-style: italic;
+    color: var(--muted);
+  }
+  .empty-line {
+    text-align: center;
+  }
+  .no-third {
+    font-size: 0.95rem;
+    margin: 0.4rem 0 0;
+  }
+  .how-more {
+    margin-top: 1rem;
+  }
+  .how-more .fold-body p {
+    margin: 0 0 0.6rem;
+  }
+  .builder-line {
+    font-size: 0.85rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .moments li.arriving { animation: none; }
+  }
   .provenance {
     font-size: 0.9rem;
     line-height: 1.5;
@@ -677,7 +821,7 @@
          where tidewright writes each person's loops on its tide, and the
          room pool:golden-flow. The page computes nothing: every pebble,
          line and count is drawn from what tidewright wrote. -->
-    <p class="status" id="status" role="status">Reading from the beach&hellip;</p>
+    <p class="status" id="status" role="status">Listening to the beach.</p>
 
     <div id="doc" hidden>
       <h1 id="title"></h1>
@@ -686,35 +830,95 @@
       <p class="welcome" id="welcome"></p>
     </div>
 
-    <!-- The pool: who you stand as, whom you are with, and the rung. -->
+    <!-- What it is for, and where it came from: each its own fold, read
+         live from the places beneath How to look that open with those
+         words; where it came from unfolds one moment at a time. -->
+    <div id="story-part" hidden>
+      <section class="story" id="story" aria-label="What it is for, and where it came from"></section>
+    </div>
+
+    <!-- The pool: who you stand as, whom you are with, and the rung, folded
+         under the invitation to look; the beach and its telling beneath. -->
     <div id="pool-part" hidden>
       <hr class="rule">
       <section id="pool" aria-labelledby="pool-head">
         <h2 id="pool-head"></h2>
-        <form id="stand-form" novalidate>
-          <label for="as-select">Stand as</label>
-          <select id="as-select" name="as"></select>
-          <div class="someone" id="someone" hidden>
-            <input id="as-other" name="other" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="A handle, as it is on the beach" placeholder="A handle">
-            <button type="submit">Stand here</button>
+        <details class="fold look" id="look-fold">
+          <summary><span class="sum-main">Look from where you stand</span></summary>
+          <div class="fold-body">
+            <p class="look-intro">Everyone uses their tools in their own way, so there is no one view we all share. Choose where you stand, and read from there.</p>
+            <form id="stand-form" novalidate>
+              <label for="as-select">Who are you looking as? <span class="builder">stand as</span></label>
+              <p class="hint">Pick a name, or type a handle from the beach if you are someone else.</p>
+              <select id="as-select" name="as"></select>
+              <div class="someone" id="someone" hidden>
+                <input id="as-other" name="other" maxlength="60" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="A handle, as it is on the beach" placeholder="A handle">
+                <button type="submit">Look from here</button>
+              </div>
+              <p class="form-status" id="stand-status" role="status"></p>
+            </form>
+
+            <p class="field-label" id="with-label">Who are you with? <span class="builder">with</span></p>
+            <p class="hint" id="with-hint">Add anyone you want to look alongside. Their presence narrows what you see to what lies between you.</p>
+            <div class="chips" id="with-chips" role="group" aria-labelledby="with-label"></div>
+
+            <p class="field-label" id="rung-label">How far back to read <span class="builder">read at</span></p>
+            <div class="seg" id="rungs" role="group" aria-labelledby="rung-label">
+              <button type="button" data-rung="day" aria-pressed="true">day</button>
+              <button type="button" data-rung="season" aria-pressed="false">season</button>
+              <button type="button" data-rung="year" aria-pressed="false">year</button>
+            </div>
+            <ul class="rung-words">
+              <li><strong>Day:</strong> what moved today.</li>
+              <li><strong>Season:</strong> what has kept moving between the same people.</li>
+              <li><strong>Year:</strong> the paths that have worn in over time.</li>
+            </ul>
+
+            <!-- The toggles: what the beach shows. Each carries its own key. -->
+            <div class="switches" id="switches" role="group" aria-label="Show on the beach">
+              <button type="button" class="switch" role="switch" data-show="open" aria-checked="true">
+                <span class="track" aria-hidden="true"></span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-open" cx="8" cy="8" rx="5.5" ry="4.3"/></svg>
+                <span class="say">What someone has asked for, or offered, that has not yet been met. <span class="builder">open loops</span></span>
+              </button>
+              <button type="button" class="switch" role="switch" data-show="closed" aria-checked="true">
+                <span class="track" aria-hidden="true"></span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-closed" cx="5" cy="9" r="2.4"/><circle class="key-closed" cx="11" cy="7" r="2.4"/></svg>
+                <span class="say">What was asked, offered and met. These rest, and are shown quietly. <span class="builder">closed</span></span>
+              </button>
+              <button type="button" class="switch" role="switch" data-show="between" aria-checked="false">
+                <span class="track" aria-hidden="true"></span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path class="key-line" d="M1 12 Q8 2 15 12"/></svg>
+                <span class="say">Draws a line between the two people each one is waiting on. <span class="builder">between whom</span></span>
+              </button>
+              <button type="button" class="switch" role="switch" data-show="flow" aria-checked="true">
+                <span class="track" aria-hidden="true"></span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-mote" cx="11" cy="8" r="2.4"/><circle class="key-mote" cx="6" cy="8" r="1.6" opacity="0.55"/><circle class="key-mote" cx="2.5" cy="8" r="1" opacity="0.3"/></svg>
+                <span class="say">Lets the movement itself drift across, so you can see which way it goes. <span class="builder">the flow</span></span>
+              </button>
+              <button type="button" class="switch" role="switch" data-show="thirds" aria-checked="true">
+                <span class="track" aria-hidden="true"></span>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-third" cx="8" cy="8" rx="6" ry="4.8"/></svg>
+                <span class="say">Someone else on the beach who has met this kind of need before, and might again. <span class="builder">thirds</span></span>
+              </button>
+            </div>
+
+            <details class="fold quiet filter" id="filter">
+              <summary><span class="sum-main">Narrow what you see</span><span class="badge" id="filter-badge" hidden></span></summary>
+              <div class="fold-body">
+                <p class="field-label" id="kind-label">Kind of loop: what sort of ask.</p>
+                <div class="chips" id="kind-chips" role="group" aria-labelledby="kind-label"></div>
+                <p class="field-label" id="side-label">Where it waits: which part of the beach it is waiting in.</p>
+                <div class="chips" id="side-chips" role="group" aria-labelledby="side-label"></div>
+              </div>
+            </details>
           </div>
-          <p class="form-status" id="stand-status" role="status"></p>
-        </form>
-
-        <p class="field-label" id="with-label">With</p>
-        <div class="chips" id="with-chips" role="group" aria-labelledby="with-label"></div>
-
-        <p class="field-label" id="rung-label">Read at</p>
-        <div class="seg" id="rungs" role="group" aria-labelledby="rung-label">
-          <button type="button" data-rung="day" aria-pressed="true">day</button>
-          <button type="button" data-rung="season" aria-pressed="false">season</button>
-          <button type="button" data-rung="year" aria-pressed="false">year</button>
-        </div>
+        </details>
 
         <div class="counts" aria-live="polite">
-          <div class="count"><span class="n" id="n-loops">&ndash;</span><span class="k">loops</span></div>
-          <div class="count"><span class="n" id="n-closed">&ndash;</span><span class="k">closed</span></div>
-          <div class="count waiting"><span class="n" id="n-waiting">&ndash;</span><span class="k">waiting</span></div>
+          <div class="count"><span class="n" id="n-loops">&ndash;</span><span class="k">loops</span><span class="d">how many asks and offers</span></div>
+          <div class="count"><span class="n" id="n-closed">&ndash;</span><span class="k">closed</span><span class="d">how many were met</span></div>
+          <div class="count waiting"><span class="n" id="n-waiting">&ndash;</span><span class="k">waiting</span><span class="d">how many are still open</span></div>
         </div>
         <p class="tide" id="tide"></p>
         <p class="tide-note" id="tide-note"></p>
@@ -725,46 +929,7 @@
         <div class="shore" id="shore">
           <svg id="beach" viewBox="0 0 400 340" role="group" aria-label="The beach"></svg>
         </div>
-
-        <!-- The toggles: what the beach shows. Each carries its own key. -->
-        <div class="switches" id="switches" role="group" aria-label="Show on the beach">
-          <button type="button" class="switch" role="switch" data-show="open" aria-checked="true">
-            <span class="track" aria-hidden="true"></span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-open" cx="8" cy="8" rx="5.5" ry="4.3"/></svg>
-            open loops
-          </button>
-          <button type="button" class="switch" role="switch" data-show="closed" aria-checked="true">
-            <span class="track" aria-hidden="true"></span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-closed" cx="5" cy="9" r="2.4"/><circle class="key-closed" cx="11" cy="7" r="2.4"/></svg>
-            closed
-          </button>
-          <button type="button" class="switch" role="switch" data-show="between" aria-checked="false">
-            <span class="track" aria-hidden="true"></span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path class="key-line" d="M1 12 Q8 2 15 12"/></svg>
-            between whom
-          </button>
-          <button type="button" class="switch" role="switch" data-show="flow" aria-checked="true">
-            <span class="track" aria-hidden="true"></span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><circle class="key-mote" cx="11" cy="8" r="2.4"/><circle class="key-mote" cx="6" cy="8" r="1.6" opacity="0.55"/><circle class="key-mote" cx="2.5" cy="8" r="1" opacity="0.3"/></svg>
-            the flow
-          </button>
-          <button type="button" class="switch" role="switch" data-show="thirds" aria-checked="true">
-            <span class="track" aria-hidden="true"></span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-third" cx="8" cy="8" rx="6" ry="4.8"/></svg>
-            thirds
-          </button>
-        </div>
         <p class="showing" id="showing" aria-live="polite"></p>
-
-        <details class="fold quiet filter" id="filter">
-          <summary><span class="sum-main">Filter by kind or surface</span><span class="badge" id="filter-badge" hidden></span></summary>
-          <div class="fold-body">
-            <p class="field-label" id="kind-label">Kind of loop</p>
-            <div class="chips" id="kind-chips" role="group" aria-labelledby="kind-label"></div>
-            <p class="field-label" id="side-label">Where it waits</p>
-            <div class="chips" id="side-chips" role="group" aria-labelledby="side-label"></div>
-          </div>
-        </details>
 
         <div class="picked" id="picked" aria-live="polite" hidden></div>
 
@@ -772,22 +937,23 @@
       </section>
     </div>
 
-    <!-- Ask the beach a question: it goes into the room, pool:golden-flow.
-         No passphrase is asked for or sent anywhere on this page. -->
+    <!-- What you are looking for: it goes into the room, pool:golden-flow,
+         as a question. No passphrase is asked for or sent anywhere on this
+         page. -->
     <div id="ask-part" hidden>
       <hr class="rule">
-      <section class="ask" id="ask" aria-label="Ask the beach">
-        <details class="fold quiet" id="ask-fold">
-          <summary><span class="sum-main">Ask the beach a question</span></summary>
+      <section class="ask" id="ask" aria-label="What are you looking for?">
+        <details class="fold look" id="ask-fold">
+          <summary><span class="sum-main">What are you looking for?</span></summary>
           <div class="fold-body">
             <form id="ask-form">
               <label class="trap" for="q-web" aria-hidden="true">Leave this empty</label>
               <input class="trap" id="q-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-              <label for="q-text">Your question</label>
+              <label for="q-text">Say what you are looking for, in your own words. Be as plain as you can; if you are clear about what you want, someone may hear it.</label>
               <textarea id="q-text" name="note" maxlength="1000" required></textarea>
-              <button type="submit">Ask the beach</button>
+              <button type="submit">Say it to the beach</button>
               <p class="form-status" role="status"></p>
-              <p class="form-foot">Questions are public and go into the room, pool:golden-flow, where one of Matthew&rsquo;s agents answers on its next tide.</p>
+              <p class="form-foot">What you write here is public. It goes into the room, pool:golden-flow, where one of Matthew&rsquo;s agents reads it and answers on its next tide.</p>
             </form>
           </div>
         </details>
@@ -800,10 +966,12 @@
       <section id="questions" aria-labelledby="questions-head">
         <h2 id="questions-head"></h2>
         <div id="question-list"></div>
+        <p class="empty-line" id="questions-empty" hidden>Nobody has said what they are looking for here yet. You could be the first.</p>
       </section>
     </div>
 
-    <!-- How to look, quiet, at the foot, folded. -->
+    <!-- How to look, quiet, at the foot, folded: its steps, then any other
+         part beneath it that opens with capitals, each its own fold. -->
     <div id="how-part" hidden>
       <hr class="rule">
       <section class="how" id="how" aria-label="How to look">
@@ -812,6 +980,7 @@
           <div class="fold-body">
             <p class="how-intro" id="how-intro"></p>
             <ol id="how-steps"></ol>
+            <div class="how-more" id="how-more"></div>
           </div>
         </details>
       </section>
@@ -820,27 +989,27 @@
     <!-- The room, pool:golden-flow: questions and comments. -->
     <hr class="rule" id="comments-rule" hidden>
     <section id="comments" hidden>
-      <h2>Comments</h2>
+      <h2>What others noticed</h2>
       <div class="thread" id="thread" aria-live="polite"></div>
       <details class="fold quiet" id="note-fold">
-        <summary><span class="sum-main">Leave a note</span></summary>
+        <summary><span class="sum-main">Leave a word</span></summary>
         <div class="fold-body">
-          <p class="comments-intro">A comment on the golden flow or on an answer.</p>
+          <p class="comments-intro">A word on the flow, or on something someone answered.</p>
           <form id="note-form">
-            <label for="n-name">Your name (shown as &ldquo;your name, a visitor&rdquo;)</label>
+            <label for="n-name">Your name. It will show as your name, a visitor.</label>
             <input id="n-name" name="who" maxlength="40" autocomplete="name">
             <label class="trap" for="n-web" aria-hidden="true">Leave this empty</label>
             <input class="trap" id="n-web" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <label for="n-text">Your note</label>
+            <label for="n-text">Your word</label>
             <textarea id="n-text" name="note" maxlength="2000" required></textarea>
-            <button type="submit">Leave a note</button>
+            <button type="submit">Leave a word</button>
             <p class="form-status" role="status"></p>
-            <p class="form-foot">Notes are public, and appear above for everyone who reads this page.</p>
+            <p class="form-foot">Words left here are public. Everyone who reads this page will see them.</p>
           </form>
         </div>
       </details>
       <p class="talk-live">
-        <a href="https://mirror.onen.ai/?pool=golden-flow">Talk live in the room</a>
+        <a href="https://mirror.onen.ai/?pool=golden-flow">Come and talk in the room, live.</a>
         <span class="here-now" id="here-now" aria-live="polite"></span>
       </p>
     </section>
@@ -856,11 +1025,12 @@
   </div>
 
   <footer class="site-footer">
-    <p class="site-where">This page reads spine:golden-flow, where tidewright writes each person&rsquo;s loops on its tide; its room is pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
+    <p>Everything here is read from the beach, where tidewright writes each person&rsquo;s loops as they move. Its room is pool:golden-flow.</p>
+    <p class="site-where builder-line">spine:golden-flow &middot; pool:golden-flow &mdash; on the beach at <a href="https://beach.happyseaurchin.com">https://beach.happyseaurchin.com</a></p>
     <p>The beach this page lives on was built by David Pinto (happyseaurchin).</p>
   </footer>
 </main>
-<script src="beach.js?v=2026-10-16a"></script>
+<script src="beach.js?v=2026-10-19a"></script>
 <script>
 (function () {
   var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
@@ -902,6 +1072,8 @@
       return s && s.length <= 60 && s !== view.as;
     });
     if (RUNGS.indexOf(qr) >= 0) view.rung = qr;
+    // A shared view opens with its controls showing.
+    if (qa || view.with.length || qr) document.getElementById('look-fold').open = true;
   } catch (e) {}
 
   function $(id) {
@@ -1076,13 +1248,38 @@
       box.appendChild(d);
     });
     $('questions-head').textContent = headingOf(node, 'Questions asked of the beach');
-    $('questions-part').hidden = !answered.length;
+    // Nobody has asked yet: a line in their place. Asked and not yet
+    // answered: nothing shows until the answer does.
+    var none = !kids(node).some(function (q) { return own(q); });
+    $('questions-empty').hidden = !none;
+    $('questions-part').hidden = !answered.length && !none;
   }
 
   // ---- How to look ----------------------------------------------------------------
+  // Beneath How to look, the steps are the parts in plain words; a part
+  // that opens with capitals is a part of its own (THE POOL, WHAT IT IS
+  // FOR, ...), never a step. What it is for and where it came from stand
+  // near the top; any other such part folds beneath the steps.
+  var STORY = ['what it is for', 'where it came from'];
+  function capsParts(node) {
+    var out = [];
+    if (!node || typeof node !== 'object') return out;
+    for (var i = 1; i <= 9; i++) {
+      var n = node[String(i)], t = own(n);
+      if (!t || STAMP.test(t)) continue;
+      var l = capsLead(t);
+      out.push({ node: n, text: t, caps: l.caps, name: l.caps ? sentenceCase(l.caps) : '', rest: l.rest.replace(/^[—–-]\s*/, '') });
+    }
+    return out;
+  }
+  function isStory(p) {
+    return STORY.indexOf(p.name.toLowerCase()) >= 0;
+  }
   function renderHow(node) {
     var t = own(node);
-    var steps = partsOf(node);
+    var all = capsParts(node);
+    var steps = all.filter(function (p) { return !p.caps; });
+    var more = all.filter(function (p) { return p.caps && !isStory(p); });
     if (!t && !steps.length) {
       $('how-part').hidden = true;
       return;
@@ -1094,8 +1291,82 @@
     $('how-intro').hidden = !intro;
     var ol = $('how-steps');
     ol.textContent = '';
-    steps.forEach(function (s) { ol.appendChild(el('li', null, s)); });
+    steps.forEach(function (s) { ol.appendChild(el('li', null, s.text)); });
+    var box = $('how-more');
+    box.textContent = '';
+    more.forEach(function (p) {
+      var f = fold('quiet', p.name);
+      if (p.rest) f.body.appendChild(el('p', null, cap(p.rest)));
+      partsOf(p.node).forEach(function (s) { f.body.appendChild(el('p', null, s)); });
+      box.appendChild(f.box);
+    });
     $('how-part').hidden = false;
+  }
+
+  // ---- What it is for, and where it came from --------------------------------------
+  // Each its own fold: the name, then the line saying whose words they are
+  // and when, then the words. Where it came from unfolds one moment at a
+  // time as the reader taps: the moments beneath it, or, until there are
+  // any, its own sentences.
+  var storyOpen = {};
+  var momentsShown = {};
+  function renderStory(node) {
+    var box = $('story');
+    var parts = capsParts(node).filter(isStory);
+    Array.prototype.forEach.call(box.querySelectorAll('details[data-key]'), function (d) {
+      storyOpen[d.dataset.key] = d.open;
+    });
+    box.textContent = '';
+    parts.forEach(function (p) {
+      var key = p.name.toLowerCase();
+      var f = fold('quiet', p.name);
+      f.box.dataset.key = key;
+      f.box.open = !!storyOpen[key];
+      var said = sentences(p.rest);
+      var from = said.length > 1 ? said.shift() : '';
+      if (from) f.body.appendChild(el('p', 'story-from', cap(from)));
+      if (key === 'where it came from') {
+        var moments = partsOf(p.node);
+        unfold(f.body, key, moments.length ? moments : said, !!moments.length);
+      } else {
+        f.body.appendChild(el('p', 'said', said.join(' ')));
+      }
+      box.appendChild(f.box);
+    });
+    $('story-part').hidden = !parts.length;
+  }
+  function unfold(body, key, list, labelled) {
+    var ol = el('ol', 'moments');
+    var next = el('button', 'moment-next', 'Next moment');
+    next.type = 'button';
+    var n = Math.max(1, Math.min(momentsShown[key] || 1, list.length));
+    function add(i, arriving) {
+      var li = el('li', arriving ? 'arriving' : '');
+      var m = list[i], s = labelled ? split(m) : null;
+      if (s && s.body) {
+        li.appendChild(el('strong', null, s.label + '.'));
+        li.appendChild(document.createTextNode(' ' + s.body));
+      } else {
+        li.textContent = m;
+      }
+      ol.appendChild(li);
+    }
+    for (var i = 0; i < n; i++) add(i, false);
+    next.hidden = n >= list.length;
+    next.addEventListener('click', function () {
+      if (n >= list.length) return;
+      add(n, true);
+      n += 1;
+      momentsShown[key] = n;
+      next.hidden = n >= list.length;
+      // The button goes with the last moment; the reader's place goes to it.
+      if (next.hidden) {
+        ol.lastChild.tabIndex = -1;
+        ol.lastChild.focus({ preventScroll: true });
+      }
+    });
+    body.appendChild(ol);
+    body.appendChild(next);
   }
 
   function renderProvenance(s) {
@@ -1796,6 +2067,9 @@
     }
     if (l.group) box.appendChild(el('p', 'group-of', l.group));
     box.appendChild(el('p', 'loop-text', l.text));
+    if (shown.thirds && !l.third && view.rung === 'day') {
+      box.appendChild(el('p', 'no-third', 'No one else is known to have met this kind of need yet.'));
+    }
     readList(box, l.reads);
     box.hidden = false;
     // Its place in the telling opens, so the two read together.
@@ -1988,7 +2262,7 @@
       b.addEventListener('click', function () { toggleWith(k); });
       box.appendChild(b);
     });
-    $('with-label').hidden = box.hidden = !scene.people.length && !chosen.length;
+    $('with-label').hidden = $('with-hint').hidden = box.hidden = !scene.people.length && !chosen.length;
   }
 
   // The rung.
@@ -2130,7 +2404,9 @@
     } else if (chosen.length) {
       note = rungList.length
         ? who + '’s loops with ' + names(chosen) + '.'
-        : 'No open loop between ' + who + ' and ' + names(chosen) + ' in this tide.';
+        : 'Nothing is waiting between them. What was asked has been met, or nothing has been asked yet.';
+    } else if (view.rung === 'day' && scene.entry && !scene.day.length && !scene.entry.closed) {
+      note = 'Nothing has moved between these people in this span. That is allowed. Try a longer span, or stand somewhere else.';
     }
     $('pool-note').textContent = note;
     // The handle they stand as: the one chosen, or for a name, the handle
@@ -2229,6 +2505,7 @@
     renderWelcome(root);
     $('pool-head').textContent = headingOf(block['1'] && block['1']['6'], 'The pool');
     renderQuestions(block['3']);
+    renderStory(block['1']);
     renderHow(block['1']);
     renderProvenance(own(block['9']));
     drawnSig = null;
@@ -2270,7 +2547,7 @@
       });
     }).then(function () {
       askForm.note.value = '';
-      st.textContent = 'Your question is in the room. One of Matthew’s agents will answer here on its next tide.';
+      st.textContent = 'It is in the room. One of Matthew’s agents will answer here on its next tide.';
       refresh();
     }).catch(function () {
       st.textContent = 'That didn’t reach the beach. Please try again in a moment.';
@@ -2310,6 +2587,8 @@
       // The page still shows if the room can't be read.
       Beach.get(ROOM).then(function (pool) {
         Beach.renderThread(thread, withoutCleared(pool));
+        var empty = thread.querySelector('.thread-empty');
+        if (empty) empty.textContent = 'No notes yet. Leave the first, if something moved in you.';
       }, function () {})
     ]).then(function () {
       loaded = true;
