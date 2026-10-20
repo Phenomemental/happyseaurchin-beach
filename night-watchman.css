@@ -3,15 +3,22 @@
    framed sheet, Cormorant Garamond, crimson as the one accent, with an ink
    blue for the second of the two lights. */
 
+/* One ground in daylight and in a phone set dark: the cream of the
+   Wholeless Nights cover (#eee7d5, taken from wholeless-nights-cover.jpg)
+   round a lighter sheet, with ink on it. On the sheet the ink reads at
+   15:1, the muted ink at 6.9:1 and the crimson at 5.2:1. Loaded after
+   beach.css, this replaces its dark colours on these pages. */
 :root {
+  color-scheme: light;
+  --paper: #eee7d5;
+  --page: #f6f1e6;
+  --ink: #1d1a17;
+  --muted: #5a5147;
+  --rule: #a8323a;
+  --frame: #b9ad9a;
+  --crimson: #c21d4e;
   --indigo: #2f4a86;
   --wash: #f5e95a;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --indigo: #8fa8e0;
-    --wash: #8a7a1e;
-  }
 }
 html {
   scroll-behavior: smooth;
@@ -667,58 +674,85 @@ section.begin {
 /* The Beings: the included middle, drawn in ink. Two lights over the P6
    constellation, Presence at its centre as the heart's ampersand, three
    Beings at each of its six portals. */
-.way-head {
-  margin: 1.5rem 0 0;
-}
-.way-head + .opening {
-  margin-top: 0.5rem;
-}
 .middle {
   width: 100%;
   max-width: 27rem;
   display: block;
   margin: 0.6rem auto 0;
 }
-.light,
-.station {
+.light {
   cursor: pointer;
 }
-.light:focus,
-.station:focus {
+.light:focus {
   outline: none;
 }
 .light:focus-visible .core {
   stroke: var(--ink);
   stroke-width: 2;
 }
-.station .disc,
-.station .ring {
+
+/* The ring both pages draw: six places round a still dark centre, each a
+   lantern that breathes slowly and glows when opened. */
+.ring {
+  width: 100%;
+  max-width: 24rem;
+  display: block;
+  margin: 0.4rem auto 0;
+}
+.place {
+  cursor: pointer;
+}
+.place:focus {
+  outline: none;
+}
+.place .breath {
+  opacity: 0.3;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe-slow var(--d, 9s) ease-in-out infinite;
+  animation-delay: var(--l, 0s);
+}
+@keyframes breathe-slow {
+  50% { transform: scale(1.12); opacity: 0.1; }
+}
+.place .glow {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.place.lit .glow {
+  opacity: 1;
+}
+.place .disc,
+.place .ring {
   transition: stroke 0.4s ease;
 }
-.station:hover .disc,
-.station.lit .disc,
-.station.lit .ring {
+.place:hover .disc,
+.place.lit .disc,
+.place.lit .ring {
   stroke: var(--crimson);
 }
-.station:focus-visible .disc {
+.place:focus-visible .disc {
   stroke: var(--crimson);
-  stroke-width: 2;
+  stroke-width: 2.2;
 }
-.station-label {
+.place-label {
   font-family: "Cormorant Garamond", Garamond, serif;
   font-weight: 600;
   font-size: 9.5px;
   letter-spacing: 0.14em;
   fill: var(--ink);
 }
-.station.lit .station-label {
+.place.lit .place-label {
   fill: var(--crimson);
 }
 .amp {
   font-family: "Cormorant Garamond", Garamond, Georgia, serif;
   font-style: italic;
-  font-size: 46px;
-  fill: var(--crimson);
+  font-size: 34px;
+  fill: var(--page);
+}
+@media (prefers-reduced-motion: reduce) {
+  .place .breath { animation: none; }
 }
 .orb .lamp {
   opacity: 0;
@@ -872,6 +906,73 @@ section.begin {
 @media (prefers-reduced-motion: reduce) {
   .orb .breath { animation: none; }
   .being.lit { animation: none; }
+}
+
+/* The front door: six places to stand, a watch, the doors and the foot. */
+.places-line {
+  font-style: italic;
+  text-align: center;
+  max-width: 28rem;
+  margin: 0 auto 0.4rem;
+}
+.place-card .spirit {
+  text-align: center;
+}
+.place-q {
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--crimson);
+  margin: 0.2rem 0 0;
+}
+.beach-note {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.8rem 0 0;
+}
+.watch-lines {
+  text-align: center;
+  max-width: 26rem;
+  margin: 0 auto;
+}
+.watch-lines p {
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.45;
+  margin: 0 0 1.9rem;
+}
+.watch-lines p:last-child {
+  margin-bottom: 0.4rem;
+}
+.doors + .doors {
+  margin-top: 1.6rem;
+}
+.door .desc:empty {
+  display: none;
+}
+.soon {
+  font-size: 0.8rem;
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  margin-left: 0.5rem;
+}
+.foot {
+  text-align: left;
+  max-width: 30rem;
+  margin: 0 auto;
+}
+.foot h2 {
+  margin: 0 0 0.4rem;
+}
+.foot h2 + p {
+  color: var(--muted);
+  margin: 0 0 1.4rem;
+}
+.foot p:last-child {
+  margin-bottom: 0;
 }
 
 /* The signature each page ends with. */

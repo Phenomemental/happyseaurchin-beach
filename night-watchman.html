@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20d">
 </head>
 <body>
 <main>
@@ -21,11 +21,15 @@
     <a href="map.html">My map</a>
   </nav>
 
-  <!-- The front door. Its words are Dorylus's, read live from
-       beings:night-watchman 8.8363 (the front door at 1); what is written
-       below is the saved copy, shown until the beach answers. Have a go, at
-       the top, and the door Read through a Being are this page's own: both
-       lead to Begin, where the spinner now turns. -->
+  <!-- The front door, in the shape set at beings:night-watchman 8.11. The
+       opening, his invitation and the foot are Dorylus's, read live from
+       8.8363 (the front door at 1), with their saved copy below until the
+       beach answers. The line over the six places and the five lines of a
+       watch are read live from 8.11, the six places themselves (name, line
+       and questions) from spine:p6, and the doors' lines from Begin's ways
+       in (8.8363 2.1); none of those words is kept in the page. Have a go,
+       the headings, the doors' names and the Beings' door are its own. The
+       practice is named in the foot and nowhere else. -->
   <div class="sheet">
     <svg class="heart" style="aspect-ratio:390/340" viewBox="0 0 390 340" role="img" aria-label="One open stroke drawn in ink: it comes in thin from the top right through the gap in a ring, curls once round a crimson centre, crosses itself, and leaves thick and open at the bottom left">
       <ellipse cx="232" cy="140" rx="118" ry="112" fill="var(--wash)" opacity=".6"/>
@@ -58,40 +62,62 @@
 
     <hr class="rule">
 
-    <section aria-labelledby="doors-head">
-      <h2 id="doors-head">Further in</h2>
-      <nav class="doors" id="doors" aria-labelledby="doors-head">
-        <a class="door" href="night-watchman-beings.html">
-          <span class="num">i</span>
-          <span class="t"><span class="title">Meet the Beings</span><span class="desc">eighteen figures who keep him company in the dark</span></span>
-          <span class="arrow" aria-hidden="true">&rarr;</span>
-        </a>
-        <a class="door" href="night-watchman-begin.html#read" data-own>
-          <span class="num">ii</span>
-          <span class="t"><span class="title">Read through a Being</span><span class="desc">No AI needed. The lines left at the wheel, seen through one Being's eyes.</span></span>
-          <span class="arrow" aria-hidden="true">&rarr;</span>
-        </a>
-      </nav>
+    <section class="places" aria-labelledby="places-head">
+      <h2 id="places-head">Six places to stand</h2>
+      <p class="places-line" id="places-line"></p>
+      <svg class="ring" id="ring" viewBox="0 0 360 320" role="group" aria-label="Six places to stand, in a ring round a still centre"><g id="ring-g"></g></svg>
+      <div class="being place-card" id="place-card" hidden aria-live="polite"></div>
+      <p class="beach-note" id="places-note" hidden>The six places can't be read from the beach just now.</p>
     </section>
 
     <hr class="rule">
 
-    <section class="more" id="more" aria-label="If you want to know more">
-      <details>
-        <summary>Why this place exists</summary>
-        <p>Rushing to AI can cost us the thing we most need: the ability to notice, and to think, for ourselves. Here an AI holds one thing only, a space and a question. What you notice, and what it means, stay with you.</p>
-        <p>Holding a space still steers a little, toward noticing what is here before deciding what it means. We would rather say so than pretend it does nothing.</p>
-      </details>
-      <details>
-        <summary>Practise it with people</summary>
-        <p>The six ways of noticing come from Presence in Action, a practice people learn and share together, in person. This is a place to rehearse it, never a substitute for the people in your life.</p>
-      </details>
+    <section class="watch" aria-labelledby="watch-head">
+      <h2 id="watch-head">A watch</h2>
+      <div class="watch-lines" id="watch-lines"></div>
+      <p class="beach-note" id="watch-note" hidden>The beach can't be reached just now; his words will be here when it answers.</p>
+    </section>
+
+    <hr class="rule">
+
+    <nav class="doors" id="ways" aria-label="Ways in">
+      <a class="door" href="night-watchman-begin.html#keep">
+        <span class="num">i</span>
+        <span class="t"><span class="title">Keep a watch</span><span class="desc"></span></span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a class="door" href="night-watchman-begin.html#host">
+        <span class="num">ii</span>
+        <span class="t"><span class="title">Host him</span><span class="desc"></span></span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <a class="door" href="night-watchman-begin.html">
+        <span class="num">iii</span>
+        <span class="t"><span class="title">Read the watches<span class="soon">coming</span></span><span class="desc"></span></span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </nav>
+    <nav class="doors" aria-label="The Beings">
+      <a class="door" href="night-watchman-beings.html">
+        <span class="num" aria-hidden="true"></span>
+        <span class="t"><span class="title">The Beings</span><span class="desc">eighteen shells on the shore of the watches. Pick one up and read a night through it.</span></span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </a>
+    </nav>
+
+    <hr class="rule">
+
+    <section class="foot" id="foot" aria-label="Why this place exists">
+      <h2>Why this place exists</h2>
+      <p id="why">Rushing to AI can cost us the thing we most need: the ability to notice, and to think, for ourselves. Here an AI holds one thing only, a space and a question.</p>
+      <h2>Practise it with people</h2>
+      <p id="practise">The six ways of noticing come from Presence in Action, a practice people learn and share together, in person.</p>
     </section>
     <p class="signature" id="signature">Mathew Pay</p>
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-20a"></script>
+<script src="night-watchman.js?v=2026-10-20b"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -104,21 +130,24 @@
   function flat(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
 
   // ---- The words --------------------------------------------------------------
-  function render(words) {
+  function up(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function render(words, block) {
     // The signature each page ends with (8.83634).
     NW.set($('signature'), NW.forAll(words).signature);
     var front = words['1'];
-    if (!front) return;
-    var f = NW.fields(NW.own(front), ['Title', 'Line', 'Opening', 'Button', 'Care']);
-    if (f.Title) f.Title = NW.bare(f.Title);
-    NW.set($('title'), f.Title);
-    if (f.Title) document.title = f.Title;
-    NW.set($('line'), NW.bare(f.Line));
-    NW.set($('opening'), f.Opening);
-    if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
-    renderPoem(NW.own(front['1']));
-    renderDoors(NW.own(front['3']));
-    renderMore(NW.own(front['4']));
+    if (front) {
+      var f = NW.fields(NW.own(front), ['Title', 'Line', 'Opening', 'Button', 'Care']);
+      if (f.Title) f.Title = NW.bare(f.Title);
+      NW.set($('title'), f.Title);
+      if (f.Title) document.title = f.Title;
+      NW.set($('line'), NW.bare(f.Line));
+      NW.set($('opening'), f.Opening);
+      if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
+      renderPoem(NW.own(front['1']));
+      renderFoot(NW.own(front['4']));
+    }
+    if (words['2']) renderWays(NW.own(words['2']['1']));
+    renderShape(NW.own(NW.at(block, ['8', '1', '1'])));
   }
   // "THE POEM, his invitation: line / line // line / line"
   function renderPoem(s) {
@@ -134,39 +163,100 @@
       st.split(/\s*\/\s*/).forEach(function (l) { if (l.trim()) box.appendChild(el('span', null, l.trim())); });
     });
   }
-  // "THE DOORS. Head: Further in. i, Title: what it is. ii, …" Each of the
-  // beach's doors goes to the page's door of the same title; one with no
-  // such door is left out, and a door marked data-own (Read through a
-  // Being) keeps this page's own words.
-  function renderDoors(s) {
-    var h = NW.fields(s, ['Head']).Head;
-    if (h) NW.set($('doors-head'), NW.bare(h.split(/\.\s/)[0]));
-    var doors = $('doors').querySelectorAll('.door');
-    NW.numbered(s, true).forEach(function (d) {
-      var door = Array.prototype.filter.call(doors, function (x) {
-        return flat(x.querySelector('.title').textContent).toLowerCase() === flat(d.title).toLowerCase();
-      })[0];
-      if (!door || door.hasAttribute('data-own')) return;
-      NW.set(door.querySelector('.title'), d.title);
-      NW.set(door.querySelector('.desc'), NW.bare(d.body));
+  // The foot, from "ON REQUEST. Why this place exists: …. Practise it with
+  // people: …": why, in its first two sentences, and the one line that
+  // names the practice and sends people to it.
+  function renderFoot(s) {
+    var f = NW.fields(s, ['Why this place exists', 'Practise it with people']);
+    var why = NW.sentences(f['Why this place exists'] || '').slice(0, 2).join(' ');
+    var practise = NW.sentences(f['Practise it with people'] || '')[0];
+    NW.set($('why'), why);
+    NW.set($('practise'), practise);
+  }
+  // The doors' lines are Begin's ways in, one to each door in order: "i,
+  // Keep a watch: …. ii, Host him: …. iii, Read (coming): …".
+  function renderWays(s) {
+    var doors = $('ways').querySelectorAll('.door');
+    NW.numbered(NW.head(s).rest, true).forEach(function (w, k) {
+      if (doors[k]) NW.set(doors[k].querySelector('.desc'), w.body);
     });
   }
-  // "ON REQUEST. Why this place exists: …. Practise it with people: …"
-  function renderMore(s) {
-    var parts = $('more').querySelectorAll('details');
-    var labels = Array.prototype.map.call(parts, function (d) { return d.querySelector('summary').textContent; });
-    var f = NW.fields(s, labels);
-    Array.prototype.forEach.call(parts, function (d, i) {
-      var t = f[labels[i]];
-      var ps = d.querySelectorAll('p');
-      if (!t || flat(t) === flat(Array.prototype.map.call(ps, function (p) { return p.textContent; }).join(' '))) return;
-      Array.prototype.forEach.call(ps, function (p) { p.remove(); });
-      d.appendChild(el('p', null, t));
+  // From the page's shape (8.11): the one line over the six places, and a
+  // watch told in five lines ("…: line / line / … / line. (4) …").
+  function renderShape(s) {
+    var line = /One line above the ring:\s*([\s\S]+?[.!?])(?=\s+[A-Z(]|\s*$)/.exec(s || '');
+    if (line) NW.set($('places-line'), up(line[1].trim()));
+    var watch = /\(3\)[^:]*:\s*([\s\S]+?)\s*\(4\)/.exec(s || '');
+    if (!watch) return;
+    var lines = watch[1].split(/\s+\/\s+/).map(function (l) {
+      l = up(l.trim());
+      return /[.!?]$/.test(l) ? l : l + '.';
     });
+    var box = $('watch-lines');
+    if (lines.length < 2 || flat(lines.join(' ')) === flat(box.textContent)) return;
+    box.textContent = '';
+    lines.forEach(function (l) { box.appendChild(el('p', null, l)); });
+    $('watch-note').hidden = true;
+  }
+
+  // ---- Six places to stand ----------------------------------------------------------
+  // The six places are spine:p6's: each one's name and what it is (its
+  // first line), and its questions, in the order it gives round the centre.
+  // Until the beach answers, the ring stands with its lanterns unnamed.
+  var ring = $('ring-g'), C = { x: 180, y: 160 }, PLACES = [], open = null;
+  function placesFrom(spine) {
+    var list = [];
+    ['1', '2'].forEach(function (k) {
+      for (var i = 1; i <= 9; i++) {
+        var node = spine && spine[k] && spine[k][String(i)], p = NW.place(NW.own(node));
+        if (!p) continue;
+        var qs = [];
+        for (var j = 1; j <= 9; j++) {
+          var q = NW.own(node[String(j)]);
+          if (q) qs.push(q);
+        }
+        list.push({ addr: k + '.' + i, name: p.name, line: NW.sentences(p.rest)[0] || p.rest, qs: qs });
+      }
+    });
+    var order = NW.order(spine);
+    function rank(p) { var r = order.indexOf(p.addr); return r < 0 ? 99 : r; }
+    return list.sort(function (a, b) { return rank(a) - rank(b); });
+  }
+  function drawRing() {
+    ring.textContent = '';
+    var blank = [0, 1, 2, 3, 4, 5].map(function () { return { addr: '', name: '' }; });
+    NW.ring(ring, C, PLACES.length ? PLACES : blank, openPlace);
+    NW.light(ring, open);
+  }
+  // Touched, a place opens with its name, what it is, and one question.
+  function openPlace(p) {
+    var c = $('place-card');
+    c.textContent = '';
+    c.appendChild(el('h3', null, p.name));
+    if (p.line) c.appendChild(el('p', 'spirit', p.line));
+    if (p.qs.length) c.appendChild(el('p', 'place-q', p.qs[Math.floor(Math.random() * p.qs.length)]));
+    c.hidden = false;
+    c.classList.remove('lit');
+    void c.offsetWidth;
+    c.classList.add('lit');
+    open = p.addr;
+    NW.light(ring, open);
+    var r = c.getBoundingClientRect();
+    if (r.bottom > innerHeight || r.top < 0) c.scrollIntoView({ block: 'nearest' });
   }
 
   // ---- Start ------------------------------------------------------------------
-  NW.follow(render);
+  drawRing();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { NW.fit(ring); });
+  Beach.get('spine:p6').then(function (spine) {
+    var list = placesFrom(spine);
+    if (list.length !== 6) throw new Error('not six places');
+    PLACES = list;
+    drawRing();
+  }).catch(function () { $('places-note').hidden = false; });
+  NW.follow(render, function () {
+    if (!$('watch-lines').childNodes.length) $('watch-note').hidden = false;
+  });
 })();
 </script>
 </body>

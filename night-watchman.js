@@ -110,20 +110,129 @@
   // Read the words, now and whenever the page comes back into view, and
   // hand them to render(words, block) only when they, or the Beings and
   // their portals (1, 2), how to read through one (3), the two extremes
-  // (4), that they are for reading (5) or play (9), have changed. The
+  // (4), play (9) or the pages' design (8.1), have changed. lost() is
+  // called when the beach can't be read before it has ever answered. The
   // beach's own status line is kept off the page.
-  function follow(render) {
+  function follow(render, lost) {
     var shown = '';
     Beach.live(function () {
       return Beach.get(BLOCK).then(function (block) {
         var words = at(block, PATH);
         if (!words) throw new Error('no words');
-        var sig = JSON.stringify(words) + JSON.stringify(['1', '2', '3', '4', '5', '9'].map(function (k) { return block[k]; }));
+        var parts = ['1', '2', '3', '4', '9'].map(function (k) { return block[k]; }).concat([at(block, ['8', '1'])]);
+        var sig = JSON.stringify(words) + JSON.stringify(parts);
         if (sig === shown) return;
         shown = sig;
         render(words, block);
+      }, function (e) {
+        if (!shown && lost) lost();
+        throw e;
       });
     }, document.createElement('p'), null, '');
+  }
+
+  // A place's own words: "FACTS — the data: what could be checked, …" is
+  // the place Facts, and what follows the dash.
+  function place(s) {
+    var m = /^([A-Z][A-Z'’ ]*[A-Z])\s*[—–]\s*([\s\S]*)$/.exec(s || '');
+    if (!m) return null;
+    var n = m[1].toLowerCase();
+    return { name: n.charAt(0).toUpperCase() + n.slice(1), rest: m[2].charAt(0).toUpperCase() + m[2].slice(1) };
+  }
+  // The six places' order round the centre, clockwise from the top, as
+  // spine:p6 gives it ("… CLOCKWISE …: Outcomes (2.3), Fictions (1.3), …").
+  function order(spine) {
+    var root = own(spine), from = root.search(/CLOCKWISE/i), list = [];
+    (from < 0 ? root : root.slice(from)).replace(/\((\d\.\d)\)/g, function (all, a) {
+      if (list.indexOf(a) < 0) list.push(a);
+    });
+    return list;
+  }
+
+  // ---- The ring --------------------------------------------------------------------
+  // The drawing the front door and the Beings share, so the two pages are
+  // one place: six places round a still dark centre, clockwise from the
+  // top, each a lantern that breathes slowly and opens when touched.
+  // ring(g, c, places, open, opts) draws into the SVG group g, centred at
+  // c ({x, y}); places are [{addr, name}]; open(place) is what a touch
+  // does; opts.amp sets the heart's ampersand in the centre. It returns
+  // each place's centre and angle, for whatever stands round it.
+  var SVG = 'http://www.w3.org/2000/svg';
+  var RING = { r: 100, place: 38 };
+  function svg(tag, attrs) {
+    var e = document.createElementNS(SVG, tag);
+    Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+  function point(c, r, deg) {
+    var a = deg * Math.PI / 180;
+    return { x: Math.round((c.x + r * Math.cos(a)) * 10) / 10, y: Math.round((c.y + r * Math.sin(a)) * 10) / 10 };
+  }
+  function pressable(e, fn) {
+    e.addEventListener('click', function () { fn(); });
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fn(); }
+    });
+  }
+  function ring(g, c, places, open, opts) {
+    opts = opts || {};
+    var owner = g.ownerSVGElement, R = RING.r, RS = RING.place, out = [];
+    if (owner && !owner.querySelector('#nw-lamp')) {
+      var defs = svg('defs', {}), grad = svg('radialGradient', { id: 'nw-lamp', cx: '50%', cy: '50%', r: '50%' });
+      grad.appendChild(svg('stop', { offset: '0', 'stop-color': 'var(--crimson)', 'stop-opacity': '.42' }));
+      grad.appendChild(svg('stop', { offset: '1', 'stop-color': 'var(--crimson)', 'stop-opacity': '0' }));
+      defs.appendChild(grad);
+      owner.insertBefore(defs, owner.firstChild);
+    }
+    g.appendChild(svg('circle', { cx: c.x, cy: c.y, r: R, fill: 'none', stroke: 'var(--frame)', 'stroke-width': '0.9' }));
+    places.forEach(function (p, k) {
+      var deg = -90 + k * 360 / places.length, s = point(c, R, deg);
+      var from = point(c, 34, deg), to = point(c, R - RS - 9, deg);
+      g.appendChild(svg('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: 'var(--frame)', 'stroke-width': '1', 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }));
+      var lamp = svg('g', { 'class': 'place', tabindex: '0', role: 'button', 'aria-label': p.name || 'A place to stand' });
+      lamp.dataset.addr = p.addr;
+      // each breathes slowly, a little out of step with the others
+      lamp.style.setProperty('--d', (8.5 + (k * 5 % 6) * 0.7).toFixed(1) + 's');
+      lamp.style.setProperty('--l', (-k * 1.7).toFixed(1) + 's');
+      lamp.appendChild(svg('circle', { 'class': 'glow', cx: s.x, cy: s.y, r: RS + 22, fill: 'url(#nw-lamp)' }));
+      lamp.appendChild(svg('circle', { 'class': 'breath', cx: s.x, cy: s.y, r: RS + 8, fill: 'var(--frame)' }));
+      lamp.appendChild(svg('circle', { 'class': 'disc', cx: s.x, cy: s.y, r: RS, fill: 'var(--page)', stroke: 'var(--ink)', 'stroke-width': '1.2' }));
+      lamp.appendChild(svg('circle', { 'class': 'ring', cx: s.x, cy: s.y, r: RS - 5, fill: 'none', stroke: 'var(--ink)', 'stroke-width': '0.7', opacity: '.45' }));
+      var t = svg('text', { 'class': 'place-label', x: s.x, y: s.y + 3.6, 'text-anchor': 'middle' });
+      t.textContent = (p.name || '').toUpperCase();
+      lamp.appendChild(t);
+      if (p.name) pressable(lamp, function () { open(p); });
+      g.appendChild(lamp);
+      out.push({ place: p, at: s, deg: deg });
+    });
+    // the still centre
+    g.appendChild(svg('circle', { cx: c.x, cy: c.y, r: 31, fill: 'var(--frame)', opacity: '.35' }));
+    g.appendChild(svg('circle', { 'class': 'still', cx: c.x, cy: c.y, r: 26, fill: 'var(--ink)' }));
+    if (opts.amp) {
+      var amp = svg('text', { 'class': 'amp', x: c.x, y: c.y + 12, 'text-anchor': 'middle' });
+      amp.textContent = '&';
+      g.appendChild(amp);
+    }
+    fit(g);
+    return out;
+  }
+  // A place's name, made narrower if it would pass its ring.
+  function fit(g) {
+    Array.prototype.forEach.call(g.querySelectorAll('.place-label'), function (t) {
+      t.removeAttribute('textLength');
+      try {
+        if (t.getComputedTextLength() > 2 * (RING.place - 8)) {
+          t.setAttribute('textLength', 2 * (RING.place - 8));
+          t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        }
+      } catch (e) {}
+    });
+  }
+  // The open lantern stays lit; every other one is dark.
+  function light(g, addr) {
+    Array.prototype.forEach.call(g.querySelectorAll('[data-addr]'), function (e) {
+      e.classList.toggle('lit', !!addr && e.dataset.addr === addr);
+    });
   }
 
   window.NW = {
@@ -137,6 +246,14 @@
     set: set,
     care: care,
     forAll: forAll,
-    follow: follow
+    follow: follow,
+    place: place,
+    order: order,
+    ring: ring,
+    fit: fit,
+    light: light,
+    svg: svg,
+    point: point,
+    pressable: pressable
   };
 })();
