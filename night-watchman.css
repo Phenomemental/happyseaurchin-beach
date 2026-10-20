@@ -664,12 +664,74 @@ section.begin {
   margin: 0;
 }
 
-/* The Beings: the included middle, drawn in ink. */
+/* The Beings: the included middle, drawn in ink. Two lights over the P6
+   constellation, Presence at its centre as the heart's ampersand, three
+   Beings at each of its six portals. */
+.way-head {
+  margin: 1.5rem 0 0;
+}
+.way-head + .opening {
+  margin-top: 0.5rem;
+}
 .middle {
   width: 100%;
-  max-width: 32rem;
+  max-width: 27rem;
   display: block;
-  margin: 0.4rem auto 0;
+  margin: 0.6rem auto 0;
+}
+.light,
+.station {
+  cursor: pointer;
+}
+.light:focus,
+.station:focus {
+  outline: none;
+}
+.light:focus-visible .core {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.station .disc,
+.station .ring {
+  transition: stroke 0.4s ease;
+}
+.station:hover .disc,
+.station.lit .disc,
+.station.lit .ring {
+  stroke: var(--crimson);
+}
+.station:focus-visible .disc {
+  stroke: var(--crimson);
+  stroke-width: 2;
+}
+.station-label {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-weight: 600;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  fill: var(--ink);
+}
+.station.lit .station-label {
+  fill: var(--crimson);
+}
+.amp {
+  font-family: "Cormorant Garamond", Garamond, Georgia, serif;
+  font-style: italic;
+  font-size: 46px;
+  fill: var(--crimson);
+}
+.orb .lamp {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.orb.lit .lamp {
+  opacity: 1;
+}
+.orb.lit circle.o {
+  fill: var(--crimson);
+}
+.orb:hover circle.ring {
+  stroke: var(--crimson);
 }
 .orb {
   cursor: pointer;
@@ -726,9 +788,30 @@ section.begin {
   color: var(--crimson);
   margin: 0 0 0.6rem;
 }
-.being .invite {
-  font-size: 1.25rem;
+.being .spirit {
+  text-align: left;
+  font-size: 1.1rem;
+  margin: 0.3rem 0 0.8rem;
+}
+.being .field {
+  text-align: left;
+  font-size: 1rem;
   font-style: italic;
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+.being .field .k {
+  font-style: normal;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-right: 0.45rem;
+}
+.card-beings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.4rem;
   margin: 0;
 }
 .being.lit {
@@ -762,6 +845,29 @@ section.begin {
 .portals li b {
   color: var(--ink);
   font-weight: 600;
+}
+.portals summary .place {
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.portals .portal-text {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin: 0.6rem 0 0.2rem;
+}
+.portals button.meet {
+  font: inherit;
+  text-align: left;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0.2rem 0;
+  min-height: 2.4rem;
+  cursor: pointer;
+}
+.portals button.meet:hover b {
+  color: var(--crimson);
 }
 @media (prefers-reduced-motion: reduce) {
   .orb .breath { animation: none; }

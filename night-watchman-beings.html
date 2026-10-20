@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Beings · The Night Watchman</title>
-<meta name="description" content="Eighteen who keep the Night Watchman company in the dark: characters drawn for the page, ways a person can be, given a face and a name.">
+<meta name="description" content="The eighteen Beings, three at each portal of the P6 constellation, under two lights, Silas and Ada: figures to pick up, read the watches through, and put down again.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20b">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20c">
 </head>
 <body>
 <main>
@@ -21,43 +21,51 @@
     <a href="map.html">My map</a>
   </nav>
 
-  <!-- The Beings. Every word here is Dorylus's, read live from
-       beings:night-watchman 8.8363 (the Beings at 3), and each Being's name
-       from its own place in that block; what is written below is the saved
-       copy, shown until the beach answers. -->
+  <!-- The Beings, read live from beings:night-watchman and never written
+       to: the surface (1) and the deep (2), each holding three portals of
+       the P6 constellation with its own words, and beneath each portal its
+       three Beings (1.11 to 2.33); how to read through a Being (3), the two
+       extremes, Silas and Ada (4), that Beings are for reading (5), and play
+       (9). The title, line and hint are the page's words at 8.83633, the
+       signature and care line at 8.83634. The order round Presence is
+       spine:p6's. What is written below, and the block in the script, is
+       the saved copy, shown until the beach answers. -->
   <div class="sheet">
     <h1 id="title">The Beings</h1>
     <p class="byline" id="line">eighteen who keep him company in the dark</p>
 
-    <p class="opening" id="opening">They are characters, drawn for the page: ways a person can be, given a face and a name. Not diagnoses, and not parts of you. Wander among them. If one speaks to you, it may come with you into a watch.</p>
+    <h2 class="way-head" id="way-head">How to read through a Being</h2>
+    <p class="opening" id="way">As in walking Louie Gardiner's mat, a reader steps onto a portal of the P6 constellation, picks up one of the three Beings standing there, like a shell on the beach, and reads a watch through it: the same facts read through the Objective Being and through the Abstract Being make two different watches. A Being is tried on and put down; it tells the reader nothing about who they are. Presence, the centre, has no Being: it is where the reader stands to choose. Silas and Ada, the two extremes, stand above the constellation as its two lights.</p>
     <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
-    <svg class="middle" id="middle" viewBox="0 0 360 330" role="group" aria-label="Two lights, Silas and Ada, the two ends of one axis, shining down on three rows of six Beings: the Head, the Heart and the Hand">
+    <svg class="middle" id="middle" viewBox="0 0 360 440" role="group" aria-label="Two lights, Silas and Ada, shining down on the P6 constellation: Presence at its centre as an ampersand, and around it six portals with three Beings at each">
       <defs>
         <radialGradient id="gS" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
         <radialGradient id="gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="gL" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".5"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
         <linearGradient id="coneS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".16"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
         <linearGradient id="coneA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".16"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
       </defs>
-      <path d="M96,52 L18,320 L250,320 Z" fill="url(#coneS)"/>
-      <path d="M264,52 L110,320 L342,320 Z" fill="url(#coneA)"/>
-      <circle class="glow" cx="96" cy="44" r="30" fill="url(#gS)"><animate attributeName="r" values="28;33;28" dur="7s" repeatCount="indefinite"/></circle>
-      <circle cx="96" cy="44" r="7" fill="var(--crimson)"/>
-      <circle class="glow" cx="264" cy="44" r="30" fill="url(#gA)"><animate attributeName="r" values="33;28;33" dur="7s" repeatCount="indefinite"/></circle>
-      <circle cx="264" cy="44" r="7" fill="var(--indigo)"/>
-      <text class="light-label" id="light-1" x="96" y="92" text-anchor="middle">Silas</text>
-      <text class="light-label" id="light-2" x="264" y="92" text-anchor="middle">Ada</text>
-      <line x1="103" y1="44" x2="257" y2="44" stroke="var(--ink)" stroke-width="1.2" stroke-linecap="round"/>
-      <g id="rows"></g>
+      <path d="M92,52 L4,436 L262,436 Z" fill="url(#coneS)"/>
+      <path d="M268,52 L98,436 L356,436 Z" fill="url(#coneA)"/>
+      <line x1="99" y1="44" x2="261" y2="44" stroke="var(--ink)" stroke-width="1.2" stroke-linecap="round"/>
+      <g class="light" id="light-s" tabindex="0" role="button" aria-label="Silas, one of the two extremes">
+        <circle class="glow" cx="92" cy="44" r="30" fill="url(#gS)"><animate attributeName="r" values="28;33;28" dur="7s" repeatCount="indefinite"/></circle>
+        <circle class="core" cx="92" cy="44" r="7" fill="var(--crimson)"/>
+        <text class="light-label" id="light-1" x="92" y="90" text-anchor="middle">Silas</text>
+        <circle cx="92" cy="58" r="34" fill="transparent"/>
+      </g>
+      <g class="light" id="light-a" tabindex="0" role="button" aria-label="Ada, one of the two extremes">
+        <circle class="glow" cx="268" cy="44" r="30" fill="url(#gA)"><animate attributeName="r" values="33;28;33" dur="7s" repeatCount="indefinite"/></circle>
+        <circle class="core" cx="268" cy="44" r="7" fill="var(--indigo)"/>
+        <text class="light-label" id="light-2" x="268" y="90" text-anchor="middle">Ada</text>
+        <circle cx="268" cy="58" r="34" fill="transparent"/>
+      </g>
+      <g id="constellation"></g>
     </svg>
     <p class="hint" id="hint">Touch a Being to meet it.</p>
 
-    <div class="being" id="being" hidden aria-live="polite">
-      <p class="portal" id="bportal"></p>
-      <h3 id="bname"></h3>
-      <p class="epithet" id="bepithet"></p>
-      <p class="invite" id="binvite"></p>
-    </div>
+    <div class="being" id="card" hidden aria-live="polite"></div>
 
     <hr class="rule">
 
@@ -68,16 +76,7 @@
 
     <hr class="rule">
 
-    <section class="more" id="more" aria-label="About the two lights">
-      <details>
-        <summary>Silas and Ada, the two lights</summary>
-        <p>Above the Beings shine two lights, Silas and Ada: the two ends of the one axis a night runs along. They are not Beings. Every Being stands somewhere along that axis, and a watch is kept on the whole of it.</p>
-      </details>
-      <details>
-        <summary>Where they come from</summary>
-        <p>The Beings grew out of the book Wholeless Nights, and the world of its watches. Each one carries a story; the stories stay with the book, and what you meet here is the Being itself.</p>
-      </details>
-    </section>
+    <section class="more" id="more" aria-label="More on the Beings"></section>
 
     <hr class="rule">
     <p class="back"><a href="night-watchman.html">&larr; back to the Night Watchman</a></p>
@@ -85,7 +84,7 @@
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-19c"></script>
+<script src="night-watchman.js?v=2026-10-20a"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -103,166 +102,383 @@
     return e;
   }
 
-  // Three rows of six: each Being's name, its epithet and its one line of
-  // invitation. This is the saved copy; the beach's own replaces it.
-  var ROWS = [
-    { portal: 'The Head', beings: [
-      ['The Abstract Being', 'the Ruler', 'The part of us that wants it measured, reduced and made certain.'],
-      ['The Hypothetical Being', 'the Theorist', 'Lives in what if, thinking about life instead of living it.'],
-      ['The Predictable Being', 'the Bureaucrat', 'Wants things safe and the same, and fears what moves.'],
-      ['The Anxious Being', 'the Glitch', 'The alarm that sounds when control gives way.'],
-      ['The Objective Being', 'the Observer', 'Watches life from behind the glass.'],
-      ['The Categorical Being', 'the Judge', 'Sorts everything into this or that, and nothing between.']] },
-    { portal: 'The Heart', beings: [
-      ['The Feeling Being', 'the Moving Form', 'Sensation and emotion, met as one.'],
-      ['The Dreaming Being', 'the Night Navigator', 'Finds by night what logic cannot reach by day.'],
-      ['The Religious Being', 'the Mystic', 'Senses something sacred in what holds us together.'],
-      ['The Relational Being', 'the Kin', 'I am because we are.'],
-      ['The Alien Being', 'the Exile', 'The ache of not belonging, felt in the body.'],
-      ['The Sensory Being', 'the Body', 'Speaks before the mind has words.']] },
-    { portal: 'The Hand', beings: [
-      ['The Compulsive Being', 'the Guardian', 'Moves fast, connects everything, stands guard.'],
-      ['The Creative Being', 'the Alchemist', 'Turns the swing between poles into making.'],
-      ['The Inclusional Being', 'the Mapmaker', 'Sees space as a welcome, not an emptiness.'],
-      ['The Performative Being', 'the Mask', 'The self we built to get through.'],
-      ['The Intentioned Being', 'the Pilgrim', 'Walks on purpose, one step and then another.'],
-      ['The Wholeless Being', 'the House', 'Holds what is missing, without needing a cure.']] }
-  ];
+  // ---- The words ------------------------------------------------------------------
+  // The saved copy of the block's own places: the surface and the deep with
+  // their portals and Beings, and 3, 4, 5 and 9, without the keepers'
+  // notes. The beach's own replaces it.
+  var SAVED = {
+   "1": {
+    "_": "THE SURFACE — Facts, Feelings and Fictions: what is here now, as spine:p6 holds it. Three portals of the P6 constellation, each held within the whole, never taken alone; three Beings stand at each.",
+    "1": {
+     "_": "FACTS — what could be checked, seen, heard, said or done, before any meaning is added. Its three Beings are three ways of being caught in facts: stripped of life, watched from behind glass, performed for others. None yet holds the plain facts freely; that Being is still to be found.",
+     "1": "The Abstract Being — the Ruler. Anchors: Newton, Locke. Reduces living reality to quantifiable parts and mechanisms; cannot tolerate ambiguity or permeable boundaries; demands the Law of the Excluded Middle. Builds the Glass Wall and forces the living self into a heavy container that hides the gift. Costs: exhausted by its own certainty, terrified of the unmeasurable. Emerges: heavily analytical language, clinical words, approaching experience from a safe distance.",
+     "2": "The Objective Being — the Observer. Anchor: the Cartesian spectator. Stands behind the glass wall of consciousness, watching life from a distance without touching or feeling it; acute derealisation, viewing one's own life as a film or stage set. The state of feeling like a ghost in one's own body, performing wellness while ontologically absent. Emerges: describing experience rather than inhabiting it; observational rather than personal language.",
+     "3": "The Performative Being — the Mask, the Legend. Anchors: Jung's persona; Pessoa's heteronyms. An avatar built to survive the Abstract World — performs stability, competence, social compliance to keep the world from discovering the internal civil war. The Uniform of Silence, worn long after the role that required it has ended. Emerges: competence described as exhausting to maintain; a gap between how someone appears and how they feel underneath."
+    },
+    "2": {
+     "_": "FEELINGS — physical sensation and emotion at once: what the body notices and what moves in it. Its three Beings: feeling as exile, feeling as the body's own knowing, feeling as a moving form met whole.",
+     "1": "The Alien Being — the Exile, the Unbelonging Ghost. Anchor: Camus, The Stranger. The raw, visceral sensation of being fundamentally distinct or misplaced — alien even at the centre of a crowded room. Drives the initial quest: the felt suffering that forces a search across history, poetry, and geography for a place where one's nature is welcomed. Emerges: language of not belonging, of being fundamentally different, even when surrounded by people.",
+     "2": "The Sensory Being — the Body, the Living Vessel. Anchors: Bessel van der Kolk, Eugene Gendlin (Focusing). The repository of implicit memory, nervous system load, trauma; cannot be lied to by abstract theory, responds physically to truth or falsehood. Its refusal is bodily — the body rejecting the Law of the Excluded Middle before the mind will. Emerges: physical sensation named directly — the body speaking before the mind has words for it.",
+     "3": "The Feeling Being — the Moving Form. Anchor: John Clare. Feeling is soma and emotion at once: a sensation in the body and what it carries, met as one, never split into body or mind. It has a form — a shape, a size, a colour, sometimes a weight or a temperature — that moves and changes; emergent, never concluded, met rather than named. Feels the full, unshielded weight of the world; moves slowly, feels deeply, refuses to be medicated or managed into artificial coherence. Costs: told its nature is the problem; landing is never certain. Emerges: always present in some form; its depth emerges when a reader stays long enough to meet it rather than witness it."
+    },
+    "3": {
+     "_": "FICTIONS — what the mind makes of what is here: conclusions, judgements, interpretations, metaphors, myths, beliefs. Thinking something does not make it so. Its three Beings: the fiction that sorts and judges, the fiction that dreams, the fiction that makes.",
+     "1": "The Categorical Being — the Judge. Anchor: institutional psychiatry, binary logic. Sorts everything into mutually exclusive bins — sick or well, manic or depressed, true or false; cannot allow a middle ground. The voice that constantly audits mood: 'is this happiness, or is it mania?' Emerges: clinical words, diagnosis names, approaching experience through what one has been told one is.",
+     "2": "The Dreaming Being — the Subconscious, the Night Navigator. Anchor: the Romantic tradition of dreams and night-side truths. Bypasses linear logic to access fundamental truths through metaphor, intuition, sleep, poetry, symbolic vision. Operates during moments of profound collapse and transformation — the vision that comes on the floor at the end of a night, where linear logic breaks and flow is revealed. Emerges: words carrying subconscious weight — dreams, memory, night, sleep, the body.",
+     "3": "The Creative Being — the Engine, the Alchemist of Polarity. Anchors: Coleridge, Blake. Reclaims polarity as the engine of imagination; oscillation is not pathology but the dynamic tension that generates new meaning, art, life. Provides the artistic bridge — showing how tension between opposites is held in the tertium quid, the third thing. Emerges: making something from the swing itself — art, metaphor, connection-making across disparate things."
+    }
+   },
+   "2": {
+    "_": "THE DEEP — Purpose, Decision and Outcomes: what moves beneath, as spine:p6 holds it. Three portals of the P6 constellation; three Beings stand at each.",
+    "1": {
+     "_": "PURPOSE — ways of being and doing: how one wants to be, and what one wants to be doing. Its three Beings: belonging to the sacred, belonging to each other, belonging to the living space between.",
+     "1": "The Religious Being — the Mystic, the Sacred Intuitive. Anchor: Maris Ross, 'Adam and Evolution'. Senses the divine, relational fabric of existence but lacks the Abstract World's reductionist language to explain it. The initiating foil, opening the first cracks in the dualistic trap. Emerges: words of meaning, spirituality, belonging, mystery.",
+     "2": "The Relational Being — the Neighbour, the Kin. Anchor: Ubuntu — I am because we are. The isolated individual is a fiction; identity emerges through relationship, not inside a skin-bound unit. Anchors the movement out of the Glass Wall's isolation into the natural neighbourhood. Emerges: reaching toward others; words of relationship, community, belonging.",
+     "3": "The Inclusional Being — the Guide, the Master Mapmaker. Anchor: Alan Rayner, Natural Inclusionality. Space is not empty void but receptive context; boundaries are not rigid walls but permeable, energetic interfacings. Hands over the physics of meaning — reframes 'Bipolar' from a broken switch into a natural mechanism of flow. Emerges: reaching for a way to hold two true things at once without collapsing either."
+    },
+    "2": {
+     "_": "DECISION — the choice in front of you, including the ones made by not choosing. Its three Beings: choosing by protocol, choosing to guard, choosing to walk.",
+     "1": "The Predictable Being — the Bureaucrat. Anchor: the medical model, military hierarchy. Terrified of change and unpredictable emotion; seeks safety in routine, diagnostic manuals, flowcharts. Manifests as the interrogation in the clinic and the protocol of the barracks. Costs: knows underneath the routine isn't working. Emerges: repetitive actions, returning to the same territory, resisting an invitation to go deeper.",
+     "2": "The Compulsive Being — the Guardian. Anchor: Daedalus, builder of the labyrinth. High-voltage, frantic architectural energy; moves fast, connects patterns across centuries, builds protective walls. Not a sickness — a structural defence built to carry trauma and protect the fragile Feeling Being underneath. Emerges: language of vigilance, momentum, building, protecting — especially protecting something soft.",
+     "3": "The Intentioned Being — the Pilgrim, the Conscious Wayfarer. Anchor: John Clare, 'Journey out of Essex' (1841) — the walk home, taken on purpose. Conscious will and active locomotion — the part that chooses to walk out of the trap and undertake a journey of the heart toward home. Drives the physical and spiritual journey, and the meetings found along the way. Emerges: a deliberate act of movement toward something, not away from something."
+    },
+    "3": {
+     "_": "OUTCOMES — future fictions: the futures imagined, expected or feared, held as stories about what has not yet happened. Its three Beings: the future feared, the future supposed, the future held open.",
+     "1": "The Anxious Being — the Glitch. Anchor: Kierkegaard, The Concept of Anxiety — the dizziness of freedom. The direct result of the measuring mind failing to control the future; hyper-aware, hyper-reflexive, exhausted from forcing internal flux into rigid categories. Stands at the Glass Wall and, held there long enough, collapses under the weight of either/or. Handle with the greatest care. Emerges: early in a watch; words of fear or overwhelm; frantic or grasping actions.",
+     "2": "The Hypothetical Being — the Theorist. Anchor: Descartes. Trapped in What If; thinks about life rather than living it; treats existence as a library puzzle, detached from the body. Dethroned when the theoretical map is found unable to replace felt, somatic experience. Costs: lonely, calculating alone, knows the weight but not the feeling. Emerges: questions the world can't answer; circling something rather than entering it.",
+     "3": "The Wholeless Being — the Destination, the House. Anchor: Bachelard, The Poetics of Space — the house that shelters daydreaming. Does not seek static perfection or cure; holds the cavity, stands at the fulcrum between poles without collapsing, honours both structure and flow. The ultimate synthesis — the self stops being the battlefield and becomes the house. Emerges: rarely, and never forced — only where the integration is already being lived rather than sought."
+    }
+   },
+   "3": "HOW TO READ THROUGH A BEING. As in walking Louie Gardiner's mat, a reader steps onto a portal of the P6 constellation, picks up one of the three Beings standing there, like a shell on the beach, and reads a watch through it: the same facts read through the Objective Being and through the Abstract Being make two different watches. A Being is tried on and put down; it tells the reader nothing about who they are. Presence, the centre, has no Being: it is where the reader stands to choose. Silas and Ada, the two extremes, stand above the constellation as its two lights.",
+   "4": "THE TWO EXTREMES — not Beings. Silas and Ada are the two extremes, the poles. The eighteen Beings are the fuller reality between and beyond them — the true spectrum.",
+   "5": "BEINGS ARE FOR READING. They do not come into a watch: the Watchman does not name, invite or use a Being while someone stands a watch, and what a watch may turn toward instead is an experience from the P6 constellation of Presence in Action (Louie Gardiner). The Beings are literary artefacts for readers of the watches — like shells on the beach, a reader picks one up, tries it on, and reads the watches through it. Each Being's 'Emerges' line tells a reader where it is found in a watch's words. Nothing personal to Matthew is held in the Beings; his story stays in his book. The Beings are still to be developed.",
+   "9": "PLAY, EXPLICITLY: the Beings are tried on lightly, not administered — picked up, worn for a reading, put down again. Nothing about them is diagnostic, and no reader is told which Being they are."
+  };
+  // The order round Presence, clockwise from the top, as spine:p6 gives it.
+  var ORDER = ['2.3', '1.3', '2.2', '2.1', '1.2', '1.1'];
 
-  // Each Being breathes at its own pace and opens like a lantern.
-  var lit = null, litKey = null;
-  function open(row, b, oc, key) {
-    if (lit) lit.setAttribute('fill', 'var(--page)');
-    oc.setAttribute('fill', 'var(--crimson)');
-    lit = oc;
-    litKey = key;
-    $('bportal').textContent = row.portal;
-    $('bname').textContent = b[0];
-    $('bepithet').textContent = b[1];
-    $('binvite').textContent = b[2];
-    var card = $('being');
-    card.hidden = false;
-    card.classList.remove('lit');
-    void card.offsetWidth;
-    card.classList.add('lit');
-    $('hint').hidden = true;
+  // Words for readers: the keepers' notes left off. A sentence saying when
+  // and on whose word the words were arranged or changed, a cross-reference
+  // such as (4), a note in brackets about an agent, and "as spine:p6 holds
+  // it" are for the block's keepers, never the page.
+  function forReaders(s) {
+    s = (s || '')
+      .replace(/\s*\(\d(?:\.\d+)?(?:,\s*\d(?:\.\d+)?)*\)/g, '')
+      .replace(/\s*\([^()]*\bagent\b[^()]*\)/gi, '')
+      .replace(/,?\s+as [a-z]+:[\w-]+ holds (?:it|them)/g, '');
+    return NW.sentences(s).filter(function (x) {
+      return !/^(Arranged|Changed|Added|Revised|Settled|Founded)\b[^.]*\b\d{4}\b/.test(x);
+    }).join(' ');
+  }
+  // "HOW TO READ THROUGH A BEING. …", "THE TWO EXTREMES — not Beings. …",
+  // "PLAY, EXPLICITLY: …": the head in sentence case, and the rest.
+  var NAMES = /\b(beings?|silas|ada|presence|watchman|p6)\b/g;
+  function headed(s) {
+    var m = /^([A-Z][A-Z0-9 ,'’-]*[A-Z0-9])(?:\s*[—–]\s*|[.:]\s+)([\s\S]*)$/.exec(s || '');
+    if (!m) return { head: '', rest: s || '' };
+    var h = m[1].toLowerCase().replace(NAMES, function (w) { return w === 'p6' ? 'P6' : w.charAt(0).toUpperCase() + w.slice(1); });
+    return { head: h.charAt(0).toUpperCase() + h.slice(1), rest: up(m[2]) };
+  }
+  function up(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  // A portal's place: "THE SURFACE — …" is on the surface, "THE DEEP — …"
+  // in the deep.
+  function placeOf(s) {
+    var h = headed(s).head.toLowerCase();
+    return h === 'the surface' ? 'on the surface' : h === 'the deep' ? 'in the deep' : h;
+  }
+  // A Being: "The Abstract Being — the Ruler. Anchors: …. <its spirit>.
+  // Costs: …. Emerges: …."
+  function beingFrom(s) {
+    var b = { name: '', epithet: '', spirit: '', fields: [] };
+    var cut = s.indexOf(' — ');
+    if (cut < 0) return null;
+    b.name = s.slice(0, cut).trim();
+    var rest = s.slice(cut + 3), dot = rest.search(/\.\s/);
+    b.epithet = (dot < 0 ? rest : rest.slice(0, dot)).trim();
+    rest = dot < 0 ? '' : rest.slice(dot + 1).trim();
+    var a = /^(Anchors?): ([\s\S]*?)\.(?:\s+|$)/.exec(rest);
+    if (a) {
+      b.fields.push([a[1], a[2]]);
+      rest = rest.slice(a[0].length);
+    }
+    var tail = /\s*\b(Costs|Emerges): /.exec(rest);
+    b.spirit = (tail ? rest.slice(0, tail.index) : rest).trim();
+    if (tail) {
+      var f = NW.fields(rest.slice(tail.index).trim(), ['Costs', 'Emerges']);
+      ['Costs', 'Emerges'].forEach(function (k) { if (f[k]) b.fields.push([k, f[k].replace(/\.$/, '')]); });
+    }
+    return b;
+  }
+  // The six portals round Presence, each with its own words and its three
+  // Beings, read from the surface (1) and the deep (2).
+  function portalsFrom(block) {
+    var list = [];
+    ['1', '2'].forEach(function (k) {
+      var side = block && block[k];
+      if (!side || typeof side !== 'object') return;
+      var place = placeOf(NW.own(side));
+      for (var i = 1; i <= 9; i++) {
+        var node = side[String(i)], h = headed(NW.own(node));
+        if (!h.head || !node || typeof node !== 'object') continue;
+        var beings = [];
+        for (var j = 1; j <= 9; j++) {
+          var b = beingFrom(NW.own(node[String(j)]));
+          if (b) { b.addr = k + '.' + i + j; beings.push(b); }
+        }
+        list.push({ addr: k + '.' + i, name: h.head, place: place, text: forReaders(h.rest), beings: beings });
+      }
+    });
+    function rank(p) { var r = ORDER.indexOf(p.addr); return r < 0 ? 99 : r; }
+    return list.sort(function (a, b) { return rank(a) - rank(b); });
+  }
+
+  // ---- The constellation -------------------------------------------------------
+  // Presence at the centre as the heart's ampersand; the six portals round
+  // it, clockwise from the top; three Beings at each, every one a lantern
+  // breathing in its own rhythm.
+  var C = { x: 180, y: 262 }, RP = 100, RS = 38, RB = 54, SPREAD = 52, ORB = 10;
+  var PORTALS = [], lit = null;
+  function at(cx, cy, r, deg) {
+    var a = deg * Math.PI / 180;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+  function n(v) { return String(Math.round(v * 10) / 10); }
+  function key(e, fn) {
+    e.addEventListener('click', fn);
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fn(); }
+    });
   }
   function draw() {
-    var g = $('rows'), ys = [150, 212, 274];
+    var g = $('constellation');
     g.textContent = '';
-    ROWS.forEach(function (row, r) {
-      g.appendChild(svg('text', { 'class': 'row-label', x: '180', y: String(ys[r] - 26), 'text-anchor': 'middle' }));
-      g.lastChild.textContent = row.portal.replace(/^The\s+/i, '').toUpperCase();
-      row.beings.forEach(function (b, i) {
-        var x = 45 + i * 54, y = ys[r], key = r + '.' + i;
-        var o = svg('g', { 'class': 'orb', tabindex: '0', role: 'button', 'aria-label': b[0] + ', ' + b[1] });
-        o.style.setProperty('--d', (5 + ((i * 7 + r * 3) % 5) * 0.9) + 's');
-        o.style.setProperty('--l', (-(i + r) * 0.7) + 's');
-        var oc = svg('circle', { 'class': 'o', cx: x, cy: y, r: '11', fill: key === litKey ? 'var(--crimson)' : 'var(--page)' });
-        o.appendChild(svg('circle', { 'class': 'breath', cx: x, cy: y, r: '13', fill: 'var(--frame)', opacity: '.45' }));
-        o.appendChild(oc);
-        o.appendChild(svg('circle', { 'class': 'ring', cx: x, cy: y, r: '11', fill: 'none', stroke: 'var(--ink)', 'stroke-width': '1.1' }));
-        // A wider touch for a finger than the drawn circle.
-        o.appendChild(svg('circle', { cx: x, cy: y, r: '22', fill: 'transparent' }));
-        if (key === litKey) lit = oc;
-        function go() { open(row, b, oc, key); }
-        o.addEventListener('click', go);
-        o.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
-        });
-        g.appendChild(o);
+    g.appendChild(svg('circle', { cx: C.x, cy: C.y, r: RP, fill: 'none', stroke: 'var(--frame)', 'stroke-width': '0.8', opacity: '.8' }));
+    PORTALS.forEach(function (p, k) {
+      var deg = -90 + k * 360 / PORTALS.length, s = at(C.x, C.y, RP, deg);
+      var from = at(C.x, C.y, 36, deg), to = at(C.x, C.y, RP - RS - 7, deg);
+      g.appendChild(svg('line', { x1: n(from.x), y1: n(from.y), x2: n(to.x), y2: n(to.y), stroke: 'var(--frame)', 'stroke-width': '1', 'stroke-dasharray': '2 4', 'stroke-linecap': 'round' }));
+      // the portal, a station that opens to its own words
+      var st = svg('g', { 'class': 'station', tabindex: '0', role: 'button', 'aria-label': p.name + ', ' + p.place + ': what this portal holds' });
+      st.dataset.addr = p.addr;
+      st.appendChild(svg('circle', { cx: n(s.x), cy: n(s.y), r: RS + 7, fill: 'var(--frame)', opacity: '.22' }));
+      st.appendChild(svg('circle', { 'class': 'disc', cx: n(s.x), cy: n(s.y), r: RS, fill: 'var(--page)', stroke: 'var(--ink)', 'stroke-width': '1.1' }));
+      st.appendChild(svg('circle', { 'class': 'ring', cx: n(s.x), cy: n(s.y), r: RS - 5, fill: 'none', stroke: 'var(--ink)', 'stroke-width': '0.7', opacity: '.45' }));
+      var t = svg('text', { 'class': 'station-label', x: n(s.x), y: n(s.y + 3.6), 'text-anchor': 'middle' });
+      t.textContent = p.name.toUpperCase();
+      st.appendChild(t);
+      key(st, function () { openPortal(p); });
+      g.appendChild(st);
+      // its three Beings, round its outer edge
+      p.beings.forEach(function (b, j) {
+        var off = p.beings.length > 1 ? -SPREAD + j * 2 * SPREAD / (p.beings.length - 1) : 0;
+        var dir = deg + off, o = at(s.x, s.y, RB, dir), e1 = at(s.x, s.y, RS + 3, dir), e2 = at(s.x, s.y, RB - ORB - 3, dir);
+        g.appendChild(svg('line', { x1: n(e1.x), y1: n(e1.y), x2: n(e2.x), y2: n(e2.y), stroke: 'var(--frame)', 'stroke-width': '0.9' }));
+        var orb = svg('g', { 'class': 'orb', tabindex: '0', role: 'button', 'aria-label': b.name + ', ' + b.epithet + ', at ' + p.name });
+        orb.dataset.addr = b.addr;
+        // each its own pace: eighteen different breaths
+        var beat = (k * 3 + j * 5) % 18;
+        orb.style.setProperty('--d', (4.2 + beat * 0.21).toFixed(2) + 's');
+        orb.style.setProperty('--l', (-(k * 1.3 + j * 0.9)).toFixed(1) + 's');
+        orb.appendChild(svg('circle', { 'class': 'lamp', cx: n(o.x), cy: n(o.y), r: '24', fill: 'url(#gL)' }));
+        orb.appendChild(svg('circle', { 'class': 'breath', cx: n(o.x), cy: n(o.y), r: '13', fill: 'var(--frame)', opacity: '.45' }));
+        orb.appendChild(svg('circle', { 'class': 'o', cx: n(o.x), cy: n(o.y), r: ORB, fill: 'var(--page)' }));
+        orb.appendChild(svg('circle', { 'class': 'ring', cx: n(o.x), cy: n(o.y), r: ORB, fill: 'none', stroke: 'var(--ink)', 'stroke-width': '1.1' }));
+        orb.appendChild(svg('circle', { cx: n(o.x), cy: n(o.y), r: '23', fill: 'transparent' }));
+        key(orb, function () { openBeing(p, b); });
+        g.appendChild(orb);
       });
     });
-    // All eighteen, as a list that opens by portal.
+    // Presence, where the heart's ampersand is
+    g.appendChild(svg('circle', { cx: C.x, cy: C.y, r: '34', fill: 'var(--frame)', opacity: '.22' }));
+    g.appendChild(svg('circle', { cx: C.x, cy: C.y, r: '29', fill: 'var(--wash)', opacity: '.55' }));
+    var amp = svg('text', { 'class': 'amp', x: C.x, y: C.y + 16, 'text-anchor': 'middle' });
+    amp.textContent = '&';
+    g.appendChild(amp);
+    var pl = svg('text', { 'class': 'row-label', x: C.x, y: C.y + 50, 'text-anchor': 'middle' });
+    pl.textContent = 'PRESENCE';
+    g.appendChild(pl);
+    fitLabels();
+    mark();
+  }
+  // A portal's name, made narrower if it would pass its ring.
+  function fitLabels() {
+    Array.prototype.forEach.call(document.querySelectorAll('.station-label'), function (t) {
+      t.removeAttribute('textLength');
+      try {
+        if (t.getComputedTextLength() > 2 * (RS - 8)) {
+          t.setAttribute('textLength', 2 * (RS - 8));
+          t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        }
+      } catch (e) {}
+    });
+  }
+  // The open lantern or portal stays lit.
+  function mark() {
+    Array.prototype.forEach.call(document.querySelectorAll('.orb, .station'), function (e) {
+      e.classList.toggle('lit', !!lit && e.dataset.addr === lit);
+    });
+  }
+
+  // ---- The card --------------------------------------------------------------------
+  // What opens beneath the constellation: a Being's spirit, a portal's own
+  // words with its three Beings, or the two extremes.
+  function card(build, addr, quiet) {
+    var c = $('card');
+    c.textContent = '';
+    build(c);
+    c.hidden = false;
+    c.classList.remove('lit');
+    void c.offsetWidth;
+    c.classList.add('lit');
+    lit = addr;
+    mark();
+    $('hint').hidden = true;
+    if (quiet) return;
+    var r = c.getBoundingClientRect();
+    if (r.bottom > innerHeight || r.top < 0) c.scrollIntoView({ block: 'nearest' });
+  }
+  function openBeing(p, b, quiet) {
+    card(function (c) {
+      c.appendChild(el('p', 'portal', p.name + ' · ' + p.place));
+      c.appendChild(el('h3', null, b.name));
+      if (b.epithet) c.appendChild(el('p', 'epithet', b.epithet));
+      if (b.spirit) c.appendChild(el('p', 'spirit', b.spirit));
+      b.fields.forEach(function (f) {
+        var line = el('p', 'field');
+        line.appendChild(el('span', 'k', f[0]));
+        line.appendChild(document.createTextNode(' ' + f[1]));
+        c.appendChild(line);
+      });
+    }, b.addr, quiet);
+  }
+  function openPortal(p, quiet) {
+    card(function (c) {
+      c.appendChild(el('p', 'portal', p.place));
+      c.appendChild(el('h3', null, p.name));
+      if (p.text) c.appendChild(el('p', 'spirit', p.text));
+      var row = el('p', 'card-beings');
+      p.beings.forEach(function (b) {
+        var go = el('button', 'flick', b.name);
+        go.type = 'button';
+        go.addEventListener('click', function () { openBeing(p, b); });
+        row.appendChild(go);
+      });
+      c.appendChild(row);
+    }, p.addr, quiet);
+  }
+  var EXTREMES = { head: '', rest: '' };
+  function openExtremes(quiet) {
+    card(function (c) {
+      c.appendChild(el('p', 'portal', $('light-1').textContent + ' · ' + $('light-2').textContent));
+      if (EXTREMES.head) c.appendChild(el('h3', null, EXTREMES.head));
+      c.appendChild(el('p', 'spirit', EXTREMES.rest));
+    }, 'extremes', quiet === true);
+  }
+  key($('light-s'), openExtremes);
+  key($('light-a'), openExtremes);
+
+  // ---- All eighteen, and more ------------------------------------------------------
+  function list() {
     var all = $('all'), openNow = {};
     Array.prototype.forEach.call(all.querySelectorAll('details'), function (d) { openNow[d.dataset.k] = d.open; });
     all.textContent = '';
-    ROWS.forEach(function (row) {
+    PORTALS.forEach(function (p) {
       var d = el('details');
-      d.dataset.k = row.portal;
-      d.open = !!openNow[row.portal];
-      d.appendChild(el('summary', null, row.portal));
+      d.dataset.k = p.addr;
+      d.open = !!openNow[p.addr];
+      var s = el('summary');
+      var name = el('span', null, p.name);
+      name.appendChild(el('span', 'place', ' · ' + p.place));
+      s.appendChild(name);
+      d.appendChild(s);
+      if (p.text) d.appendChild(el('p', 'portal-text', p.text));
       var ul = el('ul');
-      row.beings.forEach(function (b) {
-        var li = el('li');
-        li.appendChild(el('b', null, b[0]));
-        li.appendChild(document.createTextNode(', ' + b[1] + ': ' + b[2]));
+      p.beings.forEach(function (b) {
+        var li = el('li'), go = el('button', 'meet');
+        go.type = 'button';
+        go.appendChild(el('b', null, b.name));
+        if (b.epithet) go.appendChild(document.createTextNode(', ' + b.epithet));
+        go.addEventListener('click', function () { openBeing(p, b); $('card').scrollIntoView({ block: 'center' }); });
+        li.appendChild(go);
         ul.appendChild(li);
       });
       d.appendChild(ul);
       all.appendChild(d);
     });
   }
-
-  // A Being's name is the opening of its own place in the block: "The
-  // Abstract Being — the Ruler. …".
-  function nameAt(block, r, i) {
-    var t = NW.own(NW.at(block, [String(r), String(i)]));
-    var cut = t.indexOf(' — ');
-    return cut > 0 ? t.slice(0, cut).trim() : '';
+  // The two extremes (4), Beings are for reading (5), and play (9), each
+  // opening on request.
+  function more(block) {
+    var box = $('more'), openNow = {};
+    Array.prototype.forEach.call(box.querySelectorAll('details'), function (d) { openNow[d.dataset.k] = d.open; });
+    box.textContent = '';
+    ['4', '5', '9'].forEach(function (k) {
+      var h = headed(NW.own(block[k]));
+      var text = forReaders(h.rest);
+      if (!h.head || !text) return;
+      var d = el('details');
+      d.dataset.k = k;
+      d.open = !!openNow[k];
+      d.appendChild(el('summary', null, h.head));
+      d.appendChild(el('p', null, text));
+      box.appendChild(d);
+    });
   }
-  function render(words, block) {
-    // The signature, and the care line under the opening (8.83634).
-    var all = NW.forAll(words);
-    NW.set($('signature'), all.signature);
-    if (all.care && flat(all.care) !== flat($('care').textContent)) NW.care($('care'), all.care);
-    var beings = words['3'];
-    if (!beings) return;
-    var f = NW.fields(NW.own(beings), ['Title', 'Line', 'Opening', 'Hint']);
-    if (f.Title) f.Title = NW.bare(f.Title);
-    NW.set($('title'), f.Title);
-    if (f.Title) document.title = f.Title + ' · The Night Watchman';
-    NW.set($('line'), NW.bare(f.Line));
-    NW.set($('opening'), f.Opening);
-    NW.set($('hint'), f.Hint);
 
-    // "The Head: 1.1 the Ruler, The part of us …. 1.2 …. The Heart: 2.1 …"
-    var inv = NW.own(beings['1']), rows = [];
-    var heads = [], re = /(?:^|[.:]\s)(The [A-Z][a-z]+):\s/g, m;
-    while ((m = re.exec(inv))) heads.push({ name: m[1], at: m.index + m[0].length });
-    heads.forEach(function (h, k) {
-      var part = inv.slice(h.at, k + 1 < heads.length ? heads[k + 1].at - h.name.length - 2 : inv.length);
-      var items = [], ire = /(\d)\.(\d) (the [^,]+), ([\s\S]*?)(?=\s\d\.\d |\s*$)/g, n;
-      while ((n = ire.exec(part))) items.push({ r: +n[1], i: +n[2], epithet: n[3], line: n[4].replace(/\s*The [A-Z][a-z]+:\s*$/, '').trim() });
-      if (!items.length) return;
-      rows[items[0].r - 1] = {
-        portal: h.name,
-        beings: items.map(function (it) {
-          var saved = ROWS[it.r - 1] && ROWS[it.r - 1].beings[it.i - 1];
-          return [nameAt(block, it.r, it.i) || (saved && saved[0]) || '', it.epithet, it.line];
-        })
-      };
-    });
-    if (rows.length === 3 && rows.every(Boolean) && JSON.stringify(rows) !== JSON.stringify(ROWS)) {
-      ROWS = rows;
+  // ---- Reading ---------------------------------------------------------------------
+  function show(block) {
+    var portals = portalsFrom(block);
+    if (portals.length === 6 && portals.every(function (p) { return p.beings.length; })) {
+      PORTALS = portals;
       draw();
-      if (litKey) {
-        var rc = litKey.split('.'), row = ROWS[+rc[0]], b = row && row.beings[+rc[1]];
-        if (b) {
-          $('bportal').textContent = row.portal;
-          $('bname').textContent = b[0];
-          $('bepithet').textContent = b[1];
-          $('binvite').textContent = b[2];
-        }
-      }
+      list();
+      $('middle').setAttribute('aria-label', 'Two lights, ' + $('light-1').textContent + ' and ' + $('light-2').textContent +
+        ', shining down on the P6 constellation: Presence at its centre as an ampersand, and around it six portals, ' +
+        PORTALS.map(function (p) { return p.name; }).join(', ') + ', with three Beings at each');
     }
-
-    // "ON REQUEST. Silas and Ada, the two lights: …. Where they come from: …"
-    var parts = $('more').querySelectorAll('details');
-    var labels = Array.prototype.map.call(parts, function (d) { return d.querySelector('summary').textContent; });
-    var more = NW.fields(NW.own(beings['2']), labels);
-    Array.prototype.forEach.call(parts, function (d, i) {
-      var t = more[labels[i]], p = d.querySelector('p');
-      if (t && p && flat(t) !== flat(p.textContent)) p.textContent = t;
-    });
-    var two = /^(\S+) and (\S+),/.exec(labels[0] || '');
+    var way = headed(NW.own(block['3']));
+    if (way.head) NW.set($('way-head'), way.head);
+    var text = forReaders(way.rest);
+    if (text && flat(text) !== flat($('way').textContent)) $('way').textContent = text;
+    var ext = headed(NW.own(block['4']));
+    if (ext.head) EXTREMES = { head: ext.head, rest: forReaders(ext.rest) };
+    var two = /\b([A-Z][a-z]+) and ([A-Z][a-z]+) are the two extremes/.exec(EXTREMES.rest);
     if (two) {
       NW.set($('light-1'), two[1]);
       NW.set($('light-2'), two[2]);
+      $('light-s').setAttribute('aria-label', two[1] + ', one of the two extremes');
+      $('light-a').setAttribute('aria-label', two[2] + ', one of the two extremes');
+    }
+    more(block);
+    // a card already open shows the words as they now stand, where it is
+    if (lit && !$('card').hidden) {
+      if (lit === 'extremes') return openExtremes(true);
+      PORTALS.forEach(function (p) {
+        if (p.addr === lit) openPortal(p, true);
+        p.beings.forEach(function (b) { if (b.addr === lit) openBeing(p, b, true); });
+      });
     }
   }
+  function render(words, block) {
+    // The signature and the care line under the opening (8.83634).
+    var all = NW.forAll(words);
+    NW.set($('signature'), all.signature);
+    if (all.care && flat(all.care) !== flat($('care').textContent)) NW.care($('care'), all.care);
+    // The title, line and hint are the page's own words (8.83633).
+    var page = words['3'];
+    if (page) {
+      var f = NW.fields(NW.own(page), ['Title', 'Line', 'Opening', 'Hint']);
+      if (f.Title) f.Title = NW.bare(f.Title);
+      NW.set($('title'), f.Title);
+      if (f.Title) document.title = f.Title + ' · The Night Watchman';
+      NW.set($('line'), NW.bare(f.Line));
+      NW.set($('hint'), f.Hint);
+    }
+    show(block);
+  }
 
-  // The two lights are still for anyone who asks for less motion.
+  // The lights are still, and the lanterns do not breathe, for anyone who
+  // asks for less motion.
   var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function hush() {
     var m = $('middle');
@@ -273,7 +489,19 @@
   if (still && still.addEventListener) still.addEventListener('change', hush);
   hush();
 
-  draw();
+  show(SAVED);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLabels);
+  Beach.get('spine:p6').then(function (spine) {
+    var root = NW.own(spine), from = root.search(/CLOCKWISE/i), order = [];
+    (from < 0 ? root : root.slice(from)).replace(/\((\d\.\d)\)/g, function (all, a) {
+      if (order.indexOf(a) < 0) order.push(a);
+    });
+    if (order.length !== 6) return;
+    ORDER = order;
+    PORTALS.sort(function (a, b) { return ORDER.indexOf(a.addr) - ORDER.indexOf(b.addr); });
+    draw();
+    list();
+  }, function () {});
   NW.follow(render);
 })();
 </script>

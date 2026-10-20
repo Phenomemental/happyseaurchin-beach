@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20b">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20c">
 </head>
 <body>
 <main>
@@ -28,9 +28,11 @@
        answers. The line under the title, the tide, the heading Choose your
        way in, the line opening the shared path of the first two ways, the
        Read card, and reading through a Being with its lenses are this
-       page's own. The spinner's questions come from
-       spine:p6; lines left at a portal go to pool:p6 at the portal's place,
-       and the tide and Read are drawn from what pool:p6 holds, nothing else. -->
+       page's own; the Beings' names are read from their places in the same
+       block, three beneath each portal (Facts' at 1.11 to 1.13). The
+       spinner's questions come from spine:p6; lines left at a portal go to
+       pool:p6 at the portal's place, and the tide and Read are drawn from
+       what pool:p6 holds, nothing else. -->
   <div class="sheet">
     <h1 id="title">Begin</h1>
     <p class="byline" id="line">Have a go. Turn the wheel, and write what comes.</p>
@@ -153,7 +155,7 @@
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-19c"></script>
+<script src="night-watchman.js?v=2026-10-20a"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -176,9 +178,15 @@
     if (sel) setAll(sel, h.head);
     return h.rest;
   }
-  function render(words) {
+  function render(words, block) {
     // The signature each page ends with (8.83634).
     NW.set($('signature'), NW.forAll(words).signature);
+    // The Beings at each portal, from their own places in the block.
+    var beings = beingsFrom(block);
+    if (beings) {
+      BEINGS = beings;
+      buildPicker();
+    }
     // The spinner's words stand with the front door's (8.836312).
     if (words['1']) renderSpinnerWords(NW.own(words['1']['2']));
     var begin = words['2'];
@@ -855,55 +863,84 @@
   }
 
   // ---- Read through a Being ----------------------------------------------------
-  // The eighteen Beings by row, each with its lens: a question put to the
-  // reader as they read, never a reading of anyone's line. The lines show
-  // exactly as they were left, with a Being or without one.
-  var LENSES = [
-    ['The Head · the trap', [
-      ['Abstract', 'Read for the parts you would count or measure. Then notice what goes missing when you do.'],
-      ['Hypothetical', 'Notice each "what if" that arrives as you read. Are you reading the line, or a theory about it?'],
-      ['Predictable', 'Notice where you want these words to settle into something safe and known.'],
-      ['Anxious', 'Notice the alarm if it comes, the quickening, the urge to fix. Let it be there while you read.'],
-      ['Objective', 'Read from behind the glass. Then notice the glass: what is it keeping at a distance?'],
-      ['Categorical', 'Notice the bins you reach for as you read: right or wrong, well or ill, them or me. Which one did you just use?']
-    ]],
-    ['The Heart · the cure', [
-      ['Feeling', 'Read slowly. Do not name what you meet; notice where it lands in you, and the shape it takes there.'],
-      ['Dreaming', 'Read as you would a dream: let an image come, and follow it a little way.'],
-      ['Religious', 'Read for what holds these words together, unspoken. Is anything sacred here, for you?'],
-      ['Relational', 'Read as a neighbour. Who else is in these words, and who are you beside them?'],
-      ['Alien', 'Notice where you feel apart from what is written, and where, against the odds, you do not.'],
-      ['Sensory', 'Read with your body. What does it do as you read: your breath, your shoulders, your belly?']
-    ]],
-    ['The Hand · the drive', [
-      ['Compulsive', 'Notice the pull to act on what you read: to connect, to plan, to fix. Then read it once more without moving.'],
-      ['Creative', 'Notice where the words hold both ends at once, and what that makes in you.'],
-      ['Inclusional', 'Read for the edges in the words. Are they walls, or places where one thing meets another?'],
-      ['Performative', 'Notice what the words show and what they might be covering. Then notice your own face as you read.'],
-      ['Intentioned', 'Read this as one step on a walk. Where does it send you next?'],
-      ['Wholeless', 'Read without needing it to be whole. What is open here, and can you leave it open?']
-    ]]
-  ];
-  var lensOf = {}, being = null;
+  // Three Beings stand at each portal of the wheel, at the portal's own
+  // place in the Beings' block (Facts is 1.1 in both; its Beings are 1.11
+  // to 1.13), and each has its lens: a question put to the reader as they
+  // read, never a reading of anyone's line. The lines show exactly as they
+  // were left, with a Being or without one.
+  var LENSES = {
+    Abstract: 'Read for the parts you would count or measure. Then notice what goes missing when you do.',
+    Hypothetical: 'Notice each "what if" that arrives as you read. Are you reading the line, or a theory about it?',
+    Predictable: 'Notice where you want these words to settle into something safe and known.',
+    Anxious: 'Notice the alarm if it comes, the quickening, the urge to fix. Let it be there while you read.',
+    Objective: 'Read from behind the glass. Then notice the glass: what is it keeping at a distance?',
+    Categorical: 'Notice the bins you reach for as you read: right or wrong, well or ill, them or me. Which one did you just use?',
+    Feeling: 'Read slowly. Do not name what you meet; notice where it lands in you, and the shape it takes there.',
+    Dreaming: 'Read as you would a dream: let an image come, and follow it a little way.',
+    Religious: 'Read for what holds these words together, unspoken. Is anything sacred here, for you?',
+    Relational: 'Read as a neighbour. Who else is in these words, and who are you beside them?',
+    Alien: 'Notice where you feel apart from what is written, and where, against the odds, you do not.',
+    Sensory: 'Read with your body. What does it do as you read: your breath, your shoulders, your belly?',
+    Compulsive: 'Notice the pull to act on what you read: to connect, to plan, to fix. Then read it once more without moving.',
+    Creative: 'Notice where the words hold both ends at once, and what that makes in you.',
+    Inclusional: 'Read for the edges in the words. Are they walls, or places where one thing meets another?',
+    Performative: 'Notice what the words show and what they might be covering. Then notice your own face as you read.',
+    Intentioned: 'Read this as one step on a walk. Where does it send you next?',
+    Wholeless: 'Read without needing it to be whole. What is open here, and can you leave it open?'
+  };
+  // The Beings at each portal, saved; the beach's own replace them.
+  var BEINGS = {
+    '1.1': ['Abstract', 'Objective', 'Performative'],
+    '1.2': ['Alien', 'Sensory', 'Feeling'],
+    '1.3': ['Categorical', 'Dreaming', 'Creative'],
+    '2.1': ['Religious', 'Relational', 'Inclusional'],
+    '2.2': ['Predictable', 'Compulsive', 'Intentioned'],
+    '2.3': ['Anxious', 'Hypothetical', 'Wholeless']
+  };
+  // "The Abstract Being — the Ruler. …" at 1.11 is Abstract, at Facts.
+  function beingsFrom(block) {
+    var out = {}, count = 0;
+    ['1', '2'].forEach(function (k) {
+      for (var i = 1; i <= 9; i++) {
+        var node = block && block[k] && block[k][String(i)];
+        if (!node || typeof node !== 'object') continue;
+        var names = [];
+        for (var j = 1; j <= 9; j++) {
+          var m = /^The (.+?) Being — /.exec(NW.own(node[String(j)]));
+          if (m) names.push(m[1]);
+        }
+        if (names.length) { out[k + '.' + i] = names; count += names.length; }
+      }
+    });
+    return count ? out : null;
+  }
+  var being = null;
+  // The Beings by portal, in the wheel's order.
   function buildPicker() {
-    LENSES.forEach(function (row, r) {
-      var g = el('div', 'being-group'), h = el('h4', null, row[0]), list = el('div', 'being-row');
+    var box = $('being-pick');
+    box.textContent = '';
+    var shown = [];
+    PORTALS.forEach(function (p, r) {
+      var names = BEINGS[p.addr];
+      if (!names || !names.length) return;
+      var g = el('div', 'being-group'), h = el('h4', null, p.name + ' · ' + p.place), list = el('div', 'being-row');
       h.id = 'beings-' + (r + 1);
       g.setAttribute('role', 'group');
       g.setAttribute('aria-labelledby', h.id);
-      row[1].forEach(function (b) {
-        lensOf[b[0]] = b[1];
-        var btn = el('button', 'being-pick', b[0]);
+      names.forEach(function (name) {
+        shown.push(name);
+        var btn = el('button', 'being-pick', name);
         btn.type = 'button';
-        btn.setAttribute('aria-pressed', 'false');
-        btn.setAttribute('data-being', b[0]);
-        btn.addEventListener('click', function () { readThrough(being === b[0] ? null : b[0]); });
+        btn.setAttribute('aria-pressed', name === being ? 'true' : 'false');
+        btn.setAttribute('data-being', name);
+        btn.addEventListener('click', function () { readThrough(being === name ? null : name); });
         list.appendChild(btn);
       });
       g.appendChild(h);
       g.appendChild(list);
-      $('being-pick').appendChild(g);
+      box.appendChild(g);
     });
+    if (being && shown.indexOf(being) < 0) readThrough(null);
   }
   // Read through a Being, or plainly (null): its name and lens above the
   // lines, and a word after them.
@@ -913,7 +950,7 @@
     $('lens').hidden = $('lens-after').hidden = !name;
     if (!name) return;
     $('lens-name').textContent = 'The ' + name + ' Being';
-    $('lens-line').textContent = lensOf[name];
+    $('lens-line').textContent = LENSES[name] || '';
     var r = $('lens').getBoundingClientRect();
     if (r.top < 0 || r.top > innerHeight * 0.6) $('lens').scrollIntoView({ block: 'start' });
   }
@@ -956,6 +993,7 @@
     if (rested < 0) rested = null;
     if (room) renderTide();
     renderRead();
+    buildPicker();
     draw();
   }, function () {});
   // Read opened from the address reads the room itself.
