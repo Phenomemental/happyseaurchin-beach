@@ -896,124 +896,6 @@ body.has-live-bar {
       color-mix(in srgb, var(--paper) 70%, var(--frame)) 100%);
 }
 
-/* A heart: two lights, a figure-of-eight between them, the "&" at the
-   crossing, and the line beneath. */
-.live-heart {
-  text-align: center;
-}
-.live-heart-stage {
-  position: relative;
-  width: 100%;
-  max-width: 30rem;
-  aspect-ratio: 400 / 180;
-  margin: 0 auto;
-}
-.live-heart-stage[hidden] {
-  display: none;
-}
-.live-heart-art {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.live-heart-stop-core {
-  stop-color: #fff6ee;
-  stop-opacity: 0.95;
-}
-.live-heart-stop-mid {
-  stop-color: var(--crimson);
-  stop-opacity: 0.36;
-}
-.live-heart-stop-out {
-  stop-color: var(--crimson);
-  stop-opacity: 0;
-}
-.live-heart-light {
-  fill: #fffaf3;
-  stroke: var(--crimson);
-  stroke-width: 1.2;
-}
-.live-heart-path {
-  fill: none;
-  stroke: var(--crimson);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-}
-.live-heart-beat {
-  opacity: 0;
-}
-.live-heart.is-beating .live-heart-beat {
-  animation: live-heart-beat 2.8s ease-in-out infinite;
-}
-.live-heart-cross {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.3rem;
-  height: 3.3rem;
-  padding: 0 0 0.25rem;
-  font: inherit;
-  font-style: italic;
-  font-weight: 500;
-  font-size: 2.5rem;
-  line-height: 1;
-  color: var(--crimson);
-  background: radial-gradient(circle, var(--page) 48%, transparent 72%);
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.live-heart.is-beating .live-heart-cross,
-.live-heart.is-beating .live-heart-amp {
-  animation: live-heart-glow 2.8s ease-in-out infinite;
-}
-.live-heart-cross:focus-visible {
-  outline: 2px solid var(--crimson);
-  outline-offset: 2px;
-}
-.live-heart-line {
-  font-style: italic;
-  font-size: 1.3rem;
-  line-height: 1.4;
-  min-height: 2.8em;
-  margin: 0.5rem auto 0;
-  max-width: 26rem;
-}
-.live-heart-amp {
-  color: var(--crimson);
-}
-.live-heart-typed.is-typing::after {
-  content: "";
-  display: inline-block;
-  width: 1px;
-  height: 1em;
-  margin-left: 2px;
-  vertical-align: -0.12em;
-  background: var(--crimson);
-  animation: live-heart-caret 1s steps(2) infinite;
-}
-@keyframes live-heart-beat {
-  0%, 100% { opacity: 0.2; }
-  10% { opacity: 0.95; }
-  22% { opacity: 0.4; }
-  32% { opacity: 0.8; }
-  52% { opacity: 0.25; }
-}
-@keyframes live-heart-glow {
-  0%, 52%, 100% { text-shadow: 0 0 0 rgba(194, 29, 78, 0); }
-  10% { text-shadow: 0 0 0.7rem rgba(194, 29, 78, 0.7); }
-  32% { text-shadow: 0 0 0.45rem rgba(194, 29, 78, 0.45); }
-}
-@keyframes live-heart-caret {
-  50% { opacity: 0; }
-}
-
 /* A shore of time: round sand, water at the centre, rings, shells. */
 .live-shore {
   --shore-wet: #d6c5a7;
@@ -1496,12 +1378,6 @@ li.live-print::before {
     --shore-sea-edge: #4f7d86;
     --shore-foam: #dbe8e4;
   }
-  .live-heart-stop-core {
-    stop-color: #ffe3ea;
-  }
-  .live-heart-light {
-    fill: #ffe9ef;
-  }
 }
 
 /* Only in print: the whole of what is shown one at a time on screen. */
@@ -1530,16 +1406,9 @@ li.live-print::before {
   .live-glow::after {
     animation: none;
   }
-  .live-heart.is-beating .live-heart-cross,
-  .live-heart.is-beating .live-heart-amp,
-  .live-heart-typed.is-typing::after,
   .live-prints-sea,
   .live-prints-foam {
     animation: none;
-  }
-  .live-heart.is-beating .live-heart-beat {
-    animation: none;
-    opacity: 0.7;
   }
   .live-mark,
   .live-shore-ring,

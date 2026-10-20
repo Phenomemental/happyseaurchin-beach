@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-19a">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-19c">
 </head>
 <body>
 <main>
@@ -30,8 +30,9 @@
     <p class="byline" id="line">eighteen who keep him company in the dark</p>
 
     <p class="opening" id="opening">They are characters, drawn for the page: ways a person can be, given a face and a name. Not diagnoses, and not parts of you. Wander among them. If one speaks to you, it may come with you into a watch.</p>
+    <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
-    <svg class="middle" id="middle" viewBox="0 0 360 330" role="group" aria-label="Two lights, Silas and Ada, shining down on three rows of six Beings: the Head, the Heart and the Hand">
+    <svg class="middle" id="middle" viewBox="0 0 360 330" role="group" aria-label="Two lights, Silas and Ada, the two ends of one axis, shining down on three rows of six Beings: the Head, the Heart and the Hand">
       <defs>
         <radialGradient id="gS" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
         <radialGradient id="gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
@@ -46,7 +47,7 @@
       <circle cx="264" cy="44" r="7" fill="var(--indigo)"/>
       <text class="light-label" id="light-1" x="96" y="92" text-anchor="middle">Silas</text>
       <text class="light-label" id="light-2" x="264" y="92" text-anchor="middle">Ada</text>
-      <text x="180" y="50" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="24" fill="var(--crimson)">&amp;</text>
+      <line x1="103" y1="44" x2="257" y2="44" stroke="var(--ink)" stroke-width="1.2" stroke-linecap="round"/>
       <g id="rows"></g>
     </svg>
     <p class="hint" id="hint">Touch a Being to meet it.</p>
@@ -70,7 +71,7 @@
     <section class="more" id="more" aria-label="About the two lights">
       <details>
         <summary>Silas and Ada, the two lights</summary>
-        <p>Above the Beings shine two lights, Silas and Ada: the two poles a night can swing between. They are not Beings. Every Being stands somewhere in their light, and the &amp; between them is where a watch is kept.</p>
+        <p>Above the Beings shine two lights, Silas and Ada: the two ends of the one axis a night runs along. They are not Beings. Every Being stands somewhere along that axis, and a watch is kept on the whole of it.</p>
       </details>
       <details>
         <summary>Where they come from</summary>
@@ -80,10 +81,11 @@
 
     <hr class="rule">
     <p class="back"><a href="night-watchman.html">&larr; back to the Night Watchman</a></p>
+    <p class="signature" id="signature">Mathew Pay</p>
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-19a"></script>
+<script src="night-watchman.js?v=2026-10-19c"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -200,6 +202,10 @@
     return cut > 0 ? t.slice(0, cut).trim() : '';
   }
   function render(words, block) {
+    // The signature, and the care line under the opening (8.83634).
+    var all = NW.forAll(words);
+    NW.set($('signature'), all.signature);
+    if (all.care && flat(all.care) !== flat($('care').textContent)) NW.care($('care'), all.care);
     var beings = words['3'];
     if (!beings) return;
     var f = NW.fields(NW.own(beings), ['Title', 'Line', 'Opening', 'Hint']);

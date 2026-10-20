@@ -8,10 +8,13 @@
   var PATH = ['8', '8', '3', '6', '3'];
 
   // A node's own words: a string, or its "_", followed down when the beach
-  // has nested older words there.
+  // has nested older words there. A dated note at the end saying how the
+  // words were changed ("(Changed 19 October 2026, evening: …)") is for
+  // their keepers, never the page.
+  var CHANGED = /\s*\([^()]*\bchanged\b[^()]*\b\d{4}\b[^()]*\)\s*$/i;
   function own(node) {
     while (node && typeof node === 'object' && node._ && typeof node._ === 'object') node = node._;
-    return (Beach.text(node) || '').trim();
+    return (Beach.text(node) || '').trim().replace(CHANGED, '');
   }
   function at(node, path) {
     for (var i = 0; i < path.length && node; i++) node = node && typeof node === 'object' ? node[path[i]] : null;
@@ -95,6 +98,15 @@
     if (last < s.length) el.appendChild(document.createTextNode(s.slice(last)));
   }
 
+  // What all three pages carry (8.83634): the signature each ends with,
+  // and the care line the Beings page sets under its opening.
+  function forAll(words) {
+    var t = own(words && words['4']);
+    var sig = /\bsignature ([A-Z][^,.]*?)[,.]/.exec(t);
+    var care = /\bunder its opening: ([\s\S]+)$/.exec(t);
+    return { signature: sig ? sig[1].trim() : '', care: care ? care[1].trim() : '' };
+  }
+
   // Read the words, now and whenever the page comes back into view, and
   // hand them to render(words, block) only when they have changed. The
   // beach's own status line is kept off the page.
@@ -122,6 +134,7 @@
     sentences: sentences,
     set: set,
     care: care,
+    forAll: forAll,
     follow: follow
   };
 })();

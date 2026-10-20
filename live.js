@@ -1,7 +1,7 @@
 /* What lets a reader see, and touch, that a page is live: a count that
    pulses when it rises, lines that draw themselves as they are reached,
    a line of time to tap along, a sky with a flock of what has just moved
-   on the beach (or birds on a shore); a heart line drawn as a figure, a
+   on the beach (or birds on a shore); a
    round shore that is a clock of someone's time, footprints up the sand,
    a night sky of constellations, lanterns round a lit doorway; and the
    pieces a long page is folded into: chapters,
@@ -2905,167 +2905,6 @@
     return v + (to - v) * Math.min(1, k * dt);
   }
 
-  // ---- A heart --------------------------------------------------------------
-  // A line held as a figure. When the line joins two halves with "&" and
-  // carries "∞" on both sides of it, two lights stand for the poles and a
-  // figure-of-eight is drawn slowly between them, crossing at the middle;
-  // the "&" stands at the crossing and glows with a slow, steady beat,
-  // and beneath, the line types itself in, its own "&" beating with the
-  // one above. A line without them is shown as it is, with no figure.
-  // The "&" at the crossing is a button (heart.cross) for the page to
-  // give an action to; opts.name is its name for anyone who can't see
-  // it. The figure is drawn when it first comes into view. For anyone who
-  // asks for less motion the figure stands finished, the "&" glows
-  // without beating, and the line is whole. The line is always there,
-  // whole, for a screen reader. Returns { el, cross, set(line) }.
-  var HEART = { w: 400, h: 180, cx: 200, cy: 90, a: 168 };
-
-  // The figure-of-eight (a lemniscate), from its crossing round the left
-  // loop and back, then round the right.
-  function eight(n) {
-    var d = '';
-    for (var i = 0; i <= n; i++) {
-      var t = Math.PI / 2 + i / n * Math.PI * 2;
-      var s = Math.sin(t);
-      var c = Math.cos(t);
-      var k = 1 + s * s;
-      d += (i ? ' L' : 'M') + (HEART.cx + HEART.a * c / k).toFixed(1) + ' ' + (HEART.cy + HEART.a * s * c / k).toFixed(1);
-    }
-    return d;
-  }
-
-  function heart(box, opts) {
-    opts = opts || {};
-    var id = uid('live-heart');
-    box.classList.add('live-heart');
-    box.textContent = '';
-    var stage = html('div', 'live-heart-stage');
-    stage.hidden = true;
-    var art = vector('svg', 'live-heart-art', { viewBox: '0 0 ' + HEART.w + ' ' + HEART.h, 'aria-hidden': 'true', focusable: 'false' }, stage);
-    var defs = vector('defs', null, {}, art);
-    var glow = vector('radialGradient', null, { id: id + '-glow' }, defs);
-    vector('stop', 'live-heart-stop-core', { offset: '0' }, glow);
-    vector('stop', 'live-heart-stop-mid', { offset: '0.28' }, glow);
-    vector('stop', 'live-heart-stop-out', { offset: '1' }, glow);
-    var foc = HEART.a / Math.SQRT2;
-    var poles = [-1, 1].map(function (side) {
-      var g = vector('g', 'live-heart-pole', {}, art);
-      vector('circle', 'live-heart-halo', { cx: HEART.cx + side * foc, cy: HEART.cy, r: 46, fill: 'url(#' + id + '-glow)' }, g);
-      vector('circle', 'live-heart-light', { cx: HEART.cx + side * foc, cy: HEART.cy, r: 4.5 }, g);
-      return g;
-    });
-    var path = vector('path', 'live-heart-path', { d: eight(160), pathLength: '1' }, art);
-    vector('circle', 'live-heart-beat', { cx: HEART.cx, cy: HEART.cy, r: 30, fill: 'url(#' + id + '-glow)' }, art);
-    var cross = html('button', 'live-heart-cross', '&');
-    cross.type = 'button';
-    if (opts.name) cross.setAttribute('aria-label', opts.name);
-    cross.style.left = HEART.cx / HEART.w * 100 + '%';
-    cross.style.top = HEART.cy / HEART.h * 100 + '%';
-    stage.appendChild(cross);
-    box.appendChild(stage);
-
-    var lineEl = html('p', 'live-heart-line');
-    var whole = html('span', 'visually-hidden');
-    var typed = html('span', 'live-heart-typed');
-    typed.setAttribute('aria-hidden', 'true');
-    lineEl.appendChild(whole);
-    lineEl.appendChild(typed);
-    box.appendChild(lineEl);
-
-    var line = null;
-    var pre = '';
-    var post = '';
-    var amp = false;
-    var figure = false;
-    var played = false;
-    var onScreen = !window.IntersectionObserver;
-    var anims = [];
-    var timer = 0;
-
-    // The first k characters of the line, its "&" in a span of its own.
-    function show(k) {
-      typed.textContent = '';
-      typed.appendChild(document.createTextNode(pre.slice(0, k)));
-      if (amp && k > pre.length) {
-        typed.appendChild(html('span', 'live-heart-amp', '&'));
-        typed.appendChild(document.createTextNode(post.slice(0, k - pre.length - 1)));
-      }
-      typed.classList.toggle('is-typing', k < pre.length + (amp ? 1 : 0) + post.length);
-    }
-
-    function stop() {
-      anims.forEach(function (a) { a.cancel(); });
-      anims = [];
-      clearInterval(timer);
-      timer = 0;
-    }
-
-    function finish() {
-      stop();
-      show(Infinity);
-      box.classList.add('is-drawn');
-      box.classList.toggle('is-beating', figure);
-    }
-
-    function play() {
-      played = true;
-      if (still() || !art.animate || !figure) return finish();
-      stop();
-      box.classList.remove('is-drawn', 'is-beating');
-      show(0);
-      poles.forEach(function (p, i) {
-        anims.push(p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1200, delay: i * 300, easing: 'ease-out', fill: 'both' }));
-      });
-      anims.push(path.animate([{ strokeDashoffset: '1' }, { strokeDashoffset: '0' }], { duration: 4800, delay: 500, easing: 'cubic-bezier(0.45, 0.05, 0.4, 1)', fill: 'both' }));
-      var come = cross.animate([{ opacity: 0, transform: 'translate(-50%, -50%) scale(0.6)' }, { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }], { duration: 1000, delay: 4900, easing: 'ease-out', fill: 'both' });
-      anims.push(come);
-      come.onfinish = function () {
-        box.classList.add('is-beating');
-      };
-      // The line types itself in while the figure closes.
-      var k = 0;
-      var total = pre.length + (amp ? 1 : 0) + post.length;
-      setTimeout(function () {
-        if (box.classList.contains('is-drawn')) return;
-        timer = setInterval(function () {
-          k += 1;
-          show(k);
-          if (k >= total) {
-            clearInterval(timer);
-            timer = 0;
-          }
-        }, 60);
-      }, 2400);
-    }
-
-    function set(s) {
-      s = (s || '').trim();
-      if (s === line) return;
-      line = s;
-      var at = s.indexOf('&');
-      amp = at >= 0;
-      pre = amp ? s.slice(0, at) : s;
-      post = amp ? s.slice(at + 1) : '';
-      figure = amp && (s.match(/∞/g) || []).length >= 2;
-      stage.hidden = !figure;
-      whole.textContent = s;
-      if (played || still()) finish();
-      else if (onScreen) play();
-      else show(0);
-    }
-
-    if (window.IntersectionObserver) {
-      new IntersectionObserver(function (es) {
-        onScreen = es[es.length - 1].isIntersecting;
-        if (onScreen && line != null && !played) play();
-      }, { threshold: 0.3 }).observe(box);
-    }
-    onSettings(function () {
-      if (still()) finish();
-    });
-    return { el: box, cross: cross, set: set };
-  }
-
   // ---- A shore of time ------------------------------------------------------
   // A round shore seen from above, as a clock of someone's time: water at
   // the centre, and rings of sand going out from it, one for each rung of
@@ -3807,7 +3646,6 @@
     filmModel: filmModel,
     film: film,
     scene: scene,
-    heart: heart,
     shore: tideClock,
     shells: shells,
     footprints: footprints,
