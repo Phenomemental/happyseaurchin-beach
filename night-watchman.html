@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20a">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20b">
 </head>
 <body>
 <main>
@@ -24,8 +24,8 @@
   <!-- The front door. Its words are Dorylus's, read live from
        beings:night-watchman 8.8363 (the front door at 1); what is written
        below is the saved copy, shown until the beach answers. Have a go, at
-       the top and as the first door, is this page's own: it leads to Begin,
-       where the spinner now turns. -->
+       the top, and the door Read through a Being are this page's own: both
+       lead to Begin, where the spinner now turns. -->
   <div class="sheet">
     <svg class="heart" style="aspect-ratio:390/340" viewBox="0 0 390 340" role="img" aria-label="One open stroke drawn in ink: it comes in thin from the top right through the gap in a ring, curls once round a crimson centre, crosses itself, and leaves thick and open at the bottom left">
       <ellipse cx="232" cy="140" rx="118" ry="112" fill="var(--wash)" opacity=".6"/>
@@ -61,14 +61,14 @@
     <section aria-labelledby="doors-head">
       <h2 id="doors-head">Further in</h2>
       <nav class="doors" id="doors" aria-labelledby="doors-head">
-        <a class="door" href="night-watchman-begin.html" data-own>
+        <a class="door" href="night-watchman-beings.html">
           <span class="num">i</span>
-          <span class="t"><span class="title">Have a go</span><span class="desc">turn the wheel, write a line, then choose your way in</span></span>
+          <span class="t"><span class="title">Meet the Beings</span><span class="desc">eighteen figures who keep him company in the dark</span></span>
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
-        <a class="door" href="night-watchman-beings.html">
+        <a class="door" href="night-watchman-begin.html#read" data-own>
           <span class="num">ii</span>
-          <span class="t"><span class="title">Meet the Beings</span><span class="desc">eighteen figures who keep him company in the dark</span></span>
+          <span class="t"><span class="title">Read through a Being</span><span class="desc">No AI needed. The lines left at the wheel, seen through one Being's eyes.</span></span>
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
       </nav>
@@ -134,16 +134,21 @@
       st.split(/\s*\/\s*/).forEach(function (l) { if (l.trim()) box.appendChild(el('span', null, l.trim())); });
     });
   }
-  // "THE DOORS. Head: Further in. i, Title: what it is. ii, …" A door
-  // marked data-own (Have a go) keeps this page's own words.
+  // "THE DOORS. Head: Further in. i, Title: what it is. ii, …" Each of the
+  // beach's doors goes to the page's door of the same title; one with no
+  // such door is left out, and a door marked data-own (Read through a
+  // Being) keeps this page's own words.
   function renderDoors(s) {
     var h = NW.fields(s, ['Head']).Head;
     if (h) NW.set($('doors-head'), NW.bare(h.split(/\.\s/)[0]));
     var doors = $('doors').querySelectorAll('.door');
-    NW.numbered(s, true).forEach(function (d, i) {
-      if (!doors[i] || doors[i].hasAttribute('data-own')) return;
-      NW.set(doors[i].querySelector('.title'), d.title);
-      NW.set(doors[i].querySelector('.desc'), NW.bare(d.body));
+    NW.numbered(s, true).forEach(function (d) {
+      var door = Array.prototype.filter.call(doors, function (x) {
+        return flat(x.querySelector('.title').textContent).toLowerCase() === flat(d.title).toLowerCase();
+      })[0];
+      if (!door || door.hasAttribute('data-own')) return;
+      NW.set(door.querySelector('.title'), d.title);
+      NW.set(door.querySelector('.desc'), NW.bare(d.body));
     });
   }
   // "ON REQUEST. Why this place exists: …. Practise it with people: …"
