@@ -892,19 +892,10 @@ section.begin {
   font-size: 1.1rem;
   margin: 0.3rem 0 0.8rem;
 }
-.being .field {
+/* A Being's piece for the reader: prose, in the page's own size. */
+.being .piece {
   text-align: left;
-  font-size: 1rem;
-  font-style: italic;
-  color: var(--muted);
-  margin: 0 0 0.4rem;
-}
-.being .field .k {
-  font-style: normal;
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-right: 0.45rem;
+  margin: 0 0 0.9rem;
 }
 .card-beings {
   display: flex;
@@ -925,22 +916,6 @@ section.begin {
   color: var(--muted);
   text-align: center;
   margin: 0.6rem 0 0;
-}
-.being .place-line {
-  text-align: left;
-  font-size: 0.95rem;
-  font-style: italic;
-  color: var(--muted);
-  border-top: 1px solid var(--frame);
-  padding-top: 0.6rem;
-  margin: 0.8rem 0 0;
-}
-.being .place-line .k {
-  font-style: normal;
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-right: 0.45rem;
 }
 .being .read-on {
   font-style: italic;
@@ -972,38 +947,16 @@ section.begin {
   font-size: 1rem;
   color: var(--muted);
 }
-.all-place .portal-text {
-  color: var(--muted);
-  font-size: 1.05rem;
-  margin: 0.4rem 0 0.8rem;
-}
 .all-being {
-  margin: 0 0 1.1rem;
+  margin: 1rem 0 1.4rem;
 }
 .all-being h4 {
   font-weight: 600;
   font-size: 1.15rem;
-  margin: 0;
-}
-.all-being .epithet {
-  font-style: italic;
-  color: var(--crimson);
   margin: 0 0 0.3rem;
 }
-.all-being p {
-  margin: 0 0 0.35rem;
-}
-.all-being .field {
-  font-size: 1rem;
-  font-style: italic;
-  color: var(--muted);
-}
-.all-being .field .k {
-  font-style: normal;
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-right: 0.45rem;
+.all-being .piece {
+  margin: 0 0 0.7rem;
 }
 @media (prefers-reduced-motion: reduce) {
   .being.lit { animation: none; }
