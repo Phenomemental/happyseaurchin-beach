@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20f">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20g">
 </head>
 <body>
 <main>
@@ -43,8 +43,8 @@
     <section class="begin" id="begin" aria-label="The wheel">
       <p class="lede" id="sp-lede">Six ways of noticing turn about a still centre. Give it a turn; where it comes to rest, there is a question for you.</p>
       <div class="pointer" aria-hidden="true"></div>
-      <canvas class="spinner" id="spinner" tabindex="0" role="button" aria-label="Six ways of noticing about a still centre. Press Enter or Space to turn it, or drag it round." aria-describedby="tide-read"></canvas>
-      <button class="flick" type="button" id="turn">turn it</button>
+      <canvas class="spinner" id="spinner" tabindex="0" role="button" aria-label="Six ways of noticing about a still centre. Touch a place to bring it to the pointer, or use the arrow keys." aria-describedby="tide-read"></canvas>
+      <button class="begin-link turn-btn" type="button" id="turn">Turn it</button>
 
       <div class="tide" id="tide">
         <h2 id="tide-head">The tide</h2>
@@ -274,7 +274,9 @@
   function renderSpinnerWords(s) {
     var f = NW.fields(s, ['Head', 'Lede', 'Button', 'Under the question', 'To leave a line', 'Note', 'Button#2', 'Again']);
     NW.set($('sp-lede'), f.Lede);
-    NW.set($('turn'), NW.bare(f.Button));
+    // the button's words with a capital, like Have a go
+    var turn = NW.bare(f.Button);
+    NW.set($('turn'), turn && turn.charAt(0).toUpperCase() + turn.slice(1));
     NW.set($('stay'), f['Under the question']);
     NW.set($('line-label'), NW.bare(f['To leave a line']));
     NW.set($('line-note'), f.Note);
@@ -419,7 +421,7 @@
   }
 
   var angle = TOP - Math.floor(Math.random() * PORTALS.length) * arm() + arm() / 2;
-  var omega = 0, dragging = false, settling = null, rested = null, lastArm = null, moving = false;
+  var omega = 0, settling = null, rested = null, lastArm = null, moving = false;
   function armAngle(i) { return angle + i * arm(); }
   function nearestArm() {
     var best = 0, bd = Infinity;
@@ -492,29 +494,31 @@
   // It runs only while something is moving (the wheel turning, the tide
   // coming in, a pulse); at rest nothing runs.
   var last = 0;
-  function busy() { return dragging || settling || Math.abs(omega) > 0 || replay || pulse; }
+  function busy() { return settling || Math.abs(omega) > 0 || replay || pulse; }
   function frame(now) {
     var dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
     last = now;
-    if (!dragging) {
-      if (settling) {
-        settling.t = Math.min(1, settling.t + dt / 0.5);
-        var e = 1 - Math.pow(1 - settling.t, 3);
-        angle = settling.from + (settling.to - settling.from) * e;
-        if (settling.t >= 1) { settling = null; land(); }
-      } else if (Math.abs(omega) > 0) {
-        angle += omega * dt;
-        omega *= Math.exp(-0.75 * dt);
-        if (Math.abs(omega) < 0.9) {
-          var nn = nearestArm();
-          settling = { from: angle, to: angle - nn.d, t: 0 };
-          omega = 0;
-        }
+    if (settling) {
+      settling.t = Math.min(1, settling.t + dt / (settling.dur || 0.5));
+      var e = 1 - Math.pow(1 - settling.t, 3);
+      angle = settling.from + (settling.to - settling.from) * e;
+      if (settling.t >= 1) {
+        var to = settling.land;
+        settling = null;
+        land(to);
       }
-      var k = nearestArm().i;
-      if (lastArm !== null && k !== lastArm && (Math.abs(omega) > 0 || settling)) tick();
-      lastArm = k;
+    } else if (Math.abs(omega) > 0) {
+      angle += omega * dt;
+      omega *= Math.exp(-0.75 * dt);
+      if (Math.abs(omega) < 0.9) {
+        var nn = nearestArm();
+        settling = { from: angle, to: angle - nn.d, t: 0, land: nn.i };
+        omega = 0;
+      }
     }
+    var k = nearestArm().i;
+    if (lastArm !== null && k !== lastArm && (Math.abs(omega) > 0 || settling)) tick();
+    lastArm = k;
     if (replay && now - replay.start >= REPLAY_MS) {
       replay = null;
       $('replay').disabled = false;
@@ -532,10 +536,6 @@
   }
 
   var answer = $('answer');
-  function centre() {
-    var r = canvas.getBoundingClientRect();
-    return [r.left + r.width / 2, r.top + r.height / 2];
-  }
   // Turning it again lets go of the last line's place in the tide.
   function unrest() {
     rested = null;
@@ -543,37 +543,8 @@
     yoursAt = null;
     $('tide-yours').textContent = '';
   }
-  var prevA = 0, prevT = 0, vel = 0;
-  canvas.addEventListener('pointerdown', function (e) {
-    if (still.matches) return;
-    try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
-    dragging = true; settling = null; omega = 0; unrest();
-    var c = centre();
-    prevA = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
-    prevT = performance.now();
-    vel = 0;
-    go();
-  });
-  canvas.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    var c = centre(), a = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
-    var d = Math.atan2(Math.sin(a - prevA), Math.cos(a - prevA));
-    var t = performance.now(), dt = Math.max(1, t - prevT) / 1000;
-    angle += d;
-    vel = 0.6 * vel + 0.4 * (d / dt);
-    prevA = a;
-    prevT = t;
-  });
-  function release() {
-    if (!dragging) return;
-    dragging = false;
-    omega = Math.max(-28, Math.min(28, vel));
-    if (Math.abs(omega) < 2.5) omega = (omega >= 0 ? 1 : -1) * (6 + Math.random() * 4);
-    go();
-  }
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
 
+  // Turn it is the one way the wheel spins at random.
   function flick() {
     unrest();
     settling = null;
@@ -588,13 +559,53 @@
   }
   $('turn').addEventListener('click', flick);
   $('again').addEventListener('click', flick);
-  canvas.addEventListener('click', function () { if (still.matches) flick(); });
+
+  // The quiet way: a place touched is the place landed on. The wheel turns
+  // the short way round until that place stands at the pointer, and it is
+  // that place's question that shows, whatever the wheel was doing.
+  function placeAt(e) {
+    var r = canvas.getBoundingClientRect();
+    var x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
+    var R = r.width * 0.325, reach = r.width * 0.12 * 1.3, best = -1, bd = Infinity;
+    for (var i = 0; i < PORTALS.length; i++) {
+      var dx = x - Math.cos(armAngle(i)) * R, dy = y - Math.sin(armAngle(i)) * R, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < reach && d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+  function bring(i) {
+    unrest();
+    omega = 0;
+    var d = Math.atan2(Math.sin(armAngle(i) - TOP), Math.cos(armAngle(i) - TOP));
+    if (still.matches || Math.abs(d) < 0.001) {
+      settling = null;
+      angle -= d;
+      land(i);
+      draw();
+      return;
+    }
+    settling = { from: angle, to: angle - d, t: 0, dur: 0.45 + Math.abs(d) / Math.PI * 0.55, land: i };
+    go();
+  }
+  canvas.addEventListener('click', function (e) {
+    var i = placeAt(e);
+    if (i >= 0) bring(i);
+  });
+  canvas.addEventListener('mousemove', function (e) {
+    canvas.style.cursor = placeAt(e) >= 0 ? 'pointer' : '';
+  });
+  // With the keyboard, the arrow keys bring the next place round to the
+  // pointer, and Enter or Space opens the one standing there.
   canvas.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flick(); }
+    var n = PORTALS.length, here = nearestArm().i;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); bring((here + 1) % n); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); bring((here + n - 1) % n); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bring(here); }
   });
 
-  function land() {
-    var i = nearestArm().i, p = PORTALS[i];
+  function land(i) {
+    if (i == null || !PORTALS[i]) i = nearestArm().i;
+    var p = PORTALS[i];
     rested = i;
     $('portal').textContent = p.name + ' · ' + p.place;
     $('question').textContent = p.qs[Math.floor(Math.random() * p.qs.length)];

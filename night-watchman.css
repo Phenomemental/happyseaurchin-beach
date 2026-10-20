@@ -140,18 +140,26 @@ section.begin {
   border-top: 11px solid var(--crimson);
   margin: 0.8rem auto -6px;
 }
+/* The wheel is touched, never dragged, so a page can scroll over it. */
 canvas.spinner {
   width: min(19rem, 82vw);
   aspect-ratio: 1 / 1;
   max-width: 100%;
-  touch-action: none;
-  cursor: grab;
+  touch-action: manipulation;
   display: block;
   margin: 0 auto;
   border-radius: 50%;
 }
-@media (prefers-reduced-motion: reduce) {
-  canvas.spinner { touch-action: manipulation; cursor: pointer; }
+/* Turn it: the wheel's one main act, in Have a go's crimson, sized for a
+   thumb, directly beneath the wheel. */
+button.turn-btn {
+  font-family: inherit;
+  font-size: 1.2rem;
+  min-height: 48px;
+  min-width: 10rem;
+  padding: 0.6rem 2.2rem;
+  margin-top: 1rem;
+  cursor: pointer;
 }
 .flick {
   font-family: inherit;
