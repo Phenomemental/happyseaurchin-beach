@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20m">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20n">
 </head>
 <body>
 <main>
@@ -28,12 +28,12 @@
        line and signature are read live from 8.8363 with their saved copy.
        His five lines, the line under the ring, the six lines of The AI here
        and the foot's line are read live from 8.11, and the six places
-       (name, line, questions) from spine:p6. The AI here answers the ring:
-       a lantern touched brings that portal's two lines, read live from
-       8.111 and kept nowhere in the page. His lines are not kept in the
-       page either, and their frame waits empty until they come; the rest
-       are, so the page says what the AI does even when the beach is out of
-       reach.
+       (name, line, questions) from spine:p6. A lantern touched opens its
+       card with a third part, why stand here, holding that portal's case,
+       read live from 8.111 and kept nowhere in the page; while it is open
+       The AI here steps aside. His lines are not kept in the page either,
+       and their frame waits empty until they come; the rest are, so the
+       page says what the AI does even when the beach is out of reach.
        The practice is named in the foot's line and nowhere else. -->
   <div class="sheet">
     <svg class="heart" style="aspect-ratio:390/340" viewBox="0 0 390 340" role="img" aria-label="One open stroke drawn in ink: it comes in thin from the top right through the gap in a ring, curls once round a crimson centre, crosses itself, and leaves thick and open at the bottom left">
@@ -64,14 +64,10 @@
 
     <section class="ai-here" id="ai-here" aria-labelledby="ai-head">
       <h2 id="ai-head">The AI here</h2>
-      <div class="ai-face" id="ai-face" aria-live="polite">
-        <div class="ai-layer">
-          <div class="ai-lines">
-            <p>The AI here is a host: it holds, notices, follows, reflects. Nothing added, nothing taken away.</p>
-            <p>It does not interpret you. No one can make meaning on another's behalf, and no one can make another learn.</p>
-            <p>It can be wrong. The practice is with people; this is only a place to rehearse.</p>
-          </div>
-        </div>
+      <div class="ai-lines" id="ai-lines">
+        <p>The AI here is a host: it holds, notices, follows, reflects. Nothing added, nothing taken away.</p>
+        <p>It does not interpret you. No one can make meaning on another's behalf, and no one can make another learn.</p>
+        <p>It can be wrong. The practice is with people; this is only a place to rehearse.</p>
       </div>
     </section>
 
@@ -110,13 +106,13 @@
       if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
     }
     renderShape(NW.own(NW.at(block, ['8', '1', '1'])));
-    // the six portals' two lines each, for The AI here (8.111)
-    var why = portalLines(NW.own(NW.at(block, ['8', '1', '1', '1'])));
+    // why stand here, by portal (8.111); a lantern already open takes its
+    // case as it comes, in place
+    var why = casesFrom(NW.own(NW.at(block, ['8', '1', '1', '1'])));
     if (JSON.stringify(why) !== JSON.stringify(WHY)) {
       WHY = why;
-      // a lantern already lit takes its lines as they come
       var lit = PLACES.filter(function (p) { return p.addr === open; })[0];
-      if (lit || shownAt) answer(lit ? lit.name : null, true);
+      if (lit) fillWhy(lit);
     }
   }
   // Lines as the page sets them: "you tell me the hour / …" or "… . / …".
@@ -144,11 +140,7 @@
     }
     var under = /One line beneath:\s*([\s\S]+?[.!?])(?=\s+[A-Z(]|\s*$)/.exec(s || '');
     if (under) NW.set($('ring-line'), up(under[1].trim()));
-    var standing = standingLines(s);
-    if (standing.length && JSON.stringify(standing) !== JSON.stringify(STANDING)) {
-      STANDING = standing;
-      if (!shownAt) answer(null, true);
-    }
+    setLines($('ai-lines'), standingLines(s));
     var foot = /\(\d\)\s*THE FOOT[^:]*:\s*(?:one line[^:]*:\s*)?([\s\S]+?)\s+Then the (?:helpline|signature)/.exec(s || '');
     if (foot) setLines($('closing'), lines(foot[1]));
   }
@@ -175,72 +167,53 @@
     }
     return list;
   }
-  // Each portal's two lines (8.111): "FACTS — line. line." in turn, the two
-  // sentences after its name in capitals and a dash; what follows the six
-  // is for the builders.
-  function portalLines(s) {
-    var out = {}, marks = [], re = /([A-Z][A-Z'’]+(?: [A-Z][A-Z'’]+)*)\s+[—–]\s+/g, m;
+  // Why stand here, by portal (8.111): the one small line the cases stand
+  // under ('under one small line "why stand here"'), and each portal's
+  // case, after its name in capitals and a dash, up to the next portal's
+  // or, after the last, to where the builders' note begins ("Drawn from
+  // …").
+  function casesFrom(s) {
+    var out = { label: '', cases: {} }, marks = [], re = /([A-Z][A-Z'’]+(?: [A-Z][A-Z'’]+)*)\s+[—–]\s+/g, m;
+    var label = /small line\s+["“]([^"”]+)["”]/.exec(s || '');
+    if (label) out.label = label[1].trim();
     while ((m = re.exec(s || ''))) marks.push({ name: m[1], at: m.index, from: re.lastIndex });
     marks.forEach(function (k, i) {
-      var two = NW.sentences(s.slice(k.from, i + 1 < marks.length ? marks[i + 1].at : s.length)).slice(0, 2);
-      if (two.length === 2) out[up(k.name.toLowerCase())] = two;
+      var text = s.slice(k.from, i + 1 < marks.length ? marks[i + 1].at : s.length).replace(/\s+Drawn from\b[\s\S]*$/, '').trim();
+      if (NW.sentences(text).length > 1) out.cases[up(k.name.toLowerCase())] = text;
     });
     return out;
   }
-
-  // ---- The AI here, answering the ring ----------------------------------------------
-  // At rest the section stands on its three lines (8.11, part 4). A lantern
-  // touched brings that portal's two lines (8.111), its name in small
-  // capitals above them, the one crossing into the other; released, or
-  // with a touch anywhere else, it settles back. Until the portals' lines
-  // have come from the beach, a lantern leaves the section at rest.
-  var STANDING = Array.prototype.map.call(document.querySelectorAll('#ai-face .ai-lines p'), function (p) { return p.textContent; });
-  var WHY = {}, shownAt = null;
-  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-  function aiLayer(name) {
-    var layer = el('div', 'ai-layer'), box = el('div', 'ai-lines');
-    if (name) layer.appendChild(el('p', 'ai-portal', name));
-    (name ? WHY[name] : STANDING).forEach(function (l) { box.appendChild(el('p', null, l)); });
-    layer.appendChild(box);
-    return layer;
+  // A case in three or four short paragraphs: one opens where a sentence
+  // begins "Standing here" (what changes there) and one where a sentence
+  // begins "The AI" (what it can and cannot do), and the claim stands on
+  // its own when its reason runs to two sentences or more.
+  function paragraphs(text) {
+    var paras = [[]];
+    NW.sentences(text).forEach(function (x) {
+      if (paras[paras.length - 1].length && /^(Standing here|The AI)\b/.test(x)) paras.push([]);
+      paras[paras.length - 1].push(x);
+    });
+    if (paras[0].length > 2) paras.splice(0, 1, paras[0].slice(0, 1), paras[0].slice(1));
+    return paras.map(function (p) { return p.join(' '); });
   }
-  // Show the portal named, or the standing lines (null); quietly, in place,
-  // when the words are read again. Returns how much taller the section is
-  // becoming.
-  function answer(name, quiet) {
-    if (name && !WHY[name]) name = null;
-    var face = $('ai-face'), was = face.querySelector('.ai-layer:not(.leaving)');
-    if (!quiet && was && name === shownAt) return 0;
-    shownAt = name;
-    var layer = aiLayer(name);
-    if (quiet || still.matches || !was) {
-      face.textContent = '';
-      face.classList.remove('easing');
-      face.style.height = '';
-      face.appendChild(layer);
-      return 0;
-    }
-    // the new lines come in over the old as they go, and the section eases
-    // to its new height
-    var from = face.offsetHeight;
-    layer.classList.add('out');
-    face.appendChild(layer);
-    was.classList.add('leaving', 'out');
-    was.setAttribute('aria-hidden', 'true');
-    var to = layer.offsetHeight;
-    face.style.height = from + 'px';
-    void face.offsetHeight;
-    face.classList.add('easing');
-    face.style.height = to + 'px';
-    layer.classList.remove('out');
-    setTimeout(function () {
-      if (was.parentNode) was.parentNode.removeChild(was);
-      if (!face.querySelector('.leaving')) {
-        face.classList.remove('easing');
-        face.style.height = '';
-      }
-    }, 500);
-    return to - from;
+
+  // ---- Why stand here ---------------------------------------------------------------
+  // An open portal's card gains a third part beneath its question: the one
+  // small line, then the portal's case as prose. The portal's name is not
+  // said again. While the case stands, The AI here steps aside; it returns
+  // when the card closes. Until the cases have come from the beach, a card
+  // opens as it did, and The AI here stays.
+  var WHY = { label: '', cases: {} };
+  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  function fillWhy(p) {
+    var c = $('place-card'), part = c.querySelector('.place-why'), text = WHY.cases[p.name];
+    if (part) c.removeChild(part);
+    $('ai-here').hidden = !!text;
+    if (!text) return;
+    part = el('div', 'place-why');
+    part.appendChild(el('p', 'why-label', WHY.label || 'why stand here'));
+    paragraphs(text).forEach(function (t) { part.appendChild(el('p', 'why-case', t)); });
+    c.appendChild(part);
   }
 
   // ---- Six places to stand ----------------------------------------------------------
@@ -272,9 +245,8 @@
     NW.ring(ring, C, PLACES.length ? PLACES : blank, openPlace);
     NW.light(ring, open);
   }
-  // Touched, a place opens with its name, what it is, and one question, and
-  // The AI here answers with that portal's lines; touched again, it is
-  // released.
+  // Touched, a place opens with its name, what it is, one question, and why
+  // stand here; touched again, it is released.
   function openPlace(p) {
     if (open === p.addr) { release(); return; }
     var c = $('place-card');
@@ -282,35 +254,38 @@
     c.appendChild(el('h3', null, p.name));
     if (p.line) c.appendChild(el('p', 'spirit', p.line));
     if (p.qs.length) c.appendChild(el('p', 'place-q', p.qs[Math.floor(Math.random() * p.qs.length)]));
+    fillWhy(p);
     c.hidden = false;
     c.classList.remove('lit');
     void c.offsetWidth;
     c.classList.add('lit');
     open = p.addr;
     NW.light(ring, open);
-    // On a phone the section may be below the fold: it is brought gently
-    // into view, as it will stand once eased to its new height.
-    var grow = answer(p.name);
-    if (shownAt) {
-      var bottom = $('ai-here').getBoundingClientRect().bottom + grow;
-      if (bottom > innerHeight) window.scrollBy({ top: bottom - innerHeight + 16, behavior: still.matches ? 'auto' : 'smooth' });
-      return;
-    }
-    var r = c.getBoundingClientRect();
-    if (r.bottom > innerHeight || r.top < 0) c.scrollIntoView({ block: 'nearest' });
+    // On a phone the card may run below the fold: it is brought gently up
+    // until its question and the opening of its case are in view, never so
+    // far that the card's own top leaves the screen.
+    var top = c.getBoundingClientRect().top, mark = c.querySelector('.why-case') || c.lastElementChild;
+    var need = mark.getBoundingClientRect().top + 72 - innerHeight;
+    if (top < 0) c.scrollIntoView({ block: 'start', behavior: still.matches ? 'auto' : 'smooth' });
+    else if (need > 0) window.scrollBy({ top: Math.min(need, top - 12), behavior: still.matches ? 'auto' : 'smooth' });
   }
   // Released: the lantern goes dark, its card closes, and The AI here
-  // settles back to its standing lines.
+  // returns.
   function release() {
     if (!open) return;
     open = null;
     $('place-card').hidden = true;
     NW.light(ring, null);
-    answer(null);
+    var ai = $('ai-here');
+    if (!ai.hidden) return;
+    ai.hidden = false;
+    ai.classList.remove('lit');
+    void ai.offsetWidth;
+    ai.classList.add('lit');
   }
   document.addEventListener('click', function (e) {
     if (!open || !e.target.closest) return;
-    if (e.target.closest('.place, #place-card, #ai-here')) return;
+    if (e.target.closest('.place, #place-card')) return;
     release();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') release(); });
