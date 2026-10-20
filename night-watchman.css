@@ -122,21 +122,6 @@ canvas:focus-visible {
   .opening { font-size: 1.1rem; line-height: 1.42; }
 }
 
-/* His invitation, as a poem. */
-blockquote.poem {
-  font-style: italic;
-  font-size: 1.35rem;
-  line-height: 1.45;
-  margin: 0 auto;
-  max-width: 26rem;
-}
-blockquote.poem span {
-  display: block;
-}
-blockquote.poem .gap {
-  height: 0.7rem;
-}
-
 /* The spinner. */
 section.begin {
   text-align: center;
@@ -280,57 +265,20 @@ canvas.spinner {
   margin: 0.6rem 0 0;
 }
 
-/* Doors onward, set like the watches list. */
-.doors {
-  display: block;
-  text-align: left;
-  max-width: 30rem;
-  margin: 0 auto;
-  border-top: 1px solid var(--frame);
-}
-/* A ruled line, not beach.css's card. */
-.door {
-  display: flex;
-  gap: 0.8rem;
-  align-items: baseline;
-  padding: 0.8rem 0.2rem;
-  border: 0;
-  border-bottom: 1px solid var(--frame);
-  background: none;
-  color: var(--ink);
-}
-.door:hover,
-.door:focus-visible {
-  border-color: var(--frame);
-}
-.door:hover .title {
-  color: var(--crimson);
-}
-.door .num,
+/* The ways in on Begin: a number, then a title and its line. */
 .way .num {
   flex: 0 0 1.6rem;
   color: var(--muted);
   font-variant-numeric: oldstyle-nums;
   font-size: 0.95rem;
 }
-.door .t,
 .way .t {
   flex: 1;
   min-width: 0;
 }
-.door .title,
 .way .title {
   font-size: 1.3rem;
   display: block;
-}
-.door .desc {
-  font-size: 1rem;
-  color: var(--muted);
-  font-style: italic;
-  display: block;
-}
-.door .arrow {
-  color: var(--crimson);
 }
 
 /* Parts that open only on request. */
@@ -1023,12 +971,35 @@ section.begin {
   .being.lit { animation: none; }
 }
 
-/* The front door: six places to stand, a watch, the doors and the foot. */
-.places-line {
-  font-style: italic;
+/* The front door, cut to one of each thing (8.11): his voice, the ring,
+   two doors, two closing lines. No rules; air between the parts. */
+.voice {
   text-align: center;
-  max-width: 28rem;
-  margin: 0 auto 0.4rem;
+  max-width: 26rem;
+  margin: 2.8rem auto 0;
+}
+.voice p {
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.45;
+  margin: 0 0 2.4rem;
+}
+.voice p:last-child {
+  margin-bottom: 0;
+}
+.places {
+  text-align: center;
+  margin: 3rem auto 0;
+}
+.ring-line {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.4rem 0 0;
+}
+.place-card {
+  border: 0;
+  padding: 0.6rem 0.4rem 0;
 }
 .place-card .spirit {
   text-align: center;
@@ -1046,48 +1017,61 @@ section.begin {
   text-align: center;
   margin: 0.8rem 0 0;
 }
-.watch-lines {
-  text-align: center;
-  max-width: 26rem;
-  margin: 0 auto;
-}
-.watch-lines p {
-  font-size: 1.3rem;
-  font-style: italic;
-  line-height: 1.45;
-  margin: 0 0 1.9rem;
-}
-.watch-lines p:last-child {
-  margin-bottom: 0.4rem;
-}
-.doors + .doors {
-  margin-top: 1.6rem;
-}
-.door .desc:empty {
-  display: none;
-}
-.soon {
-  font-size: 0.8rem;
-  font-style: normal;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--crimson);
-  margin-left: 0.5rem;
-}
-.foot {
-  text-align: left;
+/* Two doors of equal weight: side by side, stacked on a phone. */
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
   max-width: 30rem;
-  margin: 0 auto;
+  margin: 2.8rem auto 0;
 }
-.foot h2 {
-  margin: 0 0 0.4rem;
+@media (max-width: 480px) {
+  .pair { grid-template-columns: 1fr; }
 }
-.foot h2 + p {
+.pair-door {
+  display: block;
+  text-align: center;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  padding: 1rem 1rem 1.05rem;
+  transition: border-color 0.2s;
+}
+.pair-door:hover,
+.pair-door:focus-visible {
+  border-color: var(--crimson);
+}
+.pair-door .title {
+  display: block;
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+.pair-door:hover .title {
+  color: var(--crimson);
+}
+.pair-door .desc {
+  display: block;
+  font-style: italic;
   color: var(--muted);
-  margin: 0 0 1.4rem;
+  font-size: 1.05rem;
+  margin-top: 0.25rem;
 }
-.foot p:last-child {
-  margin-bottom: 0;
+.coming {
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.9rem 0 0;
+}
+.closing-lines {
+  text-align: center;
+  max-width: 28rem;
+  margin: 2.8rem auto 0;
+}
+.closing-lines p {
+  font-style: italic;
+  color: var(--muted);
+  margin: 0 0 0.7rem;
 }
 
 /* The signature each page ends with. */
