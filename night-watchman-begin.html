@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20d">
 </head>
 <body>
 <main>
@@ -155,7 +155,7 @@
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-20a"></script>
+<script src="night-watchman.js?v=2026-10-20b"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -333,11 +333,13 @@
       if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: 'start' });
     });
   });
-  // night-watchman-begin.html#read opens Read.
+  // night-watchman-begin.html#keep, #host or #read opens that way in.
+  var HASHES = { '#keep': 'way-keep', '#host': 'way-host', '#read': 'way-read' };
   function readFromHash() {
-    if (location.hash !== '#read') return;
-    if ($('way-read').getAttribute('aria-expanded') !== 'true') choose($('way-read'));
-    $('way-read').scrollIntoView({ block: 'start' });
+    var card = $(HASHES[location.hash]);
+    if (!card) return;
+    if (card.getAttribute('aria-expanded') !== 'true') choose(card);
+    card.scrollIntoView({ block: 'start' });
   }
   window.addEventListener('hashchange', readFromHash);
 
@@ -996,9 +998,9 @@
     buildPicker();
     draw();
   }, function () {});
-  // Read opened from the address reads the room itself.
-  if (location.hash === '#read') readFromHash();
-  else readRoom().catch(function () {});
+  // A way opened from the address; Read opened so reads the room itself.
+  readFromHash();
+  if (location.hash !== '#read') readRoom().catch(function () {});
 })();
 </script>
 </body>
