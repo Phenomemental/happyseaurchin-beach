@@ -484,6 +484,108 @@ canvas.spinner {
   text-align: center;
   font-size: 1rem;
 }
+/* Keep a watch and Host him share one path; it opens with a line. */
+.path-lede {
+  text-align: center;
+  margin: 0.4rem 0 0;
+}
+.way {
+  scroll-margin-top: 1rem;
+}
+
+/* Read through a Being: eighteen to choose from, by row. */
+.pick-lede {
+  text-align: center;
+}
+.being-picker {
+  scroll-margin-top: 1rem;
+}
+.being-group h4 {
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--muted);
+  margin: 1rem 0 0.5rem;
+}
+.being-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+.being-pick {
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  min-height: 44px;
+  padding: 0.2rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.being-pick:hover {
+  border-color: var(--crimson);
+}
+.being-pick[aria-pressed="true"] {
+  color: var(--page);
+  background: var(--crimson);
+  border-color: var(--crimson);
+}
+.plainly {
+  display: block;
+  margin: 0.8rem auto 0;
+}
+/* The Being read through: its name, its lens, a short rule. */
+.lens {
+  text-align: center;
+  margin: 1.4rem 0 0.2rem;
+  scroll-margin-top: 1rem;
+}
+.lens-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.path h3.lens-name {
+  font-size: 1.7rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  margin: 0.1rem 0 0.4rem;
+}
+.lens-line {
+  font-style: italic;
+  color: var(--crimson);
+  max-width: 26rem;
+  margin: 0 auto 0.9rem;
+}
+.lens-rule {
+  width: 3rem;
+  height: 0;
+  border: 0;
+  border-top: 1.5px solid var(--crimson);
+  margin: 0 auto 1rem;
+}
+.lens-after {
+  text-align: center;
+  margin: 1.4rem 0 0;
+}
+.lens-stay {
+  font-style: italic;
+  color: var(--muted);
+}
+.lens-links {
+  margin: 0;
+}
+section.begin {
+  scroll-margin-top: 1rem;
+}
 .prose {
   text-align: left;
   max-width: 30rem;

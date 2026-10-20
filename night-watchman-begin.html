@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20a">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20b">
 </head>
 <body>
 <main>
@@ -25,8 +25,10 @@
        in and all that follows them are Dorylus's, read live from
        beings:night-watchman 8.8363 (Begin at 2, the spinner's words at 1.2);
        what is written below is the saved copy, shown until the beach
-       answers. The line under the title, the tide, and the heading Choose
-       your way in are this page's own. The spinner's questions come from
+       answers. The line under the title, the tide, the heading Choose your
+       way in, the line opening the shared path of the first two ways, the
+       Read card, and reading through a Being with its lenses are this
+       page's own. The spinner's questions come from
        spine:p6; lines left at a portal go to pool:p6 at the portal's place,
        and the tide and Read are drawn from what pool:p6 holds, nothing else. -->
   <div class="sheet">
@@ -70,11 +72,12 @@
     <section aria-labelledby="ways-head">
       <h2 id="ways-head">Choose your way in</h2>
       <div class="ways" id="ways">
-        <button class="way" type="button" id="way-keep" aria-expanded="false" aria-controls="path-keep">
+        <button class="way" type="button" id="way-keep" aria-expanded="false" aria-controls="path-watch" data-say="&quot;Wake the Night Watchman. I'd like to keep a watch.&quot;">
           <span class="num">i</span>
           <span class="t"><span class="title">Keep a watch</span><span class="desc">He holds the space and asks what you are noticing. You notice; the words stay yours.</span></span>
         </button>
-        <div class="path" id="path-keep" hidden>
+        <div class="path" id="path-watch" hidden>
+          <p class="small path-lede">Keeping a watch and hosting him begin the same way: one connection, set up once.</p>
           <h3 class="need-head">What you need</h3>
           <p class="need">An AI that lets you add a connection of your own: Claude on the web or on a computer, or ChatGPT on a paid plan with developer mode switched on. Some phone apps and free plans can't do this yet. Reading this site is still open to you.</p>
           <h3 class="connect-head">Connect, once</h3>
@@ -89,40 +92,36 @@
           </ol>
           <p class="after">The address is public and open to read. It needs no sign-in.</p>
           <h3 class="say-head">Then say</h3>
-          <div class="phrase"><p class="say">"Wake the Night Watchman. I'd like to keep a watch."</p><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> what to say</span></button></div>
+          <div class="phrase"><p class="say" id="say">"Wake the Night Watchman. I'd like to keep a watch."</p><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> what to say</span></button></div>
           <p class="small say-more">You can stop at any moment, by saying so or simply closing the chat.</p>
         </div>
 
-        <button class="way" type="button" id="way-host" aria-expanded="false" aria-controls="path-host">
+        <button class="way" type="button" id="way-host" aria-expanded="false" aria-controls="path-watch" data-say="&quot;I'd like to host the Night Watchman.&quot;">
           <span class="num">ii</span>
           <span class="t"><span class="title">Host him</span><span class="desc">You hold the space. He speaks briefly, as a character inside a story, and you notice what he brings.</span></span>
         </button>
-        <div class="path" id="path-host" hidden>
-          <h3 class="need-head">What you need</h3>
-          <p class="need">An AI that lets you add a connection of your own: Claude on the web or on a computer, or ChatGPT on a paid plan with developer mode switched on. Some phone apps and free plans can't do this yet. Reading this site is still open to you.</p>
-          <h3 class="connect-head">Connect, once</h3>
-          <ol class="steps steps-a">
-            <li data-n="i">In Claude, open Settings, then Connectors, then Add custom connector.</li>
-            <li data-n="ii">Give it the name bsp, and paste this address:</li>
-          </ol>
-          <div class="addr"><code>https://bsp.hermitcrab.me/mcp/v1</code><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> the address</span></button></div>
-          <ol class="steps steps-b">
-            <li data-n="iii">Save it, then start a new chat with the connection switched on.</li>
-            <li data-n="iv">To check it works, ask your AI what the beach is. If it can tell you, you're connected.</li>
-          </ol>
-          <p class="after">The address is public and open to read. It needs no sign-in.</p>
-          <h3 class="say-head">Then say</h3>
-          <div class="phrase"><p class="say">"I'd like to host the Night Watchman."</p><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> what to say</span></button></div>
-          <p class="small say-more">You can stop at any moment, by saying so or simply closing the chat.</p>
-        </div>
 
-        <button class="way" type="button" id="way-read" aria-expanded="false" aria-controls="path-read">
+        <button class="way" type="button" id="way-read" aria-expanded="false" aria-controls="path-read" data-own>
           <span class="num">iii</span>
-          <span class="t"><span class="title">Read</span><span class="desc">Read watches that others have chosen to share, through the eyes of one of the Beings.</span></span>
+          <span class="t"><span class="title">Read</span><span class="desc">No AI needed. Read the lines left at the wheel through the eyes of a Being.</span></span>
         </button>
         <div class="path" id="path-read" hidden>
+          <h3 id="pick-head">Read through a Being</h3>
+          <p class="small pick-lede">Choose one of the eighteen, and read the lines left at the wheel through its eyes.</p>
+          <div class="being-picker" id="being-pick"></div>
+          <button class="flick plainly" type="button" id="plainly">or read them plainly</button>
+          <div class="lens" id="lens" hidden>
+            <p class="lens-label">Reading through</p>
+            <h3 class="lens-name" id="lens-name"></h3>
+            <p class="lens-line" id="lens-line"></p>
+            <hr class="lens-rule">
+          </div>
           <p class="small read-lede">The lines left at the wheel, by the place it came to rest, newest first.</p>
           <div id="read-lines"><p class="small read-empty">Reading the lines…</p></div>
+          <div class="lens-after" id="lens-after" hidden>
+            <p class="lens-stay">Stay with what you noticed. Nothing is asked of you here.</p>
+            <p class="lens-links"><a href="#being-pick" id="to-pick">choose another Being</a> · <a href="#begin" id="to-wheel">turn the wheel</a></p>
+          </div>
         </div>
       </div>
     </section>
@@ -193,10 +192,11 @@
     if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
 
     // The ways in: "i, Keep a watch: …. ii, …. iii, Read (coming): …", one
-    // to each card, in order; the cards' heading is this page's own.
+    // to each card, in order; the cards' heading is this page's own, and so
+    // are the words of a card marked data-own (Read).
     NW.numbered(part(begin['1']), true).forEach(function (w, k) {
       var card = document.querySelectorAll('.way')[k];
-      if (!card) return;
+      if (!card || card.hasAttribute('data-own')) return;
       NW.set(card.querySelector('.num'), w.n);
       NW.set(card.querySelector('.title'), w.title.replace(/\s*\(coming\)\s*$/, ''));
       NW.set(card.querySelector('.desc'), w.body);
@@ -235,12 +235,14 @@
     }
 
     // Then say: the first words in quotes are for keeping a watch, the
-    // second for hosting him, and what follows the last is for both.
+    // second for hosting him, and what follows the last is for both. Each
+    // card keeps its own; the open one's are shown.
     var say = part(begin['4'], '.say-head');
     var qs = say.match(/"[^"]+"|“[^”]+”/g) || [];
     if (qs.length >= 2) {
-      NW.set($('path-keep').querySelector('.say'), qs[0]);
-      NW.set($('path-host').querySelector('.say'), qs[1]);
+      $('way-keep').setAttribute('data-say', qs[0]);
+      $('way-host').setAttribute('data-say', qs[1]);
+      NW.set($('say'), (document.querySelector('.way[data-say][aria-expanded="true"]') || $('way-keep')).getAttribute('data-say'));
       setAll('.say-more', say.slice(say.lastIndexOf(qs[qs.length - 1]) + qs[qs.length - 1].length).trim());
     }
 
@@ -297,25 +299,39 @@
   });
 
   // ---- Choose your way in -------------------------------------------------------
-  // A card opens its own path beneath it and closes the others; choosing
-  // it again closes it.
+  // A card opens its path beneath it and closes the others; choosing it
+  // again closes it. Keep a watch and Host him share one path, set beneath
+  // whichever of them is open; only the words to say change with the card.
   var cards = document.querySelectorAll('.way');
+  function choose(card) {
+    var opening = card.getAttribute('aria-expanded') !== 'true';
+    Array.prototype.forEach.call(cards, function (w) {
+      w.setAttribute('aria-expanded', opening && w === card ? 'true' : 'false');
+    });
+    each('.path', function (p) { p.hidden = true; });
+    if (!opening) return;
+    var path = $(card.getAttribute('aria-controls'));
+    card.parentNode.insertBefore(path, card.nextSibling);
+    path.hidden = false;
+    if (card.hasAttribute('data-say')) $('say').textContent = card.getAttribute('data-say');
+    if (card.id === 'way-read') {
+      renderRead();
+      readRoom().catch(function () {});
+    }
+  }
   Array.prototype.forEach.call(cards, function (card) {
     card.addEventListener('click', function () {
-      var opening = card.getAttribute('aria-expanded') !== 'true';
-      Array.prototype.forEach.call(cards, function (w) {
-        var open = opening && w === card;
-        w.setAttribute('aria-expanded', open ? 'true' : 'false');
-        $(w.getAttribute('aria-controls')).hidden = !open;
-      });
-      if (!opening) return;
-      if (card.id === 'way-read') {
-        renderRead();
-        readRoom().catch(function () {});
-      }
-      if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' });
+      choose(card);
+      if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: 'start' });
     });
   });
+  // night-watchman-begin.html#read opens Read.
+  function readFromHash() {
+    if (location.hash !== '#read') return;
+    if ($('way-read').getAttribute('aria-expanded') !== 'true') choose($('way-read'));
+    $('way-read').scrollIntoView({ block: 'start' });
+  }
+  window.addEventListener('hashchange', readFromHash);
 
   // ---- The spinner ------------------------------------------------------------
   // Six ways of noticing about a still centre, read from spine:p6: each
@@ -838,7 +854,87 @@
     });
   }
 
+  // ---- Read through a Being ----------------------------------------------------
+  // The eighteen Beings by row, each with its lens: a question put to the
+  // reader as they read, never a reading of anyone's line. The lines show
+  // exactly as they were left, with a Being or without one.
+  var LENSES = [
+    ['The Head · the trap', [
+      ['Abstract', 'Read for the parts you would count or measure. Then notice what goes missing when you do.'],
+      ['Hypothetical', 'Notice each "what if" that arrives as you read. Are you reading the line, or a theory about it?'],
+      ['Predictable', 'Notice where you want these words to settle into something safe and known.'],
+      ['Anxious', 'Notice the alarm if it comes, the quickening, the urge to fix. Let it be there while you read.'],
+      ['Objective', 'Read from behind the glass. Then notice the glass: what is it keeping at a distance?'],
+      ['Categorical', 'Notice the bins you reach for as you read: right or wrong, well or ill, them or me. Which one did you just use?']
+    ]],
+    ['The Heart · the cure', [
+      ['Feeling', 'Read slowly. Do not name what you meet; notice where it lands in you, and the shape it takes there.'],
+      ['Dreaming', 'Read as you would a dream: let an image come, and follow it a little way.'],
+      ['Religious', 'Read for what holds these words together, unspoken. Is anything sacred here, for you?'],
+      ['Relational', 'Read as a neighbour. Who else is in these words, and who are you beside them?'],
+      ['Alien', 'Notice where you feel apart from what is written, and where, against the odds, you do not.'],
+      ['Sensory', 'Read with your body. What does it do as you read: your breath, your shoulders, your belly?']
+    ]],
+    ['The Hand · the drive', [
+      ['Compulsive', 'Notice the pull to act on what you read: to connect, to plan, to fix. Then read it once more without moving.'],
+      ['Creative', 'Notice where the words hold both ends at once, and what that makes in you.'],
+      ['Inclusional', 'Read for the edges in the words. Are they walls, or places where one thing meets another?'],
+      ['Performative', 'Notice what the words show and what they might be covering. Then notice your own face as you read.'],
+      ['Intentioned', 'Read this as one step on a walk. Where does it send you next?'],
+      ['Wholeless', 'Read without needing it to be whole. What is open here, and can you leave it open?']
+    ]]
+  ];
+  var lensOf = {}, being = null;
+  function buildPicker() {
+    LENSES.forEach(function (row, r) {
+      var g = el('div', 'being-group'), h = el('h4', null, row[0]), list = el('div', 'being-row');
+      h.id = 'beings-' + (r + 1);
+      g.setAttribute('role', 'group');
+      g.setAttribute('aria-labelledby', h.id);
+      row[1].forEach(function (b) {
+        lensOf[b[0]] = b[1];
+        var btn = el('button', 'being-pick', b[0]);
+        btn.type = 'button';
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('data-being', b[0]);
+        btn.addEventListener('click', function () { readThrough(being === b[0] ? null : b[0]); });
+        list.appendChild(btn);
+      });
+      g.appendChild(h);
+      g.appendChild(list);
+      $('being-pick').appendChild(g);
+    });
+  }
+  // Read through a Being, or plainly (null): its name and lens above the
+  // lines, and a word after them.
+  function readThrough(name) {
+    being = name;
+    each('.being-pick', function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-being') === name ? 'true' : 'false'); });
+    $('lens').hidden = $('lens-after').hidden = !name;
+    if (!name) return;
+    $('lens-name').textContent = 'The ' + name + ' Being';
+    $('lens-line').textContent = lensOf[name];
+    var r = $('lens').getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * 0.6) $('lens').scrollIntoView({ block: 'start' });
+  }
+  $('plainly').addEventListener('click', function () {
+    readThrough(null);
+    var lede = document.querySelector('.read-lede');
+    if (lede.getBoundingClientRect().top > innerHeight * 0.8) lede.scrollIntoView({ block: 'start' });
+  });
+  $('to-pick').addEventListener('click', function (e) {
+    e.preventDefault();
+    $('being-pick').scrollIntoView({ block: 'start' });
+    (document.querySelector('.being-pick[aria-pressed="true"]') || document.querySelector('.being-pick')).focus({ preventScroll: true });
+  });
+  $('to-wheel').addEventListener('click', function (e) {
+    e.preventDefault();
+    $('begin').scrollIntoView({ block: 'start' });
+    canvas.focus({ preventScroll: true });
+  });
+
   // ---- Start ------------------------------------------------------------------
+  buildPicker();
   readColours();
   size();
   draw();
@@ -862,7 +958,9 @@
     renderRead();
     draw();
   }, function () {});
-  readRoom().catch(function () {});
+  // Read opened from the address reads the room itself.
+  if (location.hash === '#read') readFromHash();
+  else readRoom().catch(function () {});
 })();
 </script>
 </body>
