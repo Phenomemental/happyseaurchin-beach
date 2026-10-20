@@ -108,7 +108,9 @@
   }
 
   // Read the words, now and whenever the page comes back into view, and
-  // hand them to render(words, block) only when they have changed. The
+  // hand them to render(words, block) only when they, or the Beings and
+  // their portals (1, 2), how to read through one (3), the two extremes
+  // (4), that they are for reading (5) or play (9), have changed. The
   // beach's own status line is kept off the page.
   function follow(render) {
     var shown = '';
@@ -116,7 +118,7 @@
       return Beach.get(BLOCK).then(function (block) {
         var words = at(block, PATH);
         if (!words) throw new Error('no words');
-        var sig = JSON.stringify(words) + JSON.stringify([block['1'], block['2'], block['3']]);
+        var sig = JSON.stringify(words) + JSON.stringify(['1', '2', '3', '4', '5', '9'].map(function (k) { return block[k]; }));
         if (sig === shown) return;
         shown = sig;
         render(words, block);
