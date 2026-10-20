@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20j">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20k">
 </head>
 <body>
 <main>
@@ -24,7 +24,10 @@
   <!-- The Beings, read live from beings:night-watchman and never written
        to: the six places, the surface's at 1.1 to 1.3 and the deep's at 2.1
        to 2.3, each with its own words and its three Beings beneath (1.11 to
-       2.33); how a reader reads through a Being (3), which opens the page;
+       2.33). Of a Being's own line only its name and epithet are shown, the
+       rest being for the Watchman and the builders; what the reader meets
+       is the piece written for them beneath it (1.111 to 2.331). How a
+       reader reads through a Being (3) opens the page;
        the two lighthouses (4); and play (9). What is for the Watchman and
        the builders (5) is never shown. The drawing is the bay (8.31), its
        six tide-pools in spine:p6's order. None of these words is kept in
@@ -129,27 +132,25 @@
     var h = headed(s).head.toLowerCase();
     return h === 'the surface' ? 'on the surface' : h === 'the deep' ? 'in the deep' : '';
   }
-  // A Being: "The Abstract Being — the Ruler. Anchors: …. <its spirit>.
-  // Costs: …. Emerges: …."
-  function beingFrom(s) {
-    var cut = s.indexOf(' — ');
+  // A Being: its own line, "The Dreaming Being — the Subconscious, the
+  // Night Navigator. Anchor: …", gives its name and epithet, and the rest
+  // of that line is never shown; beneath it, at 1, the piece written for
+  // the reader ("On the shore of Fictions, …").
+  function beingFrom(node) {
+    var s = NW.own(node), cut = s.indexOf(' — ');
     if (cut < 0) return null;
-    var b = { name: s.slice(0, cut).trim(), epithet: '', spirit: '', fields: [] };
     var rest = s.slice(cut + 3), dot = rest.search(/\.\s/);
-    b.epithet = (dot < 0 ? rest : rest.slice(0, dot)).trim();
-    rest = dot < 0 ? '' : rest.slice(dot + 1).trim();
-    var a = /^(Anchors?): ([\s\S]*?)\.(?:\s+|$)/.exec(rest);
-    if (a) {
-      b.fields.push([a[1], a[2]]);
-      rest = rest.slice(a[0].length);
-    }
-    var tail = /\s*\b(Costs|Emerges): /.exec(rest);
-    b.spirit = (tail ? rest.slice(0, tail.index) : rest).trim();
-    if (tail) {
-      var f = NW.fields(rest.slice(tail.index).trim(), ['Costs', 'Emerges']);
-      ['Costs', 'Emerges'].forEach(function (k) { if (f[k]) b.fields.push([k, f[k].replace(/\.$/, '')]); });
-    }
-    return b;
+    return {
+      name: s.slice(0, cut).trim(),
+      epithet: (dot < 0 ? rest : rest.slice(0, dot)).trim().replace(/\.$/, ''),
+      piece: node && typeof node === 'object' ? forReaders(NW.own(node['1'])) : ''
+    };
+  }
+  // The piece in paragraphs: a new one where a sentence begins "Hold it to
+  // your ear", "Read a watch through it" or "Listen for".
+  function piece(box, b) {
+    b.piece.replace(/([.!?]["”’)]*)\s+(?=(?:Hold it to your ear|Read a watch through it|Listen for)\b)/g, '$1\n')
+      .split('\n').forEach(function (t) { if (t.trim()) box.appendChild(el('p', 'piece', t.trim())); });
   }
   // The six places, each with its own words and its three Beings, in the
   // order round the centre that spine:p6 gives.
@@ -165,11 +166,11 @@
         if (!p || !node || typeof node !== 'object') continue;
         var beings = [];
         for (var j = 1; j <= 9; j++) {
-          var b = beingFrom(NW.own(node[String(j)]));
+          var b = beingFrom(node[String(j)]);
           if (b) { b.addr = k + '.' + i + j; beings.push(b); }
         }
         var text = forReaders(p.rest);
-        list.push({ addr: k + '.' + i, name: p.name, side: where, text: text, line: NW.sentences(text)[0] || text, beings: beings });
+        list.push({ addr: k + '.' + i, name: p.name, side: where, line: NW.sentences(text)[0] || text, beings: beings });
       }
     });
     return sorted(list);
@@ -405,6 +406,7 @@
     void c.offsetWidth;
     c.classList.add('lit');
     mark();
+    hints();
     if (quiet) return;
     var r = c.getBoundingClientRect();
     if (r.bottom > innerHeight || r.top < 0) c.scrollIntoView({ block: 'nearest' });
@@ -412,23 +414,11 @@
   function chooseBeing(p, b, quiet) {
     state = { being: b.addr, place: p.addr };
     opened(function (c) {
+      // its name and epithet, its piece, and nothing else but the one way
+      // on: the lines left at the wheel, seen through it
       c.appendChild(el('h3', null, b.name));
       if (b.epithet) c.appendChild(el('p', 'epithet', b.epithet));
-      if (b.spirit) c.appendChild(el('p', 'spirit', b.spirit));
-      b.fields.forEach(function (f) {
-        var line = el('p', 'field');
-        line.appendChild(el('span', 'k', f[0]));
-        line.appendChild(document.createTextNode(' ' + f[1]));
-        c.appendChild(line);
-      });
-      // the place's own line, smaller, beneath
-      if (p.line) {
-        var pl = el('p', 'place-line');
-        pl.appendChild(el('span', 'k', p.name));
-        pl.appendChild(document.createTextNode(' ' + p.line));
-        c.appendChild(pl);
-      }
-      // and the one way on: the lines left at the wheel, seen through it
+      piece(c, b);
       var on = el('p', 'read-on'), a = el('a', null, 'read through this Being');
       a.href = '#read';
       a.addEventListener('click', function (e) {
@@ -452,6 +442,7 @@
     state = null;
     $('card').hidden = true;
     mark();
+    hints();
   }
   // Reading lets the card stand, so the lines don't move under the hand
   // (more, among them, is gone by the time its touch arrives here).
@@ -464,7 +455,7 @@
 
   // ---- All eighteen, and more ------------------------------------------------------
   // For the reader who would rather read than touch: every place in the
-  // bay's order, with its own words and its three Beings in full.
+  // bay's order, and under it each of its Beings by name, with its piece.
   function list() {
     var all = $('all');
     all.textContent = '';
@@ -472,18 +463,10 @@
       var sec = el('section', 'all-place'), h = el('h3', null, p.name);
       if (p.side) h.appendChild(el('span', 'place', ' · ' + p.side));
       sec.appendChild(h);
-      if (p.text) sec.appendChild(el('p', 'portal-text', p.text));
       p.beings.forEach(function (b) {
         var art = el('article', 'all-being');
         art.appendChild(el('h4', null, b.name));
-        if (b.epithet) art.appendChild(el('p', 'epithet', b.epithet));
-        if (b.spirit) art.appendChild(el('p', null, b.spirit));
-        b.fields.forEach(function (f) {
-          var line = el('p', 'field');
-          line.appendChild(el('span', 'k', f[0]));
-          line.appendChild(document.createTextNode(' ' + f[1]));
-          art.appendChild(line);
-        });
+        piece(art, b);
         sec.appendChild(art);
       });
       all.appendChild(sec);
@@ -626,11 +609,12 @@
   }
   // Arriving at #read, before a Being is chosen, the page asks for one
   // above the bay; "or read them plainly" stands under the reading while it
-  // would change something.
+  // would change something, and never straight under an open card, where
+  // it would read as the card's own.
   var invited = location.hash === '#read', reading = false, being = null;
   function hints() {
     $('read-hint').hidden = !invited || !!being;
-    $('plainly-line').hidden = !being && (reading || !invited);
+    $('plainly-line').hidden = (!being && (reading || !invited)) || (!reading && !!state);
   }
   // Read through a Being, or plainly (null): its name and lens above the
   // lines, and a word after them.
