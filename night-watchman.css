@@ -926,7 +926,7 @@ section.begin {
   display: inline-block;
   padding: 0.45rem 0.6rem;
 }
-/* All eighteen, in full, for the reader who would rather read. */
+/* All eighteen, for the reader who would rather read than touch. */
 .portals {
   text-align: left;
   max-width: 30rem;
@@ -947,16 +947,37 @@ section.begin {
   font-size: 1rem;
   color: var(--muted);
 }
+/* Each Being a row by name, opening on request to its piece, in the
+   look of the page's other parts that open on request. */
 .all-being {
-  margin: 1rem 0 1.4rem;
+  border-bottom: 1px solid var(--frame);
+  padding: 0.2rem 0.2rem;
 }
-.all-being h4 {
-  font-weight: 600;
+.all-being summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   font-size: 1.15rem;
-  margin: 0 0 0.3rem;
+  min-height: 2.75rem;
+}
+.all-being summary::-webkit-details-marker {
+  display: none;
+}
+.all-being summary::after {
+  content: "+";
+  color: var(--crimson);
+}
+.all-being[open] summary::after {
+  content: "\2013";
+}
+.all-being[open] summary {
+  color: var(--crimson);
 }
 .all-being .piece {
-  margin: 0 0 0.7rem;
+  margin: 0.2rem 0 0.8rem;
 }
 @media (prefers-reduced-motion: reduce) {
   .being.lit { animation: none; }

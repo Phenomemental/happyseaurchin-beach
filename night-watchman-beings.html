@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20k">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20l">
 </head>
 <body>
 <main>
@@ -455,19 +455,24 @@
 
   // ---- All eighteen, and more ------------------------------------------------------
   // For the reader who would rather read than touch: every place in the
-  // bay's order, and under it each of its Beings by name, with its piece.
+  // bay's order, and under it each of its Beings by name, opening on
+  // request to its piece. What is open stays open when the words are read
+  // again.
   function list() {
-    var all = $('all');
+    var all = $('all'), openNow = {};
+    Array.prototype.forEach.call(all.querySelectorAll('details'), function (d) { if (d.open) openNow[d.dataset.addr] = true; });
     all.textContent = '';
     PLACES.forEach(function (p) {
       var sec = el('section', 'all-place'), h = el('h3', null, p.name);
       if (p.side) h.appendChild(el('span', 'place', ' · ' + p.side));
       sec.appendChild(h);
       p.beings.forEach(function (b) {
-        var art = el('article', 'all-being');
-        art.appendChild(el('h4', null, b.name));
-        piece(art, b);
-        sec.appendChild(art);
+        var d = el('details', 'all-being');
+        d.dataset.addr = b.addr;
+        d.open = !!openNow[b.addr];
+        d.appendChild(el('summary', null, b.name));
+        piece(d, b);
+        sec.appendChild(d);
       });
       all.appendChild(sec);
     });
