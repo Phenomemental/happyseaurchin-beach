@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Beings · The Night Watchman</title>
-<meta name="description" content="The eighteen Beings, shells on the shore of the watches: three at each of six places, under two lights, Silas and Ada. Pick one up and read a night through it.">
+<meta name="description" content="The eighteen Beings, shells on the shore of the watches: three in each of six tide-pools round a bay, between two lighthouses. Pick one up and read a night through it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20g">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20h">
 </head>
 <body>
 <main>
@@ -25,11 +25,11 @@
        to: the six places, the surface's at 1.1 to 1.3 and the deep's at 2.1
        to 2.3, each with its own words and its three Beings beneath (1.11 to
        2.33); how a reader reads through a Being (3), which opens the page;
-       the two extremes, Silas and Ada (4); and play (9). What is for the
-       Watchman and the builders (5) is never shown. The ring is the front
-       door's own drawing, in spine:p6's order, with the two lights above
-       it (8.3). None of these words is kept in the page; the title, hint,
-       care line and signature are read live with their saved copy. -->
+       the two lighthouses (4); and play (9). What is for the Watchman and
+       the builders (5) is never shown. The drawing is the bay (8.31), its
+       six tide-pools in spine:p6's order. None of these words is kept in
+       the page; the title, hint, care line and signature are read live
+       with their saved copy. -->
   <div class="sheet">
     <h1 id="title">The Beings</h1>
     <p class="byline" id="line">eighteen shells on the shore of the watches</p>
@@ -37,24 +37,14 @@
     <p class="opening" id="way"></p>
     <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
-    <svg class="middle beings-drawing" id="middle" viewBox="0 0 340 480" role="group" aria-label="Two lights, Silas and Ada, above six places round a still centre, with three Beings at each place">
+    <svg class="middle beings-drawing" id="middle" viewBox="0 0 340 500" role="group" aria-label="A bay: six tide-pools round still water, three shells in each, and a lighthouse on each headland">
       <defs>
-        <radialGradient id="gS" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
-        <radialGradient id="gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
-        <linearGradient id="coneS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".14"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
-        <linearGradient id="coneA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".14"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
-        <filter id="soft" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3.2"/></filter>
+        <linearGradient id="beam-warm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".2"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="beam-cool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".2"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
+        <radialGradient id="lamp-warm" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="lamp-cool" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
+        <radialGradient id="still-glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--wash)" stop-opacity=".75"/><stop offset="1" stop-color="var(--wash)" stop-opacity="0"/></radialGradient>
       </defs>
-      <g class="lights" aria-hidden="true">
-        <path d="M34,38 L0,476 L250,476 Z" fill="url(#coneS)"/>
-        <path d="M306,38 L90,476 L340,476 Z" fill="url(#coneA)"/>
-        <circle cx="34" cy="30" r="26" fill="url(#gS)"><animate attributeName="r" values="24;29;24" dur="7s" repeatCount="indefinite"/></circle>
-        <circle cx="34" cy="30" r="6.5" fill="var(--crimson)"/>
-        <text class="light-label" id="light-1" x="34" y="70" text-anchor="middle">Silas</text>
-        <circle cx="306" cy="30" r="26" fill="url(#gA)"><animate attributeName="r" values="29;24;29" dur="7s" repeatCount="indefinite"/></circle>
-        <circle cx="306" cy="30" r="6.5" fill="var(--indigo)"/>
-        <text class="light-label" id="light-2" x="306" y="70" text-anchor="middle">Ada</text>
-      </g>
       <g id="constellation"></g>
     </svg>
     <p class="hint" id="hint">Touch a Being to meet it.</p>
@@ -104,9 +94,9 @@
       return !/^(Arranged|Changed|Added|Revised|Settled|Founded)\b[^.]*\b\d{4}\b/.test(x);
     }).join(' ');
   }
-  // "THE TWO EXTREMES — not Beings. …", "PLAY — the Beings are …": the head
+  // "THE TWO LIGHTHOUSES — not Beings. …", "PLAY — the Beings are …": the head
   // in sentence case, and the rest.
-  var NAMES = /\b(beings?|silas|ada|watchman)\b/g;
+  var NAMES = /\b(beings?|watchman)\b/g;
   function headed(s) {
     var m = /^([A-Z][A-Z0-9 ,'’-]*[A-Z0-9])(?:\s*[—–]\s*|[.:]\s+)([\s\S]*)$/.exec(s || '');
     if (!m) return { head: '', rest: s || '' };
@@ -127,9 +117,6 @@
     var b = { name: s.slice(0, cut).trim(), epithet: '', spirit: '', fields: [] };
     var rest = s.slice(cut + 3), dot = rest.search(/\.\s/);
     b.epithet = (dot < 0 ? rest : rest.slice(0, dot)).trim();
-    // its short name: the second name in its line ("the Exile, the
-    // Unbelonging Ghost" is the Exile)
-    b.short = b.epithet.split(',')[0].trim();
     rest = dot < 0 ? '' : rest.slice(dot + 1).trim();
     var a = /^(Anchors?): ([\s\S]*?)\.(?:\s+|$)/.exec(rest);
     if (a) {
@@ -172,105 +159,220 @@
     return list.sort(function (a, b) { return rank(a) - rank(b); });
   }
 
-  // ---- The drawing -----------------------------------------------------------------
-  // The Beings lead (8.31). Each place is a thin ring, barely there,
-  // holding its three Beings as lanterns: each bears its short name, glows
-  // faintly and breathes at its own pace. A ring shows its name only when
-  // it wakes. The rings stand round the still centre, clockwise from the
-  // top in spine:p6's order, on an oval tall enough for every name to be
-  // read on a phone; the two lights stand in the top corners and never
-  // open.
-  var C = { x: 170, y: 240 }, ROW = 17, GAP = 3, NAMEROW = 14, PAD = 7;
-  var H = NAMEROW + 3 * ROW + 3 * GAP + 2 * PAD;
+  // ---- The bay -------------------------------------------------------------------
+  // The Beings' page drawn as a bay (8.31): a curved ink shore with a
+  // lighthouse on each headland, one beam warm, one cool, each sweeping
+  // slowly across the water, unnamed; six tide-pools round the shore,
+  // clockwise from the top in spine:p6's order, faint and unlabelled at
+  // rest, three shells in each with the Being's name beneath; and at the
+  // centre the still water holding the ampersand, lit. The shells are
+  // stacked in their pools so that every name reads, and every shell is a
+  // thumb's width, on a phone.
+  // Inside a pool, from its centre: the portal's name on the water at the
+  // top, hidden until the pool deepens, then three shells a row apart,
+  // each with its name beneath. B is the pool's half-height.
+  var ROW = 42, B = 82, NAME_Y = -66, SHELL_Y = [-42, 0, 42], UNDER = 21, N = 3;
+  var TOP = 84, GAP = 18;
   var PLACES = [], g = $('constellation'), drawing = $('middle'), state = null;
+  var S = function (tag, attrs) { return NW.svg(tag, attrs); };
   function measure(t) {
-    try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 6.6; }
+    try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 6.4; }
   }
+  function widthOf(cls, words) {
+    var t = S('text', { 'class': cls });
+    t.textContent = words;
+    g.appendChild(t);
+    var w = measure(t);
+    g.removeChild(t);
+    return w;
+  }
+  // the hand's small unevenness, the same every time it is drawn
+  function wob(n) { var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x) - 0.5; }
+  // a smooth path through points (Catmull-Rom), open or closed
+  function smooth(pts, closed) {
+    var n = pts.length, d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+    for (var i = 0; i < (closed ? n : n - 1); i++) {
+      var p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      if (!closed) { if (i === 0) p0 = p1; if (i + 2 >= n) p3 = p2; }
+      d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ',' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) +
+        ' ' + (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ',' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) +
+        ' ' + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
+    }
+    return d + (closed ? 'Z' : '');
+  }
+  // A pool's ring: a squarish oval, loosened as a rock pool is, and never
+  // quite closed the same way twice. Its half-width a is wide enough that
+  // every name inside clears the ring, corners included.
+  function poolRing(cx, cy, a, b, seed) {
+    var pts = [], f = 2 / N;
+    for (var i = 0; i < 30; i++) {
+      var t = i / 30 * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
+      var r = 1 + 0.025 * Math.sin(2 * t + seed * 1.7) + 0.02 * Math.sin(3 * t + seed * 2.3) + wob(seed * 31 + i) * 0.02;
+      pts.push([cx + Math.sign(c) * Math.pow(Math.abs(c), f) * a * r, cy + Math.sign(sn) * Math.pow(Math.abs(sn), f) * b * r]);
+    }
+    return smooth(pts, true);
+  }
+  function inside(hx, y) {
+    var t = Math.min(Math.abs(y) / B, 0.95);
+    return hx / Math.pow(1 - Math.pow(t, N), 1 / N);
+  }
+  // Three shells, drawn small in ink: a scallop, a moon snail, a whelk.
+  var SHELLS = [
+    ['M-10,3 C-12,-6 -6,-11 0,-11 C6,-11 12,-6 10,3 L4,6 L7,8.5 L-7,8.5 L-4,6 Z', 'M0,6 L0,-10 M0,6 L-5,-9.6 M0,6 L5,-9.6 M0,6 L-8.6,-5.4 M0,6 L8.6,-5.4'],
+    ['M9.5,0.5 C9.5,6.5 5,10 -0.5,10 C-6.5,10 -10,5.5 -10,0 C-10,-6 -5.5,-10 0.5,-10 C6,-10 9.5,-5.5 9.5,0.5 Z', 'M1,1 C3,-1 1.5,-4 -1,-3.5 C-4.5,-3 -5,1.5 -2.5,4 C0.5,6.5 5.5,5 6.5,1 C7.5,-3.5 4,-7.5 -0.5,-7.5'],
+    ['M-2,-11 C3,-10 8,-5 8.5,0 C9,5 6,9 1,10.5 L-1,8.5 C-5.5,6.5 -8.5,1.5 -7.5,-3.5 C-6.5,-7.5 -4.5,-10 -2,-11 Z', 'M-6.5,-5 C-2,-4.5 3,-3 7.5,-1 M-7.5,0.5 C-2.5,1 2.5,2.5 8,5 M-4.5,5.5 C-1,6.5 1.5,7.5 4,9']
+  ];
+  function adjective(b) { return b.name.replace(/^The\s+/i, '').replace(/\s+Being$/i, ''); }
+  var drawnAt = 0;
   function draw() {
     g.textContent = '';
     var places = PLACES.length ? PLACES : [0, 1, 2, 3, 4, 5].map(function () { return { addr: '', name: '', beings: [] }; });
-    // each lantern as wide as its name, each ring as wide as its widest
-    var sized = places.map(function (p) {
-      var widths = p.beings.map(function (b) {
-        var t = NW.svg('text', { 'class': 'lantern-name' });
-        t.textContent = b.short;
-        g.appendChild(t);
-        var w = measure(t) + 16;
-        g.removeChild(t);
-        return w;
-      });
-      return { p: p, widths: widths, w: Math.max(96, Math.max.apply(null, widths.concat([0])) + 14) };
-    });
-    // the oval: wide enough that the rings either side clear each other,
-    // tall enough that each ring clears the ones above and below it
-    var w = sized.map(function (x) { return x.w; });
-    var rx = Math.max(78, ((w[1] + w[5]) / 2 + 8) / 1.732, ((w[2] + w[4]) / 2 + 8) / 1.732);
-    var ry = 2 * (H + 6);
-    sized.forEach(function (x, k) {
-      var p = x.p, deg = -90 + k * 60, a = deg * Math.PI / 180;
-      var c = { x: C.x + rx * Math.cos(a), y: C.y + ry * Math.sin(a) };
-      // a spoke from the centre to the ring's edge
-      var u = { x: c.x - C.x, y: c.y - C.y }, len = Math.sqrt(u.x * u.x + u.y * u.y);
-      u.x /= len; u.y /= len;
-      var edge = 1 / Math.sqrt(Math.pow(u.x / (x.w / 2), 2) + Math.pow(u.y / (H / 2), 2));
-      // (from beyond the whispered word, which they would otherwise cross)
-      g.appendChild(NW.svg('line', { x1: C.x + u.x * 54, y1: C.y + u.y * 54, x2: c.x - u.x * (edge + 4), y2: c.y - u.y * (edge + 4), stroke: 'var(--frame)', 'stroke-width': '0.9', 'stroke-dasharray': '2 4', 'stroke-linecap': 'round', 'class': 'spoke' }));
-      // the ring, and the name it shows when it wakes
-      var ring = NW.svg('g', { 'class': 'pring', tabindex: p.name ? '0' : '-1', role: 'button', 'aria-label': p.name ? p.name + ', ' + p.side : 'A place' });
-      ring.dataset.addr = p.addr;
-      ring.appendChild(NW.svg('rect', { 'class': 'frame', x: c.x - x.w / 2, y: c.y - H / 2, width: x.w, height: H, rx: 20 }));
-      var nm = NW.svg('text', { 'class': 'pring-name', x: c.x, y: c.y - H / 2 + PAD + NAMEROW / 2 + 3.3, 'text-anchor': 'middle' });
-      nm.textContent = (p.name || '').toUpperCase();
-      ring.appendChild(nm);
-      if (p.name) NW.pressable(ring, function () { choosePlace(p); });
-      g.appendChild(ring);
-      // its three Beings, one above another
+    // each pool as wide as the names it holds need
+    var half = places.map(function (p) {
+      var a = Math.max(inside(widthOf('water-name', p.name) / 2 + 3, NAME_Y - 7), 40);
       p.beings.forEach(function (b, j) {
-        var cy = c.y - H / 2 + PAD + NAMEROW + GAP + ROW / 2 + j * (ROW + GAP), pw = x.widths[j];
-        var lamp = NW.svg('g', { 'class': 'lantern', tabindex: '0', role: 'button', 'aria-label': b.short + ', ' + b.name });
-        lamp.dataset.addr = b.addr;
-        lamp.dataset.place = p.addr;
-        // eighteen different breaths
-        var beat = (k * 3 + j * 5) % 18;
-        lamp.style.setProperty('--d', (5.6 + beat * 0.24).toFixed(2) + 's');
-        lamp.style.setProperty('--l', (-(k * 1.3 + j * 0.9)).toFixed(1) + 's');
-        lamp.appendChild(NW.svg('rect', { 'class': 'glow', x: c.x - pw / 2 - 2, y: cy - ROW / 2 - 2, width: pw + 4, height: ROW + 4, rx: (ROW + 4) / 2, filter: 'url(#soft)' }));
-        lamp.appendChild(NW.svg('rect', { 'class': 'pill', x: c.x - pw / 2, y: cy - ROW / 2, width: pw, height: ROW, rx: ROW / 2 }));
-        var t = NW.svg('text', { 'class': 'lantern-name', x: c.x, y: cy + 3.4, 'text-anchor': 'middle' });
-        t.textContent = b.short;
-        lamp.appendChild(t);
-        NW.pressable(lamp, function () { chooseBeing(p, b); });
-        g.appendChild(lamp);
+        var y = SHELL_Y[j] + UNDER, far = Math.max(Math.abs(y - 8), Math.abs(y + 2));
+        a = Math.max(a, inside(widthOf('shell-name', adjective(b)) / 2 + 3, far), inside(12, Math.abs(SHELL_Y[j]) + 12));
       });
+      return a * 1.06;
     });
-    // the still centre: the heart's ampersand, lit, and Presence whispered
-    g.appendChild(NW.svg('circle', { cx: C.x, cy: C.y, r: 29, fill: 'var(--frame)', opacity: '.35' }));
-    g.appendChild(NW.svg('circle', { cx: C.x, cy: C.y, r: 24, fill: 'var(--ink)' }));
-    var amp = NW.svg('text', { 'class': 'amp', x: C.x, y: C.y + 11, 'text-anchor': 'middle' });
+    // The pools round an oval: the two at the top clear each other, the
+    // two at the sides leave still water for the ampersand between them,
+    // and each clears the pools above and below. Where the page has room
+    // the bay opens rounder; on a phone it draws in, so that the shells
+    // stay a thumb's size and their names read.
+    var side = Math.max(half[1], half[4]), ends = Math.max(half[0], half[2], half[3], half[5]);
+    var tx = ends + 5;
+    drawnAt = drawing.getBoundingClientRect().width || 340;
+    var most = drawnAt / 1.12 / 2 - 6 - side;
+    var rx = Math.max(side + 27, tx / 0.82, Math.min(tx / 0.52, most));
+    var th = Math.acos(tx / rx), ry = (2 * B + GAP) / Math.sin(th);
+    var W = 2 * (Math.max(rx + side, tx + ends) + 6);
+    var C = { x: W / 2, y: TOP + (2 * B + GAP) + B };
+    var out = 0.55, sx = rx + side * out, sy = ry + B * out * 0.6;
+    var VH = Math.max(C.y + 3 * B + GAP, C.y + sy) + 16;
+    drawing.setAttribute('viewBox', '0 0 ' + W.toFixed(0) + ' ' + VH.toFixed(0));
+    var deg = th * 180 / Math.PI;
+    var spots = places.map(function (p, k) {
+      var a = [-deg, 0, deg, 180 - deg, 180, 180 + deg][k] * Math.PI / 180;
+      return { x: C.x + rx * Math.cos(a), y: C.y + ry * Math.sin(a) };
+    });
+    var lampL = { x: 20, y: 30 }, lampR = { x: W - 20, y: 30 };
+
+    // the water: a few ripples, and the still centre holding the ampersand
+    var still = rx - side;
+    [[-0.45, -62], [0.35, -84], [0.4, 58], [-0.3, 80]].forEach(function (q) {
+      var x = C.x + q[0] * still, y = C.y + q[1];
+      g.appendChild(S('path', { 'class': 'ripple', d: 'M' + (x - 9).toFixed(1) + ',' + y.toFixed(1) + ' q4.5,-2.6 9,0 t9,0' }));
+    });
+    // the beams, sweeping slowly across the bay
+    [[lampL, 'beam-warm', [16, 74, 16], 19], [lampR, 'beam-cool', [164, 106, 164], 23]].forEach(function (b) {
+      var o = S('g', { transform: 'translate(' + b[0].x + ' ' + b[0].y + ')', 'class': 'beam' });
+      var turn = S('g', {});
+      turn.appendChild(S('animateTransform', { attributeName: 'transform', type: 'rotate', values: b[2].join(';'), dur: b[3] + 's', repeatCount: 'indefinite', calcMode: 'spline', keyTimes: '0;0.5;1', keySplines: '0.45 0 0.55 1;0.45 0 0.55 1' }));
+      var L = VH * 1.1, sp = L * 0.1;
+      turn.appendChild(S('path', { d: 'M0,0 L' + L.toFixed(0) + ',' + (-sp).toFixed(0) + ' L' + L.toFixed(0) + ',' + sp.toFixed(0) + ' Z', fill: 'url(#' + b[1] + ')' }));
+      o.appendChild(turn);
+      g.appendChild(o);
+    });
+    g.appendChild(S('circle', { cx: C.x, cy: C.y, r: 34, fill: 'url(#still-glow)' }));
+    var amp = S('text', { 'class': 'still-amp', x: C.x, y: C.y + 13, 'text-anchor': 'middle' });
     amp.textContent = '&';
     g.appendChild(amp);
-    var whisper = NW.svg('text', { 'class': 'whisper', x: C.x, y: C.y + 44, 'text-anchor': 'middle' });
-    whisper.textContent = 'Presence';
-    g.appendChild(whisper);
+
+    // the shore: from the left headland, round the bay along the pools'
+    // outer sides, to the right headland; gone over twice, as a hand would
+    var pts = [[lampL.x + 3, lampL.y + 36]];
+    for (var d = 180 + deg + 14, i = 0; d >= -deg - 14 - 0.01; d -= (2 * deg + 208) / 18, i++) {
+      var t = d * Math.PI / 180, r = 1 + wob(i + 3) * 0.02;
+      pts.push([C.x + sx * r * Math.cos(t), C.y + sy * r * Math.sin(t)]);
+    }
+    pts.push([lampR.x - 3, lampR.y + 36]);
+    var shore = smooth(pts, false);
+    g.appendChild(S('path', { 'class': 'shore', d: shore }));
+    g.appendChild(S('path', { 'class': 'shore second', d: shore, transform: 'translate(1.6 2.2)' }));
+
+    // the lighthouses, unnamed
+    [[lampL, 'lamp-warm'], [lampR, 'lamp-cool']].forEach(function (l) {
+      var x = l[0].x, y = l[0].y, t = S('g', { 'class': 'lighthouse', 'aria-hidden': 'true' });
+      t.appendChild(S('circle', { cx: x, cy: y, r: 15, fill: 'url(#' + l[1] + ')' }));
+      t.appendChild(S('path', { 'class': 'rock', d: 'M' + (x - 15) + ',' + (y + 38) + ' C' + (x - 9) + ',' + (y + 27) + ' ' + (x + 9) + ',' + (y + 27) + ' ' + (x + 15) + ',' + (y + 38) }));
+      t.appendChild(S('path', { 'class': 'tower', d: 'M' + (x - 5.5) + ',' + (y + 31) + ' L' + (x - 3.2) + ',' + (y + 5) + ' L' + (x + 3.2) + ',' + (y + 5) + ' L' + (x + 5.5) + ',' + (y + 31) + ' Z' }));
+      t.appendChild(S('path', { 'class': 'band', d: 'M' + (x - 4.6) + ',' + (y + 20) + ' L' + (x + 4.6) + ',' + (y + 20) + ' L' + (x + 4.3) + ',' + (y + 16.5) + ' L' + (x - 4.3) + ',' + (y + 16.5) + ' Z' }));
+      t.appendChild(S('rect', { 'class': 'lamp-room', x: x - 2.6, y: y - 2, width: 5.2, height: 7 }));
+      t.appendChild(S('path', { 'class': 'roof', d: 'M' + (x - 4) + ',' + (y - 2) + ' L' + x + ',' + (y - 6.5) + ' L' + (x + 4) + ',' + (y - 2) + ' Z' }));
+      t.appendChild(S('path', { 'class': 'gallery', d: 'M' + (x - 5) + ',' + (y + 5) + ' L' + (x + 5) + ',' + (y + 5) }));
+      g.appendChild(t);
+    });
+
+    // the pools, and their shells
+    places.forEach(function (p, k) {
+      var c = spots[k], a = half[k];
+      var pool = S('g', { 'class': 'pool', tabindex: p.name ? '0' : '-1', role: 'button', 'aria-label': p.name ? p.name + ', ' + p.side : 'A tide-pool' });
+      pool.dataset.addr = p.addr;
+      var ring = poolRing(c.x, c.y, a, B, k + 1);
+      pool.appendChild(S('path', { 'class': 'pool-hit', d: ring }));
+      pool.appendChild(S('path', { 'class': 'pool-water', d: ring }));
+      pool.appendChild(S('path', { 'class': 'pool-deep', d: ring }));
+      pool.appendChild(S('path', { 'class': 'pool-ring', d: ring }));
+      pool.appendChild(S('path', { 'class': 'pool-ring second', d: poolRing(c.x + 0.8, c.y + 1, a - 2, B - 2, k + 7) }));
+      // its name, on its own water
+      var nm = S('text', { 'class': 'water-name', x: c.x, y: c.y + NAME_Y, 'text-anchor': 'middle' });
+      nm.textContent = p.name || '';
+      pool.appendChild(nm);
+      if (p.name) NW.pressable(pool, function () { choosePlace(p); });
+      g.appendChild(pool);
+      p.beings.forEach(function (b, j) {
+        var y = c.y + SHELL_Y[j];
+        var shell = S('g', { 'class': 'shell', tabindex: '0', role: 'button', 'aria-label': b.name });
+        shell.dataset.addr = b.addr;
+        shell.dataset.place = p.addr;
+        shell.appendChild(S('rect', { 'class': 'shell-hit', x: c.x - a + 4, y: y - 15, width: 2 * a - 8, height: ROW }));
+        shell.appendChild(S('ellipse', { 'class': 'shell-shade', cx: c.x, cy: y + 10, rx: 9, ry: 2 }));
+        // the shell lifts in its own wrapper, since the drawing turns it
+        var lift = S('g', { 'class': 'lift' });
+        var shape = SHELLS[(k + j) % 3], tilt = (wob(k * 3 + j) * 24).toFixed(1);
+        var art = S('g', { transform: 'translate(' + c.x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + tilt + ')' });
+        art.appendChild(S('path', { 'class': 'shell-body', d: shape[0] }));
+        art.appendChild(S('path', { 'class': 'shell-lines', d: shape[1] }));
+        lift.appendChild(art);
+        shell.appendChild(lift);
+        var t = S('text', { 'class': 'shell-name', x: c.x, y: y + UNDER, 'text-anchor': 'middle' });
+        t.textContent = adjective(b);
+        shell.appendChild(t);
+        NW.pressable(shell, function () { chooseBeing(p, b); });
+        g.appendChild(shell);
+      });
+    });
     mark();
   }
+  // the bay is laid out for the width it is given, so it is laid out again
+  // when that width changes
+  var again = 0;
+  addEventListener('resize', function () {
+    clearTimeout(again);
+    again = setTimeout(function () {
+      var w = drawing.getBoundingClientRect().width;
+      if (PLACES.length && Math.abs(w - drawnAt) > 24) draw();
+    }, 200);
+  });
 
   // ---- Waking and settling ----------------------------------------------------------
-  // A Being touched brightens, its ring wakes with its name, its two
-  // siblings lift a little and all else dims a step. A ring touched wakes
-  // with its three Beings held brighter together. A touch anywhere else
+  // A shell touched lifts, its pool deepens with its name on the water, its
+  // two neighbours lift a little and all else dims a step. A pool touched
+  // opens with its three shells held together. A touch anywhere else
   // settles everything back.
   function mark() {
     var on = state && state.being, place = state && state.place;
     drawing.classList.toggle('focus', !!state);
-    Array.prototype.forEach.call(g.querySelectorAll('.lantern'), function (e) {
+    Array.prototype.forEach.call(g.querySelectorAll('.shell'), function (e) {
       var mine = e.dataset.place === place;
       e.classList.toggle('on', !!on && e.dataset.addr === on);
       e.classList.toggle('near', !!on && mine && e.dataset.addr !== on);
       e.classList.toggle('held', !on && mine);
       e.setAttribute('aria-pressed', on && e.dataset.addr === on ? 'true' : 'false');
     });
-    Array.prototype.forEach.call(g.querySelectorAll('.pring'), function (e) {
+    Array.prototype.forEach.call(g.querySelectorAll('.pool'), function (e) {
       e.classList.toggle('awake', !!place && e.dataset.addr === place);
     });
   }
@@ -324,14 +426,14 @@
   }
   document.addEventListener('click', function (e) {
     if (!state || !e.target.closest) return;
-    if (e.target.closest('.lantern, .pring, #card')) return;
+    if (e.target.closest('.shell, .pool, #card')) return;
     settle();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') settle(); });
 
   // ---- All eighteen, and more ------------------------------------------------------
   // For the reader who would rather read than touch: every place in the
-  // ring's order, with its own words and its three Beings in full.
+  // bay's order, with its own words and its three Beings in full.
   function list() {
     var all = $('all');
     all.textContent = '';
@@ -381,18 +483,12 @@
       PLACES = places;
       draw();
       list();
-      drawing.setAttribute('aria-label', 'Two lights, ' + $('light-1').textContent + ' and ' + $('light-2').textContent +
-        ', above six places round a still centre, ' + PLACES.map(function (p) { return p.name; }).join(', ') +
-        ', with three Beings at each');
+      drawing.setAttribute('aria-label', 'A bay: six tide-pools round still water, ' + PLACES.map(function (p) { return p.name; }).join(', ') +
+        ', three shells in each, and a lighthouse on each headland');
     }
     // How a reader reads through a Being (3) opens the page.
     var way = forReaders(NW.own(block['3']));
     if (way && flat(way) !== flat($('way').textContent)) $('way').textContent = way;
-    var ext = headed(NW.own(block['4'])), two = /\b([A-Z][a-z]+) and ([A-Z][a-z]+) are\b/.exec(forReaders(ext.rest));
-    if (two) {
-      NW.set($('light-1'), two[1]);
-      NW.set($('light-2'), two[2]);
-    }
     more(block);
     $('beach-note').hidden = true;
     // what is open shows the words as they now stand, where it is
@@ -420,8 +516,7 @@
     show(block);
   }
 
-  // The lights are still, and the lanterns do not breathe, for anyone who
-  // asks for less motion.
+  // The beams stand still for anyone who asks for less motion.
   var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function hush() {
     var m = $('middle');
@@ -433,8 +528,8 @@
   hush();
 
   draw();
-  // the lanterns are as wide as their names, so they are drawn again once
-  // the type has come
+  // the pools are as wide as their names, so they are drawn again once the
+  // type has come
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (PLACES.length) draw(); });
   Beach.get('spine:p6').then(function (spine) {
     var order = NW.order(spine);
