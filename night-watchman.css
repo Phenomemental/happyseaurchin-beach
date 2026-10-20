@@ -1009,18 +1009,28 @@ section.begin {
   .being.lit { animation: none; }
 }
 
-/* The front door, cut to one of each thing (8.11): his voice, the ring,
-   two doors, two closing lines. No rules; air between the parts. */
+/* The front door, one of each thing (8.11): the open, his voice framed,
+   Portals, The AI here, the foot. No rules; air between the parts. */
+/* His voice: a sheet within the sheet, framed as the sheet is, its five
+   lines with air round them. It waits unseen until they come. */
 .voice {
   text-align: center;
   max-width: 26rem;
   margin: 2.8rem auto 0;
+  padding: 2.1rem 1.3rem;
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  outline: 1px solid var(--frame);
+  outline-offset: 4px;
+}
+.voice:empty {
+  display: none;
 }
 .voice p {
   font-size: 1.3rem;
   font-style: italic;
   line-height: 1.45;
-  margin: 0 0 2.4rem;
+  margin: 0 0 1.8rem;
 }
 .voice p:last-child {
   margin-bottom: 0;
@@ -1028,6 +1038,20 @@ section.begin {
 .places {
   text-align: center;
   margin: 3rem auto 0;
+}
+/* The AI here: said plainly, a short line to a paragraph. */
+.ai-here {
+  margin: 3rem auto 0;
+}
+.ai-lines {
+  max-width: 28rem;
+  margin: 0 auto;
+}
+.ai-lines p {
+  margin: 0 0 0.8rem;
+}
+.ai-lines p:last-child {
+  margin-bottom: 0;
 }
 .ring-line {
   font-style: italic;
@@ -1054,52 +1078,6 @@ section.begin {
   color: var(--muted);
   text-align: center;
   margin: 0.8rem 0 0;
-}
-/* Two doors of equal weight: side by side, stacked on a phone. */
-.pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
-  max-width: 30rem;
-  margin: 2.8rem auto 0;
-}
-@media (max-width: 480px) {
-  .pair { grid-template-columns: 1fr; }
-}
-.pair-door {
-  display: block;
-  text-align: center;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid var(--frame);
-  border-radius: 2px;
-  padding: 1rem 1rem 1.05rem;
-  transition: border-color 0.2s;
-}
-.pair-door:hover,
-.pair-door:focus-visible {
-  border-color: var(--crimson);
-}
-.pair-door .title {
-  display: block;
-  font-size: 1.4rem;
-  line-height: 1.2;
-}
-.pair-door:hover .title {
-  color: var(--crimson);
-}
-.pair-door .desc {
-  display: block;
-  font-style: italic;
-  color: var(--muted);
-  font-size: 1.05rem;
-  margin-top: 0.25rem;
-}
-.coming {
-  font-size: 0.95rem;
-  color: var(--muted);
-  text-align: center;
-  margin: 0.9rem 0 0;
 }
 .closing-lines {
   text-align: center;
