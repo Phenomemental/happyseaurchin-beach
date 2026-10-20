@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20i">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20j">
 </head>
 <body>
 <main>
@@ -21,14 +21,17 @@
     <a href="map.html">My map</a>
   </nav>
 
-  <!-- The front door, cut to the shape at beings:night-watchman 8.11: one
-       of each thing, nothing said twice, no rules. The title, line, care
+  <!-- The front door, in the shape at beings:night-watchman 8.11: the
+       open (title, line, Have a go), his voice framed, Portals, The AI
+       here, the foot. One of each thing, no rules; Have a go is the one way
+       on, and the road runs main, Begin, the Beings. The title, line, care
        line and signature are read live from 8.8363 with their saved copy.
-       His five lines, the line under the ring and the two closing lines are
-       read live from 8.11, and the six places (name, line, questions) from
-       spine:p6; none of those is kept in the page beyond the line under the
-       ring. Have a go, the two doors and "coming" are the page's own. The
-       practice is named in the closing lines and nowhere else. -->
+       His five lines, the line under the ring, the six lines of The AI here
+       and the foot's line are read live from 8.11, and the six places
+       (name, line, questions) from spine:p6. His lines are not kept in the
+       page, and their frame waits empty until they come; the rest are, so
+       the page says what the AI does even when the beach is out of reach.
+       The practice is named in the foot's line and nowhere else. -->
   <div class="sheet">
     <svg class="heart" style="aspect-ratio:390/340" viewBox="0 0 390 340" role="img" aria-label="One open stroke drawn in ink: it comes in thin from the top right through the gap in a ring, curls once round a crimson centre, crosses itself, and leaves thick and open at the bottom left">
       <ellipse cx="232" cy="140" rx="118" ry="112" fill="var(--wash)" opacity=".6"/>
@@ -44,25 +47,34 @@
     <p class="byline" id="line">a quiet place to keep a watch of your own</p>
 
     <a class="begin-link" id="to-begin" href="night-watchman-begin.html">Have a go</a>
-    <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
     <div class="voice" id="voice" aria-label="A watch, as he tells it"></div>
     <p class="beach-note" id="voice-note" hidden>The beach can't be reached just now; his words will be here when it answers.</p>
 
-    <section class="places" aria-label="Six places to stand">
+    <section class="places" aria-labelledby="portals-head">
+      <h2 id="portals-head">Portals</h2>
       <svg class="ring" id="ring" viewBox="0 0 360 320" role="group" aria-label="Six places in a ring round a still centre"><g id="ring-g"></g></svg>
       <p class="ring-line" id="ring-line">Touch a place to see what is asked there.</p>
       <div class="being place-card" id="place-card" hidden aria-live="polite"></div>
       <p class="beach-note" id="places-note" hidden>The six places can't be read from the beach just now.</p>
     </section>
 
-    <nav class="pair" aria-label="Ways in">
-      <a class="pair-door" href="night-watchman-begin.html"><span class="title">Begin</span><span class="desc">keep a watch, or host him.</span></a>
-      <a class="pair-door" href="night-watchman-beings.html"><span class="title">The Beings</span><span class="desc">eighteen shells on the shore of the watches.</span></a>
-    </nav>
-    <p class="coming">Read the watches — coming.</p>
+    <section class="ai-here" aria-labelledby="ai-head">
+      <h2 id="ai-head">The AI here</h2>
+      <div class="ai-lines" id="ai-lines">
+        <p>An AI keeps this watch. It holds one thing only: a space and a question.</p>
+        <p>It asks. It does not tell you what your night means, diagnose, or advise.</p>
+        <p>Holding a space still steers a little, toward noticing before deciding. We would rather say so than pretend it does nothing.</p>
+        <p>It does not know you and it can be wrong. What you notice, and what it means, stay with you.</p>
+        <p>Rushing to AI can cost us the very thing we most need: noticing, and thinking, for ourselves. This is built to give that back.</p>
+        <p>It is a rehearsal for practice with people, never a substitute for them.</p>
+      </div>
+    </section>
 
-    <div class="closing-lines" id="closing"></div>
+    <div class="closing-lines" id="closing">
+      <p>The six places come from Presence in Action, a practice people learn together in person.</p>
+    </div>
+    <p class="care foot" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
     <p class="signature" id="signature">Mathew Pay</p>
   </div>
 </main>
@@ -108,8 +120,10 @@
     list.forEach(function (l) { box.appendChild(el('p', cls, l)); });
   }
   // From the page's shape (8.11): his voice, five lines ("(2) HIS VOICE, …:
-  // line / … / line. (3) …"); the one line beneath the ring; and the foot,
-  // two lines ("(5) THE FOOT, …: line / line Then the signature.").
+  // line / … / line. (3) …"); the one line beneath the ring; The AI here,
+  // six lines ("(4) THE AI HERE, …: line / … / line. (5) …"); and the
+  // foot's line ("(5) THE FOOT: one line: … Then the helpline, small: …").
+  // The helpline itself is the front door's care line (8.8363).
   function renderShape(s) {
     var voice = /\(\d\)\s*HIS VOICE[^:]*:\s*([\s\S]+?)\s*\(\d\)/.exec(s || '');
     if (voice) {
@@ -118,7 +132,9 @@
     }
     var under = /One line beneath:\s*([\s\S]+?[.!?])(?=\s+[A-Z(]|\s*$)/.exec(s || '');
     if (under) NW.set($('ring-line'), up(under[1].trim()));
-    var foot = /\(\d\)\s*THE FOOT[^:]*:\s*([\s\S]+?)\s+Then the signature/.exec(s || '');
+    var ai = /\(\d\)\s*THE AI HERE[^:]*:\s*([\s\S]+?)\s*\(\d\)/.exec(s || '');
+    if (ai) setLines($('ai-lines'), lines(ai[1]));
+    var foot = /\(\d\)\s*THE FOOT[^:]*:\s*(?:one line[^:]*:\s*)?([\s\S]+?)\s+Then the (?:helpline|signature)/.exec(s || '');
     if (foot) setLines($('closing'), lines(foot[1]));
   }
 
