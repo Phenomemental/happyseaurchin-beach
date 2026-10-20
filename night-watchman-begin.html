@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Begin · The Night Watchman</title>
-<meta name="description" content="How to keep a watch with the Night Watchman: what you need, how to connect once, and what happens to your words.">
+<meta name="description" content="Have a go: turn the wheel of six ways of noticing, write what comes, see the tide of lines others have left, then choose your way in with the Night Watchman.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-19c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20a">
 </head>
 <body>
 <main>
@@ -21,68 +21,124 @@
     <a href="map.html">My map</a>
   </nav>
 
-  <!-- Begin. Every word here is Dorylus's, read live from
-       beings:night-watchman 8.8363 (Begin at 2); what is written below is
-       the saved copy, shown until the beach answers. -->
+  <!-- Begin. Its title and care line, the spinner's words, the three ways
+       in and all that follows them are Dorylus's, read live from
+       beings:night-watchman 8.8363 (Begin at 2, the spinner's words at 1.2);
+       what is written below is the saved copy, shown until the beach
+       answers. The line under the title, the tide, and the heading Choose
+       your way in are this page's own. The spinner's questions come from
+       spine:p6; lines left at a portal go to pool:p6 at the portal's place,
+       and the tide and Read are drawn from what pool:p6 holds, nothing else. -->
   <div class="sheet">
     <h1 id="title">Begin</h1>
-    <p class="byline" id="line">how to keep a watch with the Night Watchman</p>
-
-    <p class="opening" id="opening">Reading here is open to everyone, with nothing to set up. To keep a watch with him, you need your own AI and one small connection added to it. This page walks you there, a step at a time.</p>
+    <p class="byline" id="line">Have a go. Turn the wheel, and write what comes.</p>
     <p class="care" id="care">Before your first watch: if tonight is heavy, you are welcome here, and you are just as welcome to reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland).</p>
 
     <hr class="rule">
 
-    <section aria-labelledby="ways-head">
-      <h2 id="ways-head">Three ways in</h2>
-      <div class="ways" id="ways">
-        <div class="way"><span class="num">i</span><span class="t"><span class="title">Keep a watch</span><span class="desc">He holds the space and asks what you are noticing. You notice; the words stay yours.</span></span></div>
-        <div class="way"><span class="num">ii</span><span class="t"><span class="title">Host him</span><span class="desc">You hold the space. He speaks briefly, as a character inside a story, and you notice what he brings.</span></span></div>
-        <div class="way"><span class="num">iii</span><span class="t"><span class="title">Read<span class="soon">coming</span></span><span class="desc">Read watches that others have chosen to share, through the eyes of one of the Beings.</span></span></div>
+    <section class="begin" id="begin" aria-label="The wheel">
+      <p class="lede" id="sp-lede">Six ways of noticing turn about a still centre. Give it a turn; where it comes to rest, there is a question for you.</p>
+      <div class="pointer" aria-hidden="true"></div>
+      <canvas class="spinner" id="spinner" tabindex="0" role="button" aria-label="Six ways of noticing about a still centre. Press Enter or Space to turn it, or drag it round." aria-describedby="tide-read"></canvas>
+      <button class="flick" type="button" id="turn">turn it</button>
+
+      <div class="tide" id="tide">
+        <h2 id="tide-head">The tide</h2>
+        <p class="tide-read" id="tide-read">The wheel is fair: it rests at each place one turn in six.</p>
+        <p class="tide-yours" id="tide-yours" role="status"></p>
+        <button class="flick" type="button" id="replay" hidden>watch it come in</button>
+      </div>
+
+      <div class="answer" id="answer" hidden aria-live="polite">
+        <p class="portal" id="portal"></p>
+        <p class="question" id="question"></p>
+        <p class="stay" id="stay">Stay with it a while. Answer, or only notice, and leave nothing.</p>
+        <div class="line">
+          <label class="line-label" for="reflection" id="line-label">leave a line for whoever lands here next</label>
+          <textarea id="reflection" maxlength="600"></textarea>
+          <p class="small" id="line-note">Anyone may read what is left here. No name is kept with it.</p>
+          <button class="btn" type="button" id="leave">Leave it</button>
+          <p class="line-status" id="line-status" role="status"></p>
+          <div class="left-lines" id="left-lines"></div>
+        </div>
+        <p class="again"><button class="flick" type="button" id="again">turn it again</button></p>
       </div>
     </section>
 
     <hr class="rule">
 
-    <section class="prose" aria-labelledby="need-head">
-      <h2 id="need-head">What you need</h2>
-      <p id="need">An AI that lets you add a connection of your own: Claude on the web or on a computer, or ChatGPT on a paid plan with developer mode switched on. Some phone apps and free plans can't do this yet. Reading this site is still open to you.</p>
+    <section aria-labelledby="ways-head">
+      <h2 id="ways-head">Choose your way in</h2>
+      <div class="ways" id="ways">
+        <button class="way" type="button" id="way-keep" aria-expanded="false" aria-controls="path-keep">
+          <span class="num">i</span>
+          <span class="t"><span class="title">Keep a watch</span><span class="desc">He holds the space and asks what you are noticing. You notice; the words stay yours.</span></span>
+        </button>
+        <div class="path" id="path-keep" hidden>
+          <h3 class="need-head">What you need</h3>
+          <p class="need">An AI that lets you add a connection of your own: Claude on the web or on a computer, or ChatGPT on a paid plan with developer mode switched on. Some phone apps and free plans can't do this yet. Reading this site is still open to you.</p>
+          <h3 class="connect-head">Connect, once</h3>
+          <ol class="steps steps-a">
+            <li data-n="i">In Claude, open Settings, then Connectors, then Add custom connector.</li>
+            <li data-n="ii">Give it the name bsp, and paste this address:</li>
+          </ol>
+          <div class="addr"><code>https://bsp.hermitcrab.me/mcp/v1</code><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> the address</span></button></div>
+          <ol class="steps steps-b">
+            <li data-n="iii">Save it, then start a new chat with the connection switched on.</li>
+            <li data-n="iv">To check it works, ask your AI what the beach is. If it can tell you, you're connected.</li>
+          </ol>
+          <p class="after">The address is public and open to read. It needs no sign-in.</p>
+          <h3 class="say-head">Then say</h3>
+          <div class="phrase"><p class="say">"Wake the Night Watchman. I'd like to keep a watch."</p><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> what to say</span></button></div>
+          <p class="small say-more">You can stop at any moment, by saying so or simply closing the chat.</p>
+        </div>
+
+        <button class="way" type="button" id="way-host" aria-expanded="false" aria-controls="path-host">
+          <span class="num">ii</span>
+          <span class="t"><span class="title">Host him</span><span class="desc">You hold the space. He speaks briefly, as a character inside a story, and you notice what he brings.</span></span>
+        </button>
+        <div class="path" id="path-host" hidden>
+          <h3 class="need-head">What you need</h3>
+          <p class="need">An AI that lets you add a connection of your own: Claude on the web or on a computer, or ChatGPT on a paid plan with developer mode switched on. Some phone apps and free plans can't do this yet. Reading this site is still open to you.</p>
+          <h3 class="connect-head">Connect, once</h3>
+          <ol class="steps steps-a">
+            <li data-n="i">In Claude, open Settings, then Connectors, then Add custom connector.</li>
+            <li data-n="ii">Give it the name bsp, and paste this address:</li>
+          </ol>
+          <div class="addr"><code>https://bsp.hermitcrab.me/mcp/v1</code><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> the address</span></button></div>
+          <ol class="steps steps-b">
+            <li data-n="iii">Save it, then start a new chat with the connection switched on.</li>
+            <li data-n="iv">To check it works, ask your AI what the beach is. If it can tell you, you're connected.</li>
+          </ol>
+          <p class="after">The address is public and open to read. It needs no sign-in.</p>
+          <h3 class="say-head">Then say</h3>
+          <div class="phrase"><p class="say">"I'd like to host the Night Watchman."</p><button class="copy" type="button"><span class="copy-word">copy</span><span class="visually-hidden"> what to say</span></button></div>
+          <p class="small say-more">You can stop at any moment, by saying so or simply closing the chat.</p>
+        </div>
+
+        <button class="way" type="button" id="way-read" aria-expanded="false" aria-controls="path-read">
+          <span class="num">iii</span>
+          <span class="t"><span class="title">Read</span><span class="desc">Read watches that others have chosen to share, through the eyes of one of the Beings.</span></span>
+        </button>
+        <div class="path" id="path-read" hidden>
+          <p class="small read-lede">The lines left at the wheel, by the place it came to rest, newest first.</p>
+          <div id="read-lines"><p class="small read-empty">Reading the lines…</p></div>
+        </div>
+      </div>
     </section>
 
     <hr class="rule">
 
-    <section class="prose" aria-labelledby="connect-head">
-      <h2 id="connect-head">Connect, once</h2>
-      <ol class="steps" id="steps-a">
-        <li data-n="i">In Claude, open Settings, then Connectors, then Add custom connector.</li>
-        <li data-n="ii">Give it the name bsp, and paste this address:</li>
-      </ol>
-      <div class="addr"><code id="addr">https://bsp.hermitcrab.me/mcp/v1</code><button class="copy" type="button" id="copy">copy</button></div>
-      <ol class="steps" id="steps-b">
-        <li data-n="iii">Save it, then start a new chat with the connection switched on.</li>
-        <li data-n="iv">To check it works, ask your AI what the beach is. If it can tell you, you're connected.</li>
-      </ol>
-      <p id="after">The address is public and open to read. It needs no sign-in.</p>
-    </section>
-
-    <hr class="rule">
-
-    <section class="begin" aria-labelledby="say-head">
-      <h2 id="say-head">Then say</h2>
-      <p class="say" id="say">"Wake the Night Watchman. I'd like to keep a watch."</p>
-      <p class="small say-more" id="say-more">Or, to host him: "I'd like to host the Night Watchman." You can stop at any moment, by saying so or simply closing the chat.</p>
-    </section>
-
-    <hr class="rule">
-
-    <section class="prose" aria-labelledby="words-head">
-      <h2 id="words-head">What happens to your words</h2>
-      <ul class="plain" id="words">
-        <li>The Night Watchman is made to keep nothing of what you say.</li>
-        <li>Your conversation stays with whoever runs your AI, as with any chat you have.</li>
-        <li>While your AI reads his pages, others working on the beach can see for a couple of minutes that someone is reading. Not who you are, and not what you said.</li>
-        <li>Keeping a watch is a later choice, and the only one that stores anything. If you choose it, it is sealed with a phrase only you hold, so only you can read it. If the phrase is lost, the watch can't be opened.</li>
-      </ul>
+    <section class="more" aria-label="What happens to your words">
+      <details>
+        <summary id="words-head">What happens to your words</summary>
+        <ul class="plain" id="words">
+          <li>The Night Watchman is made to keep nothing of what you say.</li>
+          <li>Your conversation stays with whoever runs your AI, as with any chat you have.</li>
+          <li>While your AI reads his pages, others working on the beach can see for a couple of minutes that someone is reading. Not who you are, and not what you said.</li>
+          <li>Keeping a watch is a later choice, and the only one that stores anything. If you choose it, it is sealed with a phrase only you hold, so only you can read it. If the phrase is lost, the watch can't be opened.</li>
+        </ul>
+      </details>
     </section>
 
     <hr class="rule">
@@ -109,109 +165,90 @@
     return e;
   }
   function flat(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function setAll(sel, s) { if (s) each(sel, function (e) { e.textContent = s; }); }
+  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
-  // The address can be copied in one tap; where copying isn't allowed, it
-  // is selected, ready to copy by hand.
-  $('copy').addEventListener('click', function () {
-    var b = $('copy'), t = $('addr').textContent;
-    function selectIt() {
-      var r = document.createRange();
-      r.selectNodeContents($('addr'));
-      var s = getSelection();
-      s.removeAllRanges();
-      s.addRange(r);
-      b.textContent = 'selected, copy it';
-    }
-    try {
-      navigator.clipboard.writeText(t).then(function () { b.textContent = 'copied'; }, selectIt);
-    } catch (e) {
-      selectIt();
-    }
-    setTimeout(function () { b.textContent = 'copy'; }, 2400);
-  });
-
-  // A part headed in capitals: its head, then its words, each set where
-  // it belongs on the page.
-  function part(node, headEl) {
+  // ---- The words --------------------------------------------------------------
+  // A part headed in capitals: its head, set wherever sel finds it, then
+  // its words.
+  function part(node, sel) {
     var h = NW.head(NW.own(node));
-    if (h.head) NW.set(headEl, h.head);
+    if (sel) setAll(sel, h.head);
     return h.rest;
   }
   function render(words) {
     // The signature each page ends with (8.83634).
     NW.set($('signature'), NW.forAll(words).signature);
+    // The spinner's words stand with the front door's (8.836312).
+    if (words['1']) renderSpinnerWords(NW.own(words['1']['2']));
     var begin = words['2'];
     if (!begin) return;
+    // The title and the care line are read live; the line under the title
+    // is this page's own.
     var f = NW.fields(NW.own(begin), ['Title', 'Line', 'Opening', 'Care']);
     if (f.Title) f.Title = NW.bare(f.Title);
     NW.set($('title'), f.Title);
     if (f.Title) document.title = f.Title + ' · The Night Watchman';
-    NW.set($('line'), NW.bare(f.Line));
-    NW.set($('opening'), f.Opening);
     if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
 
-    // Three ways in: "i, Keep a watch: …. ii, …. iii, Read (coming): …"
-    var waysText = part(begin['1'], $('ways-head'));
-    var ways = NW.numbered(waysText, true);
-    if (ways.length) {
-      var box = $('ways');
-      box.textContent = '';
-      ways.forEach(function (w) {
-        var row = el('div', 'way');
-        row.appendChild(el('span', 'num', w.n));
-        var t = el('span', 't'), title = el('span', 'title');
-        var coming = /\s*\(coming\)\s*$/.test(w.title);
-        title.textContent = w.title.replace(/\s*\(coming\)\s*$/, '');
-        if (coming) title.appendChild(el('span', 'soon', 'coming'));
-        t.appendChild(title);
-        t.appendChild(el('span', 'desc', w.body));
-        row.appendChild(t);
-        box.appendChild(row);
-      });
-    }
+    // The ways in: "i, Keep a watch: …. ii, …. iii, Read (coming): …", one
+    // to each card, in order; the cards' heading is this page's own.
+    NW.numbered(part(begin['1']), true).forEach(function (w, k) {
+      var card = document.querySelectorAll('.way')[k];
+      if (!card) return;
+      NW.set(card.querySelector('.num'), w.n);
+      NW.set(card.querySelector('.title'), w.title.replace(/\s*\(coming\)\s*$/, ''));
+      NW.set(card.querySelector('.desc'), w.body);
+    });
 
-    NW.set($('need'), part(begin['2'], $('need-head')));
+    setAll('.need', part(begin['2'], '.need-head'));
 
     // Connect, once: four steps, the address with its copy button after
     // the step that names it, and a line after.
-    var c = part(begin['3'], $('connect-head'));
+    var c = part(begin['3'], '.connect-head');
     var after = NW.fields(c, ['After']).After;
     if (after) c = c.slice(0, c.lastIndexOf('After: ')).trim();
-    NW.set($('after'), after);
+    setAll('.after', after);
     var steps = NW.numbered(c, false), cut = -1;
     steps.forEach(function (s, i) {
       var m = /(https?:\/\/\S+?)[.,]?(\s*\([^)]*\))?\.?$/.exec(s.body);
       if (m) {
-        NW.set($('addr'), m[1]);
+        setAll('.addr code', m[1]);
         s.body = s.body.slice(0, m.index).trim();
         cut = i;
       }
     });
     if (steps.length && cut >= 0) {
-      [['steps-a', steps.slice(0, cut + 1)], ['steps-b', steps.slice(cut + 1)]].forEach(function (g) {
-        var ol = $(g[0]);
-        ol.textContent = '';
-        g[1].forEach(function (s) {
-          var li = el('li', null, s.body);
-          li.setAttribute('data-n', s.n);
-          ol.appendChild(li);
+      each('.path', function (path) {
+        [['.steps-a', steps.slice(0, cut + 1)], ['.steps-b', steps.slice(cut + 1)]].forEach(function (g) {
+          var ol = path.querySelector(g[0]);
+          if (!ol) return;
+          ol.textContent = '';
+          g[1].forEach(function (s) {
+            var li = el('li', null, s.body);
+            li.setAttribute('data-n', s.n);
+            ol.appendChild(li);
+          });
         });
       });
     }
 
-    // Then say: the first thing to say, large; the rest beneath it.
-    var say = part(begin['4'], $('say-head'));
-    var q = /^("[^"]+"|“[^”]+”)\s*([\s\S]*)$/.exec(say);
-    if (q) {
-      NW.set($('say'), q[1]);
-      NW.set($('say-more'), q[2]);
+    // Then say: the first words in quotes are for keeping a watch, the
+    // second for hosting him, and what follows the last is for both.
+    var say = part(begin['4'], '.say-head');
+    var qs = say.match(/"[^"]+"|“[^”]+”/g) || [];
+    if (qs.length >= 2) {
+      NW.set($('path-keep').querySelector('.say'), qs[0]);
+      NW.set($('path-host').querySelector('.say'), qs[1]);
+      setAll('.say-more', say.slice(say.lastIndexOf(qs[qs.length - 1]) + qs[qs.length - 1].length).trim());
     }
 
     // What happens to your words: one point to a line; a sentence that
     // answers the one before it ("Not who you are…", "If you choose it…")
     // stays with it.
     var points = [];
-    NW.sentences(part(begin['5'], $('words-head'))).forEach(function (s) {
+    NW.sentences(part(begin['5'], '#words-head')).forEach(function (s) {
       if (points.length && /^(Not|If)\b/.test(s)) points[points.length - 1] += ' ' + s;
       else points.push(s);
     });
@@ -221,10 +258,611 @@
       points.forEach(function (p) { ul.appendChild(el('li', null, p)); });
     }
 
-    var night = part(begin['6'], $('night-head'));
+    var night = part(begin['6'], '#night-head');
     if (night && flat(night) !== flat($('night').textContent)) NW.care($('night'), night);
   }
+  function renderSpinnerWords(s) {
+    var f = NW.fields(s, ['Head', 'Lede', 'Button', 'Under the question', 'To leave a line', 'Note', 'Button#2', 'Again']);
+    NW.set($('sp-lede'), f.Lede);
+    NW.set($('turn'), NW.bare(f.Button));
+    NW.set($('stay'), f['Under the question']);
+    NW.set($('line-label'), NW.bare(f['To leave a line']));
+    NW.set($('line-note'), f.Note);
+    NW.set($('leave'), NW.bare(f['Button#2']));
+    NW.set($('again'), NW.bare(f.Again));
+  }
+
+  // A copy button copies what stands just before it: the address, or the
+  // words to say without their quotation marks. Where copying isn't
+  // allowed, they are selected, ready to copy by hand.
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('.copy') : null;
+    if (!b) return;
+    var what = b.previousElementSibling, word = b.querySelector('.copy-word') || b;
+    var t = what.textContent.trim().replace(/^["“]\s*|\s*["”]$/g, '');
+    function selectIt() {
+      var r = document.createRange();
+      r.selectNodeContents(what);
+      var s = getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+      word.textContent = 'selected, copy it';
+    }
+    try {
+      navigator.clipboard.writeText(t).then(function () { word.textContent = 'copied'; }, selectIt);
+    } catch (x) {
+      selectIt();
+    }
+    setTimeout(function () { word.textContent = 'copy'; }, 2400);
+  });
+
+  // ---- Choose your way in -------------------------------------------------------
+  // A card opens its own path beneath it and closes the others; choosing
+  // it again closes it.
+  var cards = document.querySelectorAll('.way');
+  Array.prototype.forEach.call(cards, function (card) {
+    card.addEventListener('click', function () {
+      var opening = card.getAttribute('aria-expanded') !== 'true';
+      Array.prototype.forEach.call(cards, function (w) {
+        var open = opening && w === card;
+        w.setAttribute('aria-expanded', open ? 'true' : 'false');
+        $(w.getAttribute('aria-controls')).hidden = !open;
+      });
+      if (!opening) return;
+      if (card.id === 'way-read') {
+        renderRead();
+        readRoom().catch(function () {});
+      }
+      if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+
+  // ---- The spinner ------------------------------------------------------------
+  // Six ways of noticing about a still centre, read from spine:p6: each
+  // portal's name, whether it lies on the surface or in the deep, its
+  // questions, and their order clockwise from the top as the root gives it.
+  var PORTALS = [
+    { addr: '2.3', name: 'Outcomes', place: 'in the deep', qs: ['What future are you imagining from here?', 'What do you expect will happen next, and is it a fact yet, or a story about tomorrow?'] },
+    { addr: '1.3', name: 'Fictions', place: 'on the surface', qs: ['What story are you telling yourself about this?', 'What is your mind doing with this: what have you concluded, judged or come to believe?'] },
+    { addr: '2.2', name: 'Decision', place: 'in the deep', qs: ['What are you choosing right now, even by not choosing?', 'What is the next choice in front of you?'] },
+    { addr: '2.1', name: 'Purpose', place: 'in the deep', qs: ['How do you want to be in this?', 'What do you want to be doing here?'] },
+    { addr: '1.2', name: 'Feelings', place: 'on the surface', qs: ['What do you notice in your body right now?', 'What emotion is here, and where in your body do you feel it?'] },
+    { addr: '1.1', name: 'Facts', place: 'on the surface', qs: ['What is here that you could point to: what you see, hear, or were told?', 'Leaving out what it means, what actually happened?'] }
+  ];
+  var CENTRE = 'PRESENCE';
+
+  // "FACTS — the data: …" is the portal Facts; "THE SURFACE — …" its place.
+  function nameOf(s) {
+    var m = /^([A-Z][A-Z'’ ]*[A-Z])\s*[—–-]/.exec(s);
+    return m ? m[1] : '';
+  }
+  function placeOf(s) {
+    var p = nameOf(s).toLowerCase();
+    return p === 'the surface' ? 'on the surface' : p === 'the deep' ? 'in the deep' : p;
+  }
+  function portalsFrom(spine) {
+    var list = [];
+    ['1', '2'].forEach(function (k) {
+      var place = spine && spine[k];
+      if (!place || typeof place !== 'object') return;
+      for (var i = 1; i <= 9; i++) {
+        var node = place[String(i)], name = nameOf(NW.own(node));
+        if (!name) continue;
+        var qs = [];
+        for (var j = 1; node && typeof node === 'object' && j <= 9; j++) {
+          var q = NW.own(node[String(j)]);
+          if (q) qs.push(q);
+        }
+        if (!qs.length) continue;
+        list.push({ addr: k + '.' + i, name: name.charAt(0) + name.slice(1).toLowerCase(), place: placeOf(NW.own(place)), qs: qs, n: list.length });
+      }
+    });
+    var root = NW.own(spine), from = root.search(/CLOCKWISE/i), order = [];
+    (from < 0 ? root : root.slice(from)).replace(/\((\d\.\d)\)/g, function (all, a) {
+      if (order.indexOf(a) < 0) order.push(a);
+    });
+    function rank(p) {
+      var i = order.indexOf(p.addr);
+      return i < 0 ? 99 : i;
+    }
+    return list.sort(function (a, b) { return rank(a) - rank(b) || a.n - b.n; });
+  }
+  function portalAt(addr) {
+    for (var i = 0; i < PORTALS.length; i++) if (PORTALS[i].addr === addr) return i;
+    return -1;
+  }
+
+  var canvas = $('spinner'), ctx = canvas.getContext('2d');
+  var TOP = -Math.PI / 2;
+  function arm() { return 2 * Math.PI / PORTALS.length; }
+  var C = {};
+  function readColours() {
+    var cs = getComputedStyle(document.documentElement);
+    ['ink', 'page', 'paper', 'muted', 'frame', 'crimson'].forEach(function (k) { C[k] = cs.getPropertyValue('--' + k).trim(); });
+  }
+  function hexA(hex, a) {
+    var n = parseInt((hex || '#000000').replace('#', ''), 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  var W = 0, dpr = 1;
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.getBoundingClientRect().width || 300;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(W * dpr);
+  }
+
+  var angle = TOP - Math.floor(Math.random() * PORTALS.length) * arm() + arm() / 2;
+  var omega = 0, dragging = false, settling = null, rested = null, lastArm = null, moving = false;
+  function armAngle(i) { return angle + i * arm(); }
+  function nearestArm() {
+    var best = 0, bd = Infinity;
+    for (var i = 0; i < PORTALS.length; i++) {
+      var d = Math.atan2(Math.sin(armAngle(i) - TOP), Math.cos(armAngle(i) - TOP));
+      if (Math.abs(d) < Math.abs(bd)) { bd = d; best = i; }
+    }
+    return { i: best, d: bd };
+  }
+  // A word set in spaced capitals, made smaller until it fits its circle.
+  function fitText(word, x, y, size, room) {
+    var t = word.toUpperCase().split('').join(' ');
+    ctx.font = '600 ' + size + 'px "Cormorant Garamond", Garamond, serif';
+    var w = ctx.measureText(t).width;
+    if (w > room) ctx.font = '600 ' + Math.floor(size * room / w) + 'px "Cormorant Garamond", Garamond, serif';
+    ctx.fillText(t, x, y);
+  }
+  function draw(now) {
+    if (now == null) now = performance.now();
+    var s = W * dpr, cx = s / 2, cy = s / 2, R = s * 0.325, lr = s * 0.12, halo = lr * 1.3, n = PORTALS.length;
+    ctx.clearRect(0, 0, s, s);
+    // a faint orbit, like a ruled circle on the page
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.lineWidth = 1 * dpr;
+    ctx.strokeStyle = hexA(C.frame, 0.8);
+    ctx.stroke();
+    // the arms, curling out from the centre
+    for (var i = 0; i < n; i++) {
+      var a = armAngle(i), x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R, ca = a + 0.62, cr = R * 0.55;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.quadraticCurveTo(cx + Math.cos(ca) * cr, cy + Math.sin(ca) * cr, x, y);
+      ctx.lineCap = 'round';
+      ctx.lineWidth = lr * 0.9;
+      ctx.strokeStyle = rested === i ? hexA(C.crimson, 0.18) : hexA(C.frame, 0.35);
+      ctx.stroke();
+    }
+    // the tide, beneath the portals so their names stay clear
+    drawTide(s, cx, cy, R, now);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (var j = 0; j < n; j++) {
+      var b = armAngle(j), px = cx + Math.cos(b) * R, py = cy + Math.sin(b) * R, lit = rested === j;
+      ctx.beginPath(); ctx.arc(px, py, halo, 0, Math.PI * 2);
+      ctx.fillStyle = lit ? hexA(C.crimson, 0.14) : hexA(C.frame, 0.22); ctx.fill();
+      ctx.beginPath(); ctx.arc(px, py, lr, 0, Math.PI * 2);
+      ctx.fillStyle = C.page; ctx.fill();
+      ctx.lineWidth = (lit ? 2.2 : 1.2) * dpr; ctx.strokeStyle = lit ? C.crimson : C.ink; ctx.stroke();
+      ctx.beginPath(); ctx.arc(px, py, lr * 0.84, 0, Math.PI * 2);
+      ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = hexA(lit ? C.crimson : C.ink, 0.45); ctx.stroke();
+      ctx.fillStyle = lit ? C.crimson : C.ink;
+      fitText(PORTALS[j].name, px, py + s * 0.002, Math.round(s * 0.034), lr * 1.7);
+    }
+    var br = s * 0.11;
+    ctx.beginPath(); ctx.arc(cx, cy, br * 1.25, 0, Math.PI * 2);
+    ctx.fillStyle = hexA(C.frame, 0.22); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, br, 0, Math.PI * 2);
+    ctx.fillStyle = C.page; ctx.fill();
+    ctx.lineWidth = 1.6 * dpr; ctx.strokeStyle = C.ink; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, br * 0.86, 0, Math.PI * 2);
+    ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = hexA(C.ink, 0.45); ctx.stroke();
+    ctx.fillStyle = C.ink;
+    fitText(CENTRE, cx, cy, Math.round(s * 0.034), br * 1.7);
+  }
+  function tick() {
+    try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
+  }
+
+  // It runs only while something is moving (the wheel turning, the tide
+  // coming in, a pulse); at rest nothing runs.
+  var last = 0;
+  function busy() { return dragging || settling || Math.abs(omega) > 0 || replay || pulse; }
+  function frame(now) {
+    var dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+    last = now;
+    if (!dragging) {
+      if (settling) {
+        settling.t = Math.min(1, settling.t + dt / 0.5);
+        var e = 1 - Math.pow(1 - settling.t, 3);
+        angle = settling.from + (settling.to - settling.from) * e;
+        if (settling.t >= 1) { settling = null; land(); }
+      } else if (Math.abs(omega) > 0) {
+        angle += omega * dt;
+        omega *= Math.exp(-0.75 * dt);
+        if (Math.abs(omega) < 0.9) {
+          var nn = nearestArm();
+          settling = { from: angle, to: angle - nn.d, t: 0 };
+          omega = 0;
+        }
+      }
+      var k = nearestArm().i;
+      if (lastArm !== null && k !== lastArm && (Math.abs(omega) > 0 || settling)) tick();
+      lastArm = k;
+    }
+    if (replay && now - replay.start >= REPLAY_MS) {
+      replay = null;
+      $('replay').disabled = false;
+    }
+    if (pulse && now - pulse.start >= PULSE_MS) pulse = null;
+    draw(now);
+    if (busy()) requestAnimationFrame(frame);
+    else { moving = false; last = 0; }
+  }
+  function go() {
+    if (moving) return;
+    moving = true;
+    last = 0;
+    requestAnimationFrame(frame);
+  }
+
+  var answer = $('answer');
+  function centre() {
+    var r = canvas.getBoundingClientRect();
+    return [r.left + r.width / 2, r.top + r.height / 2];
+  }
+  // Turning it again lets go of the last line's place in the tide.
+  function unrest() {
+    rested = null;
+    answer.hidden = true;
+    yoursAt = null;
+    $('tide-yours').textContent = '';
+  }
+  var prevA = 0, prevT = 0, vel = 0;
+  canvas.addEventListener('pointerdown', function (e) {
+    if (still.matches) return;
+    try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
+    dragging = true; settling = null; omega = 0; unrest();
+    var c = centre();
+    prevA = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
+    prevT = performance.now();
+    vel = 0;
+    go();
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    var c = centre(), a = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
+    var d = Math.atan2(Math.sin(a - prevA), Math.cos(a - prevA));
+    var t = performance.now(), dt = Math.max(1, t - prevT) / 1000;
+    angle += d;
+    vel = 0.6 * vel + 0.4 * (d / dt);
+    prevA = a;
+    prevT = t;
+  });
+  function release() {
+    if (!dragging) return;
+    dragging = false;
+    omega = Math.max(-28, Math.min(28, vel));
+    if (Math.abs(omega) < 2.5) omega = (omega >= 0 ? 1 : -1) * (6 + Math.random() * 4);
+    go();
+  }
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+
+  function flick() {
+    unrest();
+    settling = null;
+    if (still.matches) {
+      angle = TOP - Math.floor(Math.random() * PORTALS.length) * arm();
+      land();
+      draw();
+      return;
+    }
+    omega = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 10);
+    go();
+  }
+  $('turn').addEventListener('click', flick);
+  $('again').addEventListener('click', flick);
+  canvas.addEventListener('click', function () { if (still.matches) flick(); });
+  canvas.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flick(); }
+  });
+
+  function land() {
+    var i = nearestArm().i, p = PORTALS[i];
+    rested = i;
+    $('portal').textContent = p.name + ' · ' + p.place;
+    $('question').textContent = p.qs[Math.floor(Math.random() * p.qs.length)];
+    $('line-status').textContent = '';
+    renderLines();
+    answer.hidden = false;
+    try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch (e) {}
+    if (!still.matches) setTimeout(function () { answer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 120);
+  }
+
+  // ---- Lines left at a portal ---------------------------------------------------
+  // Each goes to pool:p6 at the portal's place, as a visitor's, never with
+  // a name; the latest twelve left at the portal show beneath the box.
+  // room is pool:p6 as last read (null until the beach answers); mine are
+  // the lines left from this page, counted at once, before the beach is
+  // read again.
+  var room = null, roomLost = false, mine = [];
+  function readRoom() {
+    return Beach.get('pool:p6').then(function (pool) {
+      room = pool;
+      roomLost = false;
+      renderLines();
+      renderTide();
+      renderRead();
+    }, function (e) {
+      if (!room) {
+        roomLost = true;
+        renderTide();
+        renderRead();
+      }
+      throw e;
+    });
+  }
+  // Every line left at a portal, oldest first, with this page's own added
+  // where the beach doesn't have them yet.
+  function wheelLines() {
+    var lines = room ? Beach.entries(room).filter(function (e) { return portalAt(e.where) >= 0; }) : [];
+    mine.forEach(function (m) {
+      if (!lines.some(function (e) { return e.where === m.where && e.text === m.text; })) lines.push(m);
+    });
+    return lines;
+  }
+  function lineRow(e) {
+    var row = el('p');
+    var d = new Date(e.when);
+    if (!isNaN(d)) row.appendChild(el('time', null, d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })));
+    row.appendChild(document.createTextNode(e.text.slice(0, 600)));
+    return row;
+  }
+  function renderLines() {
+    var box = $('left-lines'), p = PORTALS[rested];
+    box.textContent = '';
+    if (!p) return;
+    wheelLines().filter(function (e) { return e.where === p.addr; }).slice(-12).reverse().forEach(function (e) {
+      box.appendChild(lineRow(e));
+    });
+  }
+  $('leave').addEventListener('click', function () {
+    var p = PORTALS[rested], box = $('reflection'), text = box.value.trim().slice(0, 600), btn = $('leave');
+    if (!p || !text) return;
+    btn.disabled = true;
+    $('line-status').textContent = '';
+    Beach.note('pool:p6', 'a visitor', text, p.addr).then(function () {
+      box.value = '';
+      mine.push({ where: p.addr, text: text, when: new Date().toISOString() });
+      renderLines();
+      yoursAt = p.addr;
+      renderTide();
+      renderRead();
+      showYours(p.addr);
+      return readRoom().catch(function () {});
+    }, function () {
+      $('line-status').textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () { btn.disabled = false; });
+  });
+
+  // ---- The tide ------------------------------------------------------------------
+  // What the wheel has gathered: of the last hundred lines left at a
+  // portal, each portal's share, drawn about the wheel as one smooth closed
+  // curve whose reach at each portal is that portal's share, against a
+  // dotted circle where a fair share (one in six) would sit. Only what
+  // pool:p6 holds, and the lines left from this page, are counted.
+  var FAIR = $('tide-read').textContent.trim();
+  var REPLAY_MS = 6000, PULSE_MS = 1400;
+  var tide = { n: 0, counts: [], order: [] }, replay = null, pulse = null, yoursAt = null;
+  function countTide() {
+    var lines = wheelLines().slice(-100);
+    tide = {
+      n: lines.length,
+      counts: PORTALS.map(function (p) { return lines.filter(function (e) { return e.where === p.addr; }).length; }),
+      // the portal each line was left at, in the order of when it was left
+      order: lines.map(function (e, k) {
+        var t = Date.parse(e.when);
+        return { addr: e.where, t: isNaN(t) ? 0 : t, k: k };
+      }).sort(function (a, b) { return a.t - b.t || a.k - b.k; }).map(function (o) { return o.addr; })
+    };
+  }
+  // "Feelings", "Feelings and Facts", "each of Feelings, Facts and Purpose"
+  function at(count) {
+    var names = PORTALS.filter(function (p, i) { return tide.counts[i] === count; }).map(function (p) { return p.name; });
+    if (names.length === 1) return names[0];
+    return 'each of ' + names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+  function renderTide() {
+    var read = $('tide-read');
+    if (!room) {
+      if (roomLost) read.textContent = FAIR + ' The tide can’t be read just now.';
+      $('replay').hidden = true;
+      draw();
+      return;
+    }
+    countTide();
+    var n = tide.n;
+    if (n < 12) {
+      read.textContent = 'The tide is just coming in: ' + n + (n === 1 ? ' line' : ' lines') + ' so far.';
+    } else {
+      var most = Math.max.apply(null, tide.counts), least = Math.min.apply(null, tide.counts);
+      read.textContent = FAIR + ' Of the last ' + n + ' lines left, ' + (most === least
+        ? most + ' were left at each place.'
+        : most + ' were left at ' + at(most) + (/^each/.test(at(most)) ? ',' : '') + ' and ' + least + ' at ' + at(least) + '.');
+    }
+    if (yoursAt) {
+      var i = portalAt(yoursAt), k = tide.counts[i];
+      $('tide-yours').textContent = i < 0 ? '' : k > 1
+        ? 'Yours is one of ' + k + ' at ' + PORTALS[i].name + '.'
+        : 'Yours is the only one at ' + PORTALS[i].name + '.';
+    }
+    $('replay').hidden = !n || still.matches;
+    draw();
+  }
+  // Watch it come in: the lines again in the order they were left, the
+  // curve growing a line at a time over about six seconds. With reduced
+  // motion there is no replay; the tide stands as it is.
+  $('replay').addEventListener('click', function () {
+    if (still.matches || !tide.n) return;
+    replay = { start: performance.now() };
+    $('replay').disabled = true;
+    go();
+  });
+  // A line just left: the wheel brought into view, and its portal's part
+  // of the curve pulsed once (held still, with reduced motion).
+  function showYours(addr) {
+    var r = canvas.getBoundingClientRect(), off = r.top < 0 || r.bottom > innerHeight;
+    if (off) window.scrollBy({ top: r.top - 48, behavior: still.matches ? 'auto' : 'smooth' });
+    if (still.matches) { draw(); return; }
+    pulse = { addr: addr, start: performance.now() + (off ? 500 : 0) };
+    go();
+  }
+
+  // r(u): the curve's reach at u, measured in portals round from the first,
+  // a smooth periodic (Catmull-Rom) run through each portal's reach.
+  function reach(radii, u) {
+    var n = radii.length;
+    u = ((u % n) + n) % n;
+    var i = Math.floor(u), t = u - i;
+    var p0 = radii[(i + n - 1) % n], p1 = radii[i], p2 = radii[(i + 1) % n], p3 = radii[(i + 2) % n];
+    return Math.max(0, 0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (3 * p1 - p0 - 3 * p2 + p3) * t * t * t));
+  }
+  function trace(radii, cx, cy, from, to, rim) {
+    var steps = Math.ceil((to - from) * 32);
+    ctx.beginPath();
+    for (var k = 0; k <= steps; k++) {
+      var u = from + (to - from) * k / steps, r = Math.min(rim, reach(radii, u)), a = angle + u * arm();
+      if (k) ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      else ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+  }
+  function drawTide(s, cx, cy, R, now) {
+    if (!room || !tide.counts.length || tide.counts.length !== PORTALS.length) return;
+    var n = PORTALS.length, total = tide.n;
+    // Reach is share times one scale: a fair share sits on the ring through
+    // the portals, unless the largest share would pass the rim, when the
+    // whole is drawn smaller; never so small that a fair share hides
+    // beneath the centre. A share too large even then is held at the rim.
+    var rim = s * 0.485, most = total ? Math.max.apply(null, tide.counts) / total : 0;
+    var scale = Math.max(s * 0.18 * n, Math.min(R * n, most ? rim / most : R * n));
+    var fair = scale / n;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, fair, 0, Math.PI * 2);
+    ctx.setLineDash([0, 4.5 * dpr]);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 1.7 * dpr;
+    ctx.strokeStyle = hexA(C.ink, 0.42);
+    ctx.stroke();
+    ctx.restore();
+    if (!total) return;
+    // While it comes in, each portal reaches as far as the lines left there
+    // so far, the last one arriving smoothly.
+    var counts = tide.counts;
+    if (replay) {
+      var got = Math.max(0, Math.min(1, (now - replay.start) / REPLAY_MS)) * total;
+      counts = PORTALS.map(function () { return 0; });
+      tide.order.forEach(function (addr, k) {
+        var i = portalAt(addr);
+        if (i >= 0 && k < got) counts[i] += Math.min(1, got - k);
+      });
+    }
+    var radii = counts.map(function (c) { return Math.min(rim, scale * c / total); });
+    trace(radii, cx, cy, 0, n, rim);
+    ctx.closePath();
+    ctx.fillStyle = hexA(C.crimson, 0.12);
+    ctx.fill();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 1.6 * dpr;
+    ctx.strokeStyle = hexA(C.crimson, 0.85);
+    ctx.stroke();
+    // a line just left: its portal's part of the curve, pulsed once
+    var mark = pulse ? portalAt(pulse.addr) : still.matches && yoursAt ? portalAt(yoursAt) : -1;
+    if (mark >= 0) {
+      var e = pulse ? (now - pulse.start) / PULSE_MS : 0.25;
+      if (e >= 0 && e <= 1) {
+        trace(radii, cx, cy, mark - 0.5, mark + 0.5, rim);
+        ctx.lineCap = 'round';
+        ctx.lineWidth = (2 + 9 * Math.sin(Math.PI * Math.min(1, e * 1.4) / 2)) * dpr;
+        ctx.strokeStyle = hexA(C.crimson, 0.85 * (1 - e));
+        ctx.stroke();
+      }
+    }
+  }
+
+  // ---- Read ------------------------------------------------------------------------
+  // The lines left at the wheel, by portal in the wheel's order, newest
+  // first: twelve to a portal, and the rest on asking.
+  var opened = {};
+  function renderRead() {
+    var box = $('read-lines');
+    box.textContent = '';
+    var all = wheelLines();
+    if (!all.length) {
+      box.appendChild(el('p', 'small read-empty', room ? 'Nothing has been left at the wheel yet.'
+        : roomLost ? 'The lines can’t be read just now.' : 'Reading the lines…'));
+      return;
+    }
+    PORTALS.forEach(function (p) {
+      var lines = all.map(function (e, k) {
+        var t = Date.parse(e.when);
+        return { e: e, t: isNaN(t) ? 0 : t, k: k };
+      }).filter(function (o) { return o.e.where === p.addr; })
+        .sort(function (a, b) { return b.t - a.t || b.k - a.k; })
+        .map(function (o) { return o.e; });
+      var g = el('div', 'read-portal');
+      g.appendChild(el('h3', 'portal', p.name + ' · ' + p.place));
+      var list = el('div', 'left-lines');
+      if (!lines.length) list.appendChild(el('p', 'read-none', 'nothing left here yet'));
+      lines.slice(0, opened[p.addr] ? lines.length : 12).forEach(function (e) { list.appendChild(lineRow(e)); });
+      g.appendChild(list);
+      if (lines.length > 12 && !opened[p.addr]) {
+        var more = el('button', 'flick', 'more');
+        more.type = 'button';
+        more.setAttribute('aria-label', (lines.length - 12) + ' more at ' + p.name);
+        more.addEventListener('click', function () {
+          opened[p.addr] = true;
+          var first = null;
+          lines.slice(12).forEach(function (e) {
+            var row = lineRow(e);
+            if (!first) first = row;
+            list.appendChild(row);
+          });
+          more.remove();
+          first.tabIndex = -1;
+          first.focus();
+        });
+        g.appendChild(more);
+      }
+      box.appendChild(g);
+    });
+  }
+
+  // ---- Start ------------------------------------------------------------------
+  readColours();
+  size();
+  draw();
+  window.addEventListener('resize', function () { size(); draw(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { draw(); });
+  var scheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  if (scheme && scheme.addEventListener) scheme.addEventListener('change', function () { readColours(); draw(); });
+  if (still.addEventListener) still.addEventListener('change', function () { renderTide(); });
+
   NW.follow(render);
+  Beach.get('spine:p6').then(function (spine) {
+    var list = portalsFrom(spine);
+    if (list.length < 2) return;
+    var keep = rested != null && PORTALS[rested] ? PORTALS[rested].addr : null;
+    PORTALS = list;
+    var c = /^([A-Z][A-Z'’ ]*[A-Z])\s*[—–-]/.exec(NW.own(spine));
+    if (c) CENTRE = c[1];
+    if (keep) rested = portalAt(keep);
+    if (rested < 0) rested = null;
+    if (room) renderTide();
+    renderRead();
+    draw();
+  }, function () {});
+  readRoom().catch(function () {});
 })();
 </script>
 </body>
