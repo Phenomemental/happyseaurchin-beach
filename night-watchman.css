@@ -1027,6 +1027,36 @@ section.begin {
 .ai-lines p:last-child {
   margin-bottom: 0;
 }
+/* It answers the ring: its standing lines at rest, a portal's two lines
+   under the portal's name while that lantern is lit, the one crossing
+   into the other as the section eases to its new height. */
+.ai-face {
+  display: grid;
+}
+.ai-face.easing {
+  overflow: hidden;
+  transition: height 0.45s ease;
+}
+.ai-layer {
+  grid-area: 1 / 1;
+  align-self: start;
+  transition: opacity 0.45s ease;
+}
+.ai-layer.out {
+  opacity: 0;
+}
+.ai-portal {
+  font-size: 0.9rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--crimson);
+  max-width: 28rem;
+  margin: 0 auto 0.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-face.easing,
+  .ai-layer { transition: none; }
+}
 .ring-line {
   font-style: italic;
   color: var(--muted);
