@@ -622,24 +622,12 @@ section.begin {
   margin: 0;
 }
 
-/* The Beings: the included middle, drawn in ink. Two lights over the P6
-   constellation, Presence at its centre as the heart's ampersand, three
-   Beings at each of its six portals. */
+/* The Beings' drawing, in ink. */
 .middle {
   width: 100%;
   max-width: 27rem;
   display: block;
   margin: 0.6rem auto 0;
-}
-.light {
-  cursor: pointer;
-}
-.light:focus {
-  outline: none;
-}
-.light:focus-visible .core {
-  stroke: var(--ink);
-  stroke-width: 2;
 }
 
 /* The ring both pages draw: six places round a still dark centre, each a
@@ -705,145 +693,211 @@ section.begin {
 @media (prefers-reduced-motion: reduce) {
   .place .breath { animation: none; }
 }
-/* The Beings lead (8.31): eighteen lanterns bearing their short names,
-   each glowing faintly and breathing at its own pace, in thin rings that
-   wake when touched. */
+/* The Beings lead (8.31): the bay. A curved ink shore with an unnamed
+   lighthouse on each headland, one beam warm and one cool, sweeping slowly;
+   six tide-pools round the shore, faint and unlabelled at rest, three
+   shells in each with the Being's name beneath; the ampersand lit on the
+   still water at the centre. */
 .beings-drawing {
-  max-width: 24rem;
+  max-width: 20rem;
 }
 @media (max-width: 480px) {
-  /* on a phone the drawing takes the sheet's full width, so the names
-     read at about 10px */
+  /* on a phone the bay takes the sheet's full width, so the shells stay a
+     thumb's size and their names read */
   .beings-drawing {
     width: calc(100% + 2.4rem);
     max-width: none;
     margin-left: -1.2rem;
   }
 }
-.lantern,
-.pring {
-  cursor: pointer;
-  transition: opacity 0.45s ease, transform 0.45s ease;
+.shore {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
 }
-.lantern:focus,
-.pring:focus {
+.shore.second {
+  stroke-width: 0.6;
+  opacity: 0.35;
+}
+.ripple {
+  fill: none;
+  stroke: var(--indigo);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  opacity: 0.3;
+}
+.lighthouse path,
+.lighthouse rect {
+  fill: var(--page);
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+.lighthouse .band,
+.lighthouse .roof {
+  fill: var(--ink);
+}
+.lighthouse .rock {
+  fill: none;
+}
+.lighthouse .lamp-room {
+  fill: var(--wash);
+}
+.still-amp {
+  font-family: "Cormorant Garamond", Garamond, Georgia, serif;
+  font-style: italic;
+  font-size: 40px;
+  fill: var(--crimson);
+}
+.pool,
+.shell {
+  cursor: pointer;
+  transition: opacity 0.45s ease;
+}
+.pool:focus,
+.shell:focus {
   outline: none;
 }
-.lantern .glow {
-  fill: var(--crimson);
-  opacity: 0.16;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: lantern-breath var(--d, 7s) ease-in-out infinite;
-  animation-delay: var(--l, 0s);
+.pool-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 22;
+  pointer-events: stroke;
 }
-@keyframes lantern-breath {
-  50% { opacity: 0.34; transform: scale(1.06); }
-}
-.lantern .pill {
+.pool-water {
   fill: var(--page);
-  stroke: var(--crimson);
-  stroke-opacity: 0.55;
-  stroke-width: 0.8;
-  transition: fill 0.4s ease;
+  stroke: none;
 }
-.lantern-name {
+.pool-deep {
+  fill: var(--indigo);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.pool-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  opacity: 0.32;
+  transition: opacity 0.5s ease, stroke 0.5s ease;
+}
+.pool-ring.second {
+  stroke-width: 0.5;
+  opacity: 0.2;
+}
+.water-name {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--crimson);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.pool:hover .pool-ring,
+.pool:focus-visible .pool-ring {
+  opacity: 0.7;
+}
+.pool:focus-visible .pool-ring {
+  stroke: var(--crimson);
+}
+.pool.awake .pool-deep {
+  opacity: 0.045;
+}
+.pool.awake .pool-ring {
+  opacity: 0.9;
+}
+.pool.awake .pool-ring.second {
+  opacity: 0.45;
+}
+.pool.awake .water-name {
+  opacity: 1;
+}
+.shell-hit {
+  fill: transparent;
+}
+.shell .lift {
+  transition: transform 0.45s ease;
+}
+.shell-body {
+  fill: var(--page);
+  stroke: var(--ink);
+  stroke-width: 0.95;
+  stroke-linejoin: round;
+  transition: stroke 0.4s ease, fill 0.4s ease;
+}
+.shell-lines {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  opacity: 0.75;
+  transition: stroke 0.4s ease;
+}
+.shell-shade {
+  fill: var(--ink);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.shell-name {
   font-family: "Cormorant Garamond", Garamond, serif;
   font-weight: 600;
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   fill: var(--ink);
   transition: fill 0.4s ease;
 }
-.lantern:hover .pill,
-.lantern:focus-visible .pill {
-  stroke-opacity: 1;
-  stroke-width: 1.4;
-}
-.lantern.on .pill {
-  fill: var(--crimson);
-  stroke-opacity: 1;
-}
-.lantern.on .lantern-name {
-  fill: var(--page);
-}
-.lantern.on .glow {
-  opacity: 0.55;
-  animation: none;
-}
-.lantern.near,
-.lantern.held {
-  transform: translateY(-1.5px);
-}
-.lantern.near .glow,
-.lantern.held .glow {
-  opacity: 0.3;
-}
-.lantern.held .pill {
-  stroke-opacity: 1;
-}
-.pring .frame {
-  fill: none;
-  stroke: var(--frame);
-  stroke-opacity: 0.55;
-  stroke-width: 0.8;
-  pointer-events: all;
-  transition: stroke 0.4s ease, stroke-width 0.4s ease;
-}
-.pring-name {
-  font-family: "Cormorant Garamond", Garamond, serif;
-  font-weight: 600;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  fill: var(--crimson);
-  opacity: 0;
-  transition: opacity 0.45s ease;
-}
-.pring.awake .frame {
+.shell:hover .shell-body,
+.shell:focus-visible .shell-body,
+.shell:hover .shell-lines,
+.shell:focus-visible .shell-lines {
   stroke: var(--crimson);
-  stroke-opacity: 1;
+}
+.shell:focus-visible .shell-name {
+  fill: var(--crimson);
+}
+.shell.on .lift {
+  transform: translateY(-5px);
+}
+.shell.near .lift,
+.shell.held .lift {
+  transform: translateY(-2.5px);
+}
+.shell.on .shell-body {
+  stroke: var(--crimson);
   stroke-width: 1.3;
 }
-.pring.awake .pring-name {
-  opacity: 1;
-}
-.pring:focus-visible .frame {
+.shell.on .shell-lines {
   stroke: var(--crimson);
-  stroke-opacity: 1;
-  stroke-width: 1.6;
+}
+.shell.on .shell-name {
+  fill: var(--crimson);
+}
+.shell.on .shell-shade {
+  opacity: 0.12;
 }
 /* everything not woken dims a step */
-.focus .lantern:not(.on):not(.near):not(.held),
-.focus .pring:not(.awake) .frame,
-.focus .spoke {
+.focus .shell:not(.on):not(.near):not(.held),
+.focus .pool:not(.awake) .pool-ring {
   opacity: 0.4;
 }
-.whisper {
-  font-family: "Cormorant Garamond", Garamond, serif;
-  font-style: italic;
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  fill: var(--muted);
-  opacity: 0.6;
+.focus .pool:not(.awake) .pool-ring.second {
+  opacity: 0.12;
 }
 @media (prefers-reduced-motion: reduce) {
-  .lantern .glow { animation: none; }
-  .lantern,
-  .lantern.near,
-  .lantern.held { transform: none; }
+  .shell .lift { transition: none; }
 }
 .row-label {
   font-family: "Cormorant Garamond", Garamond, serif;
   font-size: 11px;
   letter-spacing: 0.22em;
   fill: var(--muted);
-}
-.light-label {
-  font-family: "Cormorant Garamond", Garamond, serif;
-  font-style: italic;
-  font-size: 14px;
-  fill: var(--ink);
 }
 .being {
   text-align: center;
