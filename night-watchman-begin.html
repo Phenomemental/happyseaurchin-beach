@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-19a">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-19c">
 </head>
 <body>
 <main>
@@ -94,10 +94,11 @@
 
     <hr class="rule">
     <p class="back"><a href="night-watchman.html">&larr; back to the Night Watchman</a></p>
+    <p class="signature" id="signature">Mathew Pay</p>
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-19a"></script>
+<script src="night-watchman.js?v=2026-10-19c"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -137,6 +138,8 @@
     return h.rest;
   }
   function render(words) {
+    // The signature each page ends with (8.83634).
+    NW.set($('signature'), NW.forAll(words).signature);
     var begin = words['2'];
     if (!begin) return;
     var f = NW.fields(NW.own(begin), ['Title', 'Line', 'Opening', 'Care']);
