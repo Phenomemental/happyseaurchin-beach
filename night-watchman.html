@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-19c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20a">
 </head>
 <body>
 <main>
@@ -21,11 +21,11 @@
     <a href="map.html">My map</a>
   </nav>
 
-  <!-- The front door. Every word here is Dorylus's, read live from
+  <!-- The front door. Its words are Dorylus's, read live from
        beings:night-watchman 8.8363 (the front door at 1); what is written
-       below is the saved copy, shown until the beach answers. The spinner's
-       questions come from spine:p6, and lines left at a portal go to pool:p6
-       at the portal's place. -->
+       below is the saved copy, shown until the beach answers. Have a go, at
+       the top and as the first door, is this page's own: it leads to Begin,
+       where the spinner now turns. -->
   <div class="sheet">
     <svg class="heart" style="aspect-ratio:390/340" viewBox="0 0 390 340" role="img" aria-label="One open stroke drawn in ink: it comes in thin from the top right through the gap in a ring, curls once round a crimson centre, crosses itself, and leaves thick and open at the bottom left">
       <ellipse cx="232" cy="140" rx="118" ry="112" fill="var(--wash)" opacity=".6"/>
@@ -41,7 +41,7 @@
     <p class="byline" id="line">a quiet place to keep a watch of your own</p>
 
     <p class="opening" id="opening">Here you can keep a watch of your own: a little while to notice what is with you, held by someone who asks and does not tell. Nothing to sign up to, nothing to get right.</p>
-    <a class="begin-link" id="to-begin" href="#begin">Begin where you are</a>
+    <a class="begin-link" id="to-begin" href="night-watchman-begin.html">Have a go</a>
     <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
     <hr class="rule">
@@ -58,38 +58,12 @@
 
     <hr class="rule">
 
-    <section class="begin" id="begin" aria-labelledby="sp-head">
-      <h2 id="sp-head">Begin where you are</h2>
-      <p class="lede" id="sp-lede">Six ways of noticing turn about a still centre. Give it a turn; where it comes to rest, there is a question for you.</p>
-      <div class="pointer" aria-hidden="true"></div>
-      <canvas class="spinner" id="spinner" tabindex="0" role="button" aria-label="Six ways of noticing about a still centre. Press Enter or Space to turn it, or drag it round."></canvas>
-      <button class="flick" type="button" id="turn">turn it</button>
-
-      <div class="answer" id="answer" hidden aria-live="polite">
-        <p class="portal" id="portal"></p>
-        <p class="question" id="question"></p>
-        <p class="stay" id="stay">Stay with it a while. Answer, or only notice, and leave nothing.</p>
-        <details class="line" id="line-fold">
-          <summary id="line-summary">leave a line for whoever lands here next</summary>
-          <label class="visually-hidden" for="reflection">Your line</label>
-          <textarea id="reflection" maxlength="600"></textarea>
-          <p class="small" id="line-note">Anyone may read what is left here. No name is kept with it.</p>
-          <button class="btn" type="button" id="leave">Leave it</button>
-          <p class="line-status" id="line-status" role="status"></p>
-          <div class="left-lines" id="left-lines"></div>
-        </details>
-        <p class="again"><button class="flick" type="button" id="again">turn it again</button></p>
-      </div>
-    </section>
-
-    <hr class="rule">
-
     <section aria-labelledby="doors-head">
       <h2 id="doors-head">Further in</h2>
       <nav class="doors" id="doors" aria-labelledby="doors-head">
-        <a class="door" href="night-watchman-begin.html">
+        <a class="door" href="night-watchman-begin.html" data-own>
           <span class="num">i</span>
-          <span class="t"><span class="title">Stand a watch with him</span><span class="desc">through your own AI; he holds the space, the words stay yours</span></span>
+          <span class="t"><span class="title">Have a go</span><span class="desc">turn the wheel, write a line, then choose your way in</span></span>
           <span class="arrow" aria-hidden="true">&rarr;</span>
         </a>
         <a class="door" href="night-watchman-beings.html">
@@ -128,7 +102,6 @@
     return e;
   }
   function flat(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
-  var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   // ---- The words --------------------------------------------------------------
   function render(words) {
@@ -142,10 +115,8 @@
     if (f.Title) document.title = f.Title;
     NW.set($('line'), NW.bare(f.Line));
     NW.set($('opening'), f.Opening);
-    NW.set($('to-begin'), NW.bare(f.Button));
     if (f.Care && flat(f.Care) !== flat($('care').textContent)) NW.care($('care'), f.Care);
     renderPoem(NW.own(front['1']));
-    renderSpinnerWords(NW.own(front['2']));
     renderDoors(NW.own(front['3']));
     renderMore(NW.own(front['4']));
   }
@@ -163,24 +134,14 @@
       st.split(/\s*\/\s*/).forEach(function (l) { if (l.trim()) box.appendChild(el('span', null, l.trim())); });
     });
   }
-  function renderSpinnerWords(s) {
-    var f = NW.fields(s, ['Head', 'Lede', 'Button', 'Under the question', 'To leave a line', 'Note', 'Button#2', 'Again']);
-    NW.set($('sp-head'), NW.bare(f.Head));
-    NW.set($('sp-lede'), f.Lede);
-    NW.set($('turn'), NW.bare(f.Button));
-    NW.set($('stay'), f['Under the question']);
-    NW.set($('line-summary'), NW.bare(f['To leave a line']));
-    NW.set($('line-note'), f.Note);
-    NW.set($('leave'), NW.bare(f['Button#2']));
-    NW.set($('again'), NW.bare(f.Again));
-  }
-  // "THE DOORS. Head: Further in. i, Title: what it is. ii, …"
+  // "THE DOORS. Head: Further in. i, Title: what it is. ii, …" A door
+  // marked data-own (Have a go) keeps this page's own words.
   function renderDoors(s) {
     var h = NW.fields(s, ['Head']).Head;
     if (h) NW.set($('doors-head'), NW.bare(h.split(/\.\s/)[0]));
     var doors = $('doors').querySelectorAll('.door');
     NW.numbered(s, true).forEach(function (d, i) {
-      if (!doors[i]) return;
+      if (!doors[i] || doors[i].hasAttribute('data-own')) return;
       NW.set(doors[i].querySelector('.title'), d.title);
       NW.set(doors[i].querySelector('.desc'), NW.bare(d.body));
     });
@@ -199,308 +160,8 @@
     });
   }
 
-  // ---- The spinner ------------------------------------------------------------
-  // Six ways of noticing about a still centre, read from spine:p6: each
-  // portal's name, whether it lies on the surface or in the deep, its
-  // questions, and their order clockwise from the top as the root gives it.
-  var PORTALS = [
-    { addr: '2.3', name: 'Outcomes', place: 'in the deep', qs: ['What future are you imagining from here?', 'What do you expect will happen next, and is it a fact yet, or a story about tomorrow?'] },
-    { addr: '1.3', name: 'Fictions', place: 'on the surface', qs: ['What story are you telling yourself about this?', 'What is your mind doing with this: what have you concluded, judged or come to believe?'] },
-    { addr: '2.2', name: 'Decision', place: 'in the deep', qs: ['What are you choosing right now, even by not choosing?', 'What is the next choice in front of you?'] },
-    { addr: '2.1', name: 'Purpose', place: 'in the deep', qs: ['How do you want to be in this?', 'What do you want to be doing here?'] },
-    { addr: '1.2', name: 'Feelings', place: 'on the surface', qs: ['What do you notice in your body right now?', 'What emotion is here, and where in your body do you feel it?'] },
-    { addr: '1.1', name: 'Facts', place: 'on the surface', qs: ['What is here that you could point to: what you see, hear, or were told?', 'Leaving out what it means, what actually happened?'] }
-  ];
-  var CENTRE = 'PRESENCE';
-
-  // "FACTS — the data: …" is the portal Facts; "THE SURFACE — …" its place.
-  function nameOf(s) {
-    var m = /^([A-Z][A-Z'’ ]*[A-Z])\s*[—–-]/.exec(s);
-    return m ? m[1] : '';
-  }
-  function placeOf(s) {
-    var p = nameOf(s).toLowerCase();
-    return p === 'the surface' ? 'on the surface' : p === 'the deep' ? 'in the deep' : p;
-  }
-  function portalsFrom(spine) {
-    var list = [];
-    ['1', '2'].forEach(function (k) {
-      var place = spine && spine[k];
-      if (!place || typeof place !== 'object') return;
-      for (var i = 1; i <= 9; i++) {
-        var node = place[String(i)], name = nameOf(NW.own(node));
-        if (!name) continue;
-        var qs = [];
-        for (var j = 1; node && typeof node === 'object' && j <= 9; j++) {
-          var q = NW.own(node[String(j)]);
-          if (q) qs.push(q);
-        }
-        if (!qs.length) continue;
-        list.push({ addr: k + '.' + i, name: name.charAt(0) + name.slice(1).toLowerCase(), place: placeOf(NW.own(place)), qs: qs, n: list.length });
-      }
-    });
-    var root = NW.own(spine), from = root.search(/CLOCKWISE/i), order = [];
-    (from < 0 ? root : root.slice(from)).replace(/\((\d\.\d)\)/g, function (all, a) {
-      if (order.indexOf(a) < 0) order.push(a);
-    });
-    function rank(p) {
-      var i = order.indexOf(p.addr);
-      return i < 0 ? 99 : i;
-    }
-    return list.sort(function (a, b) { return rank(a) - rank(b) || a.n - b.n; });
-  }
-
-  var canvas = $('spinner'), ctx = canvas.getContext('2d');
-  var TOP = -Math.PI / 2;
-  function arm() { return 2 * Math.PI / PORTALS.length; }
-  var C = {};
-  function readColours() {
-    var cs = getComputedStyle(document.documentElement);
-    ['ink', 'page', 'paper', 'muted', 'frame', 'crimson'].forEach(function (k) { C[k] = cs.getPropertyValue('--' + k).trim(); });
-  }
-  function hexA(hex, a) {
-    var n = parseInt((hex || '#000000').replace('#', ''), 16);
-    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
-  }
-  var W = 0, dpr = 1;
-  function size() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = canvas.getBoundingClientRect().width || 300;
-    canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(W * dpr);
-  }
-
-  var angle = TOP - Math.floor(Math.random() * PORTALS.length) * arm() + arm() / 2;
-  var omega = 0, dragging = false, settling = null, rested = null, lastArm = null, moving = false;
-  function armAngle(i) { return angle + i * arm(); }
-  function nearestArm() {
-    var best = 0, bd = Infinity;
-    for (var i = 0; i < PORTALS.length; i++) {
-      var d = Math.atan2(Math.sin(armAngle(i) - TOP), Math.cos(armAngle(i) - TOP));
-      if (Math.abs(d) < Math.abs(bd)) { bd = d; best = i; }
-    }
-    return { i: best, d: bd };
-  }
-  // A word set in spaced capitals, made smaller until it fits its circle.
-  function fitText(word, x, y, size, room) {
-    var t = word.toUpperCase().split('').join('\u2009');
-    ctx.font = '600 ' + size + 'px "Cormorant Garamond", Garamond, serif';
-    var w = ctx.measureText(t).width;
-    if (w > room) ctx.font = '600 ' + Math.floor(size * room / w) + 'px "Cormorant Garamond", Garamond, serif';
-    ctx.fillText(t, x, y);
-  }
-  function draw() {
-    var s = W * dpr, cx = s / 2, cy = s / 2, R = s * 0.325, lr = s * 0.12, halo = lr * 1.3, n = PORTALS.length;
-    ctx.clearRect(0, 0, s, s);
-    // a faint orbit, like a ruled circle on the page
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.lineWidth = 1 * dpr;
-    ctx.strokeStyle = hexA(C.frame, 0.8);
-    ctx.stroke();
-    // the arms, curling out from the centre
-    for (var i = 0; i < n; i++) {
-      var a = armAngle(i), x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R, ca = a + 0.62, cr = R * 0.55;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.quadraticCurveTo(cx + Math.cos(ca) * cr, cy + Math.sin(ca) * cr, x, y);
-      ctx.lineCap = 'round';
-      ctx.lineWidth = lr * 0.9;
-      ctx.strokeStyle = rested === i ? hexA(C.crimson, 0.18) : hexA(C.frame, 0.35);
-      ctx.stroke();
-    }
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (var j = 0; j < n; j++) {
-      var b = armAngle(j), px = cx + Math.cos(b) * R, py = cy + Math.sin(b) * R, lit = rested === j;
-      ctx.beginPath(); ctx.arc(px, py, halo, 0, Math.PI * 2);
-      ctx.fillStyle = lit ? hexA(C.crimson, 0.14) : hexA(C.frame, 0.22); ctx.fill();
-      ctx.beginPath(); ctx.arc(px, py, lr, 0, Math.PI * 2);
-      ctx.fillStyle = C.page; ctx.fill();
-      ctx.lineWidth = (lit ? 2.2 : 1.2) * dpr; ctx.strokeStyle = lit ? C.crimson : C.ink; ctx.stroke();
-      ctx.beginPath(); ctx.arc(px, py, lr * 0.84, 0, Math.PI * 2);
-      ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = hexA(lit ? C.crimson : C.ink, 0.45); ctx.stroke();
-      ctx.fillStyle = lit ? C.crimson : C.ink;
-      fitText(PORTALS[j].name, px, py + s * 0.002, Math.round(s * 0.034), lr * 1.7);
-    }
-    var br = s * 0.11;
-    ctx.beginPath(); ctx.arc(cx, cy, br * 1.25, 0, Math.PI * 2);
-    ctx.fillStyle = hexA(C.frame, 0.22); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx, cy, br, 0, Math.PI * 2);
-    ctx.fillStyle = C.page; ctx.fill();
-    ctx.lineWidth = 1.6 * dpr; ctx.strokeStyle = C.ink; ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, br * 0.86, 0, Math.PI * 2);
-    ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = hexA(C.ink, 0.45); ctx.stroke();
-    ctx.fillStyle = C.ink;
-    fitText(CENTRE, cx, cy, Math.round(s * 0.034), br * 1.7);
-  }
-  function tick() {
-    try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
-  }
-
-  // It turns only while it is moving; at rest nothing runs.
-  var last = 0;
-  function frame(now) {
-    var dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
-    last = now;
-    if (!dragging) {
-      if (settling) {
-        settling.t = Math.min(1, settling.t + dt / 0.5);
-        var e = 1 - Math.pow(1 - settling.t, 3);
-        angle = settling.from + (settling.to - settling.from) * e;
-        if (settling.t >= 1) { settling = null; land(); }
-      } else if (Math.abs(omega) > 0) {
-        angle += omega * dt;
-        omega *= Math.exp(-0.75 * dt);
-        if (Math.abs(omega) < 0.9) {
-          var nn = nearestArm();
-          settling = { from: angle, to: angle - nn.d, t: 0 };
-          omega = 0;
-        }
-      }
-      var k = nearestArm().i;
-      if (lastArm !== null && k !== lastArm && (Math.abs(omega) > 0 || settling)) tick();
-      lastArm = k;
-    }
-    draw();
-    if (dragging || settling || Math.abs(omega) > 0) requestAnimationFrame(frame);
-    else { moving = false; last = 0; }
-  }
-  function go() {
-    if (moving) return;
-    moving = true;
-    last = 0;
-    requestAnimationFrame(frame);
-  }
-
-  var answer = $('answer');
-  function centre() {
-    var r = canvas.getBoundingClientRect();
-    return [r.left + r.width / 2, r.top + r.height / 2];
-  }
-  var prevA = 0, prevT = 0, vel = 0;
-  canvas.addEventListener('pointerdown', function (e) {
-    if (still.matches) return;
-    try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
-    dragging = true; settling = null; omega = 0; rested = null; answer.hidden = true;
-    var c = centre();
-    prevA = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
-    prevT = performance.now();
-    vel = 0;
-    go();
-  });
-  canvas.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    var c = centre(), a = Math.atan2(e.clientY - c[1], e.clientX - c[0]);
-    var d = Math.atan2(Math.sin(a - prevA), Math.cos(a - prevA));
-    var t = performance.now(), dt = Math.max(1, t - prevT) / 1000;
-    angle += d;
-    vel = 0.6 * vel + 0.4 * (d / dt);
-    prevA = a;
-    prevT = t;
-  });
-  function release() {
-    if (!dragging) return;
-    dragging = false;
-    omega = Math.max(-28, Math.min(28, vel));
-    if (Math.abs(omega) < 2.5) omega = (omega >= 0 ? 1 : -1) * (6 + Math.random() * 4);
-    go();
-  }
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
-
-  function flick() {
-    rested = null;
-    answer.hidden = true;
-    settling = null;
-    if (still.matches) {
-      angle = TOP - Math.floor(Math.random() * PORTALS.length) * arm();
-      land();
-      draw();
-      return;
-    }
-    omega = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 10);
-    go();
-  }
-  $('turn').addEventListener('click', flick);
-  $('again').addEventListener('click', flick);
-  canvas.addEventListener('click', function () { if (still.matches) flick(); });
-  canvas.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flick(); }
-  });
-
-  function land() {
-    var i = nearestArm().i, p = PORTALS[i];
-    rested = i;
-    $('portal').textContent = p.name + ' · ' + p.place;
-    $('question').textContent = p.qs[Math.floor(Math.random() * p.qs.length)];
-    $('line-status').textContent = '';
-    renderLines();
-    answer.hidden = false;
-    try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch (e) {}
-    if (!still.matches) setTimeout(function () { answer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 120);
-  }
-
-  // ---- Lines left at a portal ---------------------------------------------------
-  // Each goes to pool:p6 at the portal's place, as a visitor's, never with
-  // a name; the latest twelve left at the portal show beneath the box.
-  var room = null, mine = [];
-  function readRoom() {
-    return Beach.get('pool:p6').then(function (pool) { room = pool; renderLines(); });
-  }
-  function renderLines() {
-    var box = $('left-lines'), p = PORTALS[rested];
-    box.textContent = '';
-    if (!p) return;
-    var lines = room ? Beach.entries(room).filter(function (e) { return e.where === p.addr; }) : [];
-    mine.forEach(function (m) {
-      if (m.where === p.addr && !lines.some(function (e) { return e.text === m.text; })) lines.push(m);
-    });
-    lines.slice(-12).reverse().forEach(function (e) {
-      var row = el('p');
-      var d = new Date(e.when);
-      if (!isNaN(d)) row.appendChild(el('time', null, d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })));
-      row.appendChild(document.createTextNode(e.text.slice(0, 600)));
-      box.appendChild(row);
-    });
-  }
-  $('leave').addEventListener('click', function () {
-    var p = PORTALS[rested], box = $('reflection'), text = box.value.trim().slice(0, 600), btn = $('leave');
-    if (!p || !text) return;
-    btn.disabled = true;
-    $('line-status').textContent = '';
-    Beach.note('pool:p6', 'a visitor', text, p.addr).then(function () {
-      box.value = '';
-      mine.push({ where: p.addr, text: text, when: new Date().toISOString() });
-      renderLines();
-      return readRoom().catch(function () {});
-    }, function () {
-      $('line-status').textContent = 'That didn’t reach the beach. Please try again in a moment.';
-    }).then(function () { btn.disabled = false; });
-  });
-
   // ---- Start ------------------------------------------------------------------
-  readColours();
-  size();
-  draw();
-  window.addEventListener('resize', function () { size(); draw(); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
-  var scheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-  if (scheme && scheme.addEventListener) scheme.addEventListener('change', function () { readColours(); draw(); });
-
   NW.follow(render);
-  Beach.get('spine:p6').then(function (spine) {
-    var list = portalsFrom(spine);
-    if (list.length < 2) return;
-    var keep = rested != null && PORTALS[rested] ? PORTALS[rested].addr : null;
-    PORTALS = list;
-    var c = /^([A-Z][A-Z'’ ]*[A-Z])\s*[—–-]/.exec(NW.own(spine));
-    if (c) CENTRE = c[1];
-    if (keep) rested = PORTALS.map(function (p) { return p.addr; }).indexOf(keep);
-    if (rested < 0) rested = null;
-    draw();
-  }, function () {});
-  readRoom().catch(function () {});
 })();
 </script>
 </body>

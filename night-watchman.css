@@ -202,19 +202,14 @@ canvas.spinner {
   text-align: center;
   margin: 0 0 0.6rem;
 }
-details.line summary {
-  cursor: pointer;
+.line-label {
+  display: block;
   font-style: italic;
-  color: var(--crimson);
-  text-align: center;
-  list-style: none;
   font-size: 1.05rem;
-  padding: 0.3rem 0;
+  text-align: center;
+  padding: 0.3rem 0 0;
 }
-details.line summary::-webkit-details-marker {
-  display: none;
-}
-details.line textarea {
+.line textarea {
   display: block;
   width: 100%;
   font: inherit;
@@ -371,20 +366,70 @@ details.line textarea {
   margin: 0.6rem 0 0.2rem;
   font-size: 1.1rem;
 }
+.more details ul {
+  margin: 0.7rem 0 0.2rem;
+}
 
-/* Begin. */
+/* Begin: the tide beneath the wheel. */
+.tide {
+  max-width: 28rem;
+  margin: 1.3rem auto 0;
+}
+.tide h2 {
+  margin: 0 0 0.4rem;
+}
+.tide-read {
+  font-style: italic;
+  margin: 0 0 0.3rem;
+}
+.tide-yours {
+  font-style: italic;
+  color: var(--crimson);
+  margin: 0 0 0.3rem;
+}
+.tide-yours:empty {
+  display: none;
+}
+
+/* Begin: the ways in, each a card that opens its own path beneath it. */
 .ways {
+  display: grid;
+  gap: 0.75rem;
   text-align: left;
   max-width: 30rem;
   margin: 0 auto;
-  border-top: 1px solid var(--frame);
 }
 .way {
   display: flex;
   gap: 0.8rem;
   align-items: baseline;
-  padding: 0.8rem 0.2rem;
-  border-bottom: 1px solid var(--frame);
+  width: 100%;
+  min-height: 3rem;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  border-radius: 2px;
+  padding: 1rem 1.1rem 1.05rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.way::after {
+  content: "+";
+  color: var(--crimson);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.way:hover,
+.way[aria-expanded="true"] {
+  border-color: var(--crimson);
+}
+.way[aria-expanded="true"] .title {
+  color: var(--crimson);
+}
+.way[aria-expanded="true"]::after {
+  content: "\2013";
 }
 .way .desc {
   font-size: 1.05rem;
@@ -392,13 +437,52 @@ details.line textarea {
   font-style: italic;
   display: block;
 }
-.soon {
-  font-size: 0.85rem;
-  letter-spacing: 0.14em;
+.path {
+  padding: 0.3rem 0.2rem 0.9rem;
+}
+.path h3 {
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--crimson);
-  font-style: normal;
-  margin-left: 0.4rem;
+  text-align: center;
+  color: var(--muted);
+  margin: 1.3rem 0 0.6rem;
+}
+.path h3:first-child {
+  margin-top: 0.4rem;
+}
+.phrase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.6rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0.2rem 0 0.6rem;
+}
+.phrase .say {
+  margin: 0;
+}
+.read-lede,
+.read-empty {
+  text-align: center;
+}
+.read-portal h3.portal {
+  font-weight: 500;
+  margin: 1.2rem 0 0.1rem;
+}
+.read-portal .left-lines {
+  margin: 0.3rem 0 0;
+}
+.read-portal .flick {
+  display: block;
+  margin: 0.1rem auto 0;
+}
+.left-lines p.read-none {
+  font-style: italic;
+  color: var(--muted);
+  text-align: center;
+  font-size: 1rem;
 }
 .prose {
   text-align: left;
