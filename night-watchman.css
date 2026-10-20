@@ -421,6 +421,25 @@ button.turn-btn {
 .phrase .say {
   margin: 0;
 }
+/* Read is a link on to the Beings page: the same card, leading on. */
+a.way::after {
+  content: "\2192";
+}
+/* Keep a watch and Host him share one path; it opens with a line. */
+.path-lede {
+  text-align: center;
+  margin: 0.4rem 0 0;
+}
+.way {
+  scroll-margin-top: 1rem;
+}
+
+/* The Beings page's reading: the lines left at the wheel, seen through a
+   Being or plainly, under the card that leads on to them. */
+.read {
+  margin: 0.4rem auto 0;
+  scroll-margin-top: 1rem;
+}
 .read-lede,
 .read-empty {
   text-align: center;
@@ -442,57 +461,6 @@ button.turn-btn {
   text-align: center;
   font-size: 1rem;
 }
-/* Keep a watch and Host him share one path; it opens with a line. */
-.path-lede {
-  text-align: center;
-  margin: 0.4rem 0 0;
-}
-.way {
-  scroll-margin-top: 1rem;
-}
-
-/* Read through a Being: eighteen to choose from, by row. */
-.pick-lede {
-  text-align: center;
-}
-.being-picker {
-  scroll-margin-top: 1rem;
-}
-.being-group h4 {
-  font-weight: 500;
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  text-align: center;
-  color: var(--muted);
-  margin: 1rem 0 0.5rem;
-}
-.being-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.45rem;
-}
-.being-pick {
-  font: inherit;
-  font-size: 1.05rem;
-  color: var(--ink);
-  background: none;
-  border: 1px solid var(--frame);
-  border-radius: 2px;
-  min-height: 44px;
-  padding: 0.2rem 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.being-pick:hover {
-  border-color: var(--crimson);
-}
-.being-pick[aria-pressed="true"] {
-  color: var(--page);
-  background: var(--crimson);
-  border-color: var(--crimson);
-}
 .plainly {
   display: block;
   margin: 0.8rem auto 0;
@@ -510,10 +478,9 @@ button.turn-btn {
   color: var(--muted);
   margin: 0;
 }
-.path h3.lens-name {
+.lens-name {
+  font-weight: 500;
   font-size: 1.7rem;
-  letter-spacing: 0;
-  text-transform: none;
   color: var(--ink);
   margin: 0.1rem 0 0.4rem;
 }
@@ -975,6 +942,15 @@ section.begin {
   text-transform: uppercase;
   margin-right: 0.45rem;
 }
+.being .read-on {
+  font-style: italic;
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0;
+}
+.being .read-on a {
+  display: inline-block;
+  padding: 0.45rem 0.6rem;
+}
 /* All eighteen, in full, for the reader who would rather read. */
 .portals {
   text-align: left;
@@ -1134,6 +1110,12 @@ section.begin {
   font-style: italic;
   color: var(--muted);
   margin: 0 0 0.7rem;
+}
+
+/* The care line, set small at the foot above the signature. */
+.care.foot {
+  font-size: 0.9rem;
+  margin: 1.4rem auto 0;
 }
 
 /* The signature each page ends with. */
