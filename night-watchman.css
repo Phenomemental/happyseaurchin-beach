@@ -932,26 +932,47 @@ section.begin {
   max-width: 30rem;
   margin: 0 auto;
 }
+/* Each place a box of its own, framed as the sheet is, on the cover's
+   cream: its name over where it lies, a short crimson rule, then its
+   three Beings. */
 .all-place {
-  margin: 0 0 1.6rem;
+  background: var(--paper);
+  border: 1px solid var(--frame);
+  outline: 1px solid var(--frame);
+  outline-offset: 3px;
+  border-radius: 2px;
+  padding: 1.1rem 1rem 0.4rem;
+  margin: 0 4px 1.6rem;
 }
 .all-place h3 {
   font-weight: 500;
-  font-size: 1.45rem;
-  margin: 0 0 0.2rem;
-  border-bottom: 1px solid var(--frame);
-  padding-bottom: 0.2rem;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  text-align: center;
+  margin: 0;
 }
 .all-place h3 .place {
+  display: block;
   font-style: italic;
   font-size: 1rem;
   color: var(--muted);
+  margin-top: 0.15rem;
+}
+.all-place h3::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  border-top: 1.5px solid var(--crimson);
+  margin: 0.6rem auto 0.4rem;
 }
 /* Each Being a row by name, opening on request to its piece, in the
    look of the page's other parts that open on request. */
 .all-being {
   border-bottom: 1px solid var(--frame);
   padding: 0.2rem 0.2rem;
+}
+.all-being:last-child {
+  border-bottom: 0;
 }
 .all-being summary {
   cursor: pointer;

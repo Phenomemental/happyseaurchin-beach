@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20n">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20o">
 </head>
 <body>
 <main>
@@ -463,8 +463,13 @@
     Array.prototype.forEach.call(all.querySelectorAll('details'), function (d) { if (d.open) openNow[d.dataset.addr] = true; });
     all.textContent = '';
     PLACES.forEach(function (p) {
+      // each place a box of its own: its name, where it lies beneath, then
+      // its three Beings
       var sec = el('section', 'all-place'), h = el('h3', null, p.name);
-      if (p.side) h.appendChild(el('span', 'place', ' · ' + p.side));
+      if (p.side) {
+        h.appendChild(document.createTextNode(' '));
+        h.appendChild(el('span', 'place', p.side));
+      }
       sec.appendChild(h);
       p.beings.forEach(function (b) {
         var d = el('details', 'all-being');
