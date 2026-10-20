@@ -150,13 +150,13 @@
   }
 
   // ---- The ring --------------------------------------------------------------------
-  // The drawing the front door and the Beings share, so the two pages are
-  // one place: six places round a still dark centre, clockwise from the
-  // top, each a lantern that breathes slowly and opens when touched.
-  // ring(g, c, places, open, opts) draws into the SVG group g, centred at
-  // c ({x, y}); places are [{addr, name}]; open(place) is what a touch
-  // does; opts.amp sets the heart's ampersand in the centre. It returns
-  // each place's centre and angle, for whatever stands round it.
+  // The front door's drawing, where the places lead (8.11): six places
+  // round a still dark centre, clockwise from the top, each a lantern that
+  // breathes slowly and opens when touched. The Beings page draws the same
+  // places the other way round, with the Beings leading (8.31).
+  // ring(g, c, places, open) draws into the SVG group g, centred at c
+  // ({x, y}); places are [{addr, name}]; open(place) is what a touch does.
+  // It returns each place's centre and angle.
   var SVG = 'http://www.w3.org/2000/svg';
   var RING = { r: 100, place: 38 };
   function svg(tag, attrs) {
@@ -174,8 +174,7 @@
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fn(); }
     });
   }
-  function ring(g, c, places, open, opts) {
-    opts = opts || {};
+  function ring(g, c, places, open) {
     var owner = g.ownerSVGElement, R = RING.r, RS = RING.place, out = [];
     if (owner && !owner.querySelector('#nw-lamp')) {
       var defs = svg('defs', {}), grad = svg('radialGradient', { id: 'nw-lamp', cx: '50%', cy: '50%', r: '50%' });
@@ -208,11 +207,6 @@
     // the still centre
     g.appendChild(svg('circle', { cx: c.x, cy: c.y, r: 31, fill: 'var(--frame)', opacity: '.35' }));
     g.appendChild(svg('circle', { 'class': 'still', cx: c.x, cy: c.y, r: 26, fill: 'var(--ink)' }));
-    if (opts.amp) {
-      var amp = svg('text', { 'class': 'amp', x: c.x, y: c.y + 12, 'text-anchor': 'middle' });
-      amp.textContent = '&';
-      g.appendChild(amp);
-    }
     fit(g);
     return out;
   }

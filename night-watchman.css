@@ -339,13 +339,11 @@ canvas.spinner {
   max-width: 30rem;
   margin: 0 auto;
 }
-.more details,
-.portals details {
+.more details {
   border-bottom: 1px solid var(--frame);
   padding: 0.6rem 0.2rem;
 }
-.more summary,
-.portals summary {
+.more summary {
   cursor: pointer;
   list-style: none;
   display: flex;
@@ -355,17 +353,14 @@ canvas.spinner {
   min-height: 2.2rem;
   align-items: center;
 }
-.more summary::-webkit-details-marker,
-.portals summary::-webkit-details-marker {
+.more summary::-webkit-details-marker {
   display: none;
 }
-.more summary::after,
-.portals summary::after {
+.more summary::after {
   content: "+";
   color: var(--crimson);
 }
-.more details[open] summary::after,
-.portals details[open] summary::after {
+.more details[open] summary::after {
   content: "\2013";
 }
 .more details p {
@@ -754,40 +749,133 @@ section.begin {
 @media (prefers-reduced-motion: reduce) {
   .place .breath { animation: none; }
 }
-.orb .lamp {
-  opacity: 0;
-  transition: opacity 0.6s ease;
+/* The Beings lead (8.31): eighteen lanterns bearing their short names,
+   each glowing faintly and breathing at its own pace, in thin rings that
+   wake when touched. */
+.beings-drawing {
+  max-width: 24rem;
 }
-.orb.lit .lamp {
-  opacity: 1;
+@media (max-width: 480px) {
+  /* on a phone the drawing takes the sheet's full width, so the names
+     read at about 10px */
+  .beings-drawing {
+    width: calc(100% + 2.4rem);
+    max-width: none;
+    margin-left: -1.2rem;
+  }
 }
-.orb.lit circle.o {
-  fill: var(--crimson);
-}
-.orb:hover circle.ring {
-  stroke: var(--crimson);
-}
-.orb {
+.lantern,
+.pring {
   cursor: pointer;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
-.orb circle.o {
-  transition: fill 0.5s ease;
-}
-.orb:focus {
+.lantern:focus,
+.pring:focus {
   outline: none;
 }
-.orb:focus-visible circle.ring {
-  stroke: var(--crimson);
-  stroke-width: 2;
-}
-.orb .breath {
+.lantern .glow {
+  fill: var(--crimson);
+  opacity: 0.16;
   transform-box: fill-box;
   transform-origin: center;
-  animation: breathe var(--d, 6s) ease-in-out infinite;
+  animation: lantern-breath var(--d, 7s) ease-in-out infinite;
   animation-delay: var(--l, 0s);
 }
-@keyframes breathe {
-  50% { transform: scale(1.18); opacity: 0.25; }
+@keyframes lantern-breath {
+  50% { opacity: 0.34; transform: scale(1.06); }
+}
+.lantern .pill {
+  fill: var(--page);
+  stroke: var(--crimson);
+  stroke-opacity: 0.55;
+  stroke-width: 0.8;
+  transition: fill 0.4s ease;
+}
+.lantern-name {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--ink);
+  transition: fill 0.4s ease;
+}
+.lantern:hover .pill,
+.lantern:focus-visible .pill {
+  stroke-opacity: 1;
+  stroke-width: 1.4;
+}
+.lantern.on .pill {
+  fill: var(--crimson);
+  stroke-opacity: 1;
+}
+.lantern.on .lantern-name {
+  fill: var(--page);
+}
+.lantern.on .glow {
+  opacity: 0.55;
+  animation: none;
+}
+.lantern.near,
+.lantern.held {
+  transform: translateY(-1.5px);
+}
+.lantern.near .glow,
+.lantern.held .glow {
+  opacity: 0.3;
+}
+.lantern.held .pill {
+  stroke-opacity: 1;
+}
+.pring .frame {
+  fill: none;
+  stroke: var(--frame);
+  stroke-opacity: 0.55;
+  stroke-width: 0.8;
+  pointer-events: all;
+  transition: stroke 0.4s ease, stroke-width 0.4s ease;
+}
+.pring-name {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  fill: var(--crimson);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.pring.awake .frame {
+  stroke: var(--crimson);
+  stroke-opacity: 1;
+  stroke-width: 1.3;
+}
+.pring.awake .pring-name {
+  opacity: 1;
+}
+.pring:focus-visible .frame {
+  stroke: var(--crimson);
+  stroke-opacity: 1;
+  stroke-width: 1.6;
+}
+/* everything not woken dims a step */
+.focus .lantern:not(.on):not(.near):not(.held),
+.focus .pring:not(.awake) .frame,
+.focus .spoke {
+  opacity: 0.4;
+}
+.whisper {
+  font-family: "Cormorant Garamond", Garamond, serif;
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  fill: var(--muted);
+  opacity: 0.6;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lantern .glow { animation: none; }
+  .lantern,
+  .lantern.near,
+  .lantern.held { transform: none; }
 }
 .row-label {
   font-family: "Cormorant Garamond", Garamond, serif;
@@ -861,50 +949,77 @@ section.begin {
   text-align: center;
   margin: 0.6rem 0 0;
 }
+.being .place-line {
+  text-align: left;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+  border-top: 1px solid var(--frame);
+  padding-top: 0.6rem;
+  margin: 0.8rem 0 0;
+}
+.being .place-line .k {
+  font-style: normal;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-right: 0.45rem;
+}
+/* All eighteen, in full, for the reader who would rather read. */
 .portals {
   text-align: left;
   max-width: 30rem;
   margin: 0 auto;
 }
-.portals ul {
-  margin: 0.5rem 0 0.2rem;
+.all-place {
+  margin: 0 0 1.6rem;
 }
-.portals li {
-  padding: 0.2rem 0;
-  color: var(--muted);
+.all-place h3 {
+  font-weight: 500;
+  font-size: 1.45rem;
+  margin: 0 0 0.2rem;
+  border-bottom: 1px solid var(--frame);
+  padding-bottom: 0.2rem;
 }
-.portals li::before {
-  content: none;
-}
-.portals li b {
-  color: var(--ink);
-  font-weight: 600;
-}
-.portals summary .place {
+.all-place h3 .place {
   font-style: italic;
   font-size: 1rem;
   color: var(--muted);
 }
-.portals .portal-text {
+.all-place .portal-text {
   color: var(--muted);
   font-size: 1.05rem;
-  margin: 0.6rem 0 0.2rem;
+  margin: 0.4rem 0 0.8rem;
 }
-.portals button.meet {
-  font: inherit;
-  text-align: left;
-  color: var(--muted);
-  background: none;
-  border: 0;
-  padding: 0.2rem 0;
-  min-height: 2.4rem;
-  cursor: pointer;
+.all-being {
+  margin: 0 0 1.1rem;
 }
-.portals button.meet:hover b {
+.all-being h4 {
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 0;
+}
+.all-being .epithet {
+  font-style: italic;
   color: var(--crimson);
+  margin: 0 0 0.3rem;
+}
+.all-being p {
+  margin: 0 0 0.35rem;
+}
+.all-being .field {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.all-being .field .k {
+  font-style: normal;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-right: 0.45rem;
 }
 @media (prefers-reduced-motion: reduce) {
-  .orb .breath { animation: none; }
   .being.lit { animation: none; }
 }
 
