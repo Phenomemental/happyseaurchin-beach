@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20d">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20e">
 </head>
 <body>
 <main>
@@ -37,28 +37,23 @@
     <p class="opening" id="way"></p>
     <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
 
-    <svg class="middle" id="middle" viewBox="0 0 360 440" role="group" aria-label="Two lights, Silas and Ada, shining down on six places round a still centre, with three Beings at each place">
+    <svg class="middle beings-drawing" id="middle" viewBox="0 0 340 480" role="group" aria-label="Two lights, Silas and Ada, above six places round a still centre, with three Beings at each place">
       <defs>
         <radialGradient id="gS" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".55"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
         <radialGradient id="gA" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".55"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></radialGradient>
-        <radialGradient id="gL" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".5"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></radialGradient>
-        <linearGradient id="coneS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".16"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
-        <linearGradient id="coneA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".16"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="coneS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--crimson)" stop-opacity=".14"/><stop offset="1" stop-color="var(--crimson)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="coneA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--indigo)" stop-opacity=".14"/><stop offset="1" stop-color="var(--indigo)" stop-opacity="0"/></linearGradient>
+        <filter id="soft" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3.2"/></filter>
       </defs>
-      <path d="M92,52 L4,436 L262,436 Z" fill="url(#coneS)"/>
-      <path d="M268,52 L98,436 L356,436 Z" fill="url(#coneA)"/>
-      <line x1="99" y1="44" x2="261" y2="44" stroke="var(--ink)" stroke-width="1.2" stroke-linecap="round"/>
-      <g class="light" id="light-s" tabindex="0" role="button" aria-label="Silas, one of the two extremes">
-        <circle class="glow" cx="92" cy="44" r="30" fill="url(#gS)"><animate attributeName="r" values="28;33;28" dur="7s" repeatCount="indefinite"/></circle>
-        <circle class="core" cx="92" cy="44" r="7" fill="var(--crimson)"/>
-        <text class="light-label" id="light-1" x="92" y="90" text-anchor="middle">Silas</text>
-        <circle cx="92" cy="58" r="34" fill="transparent"/>
-      </g>
-      <g class="light" id="light-a" tabindex="0" role="button" aria-label="Ada, one of the two extremes">
-        <circle class="glow" cx="268" cy="44" r="30" fill="url(#gA)"><animate attributeName="r" values="33;28;33" dur="7s" repeatCount="indefinite"/></circle>
-        <circle class="core" cx="268" cy="44" r="7" fill="var(--indigo)"/>
-        <text class="light-label" id="light-2" x="268" y="90" text-anchor="middle">Ada</text>
-        <circle cx="268" cy="58" r="34" fill="transparent"/>
+      <g class="lights" aria-hidden="true">
+        <path d="M34,38 L0,476 L250,476 Z" fill="url(#coneS)"/>
+        <path d="M306,38 L90,476 L340,476 Z" fill="url(#coneA)"/>
+        <circle cx="34" cy="30" r="26" fill="url(#gS)"><animate attributeName="r" values="24;29;24" dur="7s" repeatCount="indefinite"/></circle>
+        <circle cx="34" cy="30" r="6.5" fill="var(--crimson)"/>
+        <text class="light-label" id="light-1" x="34" y="70" text-anchor="middle">Silas</text>
+        <circle cx="306" cy="30" r="26" fill="url(#gA)"><animate attributeName="r" values="29;24;29" dur="7s" repeatCount="indefinite"/></circle>
+        <circle cx="306" cy="30" r="6.5" fill="var(--indigo)"/>
+        <text class="light-label" id="light-2" x="306" y="70" text-anchor="middle">Ada</text>
       </g>
       <g id="constellation"></g>
     </svg>
@@ -84,7 +79,7 @@
   </div>
 </main>
 <script src="beach.js?v=2026-10-19b"></script>
-<script src="night-watchman.js?v=2026-10-20b"></script>
+<script src="night-watchman.js?v=2026-10-20c"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -132,6 +127,9 @@
     var b = { name: s.slice(0, cut).trim(), epithet: '', spirit: '', fields: [] };
     var rest = s.slice(cut + 3), dot = rest.search(/\.\s/);
     b.epithet = (dot < 0 ? rest : rest.slice(0, dot)).trim();
+    // its short name: the second name in its line ("the Exile, the
+    // Unbelonging Ghost" is the Exile)
+    b.short = b.epithet.split(',')[0].trim();
     rest = dot < 0 ? '' : rest.slice(dot + 1).trim();
     var a = /^(Anchors?): ([\s\S]*?)\.(?:\s+|$)/.exec(rest);
     if (a) {
@@ -163,7 +161,8 @@
           var b = beingFrom(NW.own(node[String(j)]));
           if (b) { b.addr = k + '.' + i + j; beings.push(b); }
         }
-        list.push({ addr: k + '.' + i, name: p.name, side: where, text: forReaders(p.rest), beings: beings });
+        var text = forReaders(p.rest);
+        list.push({ addr: k + '.' + i, name: p.name, side: where, text: text, line: NW.sentences(text)[0] || text, beings: beings });
       }
     });
     return sorted(list);
@@ -174,45 +173,108 @@
   }
 
   // ---- The drawing -----------------------------------------------------------------
-  // The front door's ring, with the heart's ampersand at its still centre
-  // and three Beings round each place, every one a lantern breathing at its
-  // own pace. Until the beach answers, the ring stands with its places
-  // unnamed.
-  var C = { x: 180, y: 262 }, RB = 54, SPREAD = 52, ORB = 10;
-  var PLACES = [], lit = null, g = $('constellation');
+  // The Beings lead (8.31). Each place is a thin ring, barely there,
+  // holding its three Beings as lanterns: each bears its short name, glows
+  // faintly and breathes at its own pace. A ring shows its name only when
+  // it wakes. The rings stand round the still centre, clockwise from the
+  // top in spine:p6's order, on an oval tall enough for every name to be
+  // read on a phone; the two lights stand in the top corners and never
+  // open.
+  var C = { x: 170, y: 240 }, ROW = 17, GAP = 3, NAMEROW = 14, PAD = 7;
+  var H = NAMEROW + 3 * ROW + 3 * GAP + 2 * PAD;
+  var PLACES = [], g = $('constellation'), drawing = $('middle'), state = null;
+  function measure(t) {
+    try { return t.getComputedTextLength(); } catch (e) { return t.textContent.length * 6.6; }
+  }
   function draw() {
     g.textContent = '';
-    var blank = [0, 1, 2, 3, 4, 5].map(function () { return { addr: '', name: '', beings: [] }; });
-    var spots = NW.ring(g, C, PLACES.length ? PLACES : blank, openPlace, { amp: true });
-    spots.forEach(function (spot, k) {
-      var p = spot.place;
+    var places = PLACES.length ? PLACES : [0, 1, 2, 3, 4, 5].map(function () { return { addr: '', name: '', beings: [] }; });
+    // each lantern as wide as its name, each ring as wide as its widest
+    var sized = places.map(function (p) {
+      var widths = p.beings.map(function (b) {
+        var t = NW.svg('text', { 'class': 'lantern-name' });
+        t.textContent = b.short;
+        g.appendChild(t);
+        var w = measure(t) + 16;
+        g.removeChild(t);
+        return w;
+      });
+      return { p: p, widths: widths, w: Math.max(96, Math.max.apply(null, widths.concat([0])) + 14) };
+    });
+    // the oval: wide enough that the rings either side clear each other,
+    // tall enough that each ring clears the ones above and below it
+    var w = sized.map(function (x) { return x.w; });
+    var rx = Math.max(78, ((w[1] + w[5]) / 2 + 8) / 1.732, ((w[2] + w[4]) / 2 + 8) / 1.732);
+    var ry = 2 * (H + 6);
+    sized.forEach(function (x, k) {
+      var p = x.p, deg = -90 + k * 60, a = deg * Math.PI / 180;
+      var c = { x: C.x + rx * Math.cos(a), y: C.y + ry * Math.sin(a) };
+      // a spoke from the centre to the ring's edge
+      var u = { x: c.x - C.x, y: c.y - C.y }, len = Math.sqrt(u.x * u.x + u.y * u.y);
+      u.x /= len; u.y /= len;
+      var edge = 1 / Math.sqrt(Math.pow(u.x / (x.w / 2), 2) + Math.pow(u.y / (H / 2), 2));
+      // (from beyond the whispered word, which they would otherwise cross)
+      g.appendChild(NW.svg('line', { x1: C.x + u.x * 54, y1: C.y + u.y * 54, x2: c.x - u.x * (edge + 4), y2: c.y - u.y * (edge + 4), stroke: 'var(--frame)', 'stroke-width': '0.9', 'stroke-dasharray': '2 4', 'stroke-linecap': 'round', 'class': 'spoke' }));
+      // the ring, and the name it shows when it wakes
+      var ring = NW.svg('g', { 'class': 'pring', tabindex: p.name ? '0' : '-1', role: 'button', 'aria-label': p.name ? p.name + ', ' + p.side : 'A place' });
+      ring.dataset.addr = p.addr;
+      ring.appendChild(NW.svg('rect', { 'class': 'frame', x: c.x - x.w / 2, y: c.y - H / 2, width: x.w, height: H, rx: 20 }));
+      var nm = NW.svg('text', { 'class': 'pring-name', x: c.x, y: c.y - H / 2 + PAD + NAMEROW / 2 + 3.3, 'text-anchor': 'middle' });
+      nm.textContent = (p.name || '').toUpperCase();
+      ring.appendChild(nm);
+      if (p.name) NW.pressable(ring, function () { choosePlace(p); });
+      g.appendChild(ring);
+      // its three Beings, one above another
       p.beings.forEach(function (b, j) {
-        var off = p.beings.length > 1 ? -SPREAD + j * 2 * SPREAD / (p.beings.length - 1) : 0;
-        var dir = spot.deg + off, o = NW.point(spot.at, RB, dir);
-        var e1 = NW.point(spot.at, 41, dir), e2 = NW.point(spot.at, RB - ORB - 3, dir);
-        g.appendChild(NW.svg('line', { x1: e1.x, y1: e1.y, x2: e2.x, y2: e2.y, stroke: 'var(--frame)', 'stroke-width': '0.9' }));
-        var orb = NW.svg('g', { 'class': 'orb', tabindex: '0', role: 'button', 'aria-label': b.name + ', ' + b.epithet + ', at ' + p.name });
-        orb.dataset.addr = b.addr;
-        // each its own pace: eighteen different breaths
+        var cy = c.y - H / 2 + PAD + NAMEROW + GAP + ROW / 2 + j * (ROW + GAP), pw = x.widths[j];
+        var lamp = NW.svg('g', { 'class': 'lantern', tabindex: '0', role: 'button', 'aria-label': b.short + ', ' + b.name });
+        lamp.dataset.addr = b.addr;
+        lamp.dataset.place = p.addr;
+        // eighteen different breaths
         var beat = (k * 3 + j * 5) % 18;
-        orb.style.setProperty('--d', (4.2 + beat * 0.21).toFixed(2) + 's');
-        orb.style.setProperty('--l', (-(k * 1.3 + j * 0.9)).toFixed(1) + 's');
-        orb.appendChild(NW.svg('circle', { 'class': 'lamp', cx: o.x, cy: o.y, r: '24', fill: 'url(#gL)' }));
-        orb.appendChild(NW.svg('circle', { 'class': 'breath', cx: o.x, cy: o.y, r: '13', fill: 'var(--frame)', opacity: '.45' }));
-        orb.appendChild(NW.svg('circle', { 'class': 'o', cx: o.x, cy: o.y, r: ORB, fill: 'var(--page)' }));
-        orb.appendChild(NW.svg('circle', { 'class': 'ring', cx: o.x, cy: o.y, r: ORB, fill: 'none', stroke: 'var(--ink)', 'stroke-width': '1.1' }));
-        orb.appendChild(NW.svg('circle', { cx: o.x, cy: o.y, r: '23', fill: 'transparent' }));
-        NW.pressable(orb, function () { openBeing(p, b); });
-        g.appendChild(orb);
+        lamp.style.setProperty('--d', (5.6 + beat * 0.24).toFixed(2) + 's');
+        lamp.style.setProperty('--l', (-(k * 1.3 + j * 0.9)).toFixed(1) + 's');
+        lamp.appendChild(NW.svg('rect', { 'class': 'glow', x: c.x - pw / 2 - 2, y: cy - ROW / 2 - 2, width: pw + 4, height: ROW + 4, rx: (ROW + 4) / 2, filter: 'url(#soft)' }));
+        lamp.appendChild(NW.svg('rect', { 'class': 'pill', x: c.x - pw / 2, y: cy - ROW / 2, width: pw, height: ROW, rx: ROW / 2 }));
+        var t = NW.svg('text', { 'class': 'lantern-name', x: c.x, y: cy + 3.4, 'text-anchor': 'middle' });
+        t.textContent = b.short;
+        lamp.appendChild(t);
+        NW.pressable(lamp, function () { chooseBeing(p, b); });
+        g.appendChild(lamp);
       });
     });
-    NW.light(g, lit);
+    // the still centre: the heart's ampersand, lit, and Presence whispered
+    g.appendChild(NW.svg('circle', { cx: C.x, cy: C.y, r: 29, fill: 'var(--frame)', opacity: '.35' }));
+    g.appendChild(NW.svg('circle', { cx: C.x, cy: C.y, r: 24, fill: 'var(--ink)' }));
+    var amp = NW.svg('text', { 'class': 'amp', x: C.x, y: C.y + 11, 'text-anchor': 'middle' });
+    amp.textContent = '&';
+    g.appendChild(amp);
+    var whisper = NW.svg('text', { 'class': 'whisper', x: C.x, y: C.y + 44, 'text-anchor': 'middle' });
+    whisper.textContent = 'Presence';
+    g.appendChild(whisper);
+    mark();
   }
 
-  // ---- The card --------------------------------------------------------------------
-  // What opens beneath the drawing: a Being's spirit, a place's own words
-  // with its three Beings, or the two extremes.
-  function card(build, addr, quiet) {
+  // ---- Waking and settling ----------------------------------------------------------
+  // A Being touched brightens, its ring wakes with its name, its two
+  // siblings lift a little and all else dims a step. A ring touched wakes
+  // with its three Beings held brighter together. A touch anywhere else
+  // settles everything back.
+  function mark() {
+    var on = state && state.being, place = state && state.place;
+    drawing.classList.toggle('focus', !!state);
+    Array.prototype.forEach.call(g.querySelectorAll('.lantern'), function (e) {
+      var mine = e.dataset.place === place;
+      e.classList.toggle('on', !!on && e.dataset.addr === on);
+      e.classList.toggle('near', !!on && mine && e.dataset.addr !== on);
+      e.classList.toggle('held', !on && mine);
+      e.setAttribute('aria-pressed', on && e.dataset.addr === on ? 'true' : 'false');
+    });
+    Array.prototype.forEach.call(g.querySelectorAll('.pring'), function (e) {
+      e.classList.toggle('awake', !!place && e.dataset.addr === place);
+    });
+  }
+  function opened(build, quiet) {
     var c = $('card');
     c.textContent = '';
     build(c);
@@ -220,16 +282,14 @@
     c.classList.remove('lit');
     void c.offsetWidth;
     c.classList.add('lit');
-    lit = addr;
-    NW.light(g, lit);
-    $('hint').hidden = true;
+    mark();
     if (quiet) return;
     var r = c.getBoundingClientRect();
     if (r.bottom > innerHeight || r.top < 0) c.scrollIntoView({ block: 'nearest' });
   }
-  function openBeing(p, b, quiet) {
-    card(function (c) {
-      c.appendChild(el('p', 'portal', p.side ? p.name + ' · ' + p.side : p.name));
+  function chooseBeing(p, b, quiet) {
+    state = { being: b.addr, place: p.addr };
+    opened(function (c) {
       c.appendChild(el('h3', null, b.name));
       if (b.epithet) c.appendChild(el('p', 'epithet', b.epithet));
       if (b.spirit) c.appendChild(el('p', 'spirit', b.spirit));
@@ -239,61 +299,61 @@
         line.appendChild(document.createTextNode(' ' + f[1]));
         c.appendChild(line);
       });
-    }, b.addr, quiet);
+      // the place's own line, smaller, beneath
+      if (p.line) {
+        var pl = el('p', 'place-line');
+        pl.appendChild(el('span', 'k', p.name));
+        pl.appendChild(document.createTextNode(' ' + p.line));
+        c.appendChild(pl);
+      }
+    }, quiet);
   }
-  function openPlace(p, quiet) {
-    card(function (c) {
+  function choosePlace(p, quiet) {
+    state = { place: p.addr };
+    opened(function (c) {
       if (p.side) c.appendChild(el('p', 'portal', p.side));
       c.appendChild(el('h3', null, p.name));
-      if (p.text) c.appendChild(el('p', 'spirit', p.text));
-      var row = el('p', 'card-beings');
-      p.beings.forEach(function (b) {
-        var go = el('button', 'flick', b.name);
-        go.type = 'button';
-        go.addEventListener('click', function () { openBeing(p, b); });
-        row.appendChild(go);
-      });
-      c.appendChild(row);
-    }, p.addr, quiet);
+      if (p.line) c.appendChild(el('p', 'spirit', p.line));
+    }, quiet);
   }
-  var EXTREMES = null;
-  function openExtremes(quiet) {
-    if (!EXTREMES) return;
-    card(function (c) {
-      c.appendChild(el('p', 'portal', $('light-1').textContent + ' · ' + $('light-2').textContent));
-      if (EXTREMES.head) c.appendChild(el('h3', null, EXTREMES.head));
-      c.appendChild(el('p', 'spirit', EXTREMES.rest));
-    }, 'extremes', quiet === true);
+  function settle() {
+    if (!state) return;
+    state = null;
+    $('card').hidden = true;
+    mark();
   }
-  NW.pressable($('light-s'), openExtremes);
-  NW.pressable($('light-a'), openExtremes);
+  document.addEventListener('click', function (e) {
+    if (!state || !e.target.closest) return;
+    if (e.target.closest('.lantern, .pring, #card')) return;
+    settle();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') settle(); });
 
   // ---- All eighteen, and more ------------------------------------------------------
+  // For the reader who would rather read than touch: every place in the
+  // ring's order, with its own words and its three Beings in full.
   function list() {
-    var all = $('all'), openNow = {};
-    Array.prototype.forEach.call(all.querySelectorAll('details'), function (d) { openNow[d.dataset.k] = d.open; });
+    var all = $('all');
     all.textContent = '';
     PLACES.forEach(function (p) {
-      var d = el('details');
-      d.dataset.k = p.addr;
-      d.open = !!openNow[p.addr];
-      var s = el('summary'), name = el('span', null, p.name);
-      if (p.side) name.appendChild(el('span', 'place', ' · ' + p.side));
-      s.appendChild(name);
-      d.appendChild(s);
-      if (p.text) d.appendChild(el('p', 'portal-text', p.text));
-      var ul = el('ul');
+      var sec = el('section', 'all-place'), h = el('h3', null, p.name);
+      if (p.side) h.appendChild(el('span', 'place', ' · ' + p.side));
+      sec.appendChild(h);
+      if (p.text) sec.appendChild(el('p', 'portal-text', p.text));
       p.beings.forEach(function (b) {
-        var li = el('li'), go = el('button', 'meet');
-        go.type = 'button';
-        go.appendChild(el('b', null, b.name));
-        if (b.epithet) go.appendChild(document.createTextNode(', ' + b.epithet));
-        go.addEventListener('click', function () { openBeing(p, b); $('card').scrollIntoView({ block: 'center' }); });
-        li.appendChild(go);
-        ul.appendChild(li);
+        var art = el('article', 'all-being');
+        art.appendChild(el('h4', null, b.name));
+        if (b.epithet) art.appendChild(el('p', 'epithet', b.epithet));
+        if (b.spirit) art.appendChild(el('p', null, b.spirit));
+        b.fields.forEach(function (f) {
+          var line = el('p', 'field');
+          line.appendChild(el('span', 'k', f[0]));
+          line.appendChild(document.createTextNode(' ' + f[1]));
+          art.appendChild(line);
+        });
+        sec.appendChild(art);
       });
-      d.appendChild(ul);
-      all.appendChild(d);
+      all.appendChild(sec);
     });
   }
   // The two extremes (4) and play (9), each opening on request. What is
@@ -321,30 +381,25 @@
       PLACES = places;
       draw();
       list();
-      $('middle').setAttribute('aria-label', 'Two lights, ' + $('light-1').textContent + ' and ' + $('light-2').textContent +
-        ', shining down on six places round a still centre, ' + PLACES.map(function (p) { return p.name; }).join(', ') +
+      drawing.setAttribute('aria-label', 'Two lights, ' + $('light-1').textContent + ' and ' + $('light-2').textContent +
+        ', above six places round a still centre, ' + PLACES.map(function (p) { return p.name; }).join(', ') +
         ', with three Beings at each');
     }
     // How a reader reads through a Being (3) opens the page.
     var way = forReaders(NW.own(block['3']));
     if (way && flat(way) !== flat($('way').textContent)) $('way').textContent = way;
-    var ext = headed(NW.own(block['4']));
-    if (ext.head) EXTREMES = { head: ext.head, rest: forReaders(ext.rest) };
-    var two = EXTREMES && /\b([A-Z][a-z]+) and ([A-Z][a-z]+) are\b/.exec(EXTREMES.rest);
+    var ext = headed(NW.own(block['4'])), two = /\b([A-Z][a-z]+) and ([A-Z][a-z]+) are\b/.exec(forReaders(ext.rest));
     if (two) {
       NW.set($('light-1'), two[1]);
       NW.set($('light-2'), two[2]);
-      $('light-s').setAttribute('aria-label', two[1] + ', one of the two extremes');
-      $('light-a').setAttribute('aria-label', two[2] + ', one of the two extremes');
     }
     more(block);
     $('beach-note').hidden = true;
-    // a card already open shows the words as they now stand, where it is
-    if (lit && !$('card').hidden) {
-      if (lit === 'extremes') return openExtremes(true);
+    // what is open shows the words as they now stand, where it is
+    if (state) {
       PLACES.forEach(function (p) {
-        if (p.addr === lit) openPlace(p, true);
-        p.beings.forEach(function (b) { if (b.addr === lit) openBeing(p, b, true); });
+        if (!state.being && p.addr === state.place) choosePlace(p, true);
+        p.beings.forEach(function (b) { if (b.addr === state.being) chooseBeing(p, b, true); });
       });
     }
   }
@@ -353,7 +408,7 @@
     var all = NW.forAll(words);
     NW.set($('signature'), all.signature);
     if (all.care && flat(all.care) !== flat($('care').textContent)) NW.care($('care'), all.care);
-    // The title and hint are the page's own words (8.83633).
+    // The title and the one instruction are the page's own words (8.83633).
     var page = words['3'];
     if (page) {
       var f = NW.fields(NW.own(page), ['Title', 'Line', 'Opening', 'Hint']);
@@ -378,7 +433,9 @@
   hush();
 
   draw();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { NW.fit(g); });
+  // the lanterns are as wide as their names, so they are drawn again once
+  // the type has come
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (PLACES.length) draw(); });
   Beach.get('spine:p6').then(function (spine) {
     var order = NW.order(spine);
     if (order.length !== 6) return;
