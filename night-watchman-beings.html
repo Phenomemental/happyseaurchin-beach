@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
-<link rel="stylesheet" href="night-watchman.css?v=2026-10-20h">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20i">
 </head>
 <body>
 <main>
@@ -29,13 +29,16 @@
        the builders (5) is never shown. The drawing is the bay (8.31), its
        six tide-pools in spine:p6's order. None of these words is kept in
        the page; the title, hint, care line and signature are read live
-       with their saved copy. -->
+       with their saved copy. Reading lives here (8.11): a Being's card
+       leads on to the lines left at the wheel, read from pool:p6 and seen
+       through that Being; the lenses and the words round the reading are
+       the page's own, and Begin's Read comes in at #read. -->
   <div class="sheet">
     <h1 id="title">The Beings</h1>
     <p class="byline" id="line">eighteen shells on the shore of the watches</p>
 
     <p class="opening" id="way"></p>
-    <p class="care" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
+    <p class="hint read-hint" id="read-hint" hidden>Touch a Being to read through it.</p>
 
     <svg class="middle beings-drawing" id="middle" viewBox="0 0 340 500" role="group" aria-label="A bay: six tide-pools round still water, three shells in each, and a lighthouse on each headland">
       <defs>
@@ -52,6 +55,22 @@
 
     <div class="being" id="card" hidden aria-live="polite"></div>
 
+    <section class="read" id="read" hidden aria-label="The lines left at the wheel">
+      <div class="lens" id="lens" hidden>
+        <p class="lens-label">Reading through</p>
+        <h3 class="lens-name" id="lens-name"></h3>
+        <p class="lens-line" id="lens-line"></p>
+        <hr class="lens-rule">
+      </div>
+      <p class="small read-lede">The lines left at the wheel, by the place it came to rest, newest first.</p>
+      <div id="read-lines"><p class="small read-empty">Reading the lines…</p></div>
+      <div class="lens-after" id="lens-after" hidden>
+        <p class="lens-stay">Stay with what you noticed. Nothing is asked of you here.</p>
+        <p class="lens-links"><a href="#middle" id="to-bay">choose another Being</a></p>
+      </div>
+    </section>
+    <p id="plainly-line" hidden><button class="flick plainly" type="button" id="plainly">or read them plainly</button></p>
+
     <hr class="rule">
 
     <section class="portals" aria-labelledby="all-head">
@@ -65,6 +84,7 @@
 
     <hr class="rule">
     <p class="back"><a href="night-watchman.html">&larr; back to the Night Watchman</a></p>
+    <p class="care foot" id="care">If a night is more than you can hold, reach a person first. <a class="tel" href="tel:116123"><strong>Samaritans, 116 123</strong></a>, free, at any hour (UK and Ireland). Elsewhere, <a href="https://findahelpline.com">findahelpline.com</a>.</p>
     <p class="signature" id="signature">Mathew Pay</p>
   </div>
 </main>
@@ -408,6 +428,15 @@
         pl.appendChild(document.createTextNode(' ' + p.line));
         c.appendChild(pl);
       }
+      // and the one way on: the lines left at the wheel, seen through it
+      var on = el('p', 'read-on'), a = el('a', null, 'read through this Being');
+      a.href = '#read';
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        readThrough(adjective(b));
+      });
+      on.appendChild(a);
+      c.appendChild(on);
     }, quiet);
   }
   function choosePlace(p, quiet) {
@@ -424,9 +453,11 @@
     $('card').hidden = true;
     mark();
   }
+  // Reading lets the card stand, so the lines don't move under the hand
+  // (more, among them, is gone by the time its touch arrives here).
   document.addEventListener('click', function (e) {
-    if (!state || !e.target.closest) return;
-    if (e.target.closest('.shell, .pool, #card')) return;
+    if (!state || !e.target.closest || !e.target.isConnected) return;
+    if (e.target.closest('.shell, .pool, #card, #read, #plainly-line')) return;
     settle();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') settle(); });
@@ -476,6 +507,171 @@
     });
   }
 
+  // ---- Read through a Being --------------------------------------------------------
+  // The lines left at the wheel, by portal in the wheel's order, newest
+  // first: twelve to a portal, and the rest on asking. They open from a
+  // Being's card, seen through that Being, or plainly. Each Being has its
+  // lens: a question put to the reader as they read, never a reading of
+  // anyone's line. The lines show exactly as they were left, with a Being
+  // or without one.
+  var LENSES = {
+    Abstract: 'Read for the parts you would count or measure. Then notice what goes missing when you do.',
+    Hypothetical: 'Notice each "what if" that arrives as you read. Are you reading the line, or a theory about it?',
+    Predictable: 'Notice where you want these words to settle into something safe and known.',
+    Anxious: 'Notice the alarm if it comes, the quickening, the urge to fix. Let it be there while you read.',
+    Objective: 'Read from behind the glass. Then notice the glass: what is it keeping at a distance?',
+    Categorical: 'Notice the bins you reach for as you read: right or wrong, well or ill, them or me. Which one did you just use?',
+    Feeling: 'Read slowly. Do not name what you meet; notice where it lands in you, and the shape it takes there.',
+    Dreaming: 'Read as you would a dream: let an image come, and follow it a little way.',
+    Religious: 'Read for what holds these words together, unspoken. Is anything sacred here, for you?',
+    Relational: 'Read as a neighbour. Who else is in these words, and who are you beside them?',
+    Alien: 'Notice where you feel apart from what is written, and where, against the odds, you do not.',
+    Sensory: 'Read with your body. What does it do as you read: your breath, your shoulders, your belly?',
+    Compulsive: 'Notice the pull to act on what you read: to connect, to plan, to fix. Then read it once more without moving.',
+    Creative: 'Notice where the words hold both ends at once, and what that makes in you.',
+    Inclusional: 'Read for the edges in the words. Are they walls, or places where one thing meets another?',
+    Performative: 'Notice what the words show and what they might be covering. Then notice your own face as you read.',
+    Intentioned: 'Read this as one step on a walk. Where does it send you next?',
+    Wholeless: 'Read without needing it to be whole. What is open here, and can you leave it open?'
+  };
+  // The portals the lines are left at (pool:p6, at the portal's place in
+  // spine:p6), saved in the wheel's order; the bay's places, which stand
+  // at the same addresses, replace them once spine:p6 has given the order.
+  var PORTALS = [
+    { addr: '2.3', name: 'Outcomes', place: 'in the deep' },
+    { addr: '1.3', name: 'Fictions', place: 'on the surface' },
+    { addr: '2.2', name: 'Decision', place: 'in the deep' },
+    { addr: '2.1', name: 'Purpose', place: 'in the deep' },
+    { addr: '1.2', name: 'Feelings', place: 'on the surface' },
+    { addr: '1.1', name: 'Facts', place: 'on the surface' }
+  ];
+  function readingPlaces() {
+    if (!ORDER.length || !PLACES.length) return;
+    PORTALS = PLACES.map(function (p) { return { addr: p.addr, name: p.name, place: p.side }; });
+    if (reading) renderRead();
+  }
+  function portalAt(addr) {
+    for (var i = 0; i < PORTALS.length; i++) if (PORTALS[i].addr === addr) return i;
+    return -1;
+  }
+  // pool:p6, read once the lines are opened (at once, for a reader who
+  // came to read), and again on opening them after a miss.
+  var room = null, roomLost = false, asking = false;
+  function readRoom() {
+    if (room || asking) return;
+    asking = true;
+    Beach.get('pool:p6').then(function (pool) {
+      room = pool;
+      roomLost = false;
+    }, function () {
+      roomLost = true;
+    }).then(function () {
+      asking = false;
+      renderRead();
+    });
+  }
+  function wheelLines() {
+    return room ? Beach.entries(room).filter(function (e) { return portalAt(e.where) >= 0; }) : [];
+  }
+  function lineRow(e) {
+    var row = el('p');
+    var d = new Date(e.when);
+    if (!isNaN(d)) row.appendChild(el('time', null, d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })));
+    row.appendChild(document.createTextNode(e.text.slice(0, 600)));
+    return row;
+  }
+  var whole = {};
+  function renderRead() {
+    var box = $('read-lines');
+    box.textContent = '';
+    var all = wheelLines();
+    if (!all.length) {
+      box.appendChild(el('p', 'small read-empty', room ? 'Nothing has been left at the wheel yet.'
+        : roomLost ? 'The lines can’t be read just now.' : 'Reading the lines…'));
+      return;
+    }
+    PORTALS.forEach(function (p) {
+      var lines = all.map(function (e, k) {
+        var t = Date.parse(e.when);
+        return { e: e, t: isNaN(t) ? 0 : t, k: k };
+      }).filter(function (o) { return o.e.where === p.addr; })
+        .sort(function (a, b) { return b.t - a.t || b.k - a.k; })
+        .map(function (o) { return o.e; });
+      var part = el('div', 'read-portal');
+      part.appendChild(el('h3', 'portal', p.place ? p.name + ' · ' + p.place : p.name));
+      var rows = el('div', 'left-lines');
+      if (!lines.length) rows.appendChild(el('p', 'read-none', 'nothing left here yet'));
+      lines.slice(0, whole[p.addr] ? lines.length : 12).forEach(function (e) { rows.appendChild(lineRow(e)); });
+      part.appendChild(rows);
+      if (lines.length > 12 && !whole[p.addr]) {
+        var btn = el('button', 'flick', 'more');
+        btn.type = 'button';
+        btn.setAttribute('aria-label', (lines.length - 12) + ' more at ' + p.name);
+        btn.addEventListener('click', function () {
+          whole[p.addr] = true;
+          var first = null;
+          lines.slice(12).forEach(function (e) {
+            var row = lineRow(e);
+            if (!first) first = row;
+            rows.appendChild(row);
+          });
+          btn.remove();
+          first.tabIndex = -1;
+          first.focus();
+        });
+        part.appendChild(btn);
+      }
+      box.appendChild(part);
+    });
+  }
+  // Arriving at #read, before a Being is chosen, the page asks for one
+  // above the bay; "or read them plainly" stands under the reading while it
+  // would change something.
+  var invited = location.hash === '#read', reading = false, being = null;
+  function hints() {
+    $('read-hint').hidden = !invited || !!being;
+    $('plainly-line').hidden = !being && (reading || !invited);
+  }
+  // Read through a Being, or plainly (null): its name and lens above the
+  // lines, and a word after them.
+  function readThrough(name) {
+    being = name;
+    $('lens').hidden = $('lens-after').hidden = !name;
+    if (!reading) {
+      reading = true;
+      $('read').hidden = false;
+      renderRead();
+    }
+    readRoom();
+    hints();
+    if (!name) return;
+    $('lens-name').textContent = 'The ' + name + ' Being';
+    $('lens-line').textContent = LENSES[name] || '';
+    var r = $('lens').getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * 0.6) $('lens').scrollIntoView({ block: 'start' });
+  }
+  $('plainly').addEventListener('click', function () {
+    var had = document.activeElement === this;
+    readThrough(null);
+    var lede = document.querySelector('.read-lede'), r = lede.getBoundingClientRect();
+    if (r.top < 0 || r.top > innerHeight * 0.8) lede.scrollIntoView({ block: 'start' });
+    // the button is gone once the lines are plain, so its focus moves on
+    if (had) {
+      lede.tabIndex = -1;
+      lede.focus({ preventScroll: true });
+    }
+  });
+  // Choose another Being: back to the bay, at the shell read through.
+  $('to-bay').addEventListener('click', function (e) {
+    e.preventDefault();
+    drawing.scrollIntoView({ block: 'start' });
+    var shells = Array.prototype.filter.call(g.querySelectorAll('.shell'), function (s) {
+      return s.querySelector('.shell-name').textContent === being;
+    });
+    var s = shells[0] || g.querySelector('.shell');
+    if (s) s.focus({ preventScroll: true });
+  });
+
   // ---- Reading ---------------------------------------------------------------------
   function show(block) {
     var places = placesFrom(block);
@@ -485,6 +681,9 @@
       list();
       drawing.setAttribute('aria-label', 'A bay: six tide-pools round still water, ' + PLACES.map(function (p) { return p.name; }).join(', ') +
         ', three shells in each, and a lighthouse on each headland');
+      readingPlaces();
+      // a Being read through that is no longer here leaves the lines plain
+      if (being && !PLACES.some(function (p) { return p.beings.some(function (b) { return adjective(b) === being; }); })) readThrough(null);
     }
     // How a reader reads through a Being (3) opens the page.
     var way = forReaders(NW.own(block['3']));
@@ -500,7 +699,7 @@
     }
   }
   function render(words, block) {
-    // The signature and the care line under the opening (8.83634).
+    // The signature, and the care line set small at the foot (8.83634).
     var all = NW.forAll(words);
     NW.set($('signature'), all.signature);
     if (all.care && flat(all.care) !== flat($('care').textContent)) NW.care($('care'), all.care);
@@ -539,8 +738,11 @@
     PLACES = sorted(PLACES);
     draw();
     list();
+    readingPlaces();
   }, function () {});
   NW.follow(render, function () { if (!PLACES.length) $('beach-note').hidden = false; });
+  hints();
+  if (invited) readRoom();
 })();
 </script>
 </body>
