@@ -433,7 +433,7 @@
            game's room on the beach, only when the player asks for a
            challenge link. -->
       <div id="keep" hidden>
-        <label class="who">Your name, shown with your time
+        <label class="who">Your name, to put your time on the board
           <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="optional">
         </label>
         <button type="button" class="go" id="challenge">Challenge a friend</button>
@@ -488,7 +488,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21h"></script>
+<script src="ghost-wire.js?v=2026-10-21i"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -877,18 +877,15 @@
       : better ? 'This device couldn’t keep it as your ghost.'
       : 'Your best here stays at ' + GW.seconds(was) + ' s.';
     if (!friend && kept) loadGhost();
-    // A new best goes on the board by itself once this phone has put a run
-    // there before, under the same name; the first time is always asked.
+    // A new best goes on the board by itself once this phone has a name
+    // (or has put a run there before); a run with no name yet is saved as
+    // soon as one is typed.
     if (kept && isDay(TRACK) && (mine().length || recall('ghost-wire:name'))) {
       var auto = last;
-      keepRun(auto.replay, auto.steps, auto.tries).then(function (slot) {
-        auto.slot = slot;
-        if (last === auto && phase === 'done') {
-          document.getElementById('end-note').textContent = 'Your new best is on the board.';
-          document.getElementById('challenge').textContent = 'Challenge a friend';
-        }
+      saveLast(auto).then(function () {
+        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best is on the board.';
       }, function () {
-        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best couldn’t reach the board just now; tap Challenge a friend to try again.';
+        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best couldn’t reach the board just now; it will try again when you type your name or tap Challenge a friend.';
       });
     }
     var rank = document.getElementById('end-rank');
@@ -1239,18 +1236,59 @@
     });
   }
 
+  // Save a finished run to the board, once: a second ask while it is on
+  // its way, or after it has landed, gets the same slot.
+  function saveLast(run) {
+    if (!run || !run.replay) return Promise.reject(new Error('nothing to save'));
+    if (run.slot) return Promise.resolve(run.slot);
+    if (!run.saving) {
+      run.saving = keepRun(run.replay, run.steps, run.tries).then(function (slot) {
+        run.slot = slot;
+        return slot;
+      }, function (e) {
+        run.saving = null;
+        throw e;
+      });
+    }
+    return run.saving;
+  }
+
+  // Typing a name on the end screen puts this run on the board under it;
+  // the name is kept for the next runs too. It saves when the box is left
+  // or Done is pressed.
+  var whoBox = document.getElementById('who');
+  function nameGiven() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40), note = document.getElementById('keep-note');
+    if (!name) return;
+    var was = recall('ghost-wire:name');
+    remember('ghost-wire:name', name);
+    notesForm.who.value = notesForm.who.value || name;
+    if (!last || !last.replay || !isDay(TRACK)) return;
+    if (last.slot && was === name) return;
+    if (last.slot) { note.textContent = 'Your time is on the board. Your next runs will be under ' + name + '.'; return; }
+    note.textContent = 'Putting your time on the board…';
+    var run = last;
+    saveLast(run).then(function () {
+      if (last === run) note.textContent = 'Your time is on the board as ' + name + '.';
+    }, function () {
+      if (last === run) note.textContent = 'That didn’t reach the beach. Press Done again in a moment.';
+    });
+  }
+  whoBox.addEventListener('change', nameGiven);
+  whoBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); whoBox.blur(); nameGiven(); }
+  });
+
   document.getElementById('challenge').addEventListener('click', function () {
     var btn = this, note = document.getElementById('keep-note');
     if (!last || !last.replay) return;
-    if (last.slot) return share();
-    var name = document.getElementById('who').value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
     if (name) remember('ghost-wire:name', name);
+    if (last.slot) return share();
     btn.disabled = true;
     note.textContent = 'Keeping your run on the beach…';
-    keepRun(last.replay, last.steps, last.tries).then(function (slot) {
-      last.slot = slot;
+    saveLast(last).then(function () {
       btn.disabled = false;
-      btn.textContent = 'Share the challenge again';
       share();
     }, function () {
       btn.disabled = false;
