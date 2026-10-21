@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Sundial Claude check</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 40rem; margin: 1.2rem auto; padding: 0 1rem; color: #222; background: #fbfaf7; }
+  h1 { font-size: 1.25rem; }
+  .note { color: #555; }
+  input { font: inherit; width: 100%; box-sizing: border-box; padding: .4rem .5rem; }
+  button { font: inherit; padding: .5rem 1rem; margin: .6rem 0; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #ddd; padding: .8rem; font-size: 13px; min-height: 3rem; }
+</style>
+</head>
+<body>
+<h1>Sundial: the Claude check</h1>
+<p class="note">A test page, not part of Sundial: it is linked from nowhere. It sends Claude the same request
+Sundial sends, once, and shows Anthropic's answer exactly, so we can see why a day doesn't come back.
+Your key is never shown here.</p>
+
+<p id="saved"></p>
+<p><label>Or paste a key to use instead <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label></p>
+<button type="button" id="go">Ask Claude once</button>
+<pre id="out"></pre>
+
+<script>
+(function () {
+  var API = 'https://api.anthropic.com/v1/messages';
+  var MODEL = 'claude-sonnet-5-5';
+  var out = document.getElementById('out');
+  var saved = '';
+  try { saved = localStorage.getItem('sundial.key') || ''; } catch (e) {}
+  document.getElementById('saved').textContent = saved
+    ? 'Sundial keeps a key in this browser; it will be used unless you paste another below.'
+    : 'Sundial keeps no key in this browser; paste one below.';
+
+  // The reply's shape, as in sundial.html.
+  var SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['ask', 'sheet'],
+    properties: {
+      ask: { type: 'string' },
+      sheet: {
+        anyOf: [
+          { type: 'null' },
+          {
+            type: 'object',
+            additionalProperties: false,
+            required: ['title', 'lines', 'tomorrow', 'pool'],
+            properties: {
+              title: { type: 'string' },
+              lines: { type: 'array', items: { type: 'string' } },
+              tomorrow: { type: 'string' },
+              pool: { type: 'integer', enum: [1, 2, 3, 4, 5, 6] }
+            }
+          }
+        ]
+      }
+    }
+  };
+
+  function log(s) { out.textContent += s + '\n'; }
+
+  // The law, read from sundial.html itself, so the check sends what Sundial sends.
+  function law() {
+    return fetch('../sundial.html', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
+      var m = /var LAW = (".*?");\n/.exec(t);
+      return m ? JSON.parse(m[1]) : '';
+    });
+  }
+
+  function ask(key, system, shaped) {
+    var now = new Date();
+    var body = {
+      model: MODEL,
+      max_tokens: 4000,
+      system: system,
+      messages: [{ role: 'user', content: 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+        '\nTime: ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) +
+        '\nPlace: not given\n\nWhat they said:\nA test of the page. A quiet morning by the pool in Arona, the kids chasing lizards along the wall, the youngest laughing so hard she sat down. First morning without email. Tomorrow I want to walk up to the old town before it gets hot.' }]
+    };
+    var headers = {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    };
+    if (shaped) {
+      body.thinking = { type: 'between_tools' };
+      body.output_config = { effort: 'low', format: { type: 'json_schema', schema: SCHEMA } };
+      body.fallbacks = 'default';
+      headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+    }
+    log('— ' + (shaped ? 'Sundial’s request (shaped)' : 'the plain request') + ' —');
+    var started = Date.now();
+    return fetch(API, { method: 'POST', headers: headers, body: JSON.stringify(body) }).then(function (r) {
+      return r.text().then(function (t) {
+        log('status: ' + r.status + '   (' + (Date.now() - started) + ' ms)');
+        var j;
+        try { j = JSON.parse(t); } catch (e) { log('not JSON: ' + t.slice(0, 500)); return false; }
+        if (j.error) {
+          log('error type: ' + j.error.type);
+          log('message: ' + j.error.message);
+          return false;
+        }
+        log('model: ' + j.model + '   stop_reason: ' + j.stop_reason);
+        (j.content || []).forEach(function (b) {
+          if (b.type === 'text') log('text: ' + b.text);
+          else log('block: ' + b.type);
+        });
+        if (j.usage) log('tokens in/out: ' + j.usage.input_tokens + ' / ' + j.usage.output_tokens);
+        return r.status === 200;
+      });
+    }, function (e) {
+      log('no answer reached the page: ' + (e && e.message));
+      return false;
+    });
+  }
+
+  document.getElementById('go').addEventListener('click', function () {
+    var key = document.getElementById('key').value.trim() || saved;
+    out.textContent = '';
+    if (!key) { log('No key: paste one above.'); return; }
+    law().then(function (system) {
+      log(system ? 'The law was read from sundial.html (' + system.length + ' characters).' : 'The law could not be read; sending without it.');
+      return ask(key, system, true).then(function (ok) {
+        if (ok) return log('\nSundial’s request works: a day should come back.');
+        log('');
+        return ask(key, system, false).then(function (ok2) {
+          log(ok2 ? '\nOnly the plain request works: Sundial falls back to it, so a day should still come back.'
+            : '\nNeither request works: the messages above say why.');
+        });
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
