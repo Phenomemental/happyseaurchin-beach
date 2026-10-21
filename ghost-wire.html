@@ -324,6 +324,7 @@
   <div class="top">
     <h1>Ghost Wire</h1>
     <div class="top-right">
+      <button type="button" class="chip" id="noise" aria-pressed="true" aria-label="Sound and vibration on">🔊</button>
       <button type="button" class="chip" id="board-btn">Board</button>
       <span class="time" id="time" aria-hidden="true">0.00</span>
     </div>
@@ -384,7 +385,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21f"></script>
+<script src="ghost-wire.js?v=2026-10-21g"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -549,6 +550,148 @@
     return b;
   }
 
+  // ---- Sound and vibration --------------------------------------------------
+  // Every sound is made here by the browser, nothing downloaded: a tick at
+  // the start, a hum that rises as the point nears a wall, a harsh buzz,
+  // and a chime at the finish, brighter for a new best. Vibration follows
+  // the same moments where the phone allows it (not iPhones). One button
+  // turns both off, and this phone remembers it. The sound starts on the
+  // first touch, as browsers ask.
+  var audio = (function () {
+    var on = recall('ghost-wire:noise') !== 'off';
+    var ac = null, out = null, hum = null, lastPulse = 0;
+    var btn = document.getElementById('noise');
+    function show() {
+      btn.textContent = on ? '🔊' : '🔇';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('aria-label', on ? 'Sound and vibration on' : 'Sound and vibration off');
+    }
+    btn.addEventListener('click', function () {
+      on = !on;
+      remember('ghost-wire:noise', on ? 'on' : 'off');
+      if (!on) quiet();
+      else wake();
+      show();
+    });
+    show();
+    function wake() {
+      if (!on) return null;
+      try {
+        if (!ac) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          ac = new AC();
+          out = ac.createGain();
+          out.gain.value = 0.5;
+          out.connect(ac.destination);
+        }
+        if (ac.state === 'suspended') ac.resume();
+      } catch (e) { ac = null; }
+      return ac;
+    }
+    function vibe(pattern) {
+      if (!on || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+    // One note: a wave of a pitch, rising and falling in loudness.
+    function note(type, freq, at, length, level, glide) {
+      var t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + length);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(level, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      o.connect(g);
+      g.connect(out);
+      o.start(t);
+      o.stop(t + length + 0.02);
+    }
+    // A burst of noise, for the crackle in the buzz.
+    function crackle(length, level) {
+      var n = Math.floor(ac.sampleRate * length), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var src = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 2400;
+      g.gain.value = level;
+      src.buffer = buf;
+      src.connect(f);
+      f.connect(g);
+      g.connect(out);
+      src.start();
+    }
+    function quiet() {
+      if (hum) {
+        try {
+          hum.g.gain.setTargetAtTime(0, ac.currentTime, 0.02);
+          hum.o.stop(ac.currentTime + 0.1);
+          hum.lfo.stop(ac.currentTime + 0.1);
+        } catch (e) {}
+        hum = null;
+      }
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) quiet();
+    });
+    return {
+      start: function () {
+        vibe(15);
+        if (!wake()) return;
+        note('square', 1320, 0, 0.05, 0.08);
+        // The hum: a low buzzing tone, silent until the point nears a wall.
+        quiet();
+        var o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(), lfo = ac.createOscillator(), depth = ac.createGain();
+        o.type = 'sawtooth';
+        o.frequency.value = 70;
+        f.type = 'lowpass';
+        f.frequency.value = 900;
+        g.gain.value = 0;
+        lfo.frequency.value = 23;
+        depth.gain.value = 6;
+        lfo.connect(depth);
+        depth.connect(o.frequency);
+        o.connect(f);
+        f.connect(g);
+        g.connect(out);
+        o.start();
+        lfo.start();
+        hum = { o: o, g: g, f: f, lfo: lfo };
+      },
+      // close: 0 at the wire's middle, 1 at a wall.
+      near: function (close) {
+        var c = close > 0.45 ? (close - 0.45) / 0.55 : 0;
+        if (hum) {
+          var t = ac.currentTime;
+          hum.g.gain.setTargetAtTime(c * c * 0.22, t, 0.03);
+          hum.o.frequency.setTargetAtTime(70 + c * 90, t, 0.03);
+          hum.f.frequency.setTargetAtTime(900 + c * 2600, t, 0.03);
+        }
+        var now = performance.now();
+        if (close > 0.75 && now - lastPulse > 140) {
+          lastPulse = now;
+          vibe(close > 0.9 ? 14 : 8);
+        }
+      },
+      buzz: function () {
+        vibe([70, 40, 110]);
+        quiet();
+        if (!wake()) return;
+        note('sawtooth', 110, 0, 0.35, 0.3, 55);
+        note('square', 165, 0, 0.25, 0.12, 80);
+        crackle(0.3, 0.5);
+      },
+      finish: function (best) {
+        vibe(best ? [30, 40, 30, 40, 30, 40, 120] : [30, 50, 30, 50, 60]);
+        quiet();
+        if (!wake()) return;
+        var notes = best ? [784, 988, 1175, 1568] : [784, 988, 1175];
+        notes.forEach(function (f, i) { note('triangle', f, i * 0.09, 0.35, 0.18); });
+      },
+      stop: quiet
+    };
+  })();
+
   // ---- The run -----------------------------------------------------------
   // phase: 'loading' (finding the wire), 'ready' (waiting for a touch),
   // 'running', 'buzzed' (a moment's pause before ready again), 'done' (the
@@ -571,6 +714,7 @@
     acc = 0;
     phase = 'running';
     say.hidden = true;
+    audio.start();
   }
 
   function tick() {
@@ -582,6 +726,7 @@
     trail.push({ x: run.x, y: run.y });
     // Close to a wall, the point throws sparks, the more the closer.
     var close = Math.sqrt(run.near) / GW.LAW.half;
+    if (run.status === 'running') audio.near(close);
     if (run.status === 'running' && close > 0.6 && Math.random() < (close - 0.6) * (still() ? 0.6 : 2)) {
       sparks(run, 1, COLORS.you, 0.6);
     }
@@ -597,9 +742,7 @@
     say.hidden = false;
     sparks(run, still() ? 10 : 28, COLORS.buzz, 1.6);
     if (!still()) shakeUntil = buzzAt + 380;
-    if (navigator.vibrate) {
-      try { navigator.vibrate([70, 40, 110]); } catch (e) {}
-    }
+    audio.buzz();
   }
 
   function finish() {
@@ -616,6 +759,7 @@
     if (linked && (was == null || linked.steps < was)) was = linked.steps;
     var better = was == null || run.step < was;
     var kept = better && sound && remember(BEST, replay);
+    audio.finish(better && was != null);
     if (kept) remember('ghost-wire:best-tries:' + TRACK, String(tries));
     var vs = ghost ? ghost.steps : null;
     document.getElementById('end-time').textContent = GW.seconds(run.step) + ' s';
@@ -963,6 +1107,7 @@
 
   document.getElementById('again').addEventListener('click', ready);
   function ready() {
+    audio.stop();
     loadGhost();
     phase = 'ready';
     run = null;
