@@ -91,6 +91,18 @@
     font-size: 1rem;
     line-height: 1.45;
   }
+  .say .step {
+    display: block;
+  }
+  .say .step + .step {
+    margin-top: 6px;
+  }
+  .say b {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .say .start { color: var(--you); }
+  .say .finish { color: var(--wire); }
   .say strong {
     display: block;
     font-size: 0.8rem;
@@ -420,7 +432,7 @@
     <!-- The briefing tells three things only: where you start, your moves,
          and what you are trying to do (ways:games 1). Its words are kept at
          game:ghost-wire too; the label says which wire this is. -->
-    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong>Your point waits at the gold end of the wire. Put a finger anywhere and drag: the point moves as your finger does. Bring it to the far end as fast as you can without touching the walls.</p>
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong><span class="step">Put a finger anywhere on the screen and drag. The gold dot moves with your finger.</span><span class="step">Steer it from <b class="start">START</b> to <b class="finish">FINISH</b> without touching the walls.</span><span class="step">The clock starts when you touch the screen.</span></p>
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-time"></p>
@@ -488,7 +500,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21i"></script>
+<script src="ghost-wire.js?v=2026-10-21j"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -1427,6 +1439,23 @@
     g.shadowBlur = 0;
     mark(g, 0, COLORS.you);
     mark(g, wire.length, COLORS.wire);
+    label(g, 'START', 0, -1, COLORS.you);
+    label(g, 'FINISH', wire.length, 1, COLORS.wire);
+  }
+
+  // A word just past an end of the wire, along the way it runs there.
+  function label(g, word, s, way, color) {
+    var e = way > 0 ? wire.n - 1 : 0, f = way > 0 ? wire.n - 2 : 1;
+    var tx = wire.x[e] - wire.x[f], ty = wire.y[e] - wire.y[f], tl = Math.sqrt(tx * tx + ty * ty) || 1;
+    var at = px(GW.place(wire, s, 0)), off = GW.LAW.half * view.scale * 0.6 + 24;
+    g.font = '700 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = color;
+    g.shadowColor = color;
+    g.shadowBlur = 8;
+    g.fillText(word, at.x + tx / tl * off, at.y + ty / tl * off);
+    g.shadowBlur = 0;
   }
 
   // A short bar across the wire where it starts or ends.
