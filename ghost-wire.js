@@ -139,9 +139,10 @@
   // ---- A run -----------------------------------------------------------------
 
   // status: 'running' until it 'finished', 'buzzed' (touched a wall) or
-  // 'stalled' (ran out of time). i is the step of the wire nearest the point.
+  // 'stalled' (ran out of time). i is the step of the wire nearest the
+  // point, and near how far the point is from it, squared.
   function start(w) {
-    return { step: 0, x: w.x[0], y: w.y[0], i: 0, status: 'running' };
+    return { step: 0, x: w.x[0], y: w.y[0], i: 0, near: 0, status: 'running' };
   }
 
   // A move, made whole and no larger than the most a step allows.
@@ -167,6 +168,7 @@
       if (d2 < near) { near = d2; best = j; }
     }
     st.i = best;
+    st.near = near;
     st.step++;
     var e = w.n - 1;
     var past = (st.x - w.x[e]) * (w.x[e] - w.x[e - 1]) + (st.y - w.y[e]) * (w.y[e] - w.y[e - 1]);
