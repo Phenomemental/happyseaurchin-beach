@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Sundial M0 checks</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 52rem; margin: 1.5rem auto; padding: 0 1rem; color: #222; background: #fbfaf7; }
+  h1 { font-size: 1.3rem; }
+  h2 { font-size: 1.05rem; margin-top: 2rem; }
+  label { display: inline-block; margin-right: 1rem; }
+  input { font: inherit; padding: .2rem .4rem; }
+  button { font: inherit; margin: .3rem .4rem .3rem 0; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #ddd; padding: .8rem; font-size: 12.5px; min-height: 4rem; }
+  .note { color: #555; }
+</style>
+</head>
+<body>
+<h1>Sundial, milestone M0: the checks</h1>
+<p class="note">A test page, not part of Sundial: it is linked from nowhere. The plan it follows is on the
+beach at <code>spine:front-door</code>, beneath 7.1921.</p>
+
+<h2>Offline: seal.js and mark.js</h2>
+<p class="note">Seal a day and open it again, a wrong word refused; the pools' shares and evenness against
+<code>fixtures/days-trial.json</code>. The same checks run from any page's console as
+<code>Seal.test()</code> and <code>Mark.test(days)</code>.</p>
+<button type="button" id="offline">Run the offline checks</button>
+<pre id="offline-log"></pre>
+
+<h2>On the beach: checks A and B</h2>
+<p class="note">These write to the trial name's own blocks only (<code>passport:</code>, <code>history:</code> and
+<code>now:</code> of the name below). Type the trial word: it is used in this tab's requests and kept nowhere.
+Every request and answer is shown below, the word replaced by &lt;the word&gt;.</p>
+<p>
+  <label>Name <input id="name" value="fd-trial-door" autocomplete="off" spellcheck="false"></label>
+  <label>Word <input id="word" type="password" autocomplete="off"></label>
+</p>
+<p>
+  <button type="button" id="check-a">A: writing from a page</button>
+  <button type="button" id="check-b">B: a day in now</button>
+  <button type="button" id="check-b-locks">B: where the latch holds</button>
+  <button type="button" id="forget-b">B: forget the now mirror</button>
+</p>
+<pre id="beach-log"></pre>
+
+<script src="../beach.js"></script>
+<script src="../seal.js"></script>
+<script src="../mark.js"></script>
+<script>
+(function () {
+  var BEACH = 'https://beach.happyseaurchin.com/.well-known/pscale-beach';
+  var FORGOTTEN = "Forgotten at the holder's request.";
+  var offlineLog = document.getElementById('offline-log');
+  var beachLog = document.getElementById('beach-log');
+  var results = [];
+  var sink = beachLog;
+
+  function log(s) {
+    sink.textContent += s + '\n';
+    console.log(s);
+  }
+  function check(label, ok) {
+    results.push({ label: label, ok: !!ok });
+    log((ok ? 'pass  ' : 'FAIL  ') + label);
+    return !!ok;
+  }
+  function name() { return document.getElementById('name').value.trim().toLowerCase(); }
+  function word() { return document.getElementById('word').value; }
+
+  // A request or answer as shown: the word never, long strings cut short.
+  function shown(v) {
+    var w = word();
+    return JSON.stringify(v, function (k, x) {
+      if (typeof x !== 'string') return x;
+      if ((k === 'secret' || k === 'new_lock') && x) return x === w ? '<the word>' : '<another word>';
+      return x.length > 90 ? x.slice(0, 60) + '…(' + x.length + ' chars)' : x;
+    });
+  }
+
+  // One call to the beach, logged in full: what was sent, and the status,
+  // clock and body that came back.
+  function call(method, block, query, body) {
+    var url = BEACH + (block ? '?block=' + encodeURIComponent(block) : '') + (query || '');
+    var opts = { method: method, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' };
+    if (body !== undefined) {
+      opts.headers = { 'Content-Type': 'application/json' };
+      opts.body = JSON.stringify(body);
+    }
+    log('→ ' + method + ' ' + (block || '(index)') + (query || '') + (body !== undefined ? ' ' + shown(body) : ''));
+    return fetch(url, opts).then(function (r) {
+      return r.text().then(function (t) {
+        var j;
+        try { j = JSON.parse(t); } catch (e) { j = undefined; }
+        var answer = { status: r.status, now: r.headers.get('X-Pscale-Now') || '', json: j, text: t };
+        log('← ' + r.status + ' ' + (j === undefined ? t.slice(0, 300) : shown(j)));
+        return answer;
+      });
+    }, function (e) {
+      log('← no answer: ' + (e && e.message));
+      return { status: 0, now: '', json: undefined, text: '' };
+    });
+  }
+  function get(block, query) { return call('GET', block, query); }
+  function post(block, body) { return call('POST', block, '', body); }
+  function wrote(a) { return a.status >= 200 && a.status < 300 && a.json && a.json.ok !== false; }
+  function refused(a) { return a.status >= 400 && a.status < 500; }
+
+  // The node at an address: each digit a key, a nought the "_" beneath.
+  function at(node, address) {
+    String(address).split('').forEach(function (d) {
+      node = node && typeof node === 'object' ? node[d === '0' ? '_' : d] : undefined;
+    });
+    return node;
+  }
+  // Where in a block the sealed envelopes landed, as key paths.
+  function sealedIn(node, path, out) {
+    out = out || [];
+    if (!node || typeof node !== 'object') return out;
+    if (Seal.isSealed(node)) out.push(path.slice());
+    Object.keys(node).forEach(function (k) { sealedIn(node[k], path.concat(k), out); });
+    return out;
+  }
+  // The floor: how deep the chain of "_" runs from the root.
+  function floorOf(block) {
+    var f = 0, n = block;
+    while (n && typeof n === 'object' && n._ !== undefined) { f++; n = n._; }
+    return f;
+  }
+  function chain(depth, line) {
+    var n = line;
+    for (var i = 0; i < depth; i++) n = { _: n };
+    return n;
+  }
+  function same(a, b) {
+    function canon(v) {
+      if (!v || typeof v !== 'object') return JSON.stringify(v);
+      return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + canon(v[k]); }).join(',') + '}';
+    }
+    return canon(a) === canon(b);
+  }
+  // An envelope's own positions, without the arrival stamp an append adds
+  // at its position 3.
+  function own(node) {
+    if (!node || typeof node !== 'object') return node;
+    var o = {};
+    Object.keys(node).forEach(function (key) { if (key !== '3') o[key] = node[key]; });
+    return o;
+  }
+  function trialDay() {
+    return fetch('../fixtures/days-trial.json', { cache: 'no-store' }).then(function (r) { return r.json(); })
+      .then(function (days) { return days[days.length - 1]; });
+  }
+  function ready() {
+    if (!name() || !word()) {
+      log('Type the name and the word first.');
+      return false;
+    }
+    return true;
+  }
+  function done(title) {
+    var failed = results.filter(function (r) { return !r.ok; });
+    log(title + ': ' + (failed.length ? failed.length + ' of ' + results.length + ' checks failed.' : 'all ' + results.length + ' checks pass.') + '\n');
+    var out = { ok: !failed.length, results: results.slice() };
+    results = [];
+    return out;
+  }
+
+  // ---- Offline -----------------------------------------------------------------
+  function offline() {
+    sink = offlineLog;
+    offlineLog.textContent = '';
+    return Seal.test(log).then(function (sealOk) {
+      return fetch('../fixtures/days-trial.json', { cache: 'no-store' }).then(function (r) { return r.json(); })
+        .then(function (days) { return { seal: sealOk, mark: Mark.test(days, log) }; });
+    }).then(function (r) { sink = beachLog; return r; });
+  }
+
+  // ---- Check A: writing from a page ---------------------------------------------
+  // Claim the name, latch a days block, append a sealed day, read it back
+  // and open it, see writes without the word refused, then forget and
+  // relinquish both blocks as the page's "forget me" will (plan 4.5).
+  function checkA() {
+    if (!ready()) return Promise.resolve(null);
+    var n = name(), w = word(), passport = 'passport:' + n, days = 'history:' + n;
+    var k, day, envelope, slot, existed = {};
+    log('== Check A: writing from a page, as ' + n + ' ==');
+    return Promise.all([trialDay(), Seal.key(n, w)]).then(function (got) {
+      day = got[0];
+      k = got[1];
+      return get(passport);
+    }).then(function (a) {
+      existed.passport = a.status === 200;
+      var free = a.status === 404 || (a.json && a.json._ === FORGOTTEN);
+      if (!check('the name is free (no passport, or one that says only it was forgotten)', free)) {
+        throw new Error('the name is not free');
+      }
+      return get(days);
+    }).then(function (a) {
+      existed.days = a.status === 200;
+      var body = { content: { _: n + ' keeps a day book through the front door.' }, new_lock: w };
+      if (existed.passport) body.confirm = true;
+      return post(passport, body);
+    }).then(function (a) {
+      check('the passport is written and latched with the word', wrote(a));
+      var body = { content: { _: n + '’s days, each sealed with the holder’s word.' }, new_lock: w };
+      if (existed.days) body.confirm = true;
+      return post(days, body);
+    }).then(function (a) {
+      check('the days block is written and latched before the first day', wrote(a));
+      return Seal.seal(day, k);
+    }).then(function (env) {
+      envelope = env;
+      return post(days, { append: true, content: envelope, secret: w });
+    }).then(function (a) {
+      check('a sealed day appends with the word', wrote(a));
+      var j = a.json || {};
+      slot = String(j.slot || j.address || j.spindle || j.position || '');
+      log('   the beach says the day landed at: ' + (slot || '(no slot named; found by reading)'));
+      return get(days);
+    }).then(function (a) {
+      var found = sealedIn(a.json, []);
+      log('   sealed envelopes in the block at: ' + found.map(function (p) { return p.join('.'); }).join(', '));
+      var node = slot ? at(a.json, slot) : null;
+      if (!Seal.isSealed(node) && found.length) node = found[found.length - 1].reduce(function (x, key) { return x[key]; }, a.json);
+      log('   the beach stamped the entry\u2019s arrival at its position 3: ' + (node && node['3']));
+      check('the day reads back as the envelope that was sent (beside that stamp)', same(own(node), envelope));
+      return Seal.unseal(node, k).then(function (back) {
+        check('it opens with the word, word for word', same(back, day));
+      }, function () {
+        check('it opens with the word, word for word', false);
+      });
+    }).then(function () {
+      return slot ? get(days, '&spindle=' + slot) : null;
+    }).then(function (a) {
+      if (a) check('the day reads back on its own by its address', same(own(a.json), envelope));
+      return post(days, { append: true, content: 'a write without the word' });
+    }).then(function (a) {
+      check('an append without the word is refused', refused(a));
+      return post(passport, { spindle: '1', content: 'a write without the word' });
+    }).then(function (a) {
+      check('a write at a position without the word is refused', refused(a));
+      return post(passport, { content: { _: 'a write without the word' }, confirm: true });
+    }).then(function (a) {
+      check('a whole-block write without the word is refused', refused(a));
+      return post(passport, { spindle: '1', content: 'a write with another word', secret: w + '-not' });
+    }).then(function (a) {
+      check('a write with another word is refused', refused(a));
+      return Promise.all([get(passport), get(days)]);
+    }).then(function (both) {
+      check('nothing written without the word landed',
+        same(both[0].json, { _: n + ' keeps a day book through the front door.' }) &&
+        JSON.stringify(both[1].json).indexOf('without the word') < 0);
+      return forget([passport, days]);
+    }).then(function () {
+      return done('Check A');
+    }, function (e) {
+      log('Stopped: ' + (e && e.message));
+      return done('Check A');
+    });
+  }
+
+  // Forget me (plan 4.5): each block written whole as the one forgotten
+  // line with the word, then its latch relinquished. A whole-block write to
+  // a block that exists is first sent without confirm, to see what the
+  // beach says; then with it.
+  function forget(blocks) {
+    var w = word();
+    return blocks.reduce(function (p, block) {
+      return p.then(function () {
+        return post(block, { content: { _: FORGOTTEN }, secret: w });
+      }).then(function (a) {
+        log('   (a whole-block write to an existing block without confirm: ' + (wrote(a) ? 'accepted' : 'refused, ' + a.status) + ')');
+        return wrote(a) ? a : post(block, { content: { _: FORGOTTEN }, secret: w, confirm: true });
+      }).then(function (a) {
+        check(block + ' is written whole as forgotten, with the word', wrote(a));
+        return post(block, { new_lock: '', secret: w });
+      }).then(function (a) {
+        check(block + ': relinquishing with new_lock "" is accepted', wrote(a));
+        return post(block, { content: { _: FORGOTTEN }, confirm: true });
+      }).then(function (a) {
+        if (wrote(a)) return check(block + ' is open again: the same line writes without the word', true);
+        log('   still latched after new_lock ""; trying new_lock null');
+        return post(block, { new_lock: null, secret: w }).then(function () {
+          return post(block, { content: { _: FORGOTTEN }, confirm: true });
+        }).then(function (b) {
+          check(block + ' is open again: the same line writes without the word', wrote(b));
+        });
+      }).then(function () {
+        return get(block);
+      }).then(function (a) {
+        check(block + ' now reads only the forgotten line', same(a.json, { _: FORGOTTEN }));
+      });
+    }, Promise.resolve());
+  }
+
+  // ---- Check B: a day in now ------------------------------------------------------
+  // Write a sealed day to now:<name> at today's clock address (the day
+  // rung: the clock's first eight digits, then two noughts), creating the
+  // block with the word as its latch; then read it back through the beach.
+  var lastB = null;
+  function dayAddress(now) {
+    var a = (now.split('|')[1] || '').trim();
+    return /^\d{10}$/.test(a) ? a.slice(0, 8) + '00' : '';
+  }
+  function checkB() {
+    if (!ready()) return Promise.resolve(null);
+    var n = name(), w = word(), mirror = 'now:' + n;
+    var k, day, envelope, address, out = {};
+    log('== Check B: a day in now, as ' + n + ' ==');
+    return Promise.all([trialDay(), Seal.key(n, w)]).then(function (got) {
+      day = got[0];
+      k = got[1];
+      return get(mirror);
+    }).then(function (a) {
+      if (!check('there is no ' + mirror + ' yet', a.status === 404)) throw new Error(mirror + ' already stands');
+      address = dayAddress(a.now);
+      log('   the clock: ' + a.now + '  →  the day’s address ' + address);
+      return Seal.seal(day, k);
+    }).then(function (env) {
+      envelope = env;
+      return post(mirror, { spindle: address, content: envelope, new_lock: w });
+    }).then(function (a) {
+      out.write = a;
+      check('the sealed day is written at the day’s address, creating the block with the latch', wrote(a));
+      return get(mirror);
+    }).then(function (a) {
+      out.block = a.json;
+      out.floor = floorOf(a.json);
+      out.landed = sealedIn(a.json, []).map(function (p) { return p.join('.'); });
+      log('   the root chain of "_" runs ' + out.floor + ' deep; the envelope landed at key path ' + (out.landed.join(', ') || '(nowhere)'));
+      return get(mirror, '&pscale=0');
+    }).then(function (a) {
+      out.disc = a.json;
+      log('   the beach’s disc reports floor ' + (a.json && a.json.floor));
+      check('the mirror stands at floor 10', a.json && a.json.floor === 10 && out.floor === 10);
+      return get(mirror, '&spindle=' + address);
+    }).then(function (a) {
+      out.node = a.json;
+      check('the raw node at the day’s address is the envelope', same(a.json, envelope));
+      return Seal.unseal(a.json, k).then(function (back) {
+        check('it opens with the word, word for word', same(back, day));
+      }, function () {
+        check('it opens with the word, word for word', false);
+      });
+    }).then(function () {
+      return get(mirror, '&spindle=' + address + '&pscale=2');
+    }).then(function (a) {
+      out.point = a.json;
+      var text = JSON.stringify(a.json || '');
+      check('the walk to the day rung (pscale 2) reads the sealed line', text.indexOf('Sealed; readable only') >= 0);
+      lastB = { address: address, envelope: envelope, out: out };
+      return done('Check B');
+    }, function (e) {
+      log('Stopped: ' + (e && e.message));
+      return done('Check B');
+    });
+  }
+
+  // Where the latch made by that first write holds: the day itself, and a
+  // cell outside it (the next day), each tried without the word.
+  function checkBLocks() {
+    if (!ready()) return Promise.resolve(null);
+    var mirror = 'now:' + name(), address, other;
+    log('== Check B: where the latch holds ==');
+    return get(mirror, '&pscale=0').then(function (a) {
+      address = lastB ? lastB.address : dayAddress(a.now);
+      var d = Number(address.charAt(7));
+      other = address.slice(0, 7) + String(d < 9 ? d + 1 : d - 1) + '00';
+      return post(mirror, { spindle: address, content: 'a write without the word' });
+    }).then(function (a) {
+      check('a write at the day without the word is refused', refused(a));
+      return post(mirror, { spindle: other, content: 'a write without the word' });
+    }).then(function (a) {
+      check('a write at another day (' + other + ') without the word is refused', refused(a));
+      return get(mirror);
+    }).then(function (a) {
+      log('   the block now: ' + shown(a.json));
+      return done('Check B, latch');
+    });
+  }
+
+  function forgetB() {
+    if (!ready()) return Promise.resolve(null);
+    log('== Check B: forget the now mirror ==');
+    return forget(['now:' + name()]).then(function () { return done('Check B, forget'); });
+  }
+
+  function wire(id, fn) {
+    document.getElementById(id).addEventListener('click', function () { fn(); });
+  }
+  wire('offline', offline);
+  wire('check-a', checkA);
+  wire('check-b', checkB);
+  wire('check-b-locks', checkBLocks);
+  wire('forget-b', forgetB);
+  window.M0 = { offline: offline, checkA: checkA, checkB: checkB, checkBLocks: checkBLocks, forgetB: forgetB,
+    last: function () { return lastB; }, chain: chain };
+})();
+</script>
+</body>
+</html>
