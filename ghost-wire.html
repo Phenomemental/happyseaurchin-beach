@@ -173,7 +173,7 @@
   </div>
 </div>
 
-<script src="ghost-wire.js?v=2026-10-21a"></script>
+<script src="ghost-wire.js?v=2026-10-21b"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -374,7 +374,9 @@
     var half = GW.LAW.half;
     g.strokeStyle = 'rgba(0, 240, 255, 0.10)';
     g.lineWidth = 2 * half * scale;
+    g.lineCap = 'butt';
     line(0);
+    g.lineCap = 'round';
     g.strokeStyle = 'rgba(0, 240, 255, 0.22)';
     g.lineWidth = 1;
     g.setLineDash([3, 6]);

@@ -20,11 +20,11 @@
   // How a run moves (wire law gw1, until frozen by playing on phones).
   var LAW = {
     accel: 0.25,                // speed gained a second while held
-    brake: 0.8,                 // speed lost a second once let go
+    brake: 0.9,                 // speed lost a second once let go
     vmax: 0.3,                  // top speed, wire units a second
-    swing: 0.039,               // how far a bend at speed pushes the point out
+    swing: 0.1,                 // how far a bend at speed pushes the point out
     settle: 10,                 // how quickly the point follows that push
-    half: 0.014,                // from the wire's middle to its wall
+    half: 0.045,                // from the wire's middle to its wall: room for a finger's play
     maxSteps: 180 * RATE        // three minutes, then the attempt ends
   };
 
@@ -57,11 +57,11 @@
     return typeof track === 'string' && /^[a-z0-9-]{1,40}$/.test(track);
   }
 
-  // Nine points climbing the box, swinging side to side, mostly turning
+  // Six points climbing the box, swinging side to side, mostly turning
   // back and now and then running on to the same side.
   function points(track) {
     var r = random(hash(track));
-    var n = 9, out = [], side = r() < 0.5 ? -1 : 1;
+    var n = 6, out = [], side = r() < 0.5 ? -1 : 1;
     for (var i = 0; i < n; i++) {
       var y = (HEIGHT - 0.1) - i * ((HEIGHT - 0.2) / (n - 1));
       var x = 0.5;
@@ -99,8 +99,19 @@
   // The wire as tables at equal steps along it: where each step is (x, y),
   // the normal pointing to its left (nx, ny), and how sharply it bends
   // there (k, positive bending left), smoothed so a bend is felt as one.
+  // A wire that can be run flat out, never letting go, is no game, so it
+  // is drawn again from the name with a mark added, until one can't be.
   function wire(track) {
-    var fine = curve(points(track));
+    for (var again = 0; ; again++) {
+      var w = tables(track, again ? track + '#' + again : track);
+      var st = start();
+      while (st.status === 'running') step(st, true, w);
+      if (st.status !== 'finished' || again >= 9) return w;
+    }
+  }
+
+  function tables(track, name) {
+    var fine = curve(points(name));
     var acc = [0];
     for (var i = 1; i < fine.length; i++) {
       var dx = fine[i][0] - fine[i - 1][0], dy = fine[i][1] - fine[i - 1][1];
