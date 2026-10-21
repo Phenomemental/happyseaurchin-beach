@@ -528,6 +528,14 @@
     text-align: left;
     margin-top: 10px;
   }
+  .board li.gap {
+    justify-content: center;
+    color: var(--dim);
+    padding: 2px 4px;
+  }
+  .board-more {
+    margin-top: 10px;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -605,6 +613,7 @@
     </div>
     <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
     <ol class="board" id="board-list"></ol>
+    <button type="button" class="chip board-more" id="board-more" hidden aria-expanded="false"></button>
     <h3>The wave</h3>
     <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
     <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
@@ -644,7 +653,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21p"></script>
+<script src="ghost-wire.js?v=2026-10-21q"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -1244,7 +1253,11 @@
   }
 
   // ---- The board sheet -----------------------------------------------------
-  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [];
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [], boardAll = false;
+  document.getElementById('board-more').addEventListener('click', function () {
+    boardAll = !boardAll;
+    refreshBoard();
+  });
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -1411,8 +1424,12 @@
         sum.textContent = ps.length
           ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + kept.length + (kept.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
           : 'No one has kept a run on this wire yet. Finish one and tap Challenge a friend to be first.';
+        // The top five, and your own place when it is further down; the rest
+        // a tap away.
+        var TOP = 5, more = document.getElementById('board-more');
         ps.forEach(function (p, i) {
-          if (i >= 20 && p.player !== me) return;
+          if (!boardAll && i >= TOP && p.player !== me) return;
+          if (!boardAll && i >= TOP && p.player === me && i > TOP) list.appendChild(el('li', 'gap', '⋯'));
           var li = el('li', p.player === me ? 'me' : '');
           li.appendChild(el('span', 'pos', String(i + 1)));
           var name = el('span', 'name', p.name + (p.player === me ? ' (you)' : ''));
@@ -1422,6 +1439,9 @@
           li.appendChild(el('span', 't', GW.seconds(p.steps) + ' s'));
           list.appendChild(li);
         });
+        more.hidden = ps.length <= TOP;
+        more.textContent = boardAll ? 'Show the top ' + TOP + ' only' : 'Show all ' + ps.length + ' players';
+        more.setAttribute('aria-expanded', boardAll ? 'true' : 'false');
       }
       drawWave(runs, me);
       offerBest(runs, me);
