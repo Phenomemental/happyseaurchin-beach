@@ -566,7 +566,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21m"></script>
+<script src="ghost-wire.js?v=2026-10-21n"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -720,10 +720,10 @@
     });
   }
 
-  // The ghost is a friend's run when a link brought one, else your best:
-  // the faster of the best this phone kept and your own run a link brought,
-  // re-run on the wire; a kept run that doesn't re-run to its finish is no
-  // ghost.
+  // The ghost is a friend's run when a link brought one; else the fastest
+  // run on the board, the same for everyone; and only while the board is
+  // empty, your own best (the faster of this phone's and your own run a link
+  // brought). A kept run that doesn't re-run to its finish is no ghost.
   function loadGhost() {
     if (friend) {
       ghost = friend;
@@ -734,22 +734,22 @@
     var r = kept ? GW.rerun(kept, wire) : null;
     var own = r && r.ok ? r : null;
     if (linked && (!own || linked.steps < own.steps)) own = linked;
-    // The board's fastest is raced when it beats your own best.
     var fastest = TRACK === TODAY ? 'today’s fastest' : 'this wire’s fastest';
-    if (leader && (!own || leader.steps < own.steps)) {
+    if (leader) {
       ghost = leader;
       ghostLine.textContent = 'Ghost: ' + (leaderMine ? 'your best, ' : leaderWho + ', ') + fastest + ', ' + GW.seconds(ghost.steps) + ' s';
       return;
     }
     ghost = own;
     ghostLine.textContent = ghost
-      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s' + (leader ? ', ' + fastest : '')
+      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s'
       : 'No ghost yet: your first finish becomes one.';
   }
 
   // The fastest run kept on this wire, re-run, to race when no friend's
-  // link brought one. Read when the page opens, and again before a run
-  // when a little while has passed.
+  // link brought one. Read when the page opens, and every twenty seconds
+  // while it is open and no run is under way, so a new record reaches every
+  // phone.
   var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
   function loadLeader() {
     if (friend || !isDay(TRACK)) return;
@@ -768,6 +768,12 @@
       if (phase === 'ready' || phase === 'loading') loadGhost();
     }, function () {});
   }
+  setInterval(function () {
+    if (!document.hidden && phase !== 'running' && Date.now() - leaderRead > 20000) loadLeader();
+  }, 5000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && phase !== 'running' && leaderRead && Date.now() - leaderRead > 5000) loadLeader();
+  });
 
   // ---- The finger --------------------------------------------------------
   // One finger (or a mouse held down) moves the point, from anywhere on
