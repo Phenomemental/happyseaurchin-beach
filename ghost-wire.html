@@ -498,6 +498,36 @@
   .setting {
     margin-top: 12px;
   }
+  /* Where you stood: the wave read from your place in it. */
+  .stood {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--field-bg);
+  }
+  .stood-head {
+    margin: 0 0 6px !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--you);
+  }
+  .stood ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .stood li {
+    margin: 4px 0;
+    line-height: 1.4;
+  }
+  .bring {
+    margin-top: 14px;
+  }
+  .bring .who {
+    text-align: left;
+    margin-top: 10px;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -576,9 +606,20 @@
     <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
     <ol class="board" id="board-list"></ol>
     <h3>The wave</h3>
-    <p class="note">When each player first kept a run, from the first to jump in to the last. Early isn’t better; it shows how the game spread.</p>
-    <svg class="wave" id="wave" viewBox="0 0 320 64" role="img" aria-label="The wave of players"></svg>
+    <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
+    <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
     <p id="wave-line"></p>
+    <div class="stood" id="stood" hidden>
+      <p class="stood-head">Where you stood</p>
+      <ul id="stood-list"></ul>
+    </div>
+    <div class="bring">
+      <button type="button" class="go" id="bring">Bring someone into the wave</button>
+      <label class="who" id="bring-name" hidden>Your name, so they’re linked to you
+        <input id="bring-who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done">
+      </label>
+      <p class="note" id="bring-note" aria-live="polite"></p>
+    </div>
     <h3>On this phone</h3>
     <p id="mine-line"></p>
     <button type="button" class="go" id="keep-best" hidden></button>
@@ -603,7 +644,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21o"></script>
+<script src="ghost-wire.js?v=2026-10-21p"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -699,6 +740,16 @@
   var params = new URLSearchParams(location.search);
   var asked = GW.validTrack(params.get('track')) ? params.get('track') : '';
   var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  // A link to bring someone in carries the bringer's name (?from=). The
+  // first one a phone arrives by is kept, and each run it keeps says who
+  // brought it.
+  function broughtBy(name) {
+    name = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var own = (recall('ghost-wire:name') || '').toLowerCase();
+    if (!name || name === 'A friend' || recall('ghost-wire:from') || name.toLowerCase() === own) return;
+    remember('ghost-wire:from', name);
+  }
+  broughtBy(params.get('from'));
   var TRACK = '', TODAY = '', DAY = '', wire = null, BEST = '';
   var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
   var friend = null;                    // the run a link brought, re-run
@@ -738,6 +789,7 @@
           else {
             friend = r;
             ghostWho = who(entry);
+            broughtBy(ghostWho);
           }
         }
       }
@@ -1148,7 +1200,8 @@
           slot: s.slot, track: ok.track, steps: ok.steps, at: e['3'], replay: kept,
           player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
           name: named || 'A visitor',
-          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null
+          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null,
+          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : ''
         });
       });
       return runs;
@@ -1191,7 +1244,7 @@
   }
 
   // ---- The board sheet -----------------------------------------------------
-  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null;
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [];
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -1347,6 +1400,7 @@
     title.textContent = TRACK === TODAY ? 'Today’s board' : day ? 'This wire’s board' : 'The board';
     drawMine();
     room().then(function (runs) {
+      lastRuns = runs;
       var me = myPlayer(runs), list = document.getElementById('board-list');
       list.textContent = '';
       if (!day) {
@@ -1377,53 +1431,190 @@
     });
   }
 
-  // The wave: every player placed by when they first kept a run, in the
-  // groups David's place-in-the-wave uses (Everett Rogers'): innovators, the
-  // first 2.5%; early adopters, the next 13.5%; the early majority and the
-  // late majority, a third each; and the last sixth, the tail.
-  var GROUPS = [
-    { upto: 2.5, name: 'innovators' }, { upto: 16, name: 'early adopters' },
-    { upto: 50, name: 'the early majority' }, { upto: 84, name: 'the late majority' }, { upto: 100, name: 'the tail' }
-  ];
-  function drawWave(runs, me) {
+  // The wave, as David's waves are read: every player at the moment they
+  // first kept a run, the count climbing as they came, with a thread from
+  // whoever brought them. It has three parts, named for what happened: the
+  // tinder, before it caught; the spark, the stretch when people came
+  // fastest; and the flame, everything since. Early is not better; nobody
+  // is ranked.
+  function waveOf(runs) {
     var first = {};
     runs.forEach(function (r) {
-      if (!first[r.player] || r.at < first[r.player].at) first[r.player] = { player: r.player, name: r.name, at: r.at };
+      var f = first[r.player];
+      if (!f || r.at < f.at) first[r.player] = { player: r.player, name: r.name, at: r.at, from: (f && f.from) || r.from, t: Date.parse(r.at) };
+      else if (!f.from && r.from) f.from = r.from;
     });
-    var order = Object.keys(first).map(function (k) { return first[k]; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+    var order = Object.keys(first).map(function (k) { return first[k]; }).filter(function (p) { return !isNaN(p.t); })
+      .sort(function (a, b) { return a.t - b.t; });
+    var byName = {};
+    order.forEach(function (p) { if (p.player.indexOf('name:') === 0) byName[p.player.slice(5)] = p; });
+    order.forEach(function (p) {
+      var b = p.from ? byName[p.from.toLowerCase()] : null;
+      p.by = b && b !== p && b.t <= p.t ? b : null;
+    });
+    // The spark: the stretch, a sixth of the wave's span (at least a
+    // quarter of an hour), in which the most people came.
+    var spark = null;
+    if (order.length >= 4) {
+      var span = order[order.length - 1].t - order[0].t, w = Math.max(15 * 60000, span / 6), best = 0;
+      order.forEach(function (p, i) {
+        var n = 0;
+        for (var j = i; j < order.length && order[j].t - p.t <= w; j++) n++;
+        if (n > best) { best = n; spark = { from: p.t, to: p.t + w, n: n, people: order.slice(i, i + n) }; }
+      });
+      if (spark && spark.n < 3) spark = null;
+    }
+    return { order: order, spark: spark };
+  }
+  function partOf(t, spark) {
+    if (!spark) return 'the tinder';
+    return t < spark.from ? 'the tinder' : t <= spark.to ? 'the spark' : 'the flame';
+  }
+  function when(t, sameDay) {
+    var d = new Date(t);
+    return sameDay ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function minutes(ms) {
+    var m = Math.round(Math.abs(ms) / 60000);
+    return m < 60 ? m + (m === 1 ? ' minute' : ' minutes') : Math.round(m / 60) + (Math.round(m / 60) === 1 ? ' hour' : ' hours');
+  }
+
+  function drawWave(runs, me) {
+    var wv = waveOf(runs), order = wv.order, spark = wv.spark;
     var svg = document.getElementById('wave'), NS = 'http://www.w3.org/2000/svg';
     svg.textContent = '';
-    function add(tag, at) {
+    function add(tag, at, text) {
       var e = document.createElementNS(NS, tag);
       Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      if (text != null) e.textContent = text;
       svg.appendChild(e);
       return e;
     }
-    var X0 = 10, X1 = 310, from = 0;
-    GROUPS.forEach(function (g, i) {
-      add('rect', { x: X0 + from * 3, y: 26, width: Math.max(1, (g.upto - from) * 3 - 1), height: 12, rx: 2,
-        fill: skin.wall, 'fill-opacity': i < 2 ? 0.55 : 0.18 });
-      from = g.upto;
-    });
-    [['the tinder', 0, 16], ['the majority', 16, 84], ['the tail', 84, 100]].forEach(function (l) {
-      var t = add('text', { x: X0 + (l[1] + l[2]) / 2 * 3, y: 56, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 });
-      t.textContent = l[0];
-    });
     var line = document.getElementById('wave-line');
-    if (!order.length) { line.textContent = 'No one has jumped in yet.'; return; }
-    order.forEach(function (p, i) {
-      var x = X0 + (i + 0.5) / order.length * (X1 - X0);
-      add('circle', { cx: x, cy: 16, r: p.player === me ? 5 : 3.5, fill: p.player === me ? skin.you : skin.ghost });
-    });
-    var at = -1;
-    order.forEach(function (p, i) { if (p.player === me) at = i; });
-    if (at >= 0) {
-      var share = at / order.length * 100, group = GROUPS.filter(function (g) { return share < g.upto; })[0];
-      line.textContent = 'You jumped in ' + ordinal(at + 1) + ' of ' + order.length + (order.length === 1 ? ' so far' : '') + ', among ' + group.name + '.';
-    } else {
-      line.textContent = order.length + (order.length === 1 ? ' player has' : ' players have') + ' jumped in so far; the first was ' + order[0].name + '. Keep a run to take your place.';
+    if (!order.length) {
+      line.textContent = 'No one has jumped in yet.';
+      document.getElementById('stood').hidden = true;
+      return;
     }
+    var now = Date.now(), t0 = order[0].t, t1 = Math.max(order[order.length - 1].t, Math.min(now, order[order.length - 1].t + 3600000));
+    if (t1 - t0 < 600000) t1 = t0 + 600000;
+    var X0 = 14, X1 = 306, Y0 = 138, Y1 = 22, n = order.length;
+    function X(t) { return X0 + (t - t0) / (t1 - t0) * (X1 - X0); }
+    function Y(k) { return Y0 - k / Math.max(n, 1) * (Y0 - Y1); }
+    // The three parts, shaded behind the curve and named beneath it.
+    if (spark) {
+      add('rect', { x: X(spark.from), y: Y1 - 8, width: Math.max(2, X(Math.min(spark.to, t1)) - X(spark.from)), height: Y0 - Y1 + 8, fill: skin.you, 'fill-opacity': 0.12 });
+      [['the tinder', X0, X(spark.from)], ['the spark', X(spark.from), X(Math.min(spark.to, t1))], ['the flame', X(Math.min(spark.to, t1)), X1]].forEach(function (l) {
+        if (l[2] - l[1] > 24) add('text', { x: (l[1] + l[2]) / 2, y: 152, 'text-anchor': 'middle', fill: l[0] === 'the spark' ? skin.you : skin.dim, 'font-size': 10 }, l[0]);
+      });
+    } else {
+      add('text', { x: (X0 + X1) / 2, y: 152, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 }, 'the tinder: it hasn’t caught yet');
+    }
+    add('line', { x1: X0, y1: Y0, x2: X1, y2: Y0, stroke: skin.dim, 'stroke-opacity': 0.5, 'stroke-width': 1 });
+    var sameDay = new Date(t0).toDateString() === new Date(t1).toDateString();
+    add('text', { x: X0, y: 166, fill: skin.dim, 'font-size': 9 }, when(t0, sameDay));
+    add('text', { x: X1, y: 166, 'text-anchor': 'end', fill: skin.dim, 'font-size': 9 }, t1 >= now - 60000 ? 'now' : when(t1, sameDay));
+    // The count climbing, a step for each person who came.
+    var d = 'M' + X0 + ' ' + Y0;
+    order.forEach(function (p, i) { d += ' H' + X(p.t).toFixed(1) + ' V' + Y(i + 1).toFixed(1); });
+    d += ' H' + X(t1).toFixed(1);
+    add('path', { d: d + ' V' + Y0 + ' H' + X0 + ' Z', fill: skin.wall, 'fill-opacity': 0.1, stroke: 'none' });
+    add('path', { d: d, fill: 'none', stroke: skin.wall, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    // Threads from whoever brought each person.
+    order.forEach(function (p, i) {
+      if (!p.by) return;
+      var j = order.indexOf(p.by), ax = X(p.by.t), ay = Y(j + 1), bx = X(p.t), by = Y(i + 1);
+      add('path', { d: 'M' + ax + ' ' + ay + ' Q ' + ((ax + bx) / 2) + ' ' + (Math.min(ay, by) - 22) + ' ' + bx + ' ' + by,
+        fill: 'none', stroke: p.by.player === me || p.player === me ? skin.you : skin.ghost, 'stroke-width': 1.4, 'stroke-opacity': 0.8, 'stroke-dasharray': '3 3' });
+    });
+    order.forEach(function (p, i) {
+      add('circle', { cx: X(p.t), cy: Y(i + 1), r: p.player === me ? 5.5 : 3.8, fill: p.player === me ? skin.you : skin.ghost, stroke: skin.bg, 'stroke-width': 1.5 });
+    });
+    // How it is moving now.
+    var hour = order.filter(function (p) { return now - p.t < 3600000; }).length;
+    var before = order.filter(function (p) { return now - p.t >= 3600000 && now - p.t < 7200000; }).length;
+    line.textContent = n + (n === 1 ? ' player' : ' players') + ' so far. ' + (hour
+      ? hour + ' joined in the last hour' + (hour > before ? ', and the wave is rising.' : hour === before ? ', as many as the hour before.' : ', fewer than the hour before.')
+      : 'No one new in the last hour: the wave is resting. Bring someone in to start it again.');
+    drawStood(order, spark, me, sameDay);
   }
+
+  // Where you stood: the wave read from your place in it, and the one
+  // thing in it no single player saw.
+  function drawStood(order, spark, me, sameDay) {
+    var box = document.getElementById('stood'), list = document.getElementById('stood-list');
+    list.textContent = '';
+    var mine = order.filter(function (p) { return p.player === me; })[0];
+    function say(text) { list.appendChild(el('li', null, text)); }
+    if (mine) {
+      var i = order.indexOf(mine);
+      say('You came in ' + partOf(mine.t, spark) + ', the ' + ordinal(i + 1) + ' of ' + order.length + (mine.by ? ', brought by ' + mine.by.name : '') + '.');
+      // Your ripple: everyone you brought, and everyone they brought.
+      var kids = function (p) { return order.filter(function (q) { return q.by === p; }); };
+      var direct = kids(mine), all = [], todo = direct.slice();
+      while (todo.length) { var q = todo.shift(); if (all.indexOf(q) < 0) { all.push(q); todo = todo.concat(kids(q)); } }
+      if (direct.length) {
+        var names = direct.map(function (p) { return p.name; });
+        var more = all.length - direct.length;
+        say('You brought ' + direct.length + (direct.length === 1 ? ' person' : ' people') + ': ' + names.join(', ') + '.' +
+          (more > 0 ? ' They brought ' + more + ' more. Your ripple is ' + all.length + '.' : ''));
+      } else {
+        say('You haven’t brought anyone yet. Bring someone in, and a thread will run from you to them.');
+      }
+      // Nearest to you: by best time on this wire, else by when you came.
+      var bests = {};
+      players(lastRuns, TRACK).forEach(function (p) { bests[p.player] = p.steps; });
+      var others = order.filter(function (p) { return p !== mine; });
+      if (others.length) {
+        var near = others.slice().sort(function (a, b) {
+          var da = bests[a.player] != null && bests[me] != null ? Math.abs(bests[a.player] - bests[me]) : Infinity;
+          var db = bests[b.player] != null && bests[me] != null ? Math.abs(bests[b.player] - bests[me]) : Infinity;
+          return da - db || Math.abs(a.t - mine.t) - Math.abs(b.t - mine.t);
+        })[0];
+        var gap = bests[near.player] != null && bests[me] != null ? ', and your bests are ' + GW.seconds(Math.abs(bests[near.player] - bests[me])) + ' s apart' : '';
+        say('Nearest to you: ' + near.name + '. You came ' + minutes(near.t - mine.t) + ' apart' + gap + '.');
+      }
+    }
+    if (spark) {
+      var by = {};
+      spark.people.forEach(function (p) { if (p.by) by[p.by.name] = (by[p.by.name] || 0) + 1; });
+      var top = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; })[0];
+      var mins = Math.max(1, Math.round((spark.people[spark.people.length - 1].t - spark.people[0].t) / 60000));
+      say('It caught at ' + when(spark.from, sameDay) + ', when ' + spark.n + ' people came in ' + mins + (mins === 1 ? ' minute' : ' minutes') +
+        (top && by[top] * 2 >= spark.n ? ', most of them brought by ' + top + '.' : '.'));
+    }
+    box.hidden = !list.children.length;
+    if (!mine && box.hidden === false) list.insertBefore(el('li', null, 'Keep a run to take your own place in the wave.'), list.firstChild);
+  }
+
+  // ---- Bringing someone in ---------------------------------------------------
+  // A plain link to the game that carries your name, so whoever comes by it
+  // is drawn with a thread from you.
+  var bring = document.getElementById('bring'), bringNote = document.getElementById('bring-note');
+  var bringName = document.getElementById('bring-name'), bringWho = document.getElementById('bring-who');
+  bring.addEventListener('click', function () {
+    var name = (recall('ghost-wire:name') || bringWho.value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) {
+      bringName.hidden = false;
+      bringWho.focus();
+      bringNote.textContent = 'Add your name first, so the people you bring are linked to you.';
+      return;
+    }
+    remember('ghost-wire:name', name);
+    bringName.hidden = true;
+    var url = location.origin + location.pathname + '?from=' + encodeURIComponent(name);
+    var text = 'Come and play Ghost Wire with me: trace the neon wire without touching the walls.';
+    bringNote.textContent = 'Send this link: ' + url;
+    if (navigator.share) {
+      navigator.share({ title: 'Ghost Wire', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () { bringNote.textContent = 'The link is copied: ' + url; }, function () {});
+    }
+  });
+  bringWho.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); bring.click(); }
+  });
 
   // When this phone's best on a day's wire is faster than your best on the
   // board (or you aren't on it), one tap puts it there.
@@ -1470,6 +1661,9 @@
     var name = (recall('ghost-wire:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
     var line = GW.seconds(steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
     var more = { 7: replay };
+    // Who brought this phone into the wave, kept with each of its runs.
+    var from = recall('ghost-wire:from');
+    if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
     if (tries) more[8] = String(tries);
     return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
       // The slot it landed in: from the beach's answer when it says, else
