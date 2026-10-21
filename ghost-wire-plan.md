@@ -100,9 +100,11 @@ block.
 - **The generator.**
   1. Hash the address string to 32 bits (FNV-1a with `Math.imul`).
   2. Seed `mulberry32` with that hash.
-  3. Lay out about 12 control points in a winding path that fits a portrait
+  3. Lay out 9 control points in a winding path that fits a portrait
      screen.
-  4. Draw a Catmull-Rom curve through them.
+  4. Draw a cubic B-spline over them. It passes near each point rather
+     than through it, so turns become rounded bends instead of hairpins.
+     The tightest bend has a radius of about 0.03 wire units.
   5. Sample the curve at equal arc-length steps into tables: `x`, `y`, the
      normal, and the curvature `κ` (from the turn between neighbouring
      segments).
@@ -127,7 +129,7 @@ block.
   - Anything the simulation reads uses only `+ − × ÷` and `Math.sqrt`, over
     tables built at load.
   - Randomness for the wire comes from integer `mulberry32`.
-  - Curves are polynomial Catmull-Rom.
+  - Curves are polynomial (a uniform cubic B-spline).
   - No `Math.sin/cos/atan2/pow/exp` in the simulation, because engines may
     differ in the last bit.
   - Rendering can use anything.

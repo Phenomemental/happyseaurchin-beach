@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ghost Wire</title>
+<meta name="description" content="Ghost Wire: guide a glowing point along a neon wire from start to finish as fast as you can without touching it, racing a ghost.">
+<meta name="theme-color" content="#0D0D12">
+<style>
+  /* Ghost Wire, an arcade in the dark: the wire neon cyan, you gold, the
+     ghost purple. The game is drawn on one canvas filling the screen; the
+     words sit over it and let touches pass through, except the buttons. */
+  :root {
+    --night: #0D0D12;
+    --wire: #00F0FF;
+    --you: #FFD700;
+    --ghost: #A855F7;
+    --buzz: #FF3B5C;
+    --words: #E8ECF4;
+    --dim: #8A93A6;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--night);
+    color: var(--words);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .over {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--wire);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+  }
+  .time {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--you);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  .ghost-line {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--ghost);
+  }
+  .middle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .say {
+    max-width: 22rem;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(13, 13, 18, 0.82);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .say strong {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .say.buzz {
+    color: var(--buzz);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-shadow: 0 0 14px rgba(255, 59, 92, 0.7);
+  }
+  .end {
+    pointer-events: auto;
+    max-width: 22rem;
+    width: 100%;
+    padding: 20px 18px;
+    border-radius: 12px;
+    background: rgba(13, 13, 18, 0.92);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    text-align: center;
+  }
+  .end .big {
+    margin: 0;
+    font-size: 2.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--you);
+    text-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
+  }
+  .end p {
+    margin: 6px 0 0;
+  }
+  .end .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--wire);
+    background: transparent;
+    color: var(--wire);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="The wire, your point and the ghost"></canvas>
+<div class="over">
+  <div class="top">
+    <h1>Ghost Wire</h1>
+    <span class="time" id="time" aria-hidden="true">0.00</span>
+  </div>
+  <p class="ghost-line" id="ghost-line"></p>
+  <div class="middle">
+    <!-- The briefing tells three things only: where you start, your moves,
+         and what you are trying to do (ways:games 1). -->
+    <p class="say" id="say" aria-live="polite"><strong>Today’s wire</strong>Start at the open end of the wire. Hold to go; let go to brake. Reach the far end as fast as you can without touching the wire.</p>
+    <div class="end" id="end" hidden aria-live="polite">
+      <p class="big" id="end-time"></p>
+      <p id="end-line"></p>
+      <p class="note" id="end-note"></p>
+      <button type="button" id="again">Run again</button>
+    </div>
+  </div>
+</div>
+
+<script src="ghost-wire.js?v=2026-10-21a"></script>
+<script>
+(function () {
+  var GW = window.GhostWire;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var timeEl = document.getElementById('time');
+  var ghostLine = document.getElementById('ghost-line');
+  var say = document.getElementById('say');
+  var BRIEF = say.innerHTML;
+  var end = document.getElementById('end');
+  var COLORS = { night: '#0D0D12', wire: '#00F0FF', you: '#FFD700', ghost: '#A855F7', buzz: '#FF3B5C' };
+
+  // The wire this page plays: the one a link names, or the practice wire
+  // until the beach's clock gives today's (step 3).
+  var asked = new URLSearchParams(location.search).get('track');
+  var TRACK = GW.validTrack(asked) ? asked : 'practice';
+  var wire = GW.wire(TRACK);
+
+  // ---- This device's memory: your best run on each wire ------------------
+  // Storage can be missing, full or refused, so every read and write may
+  // quietly come to nothing.
+  var BEST = 'ghost-wire:best:' + TRACK;
+  function recall(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+  // The ghost is your best run here, re-run on the wire; a kept run that
+  // doesn't re-run to its finish is no ghost.
+  var ghost = null;
+  function loadGhost() {
+    var kept = recall(BEST);
+    var r = kept ? GW.rerun(kept, wire) : null;
+    ghost = r && r.ok ? r : null;
+    ghostLine.textContent = ghost
+      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s'
+      : 'No ghost yet: your first finish becomes one.';
+  }
+  loadGhost();
+
+  // ---- Holding -----------------------------------------------------------
+  // Held while any finger or pointer is down on the game, or Space is.
+  var pointers = {}, space = false;
+  function held() {
+    return space || Object.keys(pointers).length > 0;
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    pointers[e.pointerId] = true;
+    press();
+  });
+  function lift(e) { delete pointers[e.pointerId]; }
+  window.addEventListener('pointerup', lift);
+  window.addEventListener('pointercancel', lift);
+  window.addEventListener('keydown', function (e) {
+    if (e.code !== 'Space' || (e.target && e.target.tagName === 'BUTTON')) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    space = true;
+    press();
+  });
+  window.addEventListener('keyup', function (e) {
+    if (e.code === 'Space') space = false;
+  });
+  // Leaving the page lets go.
+  window.addEventListener('blur', function () {
+    pointers = {};
+    space = false;
+  });
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- The run -----------------------------------------------------------
+  // phase: 'ready' (waiting for a press), 'running', 'buzzed' (a moment's
+  // pause before ready again), 'done' (the end screen).
+  var phase = 'ready', run = null, prev = null, changes = [], lastHeld = false;
+  var trail = [];               // where you stood after each step
+  var acc = 0, lastTs = 0, buzzAt = 0;
+
+  // A press while ready starts a run: the run begins held, at step 0.
+  function press() {
+    if (phase !== 'ready') return;
+    run = GW.start();
+    prev = { s: 0, d: 0 };
+    changes = [];
+    lastHeld = false;
+    trail = [{ s: 0, d: 0 }];
+    acc = 0;
+    phase = 'running';
+    say.hidden = true;
+  }
+
+  function tick() {
+    var h = held();
+    if (h !== lastHeld) { changes.push(run.step); lastHeld = h; }
+    prev.s = run.s;
+    prev.d = run.d;
+    GW.step(run, h, wire);
+    trail.push({ s: run.s, d: run.d });
+    if (run.status === 'finished') finish();
+    else if (run.status !== 'running') buzz(run.status);
+  }
+
+  function buzz(status) {
+    phase = 'buzzed';
+    buzzAt = performance.now();
+    say.className = 'say buzz';
+    say.textContent = status === 'stalled' ? 'Out of time' : 'Buzz';
+    say.hidden = false;
+  }
+
+  function finish() {
+    phase = 'done';
+    var replay = GW.encode(TRACK, changes, run.step);
+    var was = ghost ? ghost.steps : null;
+    var better = was == null || run.step < was, kept = false;
+    if (better) {
+      // Kept only when it re-runs to the same finish, so what is kept is
+      // what any browser would replay.
+      var check = GW.rerun(replay, wire);
+      kept = !!(check && check.ok) && remember(BEST, replay);
+      if (kept) loadGhost();
+    }
+    document.getElementById('end-time').textContent = GW.seconds(run.step) + ' s';
+    document.getElementById('end-line').textContent = was == null ? 'You reached the end.'
+      : better ? 'Your best yet, by ' + GW.seconds(was - run.step) + ' s.'
+      : GW.seconds(run.step - was) + ' s behind your ghost.';
+    document.getElementById('end-note').textContent = kept ? 'This run is your ghost now.'
+      : better ? 'This device couldn’t keep it as your ghost.'
+      : 'Your ghost stays at ' + GW.seconds(was) + ' s.';
+    end.hidden = false;
+    document.getElementById('again').focus({ preventScroll: true });
+  }
+
+  document.getElementById('again').addEventListener('click', ready);
+  function ready() {
+    loadGhost();
+    phase = 'ready';
+    run = null;
+    end.hidden = true;
+    say.className = 'say';
+    say.innerHTML = BRIEF;
+    say.hidden = false;
+  }
+
+  // ---- Drawing -----------------------------------------------------------
+  var view = { scale: 1, ox: 0, oy: 0, x0: 0, y0: 0, dpr: 1 };
+  var wireLayer = document.createElement('canvas');
+
+  function px(p) {
+    return { x: view.ox + (p.x - view.x0) * view.scale, y: view.oy + (p.y - view.y0) * view.scale };
+  }
+
+  // The wire's own extent, walls included, so it is drawn as large as the
+  // screen allows.
+  var extent = (function () {
+    var b = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity }, pad = GW.LAW.half * 3;
+    for (var i = 0; i < wire.n; i++) {
+      b.x0 = Math.min(b.x0, wire.x[i] - pad);
+      b.x1 = Math.max(b.x1, wire.x[i] + pad);
+      b.y0 = Math.min(b.y0, wire.y[i] - pad);
+      b.y1 = Math.max(b.y1, wire.y[i] + pad);
+    }
+    return b;
+  })();
+
+  // The wire is drawn once for each size of the screen: its two walls,
+  // glowing, a faint line down its middle, the start and the finish.
+  function layout() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var top = 72, margin = 16;
+    var bw = extent.x1 - extent.x0, bh = extent.y1 - extent.y0;
+    var scale = Math.min((w - 2 * margin) / bw, (h - top - margin) / bh);
+    view = {
+      scale: scale, dpr: dpr, x0: extent.x0, y0: extent.y0,
+      ox: (w - scale * bw) / 2,
+      oy: top + (h - top - margin - scale * bh) / 2
+    };
+    wireLayer.width = canvas.width;
+    wireLayer.height = canvas.height;
+    var g = wireLayer.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    function line(d) {
+      g.beginPath();
+      for (var i = 0; i < wire.n; i += 2) {
+        var p = px(GW.place(wire, i * 0.0025, d));
+        if (i === 0) g.moveTo(p.x, p.y); else g.lineTo(p.x, p.y);
+      }
+      var q = px(GW.place(wire, wire.length, d));
+      g.lineTo(q.x, q.y);
+      g.stroke();
+    }
+    var half = GW.LAW.half;
+    g.strokeStyle = 'rgba(0, 240, 255, 0.10)';
+    g.lineWidth = 2 * half * scale;
+    line(0);
+    g.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+    g.lineWidth = 1;
+    g.setLineDash([3, 6]);
+    line(0);
+    g.setLineDash([]);
+    g.shadowColor = COLORS.wire;
+    g.shadowBlur = 12;
+    g.strokeStyle = COLORS.wire;
+    g.lineWidth = 2;
+    line(half);
+    line(-half);
+    g.shadowBlur = 0;
+    mark(g, 0, COLORS.you);
+    mark(g, wire.length, COLORS.wire);
+  }
+
+  // A short bar across the wire where it starts or ends.
+  function mark(g, s, color) {
+    var a = px(GW.place(wire, s, GW.LAW.half * 1.8)), b = px(GW.place(wire, s, -GW.LAW.half * 1.8));
+    g.strokeStyle = color;
+    g.lineWidth = 3;
+    g.shadowColor = color;
+    g.shadowBlur = 10;
+    g.beginPath();
+    g.moveTo(a.x, a.y);
+    g.lineTo(b.x, b.y);
+    g.stroke();
+    g.shadowBlur = 0;
+  }
+
+  // A glowing point with a fading tail behind it.
+  function dot(points, color, alpha) {
+    var n = points.length;
+    if (!n) return;
+    ctx.lineCap = 'round';
+    for (var i = Math.max(1, n - 36); i < n; i++) {
+      var a = px(GW.place(wire, points[i - 1].s, points[i - 1].d)), b = px(GW.place(wire, points[i].s, points[i].d));
+      ctx.globalAlpha = alpha * (1 - (n - i) / 36) * 0.5;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    var p = px(GW.place(wire, points[n - 1].s, points[n - 1].d));
+    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 16);
+    glow.addColorStop(0, color);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // The ghost's last few places up to a step, for its tail.
+  function ghostAt(step) {
+    var out = [], last = ghost.s.length - 1;
+    for (var k = Math.max(0, step - 36); k <= step; k++) {
+      var j = Math.min(k, last);
+      out.push({ s: ghost.s[j], d: ghost.d[j] });
+    }
+    return out;
+  }
+
+  function draw(alpha) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = COLORS.night;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(wireLayer, 0, 0);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    var step = run ? run.step : 0;
+    if (ghost) dot(ghostAt(step), COLORS.ghost, 0.75);
+    if (run) {
+      // Your point, eased between the last two steps for a smooth line.
+      var shown = trail.slice(-36);
+      if (phase === 'running') {
+        shown[shown.length - 1] = { s: prev.s + (run.s - prev.s) * alpha, d: prev.d + (run.d - prev.d) * alpha };
+      }
+      dot(shown, phase === 'buzzed' ? COLORS.buzz : COLORS.you, 1);
+    } else {
+      dot([{ s: 0, d: 0 }], COLORS.you, 1);
+    }
+    timeEl.textContent = GW.seconds(step);
+  }
+
+  // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
+  var DT = 1000 / GW.RATE;
+  function frame(ts) {
+    var gap = lastTs ? ts - lastTs : 0;
+    lastTs = ts;
+    if (phase === 'running') {
+      // A long gap (the page was away) is not caught up step by step.
+      acc += Math.min(gap, 100);
+      while (acc >= DT && phase === 'running') {
+        tick();
+        acc -= DT;
+      }
+    }
+    if (phase === 'buzzed' && ts - buzzAt > 800 && !held()) ready();
+    draw(phase === 'running' ? acc / DT : 1);
+    requestAnimationFrame(frame);
+  }
+
+  layout();
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
