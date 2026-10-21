@@ -109,6 +109,43 @@
   .say .step {
     display: block;
   }
+  /* How to play, shown: a finger pushing the dot along a short wire. */
+  .how {
+    display: block;
+    width: 100%;
+    max-width: 15rem;
+    height: auto;
+    margin: 4px auto 10px;
+    overflow: visible;
+  }
+  .how-wall {
+    fill: none;
+    stroke: var(--wire);
+    stroke-width: 20;
+    stroke-linecap: butt;
+  }
+  .how-inside {
+    fill: none;
+    stroke: var(--night);
+    stroke-width: 16;
+    stroke-linecap: butt;
+  }
+  .how-dot { fill: var(--you); }
+  .how-finger { font-size: 20px; }
+  .how-start, .how-finish {
+    font: 700 8px var(--font);
+    letter-spacing: 0.08em;
+  }
+  .how-start { fill: var(--you); }
+  .how-finish { fill: var(--wire); }
+  .dot-swatch {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    background: var(--you);
+    vertical-align: 0.05em;
+  }
   .say .step + .step {
     margin-top: 6px;
   }
@@ -480,7 +517,7 @@
     <!-- The briefing tells three things only: where you start, your moves,
          and what you are trying to do (ways:games 1). Its words are kept at
          game:ghost-wire too; the label says which wire this is. -->
-    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong><span class="step">Touch the gold dot at <b class="start">START</b> and drag it along the wire to <b class="finish">FINISH</b>.</span><span class="step">Don’t touch the walls.</span><span class="step">The clock starts when you touch the screen.</span></p>
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><path d="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50" class="how-wall"/><path d="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50" class="how-inside"/><text x="37" y="59" class="how-start" text-anchor="end">START</text><text x="165" y="53" class="how-finish">FINISH</text><g><circle r="5.5" class="how-dot"/><text x="-8" y="21" class="how-finger">👆</text><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.18;0.82;1" calcMode="linear" path="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50"/></g></svg><span class="step">Touch your dot <i class="dot-swatch"></i> at <b class="start">START</b> and drag it along the wire to <b class="finish">FINISH</b>.</span><span class="step">Don’t touch the walls.</span><span class="step">The clock starts when you touch the screen.</span></p>
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-time"></p>
@@ -566,7 +603,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21n"></script>
+<script src="ghost-wire.js?v=2026-10-21o"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -1532,6 +1569,16 @@
   }
 
   document.getElementById('again').addEventListener('click', ready);
+  // The picture of how to play holds still, its finger on the dot halfway
+  // along, for anyone who asks their device for less motion.
+  function holdHow() {
+    var how = say.querySelector('.how');
+    if (how && still() && how.pauseAnimations) {
+      try { how.pauseAnimations(); how.setCurrentTime(1.6); } catch (e) {}
+    }
+  }
+  holdHow();
+
   function ready() {
     audio.stop();
     loadGhost();
@@ -1542,6 +1589,7 @@
     say.className = 'say';
     say.innerHTML = BRIEF;
     say.hidden = false;
+    holdHow();
   }
 
   // ---- Sparks and shake (drawing only: the run never reads them) ----------
