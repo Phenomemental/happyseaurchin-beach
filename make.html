@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Make the next game · The Arcade</title>
+<meta name="description" content="The Arcade: quick, one-move skill games, a new level every day for everyone. Leave an idea for the next one, or make it yourself with an AI.">
+<meta name="theme-color" content="#0D0D12">
+<style>
+  /* The Arcade's invitation, in Ghost Wire's own look: what makes an
+     Arcade game, the games so far, ideas for the next one, and the words
+     to give an AI to make one. */
+  :root {
+    --night: #0D0D12;
+    --wire: #00F0FF;
+    --you: #FFD700;
+    --ghost: #A855F7;
+    --words: #E8ECF4;
+    --dim: #8A93A6;
+    --line: rgba(232, 236, 244, 0.12);
+    --field-line: rgba(232, 236, 244, 0.25);
+    --field-bg: rgba(232, 236, 244, 0.06);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--night);
+    color: var(--words);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 34rem;
+    margin: 0 auto;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(40px, env(safe-area-inset-bottom));
+  }
+  a { color: var(--wire); }
+  .back {
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+  h1 {
+    margin: 18px 0 6px;
+    font-size: 1.7rem;
+    line-height: 1.2;
+    color: var(--wire);
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+  }
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  h2 {
+    margin: 34px 0 8px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  p { margin: 8px 0 0; }
+  .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  .rules {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: rule;
+  }
+  .rules li {
+    counter-increment: rule;
+    position: relative;
+    padding: 10px 0 10px 2.4rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .rules li::before {
+    content: counter(rule);
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    border: 1px solid var(--wire);
+    color: var(--wire);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rules b { color: var(--you); }
+  .games {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .games li {
+    padding: 12px 14px;
+    margin-top: 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    background: var(--field-bg);
+  }
+  .games a {
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-decoration: none;
+  }
+  .games .what {
+    display: block;
+    margin-top: 2px;
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .games .next {
+    border-style: dashed;
+    color: var(--dim);
+  }
+  .starters {
+    margin: 8px 0 0;
+    padding-left: 1.1rem;
+  }
+  .starters li { margin: 6px 0; }
+  .starters b { color: var(--wire); }
+  form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  input, textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+  }
+  input { min-height: 44px; }
+  textarea { min-height: 5.5rem; resize: vertical; }
+  .prompt {
+    min-height: 15rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--wire);
+    background: transparent;
+    color: var(--wire);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  button.go {
+    background: var(--you);
+    border-color: var(--you);
+    color: var(--night);
+  }
+  .form-status {
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .steps {
+    margin: 10px 0 0;
+    padding-left: 1.3rem;
+  }
+  .steps li { margin: 6px 0; }
+  /* The words beach.js gives a note box and a room's notes. */
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .mic-row .mic {
+    margin: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+  .mic-row .mic.listening { border-color: #FF3B5C; color: #FF3B5C; }
+  .mic-note { margin: 0; font-size: 0.8rem; color: var(--dim); }
+  .thread { margin-top: 12px; }
+  .comment {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .comment-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .comment-meta strong { color: var(--words); }
+  .comment-text {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .replies {
+    margin-left: 14px;
+    padding-left: 10px;
+    border-left: 2px solid var(--line);
+  }
+  .comment-more {
+    min-height: 36px;
+    margin-top: 6px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
+  .thread-empty { color: var(--dim); }
+  .live {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="ghost-wire.html">← Back to Ghost Wire</a>
+
+  <h1>Make the next game</h1>
+  <p class="lead">Ghost Wire was made in an afternoon, by talking with an AI. The next game in the Arcade could be yours: leave an idea, or make it yourself.</p>
+
+  <!-- The six rules, from function:arcade 1-6, kept here in short. -->
+  <h2>What makes an Arcade game</h2>
+  <ol class="rules">
+    <li><b>One move.</b> Drag, tap or hold, learnt in five seconds. Players are told where they start, their move and the goal, and nothing more.</li>
+    <li><b>Quick.</b> A run takes under about 30 seconds, and failing restarts at once.</li>
+    <li><b>Pure skill.</b> Everyone gets the same level each day, so players differ only in how they play.</li>
+    <li><b>Provable.</b> Each run is saved as its moves and replayed to check it, so the board stays honest and the day’s fastest can be raced as a ghost.</li>
+    <li><b>Phone first.</b> One finger, readable at a glance, with sound and motion that can be turned down.</li>
+    <li><b>The shared extras.</b> The fastest ghost, the board, the wave, bringing people in, challenge links, notes and skins, all working the same way in every game.</li>
+  </ol>
+
+  <!-- The games so far, read live from spine:arcade. -->
+  <h2>The Arcade so far</h2>
+  <ul class="games" id="games">
+    <li><a href="ghost-wire.html">Ghost Wire</a><span class="what">Trace a neon wire with your finger from START to FINISH without touching the walls, racing the day’s fastest ghost.</span></li>
+    <li class="next">The next game: yours?</li>
+  </ul>
+
+  <h2>Some ideas to start from</h2>
+  <ul class="starters">
+    <li><b>Orbit</b>: hold to thrust and keep a ship on a ring round a planet whose pull changes; three laps to finish.</li>
+    <li><b>Tide line</b>: tap to hop a dot over incoming waves, timed differently every day.</li>
+    <li><b>Thread</b>: steer a needle through a row of eyes that drift closer each second.</li>
+  </ul>
+
+  <!-- Ideas go to pool:arcade, the Arcade's makers' room, as a visitor's line. -->
+  <h2>Leave an idea</h2>
+  <p class="note">Your game in a line or two. Ideas are open for everyone to read, here and on the beach. The best ones get built.</p>
+  <form id="idea" autocomplete="off">
+    <label>Your name (optional)
+      <input name="who" type="text" maxlength="40" autocomplete="nickname">
+    </label>
+    <label class="trap" aria-hidden="true">Leave this empty
+      <input name="web" type="text" tabindex="-1">
+    </label>
+    <label>Your idea
+      <textarea name="note" maxlength="2000" required></textarea>
+    </label>
+    <button type="submit" class="go">Send</button>
+    <p class="form-status" aria-live="polite"></p>
+  </form>
+  <div class="thread" id="ideas" aria-live="polite"></div>
+  <p class="live" id="live"></p>
+
+  <h2>Make it yourself</h2>
+  <ol class="steps">
+    <li>Copy the words below into Claude, or another AI that can write code, and put your idea where it says.</li>
+    <li>Play what it makes on your phone, and keep going until it’s fun.</li>
+    <li>Ask it to help you put the game on GitHub Pages, so it can keep its runs on the beach.</li>
+    <li>Leave its link as an idea above. If it keeps the six rules, it joins the Arcade.</li>
+  </ol>
+  <textarea class="prompt" id="prompt" readonly aria-label="Words to give an AI">I want to make a game for the Arcade: quick, one-move skill games on the happyseaurchin beach, with a new level every day for everyone.
+
+My idea, in one line: [WRITE YOUR IDEA HERE]
+
+First read the Arcade's recipe, which every game keeps:
+https://beach.happyseaurchin.com/.well-known/pscale-beach?block=function:arcade
+
+Then use Ghost Wire, the first Arcade game, as the reference for how everything works: the daily level from the beach clock, runs kept as moves and re-run to check them, the fastest ghost, the board, the wave and saving runs on the beach. The code is at:
+https://github.com/Phenomemental/happyseaurchin-beach
+(ghost-wire.html, ghost-wire.js and beach.js; the game is at https://phenomemental.github.io/happyseaurchin-beach/ghost-wire.html)
+
+Build my game the same way, as one HTML page and one engine file, keeping all six rules, and save its runs in its own room on the beach, pool:[my game's name], exactly as Ghost Wire saves to pool:ghost-wire. Keep it simple. Then help me test it on a phone and put it on GitHub Pages.</textarea>
+  <button type="button" id="copy">Copy the words</button>
+  <p class="form-status" id="copy-note" aria-live="polite"></p>
+</main>
+
+<script src="beach.js?v=2026-10-21a"></script>
+<script>
+(function () {
+  var ROOM = 'pool:arcade', SPINE = 'spine:arcade';
+
+  // The games so far: each position of spine:arcade is a game's line,
+  // "Name — what it is. link [where its law and room are]".
+  function drawGames(spine) {
+    var list = document.getElementById('games'), games = [];
+    for (var i = 1; i <= 9; i++) {
+      var t = Beach.text(spine[String(i)]).trim();
+      if (!t) continue;
+      var m = /^(.+?)\s+[—–-]\s+([\s\S]*?)\s*(https?:\/\/\S+)?\s*(\[[\s\S]*\])?\s*$/.exec(t);
+      if (m) games.push({ name: m[1], what: m[2].trim().charAt(0).toUpperCase() + m[2].trim().slice(1), url: m[3] || '' });
+    }
+    if (!games.length) return;
+    list.textContent = '';
+    games.forEach(function (g) {
+      var li = document.createElement('li'), a = document.createElement(g.url ? 'a' : 'strong');
+      if (g.url) a.href = g.url;
+      a.textContent = g.name;
+      var what = document.createElement('span');
+      what.className = 'what';
+      what.textContent = g.what;
+      li.appendChild(a);
+      li.appendChild(what);
+      list.appendChild(li);
+    });
+    var next = document.createElement('li');
+    next.className = 'next';
+    next.textContent = 'The next game: yours?';
+    list.appendChild(next);
+  }
+
+  var ideas = document.getElementById('ideas');
+  var refresh = Beach.live(function () {
+    return Promise.all([
+      Beach.get(ROOM).then(function (pool) {
+        Beach.renderThread(ideas, pool);
+        var empty = ideas.querySelector('.thread-empty');
+        if (empty) empty.textContent = 'No ideas yet. Be the first.';
+      }),
+      Beach.get(SPINE).then(drawGames, function () {})
+    ]);
+  }, document.getElementById('live'), null, 'The beach is out of reach just now, so the ideas can’t be read. Please try again in a moment.');
+  Beach.wireNoteForm(document.getElementById('idea'), ROOM, refresh);
+
+  // The words to give an AI, copied whole.
+  var prompt = document.getElementById('prompt'), note = document.getElementById('copy-note');
+  document.getElementById('copy').addEventListener('click', function () {
+    function picked() {
+      prompt.focus();
+      prompt.select();
+      note.textContent = 'Selected: copy it with your phone’s Copy.';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(prompt.value).then(function () {
+        note.textContent = 'Copied. Paste it into your AI and write your idea where it says.';
+      }, picked);
+    } else {
+      picked();
+    }
+  });
+})();
+</script>
+</body>
+</html>
