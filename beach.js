@@ -196,18 +196,23 @@
   }
 
   // Append a note to a pool, in the same shape an assistant would write it,
-  // located at an address in the pool's own tree when where is given.
-  function postNote(pool, who, note, where) {
+  // located at an address in the pool's own tree when where is given. A
+  // pool that keeps more with each note passes it in more, at its own
+  // positions 5-9 ({7: …}). It resolves with the entry as sent and the
+  // beach's answer.
+  function postNote(pool, who, note, where, more) {
+    var content = { _: note, 1: who, 2: where || '', 3: new Date().toISOString() };
+    Object.keys(more || {}).forEach(function (k) {
+      if (/^[5-9]$/.test(k)) content[k] = more[k];
+    });
     return fetch(BEACH + '?block=' + encodeURIComponent(pool), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        append: true,
-        content: { _: note, 1: who, 2: where || '', 3: new Date().toISOString() }
-      })
+      body: JSON.stringify({ append: true, content: content })
     }).then(function (r) {
       return r.json().then(function (j) {
         if (!r.ok || !j.ok) throw new Error(j.error || ('HTTP ' + r.status));
+        return { entry: content, answer: j };
       });
     });
   }

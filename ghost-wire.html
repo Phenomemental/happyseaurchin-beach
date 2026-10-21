@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ghost Wire</title>
+<meta name="description" content="Ghost Wire: guide a glowing point along a neon wire from start to finish as fast as you can without touching it, racing a ghost.">
+<meta name="theme-color" content="#0D0D12">
+<style>
+  /* Ghost Wire, an arcade in the dark: the wire neon cyan, you gold, the
+     ghost purple. The game is drawn on one canvas filling the screen; the
+     words sit over it and let touches pass through, except the buttons. */
+  :root {
+    --night: #0D0D12;
+    --wire: #00F0FF;
+    --you: #FFD700;
+    --ghost: #A855F7;
+    --buzz: #FF3B5C;
+    --words: #E8ECF4;
+    --dim: #8A93A6;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--night);
+    color: var(--words);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .over {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--wire);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+  }
+  .time {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--you);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  .ghost-line {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--ghost);
+  }
+  .middle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .say {
+    max-width: 22rem;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(13, 13, 18, 0.82);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .say strong {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .say.buzz {
+    color: var(--buzz);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-shadow: 0 0 14px rgba(255, 59, 92, 0.7);
+  }
+  .end {
+    pointer-events: auto;
+    max-width: 22rem;
+    width: 100%;
+    padding: 20px 18px;
+    border-radius: 12px;
+    background: rgba(13, 13, 18, 0.92);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    text-align: center;
+  }
+  .end .big {
+    margin: 0;
+    font-size: 2.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--you);
+    text-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
+  }
+  .end p {
+    margin: 6px 0 0;
+  }
+  .end .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--wire);
+    background: transparent;
+    color: var(--wire);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  button.go {
+    background: var(--you);
+    border-color: var(--you);
+    color: var(--night);
+    font-size: 1.05rem;
+    padding: 0 26px;
+  }
+  .rank {
+    color: var(--wire);
+    font-weight: 600;
+  }
+  .who {
+    display: block;
+    margin: 16px auto 0;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .who input {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    margin: 6px auto 0;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(232, 236, 244, 0.25);
+    background: rgba(232, 236, 244, 0.06);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+    text-align: center;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .who input:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .link {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--dim);
+    word-break: break-all;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 12px;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="The wire, your point and the ghost"></canvas>
+<div class="over">
+  <div class="top">
+    <h1>Ghost Wire</h1>
+    <span class="time" id="time" aria-hidden="true">0.00</span>
+  </div>
+  <p class="ghost-line" id="ghost-line"></p>
+  <div class="middle">
+    <!-- The briefing tells three things only: where you start, your moves,
+         and what you are trying to do (ways:games 1). Its words are kept at
+         game:ghost-wire too; the label says which wire this is. -->
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong>Your point waits at the gold end of the wire. Put a finger anywhere and drag: the point moves as your finger does. Bring it to the far end as fast as you can without touching the walls.</p>
+    <div class="end" id="end" hidden>
+      <div aria-live="polite">
+        <p class="big" id="end-time"></p>
+        <p id="end-line"></p>
+        <p class="rank" id="end-rank"></p>
+        <p class="note" id="end-note"></p>
+      </div>
+      <!-- Keeping a run is a choice: it goes to pool:ghost-wire, the
+           game's room on the beach, only when the player asks for a
+           challenge link. -->
+      <div id="keep" hidden>
+        <label class="who">Your name, shown with your time
+          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="optional">
+        </label>
+        <button type="button" class="go" id="challenge">Challenge a friend</button>
+        <p class="note" id="keep-note" aria-live="polite"></p>
+        <p class="link" id="keep-link" hidden></p>
+      </div>
+      <div class="row">
+        <button type="button" id="again">Run again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="beach.js?v=2026-10-21a"></script>
+<script src="ghost-wire.js?v=2026-10-21d"></script>
+<script>
+(function () {
+  var GW = window.GhostWire;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var timeEl = document.getElementById('time');
+  var ghostLine = document.getElementById('ghost-line');
+  var say = document.getElementById('say');
+  var end = document.getElementById('end');
+  var COLORS = { night: '#0D0D12', wire: '#00F0FF', you: '#FFD700', ghost: '#A855F7', buzz: '#FF3B5C' };
+  var ROOM = 'pool:ghost-wire', LAW = 'game:ghost-wire';
+  var MOTION = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function still() { return !!(MOTION && MOTION.matches); }
+
+  // ---- This device's memory ------------------------------------------------
+  // Storage can be missing, full or refused, so every read and write may
+  // quietly come to nothing.
+  function recall(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+
+  // ---- Which wire, and whose ghost -----------------------------------------
+  // A link may name a wire (?track=) and a run kept in the room (?ghost=, its
+  // slot there). With no wire named, it is today's, from the beach's clock:
+  // the day's address at full width, the first eight digits and '00'. If the
+  // beach can't be reached, it is the practice wire.
+  var params = new URLSearchParams(location.search);
+  var asked = GW.validTrack(params.get('track')) ? params.get('track') : '';
+  var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  var TRACK = '', TODAY = '', DAY = '', wire = null, BEST = '';
+  var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
+  var friend = null;                    // the run a link brought, re-run
+
+  function isDay(track) { return /^\d{10}$/.test(track); }
+  function who(entry) {
+    var n = typeof entry[1] === 'string' ? entry[1].replace(/, a visitor$/, '').trim() : '';
+    return n && n !== 'a visitor' && n.length <= 40 ? n : 'A friend';
+  }
+
+  function init() {
+    var law = Beach.get(LAW).then(null, function () { return null; });
+    var link = askedGhost
+      ? Beach.get(ROOM, { spindle: askedGhost }).then(null, function () { return null; })
+      : Promise.resolve(null);
+    Promise.all([law, link]).then(function (got) {
+      var clock = Beach.clock();
+      if (clock) {
+        TODAY = clock.address.slice(0, 8) + '00';
+        DAY = clock.voicing.split(',')[0];
+      }
+      var entry = got[1], kept = entry && typeof entry[7] === 'string' ? GW.decode(entry[7]) : null;
+      TRACK = asked || (kept && kept.track) || TODAY || 'practice';
+      setup();
+      if (kept && kept.track === TRACK) {
+        var r = GW.rerun(entry[7], wire);
+        if (r && r.ok) {
+          friend = r;
+          ghostWho = who(entry);
+        }
+      }
+      var label = TRACK === TODAY ? 'Today’s wire' : isDay(TRACK) ? 'An earlier day’s wire' : 'Practice wire';
+      document.getElementById('say-label').textContent = label;
+      BRIEF = say.innerHTML;
+      loadGhost();
+      if (askedGhost && !friend) {
+        ghostLine.textContent = got[1] === null && !clock
+          ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
+          : 'That ghost couldn’t be found on this wire.';
+      } else if (!clock && !asked) {
+        ghostLine.textContent = 'The beach is out of reach just now, so this is a practice wire.';
+      }
+      phase = 'ready';
+    });
+  }
+
+  // The ghost is a friend's run when a link brought one, else your best
+  // here, re-run on the wire; a kept run that doesn't re-run to its finish
+  // is no ghost.
+  function loadGhost() {
+    if (friend) {
+      ghost = friend;
+      ghostLine.textContent = 'Ghost: ' + ghostWho + '’s run, ' + GW.seconds(ghost.steps) + ' s';
+      return;
+    }
+    var kept = recall(BEST);
+    var r = kept ? GW.rerun(kept, wire) : null;
+    ghost = r && r.ok ? r : null;
+    ghostLine.textContent = ghost
+      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s'
+      : 'No ghost yet: your first finish becomes one.';
+  }
+
+  // ---- The finger --------------------------------------------------------
+  // One finger (or a mouse held down) moves the point, from anywhere on
+  // the screen: what it has moved since the last step waits in owed, in
+  // screen pixels, until the step takes it.
+  var finger = null, owed = { x: 0, y: 0 }, carry = { x: 0, y: 0 };
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    if (finger) return;
+    finger = { id: e.pointerId, x: e.clientX, y: e.clientY };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    begin();
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!finger || e.pointerId !== finger.id) return;
+    owed.x += e.clientX - finger.x;
+    owed.y += e.clientY - finger.y;
+    finger.x = e.clientX;
+    finger.y = e.clientY;
+  });
+  function lift(e) {
+    if (finger && e.pointerId === finger.id) finger = null;
+  }
+  window.addEventListener('pointerup', lift);
+  window.addEventListener('pointercancel', lift);
+  // Leaving the page lets go.
+  window.addEventListener('blur', function () { finger = null; });
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // The finger's move for one step, in the engine's whole units. What is
+  // left over below a unit is carried to the next step; a move faster than
+  // a step allows is cut to the most it allows, and the rest let go.
+  function take(axis) {
+    var u = carry[axis] + owed[axis] / view.scale;
+    owed[axis] = 0;
+    var q = Math.round(u / GW.LAW.unit);
+    var b = GW.bound(q);
+    carry[axis] = b === q ? u - q * GW.LAW.unit : 0;
+    return b;
+  }
+
+  // ---- The run -----------------------------------------------------------
+  // phase: 'loading' (finding the wire), 'ready' (waiting for a touch),
+  // 'running', 'buzzed' (a moment's pause before ready again), 'done' (the
+  // end screen).
+  var phase = 'loading', run = null, prev = null, moves = [], BRIEF = say.innerHTML;
+  var trail = [];               // where you stood after each step
+  var acc = 0, buzzAt = 0;
+  var last = null;              // the run just finished: { replay, steps, slot }
+
+  // A touch while ready starts a run, from the start, on that touch.
+  function begin() {
+    if (phase !== 'ready') return;
+    run = GW.start(wire);
+    prev = { x: run.x, y: run.y };
+    moves = [];
+    trail = [{ x: run.x, y: run.y }];
+    owed = { x: 0, y: 0 };
+    carry = { x: 0, y: 0 };
+    acc = 0;
+    phase = 'running';
+    say.hidden = true;
+  }
+
+  function tick() {
+    var qx = take('x'), qy = take('y');
+    moves.push([qx, qy]);
+    prev.x = run.x;
+    prev.y = run.y;
+    GW.step(run, qx, qy, wire);
+    trail.push({ x: run.x, y: run.y });
+    // Close to a wall, the point throws sparks, the more the closer.
+    var close = Math.sqrt(run.near) / GW.LAW.half;
+    if (run.status === 'running' && close > 0.6 && Math.random() < (close - 0.6) * (still() ? 0.6 : 2)) {
+      sparks(run, 1, COLORS.you, 0.6);
+    }
+    if (run.status === 'finished') finish();
+    else if (run.status !== 'running') buzz(run.status);
+  }
+
+  function buzz(status) {
+    phase = 'buzzed';
+    buzzAt = performance.now();
+    say.className = 'say buzz';
+    say.textContent = status === 'stalled' ? 'Out of time' : 'Buzz';
+    say.hidden = false;
+    sparks(run, still() ? 10 : 28, COLORS.buzz, 1.6);
+    if (!still()) shakeUntil = buzzAt + 380;
+    if (navigator.vibrate) {
+      try { navigator.vibrate([70, 40, 110]); } catch (e) {}
+    }
+  }
+
+  function finish() {
+    phase = 'done';
+    sparks(run, still() ? 10 : 30, COLORS.you, 1.2);
+    var replay = GW.encode(TRACK, moves, run.step);
+    var check = GW.rerun(replay, wire), sound = !!(check && check.ok);
+    last = { replay: sound ? replay : '', steps: run.step, slot: '' };
+    var mine = recall(BEST), mineRun = mine ? GW.rerun(mine, wire) : null;
+    var was = mineRun && mineRun.ok ? mineRun.steps : null;
+    var better = was == null || run.step < was;
+    var kept = better && sound && remember(BEST, replay);
+    var vs = ghost ? ghost.steps : null;
+    document.getElementById('end-time').textContent = GW.seconds(run.step) + ' s';
+    document.getElementById('end-line').textContent = friend
+      ? (run.step < vs ? 'You beat ' + ghostWho + ' by ' + GW.seconds(vs - run.step) + ' s.'
+        : run.step === vs ? 'A dead heat with ' + ghostWho + '.'
+        : GW.seconds(run.step - vs) + ' s behind ' + ghostWho + '.')
+      : was == null ? 'You reached the end.'
+      : better ? 'Your best yet, by ' + GW.seconds(was - run.step) + ' s.'
+      : GW.seconds(run.step - was) + ' s behind your best.';
+    document.getElementById('end-note').textContent = kept ? (friend ? 'It’s your best here on this device.' : 'This run is your ghost now.')
+      : better ? 'This device couldn’t keep it as your ghost.'
+      : 'Your best here stays at ' + GW.seconds(was) + ' s.';
+    if (!friend && kept) loadGhost();
+    var rank = document.getElementById('end-rank');
+    rank.textContent = '';
+    var keep = document.getElementById('keep');
+    keep.hidden = !(isDay(TRACK) && sound);
+    document.getElementById('keep-note').textContent = '';
+    document.getElementById('keep-link').hidden = true;
+    document.getElementById('challenge').disabled = false;
+    document.getElementById('who').value = recall('ghost-wire:name') || '';
+    end.hidden = false;
+    if (isDay(TRACK)) board().then(function (runs) {
+      if (phase === 'done' && last && last.steps === run.step) rank.textContent = standing(runs, run.step);
+    }, function () {});
+  }
+
+  // ---- The day's board ---------------------------------------------------
+  // Every run kept in the room on this wire that re-runs to its finish, as
+  // { steps, slot }. The room is walked as the beach nests it: older
+  // entries under "_" once it grows, newer ones a digit deeper; an entry's
+  // slot is the digits walked to it.
+  function isEntry(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
+  }
+  function slots(node, path, out) {
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') slots(node._, path, out);
+    for (var d = 1; d <= 9; d++) {
+      var c = node[String(d)];
+      if (isEntry(c)) out.push({ slot: path + d, entry: c });
+      else if (c && typeof c === 'object') slots(c, path + d, out);
+    }
+    return out;
+  }
+  function board() {
+    return Beach.get(ROOM).then(function (pool) {
+      var runs = [];
+      slots(pool, '', []).forEach(function (s) {
+        var e = s.entry;
+        if (e['2'] !== TRACK || typeof e['7'] !== 'string') return;
+        var r = GW.rerun(e['7'], wire);
+        if (r && r.ok && r.track === TRACK) runs.push({ steps: r.steps, slot: s.slot, entry: e });
+      });
+      return runs;
+    });
+  }
+  function ordinal(n) {
+    var t = n % 100, u = n % 10;
+    return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th');
+  }
+  // Where a time would stand among the runs kept on this wire.
+  function standing(runs, steps) {
+    var others = runs.filter(function (r) { return !last || r.slot !== last.slot; });
+    var when = TRACK === TODAY ? 'today' : 'on this wire';
+    if (!others.length) return 'No one else has kept a run ' + when + ' yet.';
+    var rank = 1 + others.filter(function (r) { return r.steps < steps; }).length, total = others.length + 1;
+    var top = Math.max(1, Math.ceil(rank / total * 100));
+    if (total >= 5 && top <= 50) return 'Top ' + top + '% ' + when + '!';
+    return ordinal(rank) + ' of ' + total + ' ' + when + '.';
+  }
+
+  // ---- Keeping a run, and the link to race it ------------------------------
+  // A kept run goes to the room as a visitor's line, located at its wire;
+  // its slot there is the ghost in the link. A typed name is shown as a
+  // visitor's, never as a beach handle.
+  document.getElementById('challenge').addEventListener('click', function () {
+    var btn = this, note = document.getElementById('keep-note');
+    if (!last || !last.replay) return;
+    if (last.slot) return share();
+    var name = document.getElementById('who').value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('ghost-wire:name', name);
+    var line = GW.seconds(last.steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
+    btn.disabled = true;
+    note.textContent = 'Keeping your run on the beach…';
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, { 7: last.replay }).then(function (sent) {
+      // The slot it landed in: from the beach's answer when it says, else
+      // found by reading the room for this very entry.
+      var a = sent.answer || {}, at = [a.slot, a.address, a.at, a.position].filter(function (x) {
+        return typeof x === 'string' || typeof x === 'number';
+      }).map(String).filter(function (x) { return /^\d{1,7}$/.test(x); })[0];
+      if (at) return at;
+      return Beach.get(ROOM).then(function (pool) {
+        var hit = slots(pool, '', []).filter(function (s) {
+          return s.entry['3'] === sent.entry[3] && s.entry['7'] === last.replay;
+        })[0];
+        if (!hit) throw new Error('not found');
+        return hit.slot;
+      });
+    }).then(function (slot) {
+      last.slot = slot;
+      btn.disabled = false;
+      btn.textContent = 'Share the challenge again';
+      share();
+    }, function () {
+      btn.disabled = false;
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    });
+  });
+
+  function share() {
+    var url = location.origin + location.pathname + '?track=' + TRACK + '&ghost=' + last.slot;
+    var text = 'I ran ' + (TRACK === TODAY ? 'today’s' : 'a') + ' Ghost Wire in ' + GW.seconds(last.steps) + ' s. Race my ghost:';
+    var note = document.getElementById('keep-note'), shown = document.getElementById('keep-link');
+    shown.textContent = url;
+    shown.hidden = false;
+    note.textContent = 'Your run is on the beach. Send this link:';
+    if (navigator.share) {
+      navigator.share({ title: 'Ghost Wire', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () {
+        note.textContent = 'Your run is on the beach. The link is copied:';
+      }, function () {});
+    }
+  }
+
+  document.getElementById('again').addEventListener('click', ready);
+  function ready() {
+    loadGhost();
+    phase = 'ready';
+    run = null;
+    end.hidden = true;
+    say.className = 'say';
+    say.innerHTML = BRIEF;
+    say.hidden = false;
+  }
+
+  // ---- Sparks and shake (drawing only: the run never reads them) ----------
+  var bits = [], shakeUntil = 0;
+  function sparks(st, n, color, force) {
+    var p = px(st);
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, v = (40 + Math.random() * 160) * force;
+      bits.push({ x: p.x, y: p.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.35 + Math.random() * 0.4, age: 0, color: Math.random() < 0.3 ? '#FFFFFF' : color });
+    }
+    if (bits.length > 300) bits.splice(0, bits.length - 300);
+  }
+  function drawSparks(dt) {
+    for (var i = bits.length - 1; i >= 0; i--) {
+      var b = bits[i];
+      b.age += dt;
+      if (b.age >= b.life) { bits.splice(i, 1); continue; }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.vx *= 0.92;
+      b.vy *= 0.92;
+      ctx.globalAlpha = 1 - b.age / b.life;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x - 2, b.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- Drawing -----------------------------------------------------------
+  var view = { scale: 1, ox: 0, oy: 0, x0: 0, y0: 0, dpr: 1 };
+  var wireLayer = document.createElement('canvas');
+  var extent = null;
+
+  function px(p) {
+    return { x: view.ox + (p.x - view.x0) * view.scale, y: view.oy + (p.y - view.y0) * view.scale };
+  }
+
+  // The wire for this page, and its own extent, walls included, so it is
+  // drawn as large as the screen allows.
+  function setup() {
+    wire = GW.wire(TRACK);
+    BEST = 'ghost-wire:best:' + TRACK;
+    var b = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity }, pad = GW.LAW.half * 3;
+    for (var i = 0; i < wire.n; i++) {
+      b.x0 = Math.min(b.x0, wire.x[i] - pad);
+      b.x1 = Math.max(b.x1, wire.x[i] + pad);
+      b.y0 = Math.min(b.y0, wire.y[i] - pad);
+      b.y1 = Math.max(b.y1, wire.y[i] + pad);
+    }
+    extent = b;
+    layout();
+  }
+
+  // The wire is drawn once for each size of the screen: its two walls,
+  // glowing, a faint line down its middle, the start and the finish.
+  function layout() {
+    if (!wire) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var top = 72, margin = 16;
+    var bw = extent.x1 - extent.x0, bh = extent.y1 - extent.y0;
+    var scale = Math.min((w - 2 * margin) / bw, (h - top - margin) / bh);
+    view = {
+      scale: scale, dpr: dpr, x0: extent.x0, y0: extent.y0,
+      ox: (w - scale * bw) / 2,
+      oy: top + (h - top - margin - scale * bh) / 2
+    };
+    wireLayer.width = canvas.width;
+    wireLayer.height = canvas.height;
+    var g = wireLayer.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.lineCap = 'round';
+    g.lineJoin = 'round';
+    function line(d) {
+      g.beginPath();
+      for (var i = 0; i < wire.n; i += 2) {
+        var p = px(GW.place(wire, i * 0.0025, d));
+        if (i === 0) g.moveTo(p.x, p.y); else g.lineTo(p.x, p.y);
+      }
+      var q = px(GW.place(wire, wire.length, d));
+      g.lineTo(q.x, q.y);
+      g.stroke();
+    }
+    var half = GW.LAW.half;
+    g.strokeStyle = 'rgba(0, 240, 255, 0.10)';
+    g.lineWidth = 2 * half * scale;
+    g.lineCap = 'butt';
+    line(0);
+    g.lineCap = 'round';
+    g.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+    g.lineWidth = 1;
+    g.setLineDash([3, 6]);
+    line(0);
+    g.setLineDash([]);
+    g.shadowColor = COLORS.wire;
+    g.shadowBlur = 12;
+    g.strokeStyle = COLORS.wire;
+    g.lineWidth = 2;
+    line(half);
+    line(-half);
+    g.shadowBlur = 0;
+    mark(g, 0, COLORS.you);
+    mark(g, wire.length, COLORS.wire);
+  }
+
+  // A short bar across the wire where it starts or ends.
+  function mark(g, s, color) {
+    var a = px(GW.place(wire, s, GW.LAW.half * 1.8)), b = px(GW.place(wire, s, -GW.LAW.half * 1.8));
+    g.strokeStyle = color;
+    g.lineWidth = 3;
+    g.shadowColor = color;
+    g.shadowBlur = 10;
+    g.beginPath();
+    g.moveTo(a.x, a.y);
+    g.lineTo(b.x, b.y);
+    g.stroke();
+    g.shadowBlur = 0;
+  }
+
+  // A glowing point with a fading tail behind it; points are in wire units.
+  var TAIL = 24;
+  function dot(points, color, alpha) {
+    var n = points.length;
+    if (!n) return;
+    ctx.lineCap = 'round';
+    for (var i = Math.max(1, n - TAIL); i < n; i++) {
+      var a = px(points[i - 1]), b = px(points[i]);
+      ctx.globalAlpha = alpha * (1 - (n - i) / TAIL) * 0.5;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    var p = px(points[n - 1]);
+    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
+    glow.addColorStop(0, color);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // The ghost's last few places up to a step, for its tail.
+  function ghostAt(step) {
+    var out = [], last = ghost.x.length - 1;
+    for (var k = Math.max(0, step - TAIL); k <= step; k++) {
+      var j = Math.min(k, last);
+      out.push({ x: ghost.x[j], y: ghost.y[j] });
+    }
+    return out;
+  }
+
+  function draw(alpha, dt, ts) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = COLORS.night;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (!wire) return;
+    // A buzz shakes the screen for a moment, less and less.
+    var sx = 0, sy = 0;
+    if (ts < shakeUntil) {
+      var k = (shakeUntil - ts) / 380 * 9;
+      sx = (Math.random() * 2 - 1) * k;
+      sy = (Math.random() * 2 - 1) * k;
+    }
+    ctx.setTransform(1, 0, 0, 1, sx * view.dpr, sy * view.dpr);
+    ctx.drawImage(wireLayer, 0, 0);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, sx * view.dpr, sy * view.dpr);
+    var step = run ? run.step : 0;
+    if (ghost) dot(ghostAt(step), COLORS.ghost, 0.75);
+    if (run) {
+      // Your point, eased between the last two steps for a smooth line.
+      var shown = trail.slice(-TAIL);
+      if (phase === 'running') {
+        shown[shown.length - 1] = { x: prev.x + (run.x - prev.x) * alpha, y: prev.y + (run.y - prev.y) * alpha };
+      }
+      dot(shown, phase === 'buzzed' ? COLORS.buzz : COLORS.you, 1);
+    } else {
+      dot([{ x: wire.x[0], y: wire.y[0] }], COLORS.you, 1);
+    }
+    drawSparks(dt);
+    timeEl.textContent = GW.seconds(step);
+  }
+
+  // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
+  var DT = 1000 / GW.RATE, lastTs = 0;
+  function frame(ts) {
+    var gap = lastTs ? ts - lastTs : 0;
+    lastTs = ts;
+    if (phase === 'running') {
+      // A long gap (the page was away) is not caught up step by step.
+      acc += Math.min(gap, 100);
+      while (acc >= DT && phase === 'running') {
+        tick();
+        acc -= DT;
+      }
+    }
+    if (phase === 'buzzed' && ts - buzzAt > 800 && !finger) ready();
+    draw(phase === 'running' ? acc / DT : 1, Math.min(gap, 50) / 1000, ts);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+  init();
+})();
+</script>
+</body>
+</html>
