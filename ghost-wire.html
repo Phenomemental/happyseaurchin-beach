@@ -544,6 +544,13 @@
   .sheet a {
     color: var(--wire);
   }
+  .keep-state {
+    margin: 14px 0 0;
+    font-weight: 600;
+  }
+  .keep-state.on { color: var(--wire); }
+  .keep-state.off { color: var(--you); }
+  #save-run + #challenge { margin-left: 6px; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -576,9 +583,11 @@
            game's room on the beach, only when the player asks for a
            challenge link. -->
       <div id="keep" hidden>
+        <p class="keep-state" id="keep-state" aria-live="polite"></p>
         <label class="who">Your name, to put your time on the board
-          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="optional">
+          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="your name">
         </label>
+        <button type="button" class="go" id="save-run" hidden>Save my time to the board</button>
         <button type="button" class="go" id="challenge">Challenge a friend</button>
         <p class="note" id="keep-note" aria-live="polite"></p>
         <p class="link" id="keep-link" hidden></p>
@@ -664,7 +673,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21q"></script>
+<script src="ghost-wire.js?v=2026-10-21r"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -1157,16 +1166,21 @@
     // soon as one is typed.
     if (kept && isDay(TRACK) && (mine().length || recall('ghost-wire:name'))) {
       var auto = last;
+      auto.state = 'saving';
+      keepState(auto, true);
       saveLast(auto).then(function () {
-        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best is on the board.';
+        auto.state = 'on';
+        if (last === auto && phase === 'done') keepState(auto, true);
       }, function () {
-        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best couldn’t reach the board just now; it will try again when you type your name or tap Challenge a friend.';
+        auto.state = 'failed';
+        if (last === auto && phase === 'done') keepState(auto, true);
       });
     }
     var rank = document.getElementById('end-rank');
     rank.textContent = '';
     var keep = document.getElementById('keep');
     keep.hidden = !(isDay(TRACK) && sound);
+    keepState(last, better);
     document.getElementById('keep-note').textContent = '';
     document.getElementById('keep-link').hidden = true;
     document.getElementById('challenge').disabled = false;
@@ -1696,20 +1710,30 @@
     var from = recall('ghost-wire:from');
     if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
     if (tries) more[8] = String(tries);
-    return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
-      // The slot it landed in: from the beach's answer when it says, else
-      // found by reading the room for this very entry.
-      var a = sent.answer || {}, at = [a.slot, a.address, a.at, a.position].filter(function (x) {
-        return typeof x === 'string' || typeof x === 'number';
-      }).map(String).filter(function (x) { return /^\d{1,7}$/.test(x); })[0];
-      if (at) return at;
+    // A save counts only once the run is read back from the room: the
+    // beach's answer alone isn't trusted, since two saves landing at once
+    // can lose one. If it isn't there, it is sent once more.
+    function find(sent) {
       return Beach.get(ROOM).then(function (pool) {
         var hit = slots(pool, '', []).filter(function (s) {
-          return s.entry['3'] === sent.entry[3] && s.entry['7'] === replay;
+          return s.entry['7'] === replay && (!sent || s.entry['3'] === sent.entry[3]);
         })[0];
-        if (!hit) throw new Error('not found');
-        return hit.slot;
+        return hit ? hit.slot : null;
       });
+    }
+    function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    function send() {
+      return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
+        return find(sent).then(function (slot) {
+          return slot || wait(1200).then(function () { return find(sent); });
+        });
+      });
+    }
+    return send().then(function (slot) {
+      return slot || wait(800).then(send);
+    }).then(function (slot) {
+      if (!slot) throw new Error('not in the room');
+      return slot;
     }).then(function (slot) {
       var m = mine();
       if (m.indexOf(slot) < 0) { m.push(slot); remember('ghost-wire:mine', JSON.stringify(m)); }
@@ -1738,22 +1762,52 @@
   // the name is kept for the next runs too. It saves when the box is left
   // or Done is pressed.
   var whoBox = document.getElementById('who');
-  function nameGiven() {
-    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40), note = document.getElementById('keep-note');
-    if (!name) return;
-    var was = recall('ghost-wire:name');
-    remember('ghost-wire:name', name);
-    notesForm.who.value = notesForm.who.value || name;
+  // What the end screen says about this run and the board, and whether it
+  // offers Save: on the board, being saved, not saved, or failed.
+  var saveBtn = document.getElementById('save-run');
+  function keepState(run, best) {
+    var el = document.getElementById('keep-state');
+    if (!run || run !== last) return;
+    var name = recall('ghost-wire:name');
+    var say = run.slot ? '✓ This time is on the board' + (name ? ' as ' + name : '') + '.'
+      : run.state === 'saving' ? 'Saving your time to the board…'
+      : run.state === 'failed' ? 'This time didn’t reach the board. Tap Save to try again.'
+      : best ? 'This time isn’t on the board yet. Add your name and tap Save.'
+      : 'Only your best goes on the board automatically. Tap Save to add this one too.';
+    el.textContent = say;
+    el.className = 'keep-state ' + (run.slot ? 'on' : 'off');
+    saveBtn.hidden = !!run.slot || run.state === 'saving';
+  }
+  function saveNow() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
     if (!last || !last.replay || !isDay(TRACK)) return;
-    if (last.slot && was === name) return;
-    if (last.slot) { note.textContent = 'Your time is on the board. Your next runs will be under ' + name + '.'; return; }
-    note.textContent = 'Putting your time on the board…';
+    if (!name && !recall('ghost-wire:name')) {
+      document.getElementById('keep-state').textContent = 'Type your name first, so the board knows it’s you.';
+      whoBox.focus();
+      return;
+    }
+    if (name) {
+      remember('ghost-wire:name', name);
+      notesForm.who.value = notesForm.who.value || name;
+    }
+    if (last.slot) return keepState(last, true);
     var run = last;
+    run.state = 'saving';
+    keepState(run, true);
     saveLast(run).then(function () {
-      if (last === run) note.textContent = 'Your time is on the board as ' + name + '.';
+      run.state = 'on';
+      keepState(run, true);
     }, function () {
-      if (last === run) note.textContent = 'That didn’t reach the beach. Press Done again in a moment.';
+      run.state = 'failed';
+      keepState(run, true);
     });
+  }
+  saveBtn.addEventListener('click', saveNow);
+  // Typing a name and pressing Done saves too.
+  function nameGiven() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name || !last || last.slot || last.state === 'saving') return;
+    saveNow();
   }
   whoBox.addEventListener('change', nameGiven);
   whoBox.addEventListener('keydown', function (e) {
@@ -1768,10 +1822,17 @@
     if (last.slot) return share();
     btn.disabled = true;
     note.textContent = 'Keeping your run on the beach…';
-    saveLast(last).then(function () {
+    var run = last;
+    run.state = 'saving';
+    keepState(run, true);
+    saveLast(run).then(function () {
+      run.state = 'on';
+      keepState(run, true);
       btn.disabled = false;
       share();
     }, function () {
+      run.state = 'failed';
+      keepState(run, true);
       btn.disabled = false;
       note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
     });
