@@ -201,6 +201,120 @@
     justify-content: center;
     gap: 0 12px;
   }
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chip {
+    pointer-events: auto;
+    margin: 0;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+  }
+  /* The board: today's runs, the wave of who jumped in when, and this
+     phone's own count, in a sheet over the game. */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--night);
+    padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .sheet-in {
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .sheet h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--wire);
+    letter-spacing: 0.06em;
+  }
+  .sheet h3 {
+    margin: 28px 0 4px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .sheet p {
+    margin: 6px 0 0;
+    line-height: 1.45;
+  }
+  .sheet .note {
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .board {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid rgba(232, 236, 244, 0.12);
+  }
+  .board li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(232, 236, 244, 0.12);
+  }
+  .board .pos {
+    flex: 0 0 1.6rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .board .name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .board .runs {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .board .badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(232, 236, 244, 0.25);
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .board .badge.first {
+    border-color: var(--you);
+    color: var(--you);
+  }
+  .board .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+  }
+  .board li.me {
+    background: rgba(255, 215, 0, 0.08);
+  }
+  .wave {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 12px;
+  }
+  .tries {
+    color: var(--you);
+    font-weight: 600;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -209,7 +323,10 @@
 <div class="over">
   <div class="top">
     <h1>Ghost Wire</h1>
-    <span class="time" id="time" aria-hidden="true">0.00</span>
+    <div class="top-right">
+      <button type="button" class="chip" id="board-btn">Board</button>
+      <span class="time" id="time" aria-hidden="true">0.00</span>
+    </div>
   </div>
   <p class="ghost-line" id="ghost-line"></p>
   <div class="middle">
@@ -220,6 +337,7 @@
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-time"></p>
+        <p class="tries" id="end-tries"></p>
         <p id="end-line"></p>
         <p class="rank" id="end-rank"></p>
         <p class="note" id="end-note"></p>
@@ -237,13 +355,34 @@
       </div>
       <div class="row">
         <button type="button" id="again">Run again</button>
+        <button type="button" id="end-board">See the board</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- The board, read live from pool:ghost-wire: each player's best on this
+     wire, the wave of when each player first jumped in (ranking nobody, as
+     David's place-in-the-wave does), and what this phone has done here. -->
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Today’s board</h2>
+      <button type="button" class="chip" id="sheet-close">Close</button>
+    </div>
+    <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
+    <ol class="board" id="board-list"></ol>
+    <h3>The wave</h3>
+    <p class="note">When each player first kept a run, from the first to jump in to the last. Early isn’t better; it shows how the game spread.</p>
+    <svg class="wave" id="wave" viewBox="0 0 320 64" role="img" aria-label="The wave of players"></svg>
+    <p id="wave-line"></p>
+    <h3>On this phone</h3>
+    <p id="mine-line"></p>
+  </div>
+</div>
+
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21d"></script>
+<script src="ghost-wire.js?v=2026-10-21e"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -266,6 +405,22 @@
   }
   function remember(key, value) {
     try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+  // What this phone has done on this wire: every try started, every
+  // finish. A try is counted when it starts, so a finish knows its number.
+  function tally(what) {
+    var n = parseInt(recall('ghost-wire:' + what + ':' + TRACK), 10);
+    return n > 0 ? n : 0;
+  }
+  function count(what) {
+    var n = tally(what) + 1;
+    remember('ghost-wire:' + what + ':' + TRACK, String(n));
+    return n;
+  }
+  // The slots in the room this phone has kept runs at, so the board knows
+  // which player is you.
+  function mine() {
+    try { var m = JSON.parse(recall('ghost-wire:mine') || '[]'); return Array.isArray(m) ? m : []; } catch (e) { return []; }
   }
 
   // ---- Which wire, and whose ghost -----------------------------------------
@@ -391,6 +546,7 @@
   // A touch while ready starts a run, from the start, on that touch.
   function begin() {
     if (phase !== 'ready') return;
+    count('tries');
     run = GW.start(wire);
     prev = { x: run.x, y: run.y };
     moves = [];
@@ -436,7 +592,10 @@
     sparks(run, still() ? 10 : 30, COLORS.you, 1.2);
     var replay = GW.encode(TRACK, moves, run.step);
     var check = GW.rerun(replay, wire), sound = !!(check && check.ok);
-    last = { replay: sound ? replay : '', steps: run.step, slot: '' };
+    var tries = tally('tries');
+    count('finishes');
+    last = { replay: sound ? replay : '', steps: run.step, slot: '', tries: tries };
+    document.getElementById('end-tries').textContent = tries === 1 ? 'First try on this wire!' : 'On your ' + ordinal(tries) + ' try at this wire.';
     var mine = recall(BEST), mineRun = mine ? GW.rerun(mine, wire) : null;
     var was = mineRun && mineRun.ok ? mineRun.steps : null;
     var better = was == null || run.step < was;
@@ -463,7 +622,7 @@
     document.getElementById('challenge').disabled = false;
     document.getElementById('who').value = recall('ghost-wire:name') || '';
     end.hidden = false;
-    if (isDay(TRACK)) board().then(function (runs) {
+    if (isDay(TRACK)) room().then(function (runs) {
       if (phase === 'done' && last && last.steps === run.step) rank.textContent = standing(runs, run.step);
     }, function () {});
   }
@@ -486,31 +645,195 @@
     }
     return out;
   }
-  function board() {
+  // Every run kept in the room, on any wire, that re-runs to its finish on
+  // its own wire, as { slot, track, steps, at, player, name, tries }. A
+  // run is re-run once and remembered by its words, so a refresh is cheap.
+  var reruns = {}, wires = {};
+  function room() {
     return Beach.get(ROOM).then(function (pool) {
       var runs = [];
       slots(pool, '', []).forEach(function (s) {
-        var e = s.entry;
-        if (e['2'] !== TRACK || typeof e['7'] !== 'string') return;
-        var r = GW.rerun(e['7'], wire);
-        if (r && r.ok && r.track === TRACK) runs.push({ steps: r.steps, slot: s.slot, entry: e });
+        var e = s.entry, kept = e['7'];
+        if (typeof kept !== 'string') return;
+        if (!(kept in reruns)) {
+          var d = GW.decode(kept), r = null;
+          if (d) {
+            var w = d.track === TRACK ? wire : (wires[d.track] = wires[d.track] || GW.wire(d.track));
+            r = GW.rerun(kept, w);
+          }
+          reruns[kept] = r && r.ok ? { track: r.track, steps: r.steps } : null;
+        }
+        var ok = reruns[kept];
+        if (!ok || e['2'] !== ok.track) return;
+        var named = who(e) !== 'A friend' ? who(e) : '';
+        runs.push({
+          slot: s.slot, track: ok.track, steps: ok.steps, at: e['3'],
+          player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
+          name: named || 'A visitor',
+          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null
+        });
       });
       return runs;
     });
+  }
+  // Which player is you: the one at a slot this phone kept, or with the
+  // name this phone signs with.
+  function myPlayer(runs) {
+    var slotsHere = mine(), name = (recall('ghost-wire:name') || '').toLowerCase();
+    var hit = runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0 || (name && r.player === 'name:' + name); })[0];
+    return hit ? hit.player : '';
+  }
+  // Each player's best on one wire, fastest first: { player, name, steps,
+  // tries (of that best run), runs (how many they kept there), last }.
+  function players(runs, track) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (r.track !== track) return;
+      var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, steps: Infinity, tries: null, runs: 0, last: '' });
+      p.runs++;
+      if (r.at > p.last) p.last = r.at;
+      if (r.steps < p.steps) { p.steps = r.steps; p.tries = r.tries; }
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return a.steps - b.steps || (a.last < b.last ? -1 : 1); });
   }
   function ordinal(n) {
     var t = n % 100, u = n % 10;
     return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th');
   }
-  // Where a time would stand among the runs kept on this wire.
+  // Where a time would stand among the other players' bests on this wire.
   function standing(runs, steps) {
-    var others = runs.filter(function (r) { return !last || r.slot !== last.slot; });
+    var me = myPlayer(runs);
+    var others = players(runs, TRACK).filter(function (p) { return p.player !== me; });
     var when = TRACK === TODAY ? 'today' : 'on this wire';
     if (!others.length) return 'No one else has kept a run ' + when + ' yet.';
-    var rank = 1 + others.filter(function (r) { return r.steps < steps; }).length, total = others.length + 1;
+    var rank = 1 + others.filter(function (p) { return p.steps < steps; }).length, total = others.length + 1;
     var top = Math.max(1, Math.ceil(rank / total * 100));
     if (total >= 5 && top <= 50) return 'Top ' + top + '% ' + when + '!';
-    return ordinal(rank) + ' of ' + total + ' ' + when + '.';
+    return ordinal(rank) + ' of ' + total + ' players ' + when + '.';
+  }
+
+  // ---- The board sheet -----------------------------------------------------
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null;
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clock(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function openBoard() {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    sheet.hidden = false;
+    document.getElementById('sheet-close').focus({ preventScroll: true });
+    refreshBoard();
+    clearInterval(sheetTimer);
+    sheetTimer = setInterval(function () { if (!document.hidden) refreshBoard(); }, 30000);
+  }
+  function closeBoard() {
+    sheet.hidden = true;
+    clearInterval(sheetTimer);
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('board-btn').addEventListener('click', openBoard);
+  document.getElementById('end-board').addEventListener('click', openBoard);
+  document.getElementById('sheet-close').addEventListener('click', closeBoard);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeBoard();
+  });
+
+  function refreshBoard() {
+    var title = document.getElementById('sheet-title'), sum = document.getElementById('board-sum');
+    var day = isDay(TRACK);
+    title.textContent = TRACK === TODAY ? 'Today’s board' : day ? 'This wire’s board' : 'The board';
+    drawMine();
+    room().then(function (runs) {
+      var me = myPlayer(runs), list = document.getElementById('board-list');
+      list.textContent = '';
+      if (!day) {
+        sum.textContent = 'Practice runs aren’t kept. The board is for each day’s wire; play today’s from the page without a link.';
+      } else {
+        var ps = players(runs, TRACK), kept = runs.filter(function (r) { return r.track === TRACK; });
+        var latest = kept.reduce(function (a, r) { return r.at > a ? r.at : a; }, '');
+        sum.textContent = ps.length
+          ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + kept.length + (kept.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
+          : 'No one has kept a run on this wire yet. Finish one and tap Challenge a friend to be first.';
+        ps.forEach(function (p, i) {
+          if (i >= 20 && p.player !== me) return;
+          var li = el('li', p.player === me ? 'me' : '');
+          li.appendChild(el('span', 'pos', String(i + 1)));
+          var name = el('span', 'name', p.name + (p.player === me ? ' (you)' : ''));
+          name.appendChild(el('span', 'runs', p.runs + (p.runs === 1 ? ' run kept' : ' runs kept')));
+          li.appendChild(name);
+          if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
+          li.appendChild(el('span', 't', GW.seconds(p.steps) + ' s'));
+          list.appendChild(li);
+        });
+      }
+      drawWave(runs, me);
+    }, function () {
+      sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
+    });
+  }
+
+  // The wave: every player placed by when they first kept a run, in the
+  // groups David's place-in-the-wave uses (Everett Rogers'): innovators, the
+  // first 2.5%; early adopters, the next 13.5%; the early majority and the
+  // late majority, a third each; and the last sixth, the tail.
+  var GROUPS = [
+    { upto: 2.5, name: 'innovators' }, { upto: 16, name: 'early adopters' },
+    { upto: 50, name: 'the early majority' }, { upto: 84, name: 'the late majority' }, { upto: 100, name: 'the tail' }
+  ];
+  function drawWave(runs, me) {
+    var first = {};
+    runs.forEach(function (r) {
+      if (!first[r.player] || r.at < first[r.player].at) first[r.player] = { player: r.player, name: r.name, at: r.at };
+    });
+    var order = Object.keys(first).map(function (k) { return first[k]; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+    var svg = document.getElementById('wave'), NS = 'http://www.w3.org/2000/svg';
+    svg.textContent = '';
+    function add(tag, at) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      svg.appendChild(e);
+      return e;
+    }
+    var X0 = 10, X1 = 310, from = 0;
+    GROUPS.forEach(function (g, i) {
+      add('rect', { x: X0 + from * 3, y: 26, width: Math.max(1, (g.upto - from) * 3 - 1), height: 12, rx: 2,
+        fill: '#00F0FF', 'fill-opacity': i < 2 ? 0.55 : 0.18 });
+      from = g.upto;
+    });
+    [['the tinder', 0, 16], ['the majority', 16, 84], ['the tail', 84, 100]].forEach(function (l) {
+      var t = add('text', { x: X0 + (l[1] + l[2]) / 2 * 3, y: 56, 'text-anchor': 'middle', fill: '#8A93A6', 'font-size': 10 });
+      t.textContent = l[0];
+    });
+    var line = document.getElementById('wave-line');
+    if (!order.length) { line.textContent = 'No one has jumped in yet.'; return; }
+    order.forEach(function (p, i) {
+      var x = X0 + (i + 0.5) / order.length * (X1 - X0);
+      add('circle', { cx: x, cy: 16, r: p.player === me ? 5 : 3.5, fill: p.player === me ? '#FFD700' : '#A855F7' });
+    });
+    var at = -1;
+    order.forEach(function (p, i) { if (p.player === me) at = i; });
+    if (at >= 0) {
+      var share = at / order.length * 100, group = GROUPS.filter(function (g) { return share < g.upto; })[0];
+      line.textContent = 'You jumped in ' + ordinal(at + 1) + ' of ' + order.length + (order.length === 1 ? ' so far' : '') + ', among ' + group.name + '.';
+    } else {
+      line.textContent = order.length + (order.length === 1 ? ' player has' : ' players have') + ' jumped in so far; the first was ' + order[0].name + '. Keep a run to take your place.';
+    }
+  }
+
+  function drawMine() {
+    var tries = tally('tries'), done = tally('finishes'), best = ghost && !friend ? ghost.steps : null;
+    var kept = recall(BEST), r = !best && kept ? GW.rerun(kept, wire) : null;
+    if (r && r.ok) best = r.steps;
+    document.getElementById('mine-line').textContent = tries
+      ? 'On this wire: ' + tries + (tries === 1 ? ' try, ' : ' tries, ') + done + (done === 1 ? ' finish' : ' finishes') + (best != null ? ', best ' + GW.seconds(best) + ' s.' : '.')
+      : 'You haven’t tried this wire on this phone yet.';
   }
 
   // ---- Keeping a run, and the link to race it ------------------------------
@@ -526,7 +849,7 @@
     var line = GW.seconds(last.steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
     btn.disabled = true;
     note.textContent = 'Keeping your run on the beach…';
-    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, { 7: last.replay }).then(function (sent) {
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, { 7: last.replay, 8: String(last.tries) }).then(function (sent) {
       // The slot it landed in: from the beach's answer when it says, else
       // found by reading the room for this very entry.
       var a = sent.answer || {}, at = [a.slot, a.address, a.at, a.position].filter(function (x) {
@@ -542,6 +865,8 @@
       });
     }).then(function (slot) {
       last.slot = slot;
+      var m = mine();
+      if (m.indexOf(slot) < 0) { m.push(slot); remember('ghost-wire:mine', JSON.stringify(m)); }
       btn.disabled = false;
       btn.textContent = 'Share the challenge again';
       share();
