@@ -315,6 +315,92 @@
     color: var(--you);
     font-weight: 600;
   }
+  /* Notes: one box for anyone to say something about the game, and what
+     people have said, newest first. */
+  .notes-form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .notes-form input,
+  .notes-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(232, 236, 244, 0.25);
+    background: rgba(232, 236, 244, 0.06);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .notes-form input { min-height: 44px; }
+  .notes-form textarea { min-height: 6rem; resize: vertical; }
+  .notes-form input:focus-visible,
+  .notes-form textarea:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .notes-form .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .mic-row .mic {
+    margin: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+  .mic-row .mic.listening {
+    border-color: var(--buzz);
+    color: var(--buzz);
+  }
+  .mic-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list {
+    margin-top: 16px;
+  }
+  .notes-list .n {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(232, 236, 244, 0.12);
+  }
+  .notes-list .n-who {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list .n-who strong {
+    color: var(--words);
+    font-weight: 600;
+  }
+  .notes-list .n-text {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .notes-list .more {
+    margin: 6px 0 0;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -357,6 +443,7 @@
       <div class="row">
         <button type="button" id="again">Run again</button>
         <button type="button" id="end-board">See the board</button>
+        <button type="button" id="end-note-btn">Leave a note</button>
       </div>
     </div>
   </div>
@@ -381,11 +468,27 @@
     <p id="mine-line"></p>
     <button type="button" class="go" id="keep-best" hidden></button>
     <p class="note" id="keep-best-note" aria-live="polite"></p>
+    <h3 id="notes-head">Notes</h3>
+    <p class="note">Say anything about the game: what you liked, what was hard, what you’d change. Notes are open for everyone to read, here and on the beach.</p>
+    <form class="notes-form" id="notes-form" autocomplete="off">
+      <label>Your name (optional)
+        <input name="who" type="text" maxlength="40" autocomplete="nickname">
+      </label>
+      <label class="trap" aria-hidden="true">Leave this empty
+        <input name="web" type="text" tabindex="-1">
+      </label>
+      <label>Your note
+        <textarea name="note" maxlength="2000" required></textarea>
+      </label>
+      <button type="submit" class="go">Send</button>
+      <p class="note" id="notes-status" aria-live="polite"></p>
+    </form>
+    <div class="notes-list" id="notes-list"></div>
   </div>
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21g"></script>
+<script src="ghost-wire.js?v=2026-10-21h"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -920,6 +1023,71 @@
     if (e.key === 'Escape' && !sheet.hidden) closeBoard();
   });
 
+  // ---- Notes ---------------------------------------------------------------
+  // Anyone can say something: a line in the room that carries no run, so
+  // the board and the wave pass it by, located at the wire it was said
+  // about. A typed name is shown as a visitor's, never as a beach handle.
+  var notesForm = document.getElementById('notes-form'), notesStatus = document.getElementById('notes-status');
+  Beach.addMic(notesForm.note);
+  notesForm.who.value = recall('ghost-wire:name') || '';
+  notesForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var note = notesForm.note.value.trim();
+    if (notesForm.web.value || !note) return;
+    var name = notesForm.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('ghost-wire:name', name);
+    var send = notesForm.querySelector('button[type=submit]');
+    send.disabled = true;
+    notesStatus.textContent = 'Sending…';
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', note, isDay(TRACK) ? TRACK : '').then(function () {
+      notesForm.note.value = '';
+      notesStatus.textContent = 'Thank you. Your note is on the beach.';
+      drawNotes();
+    }, function () {
+      notesStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () { send.disabled = false; });
+  });
+  document.getElementById('end-note-btn').addEventListener('click', function () {
+    openBoard();
+    notesForm.who.value = notesForm.who.value || recall('ghost-wire:name') || '';
+    document.getElementById('notes-head').scrollIntoView({ block: 'start' });
+    notesForm.note.focus({ preventScroll: true });
+  });
+
+  // What people have said, newest first; a long note shows its opening,
+  // with the rest a tap away.
+  function drawNotes() {
+    var list = document.getElementById('notes-list');
+    return Beach.get(ROOM).then(function (pool) {
+      var notes = slots(pool, '', []).filter(function (s) {
+        return typeof s.entry['7'] !== 'string' && s.entry._.trim();
+      }).sort(function (a, b) { return a.entry['3'] < b.entry['3'] ? 1 : -1; }).slice(0, 40);
+      list.textContent = '';
+      if (!notes.length) { list.appendChild(el('p', 'note', 'No notes yet. Be the first.')); return; }
+      notes.forEach(function (s) {
+        var e = s.entry, n = el('div', 'n'), meta = el('p', 'n-who');
+        var name = who(e) === 'A friend' ? 'A visitor' : who(e), when = new Date(e['3']);
+        meta.appendChild(el('strong', null, name));
+        if (!isNaN(when)) meta.appendChild(document.createTextNode(' · ' + when.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + clock(e['3'])));
+        n.appendChild(meta);
+        var full = e._.trim(), t = el('p', 'n-text');
+        if (full.length > 600) {
+          var cut = full.lastIndexOf(' ', 450);
+          t.textContent = full.slice(0, cut > 250 ? cut : 450) + '…';
+          var more = el('button', 'chip more', 'Read all');
+          more.type = 'button';
+          more.addEventListener('click', function () { t.textContent = full; more.remove(); });
+          n.appendChild(t);
+          n.appendChild(more);
+        } else {
+          t.textContent = full;
+          n.appendChild(t);
+        }
+        list.appendChild(n);
+      });
+    }, function () {});
+  }
+
   function refreshBoard() {
     var title = document.getElementById('sheet-title'), sum = document.getElementById('board-sum');
     var day = isDay(TRACK);
@@ -950,6 +1118,7 @@
       }
       drawWave(runs, me);
       offerBest(runs, me);
+      drawNotes();
     }, function () {
       sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
     });
