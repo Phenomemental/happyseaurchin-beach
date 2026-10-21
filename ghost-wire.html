@@ -6,6 +6,9 @@
 <title>Ghost Wire</title>
 <meta name="description" content="Ghost Wire: guide a glowing point along a neon wire from start to finish as fast as you can without touching it, racing a ghost.">
 <meta name="theme-color" content="#0D0D12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
 <style>
   /* Ghost Wire, an arcade in the dark: the wire neon cyan, you gold, the
      ghost purple. The game is drawn on one canvas filling the screen; the
@@ -18,6 +21,18 @@
     --buzz: #FF3B5C;
     --words: #E8ECF4;
     --dim: #8A93A6;
+    /* The rest of a skin's colours; each skin sets them all (setSkin). */
+    --panel: rgba(13, 13, 18, 0.82);
+    --panel-strong: rgba(13, 13, 18, 0.92);
+    --edge: rgba(0, 240, 255, 0.35);
+    --line: rgba(232, 236, 244, 0.12);
+    --field-line: rgba(232, 236, 244, 0.25);
+    --field-bg: rgba(232, 236, 244, 0.06);
+    --me-row: rgba(255, 215, 0, 0.08);
+    --glow-wire: rgba(0, 240, 255, 0.6);
+    --glow-you: rgba(255, 215, 0, 0.5);
+    --glow-buzz: rgba(255, 59, 92, 0.7);
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -25,7 +40,7 @@
     height: 100%;
     background: var(--night);
     color: var(--words);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font);
     overflow: hidden;
     -webkit-user-select: none;
     user-select: none;
@@ -61,14 +76,14 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--wire);
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    text-shadow: 0 0 10px var(--glow-wire);
   }
   .time {
     font-variant-numeric: tabular-nums;
     font-size: 1.4rem;
     font-weight: 600;
     color: var(--you);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 10px var(--glow-you);
   }
   .ghost-line {
     margin: 4px 0 0;
@@ -86,7 +101,7 @@
     margin: 0;
     padding: 14px 16px;
     border-radius: 10px;
-    background: rgba(13, 13, 18, 0.82);
+    background: var(--panel);
     text-align: center;
     font-size: 1rem;
     line-height: 1.45;
@@ -117,7 +132,7 @@
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    text-shadow: 0 0 14px rgba(255, 59, 92, 0.7);
+    text-shadow: 0 0 14px var(--glow-buzz);
   }
   .end {
     pointer-events: auto;
@@ -125,8 +140,8 @@
     width: 100%;
     padding: 20px 18px;
     border-radius: 12px;
-    background: rgba(13, 13, 18, 0.92);
-    border: 1px solid rgba(0, 240, 255, 0.35);
+    background: var(--panel-strong);
+    border: 1px solid var(--edge);
     text-align: center;
   }
   .end .big {
@@ -135,7 +150,7 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--you);
-    text-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
+    text-shadow: 0 0 16px var(--glow-you);
   }
   .end p {
     margin: 6px 0 0;
@@ -186,8 +201,8 @@
     min-height: 44px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px solid rgba(232, 236, 244, 0.25);
-    background: rgba(232, 236, 244, 0.06);
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
     color: var(--words);
     font: inherit;
     font-size: 1rem;
@@ -273,14 +288,14 @@
     list-style: none;
     margin: 12px 0 0;
     padding: 0;
-    border-top: 1px solid rgba(232, 236, 244, 0.12);
+    border-top: 1px solid var(--line);
   }
   .board li {
     display: flex;
     align-items: baseline;
     gap: 10px;
     padding: 10px 4px;
-    border-bottom: 1px solid rgba(232, 236, 244, 0.12);
+    border-bottom: 1px solid var(--line);
   }
   .board .pos {
     flex: 0 0 1.6rem;
@@ -301,7 +316,7 @@
     font-size: 0.75rem;
     padding: 2px 8px;
     border-radius: 10px;
-    border: 1px solid rgba(232, 236, 244, 0.25);
+    border: 1px solid var(--field-line);
     color: var(--dim);
     white-space: nowrap;
   }
@@ -315,7 +330,7 @@
     color: var(--you);
   }
   .board li.me {
-    background: rgba(255, 215, 0, 0.08);
+    background: var(--me-row);
   }
   .wave {
     display: block;
@@ -342,8 +357,8 @@
     margin-top: 6px;
     padding: 10px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(232, 236, 244, 0.25);
-    background: rgba(232, 236, 244, 0.06);
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
     color: var(--words);
     font: inherit;
     font-size: 1rem;
@@ -391,7 +406,7 @@
   }
   .notes-list .n {
     padding: 10px 0;
-    border-bottom: 1px solid rgba(232, 236, 244, 0.12);
+    border-bottom: 1px solid var(--line);
   }
   .notes-list .n-who {
     margin: 0;
@@ -413,6 +428,39 @@
     padding: 0 12px;
     font-size: 0.85rem;
   }
+  /* The look: a skin to choose, each shown as a small picture of itself. */
+  .skins {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .skin {
+    margin: 0;
+    padding: 8px;
+    min-height: 0;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font-weight: 600;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  .skin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .skin[aria-checked="true"] {
+    border: 2px solid var(--you);
+    padding: 7px;
+  }
+  .setting {
+    margin-top: 12px;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -422,7 +470,7 @@
   <div class="top">
     <h1>Ghost Wire</h1>
     <div class="top-right">
-      <button type="button" class="chip" id="noise" aria-pressed="true" aria-label="Sound and vibration on">🔊</button>
+      <button type="button" class="chip" id="settings-btn" aria-label="Look and sound">⚙</button>
       <button type="button" class="chip" id="board-btn">Board</button>
       <span class="time" id="time" aria-hidden="true">0.00</span>
     </div>
@@ -457,6 +505,24 @@
         <button type="button" id="end-board">See the board</button>
         <button type="button" id="end-note-btn">Leave a note</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Look and sound: the skin this phone draws the game in, and the switch
+     for sound and vibration. Both are kept on the phone only. -->
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="settings-title">Look and sound</h2>
+      <button type="button" class="chip" id="settings-close">Close</button>
+    </div>
+    <h3>Skin</h3>
+    <p class="note">Changes only how the game looks. Every run is timed the same, whatever the skin.</p>
+    <div class="skins" id="skins" role="radiogroup" aria-label="Skin"></div>
+    <h3>Sound</h3>
+    <div class="setting">
+      <button type="button" class="chip" id="noise" aria-pressed="true">🔊 Sound and vibration: on</button>
     </div>
   </div>
 </div>
@@ -500,7 +566,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21l"></script>
+<script src="ghost-wire.js?v=2026-10-21m"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -510,7 +576,52 @@
   var ghostLine = document.getElementById('ghost-line');
   var say = document.getElementById('say');
   var end = document.getElementById('end');
-  var COLORS = { night: '#0D0D12', wire: '#00F0FF', you: '#FFD700', ghost: '#A855F7', buzz: '#FF3B5C' };
+  // ---- Skins ----------------------------------------------------------------
+  // A skin is only how the game is drawn: colours, glow, the dot's shape,
+  // and the words' look. The wire, its walls and the run are the same in
+  // every skin, so every run is timed the same. Other players' ghosts are
+  // drawn in your skin's ghost colour. The choice is kept on this phone.
+  var SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  var SKINS = [
+    { id: 'neon', name: 'Neon', bg: '#0D0D12', wall: '#00F0FF', band: 'rgba(0, 240, 255, 0.10)', mid: 'rgba(0, 240, 255, 0.22)',
+      you: '#FFD700', ghost: '#A855F7', buzz: '#FF3B5C', spark: '#FFFFFF', glow: 12, walls: 2, dot: 'round', font: SANS,
+      words: '#E8ECF4', dim: '#8A93A6', panel: 'rgba(13, 13, 18, 0.82)', strong: 'rgba(13, 13, 18, 0.92)', edge: 'rgba(0, 240, 255, 0.35)',
+      line: 'rgba(232, 236, 244, 0.12)', fieldLine: 'rgba(232, 236, 244, 0.25)', fieldBg: 'rgba(232, 236, 244, 0.06)', me: 'rgba(255, 215, 0, 0.08)',
+      glowWire: 'rgba(0, 240, 255, 0.6)', glowYou: 'rgba(255, 215, 0, 0.5)', glowBuzz: 'rgba(255, 59, 92, 0.7)' },
+    { id: 'paper', name: 'Paper', bg: '#EFE7D8', wall: '#1D1A17', band: 'rgba(29, 26, 23, 0.06)', mid: 'rgba(29, 26, 23, 0.28)',
+      you: '#C21D4E', ghost: '#2F6690', buzz: '#E07B00', spark: '#A8323A', glow: 0, walls: 1.6, dot: 'round',
+      font: '"Cormorant Garamond", Garamond, Georgia, "Times New Roman", serif',
+      words: '#1D1A17', dim: '#6A6158', panel: 'rgba(246, 240, 228, 0.92)', strong: 'rgba(246, 240, 228, 0.97)', edge: 'rgba(29, 26, 23, 0.35)',
+      line: 'rgba(29, 26, 23, 0.14)', fieldLine: 'rgba(29, 26, 23, 0.3)', fieldBg: 'rgba(29, 26, 23, 0.04)', me: 'rgba(194, 29, 78, 0.08)',
+      glowWire: 'transparent', glowYou: 'transparent', glowBuzz: 'transparent' },
+    { id: 'urchin', name: 'Sea urchin', bg: '#06243A', wall: '#7FFFD4', band: 'rgba(127, 255, 212, 0.10)', mid: 'rgba(127, 255, 212, 0.25)',
+      you: '#FF7F6A', ghost: '#C4A7FF', buzz: '#FFE14D', spark: '#E6FFF7', glow: 10, walls: 2, dot: 'urchin', font: SANS,
+      words: '#E6F7FF', dim: '#8FB3C7', panel: 'rgba(6, 36, 58, 0.86)', strong: 'rgba(6, 36, 58, 0.94)', edge: 'rgba(127, 255, 212, 0.35)',
+      line: 'rgba(230, 247, 255, 0.14)', fieldLine: 'rgba(230, 247, 255, 0.28)', fieldBg: 'rgba(230, 247, 255, 0.06)', me: 'rgba(255, 127, 106, 0.12)',
+      glowWire: 'rgba(127, 255, 212, 0.55)', glowYou: 'rgba(255, 127, 106, 0.5)', glowBuzz: 'rgba(255, 225, 77, 0.6)' },
+    { id: 'crt', name: 'Arcade CRT', bg: '#020A02', wall: '#33FF66', band: 'rgba(51, 255, 102, 0.08)', mid: 'rgba(51, 255, 102, 0.25)',
+      you: '#E4FF5A', ghost: '#33CCFF', buzz: '#FF3B3B', spark: '#B8FFC8', glow: 8, walls: 2, dot: 'pixel', scan: true,
+      font: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+      words: '#B8FFC8', dim: '#4FA86A', panel: 'rgba(2, 10, 2, 0.88)', strong: 'rgba(2, 10, 2, 0.95)', edge: 'rgba(51, 255, 102, 0.4)',
+      line: 'rgba(51, 255, 102, 0.16)', fieldLine: 'rgba(51, 255, 102, 0.35)', fieldBg: 'rgba(51, 255, 102, 0.05)', me: 'rgba(228, 255, 90, 0.1)',
+      glowWire: 'rgba(51, 255, 102, 0.6)', glowYou: 'rgba(228, 255, 90, 0.5)', glowBuzz: 'rgba(255, 59, 59, 0.6)' },
+    { id: 'contrast', name: 'High contrast', bg: '#000000', wall: '#FFFFFF', band: 'rgba(255, 255, 255, 0.07)', mid: 'rgba(255, 255, 255, 0.35)',
+      you: '#FFE600', ghost: '#4DA3FF', buzz: '#FF5A5A', spark: '#FFFFFF', glow: 0, walls: 4, dot: 'round', ring: true, font: SANS,
+      words: '#FFFFFF', dim: '#D0D0D0', panel: 'rgba(0, 0, 0, 0.9)', strong: '#000000', edge: '#FFFFFF',
+      line: 'rgba(255, 255, 255, 0.35)', fieldLine: '#FFFFFF', fieldBg: 'rgba(255, 255, 255, 0.08)', me: 'rgba(255, 230, 0, 0.16)',
+      glowWire: 'transparent', glowYou: 'transparent', glowBuzz: 'transparent' }
+  ];
+  var skin = SKINS[0];
+  function setSkin(id) {
+    skin = SKINS.filter(function (k) { return k.id === id; })[0] || SKINS[0];
+    var r = document.documentElement.style;
+    [['--night', 'bg'], ['--wire', 'wall'], ['--you', 'you'], ['--ghost', 'ghost'], ['--buzz', 'buzz'], ['--words', 'words'], ['--dim', 'dim'],
+     ['--panel', 'panel'], ['--panel-strong', 'strong'], ['--edge', 'edge'], ['--line', 'line'], ['--field-line', 'fieldLine'],
+     ['--field-bg', 'fieldBg'], ['--me-row', 'me'], ['--glow-wire', 'glowWire'], ['--glow-you', 'glowYou'], ['--glow-buzz', 'glowBuzz'],
+     ['--font', 'font']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
+    var meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', skin.bg);
+  }
   var ROOM = 'pool:ghost-wire', LAW = 'game:ghost-wire';
   var MOTION = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function still() { return !!(MOTION && MOTION.matches); }
@@ -535,6 +646,8 @@
     remember('ghost-wire:' + what + ':' + TRACK, String(n));
     return n;
   }
+  setSkin(recall('ghost-wire:skin'));
+
   // The slots in the room this phone has kept runs at, so the board knows
   // which player is you.
   function mine() {
@@ -708,9 +821,8 @@
     var ac = null, out = null, hum = null, lastPulse = 0;
     var btn = document.getElementById('noise');
     function show() {
-      btn.textContent = on ? '🔊' : '🔇';
+      btn.textContent = on ? '🔊 Sound and vibration: on' : '🔇 Sound and vibration: off';
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      btn.setAttribute('aria-label', on ? 'Sound and vibration on' : 'Sound and vibration off');
     }
     btn.addEventListener('click', function () {
       on = !on;
@@ -874,7 +986,7 @@
     var close = Math.sqrt(run.near) / GW.LAW.half;
     if (run.status === 'running') audio.near(close);
     if (run.status === 'running' && close > 0.6 && Math.random() < (close - 0.6) * (still() ? 0.6 : 2)) {
-      sparks(run, 1, COLORS.you, 0.6);
+      sparks(run, 1, skin.you, 0.6);
     }
     if (run.status === 'finished') finish();
     else if (run.status !== 'running') buzz(run.status);
@@ -886,14 +998,14 @@
     say.className = 'say buzz';
     say.textContent = status === 'stalled' ? 'Out of time' : 'Buzz';
     say.hidden = false;
-    sparks(run, still() ? 10 : 28, COLORS.buzz, 1.6);
+    sparks(run, still() ? 10 : 28, skin.buzz, 1.6);
     if (!still()) shakeUntil = buzzAt + 380;
     audio.buzz();
   }
 
   function finish() {
     phase = 'done';
-    sparks(run, still() ? 10 : 30, COLORS.you, 1.2);
+    sparks(run, still() ? 10 : 30, skin.you, 1.2);
     var replay = GW.encode(TRACK, moves, run.step);
     var check = GW.rerun(replay, wire), sound = !!(check && check.ok);
     var tries = tally('tries');
@@ -1062,10 +1174,63 @@
     if (opener && opener.focus) opener.focus({ preventScroll: true });
   }
   document.getElementById('board-btn').addEventListener('click', openBoard);
+
+  // ---- The look-and-sound sheet ---------------------------------------------
+  var settings = document.getElementById('settings'), skinList = document.getElementById('skins');
+  // Each skin is offered as a small picture of itself: its ground, a bend of
+  // its wire, your dot and a ghost.
+  SKINS.forEach(function (k) {
+    var b = el('button', 'skin');
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.dataset.skin = k.id;
+    var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 60');
+    svg.setAttribute('aria-hidden', 'true');
+    function add(tag, at) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (a) { e.setAttribute(a, at[a]); });
+      svg.appendChild(e);
+    }
+    add('rect', { x: 0, y: 0, width: 120, height: 60, fill: k.bg });
+    add('path', { d: 'M8 46 C 40 46, 40 14, 72 14 S 104 46, 112 46', fill: 'none', stroke: k.band, 'stroke-width': 16 });
+    add('path', { d: 'M8 38 C 40 38, 40 6, 72 6 S 104 38, 112 38', fill: 'none', stroke: k.wall, 'stroke-width': Math.min(k.walls, 3) });
+    add('path', { d: 'M8 54 C 40 54, 40 22, 72 22 S 104 54, 112 54', fill: 'none', stroke: k.wall, 'stroke-width': Math.min(k.walls, 3) });
+    add('circle', { cx: 92, cy: 33, r: 4, fill: k.ghost });
+    if (k.dot === 'pixel') add('rect', { x: 27, y: 33, width: 8, height: 8, fill: k.you });
+    else add('circle', { cx: 31, cy: 37, r: k.dot === 'urchin' ? 4 : 4.5, fill: k.you, stroke: k.dot === 'urchin' ? k.you : 'none', 'stroke-width': k.dot === 'urchin' ? 5 : 0, 'stroke-dasharray': k.dot === 'urchin' ? '1.5 1.5' : '' });
+    b.appendChild(svg);
+    b.appendChild(document.createTextNode(k.name));
+    b.addEventListener('click', function () {
+      setSkin(k.id);
+      remember('ghost-wire:skin', k.id);
+      markSkin();
+      layout();
+    });
+    skinList.appendChild(b);
+  });
+  function markSkin() {
+    Array.prototype.forEach.call(skinList.children, function (b) {
+      b.setAttribute('aria-checked', b.dataset.skin === skin.id ? 'true' : 'false');
+    });
+  }
+  markSkin();
+  document.getElementById('settings-btn').addEventListener('click', function () {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    settings.hidden = false;
+    document.getElementById('settings-close').focus({ preventScroll: true });
+  });
+  function closeSettings() {
+    settings.hidden = true;
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('settings-close').addEventListener('click', closeSettings);
   document.getElementById('end-board').addEventListener('click', openBoard);
   document.getElementById('sheet-close').addEventListener('click', closeBoard);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !sheet.hidden) closeBoard();
+    if (e.key === 'Escape' && !settings.hidden) closeSettings();
   });
 
   // ---- Notes ---------------------------------------------------------------
@@ -1194,18 +1359,18 @@
     var X0 = 10, X1 = 310, from = 0;
     GROUPS.forEach(function (g, i) {
       add('rect', { x: X0 + from * 3, y: 26, width: Math.max(1, (g.upto - from) * 3 - 1), height: 12, rx: 2,
-        fill: '#00F0FF', 'fill-opacity': i < 2 ? 0.55 : 0.18 });
+        fill: skin.wall, 'fill-opacity': i < 2 ? 0.55 : 0.18 });
       from = g.upto;
     });
     [['the tinder', 0, 16], ['the majority', 16, 84], ['the tail', 84, 100]].forEach(function (l) {
-      var t = add('text', { x: X0 + (l[1] + l[2]) / 2 * 3, y: 56, 'text-anchor': 'middle', fill: '#8A93A6', 'font-size': 10 });
+      var t = add('text', { x: X0 + (l[1] + l[2]) / 2 * 3, y: 56, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 });
       t.textContent = l[0];
     });
     var line = document.getElementById('wave-line');
     if (!order.length) { line.textContent = 'No one has jumped in yet.'; return; }
     order.forEach(function (p, i) {
       var x = X0 + (i + 0.5) / order.length * (X1 - X0);
-      add('circle', { cx: x, cy: 16, r: p.player === me ? 5 : 3.5, fill: p.player === me ? '#FFD700' : '#A855F7' });
+      add('circle', { cx: x, cy: 16, r: p.player === me ? 5 : 3.5, fill: p.player === me ? skin.you : skin.ghost });
     });
     var at = -1;
     order.forEach(function (p, i) { if (p.player === me) at = i; });
@@ -1379,7 +1544,7 @@
     var p = px(st);
     for (var i = 0; i < n; i++) {
       var a = Math.random() * Math.PI * 2, v = (40 + Math.random() * 160) * force;
-      bits.push({ x: p.x, y: p.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.35 + Math.random() * 0.4, age: 0, color: Math.random() < 0.3 ? '#FFFFFF' : color });
+      bits.push({ x: p.x, y: p.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.35 + Math.random() * 0.4, age: 0, color: Math.random() < 0.3 ? skin.spark : color });
     }
     if (bits.length > 300) bits.splice(0, bits.length - 300);
   }
@@ -1401,7 +1566,7 @@
 
   // ---- Drawing -----------------------------------------------------------
   var view = { scale: 1, ox: 0, oy: 0, x0: 0, y0: 0, dpr: 1 };
-  var wireLayer = document.createElement('canvas');
+  var wireLayer = document.createElement('canvas'), scanLayer = null;
   var extent = null;
 
   function px(p) {
@@ -1457,27 +1622,39 @@
       g.stroke();
     }
     var half = GW.LAW.half;
-    g.strokeStyle = 'rgba(0, 240, 255, 0.10)';
+    g.fillStyle = skin.bg;
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = skin.band;
     g.lineWidth = 2 * half * scale;
     g.lineCap = 'butt';
     line(0);
     g.lineCap = 'round';
-    g.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+    g.strokeStyle = skin.mid;
     g.lineWidth = 1;
     g.setLineDash([3, 6]);
     line(0);
     g.setLineDash([]);
-    g.shadowColor = COLORS.wire;
-    g.shadowBlur = 12;
-    g.strokeStyle = COLORS.wire;
-    g.lineWidth = 2;
+    g.shadowColor = skin.wall;
+    g.shadowBlur = skin.glow;
+    g.strokeStyle = skin.wall;
+    g.lineWidth = skin.walls;
     line(half);
     line(-half);
     g.shadowBlur = 0;
-    mark(g, 0, COLORS.you);
-    mark(g, wire.length, COLORS.wire);
-    label(g, 'START', 0, -1, COLORS.you);
-    label(g, 'FINISH', wire.length, 1, COLORS.wire);
+    mark(g, 0, skin.you);
+    mark(g, wire.length, skin.wall);
+    label(g, 'START', 0, -1, skin.you);
+    label(g, 'FINISH', wire.length, 1, skin.wall);
+    // A screen of old glass: faint lines across it, drawn over everything.
+    scanLayer = null;
+    if (skin.scan) {
+      scanLayer = document.createElement('canvas');
+      scanLayer.width = canvas.width;
+      scanLayer.height = canvas.height;
+      var sg = scanLayer.getContext('2d');
+      sg.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      for (var y = 0; y < scanLayer.height; y += 3 * dpr) sg.fillRect(0, y, scanLayer.width, Math.max(1, dpr));
+    }
   }
 
   // A word just past an end of the wire, along the way it runs there.
@@ -1485,12 +1662,12 @@
     var e = way > 0 ? wire.n - 1 : 0, f = way > 0 ? wire.n - 2 : 1;
     var tx = wire.x[e] - wire.x[f], ty = wire.y[e] - wire.y[f], tl = Math.sqrt(tx * tx + ty * ty) || 1;
     var at = px(GW.place(wire, s, 0)), off = GW.LAW.half * view.scale * 0.6 + 24;
-    g.font = '700 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    g.font = '700 13px ' + skin.font;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillStyle = color;
     g.shadowColor = color;
-    g.shadowBlur = 8;
+    g.shadowBlur = skin.glow ? 8 : 0;
     g.fillText(word, at.x + tx / tl * off, at.y + ty / tl * off);
     g.shadowBlur = 0;
   }
@@ -1501,7 +1678,7 @@
     g.strokeStyle = color;
     g.lineWidth = 3;
     g.shadowColor = color;
-    g.shadowBlur = 10;
+    g.shadowBlur = skin.glow ? 10 : 0;
     g.beginPath();
     g.moveTo(a.x, a.y);
     g.lineTo(b.x, b.y);
@@ -1526,19 +1703,46 @@
       ctx.stroke();
     }
     var p = px(points[n - 1]);
-    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
-    glow.addColorStop(0, color);
-    glow.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.globalAlpha = alpha * 0.55;
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
-    ctx.fill();
+    if (skin.glow) {
+      var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
+      glow.addColorStop(0, color);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalAlpha = alpha * 0.55;
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.globalAlpha = alpha;
     ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.strokeStyle = color;
+    if (skin.dot === 'pixel') {
+      // A blocky arcade dot, set on a grid of whole pixels.
+      ctx.fillRect(Math.round(p.x) - 5, Math.round(p.y) - 5, 10, 10);
+    } else if (skin.dot === 'urchin') {
+      // A little sea urchin: a round body with spines all round it.
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (var k = 0; k < 12; k++) {
+        var a = k * Math.PI / 6;
+        ctx.moveTo(p.x + Math.cos(a) * 4, p.y + Math.sin(a) * 4);
+        ctx.lineTo(p.x + Math.cos(a) * 9.5, p.y + Math.sin(a) * 9.5);
+      }
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, skin.ring ? 7 : 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      if (skin.ring) {
+        // A dark ring keeps the dot clear against the white walls.
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = skin.bg;
+        ctx.stroke();
+      }
+    }
     ctx.globalAlpha = 1;
   }
 
@@ -1554,7 +1758,7 @@
 
   function draw(alpha, dt, ts) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = COLORS.night;
+    ctx.fillStyle = skin.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (!wire) return;
     // A buzz shakes the screen for a moment, less and less.
@@ -1568,18 +1772,22 @@
     ctx.drawImage(wireLayer, 0, 0);
     ctx.setTransform(view.dpr, 0, 0, view.dpr, sx * view.dpr, sy * view.dpr);
     var step = run ? run.step : 0;
-    if (ghost) dot(ghostAt(step), COLORS.ghost, 0.75);
+    if (ghost) dot(ghostAt(step), skin.ghost, 0.75);
     if (run) {
       // Your point, eased between the last two steps for a smooth line.
       var shown = trail.slice(-TAIL);
       if (phase === 'running') {
         shown[shown.length - 1] = { x: prev.x + (run.x - prev.x) * alpha, y: prev.y + (run.y - prev.y) * alpha };
       }
-      dot(shown, phase === 'buzzed' ? COLORS.buzz : COLORS.you, 1);
+      dot(shown, phase === 'buzzed' ? skin.buzz : skin.you, 1);
     } else {
-      dot([{ x: wire.x[0], y: wire.y[0] }], COLORS.you, 1);
+      dot([{ x: wire.x[0], y: wire.y[0] }], skin.you, 1);
     }
     drawSparks(dt);
+    if (scanLayer) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(scanLayer, 0, 0);
+    }
     timeEl.textContent = GW.seconds(step);
   }
 
