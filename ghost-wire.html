@@ -378,11 +378,13 @@
     <p id="wave-line"></p>
     <h3>On this phone</h3>
     <p id="mine-line"></p>
+    <button type="button" class="go" id="keep-best" hidden></button>
+    <p class="note" id="keep-best-note" aria-live="polite"></p>
   </div>
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21e"></script>
+<script src="ghost-wire.js?v=2026-10-21f"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -434,6 +436,14 @@
   var TRACK = '', TODAY = '', DAY = '', wire = null, BEST = '';
   var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
   var friend = null;                    // the run a link brought, re-run
+  var linked = null;                    // a link's run when it was your own
+
+  // A kept line is yours when this phone kept it, or it carries the name
+  // this phone signs with.
+  function isMine(entry, slot) {
+    var name = (recall('ghost-wire:name') || '').toLowerCase();
+    return mine().indexOf(slot) >= 0 || (!!name && who(entry).toLowerCase() === name);
+  }
 
   function isDay(track) { return /^\d{10}$/.test(track); }
   function who(entry) {
@@ -458,15 +468,18 @@
       if (kept && kept.track === TRACK) {
         var r = GW.rerun(entry[7], wire);
         if (r && r.ok) {
-          friend = r;
-          ghostWho = who(entry);
+          if (isMine(entry, askedGhost)) linked = r;
+          else {
+            friend = r;
+            ghostWho = who(entry);
+          }
         }
       }
       var label = TRACK === TODAY ? 'Today’s wire' : isDay(TRACK) ? 'An earlier day’s wire' : 'Practice wire';
       document.getElementById('say-label').textContent = label;
       BRIEF = say.innerHTML;
       loadGhost();
-      if (askedGhost && !friend) {
+      if (askedGhost && !friend && !linked) {
         ghostLine.textContent = got[1] === null && !clock
           ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
           : 'That ghost couldn’t be found on this wire.';
@@ -477,9 +490,10 @@
     });
   }
 
-  // The ghost is a friend's run when a link brought one, else your best
-  // here, re-run on the wire; a kept run that doesn't re-run to its finish
-  // is no ghost.
+  // The ghost is a friend's run when a link brought one, else your best:
+  // the faster of the best this phone kept and your own run a link brought,
+  // re-run on the wire; a kept run that doesn't re-run to its finish is no
+  // ghost.
   function loadGhost() {
     if (friend) {
       ghost = friend;
@@ -489,6 +503,7 @@
     var kept = recall(BEST);
     var r = kept ? GW.rerun(kept, wire) : null;
     ghost = r && r.ok ? r : null;
+    if (linked && (!ghost || linked.steps < ghost.steps)) ghost = linked;
     ghostLine.textContent = ghost
       ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s'
       : 'No ghost yet: your first finish becomes one.';
@@ -596,10 +611,12 @@
     count('finishes');
     last = { replay: sound ? replay : '', steps: run.step, slot: '', tries: tries };
     document.getElementById('end-tries').textContent = tries === 1 ? 'First try on this wire!' : 'On your ' + ordinal(tries) + ' try at this wire.';
-    var mine = recall(BEST), mineRun = mine ? GW.rerun(mine, wire) : null;
+    var bestKept = recall(BEST), mineRun = bestKept ? GW.rerun(bestKept, wire) : null;
     var was = mineRun && mineRun.ok ? mineRun.steps : null;
+    if (linked && (was == null || linked.steps < was)) was = linked.steps;
     var better = was == null || run.step < was;
     var kept = better && sound && remember(BEST, replay);
+    if (kept) remember('ghost-wire:best-tries:' + TRACK, String(tries));
     var vs = ghost ? ghost.steps : null;
     document.getElementById('end-time').textContent = GW.seconds(run.step) + ' s';
     document.getElementById('end-line').textContent = friend
@@ -613,6 +630,20 @@
       : better ? 'This device couldn’t keep it as your ghost.'
       : 'Your best here stays at ' + GW.seconds(was) + ' s.';
     if (!friend && kept) loadGhost();
+    // A new best goes on the board by itself once this phone has put a run
+    // there before, under the same name; the first time is always asked.
+    if (kept && isDay(TRACK) && (mine().length || recall('ghost-wire:name'))) {
+      var auto = last;
+      keepRun(auto.replay, auto.steps, auto.tries).then(function (slot) {
+        auto.slot = slot;
+        if (last === auto && phase === 'done') {
+          document.getElementById('end-note').textContent = 'Your new best is on the board.';
+          document.getElementById('challenge').textContent = 'Challenge a friend';
+        }
+      }, function () {
+        if (last === auto && phase === 'done') document.getElementById('end-note').textContent = 'Your new best couldn’t reach the board just now; tap Challenge a friend to try again.';
+      });
+    }
     var rank = document.getElementById('end-rank');
     rank.textContent = '';
     var keep = document.getElementById('keep');
@@ -774,6 +805,7 @@
         });
       }
       drawWave(runs, me);
+      offerBest(runs, me);
     }, function () {
       sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
     });
@@ -827,10 +859,37 @@
     }
   }
 
+  // When this phone's best on a day's wire is faster than your best on the
+  // board (or you aren't on it), one tap puts it there.
+  var keepBest = document.getElementById('keep-best');
+  function phoneBest() {
+    var kept = recall(BEST), r = kept ? GW.rerun(kept, wire) : null;
+    return r && r.ok ? { replay: kept, steps: r.steps } : null;
+  }
+  function offerBest(runs, me) {
+    var best = isDay(TRACK) ? phoneBest() : null;
+    var board = me ? players(runs, TRACK).filter(function (p) { return p.player === me; })[0] : null;
+    keepBest.hidden = !(best && (!board || best.steps < board.steps));
+    if (!keepBest.hidden) keepBest.textContent = 'Put my best (' + GW.seconds(best.steps) + ' s) on the board';
+  }
+  keepBest.addEventListener('click', function () {
+    var best = phoneBest(), note = document.getElementById('keep-best-note');
+    if (!best) return;
+    keepBest.disabled = true;
+    note.textContent = 'Keeping your best on the beach…';
+    var tries = parseInt(recall('ghost-wire:best-tries:' + TRACK), 10);
+    keepRun(best.replay, best.steps, tries > 0 ? tries : 0).then(function () {
+      note.textContent = 'Your best is on the board.';
+      keepBest.disabled = false;
+      refreshBoard();
+    }, function () {
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      keepBest.disabled = false;
+    });
+  });
+
   function drawMine() {
-    var tries = tally('tries'), done = tally('finishes'), best = ghost && !friend ? ghost.steps : null;
-    var kept = recall(BEST), r = !best && kept ? GW.rerun(kept, wire) : null;
-    if (r && r.ok) best = r.steps;
+    var tries = tally('tries'), done = tally('finishes'), pb = phoneBest(), best = pb ? pb.steps : null;
     document.getElementById('mine-line').textContent = tries
       ? 'On this wire: ' + tries + (tries === 1 ? ' try, ' : ' tries, ') + done + (done === 1 ? ' finish' : ' finishes') + (best != null ? ', best ' + GW.seconds(best) + ' s.' : '.')
       : 'You haven’t tried this wire on this phone yet.';
@@ -840,16 +899,13 @@
   // A kept run goes to the room as a visitor's line, located at its wire;
   // its slot there is the ghost in the link. A typed name is shown as a
   // visitor's, never as a beach handle.
-  document.getElementById('challenge').addEventListener('click', function () {
-    var btn = this, note = document.getElementById('keep-note');
-    if (!last || !last.replay) return;
-    if (last.slot) return share();
-    var name = document.getElementById('who').value.replace(/\s+/g, ' ').trim().slice(0, 40);
-    if (name) remember('ghost-wire:name', name);
-    var line = GW.seconds(last.steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
-    btn.disabled = true;
-    note.textContent = 'Keeping your run on the beach…';
-    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, { 7: last.replay, 8: String(last.tries) }).then(function (sent) {
+  // Keep a run in the room; resolves with the slot it landed in.
+  function keepRun(replay, steps, tries) {
+    var name = (recall('ghost-wire:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var line = GW.seconds(steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
+    var more = { 7: replay };
+    if (tries) more[8] = String(tries);
+    return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
       // The slot it landed in: from the beach's answer when it says, else
       // found by reading the room for this very entry.
       var a = sent.answer || {}, at = [a.slot, a.address, a.at, a.position].filter(function (x) {
@@ -858,15 +914,28 @@
       if (at) return at;
       return Beach.get(ROOM).then(function (pool) {
         var hit = slots(pool, '', []).filter(function (s) {
-          return s.entry['3'] === sent.entry[3] && s.entry['7'] === last.replay;
+          return s.entry['3'] === sent.entry[3] && s.entry['7'] === replay;
         })[0];
         if (!hit) throw new Error('not found');
         return hit.slot;
       });
     }).then(function (slot) {
-      last.slot = slot;
       var m = mine();
       if (m.indexOf(slot) < 0) { m.push(slot); remember('ghost-wire:mine', JSON.stringify(m)); }
+      return slot;
+    });
+  }
+
+  document.getElementById('challenge').addEventListener('click', function () {
+    var btn = this, note = document.getElementById('keep-note');
+    if (!last || !last.replay) return;
+    if (last.slot) return share();
+    var name = document.getElementById('who').value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('ghost-wire:name', name);
+    btn.disabled = true;
+    note.textContent = 'Keeping your run on the beach…';
+    keepRun(last.replay, last.steps, last.tries).then(function (slot) {
+      last.slot = slot;
       btn.disabled = false;
       btn.textContent = 'Share the challenge again';
       share();
