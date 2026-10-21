@@ -13,7 +13,7 @@ this repo are built, and keeps its record on the beach.
 | Next.js + TypeScript | One static page, `ghost-wire.html`, and one script, `ghost-wire.js`, in plain JavaScript | This repo is static pages served from GitHub Pages (`phenomemental.github.io/happyseaurchin-beach/`) with no build step. Every page is HTML plus small IIFE scripts, cache-busted with `?v=`. Next.js would need a build and a different host. |
 | "Insert your database here" | The beach, `beach.happyseaurchin.com/.well-known/pscale-beach`, through `beach.js` | `beach.js` already reads blocks, reads the beach's clock, and appends to pools from these pages. |
 | Track paths stored | Not stored. Each day's wire is generated from that day's address on the beach's clock | The same address always gives the same wire, so nothing has to be kept. |
-| Replays stored frame by frame | Inputs recorded (when you press and release); the frame-by-frame trace is re-run from them | This makes a replay about 100 characters long, and it lets the page check a claimed time by re-running it (§5). |
+| Replays stored frame by frame | The finger's moves recorded, one per step; the frame-by-frame trace is re-run from them | A replay is 1–3 KB, and the page can check a claimed time by re-running it (§5). |
 | Friend connections | None. A friend is whoever you send the link to | Visitors on these pages have no handles, and the link already carries everything a challenge needs. |
 | `?track=[track_id]&ghost=[replay_id]` | `ghost-wire.html?track=2026413700&ghost=23` | `track` is the day's address; `ghost` is the slot the beach gave the run in the pool (§3). |
 
@@ -43,8 +43,8 @@ taken yet.
 - `_`: the briefing, one short line (see §6).
 - `1` WIRE LAW: how a day's wire is drawn from its address (seed, generator,
   version).
-- `2` RUN LAW: the moves (hold to go, let go to brake) and what a buzz does
-  (the attempt restarts).
+- `2` RUN LAW: the move (drag anywhere, and the point moves as the finger
+  does) and what a buzz does (the attempt restarts).
 - `3` GHOST LAW: what a kept run carries (the replay format). Ghosts are
   re-run, never taken on trust.
 - `4` SCORE LAW: time is counted in simulation steps; you're ranked among the
@@ -109,16 +109,16 @@ block.
      normal, and the curvature `κ` (from the turn between neighbouring
      segments).
 
-## 5. Runs and ghosts: record inputs, not positions
+## 5. Runs and ghosts: record the finger, not positions
 
-- **Fixed-step simulation at 120 Hz.** The input is read once per step, and
-  the screen interpolates between steps.
-- **A replay** is the list of steps at which "hold" changed, plus the step the
-  run ended on. It is stored as varint deltas, base64url, behind a version
-  prefix: `gw1.<track>.<steps>.<data>`. A 30-second run is about 100
-  characters.
-- **The spec's per-frame record** (time, progress 0–1, speed, alive/buzzed)
-  is rebuilt exactly by re-running the replay on its wire. The ghost is drawn
+- **Fixed-step simulation at 60 Hz.** Each step takes the finger's movement
+  since the last step, in whole units of 0.001 wire units (at most 20 a step
+  along each way), and the screen interpolates between steps.
+- **A replay** is every step's move, as zigzag varints, with a run of still
+  steps written once with its length, in base64url behind a version prefix:
+  `gw1.<track>.<steps>.<moves>`. A 10-second run is about 1.5 KB.
+- **The spec's per-frame record** (time, progress 0–1, alive/buzzed) is
+  rebuilt exactly by re-running the replay on its wire. The ghost is drawn
   from that rebuilt record, step for step alongside you.
 - **Honesty comes from re-running.** A pool on an open beach takes anyone's
   lines, so the page never trusts a claimed time. It re-runs each ghost and
@@ -126,43 +126,47 @@ block.
   replay format can be published in full without letting anyone fake a
   result.
 - **Determinism rules** (so every browser re-runs a ghost identically):
-  - Anything the simulation reads uses only `+ − × ÷` and `Math.sqrt`, over
-    tables built at load.
+  - Moves arrive as whole numbers, so the run depends only on them and on
+    `+ − × ÷` over tables built at load.
   - Randomness for the wire comes from integer `mulberry32`.
   - Curves are polynomial (a uniform cubic B-spline).
   - No `Math.sin/cos/atan2/pow/exp` in the simulation, because engines may
     differ in the last bit.
   - Rendering can use anything.
-- **Versions.** The version prefix lets the wire or the physics change later
+- **Versions.** The version prefix lets the wire or the rules change later
   without breaking old ghosts. A new version gets a new prefix, and the old
   code path stays.
 
-## 6. The physics, in one model
+## 6. The run, traced
 
-The spec says "higher speeds widen the tolerance margin around curves". This
-plan reads it as: the faster you take a bend, the further the point swings
-out from the centre of the wire, and past the wire's edge it buzzes.
+The spec's control was one touch: hold to go, let go to brake. Played on a
+phone, people's first instinct was to trace the wire with a finger, so the
+game is traced instead, like a fairground buzz wire. The finger can be
+anywhere on the screen and the point copies its movement, so the finger never
+hides the point.
 
-State: `s` (distance along the wire), `v` (speed), `d` (sideways offset). Each
-step:
+State: the point's position `(x, y)`, and `i`, the step of the wire nearest
+it. Each step:
 
 ```
-v += (held ? ACCEL : -BRAKE) * dt        clamp 0 … VMAX
-s += v * dt
-d += (SWING * v*v * κ(s) - d) * SETTLE * dt
-buzz   if |d| > HALF_WIDTH               → attempt restarts
-finish if s >= LENGTH                    → time = steps / 120
+(x, y) += the finger's move              at most 20 units a step each way
+i       = the nearest step of the wire, looked for within 30 steps of the last
+buzz   if the distance from (x, y) to the wire > HALF_WIDTH   → attempt restarts
+finish if i is at the end and (x, y) has crossed the end      → time = steps / 60
 ```
 
-- **Collision** is that one comparison. No polygon tests are needed.
+- **Lifting the finger** doesn't buzz: the point waits where it is, and the
+  clock keeps running.
+- **The wire** is 6 points of B-spline, with half-width 0.045 (about a
+  fingertip on a phone).
 - **The constants** live in one table. They are tuned by playing on phones
   (step 4), then frozen as wire law `gw1` before the first share link goes
   out.
 - **The briefing on screen** tells the player three things only: where they
-  start, their moves, and the objective (`ways:games` 1). The briefing is:
-  *"Start at the open end of today's wire. Hold to go; let go to brake. Reach
-  the far end as fast as you can without touching the wire."* How bends
-  behave at speed is strategy, so the page never says it.
+  start, their move, and the objective (`ways:games` 1). The briefing is:
+  *"Your point waits at the gold end of the wire. Put a finger anywhere and
+  drag: the point moves as your finger does. Bring it to the far end as fast
+  as you can without touching the walls."*
 
 ## 7. The page
 
@@ -176,12 +180,13 @@ and its page script inline:
 
 - **Canvas.** Scaled for device pixel ratio. The whole wire fits the screen,
   so v1 needs no camera.
-- **Input.** Pointer down/up on the canvas and the Space key. `touch-action:
+- **Input.** One pointer, a finger or a mouse held down, from anywhere on
+  the canvas, captured so it keeps moving the point over the words. `touch-action:
   none` and prevented defaults stop scrolling and zooming.
 - **Loop.** `requestAnimationFrame` drives a fixed-step accumulator.
 - **Render.** The spec's palette: background `#0D0D12`, wire `#00F0FF`,
   player `#FFD700`, ghost `#A855F7`, with layered strokes for the glow.
-- **Feel.** Sparks when braking or swinging wide. A buzz shakes the screen and
+- **Feel.** Sparks when the point runs close to a wall. A buzz shakes the screen and
   calls `navigator.vibrate` where it exists (not iOS Safari).
 - **Reduced motion.** For anyone whose device asks for less motion, there is
   no shake and fewer sparks, as with every page here.
@@ -225,8 +230,8 @@ and its page script inline:
     a practice wire.
   - The end screen says plainly that the run can't be kept just now.
   - Nothing waits longer than `beach.js`'s six seconds.
-- **Size.** A kept run is about 250 bytes, so a thousand runs is about 250 KB
-  to read whole. That's fine for early days. If it outgrows that, David could
+- **Size.** A kept run is about 2 KB, so a thousand runs is about 2 MB
+  to read whole. That's fine for the first few hundred runs; past that the rank should read only the day's entries. If it outgrows that, David could
   set it up as its own world on the beach (`beach.happyseaurchin.com/w/ghost-wire`).
   That's an act only the beach's operator can do.
 - **A risk to accept for now.** Visitor lines are unlocked, so anyone could

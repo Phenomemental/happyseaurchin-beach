@@ -163,7 +163,7 @@
   <div class="middle">
     <!-- The briefing tells three things only: where you start, your moves,
          and what you are trying to do (ways:games 1). -->
-    <p class="say" id="say" aria-live="polite"><strong>Today’s wire</strong>Start at the open end of the wire. Hold to go; let go to brake. Reach the far end as fast as you can without touching the wire.</p>
+    <p class="say" id="say" aria-live="polite"><strong>Today’s wire</strong>Your point waits at the gold end of the wire. Put a finger anywhere and drag: the point moves as your finger does. Bring it to the far end as fast as you can without touching the walls.</p>
     <div class="end" id="end" hidden aria-live="polite">
       <p class="big" id="end-time"></p>
       <p id="end-line"></p>
@@ -173,7 +173,7 @@
   </div>
 </div>
 
-<script src="ghost-wire.js?v=2026-10-21b"></script>
+<script src="ghost-wire.js?v=2026-10-21c"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -215,64 +215,74 @@
   }
   loadGhost();
 
-  // ---- Holding -----------------------------------------------------------
-  // Held while any finger or pointer is down on the game, or Space is.
-  var pointers = {}, space = false;
-  function held() {
-    return space || Object.keys(pointers).length > 0;
-  }
+  // ---- The finger --------------------------------------------------------
+  // One finger (or a mouse held down) moves the point, from anywhere on
+  // the screen: what it has moved since the last step waits in owed, in
+  // screen pixels, until the step takes it.
+  var finger = null, owed = { x: 0, y: 0 }, carry = { x: 0, y: 0 };
   canvas.addEventListener('pointerdown', function (e) {
     e.preventDefault();
-    pointers[e.pointerId] = true;
-    press();
+    if (finger) return;
+    finger = { id: e.pointerId, x: e.clientX, y: e.clientY };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    begin();
   });
-  function lift(e) { delete pointers[e.pointerId]; }
+  window.addEventListener('pointermove', function (e) {
+    if (!finger || e.pointerId !== finger.id) return;
+    owed.x += e.clientX - finger.x;
+    owed.y += e.clientY - finger.y;
+    finger.x = e.clientX;
+    finger.y = e.clientY;
+  });
+  function lift(e) {
+    if (finger && e.pointerId === finger.id) finger = null;
+  }
   window.addEventListener('pointerup', lift);
   window.addEventListener('pointercancel', lift);
-  window.addEventListener('keydown', function (e) {
-    if (e.code !== 'Space' || (e.target && e.target.tagName === 'BUTTON')) return;
-    e.preventDefault();
-    if (e.repeat) return;
-    space = true;
-    press();
-  });
-  window.addEventListener('keyup', function (e) {
-    if (e.code === 'Space') space = false;
-  });
   // Leaving the page lets go.
-  window.addEventListener('blur', function () {
-    pointers = {};
-    space = false;
-  });
+  window.addEventListener('blur', function () { finger = null; });
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-  // ---- The run -----------------------------------------------------------
-  // phase: 'ready' (waiting for a press), 'running', 'buzzed' (a moment's
-  // pause before ready again), 'done' (the end screen).
-  var phase = 'ready', run = null, prev = null, changes = [], lastHeld = false;
-  var trail = [];               // where you stood after each step
-  var acc = 0, lastTs = 0, buzzAt = 0;
+  // The finger's move for one step, in the engine's whole units. What is
+  // left over below a unit is carried to the next step; a move faster than
+  // a step allows is cut to the most it allows, and the rest let go.
+  function take(axis) {
+    var u = carry[axis] + owed[axis] / view.scale;
+    owed[axis] = 0;
+    var q = Math.round(u / GW.LAW.unit);
+    var b = GW.bound(q);
+    carry[axis] = b === q ? u - q * GW.LAW.unit : 0;
+    return b;
+  }
 
-  // A press while ready starts a run: the run begins held, at step 0.
-  function press() {
+  // ---- The run -----------------------------------------------------------
+  // phase: 'ready' (waiting for a touch), 'running', 'buzzed' (a moment's
+  // pause before ready again), 'done' (the end screen).
+  var phase = 'ready', run = null, prev = null, moves = [];
+  var trail = [];               // where you stood after each step
+  var acc = 0, buzzAt = 0;
+
+  // A touch while ready starts a run, from the start, on that touch.
+  function begin() {
     if (phase !== 'ready') return;
-    run = GW.start();
-    prev = { s: 0, d: 0 };
-    changes = [];
-    lastHeld = false;
-    trail = [{ s: 0, d: 0 }];
+    run = GW.start(wire);
+    prev = { x: run.x, y: run.y };
+    moves = [];
+    trail = [{ x: run.x, y: run.y }];
+    owed = { x: 0, y: 0 };
+    carry = { x: 0, y: 0 };
     acc = 0;
     phase = 'running';
     say.hidden = true;
   }
 
   function tick() {
-    var h = held();
-    if (h !== lastHeld) { changes.push(run.step); lastHeld = h; }
-    prev.s = run.s;
-    prev.d = run.d;
-    GW.step(run, h, wire);
-    trail.push({ s: run.s, d: run.d });
+    var qx = take('x'), qy = take('y');
+    moves.push([qx, qy]);
+    prev.x = run.x;
+    prev.y = run.y;
+    GW.step(run, qx, qy, wire);
+    trail.push({ x: run.x, y: run.y });
     if (run.status === 'finished') finish();
     else if (run.status !== 'running') buzz(run.status);
   }
@@ -287,7 +297,7 @@
 
   function finish() {
     phase = 'done';
-    var replay = GW.encode(TRACK, changes, run.step);
+    var replay = GW.encode(TRACK, moves, run.step);
     var was = ghost ? ghost.steps : null;
     var better = was == null || run.step < was, kept = false;
     if (better) {
@@ -305,7 +315,6 @@
       : better ? 'This device couldn’t keep it as your ghost.'
       : 'Your ghost stays at ' + GW.seconds(was) + ' s.';
     end.hidden = false;
-    document.getElementById('again').focus({ preventScroll: true });
   }
 
   document.getElementById('again').addEventListener('click', ready);
@@ -407,14 +416,15 @@
     g.shadowBlur = 0;
   }
 
-  // A glowing point with a fading tail behind it.
+  // A glowing point with a fading tail behind it; points are in wire units.
+  var TAIL = 24;
   function dot(points, color, alpha) {
     var n = points.length;
     if (!n) return;
     ctx.lineCap = 'round';
-    for (var i = Math.max(1, n - 36); i < n; i++) {
-      var a = px(GW.place(wire, points[i - 1].s, points[i - 1].d)), b = px(GW.place(wire, points[i].s, points[i].d));
-      ctx.globalAlpha = alpha * (1 - (n - i) / 36) * 0.5;
+    for (var i = Math.max(1, n - TAIL); i < n; i++) {
+      var a = px(points[i - 1]), b = px(points[i]);
+      ctx.globalAlpha = alpha * (1 - (n - i) / TAIL) * 0.5;
       ctx.strokeStyle = color;
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -422,29 +432,29 @@
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
     }
-    var p = px(GW.place(wire, points[n - 1].s, points[n - 1].d));
-    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 16);
+    var p = px(points[n - 1]);
+    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 18);
     glow.addColorStop(0, color);
     glow.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.globalAlpha = alpha * 0.55;
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
 
   // The ghost's last few places up to a step, for its tail.
   function ghostAt(step) {
-    var out = [], last = ghost.s.length - 1;
-    for (var k = Math.max(0, step - 36); k <= step; k++) {
+    var out = [], last = ghost.x.length - 1;
+    for (var k = Math.max(0, step - TAIL); k <= step; k++) {
       var j = Math.min(k, last);
-      out.push({ s: ghost.s[j], d: ghost.d[j] });
+      out.push({ x: ghost.x[j], y: ghost.y[j] });
     }
     return out;
   }
@@ -459,19 +469,19 @@
     if (ghost) dot(ghostAt(step), COLORS.ghost, 0.75);
     if (run) {
       // Your point, eased between the last two steps for a smooth line.
-      var shown = trail.slice(-36);
+      var shown = trail.slice(-TAIL);
       if (phase === 'running') {
-        shown[shown.length - 1] = { s: prev.s + (run.s - prev.s) * alpha, d: prev.d + (run.d - prev.d) * alpha };
+        shown[shown.length - 1] = { x: prev.x + (run.x - prev.x) * alpha, y: prev.y + (run.y - prev.y) * alpha };
       }
       dot(shown, phase === 'buzzed' ? COLORS.buzz : COLORS.you, 1);
     } else {
-      dot([{ s: 0, d: 0 }], COLORS.you, 1);
+      dot([{ x: wire.x[0], y: wire.y[0] }], COLORS.you, 1);
     }
     timeEl.textContent = GW.seconds(step);
   }
 
   // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
-  var DT = 1000 / GW.RATE;
+  var DT = 1000 / GW.RATE, lastTs = 0;
   function frame(ts) {
     var gap = lastTs ? ts - lastTs : 0;
     lastTs = ts;
@@ -483,7 +493,7 @@
         acc -= DT;
       }
     }
-    if (phase === 'buzzed' && ts - buzzAt > 800 && !held()) ready();
+    if (phase === 'buzzed' && ts - buzzAt > 800 && !finger) ready();
     draw(phase === 'running' ? acc / DT : 1);
     requestAnimationFrame(frame);
   }

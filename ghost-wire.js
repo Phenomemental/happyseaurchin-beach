@@ -1,16 +1,17 @@
 /* Ghost Wire's engine: the wire a track's name draws, one step of a run
-   along it, and a run kept as the moments its player pressed and let go,
-   which re-runs to the same run, step for step, in any browser. Nothing
-   here touches the page; ghost-wire.html draws it and takes the input.
+   along it, and a run kept as the moves its player's finger made, which
+   re-runs to the same run, step for step, in any browser. Nothing here
+   touches the page; ghost-wire.html draws it and takes the input.
 
-   Everything a run depends on uses only + - * / and Math.sqrt, over tables
-   built once from the track's name, so two browsers re-running one ghost
-   agree to the last bit. Drawing may use anything; the simulation never
-   reads what drawing computes. */
+   A run is traced: the point moves as the finger does, from anywhere on
+   the screen, and buzzes if it leaves the wire's walls. Each step's move
+   arrives as whole numbers of a small unit, so the run depends only on
+   whole numbers and + - * / over tables built once from the track's name,
+   and two browsers re-running one ghost agree to the last bit. Drawing may
+   use anything; the simulation never reads what drawing computes. */
 (function (root) {
   var VERSION = 'gw1';
-  var RATE = 120;               // steps a second
-  var DT = 1 / RATE;
+  var RATE = 60;                // steps a second
   var DS = 0.0025;              // spacing of the wire's tables, in wire units
 
   // The wire stands in a box one unit wide and HEIGHT tall, made for a
@@ -19,12 +20,9 @@
 
   // How a run moves (wire law gw1, until frozen by playing on phones).
   var LAW = {
-    accel: 0.25,                // speed gained a second while held
-    brake: 0.9,                 // speed lost a second once let go
-    vmax: 0.3,                  // top speed, wire units a second
-    swing: 0.1,                 // how far a bend at speed pushes the point out
-    settle: 10,                 // how quickly the point follows that push
     half: 0.045,                // from the wire's middle to its wall: room for a finger's play
+    unit: 0.001,                // a move is counted in these, in wire units
+    most: 20,                   // the most a move may be in a step, in units, along each way
     maxSteps: 180 * RATE        // three minutes, then the attempt ends
   };
 
@@ -67,7 +65,7 @@
       var x = 0.5;
       if (i > 0 && i < n - 1) {
         if (r() < 0.75) side = -side;
-        x = 0.5 + side * (0.1 + 0.27 * r());
+        x = 0.5 + side * (0.1 + 0.25 * r());
         y += (r() - 0.5) * 0.05;
       }
       out.push([x, y]);
@@ -96,22 +94,10 @@
     return out;
   }
 
-  // The wire as tables at equal steps along it: where each step is (x, y),
-  // the normal pointing to its left (nx, ny), and how sharply it bends
-  // there (k, positive bending left), smoothed so a bend is felt as one.
-  // A wire that can be run flat out, never letting go, is no game, so it
-  // is drawn again from the name with a mark added, until one can't be.
+  // The wire as tables at equal steps along it: where each step is (x, y)
+  // and the normal pointing to its left (nx, ny), for drawing its walls.
   function wire(track) {
-    for (var again = 0; ; again++) {
-      var w = tables(track, again ? track + '#' + again : track);
-      var st = start();
-      while (st.status === 'running') step(st, true, w);
-      if (st.status !== 'finished' || again >= 9) return w;
-    }
-  }
-
-  function tables(track, name) {
-    var fine = curve(points(name));
+    var fine = curve(points(track));
     var acc = [0];
     for (var i = 1; i < fine.length; i++) {
       var dx = fine[i][0] - fine[i - 1][0], dy = fine[i][1] - fine[i - 1][1];
@@ -130,39 +116,13 @@
       x[k] = fine[at][0] + (fine[at + 1][0] - fine[at][0]) * f;
       y[k] = fine[at][1] + (fine[at + 1][1] - fine[at][1]) * f;
     }
-    var nx = new Float64Array(n), ny = new Float64Array(n), raw = new Float64Array(n);
+    var nx = new Float64Array(n), ny = new Float64Array(n);
     for (k = 0; k < n; k++) {
       var a = k > 0 ? k - 1 : 0, b = k < n - 1 ? k + 1 : n - 1;
       var tx = x[b] - x[a], ty = y[b] - y[a], tl = Math.sqrt(tx * tx + ty * ty);
       if (tl > 0) { nx[k] = -ty / tl; ny[k] = tx / tl; }
-      if (k > 0 && k < n - 1) {
-        var ax = x[k] - x[k - 1], ay = y[k] - y[k - 1], bx = x[k + 1] - x[k], by = y[k + 1] - y[k];
-        var la = Math.sqrt(ax * ax + ay * ay), lb = Math.sqrt(bx * bx + by * by);
-        if (la > 0 && lb > 0) raw[k] = (ax * by - ay * bx) / (la * lb * DS);
-      }
     }
-    var k1 = smooth(smooth(raw, 6), 6);
-    return { track: track, length: length, n: n, x: x, y: y, nx: nx, ny: ny, k: k1 };
-  }
-
-  function smooth(v, r) {
-    var n = v.length, out = new Float64Array(n);
-    for (var i = 0; i < n; i++) {
-      var sum = 0, c = 0;
-      for (var j = i - r; j <= i + r; j++) {
-        if (j >= 0 && j < n) { sum += v[j]; c++; }
-      }
-      out[i] = sum / c;
-    }
-    return out;
-  }
-
-  // How sharply the wire bends a distance s along it.
-  function bendAt(w, s) {
-    var f = s / DS, i = Math.floor(f);
-    if (i < 0) return w.k[0];
-    if (i >= w.n - 1) return w.k[w.n - 1];
-    return w.k[i] + (w.k[i + 1] - w.k[i]) * (f - i);
+    return { track: track, length: length, n: n, x: x, y: y, nx: nx, ny: ny };
   }
 
   // Where a point a distance s along the wire, d to its left, stands.
@@ -178,36 +138,53 @@
 
   // ---- A run -----------------------------------------------------------------
 
-  // status: 'running' until it 'finished', 'buzzed' (touched the wall) or
-  // 'stalled' (ran out of time).
-  function start() {
-    return { step: 0, s: 0, v: 0, d: 0, status: 'running' };
+  // status: 'running' until it 'finished', 'buzzed' (touched a wall) or
+  // 'stalled' (ran out of time). i is the step of the wire nearest the point.
+  function start(w) {
+    return { step: 0, x: w.x[0], y: w.y[0], i: 0, status: 'running' };
   }
 
-  // One step, held or not. A bend taken at speed pushes the point out
-  // from the bend, the more the faster; past the wall, it buzzes.
-  function step(st, held, w) {
+  // A move, made whole and no larger than the most a step allows.
+  function bound(q) {
+    q = Math.round(+q || 0);
+    return q > LAW.most ? LAW.most : q < -LAW.most ? -LAW.most : q;
+  }
+
+  // One step: the point moves by (qx, qy) units. The nearest part of the
+  // wire is looked for close to where it was last, so the point follows
+  // the wire and can't jump to another part of it that passes nearby.
+  // Past the wall it buzzes; across the far end, inside the walls, it's
+  // finished.
+  var LOOK = 30;
+  function step(st, qx, qy, w) {
     if (st.status !== 'running') return st;
-    var v = st.v + (held ? LAW.accel : -LAW.brake) * DT;
-    if (v < 0) v = 0;
-    if (v > LAW.vmax) v = LAW.vmax;
-    var s = st.s + v * DT;
-    var push = -LAW.swing * v * v * bendAt(w, s);
-    var d = st.d + (push - st.d) * LAW.settle * DT;
-    st.v = v;
-    st.s = s;
-    st.d = d;
+    st.x += bound(qx) * LAW.unit;
+    st.y += bound(qy) * LAW.unit;
+    var best = st.i, near = Infinity;
+    var from = st.i > LOOK ? st.i - LOOK : 0, to = st.i + LOOK < w.n ? st.i + LOOK : w.n - 1;
+    for (var j = from; j <= to; j++) {
+      var dx = st.x - w.x[j], dy = st.y - w.y[j], d2 = dx * dx + dy * dy;
+      if (d2 < near) { near = d2; best = j; }
+    }
+    st.i = best;
     st.step++;
-    if (d > LAW.half || d < -LAW.half) st.status = 'buzzed';
-    else if (s >= w.length) st.status = 'finished';
+    var e = w.n - 1;
+    var past = (st.x - w.x[e]) * (w.x[e] - w.x[e - 1]) + (st.y - w.y[e]) * (w.y[e] - w.y[e - 1]);
+    if (near > LAW.half * LAW.half) st.status = 'buzzed';
+    else if (best >= e - 2 && past >= 0) st.status = 'finished';
     else if (st.step >= LAW.maxSteps) st.status = 'stalled';
     return st;
   }
 
-  // ---- A run kept: the steps at which hold changed --------------------------
-  // "gw1.<track>.<steps>.<changes>": the changes are the gaps between the
-  // steps where hold changed, the first counted from step 0 (the run starts
-  // released), each a varint, the bytes in base64url.
+  // How far along the wire the point is, from 0 at the start to 1 at the end.
+  function progress(st, w) {
+    return st.i / (w.n - 1);
+  }
+
+  // ---- A run kept: every step's move -----------------------------------------
+  // "gw1.<track>.<steps>.<moves>": each step's move as two zigzag varints
+  // (x, then y); a run of steps without a move is written 0, 0 and how many
+  // more steps it lasted. The bytes are in base64url.
 
   var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
@@ -228,7 +205,7 @@
     for (var i = 0; i < s.length; i++) {
       var c = B64.indexOf(s.charAt(i));
       if (c < 0) return null;
-      val = (val << 6) | c;
+      val = ((val << 6) | c) & 0xffff;
       bits += 6;
       if (bits >= 8) {
         bits -= 8;
@@ -238,14 +215,24 @@
     return out;
   }
 
-  function encode(track, changes, steps) {
-    var bytes = [], last = 0;
-    changes.forEach(function (at) {
-      var gap = at - last;
-      last = at;
-      while (gap >= 128) { bytes.push((gap & 127) | 128); gap = Math.floor(gap / 128); }
-      bytes.push(gap);
-    });
+  function put(bytes, n) {
+    while (n >= 128) { bytes.push((n & 127) | 128); n = Math.floor(n / 128); }
+    bytes.push(n);
+  }
+  function zig(q) { return q >= 0 ? 2 * q : -2 * q - 1; }
+  function zag(n) { return n % 2 ? -(n + 1) / 2 : n / 2; }
+
+  // moves: one [qx, qy] for each step of the run.
+  function encode(track, moves, steps) {
+    var bytes = [];
+    for (var i = 0; i < moves.length; i++) {
+      var qx = bound(moves[i][0]), qy = bound(moves[i][1]);
+      if (qx || qy) { put(bytes, zig(qx)); put(bytes, zig(qy)); continue; }
+      var still = 1;
+      while (i + still < moves.length && !bound(moves[i + still][0]) && !bound(moves[i + still][1])) still++;
+      put(bytes, 0); put(bytes, 0); put(bytes, still - 1);
+      i += still - 1;
+    }
     return [VERSION, track, steps, toB64(bytes)].join('.');
   }
 
@@ -255,35 +242,43 @@
     if (parts.length !== 4 || parts[0] !== VERSION || !validTrack(parts[1]) || !/^\d{1,7}$/.test(parts[2])) return null;
     var bytes = fromB64(parts[3]);
     if (!bytes) return null;
-    var changes = [], at = 0, gap = 0, mul = 1;
+    var nums = [], n = 0, mul = 1;
     for (var i = 0; i < bytes.length; i++) {
-      gap += (bytes[i] & 127) * mul;
+      n += (bytes[i] & 127) * mul;
       if (bytes[i] & 128) { mul *= 128; continue; }
-      at += gap;
-      changes.push(at);
-      gap = 0;
+      nums.push(n);
+      n = 0;
       mul = 1;
     }
     if (mul !== 1) return null;
-    return { track: parts[1], steps: +parts[2], changes: changes };
+    var steps = +parts[2], moves = [];
+    for (i = 0; i < nums.length; ) {
+      var qx = zag(nums[i]), qy = zag(nums[i + 1]);
+      if (nums[i + 1] == null) return null;
+      i += 2;
+      if (qx || qy) { moves.push([qx, qy]); continue; }
+      if (nums[i] == null) return null;
+      for (var k = 0; k <= nums[i] && moves.length <= steps; k++) moves.push([0, 0]);
+      i++;
+    }
+    if (moves.length !== steps) return null;
+    return { track: parts[1], steps: steps, moves: moves };
   }
 
-  // Run a kept run again on its wire. It is good when it finishes on the
-  // very step it says it did; s and d hold where it stood after each step
-  // (index 0 is the start).
+  // Run a kept run again on its wire. It is good when it finishes on its
+  // very last step; x and y hold where it stood after each step (index 0
+  // is the start).
   function rerun(replay, w) {
     var r = decode(replay);
     if (!r) return null;
     w = w && w.track === r.track ? w : wire(r.track);
-    var st = start(), held = false, next = 0;
-    var s = [0], d = [0];
-    while (st.status === 'running') {
-      while (next < r.changes.length && r.changes[next] === st.step) { held = !held; next++; }
-      step(st, held, w);
-      s.push(st.s);
-      d.push(st.d);
+    var st = start(w), x = [st.x], y = [st.y];
+    for (var k = 0; k < r.moves.length && st.status === 'running'; k++) {
+      step(st, r.moves[k][0], r.moves[k][1], w);
+      x.push(st.x);
+      y.push(st.y);
     }
-    return { ok: st.status === 'finished' && st.step === r.steps, track: r.track, steps: st.step, status: st.status, s: s, d: d };
+    return { ok: st.status === 'finished' && st.step === r.steps, track: r.track, steps: st.step, status: st.status, x: x, y: y };
   }
 
   // The time a run took, from its steps, as the page shows it.
@@ -301,6 +296,8 @@
     place: place,
     start: start,
     step: step,
+    progress: progress,
+    bound: bound,
     encode: encode,
     decode: decode,
     rerun: rerun,
