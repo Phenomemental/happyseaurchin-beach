@@ -500,7 +500,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21k"></script>
+<script src="ghost-wire.js?v=2026-10-21l"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -595,6 +595,7 @@
       document.getElementById('say-label').textContent = label;
       BRIEF = say.innerHTML;
       loadGhost();
+      loadLeader();
       if (askedGhost && !friend && !linked) {
         ghostLine.textContent = got[1] === null && !clock
           ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
@@ -618,11 +619,41 @@
     }
     var kept = recall(BEST);
     var r = kept ? GW.rerun(kept, wire) : null;
-    ghost = r && r.ok ? r : null;
-    if (linked && (!ghost || linked.steps < ghost.steps)) ghost = linked;
+    var own = r && r.ok ? r : null;
+    if (linked && (!own || linked.steps < own.steps)) own = linked;
+    // The board's fastest is raced when it beats your own best.
+    var fastest = TRACK === TODAY ? 'today’s fastest' : 'this wire’s fastest';
+    if (leader && (!own || leader.steps < own.steps)) {
+      ghost = leader;
+      ghostLine.textContent = 'Ghost: ' + (leaderMine ? 'your best, ' : leaderWho + ', ') + fastest + ', ' + GW.seconds(ghost.steps) + ' s';
+      return;
+    }
+    ghost = own;
     ghostLine.textContent = ghost
-      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s'
+      ? 'Ghost: your best here, ' + GW.seconds(ghost.steps) + ' s' + (leader ? ', ' + fastest : '')
       : 'No ghost yet: your first finish becomes one.';
+  }
+
+  // The fastest run kept on this wire, re-run, to race when no friend's
+  // link brought one. Read when the page opens, and again before a run
+  // when a little while has passed.
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
+  function loadLeader() {
+    if (friend || !isDay(TRACK)) return;
+    leaderRead = Date.now();
+    room().then(function (runs) {
+      var me = myPlayer(runs), best = null;
+      runs.forEach(function (r) {
+        if (r.track === TRACK && (!best || r.steps < best.steps)) best = r;
+      });
+      var g = best ? GW.rerun(best.replay, wire) : null;
+      if (g && g.ok) {
+        leader = g;
+        leaderWho = best.name;
+        leaderMine = best.player === me;
+      }
+      if (phase === 'ready' || phase === 'loading') loadGhost();
+    }, function () {});
   }
 
   // ---- The finger --------------------------------------------------------
@@ -877,15 +908,20 @@
     audio.finish(better && was != null);
     if (kept) remember('ghost-wire:best-tries:' + TRACK, String(tries));
     var vs = ghost ? ghost.steps : null;
+    var lead = !friend && ghost && ghost === leader && !leaderMine;
+    var fastest = TRACK === TODAY ? 'today’s fastest' : 'this wire’s fastest';
     document.getElementById('end-time').textContent = GW.seconds(run.step) + ' s';
     document.getElementById('end-line').textContent = friend
       ? (run.step < vs ? 'You beat ' + ghostWho + ' by ' + GW.seconds(vs - run.step) + ' s.'
         : run.step === vs ? 'A dead heat with ' + ghostWho + '.'
         : GW.seconds(run.step - vs) + ' s behind ' + ghostWho + '.')
+      : lead ? (run.step < vs ? 'You beat ' + leaderWho + ', ' + fastest + ', by ' + GW.seconds(vs - run.step) + ' s!'
+        : run.step === vs ? 'A dead heat with ' + leaderWho + ', ' + fastest + '.'
+        : GW.seconds(run.step - vs) + ' s behind ' + leaderWho + ', ' + fastest + '.')
       : was == null ? 'You reached the end.'
       : better ? 'Your best yet, by ' + GW.seconds(was - run.step) + ' s.'
       : GW.seconds(run.step - was) + ' s behind your best.';
-    document.getElementById('end-note').textContent = kept ? (friend ? 'It’s your best here on this device.' : 'This run is your ghost now.')
+    document.getElementById('end-note').textContent = kept ? (friend || (leader && leader.steps < run.step) ? 'It’s your best here on this device.' : 'This run is your ghost now.')
       : better ? 'This device couldn’t keep it as your ghost.'
       : 'Your best here stays at ' + GW.seconds(was) + ' s.';
     if (!friend && kept) loadGhost();
@@ -954,7 +990,7 @@
         if (!ok || e['2'] !== ok.track) return;
         var named = who(e) !== 'A friend' ? who(e) : '';
         runs.push({
-          slot: s.slot, track: ok.track, steps: ok.steps, at: e['3'],
+          slot: s.slot, track: ok.track, steps: ok.steps, at: e['3'], replay: kept,
           player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
           name: named || 'A visitor',
           tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null
@@ -1328,6 +1364,7 @@
   function ready() {
     audio.stop();
     loadGhost();
+    if (Date.now() - leaderRead > 20000) loadLeader();
     phase = 'ready';
     run = null;
     end.hidden = true;
