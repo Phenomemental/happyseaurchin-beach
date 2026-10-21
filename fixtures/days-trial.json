@@ -1,62 +1,38 @@
 [
   {
-    "_": "TUESDAY 13 OCTOBER · 22:10 · ARONA — Landed late, the sea in the dark",
-    "1": "The flight in at four, the hire car, the wrong turning twice. The apartment smelt of salt and someone else's sun cream. You heard the sea before you saw it.",
-    "2": "Tomorrow: find the bakery and the beach, nothing more.",
-    "3": "1",
-    "4": "2026-10-13|Arona"
+    "date": "2026-10-13",
+    "text": "Arona — Landed late, the sea in the dark\nThe flight in at four, the hire car, the wrong turning twice. The apartment smelt of salt and someone else's sun cream. You heard the sea before you saw it.\nTomorrow: find the bakery and the beach, nothing more.\nA day of what happened."
   },
   {
-    "_": "WEDNESDAY 14 OCTOBER · 19:30 · ARONA — Black sand and a bakery",
-    "1": "The bakery by the roundabout, the black sand too hot by eleven. Both kids in the water until their lips went blue. You read four pages and fell asleep under the umbrella.",
-    "3": "1",
-    "4": "2026-10-14|Arona"
+    "date": "2026-10-14",
+    "text": "Arona — Black sand and a bakery\nThe bakery by the roundabout, the black sand too hot by eleven. Both kids in the water until their lips went blue. You read four pages and fell asleep under the umbrella.\nA day of what happened."
   },
   {
-    "_": "THURSDAY 15 OCTOBER · 21:45 · ARONA — The couple who looked so sure",
-    "1": "The couple at the next table, matching and quiet, and the story you told yourself about them: that they had it all worked out. Then the thought that someone might tell the same story about you.",
-    "2": "Tomorrow: the drive north.",
-    "3": "3",
-    "4": "2026-10-15|Arona"
+    "date": "2026-10-15",
+    "text": "Arona — The couple who looked so sure\nThe couple at the next table, matching and quiet, and the story you told yourself about them: that they had it all worked out. Then the thought that someone might tell the same story about you.\nTomorrow: the drive north.\nA day of what you made of it."
   },
   {
-    "_": "FRIDAY 16 OCTOBER · 20:15 · PUERTO DE LA CRUZ — Tight in the chest on the mountain road",
-    "1": "The bends and the drop, your hands tight on the wheel and something tight in your chest that stayed after you parked. Then the warm old square, and your shoulders letting go.",
-    "3": "2",
-    "4": "2026-10-16|Puerto de la Cruz"
+    "date": "2026-10-16",
+    "text": "Puerto de la Cruz — Tight in the chest on the mountain road\nThe bends and the drop, your hands tight on the wheel and something tight in your chest that stayed after you parked. Then the warm old square, and your shoulders letting go.\nA day of what you felt."
   },
   {
-    "_": "SATURDAY 17 OCTOBER · 18:50 · PUERTO DE LA CRUZ — The pools by the sea wall",
-    "1": "The pools by the sea wall, the waves coming over, your eldest counting the big ones. Wrinkled potatoes and green sauce at a plastic table. Rain for ten minutes and nobody minded.",
-    "2": "Tomorrow: Garachico, and the rock pools there.",
-    "3": "1",
-    "4": "2026-10-17|Puerto de la Cruz"
+    "date": "2026-10-17",
+    "text": "Puerto de la Cruz — The pools by the sea wall\nThe pools by the sea wall, the waves coming over, your eldest counting the big ones. Wrinkled potatoes and green sauce at a plastic table. Rain for ten minutes and nobody minded.\nTomorrow: Garachico, and the rock pools there.\nA day of what happened."
   },
   {
-    "_": "SUNDAY 18 OCTOBER · 21:20 · GARACHICO — A town built on what buried it",
-    "1": "The town the lava buried, built again on top. You kept turning it over: the rock pools you swam in were made by the thing that ruined it. It felt as if it said something about you, and you are not sure it does.",
-    "3": "3",
-    "4": "2026-10-18|Garachico"
+    "date": "2026-10-18",
+    "text": "Garachico — A town built on what buried it\nThe town the lava buried, built again on top. You kept turning it over: the rock pools you swam in were made by the thing that ruined it. It felt as if it said something about you, and you are not sure it does.\nA day of what you made of it."
   },
   {
-    "_": "MONDAY 19 OCTOBER · 22:00 · GARACHICO — Closing the laptop",
-    "1": "The laptop on the table all evening. You answered the two that mattered and chose to close it for the rest of the week. You told your partner, so it would hold.",
-    "2": "Tomorrow: back south, the long way round by the coast.",
-    "3": "5",
-    "4": "2026-10-19|Garachico"
+    "date": "2026-10-19",
+    "text": "Garachico — Closing the laptop\nThe laptop on the table all evening. You answered the two that mattered and chose to close it for the rest of the week. You told your partner, so it would hold.\nTomorrow: back south, the long way round by the coast.\nA day of a choice."
   },
   {
-    "_": "TUESDAY 20 OCTOBER · 21:35 · ARONA — Monday, arriving early",
-    "1": "Monday arrived in your head on the drive back: the inbox, the meeting you have been putting off. You pictured it going badly, then going fine. Neither has happened yet.",
-    "2": "Tomorrow: a slow morning, nothing before ten.",
-    "3": "6",
-    "4": "2026-10-20|Arona"
+    "date": "2026-10-20",
+    "text": "Arona — Monday, arriving early\nMonday arrived in your head on the drive back: the inbox, the meeting you have been putting off. You pictured it going badly, then going fine. Neither has happened yet.\nTomorrow: a slow morning, nothing before ten.\nA day of what’s ahead."
   },
   {
-    "_": "WEDNESDAY 21 OCTOBER · 9:40 · ARONA — Lizards and the first quiet",
-    "1": "A slow morning by the pool. The kids in fits over lizards on the wall, your youngest laughing. The first morning without email. Monday is there, not dreaded, just known.",
-    "2": "Tomorrow: walk up to the old town before it gets hot.",
-    "3": "1",
-    "4": "2026-10-21|Arona"
+    "date": "2026-10-21",
+    "text": "Arona — Lizards and the first quiet\nA slow morning by the pool. The kids in fits over lizards on the wall, your youngest laughing. The first morning without email. Monday is there, not dreaded, just known.\nTomorrow: walk up to the old town before it gets hot.\nA day of what happened."
   }
 ]
