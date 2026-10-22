@@ -217,6 +217,45 @@
     });
   }
 
+  // A read that tells a block that isn't there (404) from a beach that
+  // can't be reached (status 0): resolves {status, json} and never
+  // throws. It keeps the clock, as every read does; query is the rest of
+  // the address after ?block= (such as "&spindle=19"), and an empty block
+  // reads the beach's front door.
+  function look(block, query) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, LIMIT_MS);
+    var url = BEACH + (block ? '?block=' + encodeURIComponent(block) + (query || '') : '');
+    return fetch(url, ctl ? { cache: 'no-store', signal: ctl.signal } : { cache: 'no-store' }).then(function (r) {
+      clearTimeout(timer);
+      readClock(r.headers.get('X-Pscale-Now'));
+      return r.json().catch(function () { return null; }).then(function (j) { return { status: r.status, json: j }; });
+    }, function () {
+      clearTimeout(timer);
+      return { status: 0, json: null };
+    });
+  }
+
+  // A write in the beach's own shape: a POST naming the block, with body
+  // {spindle, content, secret, new_lock, confirm, append} as the write
+  // needs. The secret goes in this one request and is kept nowhere.
+  // Resolves {status, json} and never throws; status 0 is no answer.
+  function write(block, body) {
+    return fetch(BEACH + '?block=' + encodeURIComponent(block), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer'
+    }).then(function (r) {
+      readClock(r.headers.get('X-Pscale-Now'));
+      return r.json().catch(function () { return null; }).then(function (j) { return { status: r.status, json: j }; });
+    }, function () {
+      return { status: 0, json: null };
+    });
+  }
+
   // A microphone beside a text box, so people can speak their words in.
   // It uses the browser's own speech recognition (Chrome, Edge, Safari);
   // where there is none, no button appears. The words land in the box to
@@ -654,6 +693,8 @@
 
   window.Beach = {
     get: get,
+    look: look,
+    write: write,
     point: point,
     index: index,
     clock: function () { return clock; },

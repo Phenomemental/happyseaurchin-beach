@@ -148,6 +148,57 @@
     margin: 1rem auto 0;
   }
 
+  /* Coming back, and kept. */
+  .sd-greet {
+    max-width: 26rem;
+    margin: 1rem auto 0;
+  }
+  .sd-greet-said {
+    font-style: italic;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sd-greet-day {
+    color: var(--muted);
+    margin: 0.35rem 0 0;
+  }
+  .sd-kept {
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    max-width: 26rem;
+    margin: 1rem auto 0;
+    text-wrap: balance;
+  }
+  .sd-kept:focus {
+    outline: none;
+  }
+  /* A day kept: the new mark lights, then the colour sweeps in along the stroke. */
+  .sd-dial .mark.new {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sd-light 1.2s ease-out both;
+  }
+  @keyframes sd-light {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .sd-dial .sweep.sweeping {
+    animation: sd-sweep 4s ease-in-out 0.8s both;
+  }
+  @keyframes sd-sweep {
+    from { stroke-dashoffset: 1000; }
+    to { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-dial .mark.new,
+    .sd-dial .sweep.sweeping {
+      animation: none;
+    }
+  }
+
   /* The sheet: a paper card beneath the mark. */
   .sd-day {
     width: 100%;
@@ -321,6 +372,34 @@
     text-decoration-color: var(--frame);
     text-underline-offset: 0.25em;
   }
+  .sd-card label ~ label,
+  .sd-card #name-row + label {
+    margin-top: 0.9rem;
+  }
+  .sd-soft {
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    margin: 0.4rem 0 0;
+  }
+  .sd-truths {
+    list-style: none;
+    padding: 0;
+    margin: 0.9rem 0 0;
+    font-size: 1.02rem;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+  .sd-truths li {
+    margin: 0.25rem 0;
+    padding: 0;
+  }
+  .sd-truths li::before {
+    content: none;
+  }
+  .sd-forget {
+    margin: 1rem 0 0;
+  }
   .sd-version {
     font-size: 0.9rem;
     color: var(--muted);
@@ -345,6 +424,11 @@
 
   <p class="sd-ask" id="ask" aria-live="polite" hidden></p>
   <p class="sd-rest" id="rest" hidden>That’s enough for today. Come back tomorrow.</p>
+  <div class="sd-greet" id="greet" hidden>
+    <p class="sd-greet-said" id="greet-said"></p>
+    <p class="sd-greet-day" id="greet-day"></p>
+  </div>
+  <p class="sd-kept" id="kept" tabindex="-1" hidden></p>
 
   <section class="sd-day" id="day" aria-labelledby="day-title" hidden>
     <div class="sd-card-day">
@@ -356,7 +440,7 @@
     </div>
     <p class="sd-yours">This is your day, in your words.</p>
     <div class="sd-choices">
-      <button type="button" class="sd-keep" id="keep" disabled>Keep this day</button>
+      <button type="button" class="sd-keep" id="keep">Keep this day</button>
       <button type="button" class="sd-letgo" id="let-go">Let it go</button>
     </div>
   </section>
@@ -379,25 +463,64 @@
         <button type="button" class="sd-quiet" id="drop-key" hidden>Take it away</button>
         <button type="button" class="sd-quiet" id="close-card">Close</button>
       </div>
+      <div class="sd-forget" id="forget" hidden>
+        <button type="button" class="sd-quiet" id="forget-open">forget me</button>
+        <div id="forget-ask" hidden>
+          <p class="sd-soft" id="forget-line"></p>
+          <div id="fword-row">
+            <label for="fword">your secret word</label>
+            <input id="fword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+          </div>
+          <div class="sd-card-row">
+            <button type="button" class="sd-keep-key" id="forget-go">Forget me</button>
+            <button type="button" class="sd-quiet" id="forget-not">Not now</button>
+          </div>
+        </div>
+      </div>
       <p class="sd-version" id="version"></p>
+    </form>
+  </dialog>
+
+  <dialog class="sd-card" id="keep-card" aria-label="Keep this day">
+    <form id="keep-form">
+      <div id="name-row">
+        <label for="kname">your name here</label>
+        <input id="kname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+        <p class="sd-soft" id="kname-note" hidden>That name is already someone’s. If it’s yours, your word will open it.</p>
+      </div>
+      <label for="kword">your secret word</label>
+      <input id="kword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <ul class="sd-truths" id="truths">
+        <li>Anyone can read your days, and only your word can add to them.</li>
+        <li>Nobody else holds the word, not even us.</li>
+        <li>Write it down: without it your days stay, but you can’t add to them.</li>
+      </ul>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="keep-it">Keep it</button>
+        <button type="button" class="sd-quiet" id="keep-not">Not now</button>
+      </div>
     </form>
   </dialog>
 </main>
 
-<script src="beach.js?v=2026-10-19b"></script>
-<script src="mark.js?v=2026-10-21a"></script>
+<script src="beach.js?v=2026-10-22a"></script>
+<script src="mark.js?v=2026-10-22a"></script>
+<script src="days.js?v=2026-10-22a"></script>
 <script>
-/* Sundial M1: speak and see (spine:front-door 7.1922). A person says where
-   they are and what today has been like; Claude, called straight from this
-   browser with a key kept only in it, hands their day back as a sheet in
-   their own words. Nothing is written anywhere: Let it go leaves no trace,
-   and Keep comes with M2. No error text is ever shown; what fails is drawn
-   as absence, and the words they spoke go back into the box. */
+/* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
+   7.1923). A person says where they are and what today has been like;
+   Claude, called straight from this browser with a key kept only in it,
+   hands their day back as a sheet in their own words. Keep writes it as
+   one plain line in their own now on the beach, latched with their word
+   (days.js); on any phone, with their name, the days are there and the
+   sundial is coloured by them. No error text is ever shown: what fails is
+   drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M1 · 21 October 2026';
+  var VERSION = 'Sundial M2 · 22 October 2026';
   var TURNS_A_DAY = 40;
-  var KEY = 'sundial.key', TURNS = 'sundial.turns';
+  var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
+  var WORD = 'sundial.word', SEEN = 'sundial.days';     // held for this visit only
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
@@ -434,9 +557,12 @@
   var $ = function (id) { return document.getElementById(id); };
   var form = $('speak'), box = $('words'), send = $('send'), ask = $('ask'), rest = $('rest');
   var day = $('day'), corner = $('corner'), card = $('card'), keyBox = $('key');
+  var greet = $('greet'), kept = $('kept'), keepCard = $('keep-card'), kname = $('kname'), kword = $('kword');
   var dial = Mark.dial($('dial'));
 
-  // ---- What this browser keeps: the key, and today's count of turns -------------
+  // ---- What this browser keeps -------------------------------------------------
+  // In localStorage: the key, today's count of turns, the name. For this
+  // visit only, in sessionStorage: the word, and the days last read.
   function stored(k) {
     try { return localStorage.getItem(k) || ''; } catch (e) { return ''; }
   }
@@ -444,6 +570,15 @@
     try {
       if (v) localStorage.setItem(k, v);
       else localStorage.removeItem(k);
+    } catch (e) {}
+  }
+  function held(k) {
+    try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; }
+  }
+  function hold(k, v) {
+    try {
+      if (v) sessionStorage.setItem(k, v);
+      else sessionStorage.removeItem(k);
     } catch (e) {}
   }
   function ymd(d) {
@@ -459,7 +594,7 @@
   }
 
   // ---- The clock: the date at the top, the shadow on the dial ---------------------
-  var place = '';                           // from what they say, when it can be known
+  var place = '';                           // none, by Matthew's word (findings 7.1959)
   function dateWords(d) {
     return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   }
@@ -477,6 +612,46 @@
   setInterval(tick, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
 
+  // ---- Their days -------------------------------------------------------------------
+  var days = [];                            // {address, text}, oldest first
+  function showDays(list, keptNow) {
+    days = list;
+    dial.days(list, keptNow);
+    hold(SEEN, JSON.stringify(list));
+  }
+  function lastDay() {
+    return days.length ? Mark.read(days[days.length - 1].text) : null;
+  }
+  // Come back: their own tomorrow, then the last day's title.
+  function showGreeting() {
+    var d = lastDay();
+    if (!d) { greet.hidden = true; return; }
+    var t = d.tomorrow.replace(/[.\s]+$/, '');
+    if (t && !/^I\b/.test(t)) t = t.charAt(0).toLowerCase() + t.slice(1);
+    $('greet-said').textContent = t ? 'Last time you said you wanted to ' + t + '.' : '';
+    $('greet-said').hidden = !t;
+    $('greet-day').textContent = [d.title, d.place].filter(Boolean).join(' · ');
+    greet.hidden = false;
+  }
+  // On arrival with a name: their days, read with no word. Should the beach
+  // not answer, the days this visit last read stand in; else none.
+  (function comeBack() {
+    var name = stored(NAME);
+    if (!name) return;
+    Days.read(name).then(function (list) {
+      showDays(list);
+      showGreeting();
+    }, function () {
+      var seen;
+      try { seen = JSON.parse(held(SEEN)); } catch (e) { seen = null; }
+      if (Array.isArray(seen)) {
+        days = seen;
+        dial.days(seen);
+        showGreeting();
+      }
+    });
+  })();
+
   // ---- The quiet corner -----------------------------------------------------------
   var askedForKey = false, returnTo = null;
   $('version').textContent = VERSION;
@@ -487,6 +662,9 @@
     keyBox.value = '';
     keyBox.placeholder = has ? 'kept in this browser' : '';
     $('drop-key').hidden = !has;
+    $('forget').hidden = !stored(NAME);
+    $('forget-ask').hidden = true;
+    $('forget-open').hidden = false;
     showCorner();
     if (card.showModal) card.showModal();
     else card.setAttribute('open', '');
@@ -512,6 +690,55 @@
   $('close-card').addEventListener('click', closeCard);
   corner.addEventListener('click', function () { openCard(corner); });
 
+  // Forget me (plan 4.5): with the word, the days kept under this name are
+  // let go, the name freed, and this browser forgets it too.
+  $('forget-open').addEventListener('click', function () {
+    $('forget-line').textContent = 'This lets go of the days kept under ' + stored(NAME) + ', for good.';
+    $('fword-row').hidden = !!held(WORD);
+    $('fword').value = '';
+    $('forget-open').hidden = true;
+    $('forget-ask').hidden = false;
+    (held(WORD) ? $('forget-go') : $('fword')).focus();
+  });
+  $('forget-not').addEventListener('click', function () {
+    $('forget-ask').hidden = true;
+    $('forget-open').hidden = false;
+    $('forget-open').focus();
+  });
+  var forgetting = false;
+  $('forget-go').addEventListener('click', function () {
+    var word = held(WORD) || $('fword').value;
+    if (!word) { $('fword').focus(); return; }
+    if (forgetting) return;
+    forgetting = true;
+    $('forget-go').disabled = true;
+    Days.resolve(stored(NAME)).then(function (who) {
+      return who ? Days.forget(who, word) : 'forgotten';
+    }).catch(function () { return 'unreachable'; }).then(function (result) {
+      forgetting = false;
+      $('forget-go').disabled = false;
+      if (result !== 'forgotten') {
+        // Nothing let go: the field quietly reopens.
+        hold(WORD, '');
+        $('fword-row').hidden = false;
+        $('fword').value = '';
+        $('fword').focus();
+        return;
+      }
+      store(NAME, '');
+      hold(WORD, '');
+      hold(SEEN, '');
+      showDays([]);
+      greet.hidden = true;
+      kept.hidden = true;
+      day.hidden = true;
+      form.hidden = false;
+      $('question').hidden = false;
+      returnTo = box;
+      closeCard();
+    });
+  });
+
   // ---- Speaking -------------------------------------------------------------------
   Beach.addMic(box);
   // The first tap on the microphone shows the quiet corner's dot; with no key
@@ -528,12 +755,14 @@
   }, true);
 
   // ---- One visit's conversation -----------------------------------------------------
-  var messages = [], asks = 0, busy = false, plain = false;
+  var messages = [], asks = 0, busy = false, plain = false, sheetNow = null;
 
   function opening(words, now) {
+    var d = lastDay();
     return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
       '\nTime: ' + timeWords(now) +
       '\nPlace: ' + (place || 'not given') +
+      (d ? '\nTheir last day’s title: ' + d.title + (d.tomorrow ? '\nTheir tomorrow line then: ' + d.tomorrow : '') : '') +
       '\n\nWhat they said:\n' + words;
   }
 
@@ -600,6 +829,7 @@
     box.focus();
   }
   function showSheet(sheet, when) {
+    sheetNow = sheet;
     var first = [dateWords(when), timeWords(when)];
     if (place) first.push(place);
     $('day-first').textContent = first.join(' · ');
@@ -619,6 +849,7 @@
     $('day-pool').hidden = !pool;
     if (pool) $('day-pool').style.setProperty('--hue', pool.hue);
     ask.hidden = true;
+    greet.hidden = true;
     form.hidden = true;
     day.hidden = false;
     $('day-title').focus();
@@ -637,6 +868,8 @@
     if (!stored(KEY)) { openCard(send); return; }
     if (turnsToday() >= TURNS_A_DAY) { restUntilTomorrow(); return; }
     var now = new Date(), before = messages.length;
+    greet.hidden = true;
+    kept.hidden = true;
     messages.push({ role: 'user', content: before ? 'What they said:\n' + words : opening(words, now) });
     // Two questions a visit at most; past that, the sheet.
     if (asks >= 2) messages.push({ role: 'system', content: 'Two questions have been asked this visit. Return the sheet now, from what they have said.' });
@@ -674,9 +907,10 @@
   });
 
   // Let it go: back to the start, with no trace.
-  $('let-go').addEventListener('click', function () {
+  function backToStart() {
     messages = [];
     asks = 0;
+    sheetNow = null;
     box.value = '';
     ask.hidden = true;
     ask.textContent = '';
@@ -685,8 +919,108 @@
     $('day-lines').textContent = '';
     form.hidden = false;
     $('question').hidden = false;
+    showGreeting();
+  }
+  $('let-go').addEventListener('click', function () {
+    backToStart();
     box.focus();
   });
+
+  // ---- Keep ---------------------------------------------------------------------------
+  // The first time: a name and a word, with three plain truths. After that,
+  // the word once a visit, and then one tap.
+  var checking = 0, checkTimer = null, keeping = false;
+  function openKeep() {
+    var name = stored(NAME);
+    $('name-row').hidden = !!name;
+    $('truths').hidden = !!name;
+    $('kname-note').hidden = true;
+    kname.value = name || '';
+    kword.value = '';
+    if (keepCard.showModal) keepCard.showModal();
+    else keepCard.setAttribute('open', '');
+    (name ? kword : kname).focus();
+  }
+  function closeKeep() {
+    if (keepCard.open) keepCard.close ? keepCard.close() : keepCard.removeAttribute('open');
+  }
+  $('keep-not').addEventListener('click', function () {
+    closeKeep();
+    $('keep').focus();
+  });
+  // A name already someone's is said so, quietly; a name that is a day
+  // book shows its days on the sundial, read with no word.
+  kname.addEventListener('input', function () {
+    clearTimeout(checkTimer);
+    var n = ++checking;
+    checkTimer = setTimeout(function () {
+      if (!Days.handle(kname.value)) { $('kname-note').hidden = true; return; }
+      Days.resolve(kname.value).then(function (who) {
+        if (n !== checking || !who) return;
+        $('kname-note').hidden = who.state === 'free';
+        if (who.state === 'kept') showDays(who.days);
+      }, function () {});
+    }, 500);
+  });
+  $('keep').addEventListener('click', function () {
+    if (!sheetNow || keeping) return;
+    var name = stored(NAME), word = held(WORD);
+    if (name && word) keepWith(name, word);
+    else openKeep();
+  });
+  $('keep-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var typed = stored(NAME) || kname.value, word = kword.value;
+    if (!Days.handle(typed)) { kname.focus(); return; }
+    if (!word) { kword.focus(); return; }
+    keepWith(typed, word);
+  });
+  function setKeeping(on) {
+    keeping = on;
+    dial.answering(on);
+    $('keep').disabled = on;
+    $('keep-it').disabled = on;
+  }
+  function keepWith(typed, word) {
+    if (!sheetNow) return;
+    var text = Mark.write(sheetNow, place), who = null, first = false;
+    setKeeping(true);
+    Days.resolve(typed).then(function (w) {
+      who = w;
+      first = w.state === 'free';
+      return Days.keep(w, word, text);
+    }).catch(function () { return 'unreachable'; }).then(function (result) {
+      if (result !== 'kept') {
+        // Nothing written: the field quietly reopens.
+        setKeeping(false);
+        hold(WORD, '');
+        if (!keepCard.open) openKeep();
+        if (result === 'taken') $('kname-note').hidden = false;
+        kword.value = '';
+        kword.focus();
+        return;
+      }
+      store(NAME, who.name);
+      hold(WORD, word);
+      return Days.read(who.name).catch(function () {
+        return days.filter(function (d) { return d.address !== Days.today(); })
+          .concat([{ address: Days.today(), text: text }]);
+      }).then(function (list) {
+        setKeeping(false);
+        closeKeep();
+        sheetNow = null;
+        messages = [];
+        asks = 0;
+        day.hidden = true;
+        showDays(list, true);
+        kept.textContent = first
+          ? 'Kept. Your first day, ' + who.name + '. Come back tomorrow and your sundial will move. On any phone: this address, your name, your word.'
+          : 'Kept.';
+        kept.hidden = false;
+        kept.focus();
+      });
+    });
+  }
 })();
 </script>
 </body>
