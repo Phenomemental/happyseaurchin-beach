@@ -137,13 +137,17 @@
   // copied exactly, inside a group of class "breathe", with the wash, the
   // centre and the flow line marked by class) as the sundial: the shadow
   // or the night glow beneath the ink, and the ring of nine marks. It
-  // returns { time(date), answering(on) }: time moves the shadow, and
-  // answering sets the slow pulse along the line while Claude answers
-  // (drawn by the page's CSS on the class). Days lighting the marks come
-  // with keeping.
+  // returns { time(date), answering(on), days(list, kept) }: time moves the
+  // shadow; answering sets the slow pulse along the line while Claude
+  // answers (drawn by the page's CSS on the class); days draws the days
+  // kept, each a day's text (6.9): a lit mark per day on the ring in its
+  // pool's hue, folding to the outer ring at each nine, the colour inside
+  // the ink by share, the wash by count and the centre by evenness. With
+  // kept, the newest mark lights and the colour sweeps in along the stroke
+  // (the page's CSS draws the sweep, and holds still for reduced motion).
   var SVGNS = 'http://www.w3.org/2000/svg';
   var CX = 232, CY = 140;          // the dial's centre in the heart's own units
-  var RING = 186, SHADOW = 160;
+  var RING = 186, OUTER = 208, SHADOW = 160, STRETCH = 160;
   function node(name, attrs, parent) {
     var n = document.createElementNS(SVGNS, name);
     Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
@@ -154,14 +158,33 @@
     var a = angle * Math.PI / 180;
     return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
   }
+
+  // How the ring stands for n days: the marks lit on the inner ring (the
+  // days since the last full nine) and the open marks on the outer ring
+  // (one per nine, up to nine of them: eighty-one days).
+  function ring(n) {
+    return { inner: n % 9, outer: Math.min(9, Math.floor(n / 9)) };
+  }
+  // A pool's stretch of colour inside the ink: 0.35 + 1.6 x its share,
+  // capped at 1; nothing for a pool with no days.
+  function tint(share) {
+    return share > 0 ? Math.min(1, 0.35 + 1.6 * share) : 0;
+  }
+
   function dial(svg) {
     var art = svg.querySelector('.breathe');
+    var flow = art.querySelector('.flow');
+    var path = flow ? flow.getAttribute('d') : '';
     var id = 'sd' + Math.random().toString(36).slice(2, 8);
     var defs = node('defs', {});
     svg.insertBefore(defs, svg.firstChild);
     var glowFill = node('radialGradient', { id: id + '-glow' }, defs);
     node('stop', { offset: '0', 'stop-color': 'var(--wash)', 'stop-opacity': '0.3' }, glowFill);
     node('stop', { offset: '1', 'stop-color': 'var(--wash)', 'stop-opacity': '0' }, glowFill);
+    // The sweep: colour shows only where this line has drawn so far.
+    var mask = node('mask', { id: id + '-sweep', maskUnits: 'userSpaceOnUse', x: 17, y: -75, width: 430, height: 430 }, defs);
+    var sweep = node('path', { 'class': 'sweep', d: path, fill: 'none', stroke: '#fff', 'stroke-width': 14,
+      'stroke-linecap': 'round', pathLength: 1000, 'stroke-dasharray': '1000 1000' }, mask);
 
     var under = node('g', { 'class': 'under' });
     art.insertBefore(under, art.firstChild);
@@ -169,18 +192,32 @@
     var shadow = node('line', { 'class': 'shadow', x1: CX, y1: CY, x2: CX, y2: CY - SHADOW,
       stroke: 'var(--ink)', 'stroke-opacity': '0.1', 'stroke-width': 7, 'stroke-linecap': 'round' }, under);
 
-    var ring = node('g', { 'class': 'ring' }, art);
+    var wash = art.querySelector('.wash');
+    var dot = art.querySelector('.centre');
+    var halo = null;
+    if (dot) {
+      halo = node('ellipse', { 'class': 'halo', cx: 250, cy: 138, rx: 64, ry: 40, fill: 'var(--crimson)', opacity: 0,
+        transform: 'rotate(-18 250 138)' });
+      art.insertBefore(halo, dot);
+    }
+
+    // The colour inside the ink: six stretches along the line, in pool order
+    // from where it comes in (top right) to where it leaves (bottom left).
+    var tints = node('g', { 'class': 'tints', mask: 'url(#' + id + '-sweep)' });
+    if (flow) art.insertBefore(tints, flow);
+    else art.appendChild(tints);
+    var stretches = POOLS.map(function (p, i) {
+      return node('path', { d: path, fill: 'none', stroke: p.hue, 'stroke-width': 7, 'stroke-linecap': 'butt',
+        pathLength: 1000, 'stroke-dasharray': STRETCH + ' ' + (1000 - STRETCH), 'stroke-dashoffset': -i * STRETCH, opacity: 0 }, tints);
+    });
+
+    var marks = node('g', { 'class': 'ring' }, art);
     for (var i = 0; i < 9; i++) {
       var a = -90 + i * 40, p = at(a, RING - 7), q = at(a, RING + 7);
       node('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1),
-        stroke: 'var(--ink)', 'stroke-opacity': '0.55', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, ring);
+        stroke: 'var(--ink)', 'stroke-opacity': '0.55', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, marks);
     }
-
-    var c = centre(0, 0), dot = art.querySelector('.centre');
-    if (dot) {
-      dot.setAttribute('transform', 'rotate(-18 250 138) translate(250 138) scale(' + c.scale + ') translate(-250 -138)');
-      dot.setAttribute('opacity', c.opacity);
-    }
+    var lit = node('g', { 'class': 'lit' }, art);
 
     function time(date) {
       var angle = shadowAngle(date);
@@ -198,7 +235,40 @@
     function answering(on) {
       svg.classList.toggle('answering', !!on);
     }
-    return { time: time, answering: answering };
+    function days(list, kept) {
+      list = list || [];
+      var n = list.length, s = shares(list), even = evenness(s), r = ring(n);
+      while (lit.firstChild) lit.removeChild(lit.firstChild);
+      list.slice(n - r.inner).forEach(function (d, i) {
+        var pool = POOLS[poolOf(d) - 1], c = at(-90 + i * 40, RING);
+        node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 7, fill: pool ? pool.hue : 'var(--muted)',
+          'class': kept && i === r.inner - 1 ? 'mark new' : 'mark' }, lit);
+      });
+      for (var k = 0; k < r.outer; k++) {
+        var o = at(-90 + k * 40, OUTER);
+        node('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: 4, fill: 'none', stroke: 'var(--ink)',
+          'stroke-opacity': '0.5', 'stroke-width': 1.5, 'class': kept && r.inner === 0 && k === r.outer - 1 ? 'mark new' : 'mark' }, lit);
+      }
+      stretches.forEach(function (el, i) { el.setAttribute('opacity', tint(s[i]).toFixed(3)); });
+      if (wash) wash.setAttribute('opacity', (0.6 * Math.min(1, n / 27)).toFixed(3));
+      var c = centre(n, even);
+      if (dot) {
+        dot.setAttribute('transform', 'rotate(-18 250 138) translate(250 138) scale(' + c.scale + ') translate(-250 -138)');
+        dot.setAttribute('opacity', c.opacity);
+      }
+      if (halo) halo.setAttribute('opacity', n ? (0.18 * (1 - even)).toFixed(3) : 0);
+      svg.setAttribute('aria-label', n
+        ? 'A sundial: a heart drawn in ink, its shadow at this hour, coloured by ' + n + (n === 1 ? ' day' : ' days') + ' kept'
+        : 'A sundial: a heart drawn in ink, its shadow at this hour, and nine marks around it, none lit yet');
+      // The sweep restarts from the line's entry when a day is kept.
+      sweep.classList.remove('sweeping');
+      if (kept) {
+        void sweep.getBoundingClientRect();
+        sweep.classList.add('sweeping');
+      }
+    }
+    days([]);
+    return { time: time, answering: answering, days: days };
   }
 
   // ---- The console check ------------------------------------------------------
@@ -259,6 +329,10 @@
       shadowAngle(clock(19, 30)) === 22.5 && shadowAngle(clock(5, 59)) === null && shadowAngle(clock(23, 0)) === null);
     check('the empty heart’s centre: half size at 0.45; with days, 0.55 to 1 by evenness',
       centre(0, 0).scale === 0.5 && centre(0, 0).opacity === 0.45 && centre(3, 0).scale === 0.55 && centre(9, 1).scale === 1);
+    check('the ring at 1, 3, 9, 10 and 81 days, and past it',
+      [1, 3, 9, 10, 81, 90].map(function (n) { var r = ring(n); return r.inner + '/' + r.outer; }).join() === '1/0,3/0,0/1,1/1,0/9,0/9');
+    check('the colour inside the ink: none for an empty pool, 0.35 + 1.6 x share, at most 1',
+      tint(0) === 0 && near(tint(1 / 9), 0.35 + 1.6 / 9) && tint(4 / 9) === 1);
     var ok = results.every(Boolean);
     log(ok ? 'Mark: all ' + results.length + ' checks pass.' : 'Mark: a check failed.');
     return ok;
@@ -274,6 +348,8 @@
     evenness: evenness,
     shadowAngle: shadowAngle,
     centre: centre,
+    ring: ring,
+    tint: tint,
     dial: dial,
     test: test
   };
