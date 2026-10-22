@@ -79,9 +79,12 @@
 
   // The pool a day stood in, 1 to 6, from its text (or {text}); 0 when it
   // names none.
+  // A day's pool: its own quiet line, else the place this browser was given
+  // for it (a day kept through Claude has no line; plan 6.8.2).
   function poolOf(day) {
     var text = typeof day === 'string' ? day : day && typeof day.text === 'string' ? day.text : '';
-    return read(text).pool;
+    var own = read(text).pool, placed = day && typeof day === 'object' ? Number(day.pool) : 0;
+    return own || (placed >= 1 && placed <= 6 ? placed : 0);
   }
 
   // ---- The sums ---------------------------------------------------------------
