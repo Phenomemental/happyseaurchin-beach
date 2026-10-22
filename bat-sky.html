@@ -4,27 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Bat Sky</title>
-<meta name="description" content="Bat Sky: bats are out over the beach as the sun goes down. Tap as many as you can before it sets, racing the day's best ghost.">
-<meta name="theme-color" content="#140B1F">
+<meta name="description" content="Bat Sky: bats are out over the beach in the moonlight. Tap as many as you can before the sun comes up, racing the day's best ghost.">
+<meta name="theme-color" content="#0B0E24">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  /* Bat Sky, an evening on the beach: the sky going down from sunset to
-     night, the bats dark against it, your taps gold, the ghost's lilac.
+  /* Bat Sky, a night on the beach: the moon lighting the bats until the
+     sun comes up, your taps gold, the ghost's lilac.
      The game is drawn on one canvas filling the screen; the words sit over
      it and let touches pass through, except the buttons. */
   :root {
-    --night: #140B1F;
+    --night: #0B0E24;
     --accent: #FF9F43;
     --you: #FFD166;
     --ghost: #C4A1FF;
     --miss: #FF6B8B;
-    --words: #F4ECF7;
-    --dim: #A797B8;
+    --words: #EEF0FA;
+    --dim: #A3A9C9;
     /* The rest of a skin's colours; each skin sets them all (setSkin). */
-    --panel: rgba(20, 11, 31, 0.82);
-    --panel-strong: rgba(20, 11, 31, 0.93);
+    --panel: rgba(11, 14, 36, 0.82);
+    --panel-strong: rgba(11, 14, 36, 0.93);
     --edge: rgba(255, 159, 67, 0.4);
     --line: rgba(244, 236, 247, 0.12);
     --field-line: rgba(244, 236, 247, 0.25);
@@ -33,12 +33,13 @@
     --glow-accent: rgba(255, 159, 67, 0.55);
     --glow-you: rgba(255, 209, 102, 0.5);
     --shade: rgba(0, 0, 0, 0.65);
-    --how-top: #3E2A78;
-    --how-mid: #D9587A;
-    --how-low: #FFB561;
-    --how-bat: #120914;
-    --how-sea: #6B2F5F;
-    --how-sun: #FFF0B3;
+    --how-top: #060A1E;
+    --how-mid: #101736;
+    --how-low: #1E2148;
+    --how-bat: #161226;
+    --how-sea: #0B1230;
+    --how-moon: #F4F1E1;
+    --how-lit: #C8D6FF;
     --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -98,13 +99,25 @@
     font-size: 0.75rem;
     letter-spacing: 0.06em;
   }
+  /* The words over the sky sit on small panels, so they read on any sky
+     from night to dawn, in any skin. */
+  h1, .count {
+    padding: 4px 10px;
+    border-radius: 18px;
+    background: var(--panel);
+  }
   .ghost-line, .prev-line, .left-line {
+    align-self: flex-start;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: var(--panel);
     margin: 4px 0 0;
     font-size: 0.85rem;
     text-shadow: 0 1px 2px var(--shade), 0 0 6px var(--shade);
   }
   .ghost-line { color: var(--ghost); }
   .prev-line { margin-top: 2px; color: var(--dim); }
+  .ghost-line:empty, .left-line:empty { display: none; }
   .left-line {
     margin-top: 2px;
     color: var(--words);
@@ -143,7 +156,7 @@
   .say b {
     color: var(--you);
   }
-  /* How to play, shown: a bat crossing a sunset, and a finger tapping it. */
+  /* How to play, shown: a bat crossing the moonlit sky, and a finger tapping it. */
   .how {
     display: block;
     width: 100%;
@@ -155,9 +168,14 @@
   .how-top { stop-color: var(--how-top); }
   .how-mid { stop-color: var(--how-mid); }
   .how-low { stop-color: var(--how-low); }
-  .how-sun { fill: var(--how-sun); }
+  .how-moon { fill: var(--how-moon); }
+  .how-star { fill: var(--how-moon); opacity: 0.8; }
   .how-sea { fill: var(--how-sea); }
-  .how-bat { fill: var(--how-bat); }
+  .how-bat {
+    fill: var(--how-bat);
+    stroke: var(--how-lit);
+    stroke-width: 0.8;
+  }
   .how-ring {
     fill: none;
     stroke: var(--you);
@@ -601,7 +619,7 @@
 </style>
 </head>
 <body>
-<canvas id="game" role="img" aria-label="The evening sky over the beach, with bats flying, your taps and the ghost's"></canvas>
+<canvas id="game" role="img" aria-label="The night sky over the beach, with bats flying in the moonlight, your taps and the ghost's"></canvas>
 <div class="over">
   <div class="top">
     <h1>Bat Sky</h1>
@@ -618,7 +636,7 @@
     <!-- The briefing tells three things only: where you start, your move,
          and what you are trying to do (ways:games 1). Its words are kept at
          game:bat-sky too; the label says which sky this is. -->
-    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s sky…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><linearGradient id="how-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="how-top"/><stop offset="0.6" class="how-mid"/><stop offset="1" class="how-low"/></linearGradient><path id="how-bat-shape" d="M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z"/></defs><path d="M10 0 H190 A10 10 0 0 1 200 10 V68 H0 V10 A10 10 0 0 1 10 0 Z" fill="url(#how-sky)"/><circle cx="152" cy="64" r="15" class="how-sun"/><path d="M0 66 H200 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 Z" class="how-sea"/><use href="#how-bat-shape" class="how-bat" transform="translate(160 22) scale(0.8)"/><g class="how-bat"><use href="#how-bat-shape"/><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" path="M-14 46 C 30 16, 62 50, 100 30"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="3.2s" repeatCount="indefinite"/></g><circle cx="100" cy="30" r="0" class="how-ring"><animate attributeName="r" values="0;0;18;18" keyTimes="0;0.5;0.68;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.5;0.52;0.72;1" dur="3.2s" repeatCount="indefinite"/></circle><text x="112" y="22" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.53;0.8;1" dur="3.2s" repeatCount="indefinite"/></text><text x="91" y="50" class="how-finger">👆<animateTransform attributeName="transform" type="translate" values="0 22;0 22;0 0;0 0;0 22" keyTimes="0;0.34;0.5;0.62;1" dur="3.2s" repeatCount="indefinite"/></text></svg><span class="step">Bats are out over the beach as the sun goes down.</span><span class="step"><b>Tap a bat</b> to catch it.</span><span class="step">Catch as many as you can before the sun sets.</span><span class="step">It starts to set when you touch the screen.</span></p>
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s sky…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><linearGradient id="how-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="how-top"/><stop offset="0.6" class="how-mid"/><stop offset="1" class="how-low"/></linearGradient><path id="how-bat-shape" d="M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z"/></defs><path d="M10 0 H190 A10 10 0 0 1 200 10 V68 H0 V10 A10 10 0 0 1 10 0 Z" fill="url(#how-sky)"/><circle cx="160" cy="18" r="10" class="how-moon"/><circle cx="30" cy="14" r="0.9" class="how-star"/><circle cx="70" cy="9" r="0.7" class="how-star"/><circle cx="128" cy="30" r="0.8" class="how-star"/><circle cx="186" cy="44" r="0.7" class="how-star"/><path d="M0 66 H200 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 Z" class="how-sea"/><use href="#how-bat-shape" class="how-bat" transform="translate(150 46) scale(0.8)"/><g class="how-bat"><use href="#how-bat-shape"/><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" path="M-14 46 C 30 16, 62 50, 100 30"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="3.2s" repeatCount="indefinite"/></g><circle cx="100" cy="30" r="0" class="how-ring"><animate attributeName="r" values="0;0;18;18" keyTimes="0;0.5;0.68;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.5;0.52;0.72;1" dur="3.2s" repeatCount="indefinite"/></circle><text x="112" y="22" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.53;0.8;1" dur="3.2s" repeatCount="indefinite"/></text><text x="91" y="50" class="how-finger">👆<animateTransform attributeName="transform" type="translate" values="0 22;0 22;0 0;0 0;0 22" keyTimes="0;0.34;0.5;0.62;1" dur="3.2s" repeatCount="indefinite"/></text></svg><span class="step">Bats are out over the beach in the moonlight.</span><span class="step"><b>Tap a bat</b> to catch it.</span><span class="step">Catch as many as you can before the sun comes up.</span><span class="step">Dawn starts to come when you touch the screen.</span></p>
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-count"></p>
@@ -729,7 +747,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="bat-sky.js?v=2026-10-22c"></script>
+<script src="bat-sky.js?v=2026-10-22d"></script>
 <script>
 (function () {
   var BS = window.BatSky;
@@ -741,50 +759,52 @@
   var say = document.getElementById('say');
   var end = document.getElementById('end');
   // ---- Skins ----------------------------------------------------------------
-  // A skin is only how the game is drawn: the sky's colours from sunset to
-  // night, the sea, the beach, the bats and the words' look. The sky, its
-  // clouds, how dark it gets and every bat's flight are the same in every
-  // skin, so every run is counted the same. Other players' ghosts are drawn
-  // in your skin's ghost colour. The choice is kept on this phone.
+  // A skin is only how the game is drawn: the sky's colours from night to
+  // dawn, the moon, the sea, the beach, the bats and the words' look. The
+  // sky, its clouds, the moonlight and every bat's flight are the same in
+  // every skin, so every run is counted the same. Other players' ghosts are
+  // drawn in your skin's ghost colour. The choice is kept on this phone.
+  // sky0 and sky1 are the sky at the first touch and at sunrise; lit is the
+  // moonlight on a bat's edge, rim on a cloud's, dawn the sunrise's glow.
   var SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
   var SKINS = [
-    { id: 'dusk', name: 'Dusk', bg: '#140B1F', accent: '#FF9F43', you: '#FFD166', ghost: '#C4A1FF', miss: '#FF6B8B', font: SANS,
-      words: '#F4ECF7', dim: '#A797B8', panel: 'rgba(20, 11, 31, 0.82)', strong: 'rgba(20, 11, 31, 0.93)', edge: 'rgba(255, 159, 67, 0.4)',
-      line: 'rgba(244, 236, 247, 0.12)', fieldLine: 'rgba(244, 236, 247, 0.25)', fieldBg: 'rgba(244, 236, 247, 0.06)', me: 'rgba(255, 209, 102, 0.1)',
+    { id: 'night', name: 'Moonlight', bg: '#0B0E24', accent: '#FF9F43', you: '#FFD166', ghost: '#C4A1FF', miss: '#FF6B8B', font: SANS,
+      words: '#EEF0FA', dim: '#A3A9C9', panel: 'rgba(11, 14, 36, 0.82)', strong: 'rgba(11, 14, 36, 0.93)', edge: 'rgba(255, 159, 67, 0.4)',
+      line: 'rgba(238, 240, 250, 0.12)', fieldLine: 'rgba(238, 240, 250, 0.25)', fieldBg: 'rgba(238, 240, 250, 0.06)', me: 'rgba(255, 209, 102, 0.1)',
       glowAccent: 'rgba(255, 159, 67, 0.55)', glowYou: 'rgba(255, 209, 102, 0.5)', shade: 'rgba(0, 0, 0, 0.65)', glow: 1,
-      sky0: ['#3E2A78', '#D9587A', '#FFB561'], sky1: ['#120B2E', '#21154A', '#38245C'], sun: '#FFF0B3', sunRim: '#FF7B3A',
-      sea0: '#6B2F5F', sea1: '#150E2E', ground: '#0B0612', bat: '#120914', eye: '#FFB347', cloud0: '#7A4A78', cloud1: '#100B24',
-      rim: '#FFA48A', lantern: '#FF8C1A', star: '#FFF6E0' },
+      sky0: ['#060A1E', '#101736', '#1E2148'], sky1: ['#4A5C9E', '#D98CA0', '#FFC98A'], moon: '#F4F1E1', moonGlow: '#BFD0FF', crater: '#D6D0BA',
+      lit: '#C8D6FF', sun: '#FFE7A8', dawn: '#FF9E6E', sea0: '#0B1230', sea1: '#5A5C8E', ground: '#05060F', bat: '#161226', eye: '#FFB347',
+      cloud0: '#1A1E3C', cloud1: '#7A6A90', rim: '#B8C6F0', lantern: '#FF8C1A', star: '#FFF6E0' },
     { id: 'paper', name: 'Paper', bg: '#EFE7D8', accent: '#1D1A17', you: '#C21D4E', ghost: '#2F6690', miss: '#E07B00',
       font: '"Cormorant Garamond", Garamond, Georgia, "Times New Roman", serif',
       words: '#1D1A17', dim: '#6A6158', panel: 'rgba(246, 240, 228, 0.92)', strong: 'rgba(246, 240, 228, 0.97)', edge: 'rgba(29, 26, 23, 0.35)',
       line: 'rgba(29, 26, 23, 0.14)', fieldLine: 'rgba(29, 26, 23, 0.3)', fieldBg: 'rgba(29, 26, 23, 0.04)', me: 'rgba(194, 29, 78, 0.08)',
       glowAccent: 'transparent', glowYou: 'transparent', shade: 'rgba(246, 240, 228, 0.95)', glow: 0,
-      sky0: ['#E6D8BE', '#F1E2C4', '#F4D3A6'], sky1: ['#6B655B', '#7E776B', '#91887A'], sun: '#D9532B', sunRim: '#C2461D',
-      sea0: '#B6AA93', sea1: '#57524A', ground: '#1D1A17', bat: '#1D1A17', eye: '#C21D4E', cloud0: '#A89F8E', cloud1: '#46413A',
-      rim: '#F7EEDC', lantern: '#C2461D', star: '#F6F0E2' },
+      sky0: ['#3F3B36', '#4B4640', '#5A544C'], sky1: ['#E6D8BE', '#F1E2C4', '#F4D3A6'], moon: '#F6F0E2', moonGlow: '#F6F0E2', crater: '#DDD3BF',
+      lit: '#EFE7D8', sun: '#D9532B', dawn: '#E08A5A', sea0: '#34302B', sea1: '#B6AA93', ground: '#1D1A17', bat: '#1D1A17', eye: '#C21D4E',
+      cloud0: '#2C2925', cloud1: '#A89F8E', rim: '#CFC6B4', lantern: '#C2461D', star: '#F6F0E2' },
     { id: 'urchin', name: 'Sea urchin', bg: '#06243A', accent: '#7FFFD4', you: '#FF7F6A', ghost: '#C4A7FF', miss: '#FFE14D', font: SANS,
       words: '#E6F7FF', dim: '#8FB3C7', panel: 'rgba(6, 36, 58, 0.86)', strong: 'rgba(6, 36, 58, 0.94)', edge: 'rgba(127, 255, 212, 0.35)',
       line: 'rgba(230, 247, 255, 0.14)', fieldLine: 'rgba(230, 247, 255, 0.28)', fieldBg: 'rgba(230, 247, 255, 0.06)', me: 'rgba(255, 127, 106, 0.12)',
       glowAccent: 'rgba(127, 255, 212, 0.55)', glowYou: 'rgba(255, 127, 106, 0.5)', shade: 'rgba(0, 0, 0, 0.6)', glow: 1,
-      sky0: ['#2C6E9B', '#76C9C4', '#FFD0B0'], sky1: ['#05172C', '#0B2A45', '#133C5B'], sun: '#FFE3C2', sunRim: '#FF7F6A',
-      sea0: '#2E7F92', sea1: '#071D31', ground: '#021019', bat: '#03141F', eye: '#7FFFD4', cloud0: '#5E8FA6', cloud1: '#081B2D',
-      rim: '#FFC7B0', lantern: '#FF7F6A', star: '#E6FFF7' },
+      sky0: ['#020C18', '#05182C', '#0B2840'], sky1: ['#2C6E9B', '#76C9C4', '#FFD0B0'], moon: '#E6FFF7', moonGlow: '#7FFFD4', crater: '#C6E8DE',
+      lit: '#9FFFE0', sun: '#FFE3C2', dawn: '#FF9F8A', sea0: '#041426', sea1: '#2E7F92', ground: '#021019', bat: '#03141F', eye: '#FF7F6A',
+      cloud0: '#0A1F33', cloud1: '#5E8FA6', rim: '#8FD9C8', lantern: '#FF7F6A', star: '#E6FFF7' },
     { id: 'crt', name: 'Arcade CRT', bg: '#020A02', accent: '#33FF66', you: '#E4FF5A', ghost: '#33CCFF', miss: '#FF3B3B',
       font: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
       words: '#B8FFC8', dim: '#4FA86A', panel: 'rgba(2, 10, 2, 0.88)', strong: 'rgba(2, 10, 2, 0.95)', edge: 'rgba(51, 255, 102, 0.4)',
       line: 'rgba(51, 255, 102, 0.16)', fieldLine: 'rgba(51, 255, 102, 0.35)', fieldBg: 'rgba(51, 255, 102, 0.05)', me: 'rgba(228, 255, 90, 0.1)',
       glowAccent: 'rgba(51, 255, 102, 0.6)', glowYou: 'rgba(228, 255, 90, 0.5)', shade: 'rgba(0, 0, 0, 0.8)', glow: 1, scan: true,
-      sky0: ['#0D3A12', '#2C8A3A', '#7DFF8E'], sky1: ['#020802', '#06200A', '#0C3011'], sun: '#E4FF5A', sunRim: '#33FF66',
-      sea0: '#1B5E25', sea1: '#030C03', ground: '#000000', bat: '#000800', eye: '#E4FF5A', cloud0: '#1E5A27', cloud1: '#031005',
-      rim: '#9BFFAA', lantern: '#E4FF5A', star: '#B8FFC8' },
+      sky0: ['#000400', '#021204', '#062008'], sky1: ['#0D3A12', '#2C8A3A', '#7DFF8E'], moon: '#B8FFC8', moonGlow: '#33FF66', crater: '#8FE0A0',
+      lit: '#33FF66', sun: '#E4FF5A', dawn: '#9BFF5A', sea0: '#010A02', sea1: '#1B5E25', ground: '#000000', bat: '#001100', eye: '#E4FF5A',
+      cloud0: '#021006', cloud1: '#1E5A27', rim: '#33FF66', lantern: '#E4FF5A', star: '#B8FFC8' },
     { id: 'contrast', name: 'High contrast', bg: '#000000', accent: '#FFFFFF', you: '#FFE600', ghost: '#4DA3FF', miss: '#FF5A5A', font: SANS,
       words: '#FFFFFF', dim: '#D0D0D0', panel: 'rgba(0, 0, 0, 0.9)', strong: '#000000', edge: '#FFFFFF',
       line: 'rgba(255, 255, 255, 0.35)', fieldLine: '#FFFFFF', fieldBg: 'rgba(255, 255, 255, 0.08)', me: 'rgba(255, 230, 0, 0.16)',
       glowAccent: 'transparent', glowYou: 'transparent', shade: '#000000', glow: 0, thick: true,
-      sky0: ['#FFFFFF', '#FFF6CC', '#FFE680'], sky1: ['#3C3C3C', '#4C4C4C', '#5C5C5C'], sun: '#FFE600', sunRim: '#000000',
-      sea0: '#BDBDBD', sea1: '#2A2A2A', ground: '#000000', bat: '#000000', eye: '#FFE600', cloud0: '#8A8A8A', cloud1: '#1A1A1A',
-      rim: '#FFFFFF', lantern: '#FFE600', star: '#FFFFFF' }
+      sky0: ['#000000', '#080808', '#141414'], sky1: ['#FFFFFF', '#FFF6CC', '#FFE680'], moon: '#FFFFFF', moonGlow: '#FFFFFF', crater: '#D8D8D8',
+      lit: '#FFFFFF', sun: '#FFE600', dawn: '#FFE600', sea0: '#0A0A0A', sea1: '#BDBDBD', ground: '#000000', bat: '#000000', eye: '#FFE600',
+      cloud0: '#1A1A1A', cloud1: '#8A8A8A', rim: '#FFFFFF', lantern: '#FFE600', star: '#FFFFFF' }
   ];
   var skin = SKINS[0];
   function rgbOf(hex) {
@@ -802,13 +822,13 @@
     [['--night', 'bg'], ['--accent', 'accent'], ['--you', 'you'], ['--ghost', 'ghost'], ['--miss', 'miss'], ['--words', 'words'], ['--dim', 'dim'],
      ['--panel', 'panel'], ['--panel-strong', 'strong'], ['--edge', 'edge'], ['--line', 'line'], ['--field-line', 'fieldLine'],
      ['--field-bg', 'fieldBg'], ['--me-row', 'me'], ['--glow-accent', 'glowAccent'], ['--glow-you', 'glowYou'], ['--shade', 'shade'], ['--font', 'font'],
-     ['--how-bat', 'bat'], ['--how-sea', 'sea0'], ['--how-sun', 'sun']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
+     ['--how-bat', 'bat'], ['--how-sea', 'sea0'], ['--how-moon', 'moon'], ['--how-lit', 'lit']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
     r.setProperty('--how-top', skin.sky0[0]);
     r.setProperty('--how-mid', skin.sky0[1]);
     r.setProperty('--how-low', skin.sky0[2]);
     // The drawing's colours, as numbers to mix.
     skin.c = {};
-    ['sea0', 'sea1', 'cloud0', 'cloud1', 'sunRim', 'lantern', 'rim', 'bg'].forEach(function (k) { skin.c[k] = rgbOf(skin[k]); });
+    ['sea0', 'sea1', 'cloud0', 'cloud1', 'lantern', 'rim', 'bg', 'moonGlow', 'dawn'].forEach(function (k) { skin.c[k] = rgbOf(skin[k]); });
     skin.c.sky0 = skin.sky0.map(rgbOf);
     skin.c.sky1 = skin.sky1.map(rgbOf);
     var meta = document.querySelector('meta[name=theme-color]');
@@ -828,7 +848,7 @@
     try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
   }
   // What this phone has done under this sky: every try started, every
-  // sunset seen through. A try is counted when it starts, so a finish
+  // sunrise seen through. A try is counted when it starts, so a finish
   // knows its number.
   function tally(what) {
     var n = parseInt(recall('bat-sky:' + what + ':' + TRACK), 10);
@@ -995,7 +1015,7 @@
   });
 
   // ---- The finger --------------------------------------------------------
-  // The first touch starts the sun going down; every touch after it is a
+  // The first touch starts the dawn coming; every touch after it is a
   // tap, at the place it lands in the sky, waiting in taps until the next
   // step takes it.
   var taps = [];
@@ -1009,9 +1029,9 @@
 
   // ---- Sound and vibration --------------------------------------------------
   // Every sound is made here by the browser, nothing downloaded: a low bell
-  // as the sun starts down, a squeak for each bat caught, a soft whoosh for
+  // as the dawn starts coming, a squeak for each bat caught, a soft whoosh for
   // a miss, a tock for each of the last three seconds, and a chime at
-  // sunset, rising for a new best. Vibration follows the same moments where
+  // sunrise, brighter for a new best. Vibration follows the same moments where
   // the phone allows it (not iPhones). One button turns both off, and this
   // phone remembers it. The sound starts on the first touch, as browsers ask.
   var audio = (function () {
@@ -1109,7 +1129,7 @@
       set: function (better) {
         vibe(better ? [30, 40, 30, 40, 30, 40, 120] : [30, 50, 30, 50, 60]);
         if (!wake()) return;
-        var notes = better ? [523, 659, 784, 1047] : [784, 659, 523];
+        var notes = better ? [523, 659, 784, 1047] : [392, 523, 659];
         notes.forEach(function (f, i) { note('triangle', f, i * 0.12, 0.45, 0.16); });
       }
     };
@@ -1122,7 +1142,7 @@
   var acc = 0, ghostAt = 0, ghostCaught = 0;
   var last = null;              // the run just finished: { replay, caught, taps, slot }
 
-  // A touch while ready starts a run: the sun starts down on that touch.
+  // A touch while ready starts a run: the dawn starts coming on that touch.
   function begin() {
     if (phase !== 'ready' || !sk) return;
     count('tries');
@@ -1145,7 +1165,7 @@
   }
 
   // One step: the tap waiting, if any, then the ghost's taps at this step,
-  // then the sun goes down a step.
+  // then the night goes on a step.
   function tick() {
     var t = taps.shift();
     if (t) {
@@ -1179,7 +1199,7 @@
     BS.step(run);
     var left = BS.LAW.steps - run.step;
     if (left === 3 * BS.RATE || left === 2 * BS.RATE || left === BS.RATE) audio.toll();
-    if (run.status === 'set') finish();
+    if (run.status === 'up') finish();
   }
 
   // How one run stands against another, in words: bats first, then taps.
@@ -1215,8 +1235,8 @@
     document.getElementById('end-count').textContent = BS.words(run.caught);
     document.getElementById('end-line').textContent = friend ? against(now, ghost, ghostWho)
       : lead ? against(now, ghost, leaderWho, best())
-      : !run.caught ? 'The sun has set. Tap a bat to catch it.'
-      : was == null ? 'The sun has set.'
+      : !run.caught ? 'The sun is up. Tap a bat to catch it.'
+      : was == null ? 'The sun is up.'
       : better ? (run.caught > was.caught ? 'Your best yet, by ' + BS.words(run.caught - was.caught) + '.' : 'Your best yet: as many bats, with fewer taps.')
       : run.caught < was.caught ? BS.words(was.caught - run.caught) + ' behind your best.'
       : 'Level with your best.';
@@ -1381,8 +1401,8 @@
 
   // ---- The look-and-sound sheet ---------------------------------------------
   var settings = document.getElementById('settings'), skinList = document.getElementById('skins');
-  // Each skin is offered as a small picture of itself: its sunset, the sun
-  // on the sea, a cloud, a bat, your tap and a ghost's.
+  // Each skin is offered as a small picture of itself: its night, the moon
+  // over the sea, a cloud, a moonlit bat, your tap and a ghost's.
   SKINS.forEach(function (k, i) {
     var b = el('button', 'skin');
     b.type = 'button';
@@ -1402,13 +1422,14 @@
     add('stop', { offset: 0.6, 'stop-color': k.sky0[1] }, grad);
     add('stop', { offset: 1, 'stop-color': k.sky0[2] }, grad);
     add('rect', { x: 0, y: 0, width: 120, height: 60, fill: 'url(#skin-sky-' + i + ')' });
-    add('circle', { cx: 86, cy: 50, r: 9, fill: k.sun });
+    add('circle', { cx: 92, cy: 18, r: 9, fill: k.moon });
     add('rect', { x: 0, y: 50, width: 120, height: 10, fill: k.sea0 });
-    add('ellipse', { cx: 30, cy: 16, rx: 22, ry: 6, fill: k.cloud0, 'fill-opacity': 0.9 });
+    add('ellipse', { cx: 30, cy: 17, rx: 18, ry: 5, fill: k.rim, 'fill-opacity': 0.6 });
+    add('ellipse', { cx: 31, cy: 18, rx: 18, ry: 5, fill: k.cloud0 });
     add('path', { d: 'M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z',
-      fill: k.bat, transform: 'translate(58 30) scale(0.9)' });
+      fill: k.bat, stroke: k.lit, 'stroke-width': 0.8, transform: 'translate(58 30) scale(0.9)' });
     add('circle', { cx: 58, cy: 30, r: 13, fill: 'none', stroke: k.you, 'stroke-width': 2 });
-    add('circle', { cx: 100, cy: 20, r: 7, fill: 'none', stroke: k.ghost, 'stroke-width': 1.6 });
+    add('circle', { cx: 100, cy: 42, r: 6, fill: 'none', stroke: k.ghost, 'stroke-width': 1.6 });
     b.appendChild(svg);
     b.appendChild(document.createTextNode(k.name));
     b.addEventListener('click', function () {
@@ -1728,7 +1749,7 @@
     remember('bat-sky:name', name);
     bringName.hidden = true;
     var url = location.origin + location.pathname + '?from=' + encodeURIComponent(name);
-    var text = 'Come and play Bat Sky with me: tap the bats before the sun sets.';
+    var text = 'Come and play Bat Sky with me: tap the bats in the moonlight before the sun comes up.';
     bringNote.textContent = 'Send this link: ' + url;
     if (navigator.share) {
       navigator.share({ title: 'Bat Sky', text: text, url: url }).then(null, function () {});
@@ -2123,7 +2144,7 @@
   // and the beach below.
   var view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0 };
   var groundLayer = document.createElement('canvas'), scanLayer = null;
-  var stars = [], sunX = 600;
+  var stars = [], sunX = 600, moonX = 300;
 
   function px(x, y) {
     return { x: view.ox + x * view.scale, y: view.oy + y * view.scale };
@@ -2142,13 +2163,15 @@
     };
   }
 
-  // The sky for this page: its bats and clouds, and the stars and the
-  // sun's place, which only drawing uses.
+  // The sky for this page: its bats and clouds, and the stars, the moon's
+  // place and where the sun comes up, which only drawing uses.
   function setup() {
     sk = BS.sky(TRACK);
     BEST = 'bat-sky:best:' + TRACK;
     var r = seeded(TRACK + ':stars');
-    sunX = 250 + r() * 500;
+    var east = r() < 0.5;       // the side of the sky the sun comes up
+    sunX = east ? 620 + r() * 220 : 160 + r() * 220;
+    moonX = east ? 170 + r() * 240 : 590 + r() * 240;
     stars = [];
     for (var i = 0; i < 50; i++) stars.push({ x: r() * 1.6 - 0.3, y: r(), size: 0.6 + r() * 1.1, phase: r() * 6.3 });
     layout();
@@ -2198,7 +2221,7 @@
       g.lineTo(root.x + k[2] * sc, root.y + k[3] * sc);
       g.stroke();
     });
-    // The pumpkin: dark against the dusk, its carved face lit from inside.
+    // The pumpkin: dark against the night, its carved face lit from inside.
     var pk = P(840, BS.HORIZON + 50), rx = 34 * sc, ry = 26 * sc;
     g.fillStyle = skin.ground;
     g.beginPath();
@@ -2233,12 +2256,10 @@
     }
   }
 
-  // A bat, wings spread k pixels a unit of its shape, its wings lifted by
-  // flap (-1 to 1), and its eyes showing as the dark comes on.
+  // A bat's outline, wings spread k pixels a unit of its shape and lifted
+  // by flap (-1 to 1).
   var BAT = [[0, -3], [1.5, -5], [2, -2.5], [6, -5.5], [12, -4], [10.5, -0.5], [9, 1.8], [7, 0.4], [5, 2.8], [2.8, 1.2], [0, 4]];
-  function drawBat(x, y, k, flap, alpha, eyes) {
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = skin.bat;
+  function batPath(x, y, k, flap) {
     ctx.beginPath();
     var i, q;
     for (i = 0; i < BAT.length; i++) {
@@ -2252,9 +2273,29 @@
       ctx.lineTo(x - q[0] * k, y + (q[1] + (q[0] > 2.5 ? flap * q[0] / 12 * 5 : 0)) * k);
     }
     ctx.closePath();
+  }
+
+  // A bat in the moonlight: its edge towards the moon (ux, uy) silver, as
+  // bright as lit (0 to 1), its body dark, its eyes glinting.
+  function drawBat(x, y, k, flap, lit, ux, uy, eyes) {
+    if (lit > 0.02) {
+      var o = Math.max(1, 0.45 * k);
+      ctx.globalAlpha = lit;
+      ctx.fillStyle = skin.lit;
+      batPath(x + ux * o, y + uy * o, k, flap);
+      ctx.fill();
+      ctx.globalAlpha = lit * 0.35;
+      ctx.strokeStyle = skin.lit;
+      ctx.lineWidth = skin.thick ? 1.5 : 1;
+      batPath(x, y, k, flap);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = skin.bat;
+    batPath(x, y, k, flap);
     ctx.fill();
     if (eyes > 0.02) {
-      ctx.globalAlpha = alpha * eyes;
+      ctx.globalAlpha = eyes;
       ctx.fillStyle = skin.eye;
       ctx.fillRect(x - 1.4 * k, y - 2.4 * k, Math.max(1.2, 0.9 * k), Math.max(1.2, 0.9 * k));
       ctx.fillRect(x + 0.5 * k, y - 2.4 * k, Math.max(1.2, 0.9 * k), Math.max(1.2, 0.9 * k));
@@ -2262,16 +2303,34 @@
     ctx.globalAlpha = 1;
   }
 
-  // A cloud's puffs as one shape, so where they overlap is no darker.
-  function cloudPath(cl, cx, cy, sc, drop) {
+  // A cloud's puffs as one shape, so where they overlap is no darker,
+  // moved by (ox, oy) times each puff's size, for its lit edges.
+  function cloudPath(cl, cx, cy, sc, ox, oy) {
     ctx.beginPath();
     cl.puffs.forEach(function (q) {
-      var p = px(cx + q[0], cy + q[1] + drop * q[2]), r = q[2] * sc;
+      var p = px(cx + q[0] + ox * q[2], cy + q[1] + oy * q[2]), r = q[2] * sc;
       ctx.moveTo(p.x + r, p.y);
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     });
   }
+  // Where a cloud is at step s, drifting across and round again.
+  function cloudX(cl, s) {
+    return ((cl.x + cl.v * s + 300) % 1600 + 1600) % 1600 - 300;
+  }
 
+  // Lines of light on the sea under x: the moon's, then the sun's.
+  function glitter(x, hy, sc, color, alpha) {
+    if (alpha <= 0.01) return;
+    ctx.fillStyle = color;
+    for (var i = 0; i < 6; i++) {
+      var lw = (80 - i * 11) * sc, ly = hy + (5 + i * 9) * sc;
+      ctx.globalAlpha = alpha * (0.55 - i * 0.07);
+      ctx.fillRect(x - lw / 2, ly, lw, 2.5 * sc + 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  var MOON_R = 62;
   function draw(alpha, dt, ts) {
     var w = view.w, h = view.h, sc = view.scale, c = skin.c;
     ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
@@ -2283,91 +2342,131 @@
     var s = run ? (phase === 'running' ? run.step + alpha : run.step) : 0;
     var p = Math.min(1, s / BS.LAW.steps);
     var hy = view.oy + BS.HORIZON * sc;
-    // The sky, darkening as the sun goes down.
+    // How far dawn has come: nothing for the first part of the night, then
+    // light growing from the horizon up.
+    var dawn = Math.max(0, Math.min(1, (p - 0.3) / 0.7));
     var g = ctx.createLinearGradient(0, 0, 0, hy);
-    g.addColorStop(0, mix(c.sky0[0], c.sky1[0], p));
-    g.addColorStop(0.6, mix(c.sky0[1], c.sky1[1], p));
-    g.addColorStop(1, mix(c.sky0[2], c.sky1[2], p));
+    g.addColorStop(0, mix(c.sky0[0], c.sky1[0], dawn * dawn));
+    g.addColorStop(0.6, mix(c.sky0[1], c.sky1[1], Math.pow(dawn, 1.5)));
+    g.addColorStop(1, mix(c.sky0[2], c.sky1[2], dawn));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, hy + 1);
-    // The stars come out as it gets dark.
-    var sa = Math.max(0, Math.min(1, (p - 0.45) * 2));
+    // The stars, fading as dawn comes.
+    var sa = 1 - Math.min(1, dawn * 1.6);
     if (sa > 0) {
       ctx.fillStyle = skin.star;
       stars.forEach(function (st) {
         var tw = still() ? 1 : 0.6 + 0.4 * Math.sin(ts / 600 + st.phase);
-        ctx.globalAlpha = sa * tw * 0.8;
+        ctx.globalAlpha = sa * tw * 0.85;
         ctx.fillRect(view.ox + st.x * BS.W * sc, st.y * (hy - 20), st.size, st.size);
       });
       ctx.globalAlpha = 1;
     }
-    // The sun, sinking into the sea as the run goes.
-    var sun = px(sunX, 860 + (BS.HORIZON + 95 - 860) * p), sr = 85 * sc;
+    // The glow where the sun will come up.
+    if (dawn > 0) {
+      var east = px(sunX, BS.HORIZON);
+      var dg = ctx.createRadialGradient(east.x, east.y, 0, east.x, east.y, 650 * sc);
+      dg.addColorStop(0, mix(c.dawn, c.dawn, 0, 0.6 * dawn));
+      dg.addColorStop(1, mix(c.dawn, c.dawn, 0, 0));
+      ctx.fillStyle = dg;
+      ctx.fillRect(0, 0, w, hy);
+    }
+    // The moon, high at first, sinking and paling as dawn comes.
+    var my = 80 + 820 * p, moon = px(moonX, my), mr = MOON_R * sc, pale = 1 - 0.65 * dawn;
     if (skin.glow) {
-      var glow = ctx.createRadialGradient(sun.x, sun.y, sr * 0.5, sun.x, sun.y, sr * 3.2);
-      glow.addColorStop(0, mix(c.sunRim, c.sunRim, 0, 0.45 * (1 - p * 0.7)));
-      glow.addColorStop(1, mix(c.sunRim, c.sunRim, 0, 0));
-      ctx.fillStyle = glow;
-      ctx.fillRect(sun.x - sr * 3.2, sun.y - sr * 3.2, sr * 6.4, sr * 6.4);
+      var mg = ctx.createRadialGradient(moon.x, moon.y, mr * 0.9, moon.x, moon.y, mr * 4);
+      mg.addColorStop(0, mix(c.moonGlow, c.moonGlow, 0, 0.3 * pale));
+      mg.addColorStop(1, mix(c.moonGlow, c.moonGlow, 0, 0));
+      ctx.fillStyle = mg;
+      ctx.fillRect(moon.x - mr * 4, moon.y - mr * 4, mr * 8, mr * 8);
     }
-    ctx.fillStyle = skin.sun;
+    ctx.globalAlpha = pale;
+    ctx.fillStyle = skin.moon;
     ctx.beginPath();
-    ctx.arc(sun.x, sun.y, sr, 0, Math.PI * 2);
+    ctx.arc(moon.x, moon.y, mr, 0, Math.PI * 2);
     ctx.fill();
-    if (skin.thick) {
-      ctx.strokeStyle = skin.sunRim;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    ctx.globalAlpha = pale * 0.55;
+    ctx.fillStyle = skin.crater;
+    [[-0.3, -0.2, 0.22], [0.28, 0.12, 0.16], [-0.05, 0.38, 0.12], [0.1, -0.42, 0.09]].forEach(function (q) {
+      ctx.beginPath();
+      ctx.arc(moon.x + q[0] * mr, moon.y + q[1] * mr, q[2] * mr, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    // The sun, its rim coming up over the sea at the last.
+    var rise = Math.max(0, Math.min(1, (p - 0.82) / 0.18));
+    var sun = px(sunX, BS.HORIZON + 95 - 70 * rise), sr = 85 * sc;
+    if (rise > 0) {
+      ctx.fillStyle = skin.sun;
+      ctx.beginPath();
+      ctx.arc(sun.x, sun.y, sr, 0, Math.PI * 2);
+      ctx.fill();
+      if (skin.thick) {
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
     }
-    // The bats still out, fading as it gets dark, their eyes showing.
-    var k = 100 / 24 * sc, vis = 1 - 0.35 * p, eyes = Math.max(0, Math.min(1, (p - 0.3) * 1.6));
+    // How much moonlight reaches the bats: less as the moon pales, and
+    // less while a cloud is over it.
+    var cover = 0;
+    sk.clouds.forEach(function (cl) {
+      var cx = cloudX(cl, s);
+      cl.puffs.forEach(function (q) {
+        var dx = moonX - cx - q[0], dy = my - cl.y - q[1];
+        var f = (q[2] + MOON_R / 2 - Math.sqrt(dx * dx + dy * dy)) / MOON_R;
+        if (f > cover) cover = Math.min(1, f);
+      });
+    });
+    var light = pale * (1 - 0.7 * cover);
+    // The bats, silver on the side towards the moon, the more the nearer
+    // they are to it, their eyes glinting until the light comes.
+    var k = 100 / 24 * sc, eyes = 1 - 0.7 * dawn;
     for (var b = 0; b < sk.n; b++) {
       if (run && run.gone[b]) continue;
       var q = BS.at(sk, b, s);
       if (!q) continue;
       var flap = still() ? 0.2 : Math.sin(ts / 1000 * 2 * Math.PI * (5 + b % 4) + b * 1.7);
-      var at = px(q.x, q.y);
-      drawBat(at.x, at.y, k, flap, vis, eyes);
+      var at = px(q.x, q.y), dx = moonX - q.x, dy = my - q.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      drawBat(at.x, at.y, k, flap, light * (0.35 + 0.65 * Math.max(0, 1 - d / 1100)), dx / d, dy / d, eyes);
     }
-    // The clouds, over the bats: lit from beneath while the sun is up, then
-    // as dark as the night.
+    // The clouds over the bats: silver on the side towards the moon, then
+    // lit from beneath as the sun comes.
     sk.clouds.forEach(function (cl) {
-      var cx = ((cl.x + cl.v * s + 300) % 1600 + 1600) % 1600 - 300;
-      if (p < 1) {
-        ctx.fillStyle = mix(c.rim, c.rim, 0, (1 - p) * 0.6);
-        cloudPath(cl, cx, cl.y, sc, 0.14);
+      var cx = cloudX(cl, s), dx = moonX - cx, dy = my - cl.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (light > 0.02) {
+        ctx.fillStyle = mix(c.rim, c.rim, 0, 0.55 * light);
+        cloudPath(cl, cx, cl.y, sc, dx / d * 0.12, dy / d * 0.12);
         ctx.fill();
       }
-      ctx.fillStyle = mix(c.cloud0, c.cloud1, p, 0.93);
-      cloudPath(cl, cx, cl.y, sc, 0);
+      if (dawn > 0) {
+        ctx.fillStyle = mix(c.dawn, c.dawn, 0, 0.6 * dawn);
+        cloudPath(cl, cx, cl.y, sc, 0, 0.14);
+        ctx.fill();
+      }
+      ctx.fillStyle = mix(c.cloud0, c.cloud1, dawn, 0.94);
+      cloudPath(cl, cx, cl.y, sc, 0, 0);
       ctx.fill();
     });
-    // The sea, with the sun's path on it, and the beach.
+    // The sea, with the moon's path on it and then the sun's, and the beach.
     var seaG = ctx.createLinearGradient(0, hy, 0, hy + 80 * sc);
-    seaG.addColorStop(0, mix(c.sea0, c.sea1, p));
-    seaG.addColorStop(1, mix(c.sea0, c.sea1, Math.min(1, p + 0.3)));
+    seaG.addColorStop(0, mix(c.sea0, c.sea1, dawn));
+    seaG.addColorStop(1, mix(c.sea0, c.sea1, Math.max(0, dawn - 0.3)));
     ctx.fillStyle = seaG;
     ctx.fillRect(0, hy, w, h - hy);
-    if (p < 0.98) {
-      ctx.fillStyle = skin.sun;
-      for (var i = 0; i < 6; i++) {
-        var lw = (90 - i * 12) * sc * (1 - p * 0.8), ly = hy + (5 + i * 9) * sc;
-        ctx.globalAlpha = (1 - p) * (0.55 - i * 0.07);
-        ctx.fillRect(sun.x - lw / 2, ly, lw, 2.5 * sc + 1);
-      }
-      ctx.globalAlpha = 1;
-    }
+    glitter(moon.x, hy, sc, skin.moon, light * 0.8);
+    glitter(sun.x, hy, sc, skin.sun, rise);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(groundLayer, 0, 0);
     ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
-    // The lantern's glow, flickering.
+    // The lantern's glow, flickering, brightest in the dark.
     var pk = px(840, BS.HORIZON + 50), fl = still() ? 1 : 0.85 + 0.15 * Math.sin(ts / 90) * Math.sin(ts / 37);
     var lg = ctx.createRadialGradient(pk.x, pk.y, 2, pk.x, pk.y, 70 * sc);
-    lg.addColorStop(0, mix(c.lantern, c.lantern, 0, (0.25 + 0.35 * p) * fl));
+    lg.addColorStop(0, mix(c.lantern, c.lantern, 0, (0.6 - 0.4 * dawn) * fl));
     lg.addColorStop(1, mix(c.lantern, c.lantern, 0, 0));
     ctx.fillStyle = lg;
     ctx.fillRect(pk.x - 70 * sc, pk.y - 70 * sc, 140 * sc, 140 * sc);
-    // Beyond the sky's sides, on a wide screen, the dusk is dimmed: no bat
+    // Beyond the sky's sides, on a wide screen, the night is dimmed: no bat
     // can be caught out there.
     if (view.ox > 1) {
       ctx.fillStyle = mix(c.bg, c.bg, 0, 0.6);
@@ -2380,7 +2479,7 @@
       ctx.drawImage(scanLayer, 0, 0);
     }
     countEl.textContent = run ? String(run.caught) : '0';
-    leftEl.textContent = phase === 'running' ? 'The sun sets in ' + Math.ceil((BS.LAW.steps - run.step) / BS.RATE) + ' s' : '';
+    leftEl.textContent = phase === 'running' ? 'The sun rises in ' + Math.ceil((BS.LAW.steps - run.step) / BS.RATE) + ' s' : '';
   }
 
   // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
