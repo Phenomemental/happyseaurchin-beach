@@ -218,6 +218,7 @@
         stroke: 'var(--ink)', 'stroke-opacity': '0.55', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, marks);
     }
     var lit = node('g', { 'class': 'lit' }, art);
+    var pooled = node('g', { 'class': 'sd-tidepools' }, svg);
 
     function time(date) {
       var angle = shadowAngle(date);
@@ -267,8 +268,52 @@
         sweep.classList.add('sweeping');
       }
     }
+    // Hold: the colour drains into six pools; gather() brings it back.
+    function pools(list, label, pick) {
+      while (pooled.firstChild) pooled.removeChild(pooled.firstChild);
+      poolsAt(list).forEach(function (p, i) {
+        var pool = POOLS[i];
+        var g = node('g', { 'class': 'sd-tidepool' + (p.days ? '' : ' empty'), role: 'button', tabindex: 0,
+          'aria-label': label(pool, p.days), transform: 'translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')' }, pooled);
+        var inner = node('g', { 'class': 'sd-tidepool-grow' }, g);
+        node('circle', { 'class': 'sd-tidepool-hit', r: Math.max(p.r, 22), fill: 'transparent' }, inner);
+        node('circle', p.days
+          ? { 'class': 'sd-tidepool-water', r: p.r.toFixed(1), fill: pool.hue, 'fill-opacity': 0.9 }
+          : { 'class': 'sd-tidepool-water', r: p.r, fill: 'none', stroke: 'var(--frame)', 'stroke-width': 2 }, inner);
+        g.addEventListener('click', function (ev) { ev.stopPropagation(); pick(i); });
+        g.addEventListener('keydown', function (ev) {
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (!ev.repeat) pick(i);
+        });
+      });
+      svg.classList.add('pooled');
+    }
+    function gather() {
+      svg.classList.remove('pooled');
+      while (pooled.firstChild) pooled.removeChild(pooled.firstChild);
+    }
+    function picked(i) {
+      Array.prototype.forEach.call(pooled.querySelectorAll('.sd-tidepool'), function (g, k) { g.classList.toggle('picked', k === i); });
+    }
     days([]);
-    return { time: time, answering: answering, days: days };
+    return { time: time, answering: answering, days: days, pools: pools, gather: gather, picked: picked };
+  }
+
+  // ---- Hold: the pools -----------------------------------------------------------
+  // The six tide-pools in a ring round the centre (6.8), Facts at the top and
+  // clockwise, each sized by its share of the days (its area, so a pool
+  // holding twice the days looks twice as full); an empty pool is a pale
+  // ring of its own small size.
+  var POOL_RING = 128, POOL_EMPTY = 14, POOL_MIN = 16, POOL_MAX = 50;
+  function poolsAt(list) {
+    var s = shares(list || []), c = counts(list || []);
+    return POOLS.map(function (p, i) {
+      var at_ = at(-90 + i * 60, POOL_RING);
+      return { n: p.n, x: at_.x, y: at_.y, days: c[i], share: s[i],
+        r: s[i] > 0 ? POOL_MIN + (POOL_MAX - POOL_MIN) * Math.sqrt(s[i]) : POOL_EMPTY };
+    });
   }
 
   // ---- The tideline -------------------------------------------------------------
@@ -401,6 +446,12 @@
       lay.at.every(function (p) { return Math.abs(p.y - TIDE_BASE) <= 14 && Math.abs(p.turn) <= 25; }));
     var many = shellsAt(new Array(40).fill(0).map(function (x, i) { return { address: String(2026000000 + i * 100), text: '' }; }), 350);
     check('forty days: the shells keep a finger apart and the tideline grows wider', many.width > 350 && Math.abs(many.at[1].x - many.at[0].x - SHELL) < 1e-9);
+    var ps = poolsAt(days);
+    check('hold: six pools in a ring, Facts at the top and clockwise',
+      ps.length === 6 && Math.abs(ps[0].x - CX) < 1e-9 && ps[0].y < CY && ps[1].x > CX && ps[3].y > CY && ps[5].x < CX);
+    check('each pool sized by its share (by area); an empty pool a pale ring',
+      Math.abs(ps[0].r - (POOL_MIN + (POOL_MAX - POOL_MIN) * Math.sqrt(4 / 9))) < 1e-9 && ps[3].r === POOL_EMPTY && ps[3].days === 0 &&
+      ps.every(function (p) { return p.r <= POOL_MAX; }) && POOL_RING + POOL_MAX < RING);
     var ok = results.every(Boolean);
     log(ok ? 'Mark: all ' + results.length + ' checks pass.' : 'Mark: a check failed.');
     return ok;
@@ -419,6 +470,7 @@
     ring: ring,
     tint: tint,
     dial: dial,
+    poolsAt: poolsAt,
     scatter: scatter,
     shellsAt: shellsAt,
     tideline: tideline,
