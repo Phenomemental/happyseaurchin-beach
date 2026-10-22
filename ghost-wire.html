@@ -777,7 +777,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-22c"></script>
+<script src="ghost-wire.js?v=2026-10-22d"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -843,6 +843,20 @@
   function recall(key) {
     try { return window.localStorage.getItem(key); } catch (e) { return null; }
   }
+  // A phone with no name plays as a guest, under a guest name of its own
+  // ('Guest 4821'), so its bests reach the board like anyone's; typing a
+  // name puts later runs under the name instead.
+  function guest() {
+    var g = recall('ghost-wire:guest');
+    if (!/^Guest \d{4}$/.test(g || '')) {
+      g = 'Guest ' + (1000 + Math.floor(Math.random() * 9000));
+      remember('ghost-wire:guest', g);
+    }
+    return g;
+  }
+  function shownName() {
+    return recall('ghost-wire:name') || guest();
+  }
   function remember(key, value) {
     try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
   }
@@ -892,8 +906,8 @@
   // A kept line is yours when this phone kept it, or it carries the name
   // this phone signs with.
   function isMine(entry, slot) {
-    var name = (recall('ghost-wire:name') || '').toLowerCase();
-    return mine().indexOf(slot) >= 0 || (!!name && who(entry).toLowerCase() === name);
+    var name = (recall('ghost-wire:name') || '').toLowerCase(), g = (recall('ghost-wire:guest') || '').toLowerCase(), w = who(entry).toLowerCase();
+    return mine().indexOf(slot) >= 0 || (!!name && w === name) || (!!g && w === g);
   }
 
   function isDay(track) { return /^\d{10}$/.test(track); }
@@ -1271,10 +1285,9 @@
       : better ? 'This device couldn’t keep it as your ghost.'
       : 'Your best here stays at ' + GW.seconds(was) + ' s.';
     if (!friend && kept) loadGhost();
-    // A new best goes on the board by itself once this phone has a name
-    // (or has put a run there before); a run with no name yet is saved as
-    // soon as one is typed.
-    if (kept && isDay(TRACK) && (mine().length || recall('ghost-wire:name'))) {
+    // Every new best goes on the board by itself, under the phone's name or
+    // its guest name.
+    if (kept && isDay(TRACK)) {
       var auto = last;
       auto.state = 'saving';
       keepState(auto, true);
@@ -1295,6 +1308,7 @@
     document.getElementById('keep-link').hidden = true;
     document.getElementById('challenge').disabled = false;
     document.getElementById('who').value = recall('ghost-wire:name') || '';
+    document.getElementById('who').placeholder = recall('ghost-wire:name') ? 'your name' : 'your name (you’re ' + guest() + ')';
     end.hidden = false;
     if (isDay(TRACK)) room().then(function (runs) {
       if (phase === 'done' && last && last.steps === run.step) rank.textContent = standing(runs, run.step);
@@ -1345,8 +1359,17 @@
           player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
           name: named || 'A visitor',
           tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null,
-          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : ''
+          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : '',
+          was: typeof e['5'] === 'string' && /^Guest \d{4}$/.test(e['5']) ? e['5'] : ''
         });
+      });
+      // A guest who later took a name is one player: their guest runs are
+      // read under the name.
+      var alias = {};
+      runs.forEach(function (r) { if (r.was && r.player.indexOf('name:') === 0) alias['name:' + r.was.toLowerCase()] = r; });
+      runs.forEach(function (r) {
+        var to = alias[r.player];
+        if (to) { r.player = to.player; r.name = to.name; }
       });
       return runs;
     });
@@ -1354,8 +1377,11 @@
   // Which player is you: the one at a slot this phone kept, or with the
   // name this phone signs with.
   function myPlayer(runs) {
-    var slotsHere = mine(), name = (recall('ghost-wire:name') || '').toLowerCase();
-    var hit = runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0 || (name && r.player === 'name:' + name); })[0];
+    var slotsHere = mine(), name = (recall('ghost-wire:name') || '').toLowerCase(), g = (recall('ghost-wire:guest') || '').toLowerCase();
+    // Your name first, then your guest name, then any line this phone kept.
+    var hit = runs.filter(function (r) { return name && r.player === 'name:' + name; })[0] ||
+      runs.filter(function (r) { return g && r.player === 'name:' + g; })[0] ||
+      runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0; })[0];
     return hit ? hit.player : '';
   }
   // Each player's best on one wire, fastest first: { player, name, steps,
@@ -1919,13 +1945,17 @@
   // visitor's, never as a beach handle.
   // Keep a run in the room; resolves with the slot it landed in.
   function keepRun(replay, steps, tries) {
-    var name = (recall('ghost-wire:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var name = shownName().replace(/\s+/g, ' ').trim().slice(0, 40);
     var line = GW.seconds(steps) + ' s on the wire of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
     var more = { 7: replay };
     // Who brought this phone into the wave, kept with each of its runs.
     var from = recall('ghost-wire:from');
     if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
     if (tries) more[8] = String(tries);
+    // A named phone's runs say the guest name it played under before, so
+    // its guest runs are read as the same player.
+    var was = recall('ghost-wire:guest');
+    if (recall('ghost-wire:name') && was && was.toLowerCase() !== name.toLowerCase()) more[5] = was;
     // A save counts only once the run is read back from the room: the
     // beach's answer alone isn't trusted, since two saves landing at once
     // can lose one. If it isn't there, it is sent once more.
@@ -1963,6 +1993,7 @@
     if (!run || !run.replay) return Promise.reject(new Error('nothing to save'));
     if (run.slot) return Promise.resolve(run.slot);
     if (!run.saving) {
+      run.savedAs = shownName();
       run.saving = keepRun(run.replay, run.steps, run.tries).then(function (slot) {
         run.slot = slot;
         return slot;
@@ -1984,21 +2015,23 @@
   function keepState(run, best) {
     var el = document.getElementById('keep-state');
     if (!run || run !== last) return;
-    var name = recall('ghost-wire:name');
-    var say = run.slot ? '✓ This time is on the board' + (name ? ' as ' + name : '') + '.'
+    var name = recall('ghost-wire:name'), asGuest = run.slot && !name;
+    var say = run.slot ? '✓ This time is on the board as ' + (run.savedAs || shownName()) + '.' + (asGuest ? ' Add your name to use it instead.' : '')
       : run.state === 'saving' ? 'Saving your time to the board…'
       : run.state === 'failed' ? 'This time didn’t reach the board. Tap Save to try again.'
-      : best ? 'This time isn’t on the board yet. Add your name and tap Save.'
+      : best ? 'This time isn’t on the board yet. Tap Save to put it there.'
       : 'Only your best goes on the board automatically. Tap Save to add this one too.';
     el.textContent = say;
     el.className = 'keep-state ' + (run.slot ? 'on' : 'off');
-    saveBtn.hidden = !!run.slot || run.state === 'saving';
+    // Saved as a guest, Save stays to put the time up under a name.
+    saveBtn.hidden = (!!run.slot && !asGuest) || run.state === 'saving';
+    saveBtn.textContent = asGuest ? 'Save under my name' : 'Save my time to the board';
   }
   function saveNow() {
     var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
     if (!last || !last.replay || !isDay(TRACK)) return;
-    if (!name && !recall('ghost-wire:name')) {
-      document.getElementById('keep-state').textContent = 'Type your name first, so the board knows it’s you.';
+    if (last.slot && !name && !recall('ghost-wire:name')) {
+      document.getElementById('keep-state').textContent = 'Type your name first, then tap Save.';
       whoBox.focus();
       return;
     }
@@ -2006,6 +2039,8 @@
       remember('ghost-wire:name', name);
       notesForm.who.value = notesForm.who.value || name;
     }
+    // Kept under the guest name and now given a name: keep it under the name.
+    if (last.slot && last.savedAs !== shownName()) { last.slot = ''; last.saving = null; }
     if (last.slot) return keepState(last, true);
     var run = last;
     run.state = 'saving';
@@ -2022,7 +2057,7 @@
   // Typing a name and pressing Done saves too.
   function nameGiven() {
     var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
-    if (!name || !last || last.slot || last.state === 'saving') return;
+    if (!name || !last || last.state === 'saving' || (last.slot && last.savedAs === name)) return;
     saveNow();
   }
   whoBox.addEventListener('change', nameGiven);
