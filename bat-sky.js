@@ -1,4 +1,4 @@
-/* Bat Sky's engine: the evening sky a day's name draws (its bats, the
+/* Bat Sky's engine: the night sky a day's name draws (its bats, the
    ways they fly, and the clouds that drift over them), one step of a run
    under it, and a run kept as the taps its player made, which re-runs to
    the same catch, tap for tap, in any browser. Nothing here touches the
@@ -25,7 +25,7 @@
 
   // How a run goes (sky law bs1, until frozen by playing on phones).
   var LAW = {
-    steps: 20 * RATE,           // the sun sets twenty seconds after the first touch
+    steps: 20 * RATE,           // the sun rises twenty seconds after the first touch
     reach: 75,                  // a tap catches a bat whose middle is this near, in units
     rest: 6,                    // steps after any tap before the next one counts
     missRest: 30                // steps after a miss before the next one counts
@@ -87,7 +87,7 @@
     var n = [40, 48, 52][k.flight];
     var waves = [];
     if (k.flight === 2) {
-      // A swarm comes in four waves, the first as the sun starts down and
+      // A swarm comes in four waves, the first as the night starts to end and
       // the rest at times of the day's own.
       for (var w = 0; w < 4; w++) waves.push(w ? whole(w * LAW.steps / 4 - 40 + r() * 120) : -60);
     }
@@ -95,7 +95,7 @@
     for (var b = 0; b < n; b++) {
       var from, life, amp, period, bends;
       // Drifting and darting bats come one after another, each in its own
-      // share of the evening, so the sky is never empty for long; some are
+      // share of the night, so the sky is never empty for long; some are
       // already out at the first touch.
       if (k.flight === 0) {
         from = -260 + whole((b + r()) * (LAW.steps + 160) / n);
@@ -183,7 +183,7 @@
 
   // ---- A run -----------------------------------------------------------------
 
-  // status: 'running' until the sun has 'set'. gone marks the bats
+  // status: 'running' until the sun is 'up'. gone marks the bats
   // caught; readyAt is the step from which a tap counts.
   function start(sk) {
     return { step: 0, caught: 0, taps: 0, readyAt: 0, gone: new Uint8Array(sk.n), status: 'running' };
@@ -202,7 +202,7 @@
   // A tap at (x, y) on this step: it catches the nearest bat in the sky
   // within reach (the lower number when two are as near) and answers with
   // that bat's number, or -1 for a miss; null when the tap doesn't count
-  // (the hand still resting, or the sun set).
+  // (the hand still resting, or the sun up).
   function tap(st, x, y, sk) {
     if (!ready(st)) return null;
     x = spot(x, W);
@@ -226,15 +226,15 @@
     return best;
   }
 
-  // One step on: when the last has passed, the sun has set.
+  // One step on: when the last has passed, the sun is up.
   function step(st) {
     if (st.status !== 'running') return st;
     st.step++;
-    if (st.step >= LAW.steps) st.status = 'set';
+    if (st.step >= LAW.steps) st.status = 'up';
     return st;
   }
 
-  // How far the sun has gone down, from 0 at the first touch to 1 at sunset.
+  // How far the night has gone, from 0 at the first touch to 1 at sunrise.
   function progress(st) {
     return st.step / LAW.steps;
   }
