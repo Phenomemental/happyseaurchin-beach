@@ -51,6 +51,15 @@
     margin: 0.4rem auto 0;
     overflow: visible;
   }
+  .sd-dial[role="button"] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-dial[role="button"]:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
   .sd-dial .breathe {
     transform-box: view-box;
     transform-origin: 232px 140px;
@@ -481,6 +490,18 @@
     </form>
   </dialog>
 
+  <dialog class="sd-card" id="find-card" aria-label="Your days">
+    <form id="find-form">
+      <label for="fname">your name here</label>
+      <input id="fname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+      <p class="sd-soft" id="fname-note" hidden>Nothing is kept under that name yet.</p>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="find-go">Show my days</button>
+        <button type="button" class="sd-quiet" id="find-not">Not now</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog class="sd-card" id="keep-card" aria-label="Keep this day">
     <form id="keep-form">
       <div id="name-row">
@@ -520,7 +541,7 @@
   var VERSION = 'Sundial M2 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
-  var WORD = 'sundial.word', SEEN = 'sundial.days';     // held for this visit only
+  var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
@@ -626,9 +647,11 @@
   function showGreeting() {
     var d = lastDay();
     if (!d) { greet.hidden = true; return; }
+    // Their own line, quoted, so it reads whatever its shape: "Tomorrow,
+    // walk up early." as well as "Tomorrow, the drive north."
     var t = d.tomorrow.replace(/[.\s]+$/, '');
     if (t && !/^I\b/.test(t)) t = t.charAt(0).toLowerCase() + t.slice(1);
-    $('greet-said').textContent = t ? 'Last time you said you wanted to ' + t + '.' : '';
+    $('greet-said').textContent = t ? 'Last time you said: \u201cTomorrow, ' + t + '.\u201d' : '';
     $('greet-said').hidden = !t;
     $('greet-day').textContent = [d.title, d.place].filter(Boolean).join(' · ');
     greet.hidden = false;
@@ -636,7 +659,7 @@
   // On arrival with a name: their days, read with no word. Should the beach
   // not answer, the days this visit last read stand in; else none.
   (function comeBack() {
-    var name = stored(NAME);
+    var name = stored(NAME) || held(LOOKING);
     if (!name) return;
     Days.read(name).then(function (list) {
       showDays(list);
@@ -651,6 +674,68 @@
       }
     });
   })();
+
+  // ---- Tap: find your days ---------------------------------------------------------
+  // On a browser that doesn't know them yet, tapping the sundial asks for a
+  // name and shows the days kept under it, read with no word. (With a name
+  // kept here, tapping the sundial is for the tideline, M3.)
+  var dialEl = $('dial'), findCard = $('find-card'), fname = $('fname');
+  function setDialTap() {
+    if (!stored(NAME)) {
+      dialEl.setAttribute('role', 'button');
+      dialEl.setAttribute('tabindex', '0');
+      dialEl.setAttribute('aria-haspopup', 'dialog');
+    } else {
+      dialEl.setAttribute('role', 'img');
+      dialEl.removeAttribute('tabindex');
+      dialEl.removeAttribute('aria-haspopup');
+    }
+  }
+  setDialTap();
+  function openFind() {
+    if (stored(NAME)) return;
+    fname.value = held(LOOKING);
+    $('fname-note').hidden = true;
+    if (findCard.showModal) findCard.showModal();
+    else findCard.setAttribute('open', '');
+    fname.focus();
+  }
+  function closeFind() {
+    if (findCard.open) findCard.close ? findCard.close() : findCard.removeAttribute('open');
+  }
+  dialEl.addEventListener('click', openFind);
+  dialEl.addEventListener('keydown', function (ev) {
+    if (dialEl.getAttribute('role') !== 'button' || (ev.key !== 'Enter' && ev.key !== ' ')) return;
+    ev.preventDefault();
+    openFind();
+  });
+  findCard.addEventListener('close', function () { if (!stored(NAME)) dialEl.focus(); });
+  $('find-not').addEventListener('click', closeFind);
+  var finding = false;
+  $('find-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (finding || !Days.handle(fname.value)) { fname.focus(); return; }
+    finding = true;
+    $('find-go').disabled = true;
+    Days.resolve(fname.value).then(function (who) {
+      finding = false;
+      $('find-go').disabled = false;
+      if (!who || who.state !== 'kept' || !who.days.length) {
+        $('fname-note').hidden = false;
+        fname.focus();
+        return;
+      }
+      hold(LOOKING, who.name);
+      showDays(who.days);
+      if (day.hidden) showGreeting();
+      closeFind();
+    }, function () {
+      // The beach out of reach: nothing is said, and the field stays.
+      finding = false;
+      $('find-go').disabled = false;
+      fname.focus();
+    });
+  });
 
   // ---- The quiet corner -----------------------------------------------------------
   var askedForKey = false, returnTo = null;
@@ -728,6 +813,8 @@
       store(NAME, '');
       hold(WORD, '');
       hold(SEEN, '');
+      hold(LOOKING, '');
+      setDialTap();
       showDays([]);
       greet.hidden = true;
       kept.hidden = true;
@@ -931,15 +1018,15 @@
   // the word once a visit, and then one tap.
   var checking = 0, checkTimer = null, keeping = false;
   function openKeep() {
-    var name = stored(NAME);
+    var name = stored(NAME), looking = held(LOOKING);
     $('name-row').hidden = !!name;
     $('truths').hidden = !!name;
     $('kname-note').hidden = true;
-    kname.value = name || '';
+    kname.value = name || looking || '';
     kword.value = '';
     if (keepCard.showModal) keepCard.showModal();
     else keepCard.setAttribute('open', '');
-    (name ? kword : kname).focus();
+    (name || looking ? kword : kname).focus();
   }
   function closeKeep() {
     if (keepCard.open) keepCard.close ? keepCard.close() : keepCard.removeAttribute('open');
@@ -1002,6 +1089,8 @@
       }
       store(NAME, who.name);
       hold(WORD, word);
+      hold(LOOKING, '');
+      setDialTap();
       return Days.read(who.name).catch(function () {
         return days.filter(function (d) { return d.address !== Days.today(); })
           .concat([{ address: Days.today(), text: text }]);
