@@ -566,6 +566,13 @@
   .sd-forget {
     margin: 1rem 0 0;
   }
+  .sd-card .sd-or,
+  .sd-steward label {
+    margin-top: 0.8rem;
+  }
+  .sd-steward {
+    margin: 1rem 0 0;
+  }
   .sd-version {
     font-size: 0.9rem;
     color: var(--muted);
@@ -648,10 +655,26 @@
     <form id="key-form" method="dialog">
       <label for="key" id="key-label">your Claude API key</label>
       <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <label for="phrase" class="sd-or">or a passphrase</label>
+      <input id="phrase" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
       <div class="sd-card-row">
         <button type="submit" class="sd-keep-key" id="keep-key" value="keep">Keep it here</button>
         <button type="button" class="sd-quiet" id="drop-key" hidden>Take it away</button>
         <button type="button" class="sd-quiet" id="close-card">Close</button>
+      </div>
+      <div class="sd-steward" id="steward" hidden>
+        <button type="button" class="sd-quiet" id="steward-open">steward: seal a key for the roster</button>
+        <div id="steward-ask" hidden>
+          <label for="share-key">the Claude API key to share</label>
+          <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <label for="share-phrase">a passphrase to give out, twelve letters or more</label>
+          <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
+          <div class="sd-card-row">
+            <button type="button" class="sd-keep-key" id="steward-seal">Seal it</button>
+            <button type="button" class="sd-quiet" id="steward-not">Not now</button>
+          </div>
+        </div>
+        <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Sealed. Anyone given the passphrase can speak here now.</p>
       </div>
       <div class="sd-forget" id="forget" hidden>
         <button type="button" class="sd-quiet" id="forget-open">forget me</button>
@@ -708,6 +731,8 @@
 <script src="beach.js?v=2026-10-22a"></script>
 <script src="mark.js?v=2026-10-22b"></script>
 <script src="days.js?v=2026-10-22a"></script>
+<script src="seal.js?v=2026-10-22a"></script>
+<script src="roster.js?v=2026-10-22a"></script>
 <script>
 /* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
    7.1923). A person says where they are and what today has been like;
@@ -719,9 +744,12 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4 · 22 October 2026';
+  var VERSION = 'Sundial M5 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
+  // The roster's steward (plan 6.6): before the roster is first sealed, only
+  // a browser that keeps this name's days is shown the steward's line.
+  var STEWARD = 'Phenomemental';
   var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
   var API = 'https://api.anthropic.com/v1/messages';
 
@@ -1141,14 +1169,17 @@
   });
 
   // ---- The quiet corner -----------------------------------------------------------
-  var askedForKey = false, returnTo = null;
+  var askedForKey = false, returnTo = null, phraseBox = $('phrase');
   $('version').textContent = VERSION;
   function showCorner() { corner.hidden = false; }
   function openCard(from) {
     returnTo = from || null;
     var has = !!stored(KEY);
     keyBox.value = '';
+    phraseBox.value = '';
     keyBox.placeholder = has ? 'kept in this browser' : '';
+    stewardWord = '';
+    $('steward').hidden = true;
     $('drop-key').hidden = !has;
     $('forget').hidden = !stored(NAME);
     $('forget-ask').hidden = true;
@@ -1162,14 +1193,84 @@
     if (card.open) card.close ? card.close() : card.removeAttribute('open');
   }
   card.addEventListener('close', function () {
+    stewardWord = '';
+    $('share-key').value = '';
+    $('share-phrase').value = '';
     if (returnTo) returnTo.focus();
     returnTo = null;
   });
+  // A key pasted is kept as it is. A passphrase opens the roster's key
+  // (4.3), kept in this browser the same way; one that opens nothing gets
+  // nothing, and no word about it, unless it is the steward's own (6.6).
+  var unlocking = false, stewardWord = '';
   $('key-form').addEventListener('submit', function (ev) {
-    var k = keyBox.value.trim();
-    if (!k) { ev.preventDefault(); keyBox.focus(); return; }
-    store(KEY, k);
-    keyBox.value = '';
+    var k = keyBox.value.trim(), p = phraseBox.value;
+    if (k) {
+      store(KEY, k);
+      keyBox.value = '';
+      phraseBox.value = '';
+      return;
+    }
+    ev.preventDefault();
+    if (!p.trim()) { keyBox.focus(); return; }
+    if (unlocking) return;
+    unlocking = true;
+    $('keep-key').disabled = true;
+    Roster.open(p).then(function (r) {
+      if (r.key) return { key: r.key };
+      return Roster.steward(p, r.roster, stored(NAME) === STEWARD).then(function (yes) { return { steward: yes }; });
+    }).catch(function () { return {}; }).then(function (r) {
+      unlocking = false;
+      $('keep-key').disabled = false;
+      phraseBox.value = '';
+      if (r.key) {
+        store(KEY, r.key);
+        closeCard();
+      } else if (r.steward) {
+        stewardWord = p;
+        $('steward').hidden = false;
+        $('steward-ask').hidden = true;
+        $('steward-done').hidden = true;
+        $('steward-open').hidden = false;
+        $('steward-open').focus();
+      } else {
+        phraseBox.focus();
+      }
+    });
+  });
+
+  // The steward's line: a key to share and a passphrase to give out,
+  // sealed to the roster here and written with the steward's word.
+  $('steward-open').addEventListener('click', function () {
+    $('steward-open').hidden = true;
+    $('steward-done').hidden = true;
+    $('steward-ask').hidden = false;
+    $('share-key').focus();
+  });
+  $('steward-not').addEventListener('click', function () {
+    $('steward-ask').hidden = true;
+    $('steward-open').hidden = false;
+    $('steward-open').focus();
+  });
+  var sealing = false;
+  $('steward-seal').addEventListener('click', function () {
+    var share = $('share-key').value.trim(), phrase = $('share-phrase').value.trim();
+    if (!share) { $('share-key').focus(); return; }
+    if (phrase.length < 12) { $('share-phrase').focus(); return; }
+    if (sealing || !stewardWord) return;
+    sealing = true;
+    $('steward-seal').disabled = true;
+    Roster.seal(stewardWord, share, phrase).then(function (result) {
+      sealing = false;
+      $('steward-seal').disabled = false;
+      if (result !== 'sealed') { $('steward-seal').focus(); return; }
+      $('share-key').value = '';
+      $('share-phrase').value = '';
+      $('steward-ask').hidden = true;
+      $('steward-open').hidden = false;
+      $('steward-done').hidden = false;
+      $('steward-done').focus();
+    });
   });
   $('drop-key').addEventListener('click', function () {
     store(KEY, '');
