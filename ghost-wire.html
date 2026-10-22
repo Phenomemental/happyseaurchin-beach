@@ -727,7 +727,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-22a"></script>
+<script src="ghost-wire.js?v=2026-10-22b"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -877,6 +877,7 @@
         }
       }
       var label = TRACK === TODAY ? 'Today’s wire' : isDay(TRACK) ? 'An earlier day’s wire' : 'Practice wire';
+      if (GW.shape(TRACK)) label += ': ' + GW.shape(TRACK);
       document.getElementById('say-label').textContent = label;
       BRIEF = say.innerHTML;
       loadGhost();
