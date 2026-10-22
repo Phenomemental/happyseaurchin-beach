@@ -119,22 +119,93 @@
     font-size: 1.2rem;
     margin: 0.4rem 0 0;
   }
-  .sd-beings {
-    list-style: none;
+  /* The shell that listens (6.8): it rocks a little where it lies; held to
+     the ear it lifts and tilts; the words it hears surface one by one. */
+  .sd-listen {
+    display: block;
+    width: 7.5rem;
+    height: 7.5rem;
+    margin: 0.6rem auto 0;
+    padding: 0.4rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-listen svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .sd-listen .sd-listen-shell {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sd-rock 5s ease-in-out infinite alternate;
+  }
+  .sd-listen.lifted .sd-listen-shell {
+    animation: sd-ear 2.6s ease-in-out infinite alternate;
+  }
+  @keyframes sd-rock {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(4deg); }
+  }
+  @keyframes sd-ear {
+    from { transform: translateY(-0.4rem) rotate(-24deg) scale(1.12); }
+    to { transform: translateY(-0.6rem) rotate(-19deg) scale(1.15); }
+  }
+  .sd-listen:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .sd-heard {
+    margin: 0.4rem 0 0;
+  }
+  .sd-heard-line {
+    margin: 0 0 1rem;
+    padding: 0 0 0 0.9rem;
+    border-left: 2px solid var(--hue, var(--frame));
+  }
+  .sd-heard-line figcaption {
+    font-size: 0.95rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .sd-heard-line blockquote {
+    margin: 0.15rem 0 0;
     padding: 0;
-    margin: 0.6rem 0 0;
+    font-size: 1.25rem;
+    font-style: italic;
+    line-height: 1.45;
   }
-  .sd-beings li {
-    margin: 0;
-    padding: 0;
+  .sd-hears {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin: 1.1rem 0 0;
   }
-  .sd-beings li::before {
-    content: none;
+  .sd-listen-question {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin: 0.8rem 0 0.6rem;
   }
-  .sd-beings button,
+  .sd-heard .surface {
+    opacity: 0;
+    animation: sd-surface 1.6s ease forwards;
+    animation-delay: calc(var(--k, 0) * 1.4s + 0.2s);
+  }
+  @keyframes sd-surface {
+    from { opacity: 0; transform: translateY(0.4rem); }
+    to { opacity: 1; transform: none; }
+  }
   .sd-put-back {
+    display: block;
+    margin: 0 auto;
     font: inherit;
     font-size: 1.2rem;
+    font-style: italic;
     color: var(--ink);
     background: none;
     border: 0;
@@ -145,25 +216,18 @@
     text-decoration-color: var(--frame);
     text-underline-offset: 0.25em;
   }
-  .sd-being {
-    margin: 0.8rem 0 0;
-  }
-  .sd-being-name {
-    font-size: 0.95rem;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    margin: 0;
-  }
-  .sd-being-piece {
-    font-size: 1.15rem;
-    line-height: 1.55;
-    margin: 0.5rem 0 0.6rem;
-  }
-  .sd-put-back {
-    font-style: italic;
-    display: block;
-    margin: 0 auto;
+  @media (prefers-reduced-motion: reduce) {
+    .sd-listen .sd-listen-shell,
+    .sd-listen.lifted .sd-listen-shell {
+      animation: none;
+    }
+    .sd-listen.lifted .sd-listen-shell {
+      transform: rotate(-20deg) scale(1.1);
+    }
+    .sd-heard .surface {
+      animation: none;
+      opacity: 1;
+    }
   }
   .sd-dial[role="button"]:focus-visible {
     outline: 2px solid var(--crimson);
@@ -636,12 +700,13 @@
       <p class="sd-pool-phrase" id="pool-phrase" hidden></p>
       <p class="sd-pool-question" id="pool-question" hidden></p>
     </div>
-    <ul class="sd-beings" id="beings" hidden></ul>
-    <article class="sd-card-day sd-being" id="being" aria-live="polite" hidden>
-      <p class="sd-being-name" id="being-name"></p>
-      <p class="sd-being-piece" id="being-piece"></p>
-      <button type="button" class="sd-put-back" id="put-back">put it back</button>
-    </article>
+    <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
+    <div class="sd-heard" id="heard" aria-live="polite" hidden>
+      <div id="heard-lines"></div>
+      <p class="sd-hears surface" id="hears"></p>
+      <p class="sd-listen-question surface" id="listen-question"></p>
+      <button type="button" class="sd-put-back surface" id="put-back">put it back</button>
+    </div>
   </section>
 
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
@@ -743,7 +808,8 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-22b"></script>
+<script src="mark.js?v=2026-10-22c"></script>
+<script src="shell.js?v=2026-10-22a"></script>
 <script src="days.js?v=2026-10-22a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
@@ -758,7 +824,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M5.2 · 22 October 2026';
+  var VERSION = 'Sundial M4.1 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -797,6 +863,38 @@
   };
   // Should Claude decline, the law's own gentle question stands in.
   var GENTLE = 'Would you like to just sit with it a moment? If you need someone now: your local emergency number, or Samaritans on 116 123 in the UK and Ireland.';
+
+  // Listening (plan 6.8.1), Claude's second law, verbatim.
+  var LISTEN_LAW = "You are listening, with one person, to days they wrote before. They are the authority on their days.\n\nYou receive: their days that came to rest in one place, each with its date, and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question>\"}`.\n\nChoose the way of listening that finds most in their own words. Heard: one to four short passages copied exactly from their days, where that listening is most alive. Hears: one plain sentence, to them, of what this listening notices in those words — about the words, never about who they are. Question: one, turning them back to the day with fresh eyes. If little is heard, say so plainly and leave heard empty.\n\nNever advise, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If what they wrote suggests they may be in danger, make the question say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
+  var LISTEN_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['listening', 'heard', 'hears', 'question'],
+    properties: {
+      listening: { type: 'string', enum: ['A', 'B', 'C'] },
+      heard: { type: 'array', items: { type: 'string' } },
+      hears: { type: 'string' },
+      question: { type: 'string' }
+    }
+  };
+  // Placing (plan 6.8.2), Claude's third law, verbatim.
+  var PLACE_LAW = "You receive days a person wrote, each numbered. For each, say where the day mostly stood: 1 what happened, 2 what they felt, 3 what they made of it, 4 what matters, 5 a choice, 6 what's ahead. You return ONLY JSON: `{\"places\": [{\"day\": <number>, \"pool\": 1-6}, ...]}`, one for every day. Never return anything but the JSON.";
+  var PLACE_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['places'],
+    properties: {
+      places: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['day', 'pool'],
+          properties: { day: { type: 'integer' }, pool: { type: 'integer', enum: [1, 2, 3, 4, 5, 6] } }
+        }
+      }
+    }
+  };
 
   var $ = function (id) { return document.getElementById(id); };
   var form = $('speak'), box = $('words'), send = $('send'), ask = $('ask'), rest = $('rest');
@@ -859,8 +957,8 @@
   // ---- Their days -------------------------------------------------------------------
   var days = [];                            // {address, text}, oldest first
   function showDays(list, keptNow) {
-    days = list;
-    dial.days(list, keptNow);
+    days = withPlaces(list);
+    dial.days(days, keptNow);
     hold(SEEN, JSON.stringify(list));
   }
   function lastDay() {
@@ -891,8 +989,8 @@
       var seen;
       try { seen = JSON.parse(held(SEEN)); } catch (e) { seen = null; }
       if (Array.isArray(seen)) {
-        days = seen;
-        dial.days(seen);
+        days = withPlaces(seen);
+        dial.days(days);
         showGreeting();
       }
     });
@@ -973,7 +1071,7 @@
     });
     $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
     $('tide-tomorrow').hidden = !r.tomorrow;
-    var pool = Mark.POOLS[r.pool - 1];
+    var pool = Mark.POOLS[Mark.poolOf(d) - 1];
     $('tide-pool').textContent = pool ? 'a day of ' + pool.phrase : '';
     $('tide-pool').hidden = !pool;
     if (pool) $('tide-pool').style.setProperty('--hue', pool.hue);
@@ -1042,32 +1140,39 @@
     tapDial();
   });
 
-  // ---- Hold: the pools (6.8) -------------------------------------------------------
+  // ---- Hold: the pools, and the shell that listens (6.8) ---------------------------
   // The colour drains into six tide-pools in a ring, sized by share. An empty
   // pool says nothing has come to rest there, and asks its question; a
-  // filled one names its three Beings, read from the beach the first time
-  // (beings:night-watchman, never written); a Being, its short piece. Tap
-  // the sundial or Escape: all gathers back.
-  var poolsOpen = false, poolsHidden = null, beingsRead = null, beingsAt = null;
+  // filled one offers one shell, never named. Held to the ear, the shell
+  // listens to that pool's days with Claude (6.8.1): the person's own words
+  // surface, then what it hears in them, and one question back. Days kept
+  // through Claude are first given their places (6.8.2), in this browser
+  // only. Tap the sundial or Escape: all gathers back.
+  var poolsOpen = false, poolsHidden = null, poolNow = -1;
+  function drawPools() {
+    dial.pools(days, function (pool, n) {
+      return pool.phrase + ', ' + (n ? n + (n === 1 ? ' day' : ' days') : 'nothing yet');
+    }, pickPool);
+  }
   function openPools() {
     poolsOpen = true;
     poolNow = -1;
     poolsHidden = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
-    ['pool-phrase', 'pool-question', 'beings', 'being'].forEach(function (id) { $(id).hidden = true; });
+    ['pool-phrase', 'pool-question', 'listen', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
-    dial.pools(days, function (pool, n) {
-      return pool.phrase + ', ' + (n ? n + (n === 1 ? ' day' : ' days') : 'nothing yet');
-    }, pickPool);
+    drawPools();
     // While the pools are out the sundial holds them (a group, not a
     // button): each pool takes its own tap, and the first takes the focus.
     dialEl.setAttribute('role', 'group');
     ['tabindex', 'aria-expanded', 'aria-haspopup'].forEach(function (a) { dialEl.removeAttribute(a); });
     var first = dialEl.querySelector('.sd-tidepool');
     if (first) first.focus();
-    readBeings();
+    readWays();
+    placeDays();
   }
   function gatherBack() {
+    putBack(true);
     poolsOpen = false;
     dial.gather();
     (poolsHidden || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
@@ -1075,84 +1180,235 @@
     setDialTap();
     dialEl.focus();
   }
-  // The Beings, once: each pool's three, as {name, piece}. Their own
-  // opening ("The Abstract Being — the Ruler. …") gives the name; the piece
-  // is the reader-facing one beneath. A note of when a line was changed is
-  // for its keepers, never the page. Unreachable: none, and nothing said.
-  var CHANGED = /\s*\([^()]*\bchanged\b[^()]*\b\d{4}\b[^()]*\)\s*$/i;
-  function words(node) {
-    while (node && typeof node === 'object') node = node._;
-    return typeof node === 'string' ? node.trim().replace(CHANGED, '') : '';
-  }
-  function readBeings() {
-    if (beingsRead) return beingsRead;
-    beingsRead = Promise.all([Beach.look('beings:night-watchman', '&spindle=1'), Beach.look('beings:night-watchman', '&spindle=2')])
-      .then(function (both) {
-        if (both[0].status !== 200 || both[1].status !== 200) throw new Error('unreachable');
-        beingsAt = Mark.POOLS.map(function (p) {
-          var top = both[Number(p.at.charAt(0)) - 1].json, node = top && top[p.at.charAt(2)];
-          return ['1', '2', '3'].map(function (k) {
-            var b = node && node[k], m = /^(The .+? Being)\b/.exec(words(b));
-            var piece = b && typeof b === 'object' ? words(b['1']) : '';
-            return m && piece ? { name: m[1], piece: piece } : null;
-          }).filter(Boolean);
-        });
-        if (poolsOpen && poolNow >= 0) showBeings(poolNow);
-        return beingsAt;
-      }).catch(function () {
-        beingsRead = null;
-        return null;
-      });
-    return beingsRead;
-  }
-  var poolNow = -1;
   function pickPool(i) {
+    putBack(true);
     poolNow = i;
     dial.picked(i);
     var pool = Mark.POOLS[i], n = Mark.counts(days)[i];
-    $('being').hidden = true;
     $('pool-phrase').hidden = false;
     if (!n) {
       $('pool-phrase').textContent = 'Nothing has come to rest at ' + pool.phrase + '.';
       $('pool-question').textContent = pool.question;
       $('pool-question').hidden = false;
-      $('beings').hidden = true;
+      $('listen').hidden = true;
       return;
     }
     $('pool-phrase').textContent = pool.phrase;
     $('pool-question').hidden = true;
-    showBeings(i);
-    if (!beingsAt) readBeings();
+    $('listen').hidden = false;
+    Shell.draw($('shell-art'), i, pool.hue);
+    readWays();
   }
-  function showBeings(i) {
-    var list = $('beings');
-    list.textContent = '';
-    var here = beingsAt && beingsAt[i];
-    list.hidden = !(here && here.length) || !Mark.counts(days)[i];
-    (here || []).forEach(function (b, k) {
-      var li = document.createElement('li'), btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = b.name;
-      btn.addEventListener('click', function () { pickBeing(i, k); });
-      li.appendChild(btn);
-      list.appendChild(li);
+
+  // A day's own words, as it was kept: its title, its lines and its
+  // tomorrow (the pool's quiet line is the page's, not theirs).
+  function wordsOf(d) {
+    var r = Mark.read(d.text);
+    return [r.title].concat(r.lines, r.tomorrow ? ['Tomorrow: ' + r.tomorrow] : []).filter(Boolean).join('\n');
+  }
+  function textKey(text) {
+    var h = 2166136261;
+    String(text).split('').forEach(function (c) {
+      h ^= c.charCodeAt(0);
+      h = Math.imul(h, 16777619) >>> 0;
+    });
+    return h.toString(16);
+  }
+  function keptHere(k) {
+    try { return JSON.parse(stored(k) || '{}') || {}; } catch (e) { return {}; }
+  }
+
+  // Placing (6.8.2): days with no pool line, kept through Claude, are given
+  // their places once, in one call, and the places are kept here by each
+  // day's words. Nothing is written to the beach.
+  var PLACED = 'sundial.placed', placing = false;
+  function withPlaces(list) {
+    var places = keptHere(PLACED);
+    (list || []).forEach(function (d) {
+      var n = places[textKey(d.text)];
+      if (n && !Mark.read(d.text).pool) d.pool = n;
+    });
+    return list || [];
+  }
+  function placeDays() {
+    var todo = days.filter(function (d) { return !Mark.poolOf(d); }).slice(0, 40);
+    if (placing || !todo.length || !stored(KEY) || turnsToday() >= TURNS_A_DAY) return;
+    placing = true;
+    countTurn();
+    var text = todo.map(function (d, k) {
+      return (k + 1) + '. ' + dateWords(Days.dateOf(d.address)) + '\n' + wordsOf(d);
+    }).join('\n\n');
+    claude(PLACE_LAW, [{ role: 'user', content: text }], PLACE_SCHEMA, 2000).then(function (res) {
+      placing = false;
+      var j = res.status === 200 ? jsonOf(res.data) : null;
+      if (!j || !Array.isArray(j.places)) return;
+      var places = keptHere(PLACED);
+      j.places.forEach(function (p) {
+        var d = todo[Number(p.day) - 1], n = Number(p.pool);
+        if (d && n >= 1 && n <= 6) {
+          places[textKey(d.text)] = n;
+          d.pool = n;
+        }
+      });
+      store(PLACED, JSON.stringify(places));
+      hold(SEEN, JSON.stringify(days));
+      dial.days(days);
+      // The pools fill as the places come, unless one is already open.
+      if (poolsOpen && poolNow < 0) {
+        var inPools = document.activeElement && document.activeElement.classList &&
+          document.activeElement.classList.contains('sd-tidepool');
+        drawPools();
+        var first = dialEl.querySelector('.sd-tidepool');
+        if (inPools && first) first.focus();
+      }
+    }, function () {
+      placing = false;
     });
   }
-  function pickBeing(i, k) {
-    var b = beingsAt[i][k];
-    $('being-name').textContent = b.name;
-    $('being-piece').textContent = b.piece;
-    $('beings').hidden = true;
-    $('being').hidden = false;
-    $('put-back').dataset.k = k;
-    $('put-back').focus();
+
+  // The three ways of listening at each pool: each Being's own line from
+  // beings:night-watchman (read, never written), with its name, epithet and
+  // anchor taken off, so only what it is and what it listens for remain.
+  // A note of when a line was changed is for its keepers. Unreachable:
+  // none, and the shell stays quiet.
+  var CHANGED = /\s*\([^()]*\bchanged\b[^()]*\b\d{4}\b[^()]*\)\s*$/i, waysRead = null;
+  function lineOf(node) {
+    while (node && typeof node === 'object') node = node._;
+    return typeof node === 'string' ? node.trim().replace(CHANGED, '') : '';
   }
-  $('put-back').addEventListener('click', function () {
-    $('being').hidden = true;
-    $('beings').hidden = false;
-    var again = $('beings').querySelectorAll('button')[Number($('put-back').dataset.k) || 0];
-    if (again) again.focus();
+  function wayOf(line) {
+    return line.replace(/^The [^.]*?Being\s*[—–-][^.]*\.\s*/, '').replace(/\bAnchors?:[^.]*\.\s*/, '').trim();
+  }
+  function readWays() {
+    if (waysRead) return waysRead;
+    waysRead = Promise.all([Beach.look('beings:night-watchman', '&spindle=1'), Beach.look('beings:night-watchman', '&spindle=2')])
+      .then(function (both) {
+        if (both[0].status !== 200 || both[1].status !== 200) throw new Error('unreachable');
+        return Mark.POOLS.map(function (p) {
+          var top = both[Number(p.at.charAt(0)) - 1].json, node = top && top[p.at.charAt(2)];
+          return ['1', '2', '3'].map(function (k) { return wayOf(lineOf(node && node[k])); }).filter(Boolean);
+        });
+      }).catch(function () {
+        waysRead = null;
+        return null;
+      });
+    return waysRead;
+  }
+
+  // Listening (6.8.1). A pool's newest twelve days go to Claude with its
+  // three ways of listening; the reading is kept here until a new day comes
+  // to rest in that pool. Every passage it hears must be the person's own
+  // words exactly, or it is dropped.
+  var HEARD = 'sundial.heard', listening = false, listenTurn = 0, quietTimer = null;
+  function inPool(i) {
+    return days.filter(function (d) { return Mark.poolOf(d) === i + 1; }).slice(-12);
+  }
+  function listenKey(list) {
+    return textKey(list.map(function (d) { return d.address + '\n' + d.text; }).join('\n\n'));
+  }
+  function flat(s) {
+    return String(s || '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+      .replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function readListening(data, list) {
+    var j = jsonOf(data);
+    if (!j) return null;
+    var texts = list.map(function (d) { return flat(wordsOf(d)); });
+    var heard = (Array.isArray(j.heard) ? j.heard : []).filter(function (h) {
+      return typeof h === 'string' && flat(h).length > 2 &&
+        texts.some(function (t) { return t.indexOf(flat(h)) >= 0; });
+    }).slice(0, 4).map(function (h) { return h.trim(); });
+    var hears = typeof j.hears === 'string' ? j.hears.trim() : '';
+    var question = typeof j.question === 'string' ? j.question.trim() : '';
+    return hears || question ? { heard: heard, hears: hears, question: question } : null;
+  }
+  function listenWith(list, ways) {
+    var text = 'Their days:\n\n' + list.map(function (d) {
+      return dateWords(Days.dateOf(d.address)) + '\n' + wordsOf(d);
+    }).join('\n\n') + '\n\nThe ways of listening:\n\n' + ways.map(function (w, k) {
+      return 'ABC'.charAt(k) + '. ' + w;
+    }).join('\n\n');
+    return claude(LISTEN_LAW, [{ role: 'user', content: text }], LISTEN_SCHEMA, 2000).then(function (res) {
+      if (res.status === 401 || res.status === 403) throw { key: true };
+      if (res.status !== 200 || res.data.stop_reason === 'refusal') throw {};
+      var r = readListening(res.data, list);
+      if (!r) throw {};
+      return r;
+    });
+  }
+  $('listen').addEventListener('click', function () {
+    if (listening) { putBack(); return; }
+    if (poolNow < 0) return;
+    var i = poolNow, list = inPool(i), key = listenKey(list), was = keptHere(HEARD)[i];
+    var ready = was && was.key === key ? was.reading : null;
+    if (!ready && !stored(KEY)) { openCard($('listen')); return; }
+    if (!ready && turnsToday() >= TURNS_A_DAY) return;
+    var turn = ++listenTurn;
+    listening = true;
+    $('listen').classList.add('lifted');
+    $('listen').setAttribute('aria-pressed', 'true');
+    clearTimeout(quietTimer);
+    Shell.listen();
+    var reading = ready ? Promise.resolve(ready) : readWays().then(function (ways) {
+      var here = ways && ways[i];
+      if (!here || !here.length) throw {};
+      countTurn();
+      return listenWith(list, here);
+    }).then(function (r) {
+      var all = keptHere(HEARD);
+      all[i] = { key: key, reading: r };
+      store(HEARD, JSON.stringify(all));
+      return r;
+    });
+    // The shell reaches the ear before anything surfaces, even when the
+    // reading is already at hand.
+    Promise.all([reading, new Promise(function (ok) { setTimeout(ok, 1600); })]).then(function (both) {
+      if (turn === listenTurn && listening) surface(both[0], list, i);
+    }).catch(function (e) {
+      if (turn !== listenTurn) return;
+      putBack();
+      if (e && e.key) openCard($('listen'));
+    });
   });
+  // The words surface one by one: each passage it heard with its day, then
+  // what it hears, then the question. The sea quietens after.
+  function surface(r, list, i) {
+    var box = $('heard-lines'), k = 0;
+    box.textContent = '';
+    r.heard.forEach(function (h) {
+      var day = list.filter(function (d) { return flat(wordsOf(d)).indexOf(flat(h)) >= 0; })[0];
+      var fig = document.createElement('figure'), cap = document.createElement('figcaption'), q = document.createElement('blockquote');
+      fig.className = 'sd-heard-line surface';
+      fig.style.setProperty('--hue', Mark.POOLS[i].hue);
+      fig.style.setProperty('--k', k++);
+      cap.textContent = day ? dateWords(Days.dateOf(day.address)) : '';
+      q.textContent = h;
+      fig.appendChild(cap);
+      fig.appendChild(q);
+      box.appendChild(fig);
+    });
+    $('hears').textContent = r.hears;
+    $('hears').hidden = !r.hears;
+    $('hears').style.setProperty('--k', k++);
+    $('listen-question').textContent = r.question;
+    $('listen-question').hidden = !r.question;
+    $('listen-question').style.setProperty('--k', k++);
+    $('put-back').style.setProperty('--k', k);
+    $('heard').hidden = false;
+    quietTimer = setTimeout(function () { Shell.hush(3); }, (k * 1.4 + 2) * 1000);
+  }
+  function putBack(quick) {
+    var was = listening;
+    listenTurn++;
+    listening = false;
+    clearTimeout(quietTimer);
+    $('listen').classList.remove('lifted');
+    $('listen').setAttribute('aria-pressed', 'false');
+    $('heard').hidden = true;
+    Shell.hush(quick ? 0.4 : 1.6);
+    if (was && !quick && !$('listen').hidden) $('listen').focus();
+  }
+  $('put-back').addEventListener('click', function () { putBack(); });
   findCard.addEventListener('close', function () { if (!stored(NAME)) dialEl.focus(); });
   $('find-not').addEventListener('click', closeFind);
   var finding = false;
@@ -1381,6 +1637,8 @@
         return;
       }
       store(NAME, '');
+      store(PLACED, '');
+      store(HEARD, '');
       hold(WORD, '');
       hold(SEEN, '');
       hold(LOOKING, '');
@@ -1426,8 +1684,11 @@
   // One call to Claude. The first form holds Claude to the reply's shape and
   // keeps it quick; should the API refuse that form (a 400), the visit falls
   // back to the plainest request, which the law alone keeps to JSON.
-  function call() {
-    var body = { model: MODEL, max_tokens: 4000, system: LAW, messages: messages };
+  // One call to Claude: a law, the conversation so far, and the reply's
+  // shape. The visit's own conversation is call(); listening and placing
+  // each make a call of their own (6.8.1, 6.8.2).
+  function claude(system, msgs, schema, max) {
+    var body = { model: MODEL, max_tokens: max || 4000, system: system, messages: msgs };
     var headers = {
       'content-type': 'application/json',
       'x-api-key': stored(KEY),
@@ -1436,7 +1697,7 @@
     };
     if (!plain) {
       body.thinking = { type: 'between_tools' };
-      body.output_config = { effort: 'low', format: { type: 'json_schema', schema: SCHEMA } };
+      body.output_config = { effort: 'low', format: { type: 'json_schema', schema: schema } };
       body.fallbacks = 'default';
       headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
     }
@@ -1444,21 +1705,25 @@
       return r.json().catch(function () { return {}; }).then(function (j) {
         if (r.status === 400 && !plain) {
           plain = true;
-          return call();
+          return claude(system, msgs, schema, max);
         }
         return { status: r.status, data: j };
       });
     });
   }
+  function call() { return claude(LAW, messages, SCHEMA); }
+  // The JSON in a reply's text, or null.
+  function jsonOf(data) {
+    var text = ((data && data.content) || []).filter(function (b) { return b.type === 'text'; })
+      .map(function (b) { return b.text; }).join('');
+    var from = text.indexOf('{'), to = text.lastIndexOf('}');
+    try { return JSON.parse(text.slice(from, to + 1)); } catch (e) { return null; }
+  }
 
   // The reply as {sheet} or {ask}; null when it holds neither.
   function readReply(data) {
     if (data.stop_reason === 'refusal') return { refused: true };
-    var text = (data.content || []).filter(function (b) { return b.type === 'text'; })
-      .map(function (b) { return b.text; }).join('');
-    var from = text.indexOf('{'), to = text.lastIndexOf('}'), j;
-    try { j = JSON.parse(text.slice(from, to + 1)); } catch (e) { return null; }
-    var s = j && j.sheet;
+    var j = jsonOf(data), s = j && j.sheet;
     if (s && typeof s.title === 'string' && s.title.trim() && Array.isArray(s.lines)) {
       return { sheet: {
         title: s.title.trim(),
