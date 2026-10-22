@@ -528,6 +528,19 @@
     border-radius: 2px;
     padding: 0.35rem 1.1rem;
   }
+  /* A hidden field and its quiet "show" beside it. */
+  .sd-field {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+  }
+  .sd-field input {
+    flex: 1;
+    min-width: 0;
+  }
+  .sd-card .sd-show {
+    min-width: 2.75rem;
+  }
   .sd-card .sd-quiet {
     font-style: italic;
     color: var(--ink);
@@ -744,7 +757,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M5 · 22 October 2026';
+  var VERSION = 'Sundial M5.1 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1166,6 +1179,36 @@
       $('find-go').disabled = false;
       fname.focus();
     });
+  });
+
+  // ---- Show what's typed ----------------------------------------------------------
+  // Each hidden field (a key, a passphrase, a word) has a quiet "show" beside
+  // it, so a person can see what they type; it hides again when its card
+  // closes.
+  var hiders = [];
+  Array.prototype.forEach.call(document.querySelectorAll('input[type="password"]'), function (input) {
+    var row = document.createElement('div'), btn = document.createElement('button');
+    row.className = 'sd-field';
+    input.parentNode.insertBefore(row, input);
+    row.appendChild(input);
+    btn.type = 'button';
+    btn.className = 'sd-quiet sd-show';
+    btn.id = input.id + '-show';
+    btn.setAttribute('aria-controls', input.id);
+    function shown(on) {
+      input.type = on ? 'text' : 'password';
+      btn.textContent = on ? 'hide' : 'show';
+    }
+    shown(false);
+    btn.addEventListener('click', function () {
+      shown(input.type === 'password');
+      input.focus();
+    });
+    row.appendChild(btn);
+    hiders.push(function () { shown(false); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('dialog'), function (d) {
+    d.addEventListener('close', function () { hiders.forEach(function (h) { h(); }); });
   });
 
   // ---- The quiet corner -----------------------------------------------------------
