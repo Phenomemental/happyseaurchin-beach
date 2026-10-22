@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bat Sky</title>
+<meta name="description" content="Bat Sky: bats are out over the beach as the sun goes down. Tap as many as you can before it sets, racing the day's best ghost.">
+<meta name="theme-color" content="#140B1F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Bat Sky, an evening on the beach: the sky going down from sunset to
+     night, the bats dark against it, your taps gold, the ghost's lilac.
+     The game is drawn on one canvas filling the screen; the words sit over
+     it and let touches pass through, except the buttons. */
+  :root {
+    --night: #140B1F;
+    --accent: #FF9F43;
+    --you: #FFD166;
+    --ghost: #C4A1FF;
+    --miss: #FF6B8B;
+    --words: #F4ECF7;
+    --dim: #A797B8;
+    /* The rest of a skin's colours; each skin sets them all (setSkin). */
+    --panel: rgba(20, 11, 31, 0.82);
+    --panel-strong: rgba(20, 11, 31, 0.93);
+    --edge: rgba(255, 159, 67, 0.4);
+    --line: rgba(244, 236, 247, 0.12);
+    --field-line: rgba(244, 236, 247, 0.25);
+    --field-bg: rgba(244, 236, 247, 0.06);
+    --me-row: rgba(255, 209, 102, 0.1);
+    --glow-accent: rgba(255, 159, 67, 0.55);
+    --glow-you: rgba(255, 209, 102, 0.5);
+    --shade: rgba(0, 0, 0, 0.65);
+    --how-top: #3E2A78;
+    --how-mid: #D9587A;
+    --how-low: #FFB561;
+    --how-bat: #120914;
+    --how-sea: #6B2F5F;
+    --how-sun: #FFF0B3;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--night);
+    color: var(--words);
+    font-family: var(--font);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .over {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--glow-accent), 0 1px 2px var(--shade);
+  }
+  .count {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--you);
+    text-shadow: 0 0 10px var(--glow-you), 0 1px 2px var(--shade);
+    white-space: nowrap;
+  }
+  .count small {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+  .ghost-line, .prev-line, .left-line {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    text-shadow: 0 1px 2px var(--shade), 0 0 6px var(--shade);
+  }
+  .ghost-line { color: var(--ghost); }
+  .prev-line { margin-top: 2px; color: var(--dim); }
+  .left-line {
+    margin-top: 2px;
+    color: var(--words);
+    font-variant-numeric: tabular-nums;
+  }
+  .middle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .say {
+    max-width: 22rem;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--panel);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .say .step {
+    display: block;
+  }
+  .say .step + .step {
+    margin-top: 6px;
+  }
+  .say strong {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .say b {
+    color: var(--you);
+  }
+  /* How to play, shown: a bat crossing a sunset, and a finger tapping it. */
+  .how {
+    display: block;
+    width: 100%;
+    max-width: 15rem;
+    height: auto;
+    margin: 4px auto 10px;
+    overflow: visible;
+  }
+  .how-top { stop-color: var(--how-top); }
+  .how-mid { stop-color: var(--how-mid); }
+  .how-low { stop-color: var(--how-low); }
+  .how-sun { fill: var(--how-sun); }
+  .how-sea { fill: var(--how-sea); }
+  .how-bat { fill: var(--how-bat); }
+  .how-ring {
+    fill: none;
+    stroke: var(--you);
+    stroke-width: 2.5;
+  }
+  .how-plus {
+    font: 700 10px var(--font);
+    fill: var(--you);
+  }
+  .how-finger { font-size: 20px; }
+  .end {
+    pointer-events: auto;
+    max-width: 22rem;
+    width: 100%;
+    max-height: calc(100% - 8px);
+    overflow-y: auto;
+    padding: 20px 18px;
+    border-radius: 12px;
+    background: var(--panel-strong);
+    border: 1px solid var(--edge);
+    text-align: center;
+  }
+  .end .big {
+    margin: 0;
+    font-size: 2.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--you);
+    text-shadow: 0 0 16px var(--glow-you);
+  }
+  .end p {
+    margin: 6px 0 0;
+  }
+  .end .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  button.go {
+    background: var(--you);
+    border-color: var(--you);
+    color: var(--night);
+    font-size: 1.05rem;
+    padding: 0 26px;
+  }
+  .rank {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .who {
+    display: block;
+    margin: 16px auto 0;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .who input {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    margin: 6px auto 0;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+    text-align: center;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .who input:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .link {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--dim);
+    word-break: break-all;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 12px;
+  }
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chip {
+    pointer-events: auto;
+    margin: 0;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    background: var(--panel);
+  }
+  /* The board: today's runs, the wave of who jumped in when, and this
+     phone's own count, in a sheet over the game. */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--night);
+    padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .sheet-in {
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .sheet h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  .sheet h3 {
+    margin: 28px 0 4px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .sheet p {
+    margin: 6px 0 0;
+    line-height: 1.45;
+  }
+  .sheet .note {
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .board {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .board li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .board .pos {
+    flex: 0 0 1.6rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .board .name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .board .runs {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .board .badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .board .badge.first {
+    border-color: var(--you);
+    color: var(--you);
+  }
+  .board .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .board li.me {
+    background: var(--me-row);
+  }
+  .wave {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 12px;
+  }
+  .tries {
+    color: var(--you);
+    font-weight: 600;
+  }
+  /* Notes: one box for anyone to say something about the game, and what
+     people have said, newest first. */
+  .notes-form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .notes-form input,
+  .notes-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .notes-form input { min-height: 44px; }
+  .notes-form textarea { min-height: 6rem; resize: vertical; }
+  .notes-form input:focus-visible,
+  .notes-form textarea:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .notes-form .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .mic-row .mic {
+    margin: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+  .mic-row .mic.listening {
+    border-color: var(--miss);
+    color: var(--miss);
+  }
+  .mic-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list {
+    margin-top: 16px;
+  }
+  .notes-list .n {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .notes-list .n-who {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list .n-who strong {
+    color: var(--words);
+    font-weight: 600;
+  }
+  .notes-list .n-text {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .notes-list .more {
+    margin: 6px 0 0;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
+  /* The look: a skin to choose, each shown as a small picture of itself. */
+  .skins {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .skin {
+    margin: 0;
+    padding: 8px;
+    min-height: 0;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font-weight: 600;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  .skin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .skin[aria-checked="true"] {
+    border: 2px solid var(--you);
+    padding: 7px;
+  }
+  .setting {
+    margin-top: 12px;
+  }
+  /* Where you stood: the wave read from your place in it. */
+  .stood {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--field-bg);
+  }
+  .stood-head {
+    margin: 0 0 6px !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--you);
+  }
+  .stood ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .stood li {
+    margin: 4px 0;
+    line-height: 1.4;
+  }
+  .bring {
+    margin-top: 14px;
+  }
+  .bring .who {
+    text-align: left;
+    margin-top: 10px;
+  }
+  .board li.gap {
+    justify-content: center;
+    color: var(--dim);
+    padding: 2px 4px;
+  }
+  .board-more {
+    margin-top: 10px;
+  }
+  .make-line {
+    margin: 14px 0 0;
+    font-size: 0.92rem;
+  }
+  .make-line a,
+  .sheet a {
+    color: var(--accent);
+  }
+  .keep-state {
+    margin: 14px 0 0;
+    font-weight: 600;
+  }
+  .keep-state.on { color: var(--accent); }
+  .keep-state.off { color: var(--you); }
+  #save-run + #challenge { margin-left: 6px; }
+  .past, .days {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .past li, .days li {
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .past a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--words);
+  }
+  .past .day {
+    flex: 0 0 6.5rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .past .who {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: inherit;
+    color: var(--words);
+  }
+  .past .who small, .days small {
+    display: block;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+  .past .t, .days .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .days li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="The evening sky over the beach, with bats flying, your taps and the ghost's"></canvas>
+<div class="over">
+  <div class="top">
+    <h1>Bat Sky</h1>
+    <div class="top-right">
+      <button type="button" class="chip" id="settings-btn" aria-label="Look and sound">⚙</button>
+      <button type="button" class="chip" id="board-btn">Board</button>
+      <span class="count" aria-hidden="true"><span id="count">0</span><small>bats</small></span>
+    </div>
+  </div>
+  <p class="ghost-line" id="ghost-line"></p>
+  <p class="prev-line" id="prev-line" hidden></p>
+  <p class="left-line" id="left" aria-hidden="true"></p>
+  <div class="middle">
+    <!-- The briefing tells three things only: where you start, your move,
+         and what you are trying to do (ways:games 1). Its words are kept at
+         game:bat-sky too; the label says which sky this is. -->
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s sky…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><linearGradient id="how-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="how-top"/><stop offset="0.6" class="how-mid"/><stop offset="1" class="how-low"/></linearGradient><path id="how-bat-shape" d="M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z"/></defs><path d="M10 0 H190 A10 10 0 0 1 200 10 V68 H0 V10 A10 10 0 0 1 10 0 Z" fill="url(#how-sky)"/><circle cx="152" cy="64" r="15" class="how-sun"/><path d="M0 66 H200 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 Z" class="how-sea"/><use href="#how-bat-shape" class="how-bat" transform="translate(160 22) scale(0.8)"/><g class="how-bat"><use href="#how-bat-shape"/><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" path="M-14 46 C 30 16, 62 50, 100 30"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="3.2s" repeatCount="indefinite"/></g><circle cx="100" cy="30" r="0" class="how-ring"><animate attributeName="r" values="0;0;18;18" keyTimes="0;0.5;0.68;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.5;0.52;0.72;1" dur="3.2s" repeatCount="indefinite"/></circle><text x="112" y="22" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.53;0.8;1" dur="3.2s" repeatCount="indefinite"/></text><text x="91" y="50" class="how-finger">👆<animateTransform attributeName="transform" type="translate" values="0 22;0 22;0 0;0 0;0 22" keyTimes="0;0.34;0.5;0.62;1" dur="3.2s" repeatCount="indefinite"/></text></svg><span class="step">Bats are out over the beach as the sun goes down.</span><span class="step"><b>Tap a bat</b> to catch it.</span><span class="step">Catch as many as you can before the sun sets.</span><span class="step">It starts to set when you touch the screen.</span></p>
+    <div class="end" id="end" hidden>
+      <div aria-live="polite">
+        <p class="big" id="end-count"></p>
+        <p class="tries" id="end-tries"></p>
+        <p id="end-line"></p>
+        <p class="rank" id="end-rank"></p>
+        <p class="note" id="end-note"></p>
+      </div>
+      <!-- Keeping a run is a choice: it goes to pool:bat-sky, the game's
+           room on the beach, only once the player gives a name or asks
+           for a challenge link. -->
+      <div id="keep" hidden>
+        <p class="keep-state" id="keep-state" aria-live="polite"></p>
+        <label class="who">Your name, to put your catch on the board
+          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="your name">
+        </label>
+        <button type="button" class="go" id="save-run" hidden>Save my catch to the board</button>
+        <button type="button" class="go" id="challenge">Challenge a friend</button>
+        <p class="note" id="keep-note" aria-live="polite"></p>
+        <p class="link" id="keep-link" hidden></p>
+      </div>
+      <div class="row">
+        <button type="button" id="again">Play again</button>
+        <button type="button" id="end-board">See the board</button>
+        <button type="button" id="end-note-btn">Leave a note</button>
+      </div>
+      <p class="make-line">Also in the Arcade: <a href="ghost-wire.html">Ghost Wire →</a></p>
+      <p class="make-line"><a href="make.html">Liked it? Make the next game for the Arcade →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Look and sound: the skin this phone draws the game in, and the switch
+     for sound and vibration. Both are kept on the phone only. -->
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="settings-title">Look and sound</h2>
+      <button type="button" class="chip" id="settings-close">Close</button>
+    </div>
+    <h3>Skin</h3>
+    <p class="note">Changes only how the game looks. Every run is counted the same, whatever the skin.</p>
+    <div class="skins" id="skins" role="radiogroup" aria-label="Skin"></div>
+    <h3>Sound</h3>
+    <div class="setting">
+      <button type="button" class="chip" id="noise" aria-pressed="true">🔊 Sound and vibration: on</button>
+    </div>
+  </div>
+</div>
+
+<!-- The board, read live from pool:bat-sky: each player's best under this
+     sky, the wave of when each player first jumped in (ranking nobody, as
+     David's place-in-the-wave does), and what this phone has done here. -->
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Today’s board</h2>
+      <button type="button" class="chip" id="sheet-close">Close</button>
+    </div>
+    <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
+    <ol class="board" id="board-list"></ol>
+    <button type="button" class="chip board-more" id="board-more" hidden aria-expanded="false"></button>
+    <!-- Every earlier day's sky, read from the runs kept in the room: each
+         can be played again, with its own board, ghost and wave. -->
+    <h3>Past skies</h3>
+    <p class="note" id="past-note">Every day has its own sky, and every run stays. Play any earlier day again, and race its best.</p>
+    <ul class="past" id="past"></ul>
+    <h3>The wave</h3>
+    <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
+    <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
+    <p id="wave-line"></p>
+    <div class="stood" id="stood" hidden>
+      <p class="stood-head">Where you stood</p>
+      <ul id="stood-list"></ul>
+    </div>
+    <div class="bring">
+      <button type="button" class="go" id="bring">Bring someone into the wave</button>
+      <label class="who" id="bring-name" hidden>Your name, so they’re linked to you
+        <input id="bring-who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done">
+      </label>
+      <p class="note" id="bring-note" aria-live="polite"></p>
+    </div>
+    <h3>On this phone</h3>
+    <p id="mine-line"></p>
+    <p id="history" hidden></p>
+    <ul class="days" id="days" hidden></ul>
+    <button type="button" class="go" id="keep-best" hidden></button>
+    <p class="note" id="keep-best-note" aria-live="polite"></p>
+    <h3 id="notes-head">Notes</h3>
+    <p class="note">Say anything about the game: what you liked, what was hard, what you’d change. Notes are open for everyone to read, here and on the beach.</p>
+    <form class="notes-form" id="notes-form" autocomplete="off">
+      <label>Your name (optional)
+        <input name="who" type="text" maxlength="40" autocomplete="nickname">
+      </label>
+      <label class="trap" aria-hidden="true">Leave this empty
+        <input name="web" type="text" tabindex="-1">
+      </label>
+      <label>Your note
+        <textarea name="note" maxlength="2000" required></textarea>
+      </label>
+      <button type="submit" class="go">Send</button>
+      <p class="note" id="notes-status" aria-live="polite"></p>
+    </form>
+    <div class="notes-list" id="notes-list"></div>
+    <h3>The Arcade</h3>
+    <p>Bat Sky is in the Arcade: quick, one-move skill games, with a new level every day for everyone. It was Soraya’s idea, for Halloween. Play <a href="ghost-wire.html">Ghost Wire</a>, the first game, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
+  </div>
+</div>
+
+<script src="beach.js?v=2026-10-21a"></script>
+<script src="bat-sky.js?v=2026-10-22a"></script>
+<script>
+(function () {
+  var BS = window.BatSky;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var countEl = document.getElementById('count');
+  var leftEl = document.getElementById('left');
+  var ghostLine = document.getElementById('ghost-line');
+  var say = document.getElementById('say');
+  var end = document.getElementById('end');
+  // ---- Skins ----------------------------------------------------------------
+  // A skin is only how the game is drawn: the sky's colours from sunset to
+  // night, the sea, the beach, the bats and the words' look. The sky, its
+  // clouds, how dark it gets and every bat's flight are the same in every
+  // skin, so every run is counted the same. Other players' ghosts are drawn
+  // in your skin's ghost colour. The choice is kept on this phone.
+  var SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  var SKINS = [
+    { id: 'dusk', name: 'Dusk', bg: '#140B1F', accent: '#FF9F43', you: '#FFD166', ghost: '#C4A1FF', miss: '#FF6B8B', font: SANS,
+      words: '#F4ECF7', dim: '#A797B8', panel: 'rgba(20, 11, 31, 0.82)', strong: 'rgba(20, 11, 31, 0.93)', edge: 'rgba(255, 159, 67, 0.4)',
+      line: 'rgba(244, 236, 247, 0.12)', fieldLine: 'rgba(244, 236, 247, 0.25)', fieldBg: 'rgba(244, 236, 247, 0.06)', me: 'rgba(255, 209, 102, 0.1)',
+      glowAccent: 'rgba(255, 159, 67, 0.55)', glowYou: 'rgba(255, 209, 102, 0.5)', shade: 'rgba(0, 0, 0, 0.65)', glow: 1,
+      sky0: ['#3E2A78', '#D9587A', '#FFB561'], sky1: ['#120B2E', '#21154A', '#38245C'], sun: '#FFF0B3', sunRim: '#FF7B3A',
+      sea0: '#6B2F5F', sea1: '#150E2E', ground: '#0B0612', bat: '#120914', eye: '#FFB347', cloud0: '#7A4A78', cloud1: '#100B24',
+      rim: '#FFA48A', lantern: '#FF8C1A', star: '#FFF6E0' },
+    { id: 'paper', name: 'Paper', bg: '#EFE7D8', accent: '#1D1A17', you: '#C21D4E', ghost: '#2F6690', miss: '#E07B00',
+      font: '"Cormorant Garamond", Garamond, Georgia, "Times New Roman", serif',
+      words: '#1D1A17', dim: '#6A6158', panel: 'rgba(246, 240, 228, 0.92)', strong: 'rgba(246, 240, 228, 0.97)', edge: 'rgba(29, 26, 23, 0.35)',
+      line: 'rgba(29, 26, 23, 0.14)', fieldLine: 'rgba(29, 26, 23, 0.3)', fieldBg: 'rgba(29, 26, 23, 0.04)', me: 'rgba(194, 29, 78, 0.08)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: 'rgba(246, 240, 228, 0.95)', glow: 0,
+      sky0: ['#E6D8BE', '#F1E2C4', '#F4D3A6'], sky1: ['#6B655B', '#7E776B', '#91887A'], sun: '#D9532B', sunRim: '#C2461D',
+      sea0: '#B6AA93', sea1: '#57524A', ground: '#1D1A17', bat: '#1D1A17', eye: '#C21D4E', cloud0: '#A89F8E', cloud1: '#46413A',
+      rim: '#F7EEDC', lantern: '#C2461D', star: '#F6F0E2' },
+    { id: 'urchin', name: 'Sea urchin', bg: '#06243A', accent: '#7FFFD4', you: '#FF7F6A', ghost: '#C4A7FF', miss: '#FFE14D', font: SANS,
+      words: '#E6F7FF', dim: '#8FB3C7', panel: 'rgba(6, 36, 58, 0.86)', strong: 'rgba(6, 36, 58, 0.94)', edge: 'rgba(127, 255, 212, 0.35)',
+      line: 'rgba(230, 247, 255, 0.14)', fieldLine: 'rgba(230, 247, 255, 0.28)', fieldBg: 'rgba(230, 247, 255, 0.06)', me: 'rgba(255, 127, 106, 0.12)',
+      glowAccent: 'rgba(127, 255, 212, 0.55)', glowYou: 'rgba(255, 127, 106, 0.5)', shade: 'rgba(0, 0, 0, 0.6)', glow: 1,
+      sky0: ['#2C6E9B', '#76C9C4', '#FFD0B0'], sky1: ['#05172C', '#0B2A45', '#133C5B'], sun: '#FFE3C2', sunRim: '#FF7F6A',
+      sea0: '#2E7F92', sea1: '#071D31', ground: '#021019', bat: '#03141F', eye: '#7FFFD4', cloud0: '#5E8FA6', cloud1: '#081B2D',
+      rim: '#FFC7B0', lantern: '#FF7F6A', star: '#E6FFF7' },
+    { id: 'crt', name: 'Arcade CRT', bg: '#020A02', accent: '#33FF66', you: '#E4FF5A', ghost: '#33CCFF', miss: '#FF3B3B',
+      font: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+      words: '#B8FFC8', dim: '#4FA86A', panel: 'rgba(2, 10, 2, 0.88)', strong: 'rgba(2, 10, 2, 0.95)', edge: 'rgba(51, 255, 102, 0.4)',
+      line: 'rgba(51, 255, 102, 0.16)', fieldLine: 'rgba(51, 255, 102, 0.35)', fieldBg: 'rgba(51, 255, 102, 0.05)', me: 'rgba(228, 255, 90, 0.1)',
+      glowAccent: 'rgba(51, 255, 102, 0.6)', glowYou: 'rgba(228, 255, 90, 0.5)', shade: 'rgba(0, 0, 0, 0.8)', glow: 1, scan: true,
+      sky0: ['#0D3A12', '#2C8A3A', '#7DFF8E'], sky1: ['#020802', '#06200A', '#0C3011'], sun: '#E4FF5A', sunRim: '#33FF66',
+      sea0: '#1B5E25', sea1: '#030C03', ground: '#000000', bat: '#000800', eye: '#E4FF5A', cloud0: '#1E5A27', cloud1: '#031005',
+      rim: '#9BFFAA', lantern: '#E4FF5A', star: '#B8FFC8' },
+    { id: 'contrast', name: 'High contrast', bg: '#000000', accent: '#FFFFFF', you: '#FFE600', ghost: '#4DA3FF', miss: '#FF5A5A', font: SANS,
+      words: '#FFFFFF', dim: '#D0D0D0', panel: 'rgba(0, 0, 0, 0.9)', strong: '#000000', edge: '#FFFFFF',
+      line: 'rgba(255, 255, 255, 0.35)', fieldLine: '#FFFFFF', fieldBg: 'rgba(255, 255, 255, 0.08)', me: 'rgba(255, 230, 0, 0.16)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: '#000000', glow: 0, thick: true,
+      sky0: ['#FFFFFF', '#FFF6CC', '#FFE680'], sky1: ['#3C3C3C', '#4C4C4C', '#5C5C5C'], sun: '#FFE600', sunRim: '#000000',
+      sea0: '#BDBDBD', sea1: '#2A2A2A', ground: '#000000', bat: '#000000', eye: '#FFE600', cloud0: '#8A8A8A', cloud1: '#1A1A1A',
+      rim: '#FFFFFF', lantern: '#FFE600', star: '#FFFFFF' }
+  ];
+  var skin = SKINS[0];
+  function rgbOf(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  // A colour part way from a to b (each [r, g, b]), with an opacity.
+  function mix(a, b, t, alpha) {
+    var c = [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); });
+    return alpha == null ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + alpha + ')';
+  }
+  function setSkin(id) {
+    skin = SKINS.filter(function (k) { return k.id === id; })[0] || SKINS[0];
+    var r = document.documentElement.style;
+    [['--night', 'bg'], ['--accent', 'accent'], ['--you', 'you'], ['--ghost', 'ghost'], ['--miss', 'miss'], ['--words', 'words'], ['--dim', 'dim'],
+     ['--panel', 'panel'], ['--panel-strong', 'strong'], ['--edge', 'edge'], ['--line', 'line'], ['--field-line', 'fieldLine'],
+     ['--field-bg', 'fieldBg'], ['--me-row', 'me'], ['--glow-accent', 'glowAccent'], ['--glow-you', 'glowYou'], ['--shade', 'shade'], ['--font', 'font'],
+     ['--how-bat', 'bat'], ['--how-sea', 'sea0'], ['--how-sun', 'sun']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
+    r.setProperty('--how-top', skin.sky0[0]);
+    r.setProperty('--how-mid', skin.sky0[1]);
+    r.setProperty('--how-low', skin.sky0[2]);
+    // The drawing's colours, as numbers to mix.
+    skin.c = {};
+    ['sea0', 'sea1', 'cloud0', 'cloud1', 'sunRim', 'lantern', 'rim', 'bg'].forEach(function (k) { skin.c[k] = rgbOf(skin[k]); });
+    skin.c.sky0 = skin.sky0.map(rgbOf);
+    skin.c.sky1 = skin.sky1.map(rgbOf);
+    var meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', skin.bg);
+  }
+  var ROOM = 'pool:bat-sky', LAW = 'game:bat-sky';
+  var MOTION = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function still() { return !!(MOTION && MOTION.matches); }
+
+  // ---- This device's memory ------------------------------------------------
+  // Storage can be missing, full or refused, so every read and write may
+  // quietly come to nothing.
+  function recall(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+  // What this phone has done under this sky: every try started, every
+  // sunset seen through. A try is counted when it starts, so a finish
+  // knows its number.
+  function tally(what) {
+    var n = parseInt(recall('bat-sky:' + what + ':' + TRACK), 10);
+    return n > 0 ? n : 0;
+  }
+  function count(what) {
+    var n = tally(what) + 1;
+    remember('bat-sky:' + what + ':' + TRACK, String(n));
+    return n;
+  }
+  setSkin(recall('bat-sky:skin'));
+
+  // The slots in the room this phone has kept runs at, so the board knows
+  // which player is you.
+  function mine() {
+    try { var m = JSON.parse(recall('bat-sky:mine') || '[]'); return Array.isArray(m) ? m : []; } catch (e) { return []; }
+  }
+
+  // ---- Which sky, and whose ghost ------------------------------------------
+  // A link may name a sky (?track=) and a run kept in the room (?ghost=, its
+  // slot there). With no sky named, it is today's, from the beach's clock:
+  // the day's address at full width, the first eight digits and '00'. If the
+  // beach can't be reached, it is the practice sky.
+  var params = new URLSearchParams(location.search);
+  var asked = BS.validTrack(params.get('track')) ? params.get('track') : '';
+  var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  // A link to bring someone in carries the bringer's name (?from=). The
+  // first one a phone arrives by is kept, and each run it keeps says who
+  // brought it.
+  function broughtBy(name) {
+    name = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var own = (recall('bat-sky:name') || '').toLowerCase();
+    if (!name || name === 'A friend' || recall('bat-sky:from') || name.toLowerCase() === own) return;
+    remember('bat-sky:from', name);
+  }
+  broughtBy(params.get('from'));
+  var TRACK = '', TODAY = '', DAY = '', sk = null, BEST = '';
+  var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
+  var friend = null;                    // the run a link brought, re-run
+  var linked = null;                    // a link's run when it was your own
+
+  // A kept line is yours when this phone kept it, or it carries the name
+  // this phone signs with.
+  function isMine(entry, slot) {
+    var name = (recall('bat-sky:name') || '').toLowerCase();
+    return mine().indexOf(slot) >= 0 || (!!name && who(entry).toLowerCase() === name);
+  }
+
+  function isDay(track) { return /^\d{10}$/.test(track); }
+  function who(entry) {
+    var n = typeof entry[1] === 'string' ? entry[1].replace(/, a visitor$/, '').trim() : '';
+    return n && n !== 'a visitor' && n.length <= 40 ? n : 'A friend';
+  }
+
+  // The room as the beach holds it: a room not founded yet reads as empty,
+  // and a beach out of reach fails.
+  function pool() {
+    return Beach.look(ROOM).then(function (r) {
+      if (r.status === 200 && r.json && typeof r.json === 'object') return r.json;
+      if (r.status === 404) return {};
+      throw new Error('the beach is out of reach');
+    });
+  }
+
+  // The law is read for the beach's clock, which rides every answer, even
+  // the answer that a block isn't there yet.
+  function init() {
+    var law = Beach.look(LAW);
+    var link = askedGhost
+      ? Beach.get(ROOM, { spindle: askedGhost }).then(null, function () { return null; })
+      : Promise.resolve(null);
+    Promise.all([law, link]).then(function (got) {
+      var clock = Beach.clock();
+      if (clock) {
+        TODAY = clock.address.slice(0, 8) + '00';
+        DAY = clock.voicing.split(',')[0];
+      }
+      var entry = got[1], kept = entry && typeof entry[7] === 'string' ? BS.decode(entry[7]) : null;
+      TRACK = asked || (kept && kept.track) || TODAY || 'practice';
+      setup();
+      if (kept && kept.track === TRACK) {
+        var r = BS.rerun(entry[7], sk);
+        if (r && r.ok) {
+          if (isMine(entry, askedGhost)) linked = r;
+          else {
+            friend = r;
+            ghostWho = who(entry);
+            broughtBy(ghostWho);
+          }
+        }
+      }
+      var label = TRACK === TODAY ? 'Today’s sky' : isDay(TRACK) ? 'An earlier day’s sky' : 'Practice sky';
+      document.getElementById('say-label').textContent = label + ': ' + BS.describe(TRACK);
+      BRIEF = say.innerHTML;
+      holdHow();
+      loadGhost();
+      loadLeader();
+      if (askedGhost && !friend && !linked) {
+        ghostLine.textContent = got[1] === null && !clock
+          ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
+          : 'That ghost couldn’t be found under this sky.';
+      } else if (!clock && !asked) {
+        ghostLine.textContent = 'The beach is out of reach just now, so this is a practice sky.';
+      }
+      phase = 'ready';
+    });
+  }
+
+  // The ghost is a friend's run when a link brought one; else the best run
+  // on the board, the same for everyone; and only while the board is
+  // empty, your own best (the better of this phone's and your own run a
+  // link brought). A kept run that doesn't re-run to its catch is no ghost.
+  var best = function () { return TRACK === TODAY ? 'today’s best' : 'this sky’s best'; };
+  function loadGhost() {
+    if (friend) {
+      ghost = friend;
+      ghostLine.textContent = 'Ghost: ' + ghostWho + '’s run, ' + BS.words(ghost.caught);
+      return;
+    }
+    var kept = recall(BEST);
+    var r = kept ? BS.rerun(kept, sk) : null;
+    var own = r && r.ok ? r : null;
+    if (linked && BS.better(linked, own)) own = linked;
+    if (leader) {
+      ghost = leader;
+      ghostLine.textContent = 'Ghost: ' + (leaderMine ? 'your run, ' : leaderWho + ', ') + best() + ', ' + BS.words(ghost.caught);
+      return;
+    }
+    ghost = own;
+    ghostLine.textContent = ghost
+      ? 'Ghost: your best here, ' + BS.words(ghost.caught)
+      : 'No ghost yet: your first catch becomes one.';
+  }
+
+  // The best run kept under this sky, re-run, to race when no friend's
+  // link brought one. Read when the page opens, and every twenty seconds
+  // while it is open and no run is under way, so a new record reaches every
+  // phone.
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
+  function loadLeader() {
+    if (!isDay(TRACK)) return;
+    leaderRead = Date.now();
+    room().then(function (runs) {
+      showPrev(runs);
+      if (friend) return;
+      var me = myPlayer(runs), top = null;
+      runs.forEach(function (r) {
+        if (r.track === TRACK && BS.better(r, top)) top = r;
+      });
+      var g = top ? BS.rerun(top.replay, sk) : null;
+      if (g && g.ok) {
+        leader = g;
+        leaderWho = top.name;
+        leaderMine = top.player === me;
+      }
+      if (phase === 'ready' || phase === 'loading') loadGhost();
+    }, function () {});
+  }
+  setInterval(function () {
+    if (!document.hidden && phase !== 'running' && Date.now() - leaderRead > 20000) loadLeader();
+  }, 5000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && phase !== 'running' && leaderRead && Date.now() - leaderRead > 5000) loadLeader();
+  });
+
+  // ---- The finger --------------------------------------------------------
+  // The first touch starts the sun going down; every touch after it is a
+  // tap, at the place it lands in the sky, waiting in taps until the next
+  // step takes it.
+  var taps = [];
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    if (phase === 'ready') return begin();
+    if (phase !== 'running') return;
+    taps.push({ x: (e.clientX - view.ox) / view.scale, y: (e.clientY - view.oy) / view.scale });
+  });
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- Sound and vibration --------------------------------------------------
+  // Every sound is made here by the browser, nothing downloaded: a low bell
+  // as the sun starts down, a squeak for each bat caught, a soft whoosh for
+  // a miss, a tock for each of the last three seconds, and a chime at
+  // sunset, rising for a new best. Vibration follows the same moments where
+  // the phone allows it (not iPhones). One button turns both off, and this
+  // phone remembers it. The sound starts on the first touch, as browsers ask.
+  var audio = (function () {
+    var on = recall('bat-sky:noise') !== 'off';
+    var ac = null, out = null;
+    var btn = document.getElementById('noise');
+    function show() {
+      btn.textContent = on ? '🔊 Sound and vibration: on' : '🔇 Sound and vibration: off';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      on = !on;
+      remember('bat-sky:noise', on ? 'on' : 'off');
+      if (on) wake();
+      show();
+    });
+    show();
+    function wake() {
+      if (!on) return null;
+      try {
+        if (!ac) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          ac = new AC();
+          out = ac.createGain();
+          out.gain.value = 0.5;
+          out.connect(ac.destination);
+        }
+        if (ac.state === 'suspended') ac.resume();
+      } catch (e) { ac = null; }
+      return ac;
+    }
+    function vibe(pattern) {
+      if (!on || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+    // One note: a wave of a pitch, rising and falling in loudness.
+    function note(type, freq, at, length, level, glide) {
+      var t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + length);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(level, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      o.connect(g);
+      g.connect(out);
+      o.start(t);
+      o.stop(t + length + 0.02);
+    }
+    // A breath of noise, falling, for a tap that finds nothing.
+    function whoosh(length, level) {
+      var n = Math.floor(ac.sampleRate * length), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var src = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(1800, ac.currentTime);
+      f.frequency.exponentialRampToValueAtTime(300, ac.currentTime + length);
+      g.gain.value = level;
+      src.buffer = buf;
+      src.connect(f);
+      f.connect(g);
+      g.connect(out);
+      src.start();
+    }
+    return {
+      start: function () {
+        vibe(15);
+        if (!wake()) return;
+        note('sine', 196, 0, 1.6, 0.16);
+        note('sine', 294, 0.02, 1.3, 0.07);
+      },
+      // n: how many caught so far; each squeak a little higher.
+      caught: function (n) {
+        vibe(12);
+        if (!wake()) return;
+        var f = 1500 + (n % 8) * 110;
+        note('square', f, 0, 0.07, 0.04, f * 1.7);
+        note('triangle', f * 0.6, 0.03, 0.12, 0.12, f * 0.35);
+      },
+      miss: function () {
+        vibe(5);
+        if (!wake()) return;
+        whoosh(0.2, 0.3);
+      },
+      resting: function () {
+        if (!wake()) return;
+        note('sine', 160, 0, 0.05, 0.05);
+      },
+      toll: function () {
+        vibe(8);
+        if (!wake()) return;
+        note('sine', 392, 0, 0.35, 0.09);
+      },
+      set: function (better) {
+        vibe(better ? [30, 40, 30, 40, 30, 40, 120] : [30, 50, 30, 50, 60]);
+        if (!wake()) return;
+        var notes = better ? [523, 659, 784, 1047] : [784, 659, 523];
+        notes.forEach(function (f, i) { note('triangle', f, i * 0.12, 0.45, 0.16); });
+      }
+    };
+  })();
+
+  // ---- The run -----------------------------------------------------------
+  // phase: 'loading' (finding the sky), 'ready' (waiting for a touch),
+  // 'running', 'done' (the end screen).
+  var phase = 'loading', run = null, kept = [], BRIEF = say.innerHTML;
+  var acc = 0, ghostAt = 0, ghostCaught = 0;
+  var last = null;              // the run just finished: { replay, caught, taps, slot }
+
+  // A touch while ready starts a run: the sun starts down on that touch.
+  function begin() {
+    if (phase !== 'ready' || !sk) return;
+    count('tries');
+    run = BS.start(sk);
+    kept = [];
+    taps = [];
+    marks = [];
+    bits = [];
+    acc = 0;
+    ghostAt = 0;
+    ghostCaught = 0;
+    phase = 'running';
+    say.hidden = true;
+    showGhostCount();
+    audio.start();
+  }
+
+  function showGhostCount() {
+    if (ghost) ghostLine.textContent = (ghostWho && ghost === friend ? ghostWho + '’s ghost: ' : 'Ghost: ') + BS.words(ghostCaught);
+  }
+
+  // One step: the tap waiting, if any, then the ghost's taps at this step,
+  // then the sun goes down a step.
+  function tick() {
+    var t = taps.shift();
+    if (t) {
+      var got = BS.tap(run, t.x, t.y, sk);
+      if (got === null) {
+        mark(t.x, t.y, 'resting');
+        audio.resting();
+      } else {
+        kept.push([run.step, Math.round(t.x), Math.round(t.y)]);
+        if (got >= 0) {
+          var at = BS.at(sk, got, run.step);
+          mark(t.x, t.y, 'caught');
+          puff(at.x, at.y, still() ? 6 : 16, skin.you);
+          audio.caught(run.caught);
+        } else {
+          mark(t.x, t.y, 'miss');
+          audio.miss();
+        }
+      }
+    }
+    while (ghost && ghostAt < ghost.hits.length && ghost.hits[ghostAt].step === run.step) {
+      var h = ghost.hits[ghostAt++];
+      mark(h.x, h.y, h.bat >= 0 ? 'ghost-caught' : 'ghost');
+      if (h.bat >= 0) {
+        ghostCaught++;
+        var g = BS.at(sk, h.bat, run.step);
+        if (g) puff(g.x, g.y, still() ? 3 : 8, skin.ghost);
+        showGhostCount();
+      }
+    }
+    BS.step(run);
+    var left = BS.LAW.steps - run.step;
+    if (left === 3 * BS.RATE || left === 2 * BS.RATE || left === BS.RATE) audio.toll();
+    if (run.status === 'set') finish();
+  }
+
+  // How one run stands against another, in words: bats first, then taps.
+  // aside names whose run it is ('today’s best'), set off by commas.
+  function against(a, b, name, aside) {
+    var mid = aside ? name + ', ' + aside + ',' : name, last = aside ? name + ', ' + aside : name;
+    if (a.caught > b.caught) return 'You beat ' + mid + ' by ' + BS.words(a.caught - b.caught) + (aside ? '!' : '.');
+    if (a.caught < b.caught) return BS.words(b.caught - a.caught) + ' behind ' + last + '.';
+    return a.taps < b.taps ? 'Level with ' + mid + (aside ? '' : ',') + ' and with fewer taps.'
+      : a.taps > b.taps ? 'Level with ' + mid + (aside ? '' : ',') + ' but with more taps.'
+      : 'Dead level with ' + last + '.';
+  }
+
+  function finish() {
+    phase = 'done';
+    taps = [];
+    var replay = BS.encode(TRACK, kept, run.caught);
+    var check = BS.rerun(replay, sk), sound = !!(check && check.ok) && run.caught > 0;
+    var tries = tally('tries');
+    count('finishes');
+    var now = { caught: run.caught, taps: run.taps };
+    last = { replay: sound ? replay : '', caught: run.caught, taps: run.taps, slot: '', tries: tries };
+    document.getElementById('end-tries').textContent = 'From ' + run.taps + (run.taps === 1 ? ' tap, ' : ' taps, ') +
+      (tries === 1 ? 'on your first try at this sky!' : 'on your ' + ordinal(tries) + ' try at this sky.');
+    var bestKept = recall(BEST), mineRun = bestKept ? BS.rerun(bestKept, sk) : null;
+    var was = mineRun && mineRun.ok ? mineRun : null;
+    if (linked && BS.better(linked, was)) was = linked;
+    var better = run.caught > 0 && BS.better(now, was);
+    var keptIt = better && sound && remember(BEST, replay);
+    audio.set(better && was != null);
+    if (keptIt) remember('bat-sky:best-tries:' + TRACK, String(tries));
+    var lead = !friend && ghost && ghost === leader && !leaderMine;
+    document.getElementById('end-count').textContent = BS.words(run.caught);
+    document.getElementById('end-line').textContent = friend ? against(now, ghost, ghostWho)
+      : lead ? against(now, ghost, leaderWho, best())
+      : !run.caught ? 'The sun has set. Tap a bat to catch it.'
+      : was == null ? 'The sun has set.'
+      : better ? (run.caught > was.caught ? 'Your best yet, by ' + BS.words(run.caught - was.caught) + '.' : 'Your best yet: as many bats, with fewer taps.')
+      : run.caught < was.caught ? BS.words(was.caught - run.caught) + ' behind your best.'
+      : 'Level with your best.';
+    document.getElementById('end-note').textContent = keptIt ? (friend || (leader && BS.better(leader, now)) ? 'It’s your best here on this device.' : 'This run is your ghost now.')
+      : better ? 'This device couldn’t keep it as your ghost.'
+      : was ? 'Your best here stays at ' + BS.words(was.caught) + '.'
+      : '';
+    if (!friend && keptIt) loadGhost();
+    else if (ghost) loadGhost();
+    // A new best goes on the board by itself once this phone has a name
+    // (or has put a run there before); a run with no name yet is saved as
+    // soon as one is typed.
+    if (keptIt && isDay(TRACK) && (mine().length || recall('bat-sky:name'))) {
+      var auto = last;
+      auto.state = 'saving';
+      keepState(auto, true);
+      saveLast(auto).then(function () {
+        auto.state = 'on';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      }, function () {
+        auto.state = 'failed';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      });
+    }
+    var rank = document.getElementById('end-rank');
+    rank.textContent = '';
+    var keep = document.getElementById('keep');
+    keep.hidden = !(isDay(TRACK) && sound);
+    keepState(last, better);
+    document.getElementById('keep-note').textContent = '';
+    document.getElementById('keep-link').hidden = true;
+    document.getElementById('challenge').disabled = false;
+    document.getElementById('who').value = recall('bat-sky:name') || '';
+    end.hidden = false;
+    if (isDay(TRACK) && run.caught) room().then(function (runs) {
+      if (phase === 'done' && last && last.caught === now.caught && last.taps === now.taps) rank.textContent = standing(runs, now);
+    }, function () {});
+  }
+
+  // ---- The day's board ---------------------------------------------------
+  // Every run kept in the room under this sky that re-runs to its catch,
+  // as { slot, ... }. The room is walked as the beach nests it: older
+  // entries under "_" once it grows, newer ones a digit deeper; an entry's
+  // slot is the digits walked to it.
+  function isEntry(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
+  }
+  function slots(node, path, out) {
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') slots(node._, path, out);
+    for (var d = 1; d <= 9; d++) {
+      var c = node[String(d)];
+      if (isEntry(c)) out.push({ slot: path + d, entry: c });
+      else if (c && typeof c === 'object') slots(c, path + d, out);
+    }
+    return out;
+  }
+  // Every run kept in the room, under any sky, that re-runs to its catch
+  // under its own sky, as { slot, track, caught, taps, at, player, name,
+  // tries }. A run is re-run once and remembered by its words, so a
+  // refresh is cheap.
+  var reruns = {}, skies = {};
+  function room() {
+    return pool().then(function (held) {
+      var runs = [];
+      slots(held, '', []).forEach(function (s) {
+        var e = s.entry, keptRun = e['7'];
+        if (typeof keptRun !== 'string') return;
+        if (!(keptRun in reruns)) {
+          var d = BS.decode(keptRun), r = null;
+          if (d) {
+            var k = d.track === TRACK ? sk : (skies[d.track] = skies[d.track] || BS.sky(d.track));
+            r = BS.rerun(keptRun, k);
+          }
+          reruns[keptRun] = r && r.ok && r.caught > 0 ? { track: r.track, caught: r.caught, taps: r.taps } : null;
+        }
+        var ok = reruns[keptRun];
+        if (!ok || e['2'] !== ok.track) return;
+        var named = who(e) !== 'A friend' ? who(e) : '';
+        runs.push({
+          slot: s.slot, track: ok.track, caught: ok.caught, taps: ok.taps, at: e['3'], replay: keptRun,
+          player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
+          name: named || 'A visitor',
+          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null,
+          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : ''
+        });
+      });
+      return runs;
+    });
+  }
+  // Which player is you: the one at a slot this phone kept, or with the
+  // name this phone signs with.
+  function myPlayer(runs) {
+    var slotsHere = mine(), name = (recall('bat-sky:name') || '').toLowerCase();
+    var hit = runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0 || (name && r.player === 'name:' + name); })[0];
+    return hit ? hit.player : '';
+  }
+  // Each player's best under one sky, best first (most bats, then fewest
+  // taps): { player, name, caught, taps, tries (of that best run), runs
+  // (how many they kept there), last }.
+  function players(runs, track) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (r.track !== track) return;
+      var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, caught: -1, taps: 0, tries: null, runs: 0, last: '' });
+      p.runs++;
+      if (r.at > p.last) p.last = r.at;
+      if (BS.better(r, p)) { p.caught = r.caught; p.taps = r.taps; p.tries = r.tries; }
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) {
+      return b.caught - a.caught || a.taps - b.taps || (a.last < b.last ? -1 : 1);
+    });
+  }
+  function ordinal(n) {
+    var t = n % 100, u = n % 10;
+    return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th');
+  }
+  // Where a catch would stand among the other players' bests under this sky.
+  function standing(runs, now) {
+    var me = myPlayer(runs);
+    var others = players(runs, TRACK).filter(function (p) { return p.player !== me; });
+    var when = TRACK === TODAY ? 'today' : 'under this sky';
+    if (!others.length) return 'No one else has kept a run ' + when + ' yet.';
+    var rank = 1 + others.filter(function (p) { return BS.better(p, now); }).length, total = others.length + 1;
+    var top = Math.max(1, Math.ceil(rank / total * 100));
+    if (total >= 5 && top <= 50) return 'Top ' + top + '% ' + when + '!';
+    return ordinal(rank) + ' of ' + total + ' players ' + when + '.';
+  }
+
+  // ---- The board sheet -----------------------------------------------------
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [], boardAll = false;
+  document.getElementById('board-more').addEventListener('click', function () {
+    boardAll = !boardAll;
+    refreshBoard();
+  });
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clock(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function openBoard() {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    sheet.hidden = false;
+    document.getElementById('sheet-close').focus({ preventScroll: true });
+    refreshBoard();
+    clearInterval(sheetTimer);
+    sheetTimer = setInterval(function () { if (!document.hidden) refreshBoard(); }, 30000);
+  }
+  function closeBoard() {
+    sheet.hidden = true;
+    clearInterval(sheetTimer);
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('board-btn').addEventListener('click', openBoard);
+
+  // ---- The look-and-sound sheet ---------------------------------------------
+  var settings = document.getElementById('settings'), skinList = document.getElementById('skins');
+  // Each skin is offered as a small picture of itself: its sunset, the sun
+  // on the sea, a cloud, a bat, your tap and a ghost's.
+  SKINS.forEach(function (k, i) {
+    var b = el('button', 'skin');
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.dataset.skin = k.id;
+    var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 60');
+    svg.setAttribute('aria-hidden', 'true');
+    function add(tag, at, parent) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (a) { e.setAttribute(a, at[a]); });
+      (parent || svg).appendChild(e);
+      return e;
+    }
+    var grad = add('linearGradient', { id: 'skin-sky-' + i, x1: 0, y1: 0, x2: 0, y2: 1 }, add('defs', {}));
+    add('stop', { offset: 0, 'stop-color': k.sky0[0] }, grad);
+    add('stop', { offset: 0.6, 'stop-color': k.sky0[1] }, grad);
+    add('stop', { offset: 1, 'stop-color': k.sky0[2] }, grad);
+    add('rect', { x: 0, y: 0, width: 120, height: 60, fill: 'url(#skin-sky-' + i + ')' });
+    add('circle', { cx: 86, cy: 50, r: 9, fill: k.sun });
+    add('rect', { x: 0, y: 50, width: 120, height: 10, fill: k.sea0 });
+    add('ellipse', { cx: 30, cy: 16, rx: 22, ry: 6, fill: k.cloud0, 'fill-opacity': 0.9 });
+    add('path', { d: 'M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z',
+      fill: k.bat, transform: 'translate(58 30) scale(0.9)' });
+    add('circle', { cx: 58, cy: 30, r: 13, fill: 'none', stroke: k.you, 'stroke-width': 2 });
+    add('circle', { cx: 100, cy: 20, r: 7, fill: 'none', stroke: k.ghost, 'stroke-width': 1.6 });
+    b.appendChild(svg);
+    b.appendChild(document.createTextNode(k.name));
+    b.addEventListener('click', function () {
+      setSkin(k.id);
+      remember('bat-sky:skin', k.id);
+      markSkin();
+      layout();
+    });
+    skinList.appendChild(b);
+  });
+  function markSkin() {
+    Array.prototype.forEach.call(skinList.children, function (b) {
+      b.setAttribute('aria-checked', b.dataset.skin === skin.id ? 'true' : 'false');
+    });
+  }
+  markSkin();
+  document.getElementById('settings-btn').addEventListener('click', function () {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    settings.hidden = false;
+    document.getElementById('settings-close').focus({ preventScroll: true });
+  });
+  function closeSettings() {
+    settings.hidden = true;
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('settings-close').addEventListener('click', closeSettings);
+  document.getElementById('end-board').addEventListener('click', openBoard);
+  document.getElementById('sheet-close').addEventListener('click', closeBoard);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeBoard();
+    if (e.key === 'Escape' && !settings.hidden) closeSettings();
+  });
+
+  // ---- Notes ---------------------------------------------------------------
+  // Anyone can say something: a line in the room that carries no run, so
+  // the board and the wave pass it by, located at the sky it was said
+  // about. A typed name is shown as a visitor's, never as a beach handle.
+  var notesForm = document.getElementById('notes-form'), notesStatus = document.getElementById('notes-status');
+  Beach.addMic(notesForm.note);
+  notesForm.who.value = recall('bat-sky:name') || '';
+  notesForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var note = notesForm.note.value.trim();
+    if (notesForm.web.value || !note) return;
+    var name = notesForm.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('bat-sky:name', name);
+    var send = notesForm.querySelector('button[type=submit]');
+    send.disabled = true;
+    notesStatus.textContent = 'Sending…';
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', note, isDay(TRACK) ? TRACK : '').then(function () {
+      notesForm.note.value = '';
+      notesStatus.textContent = 'Thank you. Your note is on the beach.';
+      drawNotes();
+    }, function () {
+      notesStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () { send.disabled = false; });
+  });
+  document.getElementById('end-note-btn').addEventListener('click', function () {
+    openBoard();
+    notesForm.who.value = notesForm.who.value || recall('bat-sky:name') || '';
+    document.getElementById('notes-head').scrollIntoView({ block: 'start' });
+    notesForm.note.focus({ preventScroll: true });
+  });
+
+  // What people have said, newest first; a long note shows its opening,
+  // with the rest a tap away.
+  function drawNotes() {
+    var list = document.getElementById('notes-list');
+    return pool().then(function (held) {
+      var notes = slots(held, '', []).filter(function (s) {
+        return typeof s.entry['7'] !== 'string' && s.entry._.trim();
+      }).sort(function (a, b) { return a.entry['3'] < b.entry['3'] ? 1 : -1; }).slice(0, 40);
+      list.textContent = '';
+      if (!notes.length) { list.appendChild(el('p', 'note', 'No notes yet. Be the first.')); return; }
+      notes.forEach(function (s) {
+        var e = s.entry, n = el('div', 'n'), meta = el('p', 'n-who');
+        var name = who(e) === 'A friend' ? 'A visitor' : who(e), when = new Date(e['3']);
+        meta.appendChild(el('strong', null, name));
+        if (!isNaN(when)) meta.appendChild(document.createTextNode(' · ' + when.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + clock(e['3'])));
+        n.appendChild(meta);
+        var full = e._.trim(), t = el('p', 'n-text');
+        if (full.length > 600) {
+          var cut = full.lastIndexOf(' ', 450);
+          t.textContent = full.slice(0, cut > 250 ? cut : 450) + '…';
+          var more = el('button', 'chip more', 'Read all');
+          more.type = 'button';
+          more.addEventListener('click', function () { t.textContent = full; more.remove(); });
+          n.appendChild(t);
+          n.appendChild(more);
+        } else {
+          t.textContent = full;
+          n.appendChild(t);
+        }
+        list.appendChild(n);
+      });
+    }, function () {});
+  }
+
+  function refreshBoard() {
+    var title = document.getElementById('sheet-title'), sum = document.getElementById('board-sum');
+    var day = isDay(TRACK);
+    title.textContent = TRACK === TODAY ? 'Today’s board' : day ? 'This sky’s board' : 'The board';
+    drawMine();
+    room().then(function (runs) {
+      lastRuns = runs;
+      var me = myPlayer(runs), list = document.getElementById('board-list');
+      list.textContent = '';
+      if (!day) {
+        sum.textContent = 'Practice runs aren’t kept. The board is for each day’s sky; play today’s from the page without a link.';
+      } else {
+        var ps = players(runs, TRACK), keptHere = runs.filter(function (r) { return r.track === TRACK; });
+        var latest = keptHere.reduce(function (a, r) { return r.at > a ? r.at : a; }, '');
+        sum.textContent = ps.length
+          ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + keptHere.length + (keptHere.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
+          : 'No one has kept a run under this sky yet. Catch some bats and add your name to be first.';
+        // The top five, and your own place when it is further down; the rest
+        // a tap away.
+        var TOP = 5, more = document.getElementById('board-more');
+        ps.forEach(function (p, i) {
+          if (!boardAll && i >= TOP && p.player !== me) return;
+          if (!boardAll && i >= TOP && p.player === me && i > TOP) list.appendChild(el('li', 'gap', '⋯'));
+          var li = el('li', p.player === me ? 'me' : '');
+          li.appendChild(el('span', 'pos', String(i + 1)));
+          var name = el('span', 'name', p.name + (p.player === me ? ' (you)' : ''));
+          name.appendChild(el('span', 'runs', (p.runs === 1 ? '1 run kept' : p.runs + ' runs kept') + ' · ' + p.taps + (p.taps === 1 ? ' tap' : ' taps')));
+          li.appendChild(name);
+          if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
+          li.appendChild(el('span', 't', BS.words(p.caught)));
+          list.appendChild(li);
+        });
+        more.hidden = ps.length <= TOP;
+        more.textContent = boardAll ? 'Show the top ' + TOP + ' only' : 'Show all ' + ps.length + ' players';
+        more.setAttribute('aria-expanded', boardAll ? 'true' : 'false');
+      }
+      drawWave(runs, me);
+      drawPast(runs, me);
+      drawHistory(runs, me);
+      offerBest(runs, me);
+      drawNotes();
+    }, function () {
+      sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
+    });
+  }
+
+  // The wave, as David's waves are read: every player at the moment they
+  // first kept a run, the count climbing as they came, with a thread from
+  // whoever brought them. It has three parts, named for what happened: the
+  // tinder, before it caught; the spark, the stretch when people came
+  // fastest; and the flame, everything since. Early is not better; nobody
+  // is ranked.
+  function waveOf(runs) {
+    var first = {};
+    runs.forEach(function (r) {
+      var f = first[r.player];
+      if (!f || r.at < f.at) first[r.player] = { player: r.player, name: r.name, at: r.at, from: (f && f.from) || r.from, t: Date.parse(r.at) };
+      else if (!f.from && r.from) f.from = r.from;
+    });
+    var order = Object.keys(first).map(function (k) { return first[k]; }).filter(function (p) { return !isNaN(p.t); })
+      .sort(function (a, b) { return a.t - b.t; });
+    var byName = {};
+    order.forEach(function (p) { if (p.player.indexOf('name:') === 0) byName[p.player.slice(5)] = p; });
+    order.forEach(function (p) {
+      var b = p.from ? byName[p.from.toLowerCase()] : null;
+      p.by = b && b !== p && b.t <= p.t ? b : null;
+    });
+    // The spark: the stretch, a sixth of the wave's span (at least a
+    // quarter of an hour), in which the most people came.
+    var spark = null;
+    if (order.length >= 4) {
+      var span = order[order.length - 1].t - order[0].t, w = Math.max(15 * 60000, span / 6), most = 0;
+      order.forEach(function (p, i) {
+        var n = 0;
+        for (var j = i; j < order.length && order[j].t - p.t <= w; j++) n++;
+        if (n > most) { most = n; spark = { from: p.t, to: p.t + w, n: n, people: order.slice(i, i + n) }; }
+      });
+      if (spark && spark.n < 3) spark = null;
+    }
+    return { order: order, spark: spark };
+  }
+  function partOf(t, spark) {
+    if (!spark) return 'the tinder';
+    return t < spark.from ? 'the tinder' : t <= spark.to ? 'the spark' : 'the flame';
+  }
+  function when(t, sameDay) {
+    var d = new Date(t);
+    return sameDay ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function minutes(ms) {
+    var m = Math.round(Math.abs(ms) / 60000);
+    return m < 60 ? m + (m === 1 ? ' minute' : ' minutes') : Math.round(m / 60) + (Math.round(m / 60) === 1 ? ' hour' : ' hours');
+  }
+
+  function drawWave(runs, me) {
+    var wv = waveOf(runs), order = wv.order, spark = wv.spark;
+    var svg = document.getElementById('wave'), NS = 'http://www.w3.org/2000/svg';
+    svg.textContent = '';
+    function add(tag, at, text) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      if (text != null) e.textContent = text;
+      svg.appendChild(e);
+      return e;
+    }
+    var line = document.getElementById('wave-line');
+    if (!order.length) {
+      line.textContent = 'No one has jumped in yet.';
+      document.getElementById('stood').hidden = true;
+      return;
+    }
+    var now = Date.now(), t0 = order[0].t, t1 = Math.max(order[order.length - 1].t, Math.min(now, order[order.length - 1].t + 3600000));
+    if (t1 - t0 < 600000) t1 = t0 + 600000;
+    var X0 = 14, X1 = 306, Y0 = 138, Y1 = 22, n = order.length;
+    function X(t) { return X0 + (t - t0) / (t1 - t0) * (X1 - X0); }
+    function Y(k) { return Y0 - k / Math.max(n, 1) * (Y0 - Y1); }
+    // The three parts, shaded behind the curve and named beneath it.
+    if (spark) {
+      add('rect', { x: X(spark.from), y: Y1 - 8, width: Math.max(2, X(Math.min(spark.to, t1)) - X(spark.from)), height: Y0 - Y1 + 8, fill: skin.you, 'fill-opacity': 0.12 });
+      [['the tinder', X0, X(spark.from)], ['the spark', X(spark.from), X(Math.min(spark.to, t1))], ['the flame', X(Math.min(spark.to, t1)), X1]].forEach(function (l) {
+        if (l[2] - l[1] > 24) add('text', { x: (l[1] + l[2]) / 2, y: 152, 'text-anchor': 'middle', fill: l[0] === 'the spark' ? skin.you : skin.dim, 'font-size': 10 }, l[0]);
+      });
+    } else {
+      add('text', { x: (X0 + X1) / 2, y: 152, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 }, 'the tinder: it hasn’t caught yet');
+    }
+    add('line', { x1: X0, y1: Y0, x2: X1, y2: Y0, stroke: skin.dim, 'stroke-opacity': 0.5, 'stroke-width': 1 });
+    var sameDay = new Date(t0).toDateString() === new Date(t1).toDateString();
+    add('text', { x: X0, y: 166, fill: skin.dim, 'font-size': 9 }, when(t0, sameDay));
+    add('text', { x: X1, y: 166, 'text-anchor': 'end', fill: skin.dim, 'font-size': 9 }, t1 >= now - 60000 ? 'now' : when(t1, sameDay));
+    // The count climbing, a step for each person who came.
+    var d = 'M' + X0 + ' ' + Y0;
+    order.forEach(function (p, i) { d += ' H' + X(p.t).toFixed(1) + ' V' + Y(i + 1).toFixed(1); });
+    d += ' H' + X(t1).toFixed(1);
+    add('path', { d: d + ' V' + Y0 + ' H' + X0 + ' Z', fill: skin.accent, 'fill-opacity': 0.1, stroke: 'none' });
+    add('path', { d: d, fill: 'none', stroke: skin.accent, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    // Threads from whoever brought each person.
+    order.forEach(function (p, i) {
+      if (!p.by) return;
+      var j = order.indexOf(p.by), ax = X(p.by.t), ay = Y(j + 1), bx = X(p.t), by = Y(i + 1);
+      add('path', { d: 'M' + ax + ' ' + ay + ' Q ' + ((ax + bx) / 2) + ' ' + (Math.min(ay, by) - 22) + ' ' + bx + ' ' + by,
+        fill: 'none', stroke: p.by.player === me || p.player === me ? skin.you : skin.ghost, 'stroke-width': 1.4, 'stroke-opacity': 0.8, 'stroke-dasharray': '3 3' });
+    });
+    order.forEach(function (p, i) {
+      add('circle', { cx: X(p.t), cy: Y(i + 1), r: p.player === me ? 5.5 : 3.8, fill: p.player === me ? skin.you : skin.ghost, stroke: skin.bg, 'stroke-width': 1.5 });
+    });
+    // How it is moving now.
+    var hour = order.filter(function (p) { return now - p.t < 3600000; }).length;
+    var before = order.filter(function (p) { return now - p.t >= 3600000 && now - p.t < 7200000; }).length;
+    line.textContent = n + (n === 1 ? ' player' : ' players') + ' so far. ' + (hour
+      ? hour + ' joined in the last hour' + (hour > before ? ', and the wave is rising.' : hour === before ? ', as many as the hour before.' : ', fewer than the hour before.')
+      : 'No one new in the last hour: the wave is resting. Bring someone in to start it again.');
+    drawStood(order, spark, me, sameDay);
+  }
+
+  // Where you stood: the wave read from your place in it, and the one
+  // thing in it no single player saw.
+  function drawStood(order, spark, me, sameDay) {
+    var box = document.getElementById('stood'), list = document.getElementById('stood-list');
+    list.textContent = '';
+    var mineHere = order.filter(function (p) { return p.player === me; })[0];
+    function tell(text) { list.appendChild(el('li', null, text)); }
+    if (mineHere) {
+      var i = order.indexOf(mineHere);
+      tell('You came in ' + partOf(mineHere.t, spark) + ', the ' + ordinal(i + 1) + ' of ' + order.length + (mineHere.by ? ', brought by ' + mineHere.by.name : '') + '.');
+      // Your ripple: everyone you brought, and everyone they brought.
+      var kids = function (p) { return order.filter(function (q) { return q.by === p; }); };
+      var direct = kids(mineHere), all = [], todo = direct.slice();
+      while (todo.length) { var q = todo.shift(); if (all.indexOf(q) < 0) { all.push(q); todo = todo.concat(kids(q)); } }
+      if (direct.length) {
+        var names = direct.map(function (p) { return p.name; });
+        var more = all.length - direct.length;
+        tell('You brought ' + direct.length + (direct.length === 1 ? ' person' : ' people') + ': ' + names.join(', ') + '.' +
+          (more > 0 ? ' They brought ' + more + ' more. Your ripple is ' + all.length + '.' : ''));
+      } else {
+        tell('You haven’t brought anyone yet. Bring someone in, and a thread will run from you to them.');
+      }
+      // Nearest to you: by best catch under this sky, else by when you came.
+      var bests = {};
+      players(lastRuns, TRACK).forEach(function (p) { bests[p.player] = p.caught; });
+      var others = order.filter(function (p) { return p !== mineHere; });
+      if (others.length) {
+        var near = others.slice().sort(function (a, b) {
+          var da = bests[a.player] != null && bests[me] != null ? Math.abs(bests[a.player] - bests[me]) : Infinity;
+          var db = bests[b.player] != null && bests[me] != null ? Math.abs(bests[b.player] - bests[me]) : Infinity;
+          return da - db || Math.abs(a.t - mineHere.t) - Math.abs(b.t - mineHere.t);
+        })[0];
+        var apart = bests[near.player] != null && bests[me] != null ? Math.abs(bests[near.player] - bests[me]) : null;
+        var gap = apart == null ? '' : apart ? ', and your bests are ' + BS.words(apart) + ' apart' : ', and your bests are level';
+        tell('Nearest to you: ' + near.name + '. You came ' + minutes(near.t - mineHere.t) + ' apart' + gap + '.');
+      }
+    }
+    if (spark) {
+      var by = {};
+      spark.people.forEach(function (p) { if (p.by) by[p.by.name] = (by[p.by.name] || 0) + 1; });
+      var top = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; })[0];
+      var mins = Math.max(1, Math.round((spark.people[spark.people.length - 1].t - spark.people[0].t) / 60000));
+      tell('It caught at ' + when(spark.from, sameDay) + ', when ' + spark.n + ' people came in ' + mins + (mins === 1 ? ' minute' : ' minutes') +
+        (top && by[top] * 2 >= spark.n ? ', most of them brought by ' + top + '.' : '.'));
+    }
+    box.hidden = !list.children.length;
+    if (!mineHere && box.hidden === false) list.insertBefore(el('li', null, 'Keep a run to take your own place in the wave.'), list.firstChild);
+  }
+
+  // ---- Bringing someone in ---------------------------------------------------
+  // A plain link to the game that carries your name, so whoever comes by it
+  // is drawn with a thread from you.
+  var bring = document.getElementById('bring'), bringNote = document.getElementById('bring-note');
+  var bringName = document.getElementById('bring-name'), bringWho = document.getElementById('bring-who');
+  bring.addEventListener('click', function () {
+    var name = (recall('bat-sky:name') || bringWho.value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) {
+      bringName.hidden = false;
+      bringWho.focus();
+      bringNote.textContent = 'Add your name first, so the people you bring are linked to you.';
+      return;
+    }
+    remember('bat-sky:name', name);
+    bringName.hidden = true;
+    var url = location.origin + location.pathname + '?from=' + encodeURIComponent(name);
+    var text = 'Come and play Bat Sky with me: tap the bats before the sun sets.';
+    bringNote.textContent = 'Send this link: ' + url;
+    if (navigator.share) {
+      navigator.share({ title: 'Bat Sky', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () { bringNote.textContent = 'The link is copied: ' + url; }, function () {});
+    }
+  });
+  bringWho.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); bring.click(); }
+  });
+
+  // When this phone's best under a day's sky beats your best on the board
+  // (or you aren't on it), one tap puts it there.
+  var keepBest = document.getElementById('keep-best');
+  function phoneBest() {
+    var keptBest = recall(BEST), r = keptBest ? BS.rerun(keptBest, sk) : null;
+    return r && r.ok ? { replay: keptBest, caught: r.caught, taps: r.taps } : null;
+  }
+  function offerBest(runs, me) {
+    var pb = isDay(TRACK) ? phoneBest() : null;
+    var board = me ? players(runs, TRACK).filter(function (p) { return p.player === me; })[0] : null;
+    keepBest.hidden = !(pb && BS.better(pb, board));
+    if (!keepBest.hidden) keepBest.textContent = 'Put my best (' + BS.words(pb.caught) + ') on the board';
+  }
+  keepBest.addEventListener('click', function () {
+    var pb = phoneBest(), note = document.getElementById('keep-best-note');
+    if (!pb) return;
+    keepBest.disabled = true;
+    note.textContent = 'Keeping your best on the beach…';
+    var tries = parseInt(recall('bat-sky:best-tries:' + TRACK), 10);
+    keepRun(pb.replay, pb.caught, tries > 0 ? tries : 0).then(function () {
+      note.textContent = 'Your best is on the board.';
+      keepBest.disabled = false;
+      refreshBoard();
+    }, function () {
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      keepBest.disabled = false;
+    });
+  });
+
+  // ---- Days ------------------------------------------------------------------
+  // The days the room holds runs for, newest first: each day's address, its
+  // date (from the first run kept that day), and its players' bests.
+  function days(runs) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (!isDay(r.track)) return;
+      var d = by[r.track] || (by[r.track] = { track: r.track, first: r.at, runs: 0 });
+      d.runs++;
+      if (r.at < d.first) d.first = r.at;
+    });
+    return Object.keys(by).map(function (k) {
+      var d = by[k];
+      d.players = players(runs, k);
+      return d;
+    }).sort(function (a, b) { return a.track < b.track ? 1 : -1; });
+  }
+  function dayName(d) {
+    var t = new Date(d.first);
+    return isNaN(t) ? d.track : t.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function skyLink(track) {
+    return location.pathname + (track === TODAY ? '' : '?track=' + track);
+  }
+
+  // Yesterday's winner, under the ghost on today's sky.
+  function showPrev(runs) {
+    var line = document.getElementById('prev-line');
+    if (TRACK !== TODAY) { line.hidden = true; return; }
+    var before = days(runs).filter(function (d) { return d.track < TODAY && d.players.length; })[0];
+    if (!before) { line.hidden = true; return; }
+    var w = before.players[0], gap = Math.round((Date.now() - Date.parse(before.first)) / 86400000);
+    line.textContent = (gap <= 1 ? 'Yesterday' : 'Last time, ' + dayName(before)) + ': ' + w.name + ' won with ' + BS.words(w.caught) +
+      ', out of ' + before.players.length + (before.players.length === 1 ? ' player.' : ' players.');
+    line.hidden = false;
+  }
+
+  // Past skies: every day but the one being played, with its winner and
+  // your own best that day.
+  function drawPast(runs, me) {
+    var list = document.getElementById('past'), note = document.getElementById('past-note');
+    list.textContent = '';
+    var ds = days(runs).filter(function (d) { return d.track !== TRACK; });
+    if (TRACK !== TODAY && TODAY) {
+      var li0 = el('li'), a0 = el('a');
+      a0.href = skyLink(TODAY);
+      a0.appendChild(el('span', 'day', 'Today'));
+      a0.appendChild(el('span', 'who', 'Back to today’s sky'));
+      li0.appendChild(a0);
+      list.appendChild(li0);
+    }
+    ds.forEach(function (d) {
+      var li = el('li'), a = el('a'), w = d.players[0];
+      a.href = skyLink(d.track);
+      a.appendChild(el('span', 'day', d.track === TODAY ? 'Today' : dayName(d)));
+      var whoEl = el('span', 'who', w ? w.name + ' won' : 'No runs kept');
+      var mineThen = d.players.filter(function (p) { return p.player === me; })[0];
+      whoEl.appendChild(el('small', null, BS.describe(d.track) + ' · ' + d.players.length + (d.players.length === 1 ? ' player' : ' players') +
+        (mineThen ? ' · you: ' + BS.words(mineThen.caught) + ', ' + ordinal(d.players.indexOf(mineThen) + 1) : '')));
+      a.appendChild(whoEl);
+      if (w) a.appendChild(el('span', 't', BS.words(w.caught)));
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    note.textContent = ds.length || TRACK !== TODAY
+      ? 'Every day has its own sky, and every run stays. Play any earlier day again, and race its best.'
+      : 'Every day has its own sky, and every run stays. Earlier days will appear here.';
+  }
+
+  // Your history: the days you played, your best each day, and how often
+  // you finished in the day's top five.
+  function drawHistory(runs, me) {
+    var line = document.getElementById('history'), list = document.getElementById('days');
+    list.textContent = '';
+    var mineDays = days(runs).map(function (d) {
+      var p = d.players.filter(function (q) { return q.player === me; })[0];
+      return p ? { d: d, p: p, place: d.players.indexOf(p) + 1 } : null;
+    }).filter(Boolean);
+    if (!me || !mineDays.length) { line.hidden = true; list.hidden = true; return; }
+    var top = mineDays.filter(function (m) { return m.place <= 5; }).length;
+    line.textContent = 'You’ve played ' + mineDays.length + (mineDays.length === 1 ? ' day' : ' days') +
+      (top ? ', in the top five on ' + top + (top === 1 ? ' of them.' : '.') : '.');
+    mineDays.slice(0, 14).forEach(function (m) {
+      var li = el('li');
+      var leftSide = el('span', null, m.d.track === TODAY ? 'Today' : dayName(m.d));
+      leftSide.appendChild(el('small', null, ordinal(m.place) + ' of ' + m.d.players.length));
+      li.appendChild(leftSide);
+      li.appendChild(el('span', 't', BS.words(m.p.caught)));
+      list.appendChild(li);
+    });
+    line.hidden = false;
+    list.hidden = false;
+  }
+
+  function drawMine() {
+    var tries = tally('tries'), pb = phoneBest();
+    document.getElementById('mine-line').textContent = tries
+      ? 'Under this sky: ' + tries + (tries === 1 ? ' try' : ' tries') + (pb ? ', best ' + BS.words(pb.caught) + ' from ' + pb.taps + (pb.taps === 1 ? ' tap.' : ' taps.') : '.')
+      : 'You haven’t tried this sky on this phone yet.';
+  }
+
+  // ---- Keeping a run, and the link to race it ------------------------------
+  // A kept run goes to the room as a visitor's line, located at its sky;
+  // its slot there is the ghost in the link. A typed name is shown as a
+  // visitor's, never as a beach handle.
+  // Keep a run in the room; resolves with the slot it landed in.
+  function keepRun(replay, caught, tries) {
+    var name = (recall('bat-sky:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var line = BS.words(caught) + ' in the sky of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
+    var more = { 7: replay };
+    // Who brought this phone into the wave, kept with each of its runs.
+    var from = recall('bat-sky:from');
+    if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
+    if (tries) more[8] = String(tries);
+    // A save counts only once the run is read back from the room: the
+    // beach's answer alone isn't trusted, since two saves landing at once
+    // can lose one. If it isn't there, it is sent once more.
+    function find(sent) {
+      return pool().then(function (held) {
+        var hit = slots(held, '', []).filter(function (s) {
+          return s.entry['7'] === replay && (!sent || s.entry['3'] === sent.entry[3]);
+        })[0];
+        return hit ? hit.slot : null;
+      });
+    }
+    function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    function send() {
+      return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
+        return find(sent).then(function (slot) {
+          return slot || wait(1200).then(function () { return find(sent); });
+        });
+      });
+    }
+    return send().then(function (slot) {
+      return slot || wait(800).then(send);
+    }).then(function (slot) {
+      if (!slot) throw new Error('not in the room');
+      return slot;
+    }).then(function (slot) {
+      var m = mine();
+      if (m.indexOf(slot) < 0) { m.push(slot); remember('bat-sky:mine', JSON.stringify(m)); }
+      return slot;
+    });
+  }
+
+  // Save a finished run to the board, once: a second ask while it is on
+  // its way, or after it has landed, gets the same slot.
+  function saveLast(r) {
+    if (!r || !r.replay) return Promise.reject(new Error('nothing to save'));
+    if (r.slot) return Promise.resolve(r.slot);
+    if (!r.saving) {
+      r.saving = keepRun(r.replay, r.caught, r.tries).then(function (slot) {
+        r.slot = slot;
+        return slot;
+      }, function (e) {
+        r.saving = null;
+        throw e;
+      });
+    }
+    return r.saving;
+  }
+
+  // Typing a name on the end screen puts this run on the board under it;
+  // the name is kept for the next runs too. It saves when the box is left
+  // or Done is pressed.
+  var whoBox = document.getElementById('who');
+  // What the end screen says about this run and the board, and whether it
+  // offers Save: on the board, being saved, not saved, or failed.
+  var saveBtn = document.getElementById('save-run');
+  function keepState(r, isBest) {
+    var stateEl = document.getElementById('keep-state');
+    if (!r || r !== last) return;
+    var name = recall('bat-sky:name');
+    stateEl.textContent = r.slot ? '✓ This catch is on the board' + (name ? ' as ' + name : '') + '.'
+      : r.state === 'saving' ? 'Saving your catch to the board…'
+      : r.state === 'failed' ? 'This catch didn’t reach the board. Tap Save to try again.'
+      : isBest ? 'This catch isn’t on the board yet. Add your name and tap Save.'
+      : 'Only your best goes on the board automatically. Tap Save to add this one too.';
+    stateEl.className = 'keep-state ' + (r.slot ? 'on' : 'off');
+    saveBtn.hidden = !!r.slot || r.state === 'saving';
+  }
+  function saveNow() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!last || !last.replay || !isDay(TRACK)) return;
+    if (!name && !recall('bat-sky:name')) {
+      document.getElementById('keep-state').textContent = 'Type your name first, so the board knows it’s you.';
+      whoBox.focus();
+      return;
+    }
+    if (name) {
+      remember('bat-sky:name', name);
+      notesForm.who.value = notesForm.who.value || name;
+    }
+    if (last.slot) return keepState(last, true);
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+    });
+  }
+  saveBtn.addEventListener('click', saveNow);
+  // Typing a name and pressing Done saves too.
+  function nameGiven() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name || !last || last.slot || last.state === 'saving') return;
+    saveNow();
+  }
+  whoBox.addEventListener('change', nameGiven);
+  whoBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); whoBox.blur(); nameGiven(); }
+  });
+
+  document.getElementById('challenge').addEventListener('click', function () {
+    var btn = this, note = document.getElementById('keep-note');
+    if (!last || !last.replay) return;
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('bat-sky:name', name);
+    if (last.slot) return share();
+    btn.disabled = true;
+    note.textContent = 'Keeping your run on the beach…';
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+      btn.disabled = false;
+      share();
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+      btn.disabled = false;
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    });
+  });
+
+  function share() {
+    var url = location.origin + location.pathname + '?track=' + TRACK + '&ghost=' + last.slot;
+    var text = 'I caught ' + BS.words(last.caught) + ' in ' + (TRACK === TODAY ? 'today’s' : 'a') + ' Bat Sky. Race my ghost:';
+    var note = document.getElementById('keep-note'), shown = document.getElementById('keep-link');
+    shown.textContent = url;
+    shown.hidden = false;
+    note.textContent = 'Your run is on the beach. Send this link:';
+    if (navigator.share) {
+      navigator.share({ title: 'Bat Sky', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () {
+        note.textContent = 'Your run is on the beach. The link is copied:';
+      }, function () {});
+    }
+  }
+
+  document.getElementById('again').addEventListener('click', ready);
+  // The picture of how to play holds still, its finger on the bat just as
+  // it is caught, for anyone who asks their device for less motion.
+  function holdHow() {
+    var how = say.querySelector('.how');
+    if (how && still() && how.pauseAnimations) {
+      try { how.pauseAnimations(); how.setCurrentTime(1.6); } catch (e) {}
+    }
+  }
+  holdHow();
+
+  function ready() {
+    if (!sk) return;
+    loadGhost();
+    if (Date.now() - leaderRead > 20000) loadLeader();
+    phase = 'ready';
+    run = null;
+    taps = [];
+    marks = [];
+    end.hidden = true;
+    say.className = 'say';
+    say.innerHTML = BRIEF;
+    say.hidden = false;
+    holdHow();
+  }
+
+  // ---- Marks and puffs (drawing only: the run never reads them) ------------
+  // A mark is a ring where a tap landed, in sky units: gold opening out for
+  // a catch, a ring closing for as long as a miss leaves the hand resting,
+  // a small dot for a tap made while resting, and the ghost's in its colour.
+  var marks = [], bits = [];
+  function mark(x, y, kind) {
+    var life = kind === 'miss' ? BS.LAW.missRest / BS.RATE * 1000 : kind === 'resting' ? 250 : 480;
+    marks.push({ x: x, y: y, kind: kind, born: performance.now(), life: life });
+    if (marks.length > 40) marks.splice(0, marks.length - 40);
+  }
+  function puff(x, y, n, color) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 180;
+      bits.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, life: 0.4 + Math.random() * 0.4, age: 0, color: Math.random() < 0.4 ? skin.bat : color });
+    }
+    if (bits.length > 300) bits.splice(0, bits.length - 300);
+  }
+  function drawMarks(ts, dt) {
+    var sc = view.scale, thick = skin.thick ? 1.6 : 1;
+    for (var i = marks.length - 1; i >= 0; i--) {
+      var m = marks[i], f = (ts - m.born) / m.life;
+      if (f >= 1) { marks.splice(i, 1); continue; }
+      if (f < 0) f = 0;
+      var p = px(m.x, m.y);
+      ctx.beginPath();
+      if (m.kind === 'caught' || m.kind === 'ghost-caught') {
+        ctx.arc(p.x, p.y, (20 + 70 * f) * sc, 0, Math.PI * 2);
+        ctx.strokeStyle = m.kind === 'caught' ? skin.you : skin.ghost;
+        ctx.lineWidth = (m.kind === 'caught' ? 3 : 2) * thick;
+        ctx.globalAlpha = 1 - f;
+      } else if (m.kind === 'miss') {
+        ctx.arc(p.x, p.y, BS.LAW.reach * (1 - f) * sc + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = skin.miss;
+        ctx.lineWidth = 2 * thick;
+        ctx.globalAlpha = 0.85;
+      } else if (m.kind === 'ghost') {
+        ctx.arc(p.x, p.y, (15 + 40 * f) * sc, 0, Math.PI * 2);
+        ctx.strokeStyle = skin.ghost;
+        ctx.lineWidth = 1.5 * thick;
+        ctx.globalAlpha = (1 - f) * 0.7;
+      } else {
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = skin.miss;
+        ctx.globalAlpha = 1 - f;
+        ctx.fill();
+        continue;
+      }
+      ctx.stroke();
+    }
+    for (i = bits.length - 1; i >= 0; i--) {
+      var b = bits[i];
+      b.age += dt;
+      if (b.age >= b.life) { bits.splice(i, 1); continue; }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.vx *= 0.93;
+      b.vy = b.vy * 0.93 + 200 * dt;
+      var q = px(b.x, b.y);
+      ctx.globalAlpha = 1 - b.age / b.life;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(q.x - 2, q.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- Drawing -----------------------------------------------------------
+  // The sky box (BS.W by BS.H units) is drawn as large as the screen allows,
+  // its foot at the foot of the screen; the sky's colours run on above it
+  // and the beach below.
+  var view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0 };
+  var groundLayer = document.createElement('canvas'), scanLayer = null;
+  var stars = [], sunX = 600;
+
+  function px(x, y) {
+    return { x: view.ox + x * view.scale, y: view.oy + y * view.scale };
+  }
+
+  // Numbers for drawing only, the same for everyone from the day's name.
+  function seeded(name) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < name.length; i++) { h ^= name.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    var a = h >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      var t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // The sky for this page: its bats and clouds, and the stars and the
+  // sun's place, which only drawing uses.
+  function setup() {
+    sk = BS.sky(TRACK);
+    BEST = 'bat-sky:best:' + TRACK;
+    var r = seeded(TRACK + ':stars');
+    sunX = 250 + r() * 500;
+    stars = [];
+    for (var i = 0; i < 50; i++) stars.push({ x: r() * 1.6 - 0.3, y: r(), size: 0.6 + r() * 1.1, phase: r() * 6.3 });
+    layout();
+  }
+
+  function layout() {
+    if (!sk) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var top = 84, foot = 6;
+    var scale = Math.min(w / BS.W, (h - top - foot) / BS.H);
+    view = { scale: scale, dpr: dpr, w: w, h: h, ox: (w - scale * BS.W) / 2, oy: h - foot - scale * BS.H };
+    // The beach, drawn once for each size: dunes from the sea's edge to the
+    // foot of the screen, a bare tree, and a lantern carved in a pumpkin.
+    groundLayer.width = canvas.width;
+    groundLayer.height = canvas.height;
+    var g = groundLayer.getContext('2d'), sc = scale;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    function P(x, y) { return px(x, y); }
+    var a = P(-400, BS.HORIZON + 62), b = P(BS.W + 400, BS.HORIZON + 50);
+    g.fillStyle = skin.ground;
+    g.beginPath();
+    g.moveTo(0, a.y);
+    var d1 = P(150, BS.HORIZON + 20), d2 = P(420, BS.HORIZON + 70), d3 = P(700, BS.HORIZON + 34), d4 = P(950, BS.HORIZON + 60);
+    g.bezierCurveTo(d1.x - 160 * sc, d1.y, d1.x - 60 * sc, d1.y, d1.x, d1.y);
+    g.bezierCurveTo(d1.x + 120 * sc, d1.y, d2.x - 120 * sc, d2.y, d2.x, d2.y);
+    g.bezierCurveTo(d2.x + 120 * sc, d2.y, d3.x - 120 * sc, d3.y, d3.x, d3.y);
+    g.bezierCurveTo(d3.x + 120 * sc, d3.y, d4.x - 60 * sc, d4.y, d4.x, d4.y);
+    g.lineTo(Math.max(w, b.x), b.y);
+    g.lineTo(w, h);
+    g.lineTo(0, h);
+    g.closePath();
+    g.fill();
+    // The tree, branch by branch: [from x, y, to x, y, width], in units
+    // from its root.
+    var root = P(110, BS.HORIZON + 32);
+    g.strokeStyle = skin.ground;
+    g.lineCap = 'round';
+    [[0, 0, -8, -95, 11], [-8, -95, -48, -160, 6], [-8, -95, 24, -170, 6], [-48, -160, -84, -178, 3.5], [-48, -160, -56, -205, 3],
+     [24, -170, 58, -196, 3.5], [24, -170, 18, -214, 3], [-4, -52, 34, -84, 5], [34, -84, 62, -90, 2.5], [-84, -178, -96, -168, 2]].forEach(function (k) {
+      g.lineWidth = Math.max(1, k[4] * sc);
+      g.beginPath();
+      g.moveTo(root.x + k[0] * sc, root.y + k[1] * sc);
+      g.lineTo(root.x + k[2] * sc, root.y + k[3] * sc);
+      g.stroke();
+    });
+    // The pumpkin: dark against the dusk, its carved face lit from inside.
+    var pk = P(840, BS.HORIZON + 50), rx = 34 * sc, ry = 26 * sc;
+    g.fillStyle = skin.ground;
+    g.beginPath();
+    g.ellipse(pk.x, pk.y, rx, ry, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillRect(pk.x - 3 * sc, pk.y - ry - 9 * sc, 6 * sc, 11 * sc);
+    g.fillStyle = skin.lantern;
+    function tri(ax, ay, bx, by, cx, cy) {
+      g.beginPath();
+      g.moveTo(pk.x + ax * sc, pk.y + ay * sc);
+      g.lineTo(pk.x + bx * sc, pk.y + by * sc);
+      g.lineTo(pk.x + cx * sc, pk.y + cy * sc);
+      g.closePath();
+      g.fill();
+    }
+    tri(-18, -4, -6, -4, -12, -15);
+    tri(6, -4, 18, -4, 12, -15);
+    g.beginPath();
+    g.moveTo(pk.x - 20 * sc, pk.y + 5 * sc);
+    [[-13, 13], [-7, 7], [0, 15], [7, 7], [13, 13], [20, 5], [10, 20], [-10, 20]].forEach(function (q) { g.lineTo(pk.x + q[0] * sc, pk.y + q[1] * sc); });
+    g.closePath();
+    g.fill();
+    // A screen of old glass: faint lines across it, drawn over everything.
+    scanLayer = null;
+    if (skin.scan) {
+      scanLayer = document.createElement('canvas');
+      scanLayer.width = canvas.width;
+      scanLayer.height = canvas.height;
+      var sg = scanLayer.getContext('2d');
+      sg.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      for (var y = 0; y < scanLayer.height; y += 3 * dpr) sg.fillRect(0, y, scanLayer.width, Math.max(1, dpr));
+    }
+  }
+
+  // A bat, wings spread k pixels a unit of its shape, its wings lifted by
+  // flap (-1 to 1), and its eyes showing as the dark comes on.
+  var BAT = [[0, -3], [1.5, -5], [2, -2.5], [6, -5.5], [12, -4], [10.5, -0.5], [9, 1.8], [7, 0.4], [5, 2.8], [2.8, 1.2], [0, 4]];
+  function drawBat(x, y, k, flap, alpha, eyes) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = skin.bat;
+    ctx.beginPath();
+    var i, q;
+    for (i = 0; i < BAT.length; i++) {
+      q = BAT[i];
+      var lift = q[0] > 2.5 ? flap * q[0] / 12 * 5 : 0;
+      if (i === 0) ctx.moveTo(x + q[0] * k, y + (q[1] + lift) * k);
+      else ctx.lineTo(x + q[0] * k, y + (q[1] + lift) * k);
+    }
+    for (i = BAT.length - 2; i > 0; i--) {
+      q = BAT[i];
+      ctx.lineTo(x - q[0] * k, y + (q[1] + (q[0] > 2.5 ? flap * q[0] / 12 * 5 : 0)) * k);
+    }
+    ctx.closePath();
+    ctx.fill();
+    if (eyes > 0.02) {
+      ctx.globalAlpha = alpha * eyes;
+      ctx.fillStyle = skin.eye;
+      ctx.fillRect(x - 1.4 * k, y - 2.4 * k, Math.max(1.2, 0.9 * k), Math.max(1.2, 0.9 * k));
+      ctx.fillRect(x + 0.5 * k, y - 2.4 * k, Math.max(1.2, 0.9 * k), Math.max(1.2, 0.9 * k));
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // A cloud's puffs as one shape, so where they overlap is no darker.
+  function cloudPath(cl, cx, cy, sc, drop) {
+    ctx.beginPath();
+    cl.puffs.forEach(function (q) {
+      var p = px(cx + q[0], cy + q[1] + drop * q[2]), r = q[2] * sc;
+      ctx.moveTo(p.x + r, p.y);
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    });
+  }
+
+  function draw(alpha, dt, ts) {
+    var w = view.w, h = view.h, sc = view.scale, c = skin.c;
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    if (!sk) {
+      ctx.fillStyle = skin.bg;
+      ctx.fillRect(0, 0, w, h);
+      return;
+    }
+    var s = run ? (phase === 'running' ? run.step + alpha : run.step) : 0;
+    var p = Math.min(1, s / BS.LAW.steps);
+    var hy = view.oy + BS.HORIZON * sc;
+    // The sky, darkening as the sun goes down.
+    var g = ctx.createLinearGradient(0, 0, 0, hy);
+    g.addColorStop(0, mix(c.sky0[0], c.sky1[0], p));
+    g.addColorStop(0.6, mix(c.sky0[1], c.sky1[1], p));
+    g.addColorStop(1, mix(c.sky0[2], c.sky1[2], p));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, hy + 1);
+    // The stars come out as it gets dark.
+    var sa = Math.max(0, Math.min(1, (p - 0.45) * 2));
+    if (sa > 0) {
+      ctx.fillStyle = skin.star;
+      stars.forEach(function (st) {
+        var tw = still() ? 1 : 0.6 + 0.4 * Math.sin(ts / 600 + st.phase);
+        ctx.globalAlpha = sa * tw * 0.8;
+        ctx.fillRect(view.ox + st.x * BS.W * sc, st.y * (hy - 20), st.size, st.size);
+      });
+      ctx.globalAlpha = 1;
+    }
+    // The sun, sinking into the sea as the run goes.
+    var sun = px(sunX, 860 + (BS.HORIZON + 95 - 860) * p), sr = 85 * sc;
+    if (skin.glow) {
+      var glow = ctx.createRadialGradient(sun.x, sun.y, sr * 0.5, sun.x, sun.y, sr * 3.2);
+      glow.addColorStop(0, mix(c.sunRim, c.sunRim, 0, 0.45 * (1 - p * 0.7)));
+      glow.addColorStop(1, mix(c.sunRim, c.sunRim, 0, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(sun.x - sr * 3.2, sun.y - sr * 3.2, sr * 6.4, sr * 6.4);
+    }
+    ctx.fillStyle = skin.sun;
+    ctx.beginPath();
+    ctx.arc(sun.x, sun.y, sr, 0, Math.PI * 2);
+    ctx.fill();
+    if (skin.thick) {
+      ctx.strokeStyle = skin.sunRim;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    // The bats still out, fading as it gets dark, their eyes showing.
+    var k = 100 / 24 * sc, vis = 1 - 0.35 * p, eyes = Math.max(0, Math.min(1, (p - 0.3) * 1.6));
+    for (var b = 0; b < sk.n; b++) {
+      if (run && run.gone[b]) continue;
+      var q = BS.at(sk, b, s);
+      if (!q) continue;
+      var flap = still() ? 0.2 : Math.sin(ts / 1000 * 2 * Math.PI * (5 + b % 4) + b * 1.7);
+      var at = px(q.x, q.y);
+      drawBat(at.x, at.y, k, flap, vis, eyes);
+    }
+    // The clouds, over the bats: lit from beneath while the sun is up, then
+    // as dark as the night.
+    sk.clouds.forEach(function (cl) {
+      var cx = ((cl.x + cl.v * s + 600) % 2200 + 2200) % 2200 - 600;
+      if (p < 1) {
+        ctx.fillStyle = mix(c.rim, c.rim, 0, (1 - p) * 0.6);
+        cloudPath(cl, cx, cl.y, sc, 0.14);
+        ctx.fill();
+      }
+      ctx.fillStyle = mix(c.cloud0, c.cloud1, p, 0.93);
+      cloudPath(cl, cx, cl.y, sc, 0);
+      ctx.fill();
+    });
+    // The sea, with the sun's path on it, and the beach.
+    var seaG = ctx.createLinearGradient(0, hy, 0, hy + 80 * sc);
+    seaG.addColorStop(0, mix(c.sea0, c.sea1, p));
+    seaG.addColorStop(1, mix(c.sea0, c.sea1, Math.min(1, p + 0.3)));
+    ctx.fillStyle = seaG;
+    ctx.fillRect(0, hy, w, h - hy);
+    if (p < 0.98) {
+      ctx.fillStyle = skin.sun;
+      for (var i = 0; i < 6; i++) {
+        var lw = (90 - i * 12) * sc * (1 - p * 0.8), ly = hy + (5 + i * 9) * sc;
+        ctx.globalAlpha = (1 - p) * (0.55 - i * 0.07);
+        ctx.fillRect(sun.x - lw / 2, ly, lw, 2.5 * sc + 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(groundLayer, 0, 0);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    // The lantern's glow, flickering.
+    var pk = px(840, BS.HORIZON + 50), fl = still() ? 1 : 0.85 + 0.15 * Math.sin(ts / 90) * Math.sin(ts / 37);
+    var lg = ctx.createRadialGradient(pk.x, pk.y, 2, pk.x, pk.y, 70 * sc);
+    lg.addColorStop(0, mix(c.lantern, c.lantern, 0, (0.25 + 0.35 * p) * fl));
+    lg.addColorStop(1, mix(c.lantern, c.lantern, 0, 0));
+    ctx.fillStyle = lg;
+    ctx.fillRect(pk.x - 70 * sc, pk.y - 70 * sc, 140 * sc, 140 * sc);
+    // Beyond the sky's sides, on a wide screen, the dusk is dimmed: no bat
+    // can be caught out there.
+    if (view.ox > 1) {
+      ctx.fillStyle = mix(c.bg, c.bg, 0, 0.6);
+      ctx.fillRect(0, 0, view.ox, h);
+      ctx.fillRect(view.ox + BS.W * sc, 0, w - view.ox - BS.W * sc, h);
+    }
+    drawMarks(ts, dt);
+    if (scanLayer) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(scanLayer, 0, 0);
+    }
+    countEl.textContent = run ? String(run.caught) : '0';
+    leftEl.textContent = phase === 'running' ? 'The sun sets in ' + Math.ceil((BS.LAW.steps - run.step) / BS.RATE) + ' s' : '';
+  }
+
+  // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
+  var DT = 1000 / BS.RATE, lastTs = 0;
+  function frame(ts) {
+    var gap = lastTs ? ts - lastTs : 0;
+    lastTs = ts;
+    if (phase === 'running') {
+      // A long gap (the page was away) is not caught up step by step.
+      acc += Math.min(gap, 100);
+      while (acc >= DT && phase === 'running') {
+        tick();
+        acc -= DT;
+      }
+    }
+    draw(phase === 'running' ? acc / DT : 0, Math.min(gap, 50) / 1000, ts);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+  init();
+})();
+</script>
+</body>
+</html>
