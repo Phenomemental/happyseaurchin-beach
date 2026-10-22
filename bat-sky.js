@@ -12,7 +12,11 @@
    The clouds and the dark only change what can be seen; drawing may use
    anything, and the simulation never reads what drawing computes. */
 (function (root) {
-  var VERSION = 'bs1';
+  // The law runs are made under now, and every law a kept run may carry:
+  // bs1, the first morning's bats; bs2, the same bats 15% slower, for the
+  // children (22 October 2026). A kept run re-runs under its own law.
+  var VERSION = 'bs2';
+  var VERSIONS = ['bs1', 'bs2'];
   var RATE = 60;                // steps a second
 
   // The sky is a box W wide and H tall, in whole units, made for a phone
@@ -71,12 +75,14 @@
 
   function whole(v) { return Math.floor(v); }
 
-  // The sky a track's name draws: its bats, each with when it comes (from,
-  // a step, which may be before the first touch so some are already out),
-  // how long it stays (life), the points its flight bends round, and its
-  // flutter (a rise and fall of amp units every period steps); and its
-  // clouds, for drawing.
-  function sky(track) {
+  // The sky a track's name draws under a law (the one runs are made under
+  // now, unless named): its bats, each with when it comes (from, a step,
+  // which may be before the first touch so some are already out), how long
+  // it stays (life), the points its flight bends round, and its flutter (a
+  // rise and fall of amp units every period steps); and its clouds, for
+  // drawing.
+  function sky(track, version) {
+    version = version || VERSION;
     var k = kinds(track), r = random(hash(track));
     var n = [40, 48, 52][k.flight];
     var waves = [];
@@ -110,6 +116,12 @@
         period = 28 + whole(r() * 20);
         bends = 4;
       }
+      // From bs2 every bat takes 20/17 as long over the same flight, and
+      // flutters as much more slowly: 15% slower, with the same paths.
+      if (version !== 'bs1') {
+        life = whole(life * 20 / 17);
+        period = whole(period * 20 / 17);
+      }
       // From one side of the sky to the other, or, in a swarm, now and
       // then up from the beach below.
       var left = r() < 0.5, pts = [];
@@ -135,7 +147,7 @@
       }
       clouds.push({ x: -400 + whole(r() * 1800), y: 140 + whole(r() * 1050), v: wind * (0.25 + 0.5 * r()), size: size, puffs: puffs });
     }
-    return { track: track, flight: k.flight, cloud: k.cloud, n: n, bats: bats, clouds: clouds };
+    return { track: track, version: version, flight: k.flight, cloud: k.cloud, n: n, bats: bats, clouds: clouds };
   }
 
   // Where bat b is at step s, along a uniform cubic B-spline through its
@@ -226,7 +238,8 @@
   }
 
   // ---- A run kept: every tap that counted ------------------------------------
-  // "bs1.<track>.<caught>.<taps>": each tap as three varints, the steps
+  // "bs2.<track>.<caught>.<taps>" (bs1 before the bats slowed): each tap as
+  // three varints, the steps
   // since the tap before (since the first touch, for the first), then x
   // and y in whole units. The bytes are in base64url.
 
@@ -279,7 +292,7 @@
   // A kept run's parts, or null when it isn't one this engine can re-run.
   function decode(replay) {
     var parts = typeof replay === 'string' ? replay.split('.') : [];
-    if (parts.length !== 4 || parts[0] !== VERSION || !validTrack(parts[1]) || !/^\d{1,3}$/.test(parts[2])) return null;
+    if (parts.length !== 4 || VERSIONS.indexOf(parts[0]) < 0 || !validTrack(parts[1]) || !/^\d{1,3}$/.test(parts[2])) return null;
     var bytes = fromB64(parts[3]);
     if (!bytes) return null;
     var nums = [], n = 0, mul = 1;
@@ -298,16 +311,17 @@
       if (s >= LAW.steps || nums[i + 1] > W || nums[i + 2] > H) return null;
       taps.push([s, nums[i + 1], nums[i + 2]]);
     }
-    return { track: parts[1], caught: +parts[2], taps: taps };
+    return { version: parts[0], track: parts[1], caught: +parts[2], taps: taps };
   }
 
-  // Run a kept run again under its sky. It is good when every tap counts
-  // and it catches as many bats as it says; hits holds each tap's step,
-  // place and the bat it caught (-1 for a miss).
+  // Run a kept run again under its sky, drawn under the run's own law. It
+  // is good when every tap counts and it catches as many bats as it says;
+  // hits holds each tap's step, place and the bat it caught (-1 for a
+  // miss), and sky the sky it ran under.
   function rerun(replay, sk) {
     var r = decode(replay);
     if (!r) return null;
-    sk = sk && sk.track === r.track ? sk : sky(r.track);
+    sk = sk && sk.track === r.track && sk.version === r.version ? sk : sky(r.track, r.version);
     var st = start(sk), hits = [], k = 0, good = true;
     while (st.status === 'running') {
       if (k < r.taps.length && r.taps[k][0] === st.step) {
@@ -320,7 +334,7 @@
     }
     return {
       ok: good && k === r.taps.length && st.caught === r.caught,
-      track: r.track, caught: st.caught, taps: st.taps, hits: hits
+      track: r.track, caught: st.caught, taps: st.taps, hits: hits, sky: sk
     };
   }
 
