@@ -14,9 +14,10 @@
 (function (root) {
   // The law runs are made under now, and every law a kept run may carry:
   // bs1, the first morning's bats; bs2, the same bats 15% slower, for the
-  // children (22 October 2026). A kept run re-runs under its own law.
-  var VERSION = 'bs2';
-  var VERSIONS = ['bs1', 'bs2'];
+  // children (22 October 2026); bs3, another 10% slower again, so they are
+  // easier still to see and catch. A kept run re-runs under its own law.
+  var VERSION = 'bs3';
+  var VERSIONS = ['bs1', 'bs2', 'bs3'];
   var RATE = 60;                // steps a second
 
   // The sky is a box W wide and H tall, in whole units, made for a phone
@@ -117,10 +118,15 @@
         bends = 4;
       }
       // From bs2 every bat takes 20/17 as long over the same flight, and
-      // flutters as much more slowly: 15% slower, with the same paths.
+      // flutters as much more slowly: 15% slower, with the same paths. From
+      // bs3 it takes 10/9 as long again: another 10% slower.
       if (version !== 'bs1') {
         life = whole(life * 20 / 17);
         period = whole(period * 20 / 17);
+      }
+      if (version !== 'bs1' && version !== 'bs2') {
+        life = whole(life * 10 / 9);
+        period = whole(period * 10 / 9);
       }
       // From one side of the sky to the other, or, in a swarm, now and
       // then up from the beach below.
@@ -240,10 +246,10 @@
   }
 
   // ---- A run kept: every tap that counted ------------------------------------
-  // "bs2.<track>.<caught>.<taps>" (bs1 before the bats slowed): each tap as
-  // three varints, the steps
-  // since the tap before (since the first touch, for the first), then x
-  // and y in whole units. The bytes are in base64url.
+  // "bs3.<track>.<caught>.<taps>" (bs1 and bs2 before the bats slowed):
+  // each tap as three varints, the steps since the tap before (since the
+  // first touch, for the first), then x and y in whole units. The bytes
+  // are in base64url.
 
   var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
