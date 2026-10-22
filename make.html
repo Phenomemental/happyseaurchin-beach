@@ -242,7 +242,7 @@
 </head>
 <body>
 <main>
-  <a class="back" href="ghost-wire.html">← Back to Ghost Wire</a>
+  <a class="back" href="arcade.html">← All the games</a>
 
   <h1>Make the next game</h1>
   <p class="lead">Ghost Wire was made in an afternoon, by talking with an AI. The next game in the Arcade could be yours: leave an idea, or make it yourself.</p>
@@ -262,6 +262,7 @@
   <h2>The Arcade so far</h2>
   <ul class="games" id="games">
     <li><a href="ghost-wire.html">Ghost Wire</a><span class="what">Trace a neon wire with your finger from START to FINISH without touching the walls, racing the day’s fastest ghost.</span></li>
+    <li><a href="bat-sky.html">Bat Sky</a><span class="what">Tap the bats in the moonlight before the sun comes up, racing the day’s best ghost.</span></li>
     <li class="next">The next game: yours?</li>
   </ul>
 
@@ -330,6 +331,13 @@ Build my game the same way, as one HTML page and one engine file, keeping all si
       if (m) games.push({ name: m[1], what: m[2].trim().charAt(0).toUpperCase() + m[2].trim().slice(1), url: m[3] || '' });
     }
     if (!games.length) return;
+    // A game written into this page that the spine doesn't list yet stays.
+    function page(url) { return String(url || '').split(/[?#]/)[0].split('/').pop(); }
+    var listed = games.map(function (g) { return page(g.url); });
+    var kept = Array.prototype.filter.call(list.querySelectorAll('li'), function (li) {
+      var a = li.querySelector('a');
+      return a && listed.indexOf(page(a.getAttribute('href'))) < 0;
+    });
     list.textContent = '';
     games.forEach(function (g) {
       var li = document.createElement('li'), a = document.createElement(g.url ? 'a' : 'strong');
@@ -342,6 +350,7 @@ Build my game the same way, as one HTML page and one engine file, keeping all si
       li.appendChild(what);
       list.appendChild(li);
     });
+    kept.forEach(function (li) { list.appendChild(li); });
     var next = document.createElement('li');
     next.className = 'next';
     next.textContent = 'The next game: yours?';

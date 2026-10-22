@@ -93,9 +93,35 @@
   .middle {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
   }
+  /* The way to the Arcade's other games: under the briefing before a run,
+     and on the end screen after one; never while a run is under way. */
+  .more-games {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 20px;
+    border-radius: 22px;
+    border: 1px solid var(--wire);
+    background: var(--panel);
+    color: var(--wire);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .more-games:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  .say[hidden] + .more-games,
+  .say.buzz + .more-games { display: none; }
   .say {
     max-width: 22rem;
     margin: 0;
@@ -666,6 +692,7 @@
          and what you are trying to do (ways:games 1). Its words are kept at
          game:ghost-wire too; the label says which wire this is. -->
     <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s wire…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><path d="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50" class="how-wall"/><path d="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50" class="how-inside"/><text x="37" y="59" class="how-start" text-anchor="end">START</text><text x="165" y="53" class="how-finish">FINISH</text><g><circle r="5.5" class="how-dot"/><text x="-8" y="21" class="how-finger">👆</text><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.18;0.82;1" calcMode="linear" path="M44 56 C 76 56, 84 24, 112 24 S 146 50, 158 50"/></g></svg><span class="step">Touch your dot <i class="dot-swatch"></i> at <b class="start">START</b> and drag it along the wire to <b class="finish">FINISH</b>.</span><span class="step">Don’t touch the walls.</span><span class="step">The clock starts when you touch the screen.</span></p>
+    <a class="more-games" href="arcade.html">🕹 More games</a>
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-time"></p>
@@ -693,7 +720,7 @@
         <button type="button" id="end-board">See the board</button>
         <button type="button" id="end-note-btn">Leave a note</button>
       </div>
-      <p class="make-line">New in the Arcade: <a href="bat-sky.html">Bat Sky, tap the bats before the sun comes up →</a></p>
+      <a class="more-games" href="arcade.html">🕹 More games</a>
       <p class="make-line"><a href="make.html">Liked it? Make the next game for the Arcade →</a></p>
     </div>
   </div>
@@ -772,7 +799,7 @@
     </form>
     <div class="notes-list" id="notes-list"></div>
     <h3>The Arcade</h3>
-    <p>Ghost Wire is the first game in the Arcade: quick, one-move skill games, with a new level every day for everyone. Play <a href="bat-sky.html">Bat Sky</a>, the second: tap the bats in the moonlight before the sun comes up. <a href="make.html">Leave an idea for the next one, or make it yourself →</a></p>
+    <p>Ghost Wire is the first game in the Arcade: quick, one-move skill games, with a new level every day for everyone. Play <a href="bat-sky.html">Bat Sky</a>, the second: tap the bats in the moonlight before the sun comes up. <a href="arcade.html">See all the games</a>, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
   </div>
 </div>
 
