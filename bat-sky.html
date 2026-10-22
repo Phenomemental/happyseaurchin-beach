@@ -729,7 +729,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="bat-sky.js?v=2026-10-22a"></script>
+<script src="bat-sky.js?v=2026-10-22b"></script>
 <script>
 (function () {
   var BS = window.BatSky;
@@ -1171,7 +1171,7 @@
       mark(h.x, h.y, h.bat >= 0 ? 'ghost-caught' : 'ghost');
       if (h.bat >= 0) {
         ghostCaught++;
-        var g = BS.at(sk, h.bat, run.step);
+        var g = BS.at(ghost.sky || sk, h.bat, run.step);
         if (g) puff(g.x, g.y, still() ? 3 : 8, skin.ghost);
         showGhostCount();
       }
@@ -1288,7 +1288,8 @@
         if (!(keptRun in reruns)) {
           var d = BS.decode(keptRun), r = null;
           if (d) {
-            var k = d.track === TRACK ? sk : (skies[d.track] = skies[d.track] || BS.sky(d.track));
+            var key = d.track + '.' + d.version;
+            var k = key === sk.track + '.' + sk.version ? sk : (skies[key] = skies[key] || BS.sky(d.track, d.version));
             r = BS.rerun(keptRun, k);
           }
           reruns[keptRun] = r && r.ok && r.caught > 0 ? { track: r.track, caught: r.caught, taps: r.taps } : null;
