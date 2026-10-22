@@ -597,6 +597,36 @@
     justify-content: space-between;
     gap: 10px;
   }
+  .watchbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+    padding: 12px 16px max(14px, env(safe-area-inset-bottom));
+    background: var(--panel-strong);
+    border-top: 1px solid var(--edge);
+    text-align: center;
+  }
+  .watch-cap {
+    margin: 0;
+    font-weight: 600;
+  }
+  .watch-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .watch-row button { margin: 0; }
+  .watchbar .note { margin: 6px 0 0; font-size: 0.85rem; color: var(--dim); }
+  .board li.watchable { cursor: pointer; }
+  .board li .see {
+    font-size: 0.75rem;
+    color: var(--wire);
+    white-space: nowrap;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -613,6 +643,24 @@
   </div>
   <p class="ghost-line" id="ghost-line"></p>
   <p class="prev-line" id="prev-line" hidden></p>
+  <!-- Watching a run: a replay of the moves a run was kept as, with the
+       day's fastest as the ghost beside it; it can be shared as a link or
+       made into a short clip. -->
+  <div class="watchbar" id="watchbar" hidden>
+    <p class="watch-cap" id="watch-cap"></p>
+    <div class="watch-row">
+      <button type="button" class="chip" id="w-play" aria-label="Pause">⏸</button>
+      <button type="button" class="chip" id="w-slow" aria-pressed="false">½× speed</button>
+      <button type="button" class="chip" id="w-again" aria-label="Watch again">↺</button>
+      <button type="button" class="chip" id="w-close">Close</button>
+    </div>
+    <div class="watch-row">
+      <button type="button" class="go" id="w-race" hidden>Race this run</button>
+      <button type="button" class="chip" id="w-clip">Make a clip</button>
+      <button type="button" class="chip" id="w-link">Share link</button>
+    </div>
+    <p class="note" id="w-note" aria-live="polite"></p>
+  </div>
   <div class="middle">
     <!-- The briefing tells three things only: where you start, your moves,
          and what you are trying to do (ways:games 1). Its words are kept at
@@ -641,6 +689,7 @@
       </div>
       <div class="row">
         <button type="button" id="again">Run again</button>
+        <button type="button" id="end-watch">Watch my run</button>
         <button type="button" id="end-board">See the board</button>
         <button type="button" id="end-note-btn">Leave a note</button>
       </div>
@@ -727,7 +776,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-22b"></script>
+<script src="ghost-wire.js?v=2026-10-22c"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -823,6 +872,7 @@
   var params = new URLSearchParams(location.search);
   var asked = GW.validTrack(params.get('track')) ? params.get('track') : '';
   var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  var askedWatch = /^\d{1,7}$/.test(params.get('watch') || '') ? params.get('watch') : '';
   // A link to bring someone in carries the bringer's name (?from=). The
   // first one a phone arrives by is kept, and each run it keeps says who
   // brought it.
@@ -890,6 +940,7 @@
         ghostLine.textContent = 'The beach is out of reach just now, so this is a practice wire.';
       }
       phase = 'ready';
+      if (askedWatch) openWatchLink();
     });
   }
 
@@ -923,7 +974,7 @@
   // link brought one. Read when the page opens, and every twenty seconds
   // while it is open and no run is under way, so a new record reaches every
   // phone.
-  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0, leaderReplay = '';
   function loadLeader() {
     if (!isDay(TRACK)) return;
     leaderRead = Date.now();
@@ -939,6 +990,7 @@
         leader = g;
         leaderWho = best.name;
         leaderMine = best.player === me;
+        leaderReplay = best.replay;
       }
       if (phase === 'ready' || phase === 'loading') loadGhost();
     }, function () {});
@@ -1314,7 +1366,7 @@
       var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, steps: Infinity, tries: null, runs: 0, last: '' });
       p.runs++;
       if (r.at > p.last) p.last = r.at;
-      if (r.steps < p.steps) { p.steps = r.steps; p.tries = r.tries; }
+      if (r.steps < p.steps) { p.steps = r.steps; p.tries = r.tries; p.slot = r.slot; p.replay = r.replay; p.at = r.at; }
     });
     return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return a.steps - b.steps || (a.last < b.last ? -1 : 1); });
   }
@@ -1519,6 +1571,16 @@
           li.appendChild(name);
           if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
           li.appendChild(el('span', 't', GW.seconds(p.steps) + ' s'));
+          if (p.replay) {
+            li.className += ' watchable';
+            li.setAttribute('role', 'button');
+            li.tabIndex = 0;
+            li.setAttribute('aria-label', 'Watch ' + p.name + '’s run, ' + GW.seconds(p.steps) + ' seconds');
+            li.appendChild(el('span', 'see', '▶ watch'));
+            var go = function () { closeBoard(); watchRun(p.replay, { who: p.name, slot: p.slot, at: p.at, mine: p.player === me }); };
+            li.addEventListener('click', go);
+            li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+          }
           list.appendChild(li);
         });
         more.hidden = ps.length <= TOP;
@@ -2264,6 +2326,15 @@
     ctx.setTransform(1, 0, 0, 1, sx * view.dpr, sy * view.dpr);
     ctx.drawImage(wireLayer, 0, 0);
     ctx.setTransform(view.dpr, 0, 0, view.dpr, sx * view.dpr, sy * view.dpr);
+    if (phase === 'watching' && watch) {
+      drawWatch();
+      if (scanLayer) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(scanLayer, 0, 0);
+      }
+      if (clip) clipFrame(ts);
+      return;
+    }
     var step = run ? run.step : 0;
     if (ghost) dot(ghostAt(step), skin.ghost, 0.75);
     if (run) {
@@ -2284,6 +2355,251 @@
     timeEl.textContent = GW.seconds(step);
   }
 
+  // ---- Watching a run -------------------------------------------------------
+  // A kept run is its moves, so watching is re-running it: the point goes
+  // where it went, step for step, with the wire's fastest as the ghost
+  // beside it (unless it is that run). Half speed slows it to see how a
+  // bend was taken.
+  var watch = null, watchbar = document.getElementById('watchbar'), wNote = document.getElementById('w-note');
+  function dateOf(at) {
+    var d = new Date(at);
+    return isNaN(d) ? '' : d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function watchRun(replay, info) {
+    var r = GW.rerun(replay, wire);
+    if (!r || !r.ok) return false;
+    info = info || {};
+    watch = {
+      r: r, replay: replay, who: info.who || 'You', slot: info.slot || '', at: info.at || '', mine: !!info.mine,
+      race: !!info.race, t: 0, speed: 1, playing: true, endedAt: 0,
+      ghost: leader && leaderReplay !== replay ? leader : null
+    };
+    phase = 'watching';
+    audio.stop();
+    say.hidden = true;
+    end.hidden = true;
+    sheet.hidden = true;
+    settings.hidden = true;
+    watchbar.hidden = false;
+    wNote.textContent = '';
+    document.getElementById('w-race').hidden = !watch.race;
+    document.getElementById('w-link').hidden = !watch.slot;
+    document.getElementById('w-slow').setAttribute('aria-pressed', 'false');
+    document.getElementById('w-clip').disabled = false;
+    document.getElementById('w-clip').textContent = 'Make a clip';
+    caption();
+    return true;
+  }
+  function wireDay() {
+    return TRACK === TODAY ? 'today’s wire' : (watch && watch.at ? dateOf(watch.at) + '’s wire' : 'an earlier day’s wire');
+  }
+  function caption() {
+    document.getElementById('watch-cap').textContent = (watch.mine ? 'Your run' : watch.who + '’s run') + ' · ' + GW.seconds(watch.r.steps) + ' s · ' + wireDay() +
+      (watch.ghost ? ' · ghost: ' + leaderWho + ', ' + GW.seconds(watch.ghost.steps) + ' s' : '');
+  }
+  function stepWatch(gap, ts) {
+    if (!watch || clip) return;
+    if (watch.playing) {
+      watch.t += Math.min(gap, 100) / 1000 * GW.RATE * watch.speed;
+      if (watch.t >= watch.r.steps) {
+        watch.t = watch.r.steps;
+        watch.playing = false;
+        document.getElementById('w-play').textContent = '▶';
+        document.getElementById('w-play').setAttribute('aria-label', 'Play');
+      }
+    }
+  }
+  // Where a run stood at a step that may fall between two steps.
+  function at(r, t) {
+    var i = Math.floor(t), j = Math.min(i + 1, r.x.length - 1), f = t - i;
+    i = Math.min(i, r.x.length - 1);
+    return { x: r.x[i] + (r.x[j] - r.x[i]) * f, y: r.y[i] + (r.y[j] - r.y[i]) * f };
+  }
+  function tail(r, t) {
+    var out = [];
+    for (var k = Math.max(0, Math.floor(t) - TAIL); k <= Math.floor(t); k++) out.push({ x: r.x[Math.min(k, r.x.length - 1)], y: r.y[Math.min(k, r.x.length - 1)] });
+    out.push(at(r, t));
+    return out;
+  }
+  function drawWatch() {
+    if (watch.ghost) dot(tail(watch.ghost, Math.min(watch.t, watch.ghost.steps)), skin.ghost, 0.75);
+    dot(tail(watch.r, watch.t), skin.you, 1);
+    timeEl.textContent = GW.seconds(Math.floor(watch.t));
+  }
+  document.getElementById('w-play').addEventListener('click', function () {
+    if (!watch) return;
+    if (!watch.playing && watch.t >= watch.r.steps) watch.t = 0;
+    watch.playing = !watch.playing;
+    this.textContent = watch.playing ? '⏸' : '▶';
+    this.setAttribute('aria-label', watch.playing ? 'Pause' : 'Play');
+  });
+  document.getElementById('w-slow').addEventListener('click', function () {
+    if (!watch) return;
+    watch.speed = watch.speed === 1 ? 0.5 : 1;
+    this.setAttribute('aria-pressed', watch.speed < 1 ? 'true' : 'false');
+    this.textContent = watch.speed < 1 ? '1× speed' : '½× speed';
+  });
+  document.getElementById('w-again').addEventListener('click', function () {
+    if (!watch) return;
+    watch.t = 0;
+    watch.playing = true;
+    document.getElementById('w-play').textContent = '⏸';
+  });
+  function closeWatch() {
+    if (clip) return;
+    watch = null;
+    watchbar.hidden = true;
+    ready();
+  }
+  document.getElementById('w-close').addEventListener('click', closeWatch);
+  document.getElementById('end-watch').addEventListener('click', function () {
+    if (!last || !last.replay) return;
+    watchRun(last.replay, { who: recall('ghost-wire:name') || 'You', slot: last.slot, at: new Date().toISOString(), mine: true });
+  });
+  // Race the run being watched: it becomes the ghost.
+  document.getElementById('w-race').addEventListener('click', function () {
+    if (!watch) return;
+    friend = watch.r;
+    ghostWho = watch.who;
+    closeWatch();
+  });
+
+  // A watch link opens the page playing a kept run.
+  function watchUrl(slot) {
+    return location.origin + location.pathname + '?track=' + TRACK + '&watch=' + slot;
+  }
+  document.getElementById('w-link').addEventListener('click', function () {
+    if (!watch || !watch.slot) return;
+    var url = watchUrl(watch.slot);
+    var text = (watch.mine ? 'Watch my Ghost Wire run: ' : 'Watch ' + watch.who + '’s Ghost Wire run: ') + GW.seconds(watch.r.steps) + ' s.';
+    wNote.textContent = url;
+    if (navigator.share) navigator.share({ title: 'Ghost Wire', text: text, url: url }).then(null, function () {});
+    else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(function () { wNote.textContent = 'Link copied: ' + url; }, function () {});
+  });
+  function openWatchLink() {
+    Beach.get(ROOM, { spindle: askedWatch }).then(function (e) {
+      if (!e || typeof e[7] !== 'string') throw new Error('none');
+      var d = GW.decode(e[7]);
+      if (!d || d.track !== TRACK) throw new Error('other wire');
+      var name = who(e) === 'A friend' ? 'A visitor' : who(e);
+      if (!watchRun(e[7], { who: name, slot: askedWatch, at: e[3], mine: isMine(e, askedWatch), race: !isMine(e, askedWatch) })) throw new Error('bad');
+    }).then(null, function () {
+      ghostLine.textContent = 'That run couldn’t be found on this wire.';
+    });
+  }
+
+  // ---- A clip -------------------------------------------------------------------
+  // The replay recorded as a short video by the phone's own recorder: a
+  // title card, the run (at double speed when it is long) with the ghost,
+  // and an end card with the game's name, to share like any clip. Drawn on
+  // a canvas of its own, upright, 720 by 1280.
+  var clip = null;
+  function clipKind() {
+    var kinds = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    if (!window.MediaRecorder) return '';
+    for (var i = 0; i < kinds.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(kinds[i])) return kinds[i];
+    return '';
+  }
+  document.getElementById('w-clip').addEventListener('click', function () {
+    var btn = this;
+    if (!watch) return;
+    if (watch.file) return shareClip();
+    var kind = clipKind(), rec = document.createElement('canvas');
+    if (!kind || !rec.captureStream) {
+      wNote.textContent = 'This browser can’t make clips. Share the link instead.';
+      return;
+    }
+    rec.width = 720;
+    rec.height = 1280;
+    var stream = rec.captureStream(30), chunks = [];
+    var recorder = new MediaRecorder(stream, { mimeType: kind, videoBitsPerSecond: 2500000 });
+    recorder.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    recorder.onstop = function () {
+      var type = kind.split(';')[0], ext = type === 'video/mp4' ? 'mp4' : 'webm';
+      var blob = new Blob(chunks, { type: type });
+      var w = clip.watch;
+      clip = null;
+      w.file = new File([blob], 'ghost-wire-' + GW.seconds(w.r.steps).replace('.', '-') + 's.' + ext, { type: type });
+      if (watch === w) {
+        btn.disabled = false;
+        btn.textContent = 'Share clip';
+        wNote.textContent = 'Your clip is ready (' + Math.round(blob.size / 1024) + ' KB).';
+      }
+    };
+    watch.t = 0;
+    watch.playing = false;
+    clip = { rec: rec, g: rec.getContext('2d'), recorder: recorder, start: 0, watch: watch, speed: watch.r.steps > 600 ? 2 : 1 };
+    btn.disabled = true;
+    btn.textContent = 'Recording…';
+    wNote.textContent = 'Making your clip: it plays through once.';
+    recorder.start(250);
+  });
+  function shareClip() {
+    var file = watch.file;
+    var text = (watch.mine ? 'My Ghost Wire run: ' : watch.who + '’s Ghost Wire run: ') + GW.seconds(watch.r.steps) + ' s. Can you beat it? ' +
+      (watch.slot ? watchUrl(watch.slot) : location.origin + location.pathname);
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Ghost Wire', text: text }).then(null, function () {});
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    wNote.textContent = 'Your clip is saved to your downloads. ' + text;
+  }
+  // One frame of the clip: the game as drawn, set into the upright frame,
+  // with the words over it. Title 1.3 s, the run, end card 1.8 s.
+  var TITLE = 1300, CLOSE = 1800;
+  function clipFrame(ts) {
+    var c = clip, g = c.g, W = 720, H = 1280;
+    if (!c.start) c.start = ts;
+    var el2 = ts - c.start, runMs = c.watch.r.steps / GW.RATE * 1000 / c.speed;
+    var phaseOf = el2 < TITLE ? 'title' : el2 < TITLE + runMs ? 'run' : el2 < TITLE + runMs + CLOSE ? 'end' : 'done';
+    c.watch.t = phaseOf === 'title' ? 0 : Math.min(c.watch.r.steps, (el2 - TITLE) / 1000 * GW.RATE * c.speed);
+    g.fillStyle = skin.bg;
+    g.fillRect(0, 0, W, H);
+    var s = Math.min(W / canvas.width, (H - 170) / canvas.height);
+    g.drawImage(canvas, (W - canvas.width * s) / 2, 150 + (H - 170 - canvas.height * s) / 2, canvas.width * s, canvas.height * s);
+    g.textAlign = 'center';
+    g.fillStyle = skin.wall;
+    g.font = '700 40px ' + skin.font;
+    g.fillText('GHOST WIRE', W / 2, 70);
+    g.fillStyle = skin.you;
+    g.font = '700 34px ' + skin.font;
+    g.fillText((c.watch.mine ? (recall('ghost-wire:name') || 'Me') : c.watch.who) + ' · ' + GW.seconds(Math.floor(c.watch.t)) + ' s', W / 2, 122);
+    if (phaseOf === 'title' || phaseOf === 'end' || phaseOf === 'done') {
+      g.fillStyle = skin.strong;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = skin.wall;
+      g.font = '700 64px ' + skin.font;
+      g.fillText('GHOST WIRE', W / 2, H / 2 - 120);
+      g.fillStyle = skin.you;
+      g.font = '700 96px ' + skin.font;
+      g.fillText(GW.seconds(c.watch.r.steps) + ' s', W / 2, H / 2 + 10);
+      g.fillStyle = skin.words;
+      g.font = '500 38px ' + skin.font;
+      if (phaseOf === 'title') {
+        g.fillText(c.watch.mine ? (recall('ghost-wire:name') || 'My run') : c.watch.who, W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 30px ' + skin.font;
+        g.fillText(wireDay().charAt(0).toUpperCase() + wireDay().slice(1), W / 2, H / 2 + 140);
+      } else {
+        g.fillText('Can you beat it?', W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 28px ' + skin.font;
+        g.fillText('phenomemental.github.io', W / 2, H / 2 + 145);
+        g.fillText('/happyseaurchin-beach/ghost-wire.html', W / 2, H / 2 + 185);
+      }
+    }
+    if (phaseOf === 'done' && c.recorder.state === 'recording') {
+      c.recorder.stop();
+      c.watch.t = c.watch.r.steps;
+    }
+  }
+
   // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
   var DT = 1000 / GW.RATE, lastTs = 0;
   function frame(ts) {
@@ -2298,6 +2614,7 @@
       }
     }
     if (phase === 'buzzed' && ts - buzzAt > 800 && !finger) ready();
+    if (phase === 'watching') stepWatch(gap, ts);
     draw(phase === 'running' ? acc / DT : 1, Math.min(gap, 50) / 1000, ts);
     requestAnimationFrame(frame);
   }
