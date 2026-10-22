@@ -551,6 +551,52 @@
   .keep-state.on { color: var(--wire); }
   .keep-state.off { color: var(--you); }
   #save-run + #challenge { margin-left: 6px; }
+  .prev-line {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .past, .days {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .past li, .days li {
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .past a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--words);
+  }
+  .past .day {
+    flex: 0 0 6.5rem;
+    font-weight: 600;
+    color: var(--wire);
+  }
+  .past .who {
+    flex: 1;
+    min-width: 0;
+  }
+  .past .who small, .days small {
+    display: block;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+  .past .t, .days .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+  }
+  .days li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -566,6 +612,7 @@
     </div>
   </div>
   <p class="ghost-line" id="ghost-line"></p>
+  <p class="prev-line" id="prev-line" hidden></p>
   <div class="middle">
     <!-- The briefing tells three things only: where you start, your moves,
          and what you are trying to do (ways:games 1). Its words are kept at
@@ -632,6 +679,11 @@
     <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
     <ol class="board" id="board-list"></ol>
     <button type="button" class="chip board-more" id="board-more" hidden aria-expanded="false"></button>
+    <!-- Every earlier day's wire, read from the runs kept in the room: each
+         can be played again, with its own board, ghost and wave. -->
+    <h3>Past wires</h3>
+    <p class="note" id="past-note">Every day has its own wire, and every run stays. Play any earlier day again, and race its fastest.</p>
+    <ul class="past" id="past"></ul>
     <h3>The wave</h3>
     <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
     <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
@@ -649,6 +701,8 @@
     </div>
     <h3>On this phone</h3>
     <p id="mine-line"></p>
+    <p id="history" hidden></p>
+    <ul class="days" id="days" hidden></ul>
     <button type="button" class="go" id="keep-best" hidden></button>
     <p class="note" id="keep-best-note" aria-live="polite"></p>
     <h3 id="notes-head">Notes</h3>
@@ -673,7 +727,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="ghost-wire.js?v=2026-10-21r"></script>
+<script src="ghost-wire.js?v=2026-10-22a"></script>
 <script>
 (function () {
   var GW = window.GhostWire;
@@ -870,9 +924,11 @@
   // phone.
   var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
   function loadLeader() {
-    if (friend || !isDay(TRACK)) return;
+    if (!isDay(TRACK)) return;
     leaderRead = Date.now();
     room().then(function (runs) {
+      showPrev(runs);
+      if (friend) return;
       var me = myPlayer(runs), best = null;
       runs.forEach(function (r) {
         if (r.track === TRACK && (!best || r.steps < best.steps)) best = r;
@@ -1448,7 +1504,7 @@
         var latest = kept.reduce(function (a, r) { return r.at > a ? r.at : a; }, '');
         sum.textContent = ps.length
           ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + kept.length + (kept.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
-          : 'No one has kept a run on this wire yet. Finish one and tap Challenge a friend to be first.';
+          : 'No one has kept a run on this wire yet. Finish one and add your name to be first.';
         // The top five, and your own place when it is further down; the rest
         // a tap away.
         var TOP = 5, more = document.getElementById('board-more');
@@ -1469,6 +1525,8 @@
         more.setAttribute('aria-expanded', boardAll ? 'true' : 'false');
       }
       drawWave(runs, me);
+      drawPast(runs, me);
+      drawHistory(runs, me);
       offerBest(runs, me);
       drawNotes();
     }, function () {
@@ -1689,6 +1747,100 @@
       keepBest.disabled = false;
     });
   });
+
+  // ---- Days ------------------------------------------------------------------
+  // The days the room holds runs for, newest first: each day's address, its
+  // date (from the first run kept that day), and its players' bests.
+  function days(runs) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (!isDay(r.track)) return;
+      var d = by[r.track] || (by[r.track] = { track: r.track, first: r.at, runs: 0 });
+      d.runs++;
+      if (r.at < d.first) d.first = r.at;
+    });
+    return Object.keys(by).map(function (k) {
+      var d = by[k];
+      d.players = players(runs, k);
+      return d;
+    }).sort(function (a, b) { return a.track < b.track ? 1 : -1; });
+  }
+  function dayName(d) {
+    var t = new Date(d.first);
+    return isNaN(t) ? d.track : t.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function wireLink(track) {
+    return location.pathname + (track === TODAY ? '' : '?track=' + track);
+  }
+
+  // Yesterday's winner, under the ghost on today's wire.
+  function showPrev(runs) {
+    var line = document.getElementById('prev-line');
+    if (TRACK !== TODAY) { line.hidden = true; return; }
+    var before = days(runs).filter(function (d) { return d.track < TODAY && d.players.length; })[0];
+    if (!before) { line.hidden = true; return; }
+    var w = before.players[0], gap = Math.round((Date.now() - Date.parse(before.first)) / 86400000);
+    line.textContent = (gap <= 1 ? 'Yesterday' : 'Last time, ' + dayName(before)) + ': ' + w.name + ' won in ' + GW.seconds(w.steps) +
+      ' s, out of ' + before.players.length + (before.players.length === 1 ? ' player.' : ' players.');
+    line.hidden = false;
+  }
+
+  // Past wires: every day but the one being played, with its winner and
+  // your own best that day.
+  function drawPast(runs, me) {
+    var list = document.getElementById('past'), note = document.getElementById('past-note');
+    list.textContent = '';
+    var ds = days(runs).filter(function (d) { return d.track !== TRACK; });
+    if (TRACK !== TODAY && TODAY) {
+      var li0 = el('li'), a0 = el('a');
+      a0.href = wireLink(TODAY);
+      a0.appendChild(el('span', 'day', 'Today'));
+      a0.appendChild(el('span', 'who', 'Back to today’s wire'));
+      li0.appendChild(a0);
+      list.appendChild(li0);
+    }
+    ds.forEach(function (d) {
+      var li = el('li'), a = el('a'), w = d.players[0];
+      a.href = wireLink(d.track);
+      a.appendChild(el('span', 'day', d.track === TODAY ? 'Today' : dayName(d)));
+      var who = el('span', 'who', w ? w.name + ' won' : 'No finished runs');
+      var mineThen = d.players.filter(function (p) { return p.player === me; })[0];
+      who.appendChild(el('small', null, d.players.length + (d.players.length === 1 ? ' player' : ' players') +
+        (mineThen ? ' · you: ' + GW.seconds(mineThen.steps) + ' s, ' + ordinal(d.players.indexOf(mineThen) + 1) : '')));
+      a.appendChild(who);
+      if (w) a.appendChild(el('span', 't', GW.seconds(w.steps) + ' s'));
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    note.textContent = ds.length || TRACK !== TODAY
+      ? 'Every day has its own wire, and every run stays. Play any earlier day again, and race its fastest.'
+      : 'Every day has its own wire, and every run stays. Earlier days will appear here.';
+  }
+
+  // Your history: the days you played, your best each day, and how often
+  // you finished in the day's top five.
+  function drawHistory(runs, me) {
+    var line = document.getElementById('history'), list = document.getElementById('days');
+    list.textContent = '';
+    var mineDays = days(runs).map(function (d) {
+      var p = d.players.filter(function (q) { return q.player === me; })[0];
+      return p ? { d: d, p: p, place: d.players.indexOf(p) + 1 } : null;
+    }).filter(Boolean);
+    if (!me || !mineDays.length) { line.hidden = true; list.hidden = true; return; }
+    var top = mineDays.filter(function (m) { return m.place <= 5; }).length;
+    line.textContent = 'You’ve played ' + mineDays.length + (mineDays.length === 1 ? ' day' : ' days') +
+      (top ? ', in the top five on ' + top + (top === 1 ? ' of them.' : '.') : '.');
+    mineDays.slice(0, 14).forEach(function (m) {
+      var li = el('li');
+      var left = el('span', null, m.d.track === TODAY ? 'Today' : dayName(m.d));
+      left.appendChild(el('small', null, ordinal(m.place) + ' of ' + m.d.players.length));
+      li.appendChild(left);
+      li.appendChild(el('span', 't', GW.seconds(m.p.steps) + ' s'));
+      list.appendChild(li);
+    });
+    line.hidden = false;
+    list.hidden = false;
+  }
 
   function drawMine() {
     var tries = tally('tries'), done = tally('finishes'), pb = phoneBest(), best = pb ? pb.steps : null;
