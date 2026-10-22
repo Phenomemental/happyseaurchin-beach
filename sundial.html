@@ -686,6 +686,7 @@
             <button type="button" class="sd-keep-key" id="steward-seal">Seal it</button>
             <button type="button" class="sd-quiet" id="steward-not">Not now</button>
           </div>
+          <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
         </div>
         <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Sealed. Anyone given the passphrase can speak here now.</p>
       </div>
@@ -757,7 +758,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M5.1 · 22 October 2026';
+  var VERSION = 'Sundial M5.2 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1222,6 +1223,7 @@
     phraseBox.value = '';
     keyBox.placeholder = has ? 'kept in this browser' : '';
     stewardWord = '';
+    continueSend = false;
     $('steward').hidden = true;
     $('drop-key').hidden = !has;
     $('forget').hidden = !stored(NAME);
@@ -1235,12 +1237,18 @@
   function closeCard() {
     if (card.open) card.close ? card.close() : card.removeAttribute('open');
   }
+  // Opened by Send with no key: once a key is kept, the words go on their
+  // way without a second tap.
+  var continueSend = false;
   card.addEventListener('close', function () {
+    var go = continueSend && !!stored(KEY) && !!box.value.trim();
+    continueSend = false;
     stewardWord = '';
     $('share-key').value = '';
     $('share-phrase').value = '';
     if (returnTo) returnTo.focus();
     returnTo = null;
+    if (go) form.requestSubmit ? form.requestSubmit(send) : send.click();
   });
   // A key pasted is kept as it is. A passphrase opens the roster's key
   // (4.3), kept in this browser the same way; one that opens nothing gets
@@ -1250,6 +1258,7 @@
     var k = keyBox.value.trim(), p = phraseBox.value;
     if (k) {
       store(KEY, k);
+      continueSend = returnTo === send;
       keyBox.value = '';
       phraseBox.value = '';
       return;
@@ -1268,6 +1277,7 @@
       phraseBox.value = '';
       if (r.key) {
         store(KEY, r.key);
+        continueSend = returnTo === send;
         closeCard();
       } else if (r.steward) {
         stewardWord = p;
@@ -1284,7 +1294,14 @@
 
   // The steward's line: a key to share and a passphrase to give out,
   // sealed to the roster here and written with the steward's word.
+  // The steward is told, in plain words, what a seal still needs and how it
+  // went; this card is the steward's alone.
+  function stewardSays(words) {
+    $('steward-note').textContent = words;
+    $('steward-note').hidden = !words;
+  }
   $('steward-open').addEventListener('click', function () {
+    stewardSays('');
     $('steward-open').hidden = true;
     $('steward-done').hidden = true;
     $('steward-ask').hidden = false;
@@ -1298,15 +1315,21 @@
   var sealing = false;
   $('steward-seal').addEventListener('click', function () {
     var share = $('share-key').value.trim(), phrase = $('share-phrase').value.trim();
-    if (!share) { $('share-key').focus(); return; }
-    if (phrase.length < 12) { $('share-phrase').focus(); return; }
+    if (!share) { stewardSays('Paste the key to share first.'); $('share-key').focus(); return; }
+    if (phrase.length < 12) { stewardSays('The passphrase needs twelve letters or more.'); $('share-phrase').focus(); return; }
     if (sealing || !stewardWord) return;
     sealing = true;
     $('steward-seal').disabled = true;
+    stewardSays('Sealing…');
     Roster.seal(stewardWord, share, phrase).then(function (result) {
       sealing = false;
       $('steward-seal').disabled = false;
-      if (result !== 'sealed') { $('steward-seal').focus(); return; }
+      if (result !== 'sealed') {
+        stewardSays(result === 'wrong' ? 'Not sealed: that word doesn’t open the roster.' : 'Not sealed: the beach didn’t take it. Try again in a moment.');
+        $('steward-seal').focus();
+        return;
+      }
+      stewardSays('');
       $('share-key').value = '';
       $('share-phrase').value = '';
       $('steward-ask').hidden = true;
