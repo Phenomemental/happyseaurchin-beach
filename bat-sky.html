@@ -729,7 +729,7 @@
 </div>
 
 <script src="beach.js?v=2026-10-21a"></script>
-<script src="bat-sky.js?v=2026-10-22b"></script>
+<script src="bat-sky.js?v=2026-10-22c"></script>
 <script>
 (function () {
   var BS = window.BatSky;
@@ -2332,7 +2332,7 @@
     // The clouds, over the bats: lit from beneath while the sun is up, then
     // as dark as the night.
     sk.clouds.forEach(function (cl) {
-      var cx = ((cl.x + cl.v * s + 600) % 2200 + 2200) % 2200 - 600;
+      var cx = ((cl.x + cl.v * s + 300) % 1600 + 1600) % 1600 - 300;
       if (p < 1) {
         ctx.fillStyle = mix(c.rim, c.rim, 0, (1 - p) * 0.6);
         cloudPath(cl, cx, cl.y, sc, 0.14);

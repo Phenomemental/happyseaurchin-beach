@@ -138,14 +138,16 @@
       pts.push(end);
       bats.push({ from: from, life: life, amp: amp, period: period, pts: pts, face: left ? 1 : -1 });
     }
-    // Clouds: a few soft heaps of puffs drifting with the day's wind.
-    var clouds = [], wind = r() < 0.5 ? -1 : 1, many = [2, 4, 6][k.cloud];
+    // Clouds: small heaps of puffs drifting with the day's wind, each at a
+    // height of its own, so no one cloud hides the middle of the sky. (Only
+    // drawing reads them, so changing them leaves every kept run as it was.)
+    var clouds = [], wind = r() < 0.5 ? -1 : 1, many = [3, 6, 9][k.cloud];
     for (var c = 0; c < many; c++) {
-      var size = (k.cloud === 2 ? 260 : 170) + whole(r() * 160), puffs = [];
-      for (var p = 0; p < 7; p++) {
-        puffs.push([whole((r() - 0.5) * size * 1.4), whole((r() - 0.5) * size * 0.35), whole(size * (0.28 + 0.22 * r()))]);
+      var size = [70, 90, 110][k.cloud] + whole(r() * [60, 70, 80][k.cloud]), puffs = [];
+      for (var p = 0; p < 5; p++) {
+        puffs.push([whole((r() - 0.5) * size * 1.2), whole((r() - 0.5) * size * 0.3), whole(size * (0.25 + 0.17 * r()))]);
       }
-      clouds.push({ x: -400 + whole(r() * 1800), y: 140 + whole(r() * 1050), v: wind * (0.25 + 0.5 * r()), size: size, puffs: puffs });
+      clouds.push({ x: -300 + whole(r() * 1600), y: 160 + whole((c + r()) * 1000 / many), v: wind * (0.25 + 0.5 * r()), size: size, puffs: puffs });
     }
     return { track: track, version: version, flight: k.flight, cloud: k.cloud, n: n, bats: bats, clouds: clouds };
   }
