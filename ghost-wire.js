@@ -94,10 +94,103 @@
     return out;
   }
 
+  // ---- Wires from 22 October 2026 (wire law 1.1) ----------------------------
+  // Each day draws one of three shapes, so no two days feel the same, and
+  // its START and FINISH move: a serpentine climbing the screen, a
+  // switchback running across it and back, or a wander that drifts. Days
+  // before this keep the wire they were played on, so every run on them
+  // still re-runs.
+  var V2_FROM = '2026414100';
+  function newer(track) {
+    return /^\d{10}$/.test(track) && track >= V2_FROM;
+  }
+  // kind: 0 serpentine, 1 switchback, 2 wander; the day's seed picks it,
+  // and a redraw keeps it.
+  function pointsV2(name, kind) {
+    var r = random(hash(name)), out = [], i, n;
+    function edge() { return 0.2 + 0.6 * r(); }
+    if (kind === 0) {
+      // Serpentine: five to seven points climbing, swinging side to side.
+      n = 5 + Math.floor(r() * 3);
+      var side = r() < 0.5 ? -1 : 1, swing = 0.16 + 0.14 * r();
+      for (i = 0; i < n; i++) {
+        var y = (HEIGHT - 0.1) - i * ((HEIGHT - 0.2) / (n - 1)), x = i === 0 || i === n - 1 ? edge() : 0;
+        if (i > 0 && i < n - 1) {
+          if (r() < 0.8) side = -side;
+          x = 0.5 + side * (0.12 + swing * r());
+          y += (r() - 0.5) * 0.06;
+        }
+        out.push([x, y]);
+      }
+    } else if (kind === 1) {
+      // Switchback: runs across the screen and back, climbing at each end.
+      var rows = 3 + Math.floor(r() * 2), left = r() < 0.5;
+      for (i = 0; i <= rows; i++) {
+        var yy = (HEIGHT - 0.1) - i * ((HEIGHT - 0.2) / rows) + (i > 0 && i < rows ? (r() - 0.5) * 0.08 : 0);
+        out.push([left ? 0.12 + 0.08 * r() : 0.8 + 0.08 * r(), yy]);
+        if (i < rows) out.push([0.5 + (r() - 0.5) * 0.2, yy - ((HEIGHT - 0.2) / rows) * (0.35 + 0.3 * r())]);
+        left = !left;
+      }
+    } else {
+      // Wander: six to eight points drifting upwards, free to wander sideways.
+      n = 6 + Math.floor(r() * 3);
+      var x0 = edge();
+      for (i = 0; i < n; i++) {
+        var yw = (HEIGHT - 0.1) - i * ((HEIGHT - 0.2) / (n - 1)) + (i > 0 && i < n - 1 ? (r() - 0.5) * 0.12 : 0);
+        x0 = i === 0 ? x0 : Math.min(0.88, Math.max(0.12, x0 + (r() - 0.5) * 0.7));
+        out.push([x0, yw]);
+      }
+    }
+    return out;
+  }
+  // A wire is fit to play when its bends are no tighter than a finger can
+  // follow, no part of it passes close to another (no shortcut, no
+  // touching walls), and it is neither too short nor too long.
+  function fit(w) {
+    if (w.length < 1.5 || w.length > 3.2) return false;
+    var step = 4, lim = 0.06, gap = LAW.half * 3.4;
+    for (var i = step; i < w.n - step; i += step) {
+      var ax = w.x[i] - w.x[i - step], ay = w.y[i] - w.y[i - step], bx = w.x[i + step] - w.x[i], by = w.y[i + step] - w.y[i];
+      var cx = w.x[i + step] - w.x[i - step], cy = w.y[i + step] - w.y[i - step];
+      var la = Math.sqrt(ax * ax + ay * ay), lb = Math.sqrt(bx * bx + by * by), lc = Math.sqrt(cx * cx + cy * cy);
+      var cross = Math.abs(ax * by - ay * bx);
+      if (cross > 0 && la * lb * lc / (2 * cross) < lim) return false;
+    }
+    var apart = Math.ceil(0.4 / DS);
+    for (i = 0; i < w.n; i += 8) {
+      for (var j = i + apart; j < w.n; j += 8) {
+        var dx = w.x[i] - w.x[j], dy = w.y[i] - w.y[j];
+        if (dx * dx + dy * dy < gap * gap) return false;
+      }
+    }
+    return true;
+  }
+
+  // What kind of wire a track draws, in words: 'a serpentine', 'a
+  // switchback' or 'a wander', and whether it runs downwards; '' before 22
+  // October 2026.
+  function shape(track) {
+    if (!newer(track)) return '';
+    return ['a serpentine', 'a switchback', 'a wander'][hash(track + ':shape') % 3] + (hash(track + ':way') % 2 === 1 ? ', running down' : '');
+  }
+
+  // The wire a track's name draws.
+  function wire(track) {
+    if (!newer(track)) return tables(track, points(track));
+    var kind = hash(track + ':shape') % 3, down = hash(track + ':way') % 2 === 1;
+    for (var again = 0; ; again++) {
+      var pts = pointsV2(again ? track + '#' + again : track, kind);
+      // On about half the days the wire runs from the top down.
+      if (down) pts = pts.map(function (q) { return [q[0], HEIGHT - q[1]]; });
+      var w = tables(track, pts);
+      if (fit(w) || again >= 40) return w;
+    }
+  }
+
   // The wire as tables at equal steps along it: where each step is (x, y)
   // and the normal pointing to its left (nx, ny), for drawing its walls.
-  function wire(track) {
-    var fine = curve(points(track));
+  function tables(track, pts) {
+    var fine = curve(pts);
     var acc = [0];
     for (var i = 1; i < fine.length; i++) {
       var dx = fine[i][0] - fine[i - 1][0], dy = fine[i][1] - fine[i - 1][1];
@@ -295,6 +388,7 @@
     LAW: LAW,
     validTrack: validTrack,
     wire: wire,
+    shape: shape,
     place: place,
     start: start,
     step: step,
