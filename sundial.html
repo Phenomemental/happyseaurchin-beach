@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Sundial</title>
 <meta name="description" content="Say where you are and what today has been like, and see your day back in your own words.">
-<meta name="theme-color" content="#eee7d5">
+<meta name="theme-color" content="#eee7d5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -23,6 +24,21 @@
     --purpose: #2E7D6B;
     --decision: #B8860B;
     --outcomes: #5B7F95;
+  }
+  /* The night look: when the phone is set dark (Matthew's choice), the
+     paper turns to night and the ink to light; the hues stay as they are. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #16130f;
+      --page: #1d1914;
+      --ink: #ede4d3;
+      --muted: #a79c8b;
+      --rule: #d0525a;
+      --frame: #4a4237;
+      --crimson: #ef5d85;
+      --wash: #b3a73c;
+    }
   }
   main.sd {
     min-height: 100vh;
@@ -54,6 +70,100 @@
   .sd-dial[role="button"] {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Hold: the colour drains into six tide-pools in a ring. */
+  .sd-dial .breathe {
+    transition: opacity 0.8s ease;
+  }
+  .sd-dial.pooled .breathe {
+    opacity: 0.14;
+  }
+  .sd-dial .sd-tidepool {
+    cursor: pointer;
+  }
+  .sd-dial .sd-tidepool:focus {
+    outline: none;
+  }
+  .sd-dial .sd-tidepool-grow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sd-pool 0.9s ease-out both;
+  }
+  @keyframes sd-pool {
+    from { opacity: 0; transform: scale(0.2); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .sd-dial .sd-tidepool:focus-visible .sd-tidepool-hit,
+  .sd-dial .sd-tidepool.picked .sd-tidepool-hit {
+    stroke: var(--crimson);
+    stroke-width: 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-dial .breathe { transition: none; }
+    .sd-dial .sd-tidepool-grow { animation: none; }
+  }
+  .sd-pools {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0.8rem auto 0;
+  }
+  .sd-pool-phrase {
+    font-style: italic;
+    font-size: 1.35rem;
+    margin: 0;
+  }
+  .sd-pool-question {
+    font-size: 1.2rem;
+    margin: 0.4rem 0 0;
+  }
+  .sd-beings {
+    list-style: none;
+    padding: 0;
+    margin: 0.6rem 0 0;
+  }
+  .sd-beings li {
+    margin: 0;
+    padding: 0;
+  }
+  .sd-beings li::before {
+    content: none;
+  }
+  .sd-beings button,
+  .sd-put-back {
+    font: inherit;
+    font-size: 1.2rem;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    min-height: 2.75rem;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.25em;
+  }
+  .sd-being {
+    margin: 0.8rem 0 0;
+  }
+  .sd-being-name {
+    font-size: 0.95rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 0;
+  }
+  .sd-being-piece {
+    font-size: 1.15rem;
+    line-height: 1.55;
+    margin: 0.5rem 0 0.6rem;
+  }
+  .sd-put-back {
+    font-style: italic;
+    display: block;
+    margin: 0 auto;
   }
   .sd-dial[role="button"]:focus-visible {
     outline: 2px solid var(--crimson);
@@ -501,6 +611,19 @@
     </div>
   </section>
 
+  <section class="sd-pools" id="pools" aria-label="Where your days have come to rest" hidden>
+    <div aria-live="polite">
+      <p class="sd-pool-phrase" id="pool-phrase" hidden></p>
+      <p class="sd-pool-question" id="pool-question" hidden></p>
+    </div>
+    <ul class="sd-beings" id="beings" hidden></ul>
+    <article class="sd-card-day sd-being" id="being" aria-live="polite" hidden>
+      <p class="sd-being-name" id="being-name"></p>
+      <p class="sd-being-piece" id="being-piece"></p>
+      <button type="button" class="sd-put-back" id="put-back">put it back</button>
+    </article>
+  </section>
+
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
     <div class="sd-tide-scroll" id="tide-scroll"><svg class="sd-tideline" id="tideline" role="group" aria-label="Your days, one shell each, the newest on the right"></svg></div>
     <article class="sd-card-day sd-tide-day" id="tide-day" aria-live="polite" hidden>
@@ -583,7 +706,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-22a"></script>
+<script src="mark.js?v=2026-10-22b"></script>
 <script src="days.js?v=2026-10-22a"></script>
 <script>
 /* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
@@ -596,7 +719,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M3 · 22 October 2026';
+  var VERSION = 'Sundial M4 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
@@ -754,7 +877,8 @@
   setDialTap();
   function tapDial() {
     if (busy || keeping) return;
-    if (tideOpen) closeTide();
+    if (poolsOpen) gatherBack();
+    else if (tideOpen) closeTide();
     else if (known()) openTide();
     else openFind();
   }
@@ -814,7 +938,9 @@
     $('tide-day').hidden = false;
   }
   document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape' && tideOpen && !document.querySelector('dialog[open]')) closeTide();
+    if (ev.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+    if (poolsOpen) gatherBack();
+    else if (tideOpen) closeTide();
   });
   function openFind() {
     if (stored(NAME)) return;
@@ -827,11 +953,163 @@
   function closeFind() {
     if (findCard.open) findCard.close ? findCard.close() : findCard.removeAttribute('open');
   }
-  dialEl.addEventListener('click', tapDial);
+  // A tap, or a hold of 700ms (a finger, a long press, or Enter held down).
+  var HOLD_MS = 700, holdTimer = null, holdBy = '', heldNow = false, keyDown = false;
+  function startHold(by) {
+    if (busy || keeping || tideOpen || poolsOpen) return;
+    clearTimeout(holdTimer);
+    holdBy = by;
+    holdTimer = setTimeout(function () {
+      holdTimer = null;
+      heldNow = true;
+      openPools();
+    }, HOLD_MS);
+  }
+  function stopHold() {
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+  // A long press can end with no click on some phones, so each touch starts
+  // with the last hold forgotten.
+  dialEl.addEventListener('pointerdown', function (ev) {
+    heldNow = false;
+    if (ev.button === 0) startHold('pointer');
+  });
+  // A pointer lifted or gone ends only a hold it began, not one held on a key.
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (t) {
+    dialEl.addEventListener(t, function () { if (holdBy === 'pointer') stopHold(); });
+  });
+  dialEl.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+  dialEl.addEventListener('click', function () {
+    if (heldNow) { heldNow = false; return; }
+    tapDial();
+  });
   dialEl.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Enter' && ev.key !== ' ') return;
     ev.preventDefault();
+    if (ev.repeat || keyDown) return;
+    keyDown = true;
+    startHold('key');
+  });
+  dialEl.addEventListener('keyup', function (ev) {
+    if ((ev.key !== 'Enter' && ev.key !== ' ') || !keyDown) return;
+    ev.preventDefault();
+    keyDown = false;
+    if (heldNow) { heldNow = false; return; }
+    stopHold();
     tapDial();
+  });
+
+  // ---- Hold: the pools (6.8) -------------------------------------------------------
+  // The colour drains into six tide-pools in a ring, sized by share. An empty
+  // pool says nothing has come to rest there, and asks its question; a
+  // filled one names its three Beings, read from the beach the first time
+  // (beings:night-watchman, never written); a Being, its short piece. Tap
+  // the sundial or Escape: all gathers back.
+  var poolsOpen = false, poolsHidden = null, beingsRead = null, beingsAt = null;
+  function openPools() {
+    poolsOpen = true;
+    poolNow = -1;
+    poolsHidden = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
+    ['pool-phrase', 'pool-question', 'beings', 'being'].forEach(function (id) { $(id).hidden = true; });
+    $('pools').hidden = false;
+    dial.pools(days, function (pool, n) {
+      return pool.phrase + ', ' + (n ? n + (n === 1 ? ' day' : ' days') : 'nothing yet');
+    }, pickPool);
+    // While the pools are out the sundial holds them (a group, not a
+    // button): each pool takes its own tap, and the first takes the focus.
+    dialEl.setAttribute('role', 'group');
+    ['tabindex', 'aria-expanded', 'aria-haspopup'].forEach(function (a) { dialEl.removeAttribute(a); });
+    var first = dialEl.querySelector('.sd-tidepool');
+    if (first) first.focus();
+    readBeings();
+  }
+  function gatherBack() {
+    poolsOpen = false;
+    dial.gather();
+    (poolsHidden || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
+    $('pools').hidden = true;
+    setDialTap();
+    dialEl.focus();
+  }
+  // The Beings, once: each pool's three, as {name, piece}. Their own
+  // opening ("The Abstract Being — the Ruler. …") gives the name; the piece
+  // is the reader-facing one beneath. A note of when a line was changed is
+  // for its keepers, never the page. Unreachable: none, and nothing said.
+  var CHANGED = /\s*\([^()]*\bchanged\b[^()]*\b\d{4}\b[^()]*\)\s*$/i;
+  function words(node) {
+    while (node && typeof node === 'object') node = node._;
+    return typeof node === 'string' ? node.trim().replace(CHANGED, '') : '';
+  }
+  function readBeings() {
+    if (beingsRead) return beingsRead;
+    beingsRead = Promise.all([Beach.look('beings:night-watchman', '&spindle=1'), Beach.look('beings:night-watchman', '&spindle=2')])
+      .then(function (both) {
+        if (both[0].status !== 200 || both[1].status !== 200) throw new Error('unreachable');
+        beingsAt = Mark.POOLS.map(function (p) {
+          var top = both[Number(p.at.charAt(0)) - 1].json, node = top && top[p.at.charAt(2)];
+          return ['1', '2', '3'].map(function (k) {
+            var b = node && node[k], m = /^(The .+? Being)\b/.exec(words(b));
+            var piece = b && typeof b === 'object' ? words(b['1']) : '';
+            return m && piece ? { name: m[1], piece: piece } : null;
+          }).filter(Boolean);
+        });
+        if (poolsOpen && poolNow >= 0) showBeings(poolNow);
+        return beingsAt;
+      }).catch(function () {
+        beingsRead = null;
+        return null;
+      });
+    return beingsRead;
+  }
+  var poolNow = -1;
+  function pickPool(i) {
+    poolNow = i;
+    dial.picked(i);
+    var pool = Mark.POOLS[i], n = Mark.counts(days)[i];
+    $('being').hidden = true;
+    $('pool-phrase').hidden = false;
+    if (!n) {
+      $('pool-phrase').textContent = 'Nothing has come to rest at ' + pool.phrase + '.';
+      $('pool-question').textContent = pool.question;
+      $('pool-question').hidden = false;
+      $('beings').hidden = true;
+      return;
+    }
+    $('pool-phrase').textContent = pool.phrase;
+    $('pool-question').hidden = true;
+    showBeings(i);
+    if (!beingsAt) readBeings();
+  }
+  function showBeings(i) {
+    var list = $('beings');
+    list.textContent = '';
+    var here = beingsAt && beingsAt[i];
+    list.hidden = !(here && here.length) || !Mark.counts(days)[i];
+    (here || []).forEach(function (b, k) {
+      var li = document.createElement('li'), btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = b.name;
+      btn.addEventListener('click', function () { pickBeing(i, k); });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  }
+  function pickBeing(i, k) {
+    var b = beingsAt[i][k];
+    $('being-name').textContent = b.name;
+    $('being-piece').textContent = b.piece;
+    $('beings').hidden = true;
+    $('being').hidden = false;
+    $('put-back').dataset.k = k;
+    $('put-back').focus();
+  }
+  $('put-back').addEventListener('click', function () {
+    $('being').hidden = true;
+    $('beings').hidden = false;
+    var again = $('beings').querySelectorAll('button')[Number($('put-back').dataset.k) || 0];
+    if (again) again.focus();
   });
   findCard.addEventListener('close', function () { if (!stored(NAME)) dialEl.focus(); });
   $('find-not').addEventListener('click', closeFind);
