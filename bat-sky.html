@@ -126,9 +126,35 @@
   .middle {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
   }
+  /* The way to the Arcade's other games: under the briefing before a run,
+     and on the end screen after one; never while a run is under way. */
+  .more-games {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 20px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: var(--panel);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .more-games:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  .say[hidden] + .more-games,
+  .say.buzz + .more-games { display: none; }
   .say {
     max-width: 22rem;
     margin: 0;
@@ -637,6 +663,7 @@
          and what you are trying to do (ways:games 1). Its words are kept at
          game:bat-sky too; the label says which sky this is. -->
     <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s sky…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><linearGradient id="how-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="how-top"/><stop offset="0.6" class="how-mid"/><stop offset="1" class="how-low"/></linearGradient><path id="how-bat-shape" d="M0 -3 L1.5 -5 L2 -2.5 L6 -5.5 L12 -4 L10.5 -0.5 L9 1.8 L7 0.4 L5 2.8 L2.8 1.2 L0 4 L-2.8 1.2 L-5 2.8 L-7 0.4 L-9 1.8 L-10.5 -0.5 L-12 -4 L-6 -5.5 L-2 -2.5 L-1.5 -5 Z"/></defs><path d="M10 0 H190 A10 10 0 0 1 200 10 V68 H0 V10 A10 10 0 0 1 10 0 Z" fill="url(#how-sky)"/><circle cx="160" cy="18" r="10" class="how-moon"/><circle cx="30" cy="14" r="0.9" class="how-star"/><circle cx="70" cy="9" r="0.7" class="how-star"/><circle cx="128" cy="30" r="0.8" class="how-star"/><circle cx="186" cy="44" r="0.7" class="how-star"/><path d="M0 66 H200 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 Z" class="how-sea"/><use href="#how-bat-shape" class="how-bat" transform="translate(150 46) scale(0.8)"/><g class="how-bat"><use href="#how-bat-shape"/><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" path="M-14 46 C 30 16, 62 50, 100 30"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="3.2s" repeatCount="indefinite"/></g><circle cx="100" cy="30" r="0" class="how-ring"><animate attributeName="r" values="0;0;18;18" keyTimes="0;0.5;0.68;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.5;0.52;0.72;1" dur="3.2s" repeatCount="indefinite"/></circle><text x="112" y="22" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.53;0.8;1" dur="3.2s" repeatCount="indefinite"/></text><text x="91" y="50" class="how-finger">👆<animateTransform attributeName="transform" type="translate" values="0 22;0 22;0 0;0 0;0 22" keyTimes="0;0.34;0.5;0.62;1" dur="3.2s" repeatCount="indefinite"/></text></svg><span class="step">Bats are out over the beach in the moonlight.</span><span class="step"><b>Tap a bat</b> to catch it.</span><span class="step">Catch as many as you can before the sun comes up.</span><span class="step">Dawn starts to come when you touch the screen.</span></p>
+    <a class="more-games" href="arcade.html">🕹 More games</a>
     <div class="end" id="end" hidden>
       <div aria-live="polite">
         <p class="big" id="end-count"></p>
@@ -663,7 +690,7 @@
         <button type="button" id="end-board">See the board</button>
         <button type="button" id="end-note-btn">Leave a note</button>
       </div>
-      <p class="make-line">Also in the Arcade: <a href="ghost-wire.html">Ghost Wire →</a></p>
+      <a class="more-games" href="arcade.html">🕹 More games</a>
       <p class="make-line"><a href="make.html">Liked it? Make the next game for the Arcade →</a></p>
     </div>
   </div>
@@ -742,7 +769,7 @@
     </form>
     <div class="notes-list" id="notes-list"></div>
     <h3>The Arcade</h3>
-    <p>Bat Sky is in the Arcade: quick, one-move skill games, with a new level every day for everyone. It was Soraya’s idea, for Halloween. Play <a href="ghost-wire.html">Ghost Wire</a>, the first game, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
+    <p>Bat Sky is in the Arcade: quick, one-move skill games, with a new level every day for everyone. It was Soraya’s idea, for Halloween. Play <a href="ghost-wire.html">Ghost Wire</a>, the first game, <a href="arcade.html">see all the games</a>, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
   </div>
 </div>
 
