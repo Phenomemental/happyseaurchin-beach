@@ -122,10 +122,11 @@
   /* The shell that listens (6.8): it rocks a little where it lies; held to
      the ear it lifts and tilts; the words it hears surface one by one. */
   .sd-listen {
+    position: relative;
     display: block;
-    width: 7.5rem;
-    height: 7.5rem;
-    margin: 0.6rem auto 0;
+    width: 10rem;
+    height: 10rem;
+    margin: 0.4rem auto 0.6rem;
     padding: 0.4rem;
     color: var(--ink);
     background: none;
@@ -153,8 +154,29 @@
     to { transform: rotate(4deg); }
   }
   @keyframes sd-ear {
-    from { transform: translateY(-0.4rem) rotate(-24deg) scale(1.12); }
-    to { transform: translateY(-0.6rem) rotate(-19deg) scale(1.15); }
+    from { transform: translateY(-0.6rem) rotate(-34deg) scale(1.22); }
+    to { transform: translateY(-0.9rem) rotate(-27deg) scale(1.28); }
+  }
+  /* While it listens and nothing has come yet, rings open out from it. */
+  .sd-listen::before,
+  .sd-listen::after {
+    content: '';
+    position: absolute;
+    inset: 16%;
+    border: 1.5px solid var(--frame);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sd-listen.waiting::before {
+    animation: sd-ripple 2.4s ease-out infinite;
+  }
+  .sd-listen.waiting::after {
+    animation: sd-ripple 2.4s ease-out 1.2s infinite;
+  }
+  @keyframes sd-ripple {
+    from { transform: scale(0.6); opacity: 0.7; }
+    to { transform: scale(1.8); opacity: 0; }
   }
   .sd-listen:focus-visible {
     outline: 2px solid var(--crimson);
@@ -164,6 +186,7 @@
     margin: 0.4rem 0 0;
   }
   .sd-heard-line {
+    position: relative;
     margin: 0 0 1rem;
     padding: 0 0 0 0.9rem;
     border-left: 2px solid var(--hue, var(--frame));
@@ -191,15 +214,6 @@
     line-height: 1.5;
     margin: 0.8rem 0 0.6rem;
   }
-  .sd-heard .surface {
-    opacity: 0;
-    animation: sd-surface 1.6s ease forwards;
-    animation-delay: calc(var(--k, 0) * 1.4s + 0.2s);
-  }
-  @keyframes sd-surface {
-    from { opacity: 0; transform: translateY(0.4rem); }
-    to { opacity: 1; transform: none; }
-  }
   .sd-put-back {
     display: block;
     margin: 0 auto;
@@ -224,9 +238,9 @@
     .sd-listen.lifted .sd-listen-shell {
       transform: rotate(-20deg) scale(1.1);
     }
-    .sd-heard .surface {
+    .sd-listen.waiting::before,
+    .sd-listen.waiting::after {
       animation: none;
-      opacity: 1;
     }
   }
   .sd-dial[role="button"]:focus-visible {
@@ -703,9 +717,9 @@
     <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
     <div class="sd-heard" id="heard" aria-live="polite" hidden>
       <div id="heard-lines"></div>
-      <p class="sd-hears surface" id="hears"></p>
-      <p class="sd-listen-question surface" id="listen-question"></p>
-      <button type="button" class="sd-put-back surface" id="put-back">put it back</button>
+      <p class="sd-hears" id="hears"></p>
+      <p class="sd-listen-question" id="listen-question"></p>
+      <button type="button" class="sd-put-back" id="put-back">put it back</button>
     </div>
   </section>
 
@@ -824,7 +838,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.1 · 22 October 2026';
+  var VERSION = 'Sundial M4.2 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1197,7 +1211,7 @@
     $('pool-question').hidden = true;
     $('listen').hidden = false;
     Shell.draw($('shell-art'), i, pool.hue);
-    readWays();
+    readingFor(i);
   }
 
   // A day's own words, as it was kept: its title, its lines and its
@@ -1299,7 +1313,7 @@
   // three ways of listening; the reading is kept here until a new day comes
   // to rest in that pool. Every passage it hears must be the person's own
   // words exactly, or it is dropped.
-  var HEARD = 'sundial.heard', listening = false, listenTurn = 0, quietTimer = null;
+  var HEARD = 'sundial.heard', listening = false, listenTurn = 0, quietTimer = null, pending = {};
   function inPool(i) {
     return days.filter(function (d) { return Mark.poolOf(d) === i + 1; }).slice(-12);
   }
@@ -1336,20 +1350,15 @@
       return r;
     });
   }
-  $('listen').addEventListener('click', function () {
-    if (listening) { putBack(); return; }
-    if (poolNow < 0) return;
-    var i = poolNow, list = inPool(i), key = listenKey(list), was = keptHere(HEARD)[i];
-    var ready = was && was.key === key ? was.reading : null;
-    if (!ready && !stored(KEY)) { openCard($('listen')); return; }
-    if (!ready && turnsToday() >= TURNS_A_DAY) return;
-    var turn = ++listenTurn;
-    listening = true;
-    $('listen').classList.add('lifted');
-    $('listen').setAttribute('aria-pressed', 'true');
-    clearTimeout(quietTimer);
-    Shell.listen();
-    var reading = ready ? Promise.resolve(ready) : readWays().then(function (ways) {
+  // A pool's reading: kept, already on its way, or begun now. It is begun
+  // as soon as a filled pool is tapped, so the shell is ready by the time
+  // it is lifted to the ear.
+  function readingFor(i) {
+    var list = inPool(i), key = listenKey(list), was = keptHere(HEARD)[i];
+    if (was && was.key === key) return { list: list, ready: was.reading };
+    if (pending[i] && pending[i].key === key) return { list: list, promise: pending[i].promise };
+    if (!stored(KEY) || turnsToday() >= TURNS_A_DAY) return { list: list };
+    var promise = readWays().then(function (ways) {
       var here = ways && ways[i];
       if (!here || !here.length) throw {};
       countTurn();
@@ -1360,42 +1369,90 @@
       store(HEARD, JSON.stringify(all));
       return r;
     });
-    // The shell reaches the ear before anything surfaces, even when the
-    // reading is already at hand.
-    Promise.all([reading, new Promise(function (ok) { setTimeout(ok, 1600); })]).then(function (both) {
-      if (turn === listenTurn && listening) surface(both[0], list, i);
+    pending[i] = { key: key, promise: promise };
+    promise.then(null, function () {
+      if (pending[i] && pending[i].promise === promise) delete pending[i];
+    });
+    return { list: list, promise: promise };
+  }
+  $('listen').addEventListener('click', function () {
+    if (listening) { putBack(); return; }
+    if (poolNow < 0) return;
+    var i = poolNow, got = readingFor(i);
+    if (!got.ready && !got.promise) {
+      if (!stored(KEY)) openCard($('listen'));
+      return;
+    }
+    var turn = ++listenTurn;
+    listening = true;
+    $('listen').classList.add('lifted');
+    $('listen').setAttribute('aria-pressed', 'true');
+    clearTimeout(quietTimer);
+    Shell.listen();
+    var reading = got.ready ? Promise.resolve(got.ready) : got.promise;
+    // A moment for the shell to reach the ear; then, if the reading has
+    // not come, rings open out from it until it does.
+    var waiting = setTimeout(function () { if (turn === listenTurn) $('listen').classList.add('waiting'); }, 700);
+    Promise.all([reading, new Promise(function (ok) { setTimeout(ok, 700); })]).then(function (both) {
+      clearTimeout(waiting);
+      $('listen').classList.remove('waiting');
+      if (turn === listenTurn && listening) surface(both[0], got.list, i);
     }).catch(function (e) {
+      clearTimeout(waiting);
+      $('listen').classList.remove('waiting');
       if (turn !== listenTurn) return;
       putBack();
       if (e && e.key) openCard($('listen'));
     });
   });
-  // The words surface one by one: each passage it heard with its day, then
-  // what it hears, then the question. The sea quietens after.
+  // The person's own words come out of the shell one after another, each
+  // rising from its mouth in a slow arc to its place, overlapping like
+  // backs breaking the water: faint and blurred beneath the words already
+  // there, clear only as they surface. Then what it hears, and the
+  // question, settle in beneath. The sea quietens as the last words land.
+  var STILL = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  var RISE = 2600, NEXT = 900;
   function surface(r, list, i) {
-    var box = $('heard-lines'), k = 0;
+    var box = $('heard-lines'), under = 9;
     box.textContent = '';
-    r.heard.forEach(function (h) {
+    var figs = r.heard.map(function (h) {
       var day = list.filter(function (d) { return flat(wordsOf(d)).indexOf(flat(h)) >= 0; })[0];
       var fig = document.createElement('figure'), cap = document.createElement('figcaption'), q = document.createElement('blockquote');
-      fig.className = 'sd-heard-line surface';
+      fig.className = 'sd-heard-line';
       fig.style.setProperty('--hue', Mark.POOLS[i].hue);
-      fig.style.setProperty('--k', k++);
+      fig.style.zIndex = String(under--);
       cap.textContent = day ? dateWords(Days.dateOf(day.address)) : '';
       q.textContent = h;
       fig.appendChild(cap);
       fig.appendChild(q);
       box.appendChild(fig);
+      return fig;
     });
     $('hears').textContent = r.hears;
     $('hears').hidden = !r.hears;
-    $('hears').style.setProperty('--k', k++);
     $('listen-question').textContent = r.question;
     $('listen-question').hidden = !r.question;
-    $('listen-question').style.setProperty('--k', k++);
-    $('put-back').style.setProperty('--k', k);
     $('heard').hidden = false;
-    quietTimer = setTimeout(function () { Shell.hush(3); }, (k * 1.4 + 2) * 1000);
+    var still = STILL.matches || !document.body.animate;
+    var from = $('shell-art').getBoundingClientRect();
+    figs.forEach(function (fig, k) {
+      if (still) return;
+      var to = fig.getBoundingClientRect();
+      var dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height * 0.45 - (to.top + to.height / 2);
+      var sway = (k % 2 ? 1 : -1) * (36 + 10 * k);
+      fig.animate([
+        { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(0.12)', opacity: 0, filter: 'blur(4px)' },
+        { transform: 'translate(' + (dx * 0.45 + sway) + 'px,' + (dy * 0.5 - 22) + 'px) scale(0.75)', opacity: 0.3, filter: 'blur(2.5px)', offset: 0.55 },
+        { transform: 'none', opacity: 1, filter: 'blur(0)' }
+      ], { duration: RISE, delay: k * NEXT, easing: 'cubic-bezier(.3,.6,.25,1)', fill: 'backwards' });
+    });
+    var settle = figs.length ? (figs.length - 1) * NEXT + RISE * 0.7 : 0;
+    ['hears', 'listen-question', 'put-back'].forEach(function (id, k) {
+      if (still) return;
+      $(id).animate([{ opacity: 0, transform: 'translateY(0.4rem)' }, { opacity: 1, transform: 'none' }],
+        { duration: 1400, delay: settle + k * 500, easing: 'ease-out', fill: 'backwards' });
+    });
+    quietTimer = setTimeout(function () { Shell.hush(2.5); }, settle + 1600);
   }
   function putBack(quick) {
     var was = listening;
@@ -1403,6 +1460,7 @@
     listening = false;
     clearTimeout(quietTimer);
     $('listen').classList.remove('lifted');
+    $('listen').classList.remove('waiting');
     $('listen').setAttribute('aria-pressed', 'false');
     $('heard').hidden = true;
     Shell.hush(quick ? 0.4 : 1.6);
