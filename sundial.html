@@ -157,6 +157,50 @@
     margin: 1rem auto 0;
   }
 
+  /* Tap: the tideline. The sundial eases to about 40% at the top; below,
+     the days lie along a faint tideline as shells. */
+  .sd-dial {
+    transition: width 0.6s ease;
+  }
+  main.sd.tide-open .sd-dial {
+    width: min(9.2rem, 35vw, 21svh);
+  }
+  main.sd.tide-open .sd-name {
+    display: none;
+  }
+  .sd-tide {
+    width: 100%;
+    max-width: 34rem;
+    margin: 0.6rem auto 0;
+  }
+  .sd-tide-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sd-tideline {
+    display: block;
+    margin: 0 auto;
+  }
+  .sd-tideline .sd-shell {
+    cursor: pointer;
+  }
+  .sd-tideline .sd-shell:focus {
+    outline: none;
+  }
+  .sd-tideline .sd-shell:focus-visible .sd-shell-hit,
+  .sd-tideline .sd-shell.picked .sd-shell-hit {
+    stroke: var(--crimson);
+    stroke-width: 1.5;
+  }
+  .sd-tide-day {
+    margin-top: 0.4rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-dial { transition: none; }
+  }
+
   /* Coming back, and kept. */
   .sd-greet {
     max-width: 26rem;
@@ -235,6 +279,9 @@
     font-weight: 500;
     line-height: 1.15;
     letter-spacing: 0.01em;
+    text-transform: none;
+    text-align: left;
+    color: var(--ink);
     margin: 0.3rem 0 0.8rem;
     text-wrap: balance;
   }
@@ -454,6 +501,17 @@
     </div>
   </section>
 
+  <section class="sd-tide" id="tide" aria-label="Your days" hidden>
+    <div class="sd-tide-scroll" id="tide-scroll"><svg class="sd-tideline" id="tideline" role="group" aria-label="Your days, one shell each, the newest on the right"></svg></div>
+    <article class="sd-card-day sd-tide-day" id="tide-day" aria-live="polite" hidden>
+      <p class="sd-first" id="tide-first"></p>
+      <h2 class="sd-title" id="tide-title"></h2>
+      <div class="sd-lines" id="tide-lines"></div>
+      <p class="sd-tomorrow" id="tide-tomorrow" hidden></p>
+      <p class="sd-pool" id="tide-pool" hidden></p>
+    </article>
+  </section>
+
   <div class="sd-foot">
     <form class="sd-speak" id="speak">
       <p class="sd-question" id="question">Where are you, and what’s today been like?</p>
@@ -538,7 +596,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M2 · 22 October 2026';
+  var VERSION = 'Sundial M3 · 22 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
@@ -675,23 +733,89 @@
     });
   })();
 
-  // ---- Tap: find your days ---------------------------------------------------------
-  // On a browser that doesn't know them yet, tapping the sundial asks for a
-  // name and shows the days kept under it, read with no word. (With a name
-  // kept here, tapping the sundial is for the tideline, M3.)
-  var dialEl = $('dial'), findCard = $('find-card'), fname = $('fname');
+  // ---- Tap -----------------------------------------------------------------------------
+  // Tapping the sundial opens the tideline of the days (6.7). On a browser
+  // that doesn't know them yet, it first asks for a name and shows the days
+  // kept under it, read with no word.
+  var dialEl = $('dial'), findCard = $('find-card'), fname = $('fname'), main = $('sd');
+  var tideOpen = false, hiddenBefore = null;
+  function known() { return !!(stored(NAME) || held(LOOKING)); }
   function setDialTap() {
-    if (!stored(NAME)) {
-      dialEl.setAttribute('role', 'button');
-      dialEl.setAttribute('tabindex', '0');
-      dialEl.setAttribute('aria-haspopup', 'dialog');
-    } else {
-      dialEl.setAttribute('role', 'img');
-      dialEl.removeAttribute('tabindex');
+    dialEl.setAttribute('role', 'button');
+    dialEl.setAttribute('tabindex', '0');
+    if (known()) {
       dialEl.removeAttribute('aria-haspopup');
+      dialEl.setAttribute('aria-expanded', tideOpen ? 'true' : 'false');
+    } else {
+      dialEl.setAttribute('aria-haspopup', 'dialog');
+      dialEl.removeAttribute('aria-expanded');
     }
   }
   setDialTap();
+  function tapDial() {
+    if (busy || keeping) return;
+    if (tideOpen) closeTide();
+    else if (known()) openTide();
+    else openFind();
+  }
+
+  // The tideline: the sundial eases to the top, everything else steps aside,
+  // and the days lie along the line, newest on the right. Tap the sundial
+  // again (or Escape) and all comes back as it was.
+  function openTide() {
+    tideOpen = true;
+    hiddenBefore = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    hiddenBefore.forEach(function (h) { $(h[0]).hidden = true; });
+    main.classList.add('tide-open');
+    $('tide').hidden = false;
+    $('tide-day').hidden = true;
+    var scroll = $('tide-scroll');
+    Mark.tideline($('tideline'), days, scroll.clientWidth, shellName, pickDay);
+    scroll.scrollLeft = scroll.scrollWidth;
+    setDialTap();
+  }
+  function closeTide() {
+    tideOpen = false;
+    (hiddenBefore || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
+    main.classList.remove('tide-open');
+    $('tide').hidden = true;
+    setDialTap();
+    dialEl.focus();
+  }
+  function shellName(d) {
+    var r = Mark.read(d.text);
+    var t = r.title.length > 60 ? r.title.slice(0, 57).replace(/\s+\S*$/, '') + '…' : r.title;
+    return dateWords(Days.dateOf(d.address)) + ': ' + t;
+  }
+  // A shell tapped: the day's sheet in full, beneath the line. A day written
+  // elsewhere as one long line shows it as its words, with no title.
+  function pickDay(i) {
+    var d = days[i], r = Mark.read(d.text);
+    Array.prototype.forEach.call($('tideline').querySelectorAll('.sd-shell'), function (g, k) {
+      g.classList.toggle('picked', k === i);
+    });
+    var long = !r.lines.length && r.title.length > 70;
+    $('tide-first').textContent = [dateWords(Days.dateOf(d.address)), r.place].filter(Boolean).join(' · ');
+    $('tide-title').textContent = long ? '' : r.title;
+    $('tide-title').hidden = long;
+    var lines = $('tide-lines');
+    lines.textContent = '';
+    (long ? [r.title] : r.lines).forEach(function (l) {
+      var p = document.createElement('p');
+      p.textContent = l;
+      lines.appendChild(p);
+    });
+    $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
+    $('tide-tomorrow').hidden = !r.tomorrow;
+    var pool = Mark.POOLS[r.pool - 1];
+    $('tide-pool').textContent = pool ? 'a day of ' + pool.phrase : '';
+    $('tide-pool').hidden = !pool;
+    if (pool) $('tide-pool').style.setProperty('--hue', pool.hue);
+    $('tide-day').hidden = false;
+  }
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && tideOpen && !document.querySelector('dialog[open]')) closeTide();
+  });
   function openFind() {
     if (stored(NAME)) return;
     fname.value = held(LOOKING);
@@ -703,11 +827,11 @@
   function closeFind() {
     if (findCard.open) findCard.close ? findCard.close() : findCard.removeAttribute('open');
   }
-  dialEl.addEventListener('click', openFind);
+  dialEl.addEventListener('click', tapDial);
   dialEl.addEventListener('keydown', function (ev) {
-    if (dialEl.getAttribute('role') !== 'button' || (ev.key !== 'Enter' && ev.key !== ' ')) return;
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
     ev.preventDefault();
-    openFind();
+    tapDial();
   });
   findCard.addEventListener('close', function () { if (!stored(NAME)) dialEl.focus(); });
   $('find-not').addEventListener('click', closeFind);
@@ -726,6 +850,7 @@
         return;
       }
       hold(LOOKING, who.name);
+      setDialTap();
       showDays(who.days);
       if (day.hidden) showGreeting();
       closeFind();

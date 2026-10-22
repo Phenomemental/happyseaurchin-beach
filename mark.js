@@ -271,6 +271,65 @@
     return { time: time, answering: answering, days: days };
   }
 
+  // ---- The tideline -------------------------------------------------------------
+  // tideline(svg, list, width, label, pick) lays the days along a faint
+  // tideline (6.7): one shell per day, oldest left and newest right, each in
+  // its pool's hue (a day with no colour line in the muted ink), set a little
+  // above or below the line and turned a little by its own address, so the
+  // same days always lie the same way. Each shell is a button named by
+  // label(day); pick(i) runs when one is tapped or chosen with Enter. The
+  // shells keep at least a finger's width apart, so a long tideline grows
+  // wider than the screen; the width drawn is returned.
+  var SHELL = 26, PAD = 22, TIDE_H = 120, TIDE_BASE = 62;
+  function scatter(address) {
+    var h = 2166136261;
+    String(address).split('').forEach(function (c) {
+      h ^= c.charCodeAt(0);
+      h = Math.imul(h, 16777619) >>> 0;
+    });
+    return { dy: (h % 29) - 14, turn: ((h >>> 8) % 51) - 25 };
+  }
+  function shellsAt(list, width) {
+    var n = list.length;
+    var step = n > 1 ? Math.max(SHELL, (width - 2 * PAD) / (n - 1)) : 0;
+    var w = n > 1 ? Math.max(width, 2 * PAD + step * (n - 1)) : width;
+    return { width: w, at: list.map(function (day, i) {
+      var s = scatter(day.address);
+      return { x: n > 1 ? PAD + step * i : w / 2, y: TIDE_BASE + s.dy, turn: s.turn };
+    }) };
+  }
+  function tideline(svg, list, width, label, pick) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var lay = shellsAt(list, width), w = lay.width;
+    svg.setAttribute('viewBox', '0 0 ' + w.toFixed(0) + ' ' + TIDE_H);
+    svg.setAttribute('width', w.toFixed(0));
+    svg.setAttribute('height', TIDE_H);
+    var waves = Math.max(2, Math.round(w / 140)), d = 'M 0 ' + TIDE_BASE;
+    for (var k = 0; k < waves; k++) {
+      var x0 = w * k / waves, x1 = w * (k + 1) / waves, third = (x1 - x0) / 3;
+      d += ' C ' + (x0 + third).toFixed(1) + ' ' + (TIDE_BASE - 6) + ' ' + (x0 + 2 * third).toFixed(1) + ' ' +
+        (TIDE_BASE + 6) + ' ' + x1.toFixed(1) + ' ' + TIDE_BASE;
+    }
+    node('path', { 'class': 'sd-tide-line', d: d, fill: 'none', stroke: 'var(--frame)', 'stroke-width': 1.5, 'stroke-linecap': 'round' }, svg);
+    list.forEach(function (day, i) {
+      var p = lay.at[i], pool = POOLS[poolOf(day) - 1];
+      var g = node('g', { 'class': 'sd-shell', role: 'button', tabindex: 0, 'aria-label': label(day),
+        transform: 'translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ') rotate(' + p.turn + ')' }, svg);
+      node('circle', { 'class': 'sd-shell-hit', r: 17, fill: 'transparent' }, g);
+      node('path', { 'class': 'sd-shell-body', d: 'M 0 10 L -11 -2 A 12 12 0 0 1 11 -2 Z', fill: pool ? pool.hue : 'var(--muted)' }, g);
+      ['M 0 10 L -5.5 -8', 'M 0 10 L 0 -10', 'M 0 10 L 5.5 -8'].forEach(function (r) {
+        node('path', { d: r, fill: 'none', stroke: 'var(--page)', 'stroke-width': 1, 'stroke-opacity': 0.75 }, g);
+      });
+      g.addEventListener('click', function () { pick(i); });
+      g.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault();
+        pick(i);
+      });
+    });
+    return w;
+  }
+
   // ---- The console check ------------------------------------------------------
   // Mark.test(days) with the trial fixture (fixtures/days-trial.json, nine
   // days whose pools are 1,1,3,2,1,3,5,6,1): the day text read and written,
@@ -333,6 +392,15 @@
       [1, 3, 9, 10, 81, 90].map(function (n) { var r = ring(n); return r.inner + '/' + r.outer; }).join() === '1/0,3/0,0/1,1/1,0/9,0/9');
     check('the colour inside the ink: none for an empty pool, 0.35 + 1.6 x share, at most 1',
       tint(0) === 0 && near(tint(1 / 9), 0.35 + 1.6 / 9) && tint(4 / 9) === 1);
+    var addressed = days.map(function (d, i) { return { address: '20264131' + (i + 1) + '00', text: d.text }; });
+    var lay = shellsAt(addressed, 350);
+    check('the tideline: oldest left, newest right, within the width',
+      lay.at.every(function (p, i) { return i === 0 || p.x > lay.at[i - 1].x; }) && lay.at[0].x === PAD && Math.abs(lay.at[8].x - (350 - PAD)) < 1e-9);
+    check('the tideline lies the same way every time, each shell near the line',
+      JSON.stringify(shellsAt(addressed, 350)) === JSON.stringify(lay) &&
+      lay.at.every(function (p) { return Math.abs(p.y - TIDE_BASE) <= 14 && Math.abs(p.turn) <= 25; }));
+    var many = shellsAt(new Array(40).fill(0).map(function (x, i) { return { address: String(2026000000 + i * 100), text: '' }; }), 350);
+    check('forty days: the shells keep a finger apart and the tideline grows wider', many.width > 350 && Math.abs(many.at[1].x - many.at[0].x - SHELL) < 1e-9);
     var ok = results.every(Boolean);
     log(ok ? 'Mark: all ' + results.length + ' checks pass.' : 'Mark: a check failed.');
     return ok;
@@ -351,6 +419,9 @@
     ring: ring,
     tint: tint,
     dial: dial,
+    scatter: scatter,
+    shellsAt: shellsAt,
+    tideline: tideline,
     test: test
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

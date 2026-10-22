@@ -48,6 +48,16 @@
     return c && /^\d{10}$/.test(c.address) ? c.address.slice(0, 8) + '00' : '';
   }
 
+  // The calendar date of a day's address (pscale://sundial 3.1): the year's
+  // four digits, then season 1-4 (three months each), month of the season
+  // 1-3, seven-day band of the month 1-5, day of the band 1-7. Noon, so no
+  // clock's offset moves it to another day.
+  function dateOf(address) {
+    var a = String(address);
+    return new Date(Number(a.slice(0, 4)), (Number(a[4]) - 1) * 3 + Number(a[5]) - 1,
+      (Number(a[6]) - 1) * 7 + Number(a[7]), 12);
+  }
+
   // Every day in a mirror, oldest first, as {address, text}: a line at the
   // day rung (depth 8 from the root), reached by digits only. The year's
   // digits may be nought ("_"); the season, month, band and day never are,
@@ -174,6 +184,7 @@
     FORGOTTEN: FORGOTTEN,
     handle: handle,
     today: today,
+    dateOf: dateOf,
     daysIn: daysIn,
     resolve: resolve,
     read: read,
