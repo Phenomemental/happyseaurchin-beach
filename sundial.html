@@ -23,7 +23,7 @@
     --fictions: #7A5C99;
     --purpose: #2E7D6B;
     --decision: #B8860B;
-    --outcomes: #5B7F95;
+    --outcomes: #6FA8DC;
   }
   /* The night look: when the phone is set dark (Matthew's choice), the
      paper turns to night and the ink to light; the hues stay as they are. */
@@ -396,6 +396,14 @@
   }
   main.sd.tide-open .sd-days {
     display: none;
+  }
+  /* The sundial's one quiet invitation (6.1), until it has been used. */
+  .sd-invite {
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    text-align: center;
+    margin: 0.5rem 0 0;
   }
   .sd-ask {
     font-style: italic;
@@ -792,6 +800,7 @@
   </svg>
   <p class="sd-name">SUNDIAL</p>
   <p class="sd-days" id="days-count" hidden></p>
+  <p class="sd-invite" id="invite" hidden></p>
 
   <p class="sd-ask" id="ask" aria-live="polite" hidden></p>
   <p class="sd-rest" id="rest" hidden>That’s enough for today. Come back tomorrow.</p>
@@ -823,7 +832,7 @@
       <p class="sd-pool-question" id="pool-question" hidden></p>
     </div>
     <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
-    <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>hold it to your ear</p>
+    <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>tap the shell, then hold it to your ear</p>
     <div class="sd-heard" id="heard" aria-live="polite" hidden>
       <div id="heard-lines"></div>
       <p class="sd-hears" id="hears"></p>
@@ -954,7 +963,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-23a"></script>
+<script src="mark.js?v=2026-10-23b"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -973,7 +982,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.1 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.2 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1155,6 +1164,7 @@
     $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
     $('days-count').hidden = !n;
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
+    showInvite();
   }
   // The last day before today with anything kept, as its day address.
   function lastDayBefore() {
@@ -1197,9 +1207,13 @@
   // they said before today.
   function showGreeting() {
     var mine = todaysMoments(), lead = '';
+    var todayLine = days.filter(function (d) { return d.address === todayAddress(); })[0];
     if (mine.length) {
       var m = mine[mine.length - 1];
       lead = 'Earlier today, ' + AT_PART[partAt(Days.timeOf(m.address))] + ': ' + Mark.read(m.text).title;
+    } else if (todayLine) {
+      // Today holds only its own line (kept before moments, or elsewhere).
+      lead = 'Earlier today: ' + Mark.read(todayLine.text).title;
     } else {
       var b = lastBefore();
       if (b) lead = whenWords(b.address) + ': ' + Mark.read(b.text).title;
@@ -1252,8 +1266,22 @@
     }
   }
   setDialTap();
+  // The sundial's one quiet invitation (6.1): until this browser has both
+  // tapped and held it. With days, both; with no name yet, the tap that
+  // finds them. Never while words are being spoken or a sheet is out.
+  var TAPPED = 'sundial.tapped', HELD = 'sundial.held';
+  function showInvite() {
+    var line = '';
+    if (!(stored(TAPPED) && stored(HELD)) && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length)) {
+      if (days.length || moments.length) line = 'tap the sundial for your days · hold it for where they rest';
+      else if (!known()) line = 'tap the sundial if you’ve been here before';
+    }
+    $('invite').textContent = line;
+    $('invite').hidden = !line;
+  }
   function tapDial() {
     if (busy || keeping) return;
+    store(TAPPED, '1');
     if (poolsOpen) gatherBack();
     else if (tideOpen) closeTide();
     else if (known()) openTide();
@@ -1265,7 +1293,7 @@
   // again (or Escape) and all comes back as it was.
   function openTide() {
     tideOpen = true;
-    hiddenBefore = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     hiddenBefore.forEach(function (h) { $(h[0]).hidden = true; });
     main.classList.add('tide-open');
     $('tide').hidden = false;
@@ -1278,6 +1306,7 @@
   function closeTide() {
     tideOpen = false;
     (hiddenBefore || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
+    showInvite();
     main.classList.remove('tide-open');
     $('tide').hidden = true;
     setDialTap();
@@ -1392,9 +1421,10 @@
     }, pickPool);
   }
   function openPools() {
+    store(HELD, '1');
     poolsOpen = true;
     poolNow = -1;
-    poolsHidden = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
     ['pool-phrase', 'pool-question', 'listen', 'listen-hint', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
@@ -1421,6 +1451,7 @@
     poolsOpen = false;
     dial.gather();
     (poolsHidden || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
+    showInvite();
     $('pools').hidden = true;
     setDialTap();
     dialEl.focus();
@@ -2255,6 +2286,7 @@
     if (turnsToday() >= TURNS_A_DAY) { restUntilTomorrow(); return; }
     var now = new Date(), before = messages.length;
     greet.hidden = true;
+    $('invite').hidden = true;
     kept.hidden = true;
     messages.push({ role: 'user', content: before ? 'What they said:\n' + words : opening(words, now) });
     // Two questions a visit at most; past that, the sheet.
@@ -2313,6 +2345,7 @@
     form.hidden = false;
     $('question').hidden = false;
     showGreeting();
+    showInvite();
   }
   $('let-go').addEventListener('click', function () {
     backToStart();
@@ -2428,10 +2461,12 @@
         box.value = '';
         form.hidden = false;
         $('question').hidden = false;
+        showInvite();
         kept.focus();
       });
     });
   }
+  showInvite();
 })();
 </script>
 </body>

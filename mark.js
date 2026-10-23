@@ -19,7 +19,7 @@
       question: 'What mattered, underneath?' },
     { n: 5, name: 'Decision', hue: '#B8860B', phrase: 'a choice', at: '2.2',
       question: 'What did you choose, or let be chosen?' },
-    { n: 6, name: 'Outcomes', hue: '#5B7F95', phrase: 'what’s ahead', at: '2.3',
+    { n: 6, name: 'Outcomes', hue: '#6FA8DC', phrase: 'what’s ahead', at: '2.3',
       question: 'What are you expecting, or fearing?' }
   ];
 
@@ -427,7 +427,7 @@
       poolOf('Home — Rain\nA day of rain, mostly.') === 0);
     check('the table names six pools in order, with the plan’s hues',
       POOLS.map(function (p) { return p.n + p.hue; }).join() ===
-        '1#4A6B8A,2#B0413E,3#7A5C99,4#2E7D6B,5#B8860B,6#5B7F95');
+        '1#4A6B8A,2#B0413E,3#7A5C99,4#2E7D6B,5#B8860B,6#6FA8DC');
     check('no days: no shares, evenness 0', all(shares([]), [0, 0, 0, 0, 0, 0]) && evenness(shares([])) === 0);
     check('1 day: all in what happened, evenness 0',
       all(shares(days.slice(0, 1)), [1, 0, 0, 0, 0, 0]) && near(evenness(shares(days.slice(0, 1))), 0));
