@@ -464,6 +464,35 @@
   .sd-send-row {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  /* The turn back (8.721): their words given back, then the question. */
+  .sd-reflect {
+    font-size: 1.2rem;
+    line-height: 1.45;
+    max-width: 26rem;
+    margin: 1rem auto 0;
+    text-wrap: pretty;
+  }
+  .sd-reflect + .sd-ask {
+    margin-top: 0.6rem;
+  }
+  /* The day's Keep, in reach beside the turn. */
+  form.sd-speak button.sd-keep-now {
+    margin-right: auto;
+    font: inherit;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    color: var(--crimson);
+    background: none;
+    border: 0;
+    padding: 0.45rem 0.2rem;
+    min-height: 2.75rem;
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 0.25em;
+    cursor: pointer;
   }
   form.sd-speak button.sd-send {
     color: var(--ink);
@@ -1237,6 +1266,7 @@
   <p class="sd-days" id="days-count" hidden></p>
   <p class="sd-invite" id="invite" hidden></p>
 
+  <p class="sd-reflect" id="reflect" hidden></p>
   <p class="sd-ask" id="ask" aria-live="polite" hidden></p>
   <p class="sd-rest" id="rest" hidden>That’s enough for today. Come back tomorrow.</p>
   <div class="sd-greet" id="greet" hidden>
@@ -1314,7 +1344,7 @@
     <form class="sd-speak" id="speak">
       <p class="sd-question" id="question">What’s with you today?</p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
-      <div class="sd-send-row"><button type="submit" class="sd-send" id="send">Send</button></div>
+      <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
     <button type="button" class="sd-corner" id="corner" aria-label="More" aria-haspopup="dialog" hidden>·</button>
   </div>
@@ -1481,7 +1511,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.12 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.13 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1491,7 +1521,7 @@
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
-  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day.\n\nYou receive: the date, the time and the part of the day; what they said (a transcript); their last words before today, with its tomorrow line; today's line and today's earlier moments, if any; tomorrow's line, if any. You return ONLY JSON: `{\"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"places\": [1-6, ...]}, \"day\": {\"title\": \"...\", \"lines\": [\"...\"], \"places\": [1-6, ...]}, \"ahead\": \"<tomorrow's line, or empty>\"}`.\n\nFlow. If what they said is thin (under ~40 words) and you have asked fewer than two questions this visit, return `ask` only: one short question that follows them, staying with what they are already telling and inviting more of it, in their own words (as in \"Is there more to that?\"). Never take them deeper inward, never toward something they have not raised, and never choose for them where to go next. Otherwise return the sheet, the day and ahead. Sheet, this moment: title short, from their own words; lines two to four, second person, drawing together what they said, nothing they did not say; if an earlier moment from this same beat is given, fold it in. Tomorrow: their intention if they voiced one, else empty. Places: every place their own words touched, one or more, never ranked — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes); a place counts only where their words are plainly in it. Day, the whole day so far: fold today's line, today's earlier moments and this moment into one, keeping what was there and nothing they did not say; title short; lines two to five; places: every place the day's text touches. Ahead: tomorrow's line with any intention they voiced folded in, keeping what was there; empty if neither.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
+  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day. You host: you hold, notice, follow and reflect, adding nothing and taking nothing away, and you never interpret.\n\nYou receive: the date, the time and the part of the day; whether this is the first telling of the day or a moment added to a day already kept; what they said (a transcript); their last words before today, with its tomorrow line; today's line and today's earlier moments, if any; tomorrow's line, if any; and how many turns back are left for this telling. You return ONLY JSON: `{\"reflect\": \"<a short reflection, or empty>\", \"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"places\": [1-6, ...]}, \"day\": {\"title\": \"...\", \"lines\": [\"...\"], \"places\": [1-6, ...]}, \"ahead\": \"<tomorrow's line, or empty>\"}`.\n\nEvery telling gets a turn back, the first of the day and every moment added later. `reflect`: a short reflection, one or two sentences, giving back what they said in their own words, adding nothing. Then `ask`: one question. The question follows their thread and asks it from a neighbouring place, as a host does: talking about what they made of it, a question about the facts of that same thing; focused on what's ahead, a question about what matters in it. It stays with what they are telling, about that same thing; it never walks them elsewhere, never deeper inward, never toward something they have not raised, and never repeats a question already asked here. It carries some practical challenge: something they can answer from the day itself. Acuity points at the day, never at them: never ask how they are, what they are like, or why. How much: the first reply to every telling always gives a turn back. A moment added to a day already kept has that one. The first telling of a day may have up to three in all before the sheet is drawn, each further one only while it is needed: ask less as the telling already makes these distinctions itself, as it does more often as days are kept; judge that from what they say, never from a count. When the telling is held, or no turns back are left, return `ask` empty. They can answer, or keep the day at any point: so every reply, whether or not it asks, also returns the sheet, the day and ahead as they stand from everything said so far.\n\nSheet, this moment: title short, from their own words; lines two to four, second person, drawing together what they said, nothing they did not say; if an earlier moment from this same beat is given, fold it in. Tomorrow: their intention if they voiced one, else empty. Places: every place their own words touched, one or more, never ranked — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes); a place counts only where their words are plainly in it. Day, the whole day so far: fold today's line, today's earlier moments and this moment into one, keeping what was there and nothing they did not say; title short; lines two to five; places: every place the day's text touches. Ahead: tomorrow's line with any intention they voiced folded in, keeping what was there; empty if neither.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment, with `reflect` empty; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
 
   // The reply's shape, held to by the API (structured output).
   var POOL_ENUM = { type: 'integer', enum: [1, 2, 3, 4, 5, 6] };
@@ -1499,8 +1529,9 @@
   var SCHEMA = {
     type: 'object',
     additionalProperties: false,
-    required: ['ask', 'sheet', 'day', 'ahead'],
+    required: ['reflect', 'ask', 'sheet', 'day', 'ahead'],
     properties: {
+      reflect: { type: 'string' },
       ask: { type: 'string' },
       sheet: {
         anyOf: [
@@ -3034,7 +3065,11 @@
   }, true);
 
   // ---- One visit's conversation -----------------------------------------------------
-  var messages = [], asks = 0, busy = false, plain = false, sheetNow = null, dayNow = null, aheadNow = '';
+  var messages = [], turnsLeft = 0, drawn = null, keepAfter = false, busy = false, plain = false, sheetNow = null, dayNow = null, aheadNow = '';
+  // How many turns back a telling may have (8.721): up to three on the
+  // first telling of a day, before the sheet is drawn; one on a moment
+  // added to a day already kept. Claude may ask fewer.
+  function firstOfDay() { return !todaysMoments().length; }
 
   function flatText(text) {
     var r = Mark.read(text);
@@ -3048,6 +3083,7 @@
     return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
       '\nTime: ' + timeWords(now) +
       '\nPart of the day: ' + partAt(now) +
+      '\nThis telling: ' + (firstOfDay() ? 'the first of the day' : 'a moment added to a day already kept') +
       (before ? '\nTheir last words before today (' + whenWords(before.address) + '): ' + flatText(before.text) : '') +
       (said ? '\nTheir tomorrow line then: ' + said : '') +
       (todayLine ? '\nToday’s line: ' + flatText(todayLine) : '') +
@@ -3098,21 +3134,26 @@
     try { return JSON.parse(text.slice(from, to + 1)); } catch (e) { return null; }
   }
 
-  // The reply as {sheet} or {ask}; null when it holds neither.
+  // The reply as {reflect, ask, sheet, day, ahead}: the turn back (8.721)
+  // and the sheet as it stands, so the day can be kept at any point; null
+  // when it holds neither a question nor a sheet.
   function readReply(data) {
     if (data.stop_reason === 'refusal') return { refused: true };
     var j = jsonOf(data), s = j && j.sheet;
+    if (!j) return null;
     function lines(x) { return (Array.isArray(x) ? x : []).filter(function (l) { return typeof l === 'string' && l.trim(); }); }
     function places(x) { return Mark.inOrder(x); }
+    function str(x) { return typeof x === 'string' ? x.trim() : ''; }
+    var out = { reflect: str(j.reflect), ask: str(j.ask) };
     if (s && typeof s.title === 'string' && s.title.trim() && Array.isArray(s.lines)) {
-      var sheet = { title: s.title.trim(), lines: lines(s.lines), tomorrow: typeof s.tomorrow === 'string' ? s.tomorrow.trim() : '', places: places(s.places) };
-      var d = j.day, dayNow = d && typeof d.title === 'string' && d.title.trim() && Array.isArray(d.lines)
+      out.sheet = { title: s.title.trim(), lines: lines(s.lines), tomorrow: str(s.tomorrow), places: places(s.places) };
+      var d = j.day;
+      out.day = d && typeof d.title === 'string' && d.title.trim() && Array.isArray(d.lines)
         ? { title: d.title.trim(), lines: lines(d.lines), tomorrow: '', places: places(d.places) }
-        : { title: sheet.title, lines: sheet.lines, tomorrow: '', places: sheet.places };
-      return { sheet: sheet, day: dayNow, ahead: typeof j.ahead === 'string' ? j.ahead.trim() : '' };
+        : { title: out.sheet.title, lines: out.sheet.lines, tomorrow: '', places: out.sheet.places };
+      out.ahead = str(j.ahead);
     }
-    if (j && typeof j.ask === 'string' && j.ask.trim()) return { ask: j.ask.trim() };
-    return null;
+    return out.sheet || out.ask ? out : null;
   }
 
   function setBusy(on) {
@@ -3122,12 +3163,20 @@
     box.readOnly = on;
     send.disabled = on;
   }
-  function showAsk(text) {
+  function showAsk(text, reflect) {
+    $('reflect').textContent = reflect || '';
+    $('reflect').hidden = !reflect;
     ask.textContent = text;
     ask.hidden = false;
     $('question').hidden = true;
+    $('keep-now').hidden = !drawn;
     box.value = '';
     box.focus();
+  }
+  function hideTurn() {
+    ask.hidden = true;
+    $('reflect').hidden = true;
+    $('keep-now').hidden = true;
   }
   function showSheet(sheet, when, own) {
     sheetNow = sheet;
@@ -3151,14 +3200,14 @@
     var touched = Mark.placesWords(sheet.places);
     $('day-pool').textContent = touched;
     $('day-pool').hidden = !touched;
-    ask.hidden = true;
+    hideTurn();
     greet.hidden = true;
     form.hidden = true;
     day.hidden = false;
     $('day-title').focus();
   }
   function restUntilTomorrow() {
-    ask.hidden = true;
+    hideTurn();
     form.hidden = true;
     rest.hidden = false;
   }
@@ -3196,9 +3245,10 @@
     $('invite').hidden = true;
     kept.hidden = true;
     $('bring-row').hidden = true;
-    messages.push({ role: 'user', content: before ? 'What they said:\n' + words : opening(words, now) });
-    // Two questions a visit at most; past that, the sheet.
-    if (asks >= 2) messages.push({ role: 'system', content: 'Two questions have been asked this visit. Return the sheet now, from what they have said.' });
+    if (!before) { turnsLeft = firstOfDay() ? 3 : 1; drawn = null; }
+    if (keepAfter) turnsLeft = 0;
+    messages.push({ role: 'user', content: (before ? 'What they said:\n' + words : opening(words, now)) +
+      '\n\nTurns back left for this telling: ' + turnsLeft + (turnsLeft ? '' : ' (return the sheet now, with ask empty)') + '.' });
     countTurn();
     setBusy(true);
     call().then(function (res) {
@@ -3209,7 +3259,7 @@
       if (!reply) throw {};
       if (reply.refused) {
         messages.length = before;
-        asks++;
+        keepAfter = false;
         showAsk(GENTLE);
         return;
       }
@@ -3219,34 +3269,67 @@
         return b.type === 'text' || b.type === 'thinking' || b.type === 'redacted_thinking';
       });
       messages.push({ role: 'assistant', content: blocks.some(function (b) { return b.type === 'text'; })
-        ? blocks : JSON.stringify(reply.sheet ? { ask: '', sheet: reply.sheet, day: reply.day, ahead: reply.ahead }
-          : { ask: reply.ask, sheet: null, day: null, ahead: '' }) });
-      if (reply.sheet) {
-        dayNow = reply.day;
-        aheadNow = reply.ahead;
-        showSheet(reply.sheet, now);
+        ? blocks : JSON.stringify({ reflect: reply.reflect, ask: reply.ask, sheet: reply.sheet || null, day: reply.day || null, ahead: reply.ahead || '' }) });
+      if (reply.sheet) drawn = { sheet: reply.sheet, day: reply.day, ahead: reply.ahead, when: now };
+      // The turn back: their words given back and one question, the day's
+      // Keep in reach beside it; or, the telling held, the sheet.
+      if (reply.ask && turnsLeft > 0 && !keepAfter) {
+        turnsLeft--;
+        showAsk(reply.ask, reply.reflect);
+        return;
       }
-      else { asks++; showAsk(reply.ask); }
+      if (!drawn) throw {};
+      drawSheet();
+      if (keepAfter) { keepAfter = false; keepDrawn(); }
     }).catch(function (e) {
       // Nothing is said: the turn is taken back and their words return.
       setBusy(false);
       messages.length = before;
+      keepAfter = false;
       box.value = words;
       if (e && e.key) openCard(send);
       else box.focus();
     });
   });
 
+  // The sheet as it stands, drawn from the latest turn.
+  function drawSheet() {
+    dayNow = drawn.day;
+    aheadNow = drawn.ahead;
+    showSheet(drawn.sheet, drawn.when);
+  }
+  // 'Keep this day' beside the turn (8.721): anything typed and not yet sent
+  // goes first, for the sheet to hold it; then the day as it stands is drawn
+  // and kept, as the sheet's own Keep does.
+  function keepDrawn() {
+    var name = stored(NAME), word = held(WORD);
+    if (name && word) keepWith(name, word);
+    else openKeep();
+  }
+  $('keep-now').addEventListener('click', function () {
+    if (busy || !drawn) return;
+    if (box.value.trim()) {
+      keepAfter = true;
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event('submit', { cancelable: true }));
+      return;
+    }
+    drawSheet();
+    keepDrawn();
+  });
+
   // Let it go: back to the start, with no trace.
   function backToStart() {
     messages = [];
-    asks = 0;
+    turnsLeft = 0;
+    drawn = null;
+    keepAfter = false;
     sheetNow = null;
     ownNow = false;
     dayNow = null;
     aheadNow = '';
     box.value = '';
-    ask.hidden = true;
+    hideTurn();
     ask.textContent = '';
     day.hidden = true;
     $('day-title').textContent = '';
@@ -3389,7 +3472,8 @@
         dayNow = null;
         aheadNow = '';
         messages = [];
-        asks = 0;
+        turnsLeft = 0;
+        drawn = null;
         // The first keep only: the arrival line in the community's room (4.7).
         if (first) arrive(who.name);
         window.SUNDIAL_FROM = who.name;
