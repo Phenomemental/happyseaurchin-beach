@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sundial: Look back</title>
+<meta name="description" content="Every ninth day, the spiral turns.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sundial">
+<meta property="og:title" content="Sundial: Look back">
+<meta property="og:description" content="Every ninth day, the spiral turns.">
+<meta property="og:url" content="https://phenomemental.github.io/happyseaurchin-beach/film/back.html">
+<meta property="og:image" content="https://phenomemental.github.io/happyseaurchin-beach/film/back.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sundial: Look back, a still from the film">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sundial: Look back">
+<meta name="twitter:description" content="Every ninth day, the spiral turns.">
+<meta name="twitter:image" content="https://phenomemental.github.io/happyseaurchin-beach/film/back.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../films.css?v=2026-10-23b">
+<style>
+  /* The paper look, with just this film (6.1.2). */
+  :root {
+    --paper: #eee7d5; --page: #f6f1e6; --ink: #1d1a17; --muted: #5a5147;
+    --frame: #b9ad9a; --crimson: #c21d4e;
+  }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body { font-family: 'Cormorant Garamond', Georgia, serif; }
+  .fp { max-width: 480px; margin: 0 auto; padding: 22px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); box-sizing: border-box; }
+  .fp-name { font-size: 13px; letter-spacing: .5em; padding-left: .5em; color: var(--muted); text-align: center; margin: 0 0 16px; }
+  .fp-about { text-align: center; margin: 10px 0 0; }
+  .fp-about a { font-style: italic; font-size: 16px; color: var(--muted); text-decoration: underline; text-decoration-color: var(--frame); text-underline-offset: .2em; }
+</style>
+</head>
+<body>
+<main class="fp">
+  <p class="fp-name">SUNDIAL</p>
+  <div class="film" data-film="back"></div>
+  <p class="fp-about"><a href="../sundial.html#about">About Sundial</a></p>
+</main>
+<script>
+(function () {
+  // Home, and where the films are shared from; the name this browser holds,
+  // carried on a shared link as ?from=. A film opened with ?from=<name>
+  // remembers it in this browser until the first keep (4.7), unless this
+  // browser already holds a name. No other data rides on the link.
+  var here = location.href.replace(/[?#].*$/, '');
+  window.SUNDIAL_HOME = here.replace(/film\/[^\/]*$/, '') + 'sundial.html';
+  window.SUNDIAL_FILM_BASE = here.replace(/[^\/]*$/, '');
+  var name = '';
+  try { name = localStorage.getItem('sundial.name') || ''; } catch (e) {}
+  window.SUNDIAL_FROM = name;
+  var q = location.search.match(/[?&]from=([^&]*)/), from = '';
+  try { from = q ? decodeURIComponent(q[1]) : ''; } catch (e) {}
+  from = from.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  if (from && !name) { try { localStorage.setItem('sundial.from', from); } catch (e) {} }
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // The engine, then the film plays once on arrival (unless motion is reduced).
+  function start() {
+    var s = document.createElement('script');
+    s.src = '../films.js?v=2026-10-23a';
+    s.onload = function () {
+      var m = window.SundialFilms && window.SundialFilms.mounted[0];
+      if (m && !still) m.play();
+    };
+    document.body.appendChild(s);
+  }
+  // A road film takes its stop's name and state live from the road (3.6);
+  // if the beach can't be reached, the film's own words stand.
+  var done = false, late = setTimeout(go, 4000);
+  function go() { if (!done) { done = true; clearTimeout(late); start(); } }
+  fetch('https://beach.happyseaurchin.com/.well-known/pscale-beach?block=spine%3Afront-door&spindle=3.6', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      var stops = [];
+      for (var k = 1; j && k <= 9; k++) {
+        var n = j[String(k)], t = n;
+        while (t && typeof t === 'object') t = t._;
+        if (typeof t !== 'string') continue;
+        var cut = t.indexOf('. ');
+        stops.push({ name: cut > 0 ? t.slice(0, cut) : t, line: cut > 0 ? t.slice(cut + 2) : '',
+          state: n && typeof n['1'] === 'string' ? n['1'].trim().toLowerCase() : 'later' });
+      }
+      if (stops.length >= 7) window.SUNDIAL_ROAD = stops;
+      go();
+    }, go);
+})();
+</script>
+</body>
+</html>
