@@ -499,19 +499,31 @@
     text-align: left;
     margin: 1rem 6px 0;
   }
-  .sd-turn-lines p {
+  /* Lines left by others read as theirs (3.71): a small label above, each
+     a quoted line in the grey of secondary text, never the sheet's own
+     type, its date small after it. */
+  .sd-turn-others {
+    font-size: 0.95rem;
     font-style: italic;
-    margin: 0 0 0.7rem;
-    padding-left: 0.8rem;
-    border-left: 1px solid var(--frame);
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+  .sd-turn-lines p {
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--muted);
+    margin: 0 0 0.6rem;
   }
   .sd-turn-lines time {
-    display: block;
-    font-style: normal;
-    font-size: 0.85rem;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    margin-left: 0.35rem;
+    white-space: nowrap;
+  }
+  .sd-turn-public {
+    font-size: 0.95rem;
+    font-style: italic;
     color: var(--muted);
+    margin: -0.3rem 0 0.7rem;
   }
   .sd-turn-label {
     display: block;
@@ -1383,9 +1395,11 @@
       <button type="button" class="sd-letgo" id="turn-tell">Tell today from here</button>
     </div>
     <form class="sd-turn-stay" id="turn-stay-box" hidden>
+      <p class="sd-turn-others" id="turn-others" hidden>Left here by others.</p>
       <div class="sd-turn-lines" id="turn-lines"></div>
       <label for="turn-line" class="sd-turn-label">Leave a line for whoever lands here next.</label>
-      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off"></textarea>
+      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off" aria-describedby="turn-public"></textarea>
+      <p class="sd-turn-public" id="turn-public">Anyone may read what you leave here. No name is kept with it.</p>
       <p class="sd-soft" id="turn-note" aria-live="polite" hidden></p>
       <div class="sd-send-row"><button type="submit" id="turn-leave">Leave it</button></div>
     </form>
@@ -1605,7 +1619,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.14 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.15 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -3883,16 +3897,20 @@
     turnMine.forEach(function (m) {
       if (!all.some(function (e) { return e.where === m.where && e.text === m.text; })) all.push(m);
     });
-    all.filter(function (e) { return e.where === here.at && e.text && !TURN_HIDE.test(e.text); }).slice(-3).reverse().forEach(function (e) {
-      var row = document.createElement('p'), d = new Date(e.when);
+    var shown = all.filter(function (e) { return e.where === here.at && e.text && !TURN_HIDE.test(e.text); }).slice(-3).reverse();
+    shown.forEach(function (e) {
+      var row = document.createElement('p'), said = document.createElement('q'), d = new Date(e.when);
+      said.textContent = e.text.slice(0, 600);
+      row.appendChild(said);
       if (!isNaN(d)) {
         var t = document.createElement('time');
-        t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        t.dateTime = e.when;
+        t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
         row.appendChild(t);
       }
-      row.appendChild(document.createTextNode(e.text.slice(0, 600)));
       lines.appendChild(row);
     });
+    $('turn-others').hidden = !shown.length;
   }
   $('turn-stay').addEventListener('click', function () {
     if (!turnNow) return;
@@ -3906,6 +3924,7 @@
     $('turn-line').focus();
   });
   Beach.addMic($('turn-line'), { finals: true });
+  $('turn-line').insertAdjacentElement('afterend', $('turn-public'));
   $('turn-line').addEventListener('input', function () { $('turn-note').hidden = true; });
   $('turn-stay-box').addEventListener('submit', function (ev) {
     ev.preventDefault();
