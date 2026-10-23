@@ -523,8 +523,58 @@
         { duration: 1000, delay: at_, fill: 'forwards' }).then(function () { if (g.parentNode) g.parentNode.removeChild(g); });
       return at_ + 1000;
     }
+    // ---- The turn (3.7) ---------------------------------------------------------
+    // A flick sets the six pools turning round the heart, each in its own
+    // colour and all one size, so each place is one turn in six; where they
+    // rest, the pool at the top brightens. `k` is the pool to rest on (an
+    // index into POOLS), chosen fairly by the page; `dir` 1 turns clockwise,
+    // -1 the other way; `still`: nothing turns, that pool simply brightens.
+    // Resolves once it rests.
+    var turning = node('g', { 'class': 'sd-turning', 'pointer-events': 'none' }, svg), turnRun = 0;
+    function turn(k, dir, still) {
+      var run = ++turnRun;
+      while (turning.firstChild) turning.removeChild(turning.firstChild);
+      svg.classList.add('pooled');
+      var wheel = node('g', {}, turning), dots = POOLS.map(function (p) {
+        var a = at(-90 + P6.indexOf(p.n) * 60, POOL_RING);
+        return node('circle', { cx: a.x.toFixed(1), cy: a.y.toFixed(1), r: 22, fill: p.hue, 'fill-opacity': 0.55 }, wheel);
+      });
+      var end = -P6.indexOf(POOLS[k].n) * 60;
+      end = ((end % 360) + 360) % 360;
+      if (dir < 0) end -= 360;
+      end += (dir < 0 ? -1 : 1) * 360 * 3;
+      function rest(at_) {
+        wheel.setAttribute('transform', 'rotate(' + at_.toFixed(2) + ' ' + CX + ' ' + CY + ')');
+        dots.forEach(function (d, i) {
+          d.setAttribute('fill-opacity', i === k ? 0.95 : 0.16);
+          d.setAttribute('r', i === k ? 27 : 20);
+        });
+      }
+      if (still || !window.requestAnimationFrame) {
+        rest(0);
+        return Promise.resolve();
+      }
+      return new Promise(function (ok) {
+        var t0 = null, D = 2800;
+        function frame(now) {
+          if (run !== turnRun) return ok();
+          if (t0 === null) t0 = now;
+          var t = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - t, 3);
+          wheel.setAttribute('transform', 'rotate(' + (end * e).toFixed(2) + ' ' + CX + ' ' + CY + ')');
+          if (t < 1) return requestAnimationFrame(frame);
+          rest(end);
+          ok();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    function unturn() {
+      turnRun++;
+      while (turning.firstChild) turning.removeChild(turning.firstChild);
+      if (!pooled.firstChild) svg.classList.remove('pooled');
+    }
     return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
-      where: where, bloom: bloom, ring: ring };
+      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
