@@ -231,6 +231,9 @@
     line-height: 1.5;
     margin: 0.8rem 0 0.6rem;
   }
+  .sd-listen-question.sd-resting {
+    font-style: italic;
+  }
   .sd-put-back {
     display: block;
     margin: 0 auto;
@@ -310,6 +313,14 @@
     border-radius: 2px;
     padding: 0.35rem 1.1rem;
     cursor: pointer;
+  }
+  /* Never silent (6.8.3.1): when a whisper isn't kept, one plain line says why. */
+  .sd-whisper-note {
+    margin: 0.5rem 0 0;
+    font-style: italic;
+  }
+  .sd-whisper-note:empty {
+    margin: 0;
   }
   .sd-heard-line.sd-whispered {
     border-left-style: dashed;
@@ -1198,6 +1209,7 @@
         <form class="sd-whisper-form" id="whisper-form" hidden>
           <label for="whisper" class="sd-whisper-label">into the shell</label>
           <textarea id="whisper" rows="3"></textarea>
+          <p class="sd-whisper-note" id="whisper-note" role="status"></p>
           <div class="sd-whisper-row">
             <button type="submit" class="sd-whisper-send" id="whisper-send">Whisper it</button>
             <button type="button" class="sd-whisper-not" id="whisper-not">not now</button>
@@ -1366,7 +1378,7 @@
 <script src="days.js?v=2026-10-23d"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
-<script src="whispers.js?v=2026-10-23d"></script>
+<script src="whispers.js?v=2026-10-23e"></script>
 <script src="words.js?v=2026-10-23b"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-23b"></script>
@@ -1390,7 +1402,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.8 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.9 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1449,7 +1461,7 @@
   var GENTLE = 'Would you like to just sit with it a moment? If you need someone now: your local emergency number, or Samaritans on 116 123 in the UK and Ireland.';
 
   // Listening (plan 6.8.1), Claude's second law, verbatim.
-  var LISTEN_LAW = "You are listening, with one person, to days they wrote before. They are the authority on their days. You host: you hold, notice and return, adding nothing and taking nothing away.\n\nYou receive: their days that came to rest in one place, each with its date, and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question>\"}`.\n\nChoose the way of listening that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days, where that listening is most alive. Hears: one plain sentence that notices only what is on the surface of those passages, in their own words: what they wrote of, and when (as in \"That Friday you wrote of the beach, a mountain, and others wanting the top.\"). Never say how their words are built, what they set beside what, what they mean or what they show; add no word they did not use. Question: one short question that returns them to now, open to wherever they go (as in \"Where are you with this today?\"); never back into the older day's story, never naming anything they did not name. If little is heard, say so plainly and leave heard empty.\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote suggests they may be in danger, make the question say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
+  var LISTEN_LAW = "You are listening, with one person, to days they wrote before, and to what they whispered back since. They are the authority on their days. You host: you hold, notice, follow and return, adding nothing and taking nothing away.\n\nYou receive: today's date; their days that came to rest in one place, each with its date; what they whispered back before, if anything, each with its date and the question it answered; and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question, or empty>\"}`.\n\nChoose the way of listening that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days or their whispers, where that listening is most alive. Hears: one plain sentence that notices only what is on the surface of those passages, in their own words: what they wrote or whispered of, and when (as in \"That Friday you wrote of the beach, a mountain, and others wanting the top.\"). Never say how their words are built, what they set beside what, what they mean or what they show; add no word they did not use. Question: one short question that returns them to now, open to wherever they go (as in \"Where are you with this today?\"); never back into the older day's story, never naming anything they did not name. If little is heard, say so plainly and leave heard empty.\n\nWhat they whispered is where they have led; follow it. When there are whispers, let Hears begin from the newest one, in their own words and when (as in \"Today you whispered of a good place, a deep congruence, and feeling hopeful about the future.\"), and say in the same plain way what the days held only if room remains. Never ask again a question they have already answered, and never repeat the question that went with their newest whisper. If their newest whisper was made today, they are already here: leave the question empty. If it was made on an earlier day, let the question return them to now from where they last were, naming only their own words (as in \"Last time you whispered of feeling hopeful about the future. Where are you with that today?\").\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote or whispered suggests they may be in danger, always give a question, and make it say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
   var LISTEN_SCHEMA = {
     type: 'object',
     additionalProperties: false,
@@ -2141,7 +2153,9 @@
     return hears || question ? { heard: heard, hears: hears, question: question } : null;
   }
   function listenWith(list, ways, whispers) {
-    var text = 'Their days:\n\n' + list.map(function (d) {
+    var now = new Date();
+    var text = 'Today is ' + now.toLocaleDateString('en-GB', { weekday: 'long' }) + ' ' +
+      now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '.\n\nTheir days:\n\n' + list.map(function (d) {
       return dateWords(Days.dateOf(d.address)) + '\n' + wordsOf(d);
     }).join('\n\n') + (whispers && whispers.length ? '\n\nWhat they whispered back before, each with the question it answered:\n\n' +
       whispers.map(function (w) { return w.date + (w.asked ? ' — asked: ' + w.asked : '') + '\n' + w.said; }).join('\n\n') : '') +
@@ -2273,8 +2287,12 @@
     $('whisper-open').hidden = false;
     $('hears').textContent = r.hears;
     $('hears').hidden = !r.hears;
-    $('listen-question').textContent = r.question;
-    $('listen-question').hidden = !r.question;
+    // With no question, the shell rests (6.8.3.2 (3)): one quiet line in the
+    // question's place, and 'whisper back' stays as it is.
+    $('listen-question').textContent = r.question || 'The shell rests with that until tomorrow.';
+    $('listen-question').setAttribute('data-asked', r.question);
+    $('listen-question').classList.toggle('sd-resting', !r.question);
+    $('listen-question').hidden = !(r.question || r.hears);
     $('heard').hidden = false;
     var still = STILL.matches || !document.body.animate;
     var from = $('shell-art').getBoundingClientRect();
@@ -2320,11 +2338,20 @@
   // next time the shell is lifted, it comes back with their words and the
   // shell listens to it too. The word is asked once a visit, in its own
   // small card, the first time it is needed; the key is made from then.
-  var wordCard = $('word-card'), wordWaiter = null, wordAsked = false;
+  var wordCard = $('word-card'), wordWaiter = null, wordAsked = false, wordFor = 'day';
+  // A stash that stood before Sundial may have its own word (6.8.3.1): it is
+  // asked once, in the same card, and held for the visit apart from the
+  // day-book word, which still keeps days.
+  var STASH_WORD = 'sundial.stash', STASH_ASK = 'Your stash has its own word. What is it?', DAY_ASK = $('wword-label').textContent;
+  var WHISPER_NOT = {
+    stash: 'That word doesn\u2019t open your stash.',
+    wrong: 'That word doesn\u2019t open your stash.',
+    unreachable: 'The beach can\u2019t be reached just now. Your words are still here.'
+  };
   var stashSealed = -1, whispersAll = null, whisperRead = null, whispering = false;
   function whoseName() { return stored(NAME) || held(LOOKING); }
   function readWhispers() {
-    var name = whoseName(), word = held(WORD);
+    var name = whoseName(), word = held(STASH_WORD) || held(WORD);
     if (!name || !word) return Promise.resolve(null);
     if (!whisperRead) {
       whisperRead = Whispers.read(name, word).then(function (list) {
@@ -2341,10 +2368,12 @@
     var phrase = Mark.POOLS[i].phrase;
     return (whispersAll || []).filter(function (w) { return w.phrase === phrase; }).slice(-3);
   }
-  function askWord() {
-    if (held(WORD)) return Promise.resolve(held(WORD));
+  function askWord(kind) {
+    wordFor = kind === 'stash' ? 'stash' : 'day';
+    if (wordFor === 'day' && held(WORD)) return Promise.resolve(held(WORD));
     return new Promise(function (ok) {
       wordWaiter = ok;
+      $('wword-label').textContent = wordFor === 'stash' ? STASH_ASK : DAY_ASK;
       $('wword').value = '';
       if (wordCard.showModal) wordCard.showModal();
       else wordCard.setAttribute('open', '');
@@ -2361,13 +2390,20 @@
     ev.preventDefault();
     var word = $('wword').value;
     if (!word) { $('wword').focus(); return; }
+    if (wordFor === 'stash') {
+      closeWord(word);
+      return;
+    }
     hold(WORD, word);
     Whispers.warm(word);
     whisperRead = null;
     closeWord(word);
   });
   $('word-not').addEventListener('click', function () { closeWord(''); });
-  wordCard.addEventListener('close', function () { closeWord(held(WORD)); });
+  wordCard.addEventListener('close', function () {
+    closeWord(wordFor === 'stash' ? '' : held(WORD));
+    $('wword-label').textContent = DAY_ASK;
+  });
 
   Beach.addMic($('whisper'));
   $('whisper-open').addEventListener('click', function () {
@@ -2385,6 +2421,7 @@
     var said = $('whisper').value.trim(), i = poolNow, name = whoseName();
     if (!said || whispering || i < 0 || !name) return;
     whispering = true;
+    $('whisper-note').textContent = '';
     askWord().then(function (word) {
       if (!word) {
         whispering = false;
@@ -2392,10 +2429,25 @@
         return;
       }
       var entry = { phrase: Mark.POOLS[i].phrase, date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-        said: said, asked: $('listen-question').textContent };
+        said: said, asked: $('listen-question').getAttribute('data-asked') || '' };
       sink($('whisper'));
       $('whisper-form').hidden = true;
-      return Whispers.keep(name, word, entry).then(function (result) {
+      // Sealed with the stash's own word when one is held, else the
+      // day-book word; a standing stash that refuses the day-book word asks
+      // once for its own (6.8.3.1).
+      function seal(w, asked) {
+        return Whispers.keep(name, w, entry).then(function (result) {
+          if (result === 'stash' && !asked && !held(STASH_WORD)) {
+            return askWord('stash').then(function (own) {
+              if (!own) return 'stash';
+              hold(STASH_WORD, own);
+              return seal(own, true);
+            });
+          }
+          return result;
+        });
+      }
+      return seal(held(STASH_WORD) || word, false).then(function (result) {
         whispering = false;
         if (result === 'kept') {
           $('whisper').value = '';
@@ -2407,12 +2459,14 @@
           $('whisper-open').hidden = false;
           return;
         }
-        // Nothing kept: the words wait in the field, and nothing is said. A
-        // word the stash's lock refused is let go, to be asked again.
-        if (result === 'wrong') {
-          hold(WORD, '');
-          whisperRead = null;
-        }
+        // Never silent (6.8.3.1): the words wait in the field and one plain
+        // line says why. A day-book word that doesn't prove is let go, to be
+        // asked again; a stash's own word that fails is let go too; the
+        // day-book word is kept when only the stash refuses it.
+        if (result === 'wrong') hold(WORD, '');
+        if (result === 'stash') hold(STASH_WORD, '');
+        whisperRead = null;
+        $('whisper-note').textContent = WHISPER_NOT[result] || WHISPER_NOT.unreachable;
         $('whisper-form').hidden = false;
         $('whisper').focus();
       });

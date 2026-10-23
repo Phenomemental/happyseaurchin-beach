@@ -86,20 +86,27 @@
   // October 2026): letting go of its lock with no word is refused when it
   // is locked (403) and does nothing when it is open (200); then the lock
   // "rotated" to the same word answers 200 only for the word that holds
-  // it. An open day book proves nothing, and no stash is made. Resolves
-  // 'kept', 'wrong' (the word doesn't open the lock) or 'unreachable'.
+  // it. An open day book proves nothing, and no stash is made. A stash that
+  // already stands keeps its own lock, never changed (6.8.3.1 (3)): the
+  // whisper is sealed and appended with the word given, which may be the
+  // stash's own. Resolves 'kept'; 'wrong' (the word doesn't open the day
+  // book, so no stash is made); 'stash' (a standing stash refuses the
+  // word); or 'unreachable'.
   function keep(name, word, whisper) {
     var entry = { _: MARK + whisper.phrase + ' · ' + whisper.date, 1: whisper.said, 2: whisper.asked || '' };
-    function failed(r) { return r.status === 403 ? 'wrong' : 'unreachable'; }
+    var why = 'stash';
+    function failed(r) { return r.status === 403 ? why : 'unreachable'; }
     return Beach.look('stash:' + name).then(function (r) {
       if (!r.status) throw 'unreachable';
       if (r.status === 200) return null;
+      why = 'wrong';
       return Beach.write('now:' + name, { new_lock: '' }).then(function (w) {
         if (w.status === 200) throw 'wrong';
         if (w.status !== 403) throw 'unreachable';
         return Beach.write('now:' + name, { secret: word, new_lock: word });
       }).then(function (w) {
         if (w.status !== 200) throw failed(w);
+        why = 'stash';
         return Beach.write('stash:' + name, { content: { _: stashLine(name) }, new_lock: word });
       }).then(function (w) {
         if (w.status !== 200) throw failed(w);
