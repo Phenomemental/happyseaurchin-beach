@@ -268,6 +268,12 @@
   // result 0: the finals in order, revisions collapsed, and only the last
   // unfinished entry as the words still forming. The box is set to that,
   // in place of what the last result wrote, never added to.
+  //
+  // With {finals: true} (Sundial's fields, spine:front-door 6.8.3.4 (2)),
+  // only final words are written, and a phone's passing guesses, handed
+  // back as final as it goes, are folded into the phrase they revise: one
+  // whose last word was only half heard, or one re-heard with nearly the
+  // same words in the same places. The box then holds what was said once.
   var SVGNS = 'http://www.w3.org/2000/svg';
   function micIcon() {
     var svg = document.createElementNS(SVGNS, 'svg');
@@ -302,14 +308,27 @@
     for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
     return true;
   }
+  // A phone's passing guess and its revision (6.8.3.4 (2)): b begins with
+  // a, a's last word perhaps only half heard ('pers', then 'perspective'),
+  // or b says nearly the same words in the same places ('Open my
+  // perspective I'll …', then 'Offer my perspective I've …').
+  function rehears(a, b) {
+    var x = words(a), y = words(b);
+    if (!x.length) return true;
+    if (x.length > y.length) return false;
+    if (x.every(function (w, i) { return w === y[i] || (i === x.length - 1 && y[i].indexOf(w) === 0); })) return true;
+    if (x.length < 3) return false;
+    return x.filter(function (w, i) { return w === y[i]; }).length / x.length >= 0.7;
+  }
   // Going through the phrases in order, one that repeats the phrase before
-  // it, or begins with it, takes its place instead of being added.
-  function collapse(list) {
+  // it, or begins with it, takes its place instead of being added; with
+  // `loose`, so does one that re-hears it.
+  function collapse(list, loose) {
     var out = [];
     list.forEach(function (p) {
       p = String(p).trim();
       if (!words(p).length) return;
-      if (out.length && revises(out[out.length - 1], p)) out[out.length - 1] = p;
+      if (out.length && (loose ? rehears : revises)(out[out.length - 1], p)) out[out.length - 1] = p;
       else out.push(p);
     });
     return out;
@@ -327,7 +346,8 @@
   }
 
   var listening = null;     // the one microphone listening now, as its stop
-  function addMic(box) {
+  function addMic(box, opts) {
+    var finalsOnly = !!(opts && opts.finals);
     var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Rec || !box || box.dataset.mic) return;
     box.dataset.mic = '1';
@@ -421,6 +441,12 @@
           var res = ev.results[i];
           if (res.isFinal) finals.push(res[0].transcript);
           else forming = res[0].transcript;
+        }
+        if (finalsOnly) {
+          phrases = collapse(finals, true);
+          live = '';
+          show(compose(false));
+          return;
         }
         phrases = collapse(finals);
         live = forming.trim();

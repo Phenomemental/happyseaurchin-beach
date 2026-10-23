@@ -35,15 +35,19 @@
     });
   }
 
-  // Every sealed envelope in a block, wherever the supernesting has put it.
-  function sealedIn(block) {
+  // Every sealed envelope in a block, wherever the supernesting has put it,
+  // with its address (the digits down to it, '_' read as 0).
+  function sealedAt(block) {
     var out = [];
-    (function walk(node) {
+    (function walk(node, at) {
       if (!node || typeof node !== 'object') return;
-      if (node['9'] && typeof node['9'] === 'object' && node['9']._ === 'gray' && node['9']['1'] === 'self') { out.push(node); return; }
-      Object.keys(node).forEach(function (k) { if (k !== '9') walk(node[k]); });
-    })(block);
+      if (node['9'] && typeof node['9'] === 'object' && node['9']._ === 'gray' && node['9']['1'] === 'self') { out.push({ node: node, at: at }); return; }
+      Object.keys(node).forEach(function (k) { if (k !== '9') walk(node[k], at + (k === '_' ? '0' : k)); });
+    })(block, '');
     return out;
+  }
+  function sealedIn(block) {
+    return sealedAt(block).map(function (s) { return s.node; });
   }
 
   // How many sealed entries a person's stash holds, with no word: 0 when
@@ -86,13 +90,14 @@
   // October 2026): letting go of its lock with no word is refused when it
   // is locked (403) and does nothing when it is open (200); then the lock
   // "rotated" to the same word answers 200 only for the word that holds
-  // it. An open day book proves nothing, and no stash is made. A stash that
-  // already stands keeps its own lock, never changed (6.8.3.1 (3)): the
-  // whisper is sealed and appended with the word given, which may be the
-  // stash's own. Resolves 'kept'; 'wrong' (the word doesn't open the day
-  // book, so no stash is made); 'stash' (a standing stash refuses the
-  // word); or 'unreachable'.
-  function keep(name, word, whisper) {
+  // it. An open day book proves nothing, and no stash is made. A hand
+  // whose name has an older word from before Sundial (6.8.3.3 (2)) gives
+  // it once, as `older`, sent alongside to make the stash under their one
+  // word, and kept nowhere. Resolves 'kept'; 'wrong' (the word doesn't open
+  // the day book, so no stash is made); 'passport' (the stash can't be made
+  // without the name's older word); 'stash' (a standing stash refuses the
+  // word: it is kept under an older word, see bringUnder); or 'unreachable'.
+  function keep(name, word, whisper, older) {
     var entry = { _: MARK + whisper.phrase + ' · ' + whisper.date, 1: whisper.said, 2: whisper.asked || '' };
     var why = 'stash';
     function failed(r) { return r.status === 403 ? why : 'unreachable'; }
@@ -106,10 +111,13 @@
         return Beach.write('now:' + name, { secret: word, new_lock: word });
       }).then(function (w) {
         if (w.status !== 200) throw failed(w);
-        why = 'stash';
-        return Beach.write('stash:' + name, { content: { _: stashLine(name) }, new_lock: word });
+        why = 'passport';
+        var make = { content: { _: stashLine(name) }, new_lock: word };
+        if (older) make.secret = older;
+        return Beach.write('stash:' + name, make);
       }).then(function (w) {
         if (w.status !== 200) throw failed(w);
+        why = 'stash';
       });
     }).then(function () {
       return gray();
@@ -125,12 +133,59 @@
     });
   }
 
+  // One name, one word (6.8.3.3 (1)): a stash kept under an older word is
+  // brought under the person's one word, with the older word given once by
+  // its holder and kept nowhere. The older word first proves itself (its
+  // lock turned to itself changes nothing); then every whisper it opens is
+  // sealed again with the one word, in place, its arrival stamp kept, and
+  // read back; then the lock is turned to the one word. Each whisper is
+  // sealed again while the older word still holds the lock, so a visit cut
+  // short loses nothing: the older word still opens what remains. Envelopes
+  // the older word doesn't open are left as they are. Resolves 'done',
+  // 'wrong' (the older word doesn't open it) or 'unreachable'.
+  function bringUnder(name, older, word) {
+    var block = 'stash:' + name;
+    return Promise.all([Beach.look(block), gray()]).then(function (both) {
+      var r = both[0], Gray = both[1];
+      if (r.status !== 200 || !r.json) throw 'unreachable';
+      return Beach.write(block, { secret: older, new_lock: older }).then(function (w) {
+        if (w.status === 403) throw 'wrong';
+        if (w.status !== 200) throw 'unreachable';
+        return sealedAt(r.json).reduce(function (p, s) {
+          return p.then(function () {
+            return Gray.open(s.node, older);
+          }).then(function (text) {
+            var entry = null;
+            try { entry = text == null ? null : JSON.parse(text); } catch (x) { entry = null; }
+            if (!entry) return null;
+            return Gray.seal(entry, word).then(function (env) {
+              if (s.node['3'] !== undefined) env['3'] = s.node['3'];
+              return Beach.write(block, { spindle: s.at, content: env, secret: older }).then(function (w) {
+                if (w.status !== 200) throw 'unreachable';
+                return Beach.look(block, '&spindle=' + s.at);
+              }).then(function (b) {
+                if (b.status !== 200 || !b.json || b.json['1'] !== env['1']) throw 'unreachable';
+              });
+            });
+          });
+        }, Promise.resolve());
+      }).then(function () {
+        return Beach.write(block, { secret: older, new_lock: word });
+      }).then(function (w) {
+        if (w.status !== 200) throw w.status === 403 ? 'wrong' : 'unreachable';
+        return 'done';
+      });
+    }).catch(function (e) {
+      return typeof e === 'string' ? e : 'unreachable';
+    });
+  }
+
   // Begin making the key for a word, so it is ready when it is needed.
   function warm(word) {
     gray().then(function (Gray) { Gray.key(word, Gray.BEACH).catch(function () {}); });
   }
 
-  var api = { MARK: MARK, stashLine: stashLine, sealedIn: sealedIn, count: count, read: read, keep: keep, warm: warm };
+  var api = { MARK: MARK, stashLine: stashLine, sealedIn: sealedIn, sealedAt: sealedAt, count: count, read: read, keep: keep, bringUnder: bringUnder, warm: warm };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.Whispers = api;
 })(this);
