@@ -90,3 +90,4 @@ function open(envelope, word, handle) {
 }
 
 window.Gray = { BEACH: BEACH, NOTE: NOTE, key: key, isGray: isGray, seal: seal, open: open };
+window.dispatchEvent(new Event('gray-ready'));
