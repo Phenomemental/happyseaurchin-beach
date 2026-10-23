@@ -94,19 +94,24 @@
   // open the day book (or the day book proves nothing); 'passport' when the
   // mirror can't be made without the passport's key; 'refused' when the
   // mirror stands under another word; or 'unreachable'. `when` is the ISO
-  // time to write beside the words; `passportKey` is '' unless asked.
-  function leave(name, word, address, text, when, passportKey) {
+  // time to write beside the words; `passportKey` is '' unless asked. With
+  // `prove`, for a name given in this browser (6.1.3.2), the word is proved
+  // on the day book even when the mirror already stands.
+  function leave(name, word, address, text, when, passportKey, prove) {
     var block = PREFIX + name;
     function failed(w, why) { return w.status === 403 ? why : 'unreachable'; }
+    var stands = false;
     return Beach.look(block).then(function (r) {
-      if (r.status === 200) return null;
-      if (r.status !== 404) throw 'unreachable';
+      if (r.status !== 200 && r.status !== 404) throw 'unreachable';
+      stands = r.status === 200;
+      if (stands && !prove) return null;
       return Beach.write('now:' + name, { new_lock: '' }).then(function (w) {
         if (w.status === 200 || w.status === 404) throw 'wrong';
         if (w.status !== 403) throw 'unreachable';
         return Beach.write('now:' + name, { secret: word, new_lock: word });
       }).then(function (w) {
         if (w.status !== 200) throw failed(w, 'wrong');
+        if (stands) return { status: 200 };
         var make = { content: { _: mirrorLine(name) }, new_lock: word };
         if (passportKey) make.secret = passportKey;
         return Beach.write(block, make);

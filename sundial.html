@@ -1575,9 +1575,10 @@
     aheadText = ((all.days || []).filter(function (d) { return d.address === tomorrow; })[0] || {}).text || '';
     days = withPlaces((all.days || []).filter(function (d) { return d.address <= t; }));
     // A day whose own line is theirs, not Sundial's, is drawn from its
-    // moments (6.4.1 (3)): every place its moments touched.
+    // moments (6.4.1 (3)): every place its moments touched. A day Sundial
+    // kept in their own words is placed by the third law instead (6.8.2.1).
     days.forEach(function (d) {
-      if (Mark.placesOf(d).length) return;
+      if (Mark.placesOf(d).length || Mark.read(d.text).own) return;
       var ps = [];
       moments.forEach(function (m) { if (dayOfAddress(m.address) === d.address) ps = ps.concat(Mark.read(m.text).places); });
       if (ps.length) {
@@ -3415,7 +3416,7 @@
     function go(name, word, typedHere) {
       var key = passport.wrap.hidden ? '' : passport.input.value, when = new Date().toISOString();
       send.disabled = true;
-      return Words.leave(name, word, address, field.value.trim(), when, key).then(function (result) {
+      return Words.leave(name, word, address, field.value.trim(), when, key, typedHere).then(function (result) {
         place.busy = false;
         send.disabled = false;
         passport.input.value = '';
