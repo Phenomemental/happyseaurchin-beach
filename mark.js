@@ -150,14 +150,54 @@
     return Math.min(1, Math.max(0, 1 - v / MOST));
   }
 
-  // Where the shadow falls by the phone's clock: between 06:00 and 19:30
-  // an angle in degrees from the centre, -90 + (hour - 12) x 15, so morning
-  // falls left, noon up and evening right; outside those hours null, and
-  // the dial glows instead.
+  // ---- The day's light (6.9, after 8.77: a sundial, not a clock) ------------
+  // As on a horizontal sundial with north at the top: the shadow's direction
+  // for the hour h by the phone's clock is -90 + (h - 12) x 15 degrees from
+  // the centre, so at noon it points up, in the morning left (west), in the
+  // evening right (east); the sun is opposite. Daylight runs 06:00 to 19:30
+  // (not true sunrise); outside it, null, and the dial glows instead.
+  function hourOf(date) { return date.getHours() + date.getMinutes() / 60; }
   function shadowAngle(date) {
-    var h = date.getHours() + date.getMinutes() / 60;
+    var h = hourOf(date);
     if (h < 6 || h > 19.5) return null;
     return -90 + (h - 12) * 15;
+  }
+  // The sun's height: 0 at the ends of daylight, 1 at 12:45; null at night.
+  function sunHeight(date) {
+    var h = hourOf(date);
+    if (h < 6 || h > 19.5) return null;
+    return Math.sin(Math.PI * (h - 6) / 13.5);
+  }
+  // The shadow the heart casts: thrown along the shadow's direction by
+  // 14 + 70 x (1 - s), long and soft at dawn and dusk, short at midday, at
+  // ink 0.16 x min(1, 4s); null at night.
+  function castOf(date) {
+    var s = sunHeight(date);
+    if (s === null) return null;
+    var a = shadowAngle(date) * Math.PI / 180, L = 14 + 70 * (1 - s);
+    return { dx: L * Math.cos(a), dy: L * Math.sin(a), length: L, opacity: 0.16 * Math.min(1, 4 * s) };
+  }
+  // The sunlight: its brightest point moved from the centre towards the sun
+  // by 36 x (1 - s) + 10; warm apricot at dawn, pale sun by day, amber at
+  // evening, by minute; strength 0.25 + 0.5 x s, times the days (all of it
+  // at 27, never under 0.35 so the first day already has light); null at
+  // night.
+  var DAWN = '#F3CB8F', MIDDAY = '#F1E79B', EVENING = '#EDB98A';
+  function mixHex(a, b, f) {
+    var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16), out = '#';
+    [16, 8, 0].forEach(function (sh) {
+      var v = Math.round(((x >> sh) & 255) * (1 - f) + ((y >> sh) & 255) * f);
+      out += (v < 16 ? '0' : '') + v.toString(16).toUpperCase();
+    });
+    return out;
+  }
+  function lightOf(date, days) {
+    var s = sunHeight(date);
+    if (s === null) return null;
+    var a = (shadowAngle(date) + 180) * Math.PI / 180, D = 36 * (1 - s) + 10;
+    return { x: CX + D * Math.cos(a), y: CY + D * Math.sin(a), shift: D,
+      colour: mixHex(hourOf(date) < 12.75 ? DAWN : EVENING, MIDDAY, s),
+      strength: (0.25 + 0.5 * s) * Math.max(0.35, Math.min(1, (days || 0) / 27)) };
   }
 
   // The crimson centre: scaled 0.55 to 1 by evenness once there are days;
@@ -169,19 +209,19 @@
   // ---- The drawing ------------------------------------------------------------
   // dial(svg) dresses the heart already in the page (night-watchman.html's,
   // copied exactly, inside a group of class "breathe", with the wash, the
-  // centre and the flow line marked by class) as the sundial: the shadow
-  // or the night glow beneath the ink, and the ring of nine marks. It
-  // returns { time(date), answering(on), days(list, kept) }: time moves the
-  // shadow; answering sets the slow pulse along the line while Claude
-  // answers (drawn by the page's CSS on the class); days draws the days
-  // kept, each a day's text (6.9): a lit mark per day on the ring in its
-  // pool's hue, folding to the outer ring at each nine, the colour inside
-  // the ink by share, the wash by count and the centre by evenness. With
-  // kept, the newest mark lights and the colour sweeps in along the stroke
-  // (the page's CSS draws the sweep, and holds still for reduced motion).
+  // centre and the flow line marked by class) as a sundial, not a clock
+  // (6.9, after 8.77): the sunlight behind the heart, the shadow the heart
+  // casts, the night glow, and the spiral of days. It returns { time(date),
+  // answering(on), days(list, kept, count), … }: time moves the light and
+  // the shadow; answering sets the slow pulse along the line while Claude
+  // answers (drawn by the page's CSS on the class); days takes each day's
+  // text for the colour inside the ink (by share) and the centre (by
+  // evenness), and draws the days kept as ink dots along the spiral. With
+  // kept, the newest dot appears and the colour sweeps in along the stroke
+  // (the page's CSS draws both, and holds still for reduced motion).
   var SVGNS = 'http://www.w3.org/2000/svg';
   var CX = 232, CY = 140;          // the dial's centre in the heart's own units
-  var RING = 186, SHADOW = 160, STRETCH = 160, MOMENTS = 166;
+  var RING = 182, STRETCH = 160, MOMENTS = 166, LIGHT_R = 118;
   function node(name, attrs, parent) {
     var n = document.createElementNS(SVGNS, name);
     Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
@@ -193,28 +233,28 @@
     return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
   }
 
-  // How the ring stands for n days: the marks lit on the ring (the days
-  // since the last full nine) and the folds, one per nine, up to nine of
-  // them: eighty-one days.
-  function ring(n) {
-    return { inner: n % 9, outer: Math.min(9, Math.floor(n / 9)) };
+  // ---- The spiral of days (6.9, after 8.71 and 8.77) --------------------------
+  // No ticks and no ring: one faint open line winds clockwise out from the
+  // top of the dial, day n (from 1) at -90 + 40 x (n - 1) degrees and radius
+  // 182 + 0.3 x (n - 1), so the 81st lies at 206 and the line never closes.
+  var SPIRAL_IN = 182, SPIRAL_STEP = 0.3;
+  function dayAt(n) {
+    return at(-90 + 40 * (n - 1), SPIRAL_IN + SPIRAL_STEP * (n - 1));
   }
-  // The fold is a spiral, never a second closed circle (6.9, after 8.71):
-  // a faint open stroke from the top at radius 200, winding clockwise and
-  // widening to 214 across one full turn. A point on it, t degrees along
-  // from the top; the j-th fold sits at 40 x j degrees, so the ninth closes
-  // the turn at 214, outside where it began, and never meets itself.
-  var FOLD_IN = 200, FOLD_OUT = 214;
-  function foldAt(t) {
-    return at(-90 + t, FOLD_IN + (FOLD_OUT - FOLD_IN) * t / 360);
-  }
-  // The stroke for k folds: drawn only as far as the last of them.
-  function foldPath(k) {
-    if (!k) return '';
-    var end = 40 * Math.min(9, k), pts = [];
-    for (var t = 0; t < end; t += 4) pts.push(foldAt(t));
-    pts.push(foldAt(end));
+  // The line, drawn only from day 1 to day n ('' before the second day).
+  function spiralPath(n) {
+    if (n < 2) return '';
+    var pts = [];
+    for (var k = 0; 1 + k / 10 < n; k++) pts.push(dayAt(1 + k / 10));
+    pts.push(dayAt(n));
     return 'M ' + pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' L ');
+  }
+  // How day k of n is drawn: every ninth a slightly larger open circle; the
+  // current turn (the latest nine days) full; earlier turns fine and faint.
+  function dotOf(k, n) {
+    if (k % 9 === 0) return { kind: 'ninth', r: 5 };
+    if (k > n - 9) return { kind: 'full', r: 6, opacity: 1 };
+    return { kind: 'faint', r: 2, opacity: 0.35 };
   }
   // A pool's stretch of colour inside the ink: 0.35 + 1.6 x its share,
   // capped at 1; nothing for a pool with no days.
@@ -229,11 +269,15 @@
     var id = 'sd' + Math.random().toString(36).slice(2, 8);
     var defs = node('defs', {});
     svg.insertBefore(defs, svg.firstChild);
-    // The wash reads as the sun, never a container: soft-edged, no outline.
-    var washFill = node('radialGradient', { id: id + '-wash' }, defs);
-    node('stop', { offset: '0', 'stop-color': 'var(--wash)', 'stop-opacity': '1' }, washFill);
-    node('stop', { offset: '0.62', 'stop-color': 'var(--wash)', 'stop-opacity': '0.9' }, washFill);
-    node('stop', { offset: '1', 'stop-color': 'var(--wash)', 'stop-opacity': '0' }, washFill);
+    // The sunlight reads as the sun, never a container: a soft radial light
+    // with no outline, its brightest point moving towards the sun's side.
+    var washFill = node('radialGradient', { id: id + '-wash', gradientUnits: 'userSpaceOnUse', cx: CX, cy: CY, r: LIGHT_R, fx: CX, fy: CY }, defs);
+    var washStops = [[0, 1], [0.5, 0.7], [1, 0]].map(function (s) {
+      return node('stop', { offset: s[0], 'stop-color': MIDDAY, 'stop-opacity': s[1] }, washFill);
+    });
+    // The heart's shadow is its own ink, softened.
+    var blur = node('filter', { id: id + '-blur', x: '-40%', y: '-40%', width: '180%', height: '180%' }, defs);
+    node('feGaussianBlur', { stdDeviation: 4 }, blur);
     var glowFill = node('radialGradient', { id: id + '-glow' }, defs);
     node('stop', { offset: '0', 'stop-color': 'var(--wash)', 'stop-opacity': '0.3' }, glowFill);
     node('stop', { offset: '1', 'stop-color': 'var(--wash)', 'stop-opacity': '0' }, glowFill);
@@ -245,14 +289,22 @@
     var under = node('g', { 'class': 'under' });
     art.insertBefore(under, art.firstChild);
     var glow = node('circle', { 'class': 'glow', cx: CX, cy: CY, r: 120, fill: 'url(#' + id + '-glow)' }, under);
-    var shadow = node('line', { 'class': 'shadow', x1: CX, y1: CY, x2: CX, y2: CY - SHADOW,
-      stroke: 'var(--ink)', 'stroke-opacity': '0.1', 'stroke-width': 7, 'stroke-linecap': 'round' }, under);
 
     var wash = art.querySelector('.wash');
     if (wash) {
       wash.setAttribute('fill', 'url(#' + id + '-wash)');
+      wash.setAttribute('rx', LIGHT_R + 6);
+      wash.setAttribute('ry', LIGHT_R + 6);
       wash.removeAttribute('stroke');
     }
+    // The shadow: a copy of the heart's two ink paths (not the crimson),
+    // beneath the ink and over the light, blurred, thrown away from the sun.
+    var cast = node('g', { 'class': 'cast', filter: 'url(#' + id + '-blur)', opacity: 0 });
+    Array.prototype.forEach.call(art.querySelectorAll('path'), function (p) {
+      if (p.getAttribute('fill') === 'var(--ink)') cast.appendChild(node('path', { d: p.getAttribute('d'), fill: 'var(--ink)' }));
+    });
+    if (wash && wash.nextSibling) art.insertBefore(cast, wash.nextSibling);
+    else art.insertBefore(cast, under.nextSibling);
     var dot = art.querySelector('.centre');
     var halo = null;
     if (dot) {
@@ -273,53 +325,61 @@
         'data-place': n }, tints);
     });
 
-    var marks = node('g', { 'class': 'ring' }, art);
-    for (var i = 0; i < 9; i++) {
-      var a = -90 + i * 40, p = at(a, RING - 7), q = at(a, RING + 7);
-      node('line', { x1: p.x.toFixed(1), y1: p.y.toFixed(1), x2: q.x.toFixed(1), y2: q.y.toFixed(1),
-        stroke: 'var(--ink)', 'stroke-opacity': '0.55', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, marks);
-    }
-    var fold = node('path', { 'class': 'fold', d: '', fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': '0.15',
+    // The spiral of days: the line, then a dot for each day kept.
+    var spiral = node('path', { 'class': 'spiral', d: '', fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': '0.15',
       'stroke-width': 1.5, 'stroke-linecap': 'round' }, art);
-    var lit = node('g', { 'class': 'lit' }, art);
+    var kept_ = node('g', { 'class': 'days-kept' }, art);
     var momentsAt = node('g', { 'class': 'sd-moments' }, art);
     var pooled = node('g', { 'class': 'sd-tidepools' }, svg);
 
-    function time(date) {
-      var angle = shadowAngle(date);
-      if (angle === null) {
-        shadow.setAttribute('visibility', 'hidden');
-        glow.setAttribute('visibility', 'visible');
-        return;
+    // The light and the shadow at this minute; at night, the glow instead.
+    var now = null, count = 0;
+    function light() {
+      if (!now) return;
+      var c = castOf(now), l = lightOf(now, count);
+      glow.setAttribute('visibility', l ? 'hidden' : 'visible');
+      cast.style.opacity = c ? c.opacity.toFixed(3) : '0';
+      if (c) cast.style.transform = 'translate(' + c.dx.toFixed(1) + 'px, ' + c.dy.toFixed(1) + 'px)';
+      if (wash) wash.setAttribute('opacity', l ? l.strength.toFixed(3) : '0');
+      if (l) {
+        washFill.setAttribute('fx', l.x.toFixed(1));
+        washFill.setAttribute('fy', l.y.toFixed(1));
+        washStops.forEach(function (s) { s.setAttribute('stop-color', l.colour); });
       }
-      var end = at(angle, SHADOW);
-      shadow.setAttribute('x2', end.x.toFixed(1));
-      shadow.setAttribute('y2', end.y.toFixed(1));
-      shadow.setAttribute('visibility', 'visible');
-      glow.setAttribute('visibility', 'hidden');
+    }
+    function time(date) {
+      now = date;
+      light();
     }
     function answering(on) {
       svg.classList.toggle('answering', !!on);
     }
-    function days(list, kept) {
+    // `count` is how many days are kept (days with a line or moments; the
+    // list's length when not given); `ahead`, that the latest began from
+    // tomorrow's line and has no words yet.
+    function days(list, kept, opts) {
       list = list || [];
-      var n = list.length, s = shares(list), even = evenness(s), r = ring(n);
-      while (lit.firstChild) lit.removeChild(lit.firstChild);
-      // A lit mark says only that a day was kept: ink, never a place's colour.
-      for (var i = 0; i < r.inner; i++) {
-        var c = at(-90 + i * 40, RING);
-        node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 7, fill: 'var(--ink)',
-          'class': kept && i === r.inner - 1 ? 'mark new' : 'mark' }, lit);
+      opts = opts || {};
+      var n = opts.count != null ? opts.count : list.length, s = shares(list), even = evenness(s);
+      count = n;
+      while (kept_.firstChild) kept_.removeChild(kept_.firstChild);
+      spiral.setAttribute('d', spiralPath(n));
+      // Before the first day, one faint point where the spiral will begin.
+      if (!n) {
+        var o = dayAt(1);
+        node('circle', { 'class': 'origin', cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: 1.8, fill: 'var(--ink)', 'fill-opacity': '0.3' }, kept_);
       }
-      // The folds: small open circles along the spiral, from the top.
-      fold.setAttribute('d', foldPath(r.outer));
-      for (var k = 1; k <= r.outer; k++) {
-        var o = foldAt(40 * k);
-        node('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: 4, fill: 'none', stroke: 'var(--ink)',
-          'stroke-opacity': '0.5', 'stroke-width': 1.5, 'class': kept && r.inner === 0 && k === r.outer ? 'mark new' : 'mark' }, lit);
+      // A dot says only that a day was kept: ink, never a place's colour.
+      for (var k = 1; k <= n; k++) {
+        var c = dayAt(k), d = dotOf(k, n), cls = 'mark day ' + d.kind + (kept && k === n ? ' new' : '');
+        node('circle', d.kind === 'ninth'
+          ? { 'class': cls, cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: d.r, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.5,
+            'stroke-opacity': k === n && opts.ahead ? 0.4 : 1 }
+          : { 'class': cls, cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: d.r, fill: 'var(--ink)',
+            'fill-opacity': k === n && opts.ahead ? 0.4 : d.opacity }, kept_);
       }
       stretches.forEach(function (el, k) { el.setAttribute('opacity', tint(s[P6[k] - 1]).toFixed(3)); });
-      if (wash) wash.setAttribute('opacity', (0.6 * Math.min(1, n / 27)).toFixed(3));
+      light();
       var cen = centre(n, even);
       if (dot) {
         dot.setAttribute('transform', 'rotate(-18 250 138) translate(250 138) scale(' + cen.scale + ') translate(-250 -138)');
@@ -327,8 +387,8 @@
       }
       if (halo) halo.setAttribute('opacity', n ? (0.18 * (1 - even)).toFixed(3) : 0);
       svg.setAttribute('aria-label', n
-        ? 'A sundial: a heart drawn in ink, its shadow at this hour, coloured by ' + n + (n === 1 ? ' day' : ' days') + ' kept'
-        : 'A sundial: a heart drawn in ink, its shadow at this hour, and nine marks around it, none lit yet');
+        ? 'A sundial: a heart drawn in ink, casting its shadow at this hour, ' + n + (n === 1 ? ' day' : ' days') + ' kept along a spiral'
+        : 'A sundial: a heart drawn in ink, casting its shadow at this hour, no days kept yet');
       // The sweep restarts from the line's entry when a day is kept.
       sweep.classList.remove('sweeping');
       if (kept) {
@@ -375,9 +435,17 @@
     // `list` is [{when: Date, text}].
     function moments(list) {
       while (momentsAt.firstChild) momentsAt.removeChild(momentsAt.firstChild);
-      (list || []).forEach(function (m) {
-        var h = m.when.getHours() + m.when.getMinutes() / 60;
-        var c = at(-90 + (h - 12) * 15, MOMENTS);
+      var angles = (list || []).map(function (m) { return -90 + (hourOf(m.when) - 12) * 15; });
+      if (angles.length) {
+        // A faint arc beneath them, only as wide as today's moments.
+        var a0 = Math.min.apply(null, angles) - 8, a1 = Math.max.apply(null, angles) + 8, pts = [];
+        for (var a = a0; a < a1; a += 2) pts.push(at(a, MOMENTS));
+        pts.push(at(a1, MOMENTS));
+        node('path', { 'class': 'moment-arc', d: 'M ' + pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' L '),
+          fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': '0.12', 'stroke-width': 1 }, momentsAt);
+      }
+      angles.forEach(function (ang) {
+        var c = at(ang, MOMENTS);
         node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 4.5, fill: 'var(--ink)', 'fill-opacity': '0.6', 'class': 'moment' }, momentsAt);
       });
     }
@@ -400,97 +468,50 @@
     });
   }
 
-  // ---- The tideline -------------------------------------------------------------
-  // tideline(svg, list, width, label, pick) lays the days along a faint
-  // tideline (6.7): one shell per day, oldest left and newest right, set a
-  // little above or below the line by its own address, so the same days
-  // always lie the same way. Each is a sundial shell (Architectonica) seen
-  // from above, carrying the day's mix (sundialShell, below), always
-  // upright so Facts stays at the top. Each shell is a button named by
-  // label(day); pick(i) runs when one is tapped or chosen with Enter. The
-  // shells keep at least a finger's width apart, so a long tideline grows
-  // wider than the screen; the width drawn is returned. Nothing is counted
-  // or labelled beside them.
-  var SHELL = 32, PAD = 22, TIDE_H = 120, TIDE_BASE = 62, SHELL_R = 13;
-  function scatter(address) {
-    var h = 2166136261;
-    String(address).split('').forEach(function (c) {
-      h ^= c.charCodeAt(0);
-      h = Math.imul(h, 16777619) >>> 0;
-    });
-    return { dy: (h % 29) - 14 };
-  }
-  function shellsAt(list, width) {
-    var n = list.length;
-    var step = n > 1 ? Math.max(SHELL, (width - 2 * PAD) / (n - 1)) : 0;
-    var w = n > 1 ? Math.max(width, 2 * PAD + step * (n - 1)) : width;
-    return { width: w, at: list.map(function (day, i) {
-      var s = scatter(day.address);
-      return { x: n > 1 ? PAD + step * i : w / 2, y: TIDE_BASE + s.dy };
-    }) };
-  }
-  // The six wedges of a sundial shell of radius r, in P6's order clockwise
-  // from Facts at the top, each centred on its own direction: [{n, d}].
-  function wedges(r) {
-    return P6.map(function (n, k) {
-      var a0 = (-90 + k * 60 - 30) * Math.PI / 180, a1 = (-90 + k * 60 + 30) * Math.PI / 180;
-      return { n: n, d: 'M 0,0 L ' + (r * Math.cos(a0)).toFixed(2) + ',' + (r * Math.sin(a0)).toFixed(2) +
-        ' A ' + r + ' ' + r + ' 0 0 1 ' + (r * Math.cos(a1)).toFixed(2) + ',' + (r * Math.sin(a1)).toFixed(2) + ' Z' };
-    });
-  }
-  // One spiral coiling out from presence at the centre to the rim, fine so
-  // it never hides the wedges.
-  function shellSpiral(r) {
-    var turns = 2.5, pts = [];
-    for (var t = 0; t <= turns * 360; t += 12) {
-      var rr = r * 0.94 * t / (turns * 360), a = (t - 90) * Math.PI / 180;
-      pts.push((rr * Math.cos(a)).toFixed(2) + ',' + (rr * Math.sin(a)).toFixed(2));
+  // ---- The strandline's shells (6.7, after 8.77) ------------------------------
+  // A day's shell is the sundial shell as it is in nature, seen from above:
+  // a flat spiral of about two and a half turns from its centre, in ink.
+  // Where the day touched a place, a stretch of the coil carries a soft band
+  // of that place's hue beneath the ink line, the bands in P6's order from
+  // the centre outward, each touched place an equal share of the coil's
+  // length with a small gap between; a day of one place is banded along
+  // its whole coil. Untouched places are not drawn: nothing pale, nothing
+  // empty. A tiny crimson point at the centre. Drawn in -30..30.
+  var COIL_R = 25, COIL_TURNS = 2.5, COIL_STEPS = 300, COIL_GAP = 0.03;
+  function coilPoints() {
+    var pts = [], len = 0;
+    for (var i = 0; i <= COIL_STEPS; i++) {
+      var f = i / COIL_STEPS, a = (-90 + f * COIL_TURNS * 360) * Math.PI / 180, r = COIL_R * (0.1 + 0.9 * f);
+      var p = { x: r * Math.cos(a), y: r * Math.sin(a) };
+      if (pts.length) len += Math.hypot(p.x - pts[pts.length - 1].x, p.y - pts[pts.length - 1].y);
+      p.len = len;
+      pts.push(p);
     }
-    return 'M ' + pts.join(' L ');
+    pts.forEach(function (q) { q.at = q.len / len; });
+    return pts;
   }
-  // A day's sundial shell into a group: each wedge lit in its place's hue
-  // where the day touched it, pale (the page with a faint ink edge) where
-  // it did not; then the spiral and presence.
-  function sundialShell(g, places, r) {
-    var touched = {};
-    places.forEach(function (n) { touched[n] = 1; });
-    wedges(r).forEach(function (w) {
-      node('path', touched[w.n]
-        ? { 'class': 'sd-wedge lit', d: w.d, fill: POOLS[w.n - 1].hue, stroke: 'var(--page)', 'stroke-width': 0.6, 'data-place': w.n }
-        : { 'class': 'sd-wedge', d: w.d, fill: 'var(--page)', stroke: 'var(--ink)', 'stroke-opacity': 0.22, 'stroke-width': 0.6, 'data-place': w.n }, g);
+  // The bands for a day's places, as fractions of the coil's length.
+  function coilBands(places) {
+    var ps = inOrder(places), n = ps.length;
+    return ps.map(function (q, k) {
+      return { n: q, from: k / n + (k ? COIL_GAP / 2 : 0), to: (k + 1) / n - (k < n - 1 ? COIL_GAP / 2 : 0) };
     });
-    node('path', { 'class': 'sd-shell-spiral', d: shellSpiral(r), fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': 0.55,
-      'stroke-width': 0.7, 'stroke-linecap': 'round' }, g);
-    node('circle', { r: r, fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': 0.3, 'stroke-width': 0.7 }, g);
-    node('circle', { 'class': 'sd-shell-presence', r: 1.4, fill: 'var(--crimson)' }, g);
   }
-  function tideline(svg, list, width, label, pick) {
+  function coilPath(pts, from, to) {
+    var on = pts.filter(function (q) { return q.at >= from - 1e-9 && q.at <= to + 1e-9; });
+    return on.length > 1 ? 'M ' + on.map(function (q) { return q.x.toFixed(2) + ',' + q.y.toFixed(2); }).join(' L ') : '';
+  }
+  function coil(svg, places) {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    var lay = shellsAt(list, width), w = lay.width;
-    svg.setAttribute('viewBox', '0 0 ' + w.toFixed(0) + ' ' + TIDE_H);
-    svg.setAttribute('width', w.toFixed(0));
-    svg.setAttribute('height', TIDE_H);
-    var waves = Math.max(2, Math.round(w / 140)), d = 'M 0 ' + TIDE_BASE;
-    for (var k = 0; k < waves; k++) {
-      var x0 = w * k / waves, x1 = w * (k + 1) / waves, third = (x1 - x0) / 3;
-      d += ' C ' + (x0 + third).toFixed(1) + ' ' + (TIDE_BASE - 6) + ' ' + (x0 + 2 * third).toFixed(1) + ' ' +
-        (TIDE_BASE + 6) + ' ' + x1.toFixed(1) + ' ' + TIDE_BASE;
-    }
-    node('path', { 'class': 'sd-tide-line', d: d, fill: 'none', stroke: 'var(--frame)', 'stroke-width': 1.5, 'stroke-linecap': 'round' }, svg);
-    list.forEach(function (day, i) {
-      var p = lay.at[i];
-      var g = node('g', { 'class': 'sd-shell', role: 'button', tabindex: 0, 'aria-label': label(day),
-        transform: 'translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')' }, svg);
-      node('circle', { 'class': 'sd-shell-hit', r: 17, fill: 'transparent' }, g);
-      sundialShell(g, placesOf(day), SHELL_R);
-      g.addEventListener('click', function () { pick(i); });
-      g.addEventListener('keydown', function (ev) {
-        if (ev.key !== 'Enter' && ev.key !== ' ') return;
-        ev.preventDefault();
-        pick(i);
-      });
+    svg.setAttribute('viewBox', '-30 -30 60 60');
+    var pts = coilPoints();
+    coilBands(places).forEach(function (b) {
+      node('path', { 'class': 'band', 'data-place': b.n, d: coilPath(pts, b.from, b.to), fill: 'none', stroke: POOLS[b.n - 1].hue,
+        'stroke-width': 5, 'stroke-opacity': 0.75, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
     });
-    return w;
+    node('path', { 'class': 'coil', d: coilPath(pts, 0, 1), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.2,
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+    node('circle', { 'class': 'presence', r: 1.3, fill: 'var(--crimson)' }, svg);
   }
 
   // ---- The console check ------------------------------------------------------
@@ -499,7 +520,8 @@
   // 1,1,3,2,1,3,5,6,1) and the mixed fixture (fixtures/days-mixed.json, nine
   // days touching 1+2, 1, 1+6+2, 3, 1+3+4, 2, 5+6, all six, 4+2): the text read
   // and written, the touches, shares and evenness, against sums worked by
-  // hand; the fold, the tideline's shells, the pools' order, the shadow.
+  // hand; the spiral of days, the light and the cast shadow, the coiled
+  // shells, the pools' order.
   function test(days, log, mixed) {
     log = log || function (s) { console.log(s); };
     var results = [];
@@ -568,42 +590,47 @@
       check('mixed, 3 days: touches 3,2,0,0,0,1 over 6; evenness 11/15',
         counts(mixed.slice(0, 3)).join() === '3,2,0,0,0,1' && near(evenness(shares(mixed.slice(0, 3))), 11 / 15));
     }
-    check('the shadow: up at noon, left at six, right at six in the evening',
+    check('the shadow’s direction: up at noon, left at six, right at six in the evening',
       shadowAngle(clock(12, 0)) === -90 && shadowAngle(clock(6, 0)) === -180 && shadowAngle(clock(18, 0)) === 0);
-    check('the shadow at 19:30, and none at 05:59 or 23:00',
-      shadowAngle(clock(19, 30)) === 22.5 && shadowAngle(clock(5, 59)) === null && shadowAngle(clock(23, 0)) === null);
+    check('daylight 06:00 to 19:30: none at 05:59 or 23:00',
+      shadowAngle(clock(19, 30)) === 22.5 && shadowAngle(clock(5, 59)) === null && sunHeight(clock(23, 0)) === null && castOf(clock(21, 0)) === null && lightOf(clock(21, 0), 9) === null);
+    check('the sun’s height: 0 at 06:00 and 19:30, 1 at 12:45',
+      near(sunHeight(clock(6, 0)), 0) && Math.abs(sunHeight(clock(19, 30))) < 1e-12 && near(sunHeight(clock(12, 45)), 1));
+    var c1245 = castOf(clock(12, 45)), c0630 = castOf(clock(6, 30)), c1700 = castOf(clock(17, 0));
+    check('the cast shadow: short beneath the heart at 12:45 (14, at 0.16), long and faint at dawn, thrown left in the morning, right in the evening',
+      near(c1245.length, 14) && near(c1245.opacity, 0.16) && c0630.length > 70 && c0630.opacity < 0.16 && c0630.dx < 0 && c1700.dx > 0 && c1245.dy < 0);
+    var l0900 = lightOf(clock(9, 0), 27), l1245 = lightOf(clock(12, 45), 27), l1700 = lightOf(clock(17, 0), 27);
+    var sunAt = function (l, h, m) { return Math.atan2(l.y - CY, l.x - CX) * 180 / Math.PI - (shadowAngle(clock(h, m)) + 180); };
+    check('the light: moved towards the sun, opposite the shadow (right in the morning, left in the evening), 10 from the centre at 12:45',
+      l0900.x > CX && l1700.x < CX && near(Math.hypot(l1245.x - CX, l1245.y - CY), 10) &&
+      [[l0900, 9, 0], [l1245, 12, 45], [l1700, 17, 0]].every(function (x) { var d = (sunAt(x[0], x[1], x[2]) % 360 + 360) % 360; return d < 1e-6 || d > 360 - 1e-6; }));
+    check('the light’s colour: apricot at dawn, pale sun at 12:45, amber at dusk, by minute',
+      lightOf(clock(6, 0), 27).colour === '#F3CB8F' && l1245.colour === '#F1E79B' && lightOf(clock(19, 29), 27).colour.slice(0, 3) === '#ED' &&
+      mixHex('#000000', '#FFFFFF', 0.5) === '#808080');
+    check('the light’s strength: (0.25 + 0.5s) x days, all of it at 27, never under 0.35',
+      near(l1245.strength, 0.75) && near(lightOf(clock(12, 45), 1).strength, 0.75 * 0.35) && near(lightOf(clock(12, 45), 18).strength, 0.75 * 18 / 27));
     check('the empty heart’s centre: half size at 0.45; with days, 0.55 to 1 by evenness',
       centre(0, 0).scale === 0.5 && centre(0, 0).opacity === 0.45 && centre(3, 0).scale === 0.55 && centre(9, 1).scale === 1);
-    check('the ring at 1, 3, 9, 10 and 81 days, and past it',
-      [1, 3, 9, 10, 81, 90].map(function (n) { var r = ring(n); return r.inner + '/' + r.outer; }).join() === '1/0,3/0,0/1,1/1,0/9,0/9');
-    var top = foldAt(0), turn = foldAt(360), fourth = foldAt(160);
-    check('the fold: a spiral from the top at 200, widening to 214 at one full turn',
-      near(top.x, CX) && near(top.y, CY - 200) && near(turn.x, CX) && near(turn.y, CY - 214) &&
-      near(Math.hypot(fourth.x - CX, fourth.y - CY), 200 + 14 * 160 / 360));
-    check('the fold is drawn only as far as the last nine: none before nine days, then to 40 x k degrees',
-      foldPath(0) === '' && /^M 232\.0,-60\.0 /.test(foldPath(1)) &&
-      foldPath(9).split(' L ').length === 91 && /L 232\.0,-74\.0$/.test(foldPath(9)) && /L [\d.-]+,[\d.-]+$/.test(foldPath(1)) &&
-      foldPath(1).split(' L ').length === 11);
+    var d1 = dayAt(1), d10 = dayAt(10), d81 = dayAt(81);
+    check('the spiral of days: day 1 at the top at 182, day 10 back at the top a little further out, day 81 at 206',
+      near(d1.x, CX) && near(d1.y, CY - 182) && near(d10.x, CX) && near(d10.y, CY - 182.3 * 1 - 2.4) &&
+      near(Math.hypot(d81.x - CX, d81.y - CY), 206) && near(Math.atan2(dayAt(2).y - CY, dayAt(2).x - CX) * 180 / Math.PI, -50));
+    check('the line is drawn only from day 1 to the latest day; none before the second',
+      spiralPath(0) === '' && spiralPath(1) === '' && spiralPath(2).split(' L ').length === 11 &&
+      spiralPath(81).endsWith(' ' + dayAt(81).x.toFixed(1) + ',' + dayAt(81).y.toFixed(1)) && spiralPath(81).indexOf('M 232.0,-42.0 ') === 0);
+    check('the dots: the latest nine full (r 6), earlier fine and faint (r 2 at 35%), every ninth an open circle (r 5)',
+      dotOf(22, 22).kind === 'full' && dotOf(14, 22).kind === 'full' && dotOf(13, 22).kind === 'faint' && dotOf(13, 22).r === 2 && dotOf(13, 22).opacity === 0.35 &&
+      dotOf(9, 22).kind === 'ninth' && dotOf(18, 22).r === 5 && dotOf(81, 81).kind === 'ninth' && dotOf(1, 1).r === 6);
     check('the colour inside the ink: none for a place no day touched, 0.35 + 1.6 x share, at most 1',
       tint(0) === 0 && near(tint(1 / 9), 0.35 + 1.6 / 9) && tint(4 / 9) === 1);
-    var addressed = days.map(function (d, i) { return { address: '20264131' + (i + 1) + '00', text: d.text }; });
-    var lay = shellsAt(addressed, 350);
-    check('the tideline: oldest left, newest right, within the width',
-      lay.at.every(function (p, i) { return i === 0 || p.x > lay.at[i - 1].x; }) && lay.at[0].x === PAD && Math.abs(lay.at[8].x - (350 - PAD)) < 1e-9);
-    check('the tideline lies the same way every time, each shell near the line and upright',
-      JSON.stringify(shellsAt(addressed, 350)) === JSON.stringify(lay) &&
-      lay.at.every(function (p) { return Math.abs(p.y - TIDE_BASE) <= 14 && p.turn === undefined; }));
-    var many = shellsAt(new Array(40).fill(0).map(function (x, i) { return { address: String(2026000000 + i * 100), text: '' }; }), 350);
-    check('forty days: the shells keep a finger apart, wider than a shell, and the tideline grows wider',
-      many.width > 350 && Math.abs(many.at[1].x - many.at[0].x - SHELL) < 1e-9 && SHELL > 2 * SHELL_R);
-    var ws = wedges(SHELL_R);
-    function mid(w) {
-      var m = /L (-?[\d.]+),(-?[\d.]+) A [\d.]+ [\d.]+ 0 0 1 (-?[\d.]+),(-?[\d.]+)/.exec(w.d);
-      return Math.atan2((+m[2] + +m[4]) / 2, (+m[1] + +m[3]) / 2) * 180 / Math.PI;
-    }
-    check('a sundial shell: six wedges in P6’s order clockwise from Facts at the top',
-      ws.map(function (w) { return w.n; }).join() === '1,6,3,5,4,2' &&
-      ws.every(function (w, k) { return Math.abs(((mid(w) - (-90 + k * 60) + 540) % 360) - 180) < 0.5; }));
+    var pts = coilPoints();
+    check('a shell’s coil: two and a half turns from the centre out to its rim',
+      near(pts[0].x, 0) && near(pts[0].y, -2.5) && near(Math.hypot(pts[pts.length - 1].x, pts[pts.length - 1].y), COIL_R) && near(pts[pts.length - 1].at, 1));
+    var three = coilBands([2, 6, 1]), one = coilBands([4]);
+    check('its bands: the places touched, in P6’s order from the centre out, equal shares of the coil’s length, a small gap between',
+      three.map(function (b) { return b.n; }).join() === '1,6,2' && near(three[0].from, 0) && near(three[2].to, 1) &&
+      near(three[1].to - three[1].from, 1 / 3 - COIL_GAP) && near(three[1].from - three[0].to, COIL_GAP) &&
+      one.length === 1 && near(one[0].from, 0) && near(one[0].to, 1) && coilBands([]).length === 0);
     var ps = poolsAt(days);
     function bearing(p) { return (Math.atan2(p.y - CY, p.x - CX) * 180 / Math.PI + 450) % 360; }
     check('hold: six pools in P6’s order, Facts at the top, then clockwise Outcomes, Fictions, Decision, Purpose, Feelings',
@@ -635,16 +662,17 @@
     evenness: evenness,
     shadowAngle: shadowAngle,
     centre: centre,
-    ring: ring,
-    foldAt: foldAt,
-    foldPath: foldPath,
     tint: tint,
     dial: dial,
     poolsAt: poolsAt,
-    scatter: scatter,
-    shellsAt: shellsAt,
-    wedges: wedges,
-    tideline: tideline,
+    sunHeight: sunHeight,
+    castOf: castOf,
+    lightOf: lightOf,
+    dayAt: dayAt,
+    spiralPath: spiralPath,
+    dotOf: dotOf,
+    coilBands: coilBands,
+    coil: coil,
     test: test
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

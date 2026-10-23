@@ -459,8 +459,9 @@
     margin: 1rem auto 0;
   }
 
-  /* Tap: the tideline. The sundial eases to about 40% at the top; below,
-     the days lie along a faint tideline as shells. */
+  /* Tap: the strandline (6.7). The sundial eases to about 40% at the top;
+     below, the days run down the page, newest first, each a shell, its
+     date, its title and the times of its moments, joined by a faint thread. */
   .sd-dial {
     transition: width 0.6s ease;
   }
@@ -475,29 +476,82 @@
     max-width: 34rem;
     margin: 0.6rem auto 0;
   }
-  .sd-tide-scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  .sd-strand {
+    position: relative;
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
   }
-  .sd-tideline {
-    display: block;
-    margin: 0 auto;
+  .sd-strand::before {
+    content: "";
+    position: absolute;
+    left: 28px;
+    top: 28px;
+    bottom: 28px;
+    border-left: 1px solid var(--ink);
+    opacity: 0.14;
   }
-  .sd-tideline .sd-shell {
+  .sd-strand > li {
+    position: relative;
+    margin: 0 0 2rem;
+    padding: 0;
+  }
+  .sd-strand > li::before,
+  .sd-about-links li::before {
+    content: none;
+  }
+  .sd-strand-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
-  .sd-tideline .sd-shell:focus {
+  .sd-strand-row:focus {
     outline: none;
   }
-  .sd-tideline .sd-shell:focus-visible .sd-shell-hit,
-  .sd-tideline .sd-shell.picked .sd-shell-hit {
-    stroke: var(--crimson);
-    stroke-width: 1.5;
+  .sd-strand-row:focus-visible .sd-strand-title {
+    text-decoration: underline;
+    text-decoration-color: var(--crimson);
+    text-underline-offset: 0.2em;
+  }
+  .sd-strand-shell {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--paper);
+  }
+  .sd-strand-date {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0.35rem 0 0.15rem;
+  }
+  .sd-strand-title {
+    display: block;
+    font-style: italic;
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+  .sd-strand-times {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+    font-variant-numeric: tabular-nums;
   }
   .sd-tide-day {
-    margin-top: 0.4rem;
+    margin: 1rem 0 0 calc(56px + 1rem);
   }
   @media (prefers-reduced-motion: reduce) {
     .sd-dial { transition: none; }
@@ -530,7 +584,14 @@
   .sd-kept:focus {
     outline: none;
   }
-  /* A day kept: the new mark lights, then the colour sweeps in along the stroke. */
+  /* The shadow the heart casts moves with the sun, eased over 2s (6.9). */
+  .sd-dial .cast {
+    transition: transform 2s ease, opacity 2s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-dial .cast { transition: none; }
+  }
+  /* A day kept: the new dot appears on the spiral, then the colour sweeps in along the stroke. */
   .sd-dial .mark.new {
     transform-box: fill-box;
     transform-origin: center;
@@ -670,6 +731,97 @@
   dialog.sd-card::backdrop {
     background: rgba(29, 26, 23, 0.35);
   }
+
+  /* About and help (6.1.1): one quiet line at the very foot of every screen;
+     About unfolds as a paper sheet over the screen, in the sheet's own look. */
+  .sd-help {
+    width: 100%;
+    max-width: 30rem;
+    margin: 1.4rem auto 0;
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--muted);
+    text-align: center;
+  }
+  .sd-about-open {
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+  dialog.sd-about {
+    width: min(34rem, calc(100vw - 1.5rem));
+    max-height: calc(100svh - 2rem);
+    padding: 0;
+    color: var(--ink);
+    background: var(--page);
+    border: 1px solid var(--frame);
+    outline: 1px solid var(--frame);
+    outline-offset: 5px;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  dialog.sd-about::backdrop {
+    background: rgba(29, 26, 23, 0.35);
+  }
+  .sd-about-sheet {
+    padding: 1.6rem 1.4rem 1.2rem;
+    text-align: left;
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+  .sd-about-sheet p {
+    margin: 0 0 0.9rem;
+  }
+  .sd-about-standfirst {
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+  .sd-about-h {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    color: var(--muted);
+    margin: 1.4rem 0 0.4rem;
+  }
+  .sd-about-links {
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+  }
+  .sd-about-links li {
+    margin: 0 0 0.35rem;
+    padding: 0;
+  }
+  .sd-about-links a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+  }
+  .sd-about-foot {
+    text-align: center;
+    margin: 1.2rem 0 0;
+  }
+  .sd-about-close {
+    padding: 0.4rem 0.8rem;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
   .sd-card label {
     display: block;
     font-style: italic;
@@ -779,7 +931,7 @@
 <main class="sd" id="sd">
   <p class="sd-when"><span id="date"></span><span id="place" hidden></span></p>
 
-  <svg class="sd-dial" id="dial" viewBox="17 -75 430 430" role="img" aria-label="A sundial: a heart drawn in ink, its shadow at this hour, and nine marks around it, none lit yet">
+  <svg class="sd-dial" id="dial" viewBox="17 -75 430 430" role="img" aria-label="A sundial: a heart drawn in ink, casting its shadow at this hour, no days kept yet">
     <g class="breathe">
       <ellipse class="wash" cx="232" cy="140" rx="118" ry="112" fill="var(--wash)" opacity="0"/>
       <ellipse class="centre" cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)" fill="var(--crimson)"/>
@@ -843,7 +995,7 @@
   </section>
 
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
-    <div class="sd-tide-scroll" id="tide-scroll"><svg class="sd-tideline" id="tideline" role="group" aria-label="Your days, one shell each, the newest on the right"></svg></div>
+    <ol class="sd-strand" id="strandline" aria-label="Your days, the newest first"></ol>
     <article class="sd-card-day sd-tide-day" id="tide-day" aria-live="polite" hidden>
       <p class="sd-first" id="tide-first"></p>
       <h2 class="sd-title" id="tide-title"></h2>
@@ -861,6 +1013,36 @@
     </form>
     <button type="button" class="sd-corner" id="corner" aria-label="More" aria-haspopup="dialog" hidden>·</button>
   </div>
+
+  <p class="sd-help" id="help-line"><button type="button" class="sd-about-open" id="about-open" aria-haspopup="dialog">About</button> · <span>If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</span></p>
+
+  <dialog class="sd-about" id="about" aria-labelledby="about-head">
+    <article class="sd-about-sheet">
+      <p class="sd-about-standfirst">Most AI that people turn to for support is an open conversation with no shape and no end, its memory held inside someone else's product. This is the other kind: a daily practice, bounded, and the person's days are theirs.</p>
+      <h2 class="sd-about-h" id="about-head">ABOUT</h2>
+      <p>This was made by Matthew Bushell, a therapeutic coach who lives with bipolar and serves on the Lived Experience Council of the International Society for Bipolar Disorders, with David Pinto, who created the beach it stands on, and with Claude. It grew from lived experience, and from Presence in Action, Louie Gardiner's practice.</p>
+      <h2 class="sd-about-h">WHY IT EXISTS</h2>
+      <p>More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. It is bounded: each day has a limit, and when it's reached, it rests until tomorrow. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI.</p>
+      <h2 class="sd-about-h">HOW IT HOLDS YOU</h2>
+      <p>It reflects. It doesn't advise, interpret, diagnose or praise. Those are the instructions Claude is given here; they guide it but can't guarantee it, so you remain the judge of what's true for you. It isn't a friend or a therapist, and it won't pretend to be.</p>
+      <h2 class="sd-about-h">WHERE YOUR WORDS GO</h2>
+      <p>When you speak, your browser turns your voice into text; Chrome may send it to Google to do that. Your words go to Claude, made by Anthropic, to be reflected back. Days you keep are written to the beach, an open system created by David Pinto, under your name. They are public: anyone who knows your name can read them. Only your word can change them, and forget me removes them.</p>
+      <h2 class="sd-about-h">WHAT IT DRAWS ON</h2>
+      <p>The P6 Constellation and Presence in Action (Louie Gardiner) · Natural Inclusionality (Alan Rayner) · peer support and lived-experience recovery.</p>
+      <h2 class="sd-about-h">WHAT IT IS NOT</h2>
+      <p>It isn't therapy, a clinical service, or a way to diagnose anything. The colours are ways of looking, offered lightly, never labels.</p>
+      <h2 class="sd-about-h">IF YOU NEED HELP NOW</h2>
+      <p>Call your local emergency number. In the UK and Ireland, Samaritans on 116 123, any time. In the UK, NHS 111 for urgent mental health help.</p>
+      <ul class="sd-about-links">
+        <li><a href="https://potent6.co.uk" target="_blank" rel="noopener">Presence in Action and the P6 Constellation</a></li>
+        <li><a href="https://occurrity.com/publications/natural-inclusionality-fromself-recovery-to-self-discovery/" target="_blank" rel="noopener">Natural Inclusionality</a></li>
+        <li><a href="https://www.isbd.org" target="_blank" rel="noopener">the International Society for Bipolar Disorders</a></li>
+        <li><a href="https://www.bipolaruk.org" target="_blank" rel="noopener">Bipolar UK</a></li>
+        <li><a href="https://www.samaritans.org" target="_blank" rel="noopener">Samaritans</a></li>
+      </ul>
+      <p class="sd-about-foot"><button type="button" class="sd-about-close" id="about-close">close</button></p>
+    </article>
+  </dialog>
 
   <dialog class="sd-card" id="card" aria-labelledby="key-label">
     <form id="key-form" method="dialog">
@@ -953,7 +1135,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-23c"></script>
+<script src="mark.js?v=2026-10-23d"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -972,7 +1154,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.3 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.4 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1135,7 +1317,7 @@
   // The days (each day's own line, today and before) draw the sundial; the
   // moments of today mark the hours they were spoken; tomorrow's line, if
   // one stands, waits ahead (4.2).
-  var days = [], moments = [], aheadText = '';
+  var days = [], moments = [], aheadText = '', dialOpts = null;
   function todayAddress() { return Days.today() || Days.now().slice(0, 8) + '00'; }
   function dayOfAddress(a) { return String(a).slice(0, 8) + '00'; }
   function showAll(all, keptNow) {
@@ -1144,14 +1326,17 @@
     moments = (all.moments || []).filter(function (m) { return dayOfAddress(m.address) <= t; });
     aheadText = ((all.days || []).filter(function (d) { return d.address === tomorrow; })[0] || {}).text || '';
     days = withPlaces((all.days || []).filter(function (d) { return d.address <= t; }));
-    dial.days(days, keptNow);
-    dial.moments(moments.filter(function (m) { return dayOfAddress(m.address) === t; }).map(function (m) {
-      return { when: Days.timeOf(m.address), text: m.text };
-    }));
     var spoken = {};
     days.forEach(function (d) { spoken[d.address] = 1; });
     moments.forEach(function (m) { spoken[dayOfAddress(m.address)] = 1; });
-    var n = Object.keys(spoken).length;
+    var n = Object.keys(spoken).length, todays = moments.filter(function (m) { return dayOfAddress(m.address) === t; });
+    // The spiral holds every day kept; today, if it has only the line set
+    // ahead yesterday and no words yet, is a dot at 40% (6.9).
+    dialOpts = { count: n, ahead: !!spoken[t] && !todays.length };
+    dial.days(days, keptNow, dialOpts);
+    dial.moments(todays.map(function (m) {
+      return { when: Days.timeOf(m.address), text: m.text };
+    }));
     $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
     $('days-count').hidden = !n;
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
@@ -1239,7 +1424,7 @@
   })();
 
   // ---- Tap -----------------------------------------------------------------------------
-  // Tapping the sundial opens the tideline of the days (6.7). On a browser
+  // Tapping the sundial opens the strandline of the days (6.7). On a browser
   // that doesn't know them yet, it first asks for a name and shows the days
   // kept under it, read with no word.
   var dialEl = $('dial'), findCard = $('find-card'), fname = $('fname'), main = $('sd');
@@ -1279,9 +1464,9 @@
     else openFind();
   }
 
-  // The tideline: the sundial eases to the top, everything else steps aside,
-  // and the days lie along the line, newest on the right. Tap the sundial
-  // again (or Escape) and all comes back as it was.
+  // The strandline (6.7): the sundial eases to the top, everything else
+  // steps aside, and the days run down the page, newest first. Tap the
+  // sundial again (or Escape) and all comes back as it was.
   function openTide() {
     tideOpen = true;
     hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
@@ -1289,9 +1474,7 @@
     main.classList.add('tide-open');
     $('tide').hidden = false;
     $('tide-day').hidden = true;
-    var scroll = $('tide-scroll');
-    Mark.tideline($('tideline'), days, scroll.clientWidth, shellName, pickDay);
-    scroll.scrollLeft = scroll.scrollWidth;
+    drawStrand();
     setDialTap();
   }
   function closeTide() {
@@ -1300,21 +1483,69 @@
     showInvite();
     main.classList.remove('tide-open');
     $('tide').hidden = true;
+    $('tide').appendChild($('tide-day'));
     setDialTap();
     dialEl.focus();
   }
-  function shellName(d) {
-    var r = Mark.read(d.text);
-    var t = r.title.length > 60 ? r.title.slice(0, 57).replace(/\s+\S*$/, '') + '…' : r.title;
-    return dateWords(Days.dateOf(d.address)) + ': ' + t;
-  }
-  // A shell tapped: the day's sheet in full, beneath the line. A day written
-  // elsewhere as one long line shows it as its words, with no title.
-  function pickDay(i) {
-    var d = days[i], r = Mark.read(d.text);
-    Array.prototype.forEach.call($('tideline').querySelectorAll('.sd-shell'), function (g, k) {
-      g.classList.toggle('picked', k === i);
+  // One row per day kept, newest first: the day's own line, else its latest
+  // moment; with the times of its moments in the phone's own time.
+  function strandDays() {
+    var t = todayAddress(), by = {};
+    days.forEach(function (d) { by[d.address] = { address: d.address, day: d, times: [] }; });
+    moments.forEach(function (m) {
+      var a = dayOfAddress(m.address);
+      if (a > t) return;
+      if (!by[a]) by[a] = { address: a, day: null, times: [] };
+      if (!by[a].day || by[a].fromMoment) { by[a].day = { address: a, text: m.text }; by[a].fromMoment = true; }
+      by[a].times.push(Days.timeOf(m.address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
     });
+    return Object.keys(by).sort().reverse().map(function (k) { return by[k]; });
+  }
+  var SVG = 'http://www.w3.org/2000/svg';
+  function drawStrand() {
+    var list = $('strandline');
+    $('tide').appendChild($('tide-day'));
+    list.textContent = '';
+    strandDays().forEach(function (row) {
+      var r = Mark.read(row.day.text), li = document.createElement('li'), b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sd-strand-row';
+      b.setAttribute('aria-expanded', 'false');
+      var shell = document.createElementNS(SVG, 'svg');
+      shell.setAttribute('class', 'sd-strand-shell');
+      shell.setAttribute('aria-hidden', 'true');
+      shell.setAttribute('focusable', 'false');
+      Mark.coil(shell, Mark.placesOf(row.day));
+      var words = document.createElement('span');
+      [['sd-strand-date', dateWords(Days.dateOf(row.address))],
+       ['sd-strand-title', r.title.length > 70 ? r.title.slice(0, 66).replace(/\s+\S*$/, '') + '…' : r.title],
+       ['sd-strand-times', row.times.join(' · ')]].forEach(function (x) {
+        if (!x[1]) return;
+        var s = document.createElement('span');
+        s.className = x[0];
+        s.textContent = x[1];
+        words.appendChild(s);
+      });
+      b.appendChild(shell);
+      b.appendChild(words);
+      b.addEventListener('click', function () { pickDay(row.day, li, b); });
+      li.appendChild(b);
+      list.appendChild(li);
+    });
+  }
+  // A row tapped: the day's sheet in full, beneath it; tapped again, it
+  // folds away. A day written elsewhere as one long line shows it as its
+  // words, with no title.
+  function pickDay(d, li, b) {
+    var open = b.getAttribute('aria-expanded') === 'true';
+    Array.prototype.forEach.call($('strandline').querySelectorAll('.sd-strand-row'), function (x) { x.setAttribute('aria-expanded', 'false'); });
+    if (open) {
+      $('tide-day').hidden = true;
+      return;
+    }
+    b.setAttribute('aria-expanded', 'true');
+    li.appendChild($('tide-day'));
+    var r = Mark.read(d.text);
     var long = !r.lines.length && r.title.length > 70;
     $('tide-first').textContent = [dateWords(Days.dateOf(d.address)), r.place].filter(Boolean).join(' · ');
     $('tide-title').textContent = long ? '' : r.title;
@@ -1525,7 +1756,7 @@
       });
       store(PLACED, JSON.stringify(places));
       hold(SEEN, JSON.stringify({ days: days, moments: moments }));
-      dial.days(days);
+      dial.days(days, false, dialOpts);
       // The pools fill as the places come, unless one is already open.
       if (poolsOpen && poolNow < 0) {
         var inPools = document.activeElement && document.activeElement.classList &&
@@ -1616,8 +1847,19 @@
   // A pool's reading: kept, already on its way, or begun now. It is begun
   // as soon as a filled pool is tapped, so the shell is ready by the time
   // it is lifted to the ear.
+  // A reading is kept only under the law it was made under (6.8.1, after
+  // 8.77): each is stored with a short fingerprint of the second law's
+  // text, and one whose fingerprint differs is dropped, so the shell
+  // listens afresh whenever the law changes.
+  var LISTEN_PRINT = textKey(LISTEN_LAW);
   function readingFor(i) {
     var list = inPool(i), whispers = whispersFor(i), key = listenKey(list, whispers), was = keptHere(HEARD)[i];
+    if (was && was.law !== LISTEN_PRINT) {
+      var all0 = keptHere(HEARD);
+      delete all0[i];
+      store(HEARD, JSON.stringify(all0));
+      was = null;
+    }
     if (was && was.key === key) return { list: list, whispers: whispers, ready: was.reading };
     if (pending[i] && pending[i].key === key) return { list: list, whispers: whispers, promise: pending[i].promise };
     if (!stored(KEY) || turnsToday() >= TURNS_A_DAY) return { list: list, whispers: whispers };
@@ -1628,7 +1870,7 @@
       return listenWith(list, here, whispers);
     }).then(function (r) {
       var all = keptHere(HEARD);
-      all[i] = { key: key, reading: r };
+      all[i] = { key: key, law: LISTEN_PRINT, reading: r };
       store(HEARD, JSON.stringify(all));
       return r;
     });
@@ -2460,6 +2702,23 @@
       });
     });
   }
+  // About (6.1.1): the sheet unfolds over the screen; tap outside it,
+  // Escape, or close to fold it away. Nothing is written or sent.
+  var about = $('about');
+  $('about-open').addEventListener('click', function () {
+    if (about.showModal) about.showModal();
+    else about.setAttribute('open', '');
+    $('about-close').focus({ preventScroll: true });
+    about.scrollTop = 0;
+  });
+  function foldAbout() {
+    if (about.open) about.close ? about.close() : about.removeAttribute('open');
+    $('about-open').focus();
+  }
+  $('about-close').addEventListener('click', foldAbout);
+  about.addEventListener('click', function (ev) { if (ev.target === about) foldAbout(); });
+  about.addEventListener('cancel', function (ev) { ev.preventDefault(); foldAbout(); });
+
   showInvite();
 })();
 </script>
