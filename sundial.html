@@ -804,6 +804,97 @@
     white-space: nowrap;
   }
 
+  /* Words left on the About sheet (6.1.3): beneath each place, quiet and
+     italic, 'leave a word' and how many; the words folded until tapped,
+     each drawn as a whisper is, the name in small spaced capitals. */
+  .sd-words {
+    margin: 0.3rem 0 0.2rem;
+  }
+  .sd-words-whole {
+    margin: 1.6rem 0 0.6rem;
+  }
+  .sd-words-row {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+    align-items: center;
+  }
+  .sd-words-whole .sd-words-row {
+    justify-content: center;
+  }
+  .sd-words-leave,
+  .sd-words-count,
+  .sd-words-more {
+    font: inherit;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    min-height: 2.5rem;
+    padding: 0.3rem 0.15rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.22em;
+  }
+  .sd-words-list {
+    margin: 0.4rem 0 0.2rem;
+    color: var(--ink);
+    text-align: left;
+  }
+  .sd-words-list .sd-heard-line {
+    margin: 0 0 0.8rem;
+  }
+  .sd-words-list .sd-heard-line figcaption {
+    font-size: 0.9rem;
+    letter-spacing: 0.14em;
+  }
+  .sd-words-list .sd-heard-line blockquote {
+    font-size: 1.1rem;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+  }
+  .sd-words-first {
+    margin: 0.2rem 0 0.4rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .sd-words-whole .sd-words-first {
+    text-align: center;
+  }
+  .sd-words-form {
+    margin: 0.4rem 0 0.4rem;
+    text-align: left;
+    color: var(--ink);
+  }
+  .sd-words-form textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 1.1rem;
+    line-height: 1.45;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    padding: 0.5rem 0.6rem;
+    resize: vertical;
+  }
+  .sd-words-form textarea:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+  }
+  .sd-words-note {
+    margin: 0.5rem 0 0;
+    font-style: italic;
+  }
+  .sd-words-note:empty {
+    margin: 0;
+  }
+
   /* About and help (6.1.1): one quiet line at the very foot of every screen;
      About unfolds as a paper sheet over the screen, in the sheet's own look. */
   .sd-help {
@@ -1111,6 +1202,7 @@
         <h2 class="sd-about-h" id="road-head">WHERE IT'S GOING</h2>
         <div class="sd-road-way"><svg class="sd-road-line" id="road-line" aria-hidden="true" focusable="false"></svg><ol class="sd-road-stops" id="road-stops"></ol></div>
       </section>
+      <div class="sd-words sd-words-whole" id="words-whole"></div>
       <h2 class="sd-about-h">WHAT IT IS NOT</h2>
       <p>It isn't therapy, a clinical service, or a way to diagnose anything. The colours are ways of looking, offered lightly, never labels.</p>
       <h2 class="sd-about-h">IF YOU NEED HELP NOW</h2>
@@ -1224,6 +1316,7 @@
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
 <script src="whispers.js?v=2026-10-23d"></script>
+<script src="words.js?v=2026-10-23a"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-23b"></script>
 <script>
@@ -1246,7 +1339,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.6 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.7 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2866,7 +2959,7 @@
       var state = stop && typeof stop === 'object' && typeof stop['1'] === 'string' ? stop['1'].trim().toLowerCase() : '';
       var cut = text.indexOf('. ');
       out.push({ name: cut > 0 ? text.slice(0, cut + 1) : text.trim(), line: cut > 0 ? text.slice(cut + 2).trim() : '',
-        state: STATES.indexOf(state) >= 0 ? state : 'later' });
+        state: STATES.indexOf(state) >= 0 ? state : 'later', at: '3.6' + k });
     }
     return out;
   }
@@ -2882,6 +2975,7 @@
       // The same road as last drawn: show it as it stands, films and all.
       if (JSON.stringify(stops) === roadDrawn && list.children.length) {
         $('road').hidden = false;
+        roadShown = stops;
         drawRoad(stops);
         return;
       }
@@ -2902,8 +2996,21 @@
       });
       $('road').hidden = false;
       roadFilms(stops, list);
+      // Beneath each stop and its film, its words (6.1.3).
+      stops.forEach(function (s, k) {
+        if (Words.PLACES.indexOf(s.at) < 0) return;
+        var box = document.createElement('div');
+        list.children[k].appendChild(box);
+        wordPlace(box, s.at, s.name.replace(/\.$/, ''));
+      });
+      roadShown = stops;
       drawRoad(stops);
     });
+  }
+  // The road again, as words unfold beneath its stops.
+  var roadShown = null;
+  function roadAgain() {
+    if (roadShown && !$('road').hidden && $('road-stops').children.length === roadShown.length) drawRoad(roadShown);
   }
   // The road's films (6.1.2): one beside each stop, in the road's order,
   // their names and states taken from this same reading of the road.
@@ -2964,13 +3071,211 @@
     });
   }
 
+  // ---- Words left on the About sheet (6.1.3) ---------------------------------------
+  // Sundial as a whole takes words at 2.6, at the end of the sheet's own
+  // words; each stop on the road at 3.61 to 3.67, beneath the stop and its
+  // film. Beneath each place, quietly, 'leave a word' and, when there are
+  // any, how many; the words stay folded until tapped, then unfold newest
+  // first, nine at a time, each as the person's name and the date with
+  // their words beneath. Only a keeper leaves a word, with their word asked
+  // as for keeping; a word not taken stays in its field, and one plain line
+  // says why. Read each time the sheet opens; drawn as text, never markup.
+  var wordsSaid = [], wordsTurn = 0, wordPlaces = {}, placeCount = 0;
+  var NOT_TAKEN = {
+    wrong: 'That word doesn\u2019t open your day book.',
+    refused: 'That word doesn\u2019t open your words here.',
+    unreachable: 'The beach can\u2019t be reached just now. Your words are still here.'
+  };
+  function wordsAt(address) {
+    return wordsSaid.filter(function (m) { return m.at[address]; }).map(function (m) {
+      return { name: m.name, when: m.when, said: m.at[address] };
+    }).sort(function (a, b) {
+      return a.when < b.when ? 1 : a.when > b.when ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    });
+  }
+  function wordDate(iso) {
+    var d = iso ? new Date(iso) : null;
+    return d && !isNaN(d) ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  }
+  function wordPlace(box, address, what) {
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text) e.textContent = text;
+      return e;
+    }
+    var n = ++placeCount;
+    box.className = 'sd-words' + (address === '2.6' ? ' sd-words-whole' : '');
+    box.setAttribute('data-at', address);
+    box.textContent = '';
+    var row = el('p', 'sd-words-row'), leave = el('button', 'sd-words-leave', 'leave a word'), count = el('button', 'sd-words-count');
+    leave.type = count.type = 'button';
+    leave.setAttribute('aria-label', 'leave a word on ' + what);
+    count.setAttribute('aria-expanded', 'false');
+    count.setAttribute('aria-controls', 'words-' + n);
+    count.hidden = true;
+    row.appendChild(leave);
+    row.appendChild(count);
+    var list = el('div', 'sd-words-list');
+    list.id = 'words-' + n;
+    list.hidden = true;
+    var first = el('p', 'sd-words-first', 'Keep a day first, and you can leave a word here.');
+    first.hidden = true;
+    var form = el('form', 'sd-words-form'), field = el('textarea'), note = el('p', 'sd-words-note');
+    var buttons = el('div', 'sd-whisper-row'), send = el('button', 'sd-whisper-send', 'Leave it'), not = el('button', 'sd-whisper-not', 'not now');
+    form.hidden = true;
+    field.rows = 3;
+    field.setAttribute('aria-label', 'your words on ' + what);
+    note.setAttribute('role', 'status');
+    send.type = 'submit';
+    not.type = 'button';
+    buttons.appendChild(send);
+    buttons.appendChild(not);
+    form.appendChild(field);
+    form.appendChild(note);
+    form.appendChild(buttons);
+    [row, list, first, form].forEach(function (x) { box.appendChild(x); });
+    Beach.addMic(field);
+    var place = { address: address, list: list, count: count, form: form, field: field, note: note, first: first, open: false, shown: 9, busy: false };
+    wordPlaces[address] = place;
+
+    leave.addEventListener('click', function () {
+      if (!whoseName()) {
+        form.hidden = true;
+        first.hidden = false;
+        return;
+      }
+      first.hidden = true;
+      form.hidden = false;
+      field.focus();
+      roadAgain();
+    });
+    count.addEventListener('click', function () {
+      place.open = !place.open;
+      place.shown = 9;
+      drawPlace(place);
+      roadAgain();
+    });
+    not.addEventListener('click', function () {
+      form.hidden = true;
+      note.textContent = '';
+      leave.focus();
+      roadAgain();
+    });
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var said = field.value.trim(), name = whoseName();
+      if (place.busy) return;
+      if (!said) { field.focus(); return; }
+      if (!name) {
+        form.hidden = true;
+        first.hidden = false;
+        return;
+      }
+      place.busy = true;
+      note.textContent = '';
+      askWord().then(function (word) {
+        if (!word) {
+          place.busy = false;
+          field.focus();
+          return;
+        }
+        send.disabled = true;
+        return Words.leave(name, word, address, said).then(function (result) {
+          place.busy = false;
+          send.disabled = false;
+          if (result === 'left') {
+            // Theirs now stands at this place: one per person per place,
+            // dated as the beach will date it, and unfolded for them to see.
+            var when = new Date().toISOString(), mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
+            if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {} });
+            mine.when = when;
+            mine.at[address] = said;
+            field.value = '';
+            form.hidden = true;
+            place.open = true;
+            place.shown = 9;
+            Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
+            roadAgain();
+            count.focus();
+            return;
+          }
+          // Not taken: the words stay in the field, and the page says why.
+          // A word the beach refused is let go, to be asked again.
+          if (result === 'wrong' || result === 'refused') hold(WORD, '');
+          note.textContent = NOT_TAKEN[result] || NOT_TAKEN.unreachable;
+          field.focus();
+          roadAgain();
+        });
+      });
+    });
+    drawPlace(place);
+  }
+  function drawPlace(place) {
+    var all = wordsAt(place.address);
+    place.count.hidden = !all.length;
+    place.count.textContent = all.length === 1 ? '1 word' : all.length + ' words';
+    place.count.setAttribute('aria-expanded', place.open && all.length ? 'true' : 'false');
+    place.list.textContent = '';
+    place.list.hidden = !(place.open && all.length);
+    if (place.list.hidden) return;
+    all.slice(0, place.shown).forEach(function (w) {
+      var fig = document.createElement('figure'), cap = document.createElement('figcaption'), q = document.createElement('blockquote');
+      fig.className = 'sd-heard-line sd-word';
+      cap.textContent = w.name + (wordDate(w.when) ? ' \u00b7 ' + wordDate(w.when) : '');
+      q.textContent = w.said;
+      fig.appendChild(cap);
+      fig.appendChild(q);
+      place.list.appendChild(fig);
+    });
+    if (all.length > place.shown) {
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'sd-words-more';
+      more.textContent = 'more';
+      more.addEventListener('click', function () {
+        place.shown += 9;
+        drawPlace(place);
+        roadAgain();
+        var next = place.list.querySelectorAll('figure')[place.shown - 9];
+        if (next) {
+          next.setAttribute('tabindex', '-1');
+          next.focus();
+        }
+      });
+      place.list.appendChild(more);
+    }
+  }
+  // Each time the sheet opens: every place folded and quiet, then the
+  // mirrors read afresh. If they can't be read, the places stay as they are.
+  function readWords() {
+    var turn = ++wordsTurn;
+    Object.keys(wordPlaces).forEach(function (a) {
+      var place = wordPlaces[a];
+      place.open = false;
+      place.form.hidden = true;
+      place.first.hidden = true;
+      place.note.textContent = '';
+      drawPlace(place);
+    });
+    Words.read().then(function (all) {
+      if (turn !== wordsTurn) return;
+      wordsSaid = all;
+      Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
+      roadAgain();
+    }, function () {});
+  }
+  wordPlace($('words-whole'), '2.6', 'Sundial');
+
   // About (6.1.1): the sheet unfolds over the screen; tap outside it,
-  // Escape, or close to fold it away. Nothing is written or sent.
+  // Escape, or close to fold it away. Opening it reads the road and the
+  // words left on it (6.1.3); nothing is written until someone leaves one.
   var about = $('about');
   $('about-open').addEventListener('click', function () {
     if (about.showModal) about.showModal();
     else about.setAttribute('open', '');
     readRoad();
+    readWords();
     $('about-close').focus({ preventScroll: true });
     about.scrollTop = 0;
   });
