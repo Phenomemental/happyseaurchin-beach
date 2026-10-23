@@ -110,6 +110,22 @@
     max-width: 28rem;
     margin: 0.8rem auto 0;
   }
+  /* The two quiet lines of the pools (6.8, amended 23 October 2026). */
+  .sd-pools-line,
+  .sd-listen-hint {
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin: 0;
+  }
+  .sd-pools-line {
+    font-size: 1.05rem;
+    margin: 0 0 0.6rem;
+  }
+  .sd-listen-hint {
+    font-size: 1rem;
+    margin-top: -0.4rem;
+  }
   .sd-pool-phrase {
     font-style: italic;
     font-size: 1.35rem;
@@ -800,12 +816,14 @@
     </div>
   </section>
 
-  <section class="sd-pools" id="pools" aria-label="Where your days have come to rest" hidden>
+  <section class="sd-pools" id="pools" aria-labelledby="pools-line" hidden>
+    <p class="sd-pools-line" id="pools-line">where your days have come to rest</p>
     <div aria-live="polite">
       <p class="sd-pool-phrase" id="pool-phrase" hidden></p>
       <p class="sd-pool-question" id="pool-question" hidden></p>
     </div>
     <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
+    <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>hold it to your ear</p>
     <div class="sd-heard" id="heard" aria-live="polite" hidden>
       <div id="heard-lines"></div>
       <p class="sd-hears" id="hears"></p>
@@ -937,7 +955,7 @@
 
 <script src="beach.js?v=2026-10-22a"></script>
 <script src="mark.js?v=2026-10-23a"></script>
-<script src="shell.js?v=2026-10-22a"></script>
+<script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
@@ -955,7 +973,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.1 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1378,7 +1396,7 @@
     poolNow = -1;
     poolsHidden = ['greet', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
-    ['pool-phrase', 'pool-question', 'listen', 'heard'].forEach(function (id) { $(id).hidden = true; });
+    ['pool-phrase', 'pool-question', 'listen', 'listen-hint', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
     drawPools();
     // While the pools are out the sundial holds them (a group, not a
@@ -1418,11 +1436,13 @@
       $('pool-question').textContent = pool.question;
       $('pool-question').hidden = false;
       $('listen').hidden = true;
+      $('listen-hint').hidden = true;
       return;
     }
     $('pool-phrase').textContent = pool.phrase;
     $('pool-question').hidden = true;
     $('listen').hidden = false;
+    $('listen-hint').hidden = false;
     Shell.draw($('shell-art'), i, pool.hue);
     readingFor(i);
   }
@@ -1609,8 +1629,9 @@
     listening = true;
     $('listen').classList.add('lifted');
     $('listen').setAttribute('aria-pressed', 'true');
+    $('listen-hint').hidden = true;
     clearTimeout(quietTimer);
-    Shell.listen();
+    Shell.listen({ pool: i, part: partAt(new Date()) });
     // A moment for the shell to reach the ear; then, if the reading has
     // not come, rings open out from it until it does.
     var waiting = setTimeout(function () { if (turn === listenTurn) $('listen').classList.add('waiting'); }, 700);
@@ -1704,6 +1725,7 @@
     $('listen').classList.remove('lifted');
     $('listen').classList.remove('waiting');
     $('listen').setAttribute('aria-pressed', 'false');
+    $('listen-hint').hidden = $('listen').hidden;
     $('heard').hidden = true;
     $('whisper-form').hidden = true;
     $('whisper-open').hidden = false;
