@@ -655,6 +655,37 @@
     justify-content: space-between;
     gap: 10px;
   }
+  /* Watching a run: a bar at the foot of the screen with its controls. */
+  .watchbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+    padding: 12px 16px max(14px, env(safe-area-inset-bottom));
+    background: var(--panel-strong);
+    border-top: 1px solid var(--edge);
+    text-align: center;
+  }
+  .watch-cap {
+    margin: 0;
+    font-weight: 600;
+  }
+  .watch-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .watch-row button { margin: 0; }
+  .watchbar .note { margin: 6px 0 0; font-size: 0.85rem; color: var(--dim); }
+  .board li.watchable { cursor: pointer; }
+  .board li .see {
+    font-size: 0.75rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -672,6 +703,24 @@
   <p class="ghost-line" id="ghost-line"></p>
   <p class="prev-line" id="prev-line" hidden></p>
   <p class="left-line" id="left" aria-hidden="true"></p>
+  <!-- Watching a run: a replay of the swings a run was kept as, with the
+       day's best as the ghost beside it; it can be shared as a link or
+       made into a short clip. -->
+  <div class="watchbar" id="watchbar" hidden>
+    <p class="watch-cap" id="watch-cap"></p>
+    <div class="watch-row">
+      <button type="button" class="chip" id="w-play" aria-label="Pause">⏸</button>
+      <button type="button" class="chip" id="w-slow" aria-pressed="false">½× speed</button>
+      <button type="button" class="chip" id="w-again" aria-label="Watch again">↺</button>
+      <button type="button" class="chip" id="w-close">Close</button>
+    </div>
+    <div class="watch-row">
+      <button type="button" class="go" id="w-race" hidden>Race this run</button>
+      <button type="button" class="chip" id="w-clip">Make a clip</button>
+      <button type="button" class="chip" id="w-link">Share link</button>
+    </div>
+    <p class="note" id="w-note" aria-live="polite"></p>
+  </div>
   <div class="middle">
     <!-- The briefing tells three things only: where you start, your move,
          and what you are trying to do (ways:games 1). Its words are kept at
@@ -701,6 +750,7 @@
       </div>
       <div class="row">
         <button type="button" id="again">Play again</button>
+        <button type="button" id="end-watch">Watch my run</button>
         <button type="button" id="end-board">See the board</button>
         <button type="button" id="end-note-btn">Leave a note</button>
       </div>
@@ -912,6 +962,7 @@
   var params = new URLSearchParams(location.search);
   var asked = RA.validTrack(params.get('track')) ? params.get('track') : '';
   var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  var askedWatch = /^\d{1,7}$/.test(params.get('watch') || '') ? params.get('watch') : '';
   // A link to bring someone in carries the bringer's name (?from=). The
   // first one a phone arrives by is kept, and each run it keeps says who
   // brought it.
@@ -991,6 +1042,7 @@
         ghostLine.textContent = 'The beach is out of reach just now, so this is a practice alley.';
       }
       phase = 'ready';
+      if (askedWatch) openWatchLink();
     });
   }
 
@@ -1024,7 +1076,7 @@
   // link brought one. Read when the page opens, and every twenty seconds
   // while it is open and no run is under way, so a new record reaches every
   // phone.
-  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0, leaderReplay = '';
   function loadLeader() {
     if (!isDay(TRACK)) return;
     leaderRead = Date.now();
@@ -1040,6 +1092,7 @@
         leader = g;
         leaderWho = top.name;
         leaderMine = top.player === me;
+        leaderReplay = top.replay;
       }
       if (phase === 'ready' || phase === 'loading') loadGhost();
     }, function () {});
@@ -1281,6 +1334,7 @@
     count('finishes');
     var now = { caught: run.caught, taps: run.taps };
     last = { replay: sound ? replay : '', caught: run.caught, taps: run.taps, slot: '', tries: tries };
+    document.getElementById('end-watch').hidden = !last.replay;
     document.getElementById('end-tries').textContent = 'From ' + run.taps + (run.taps === 1 ? ' swing, ' : ' swings, ') +
       (tries === 1 ? 'on your first try in this alley!' : 'on your ' + ordinal(tries) + ' try in this alley.');
     var bestKept = recall(BEST), mineRun = bestKept ? RA.rerun(bestKept, sk) : null;
@@ -1413,7 +1467,7 @@
       var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, caught: -1, taps: 0, tries: null, runs: 0, last: '' });
       p.runs++;
       if (r.at > p.last) p.last = r.at;
-      if (RA.better(r, p)) { p.caught = r.caught; p.taps = r.taps; p.tries = r.tries; }
+      if (RA.better(r, p)) { p.caught = r.caught; p.taps = r.taps; p.tries = r.tries; p.slot = r.slot; p.replay = r.replay; p.at = r.at; }
     });
     return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) {
       return b.caught - a.caught || a.taps - b.taps || (a.last < b.last ? -1 : 1);
@@ -1628,6 +1682,16 @@
           li.appendChild(name);
           if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
           li.appendChild(el('span', 't', RA.words(p.caught)));
+          if (p.replay) {
+            li.className += ' watchable';
+            li.setAttribute('role', 'button');
+            li.tabIndex = 0;
+            li.setAttribute('aria-label', 'Watch ' + p.name + '’s run, ' + RA.words(p.caught));
+            li.appendChild(el('span', 'see', '▶ watch'));
+            var go = function () { closeBoard(); watchRun(p.replay, { who: p.name, slot: p.slot, at: p.at, mine: p.player === me }); };
+            li.addEventListener('click', go);
+            li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+          }
           list.appendChild(li);
         });
         more.hidden = ps.length <= TOP;
@@ -2156,7 +2220,8 @@
   var bigRat = 0;               // when the big rat started coming, or 0
   function mark(x, y, kind) {
     var life = kind === 'miss' ? RA.LAW.missRest / RA.RATE * 1000 : kind === 'resting' ? 250 : 480;
-    marks.push({ x: x, y: y, kind: kind, born: performance.now(), life: life, reach: RA.reach(run ? run.step : 0) });
+    var at = phase === 'watching' && watch ? watch.t : run ? run.step : 0;
+    marks.push({ x: x, y: y, kind: kind, born: performance.now(), life: life, reach: RA.reach(at) });
     if (marks.length > 40) marks.splice(0, marks.length - 40);
   }
   function puff(x, y, n, color) {
@@ -2515,8 +2580,8 @@
   // A rat seen from above, nose to the right, in units of its size: its
   // tail, its feet, its body and head, its ears and whiskers. Its eyes are
   // drawn after the dark, so they glint in it; this answers where they are.
-  function drawRat(b, q, s, ts) {
-    var rat = sk.list[b], sc = view.scale, p = px(q.x, q.y);
+  function drawRat(b, q, s, ts, al) {
+    var rat = (al || sk).list[b], sc = view.scale, p = px(q.x, q.y);
     var len = Math.sqrt(q.hx * q.hx + q.hy * q.hy);
     var ang = len > 1e-6 ? Math.atan2(q.hy, q.hx) : (heading[b] || 0);
     heading[b] = ang;
@@ -2731,7 +2796,11 @@
       ctx.fillRect(0, 0, w, h);
       return;
     }
-    var s = run ? (phase === 'running' ? run.step + alpha : run.step) : 0;
+    // A run being watched is drawn at its own step, in the alley of the law
+    // it was kept under.
+    var seen = phase === 'watching' && watch;
+    var s = seen ? watch.t : run ? (phase === 'running' ? run.step + alpha : run.step) : 0;
+    var rats = seen ? watch.r.alley : sk;
     // A squash jolts the picture a moment.
     var j = !still() && ts - jolt < 90 ? (1 - (ts - jolt) / 90) * 3 : 0;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2747,13 +2816,13 @@
     drawFlats(ts);
     // The rats, the nearer over the further, growing by the second.
     var out = [];
-    for (var b = 0; b < sk.n; b++) {
-      if (run && run.gone[b]) continue;
-      var q = RA.at(sk, b, s);
+    for (var b = 0; b < rats.n; b++) {
+      if (seen ? watch.caughtAt[b] <= s : run && run.gone[b]) continue;
+      var q = RA.at(rats, b, s);
       if (q) out.push({ b: b, q: q });
     }
     out.sort(function (m, n) { return m.q.y - n.q.y; });
-    var eyes = out.map(function (o) { return drawRat(o.b, o.q, s, ts); });
+    var eyes = out.map(function (o) { return drawRat(o.b, o.q, s, ts, rats); });
     // The dark, everywhere but under the lamp.
     var inner = skin.gloom * (1 - 0.92 * lp.level);
     var dk = ctx.createRadialGradient(lc.x, lc.y, lr * 0.12, lc.x, lc.y, lr);
@@ -2801,7 +2870,7 @@
     // In the last five seconds the big rat's eyes open in the door's dark,
     // wider and brighter as it comes.
     var late = (s - (RA.LAW.steps - 5 * RA.RATE)) / (5 * RA.RATE);
-    if (run && late > 0 && !(phase === 'done' && bigRat)) {
+    if ((run || seen) && late > 0 && !(phase === 'done' && bigRat)) {
       late = Math.min(1, late);
       var blink = !still() && Math.sin(ts / 260) > 0.97 ? 0.1 : 1, dc = px(sk.door, RA.WALL - 150);
       var gap = (26 + 22 * late) * sc;
@@ -2821,8 +2890,289 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(scanLayer, 0, 0);
     }
-    countEl.textContent = run ? String(run.caught) : '0';
-    leftEl.textContent = phase === 'running' ? 'The big rat comes in ' + Math.ceil((RA.LAW.steps - run.step) / RA.RATE) + ' s' : '';
+    countEl.textContent = seen ? String(watch.count) : run ? String(run.caught) : '0';
+    leftEl.textContent = phase === 'running' || seen ? 'The big rat comes in ' + Math.ceil((RA.LAW.steps - Math.floor(s)) / RA.RATE) + ' s' : '';
+    if (seen && clip) clipFrame(ts);
+  }
+
+  // ---- Watching a run -------------------------------------------------------
+  // A kept run is its swings, so watching is re-running it: each swing
+  // lands where it did, step for step, the rats it squashed lie flat, and
+  // the count climbs, with the day's best as the ghost beside it (unless
+  // it is that run). Half speed slows it to see how a squash was made.
+  var watch = null, watchbar = document.getElementById('watchbar'), wNote = document.getElementById('w-note');
+  function dateOf(at) {
+    var d = new Date(at);
+    return isNaN(d) ? '' : d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function watchRun(replay, info) {
+    var r = RA.rerun(replay, sk);
+    if (!r || !r.ok) return false;
+    info = info || {};
+    var caughtAt = [];
+    for (var b = 0; b < r.alley.n; b++) caughtAt.push(Infinity);
+    r.hits.forEach(function (h) { if (h.rat >= 0) caughtAt[h.rat] = h.step; });
+    watch = {
+      r: r, replay: replay, who: info.who || 'You', slot: info.slot || '', at: info.at || '', mine: !!info.mine,
+      race: !!info.race, speed: 1, playing: true, caughtAt: caughtAt,
+      ghost: leader && leaderReplay !== replay ? leader : null
+    };
+    rewind();
+    phase = 'watching';
+    bigRat = 0;
+    say.hidden = true;
+    end.hidden = true;
+    sheet.hidden = true;
+    settings.hidden = true;
+    watchbar.hidden = false;
+    wNote.textContent = '';
+    document.getElementById('w-race').hidden = !watch.race;
+    document.getElementById('w-link').hidden = !watch.slot;
+    document.getElementById('w-play').textContent = '⏸';
+    document.getElementById('w-slow').textContent = '½× speed';
+    document.getElementById('w-slow').setAttribute('aria-pressed', 'false');
+    document.getElementById('w-clip').disabled = false;
+    document.getElementById('w-clip').textContent = 'Make a clip';
+    caption();
+    return true;
+  }
+  function alleyDay() {
+    return TRACK === TODAY ? 'today’s alley' : (watch && watch.at ? dateOf(watch.at) + '’s alley' : 'an earlier day’s alley');
+  }
+  function caption() {
+    document.getElementById('watch-cap').textContent = (watch.mine ? 'Your run' : watch.who + '’s run') + ' · ' + RA.words(watch.r.caught) + ' · ' + alleyDay() +
+      (watch.ghost ? ' · ghost: ' + leaderWho + ', ' + RA.words(watch.ghost.caught) : '');
+  }
+  // Back to the start of the run being watched.
+  function rewind() {
+    watch.t = 0;
+    watch.hit = 0;
+    watch.count = 0;
+    watch.ghostHit = 0;
+    watch.ghostCount = 0;
+    marks = [];
+    bits = [];
+    flats = [];
+    swings = [];
+    showWatchGhost();
+  }
+  function showWatchGhost() {
+    if (watch.ghost) ghostLine.textContent = 'Ghost: ' + RA.words(watch.ghostCount);
+  }
+  // The run being watched moved on to step t: every swing it passes lands,
+  // its own with the bat coming down and the rat squashed flat, the
+  // ghost's in its colour.
+  function advance(t) {
+    var w = watch;
+    t = Math.min(t, RA.LAW.steps);
+    while (w.hit < w.r.hits.length && w.r.hits[w.hit].step <= t) {
+      var h = w.r.hits[w.hit++];
+      var at = h.rat >= 0 ? RA.at(w.r.alley, h.rat, h.step) : null;
+      if (at) {
+        w.count++;
+        swing(at.x, at.y);
+        mark(at.x, at.y, 'caught');
+        squash(at, h.step);
+        puff(at.x, at.y, still() ? 6 : 16, skin.you);
+      } else {
+        if (h.rat >= 0) w.count++;
+        swing(h.x, h.y);
+        mark(h.x, h.y, h.rat >= 0 ? 'caught' : 'miss');
+      }
+    }
+    while (w.ghost && w.ghostHit < w.ghost.hits.length && w.ghost.hits[w.ghostHit].step <= t) {
+      var g = w.ghost.hits[w.ghostHit++];
+      mark(g.x, g.y, g.rat >= 0 ? 'ghost-caught' : 'ghost');
+      if (g.rat >= 0) {
+        w.ghostCount++;
+        var ga = RA.at(w.ghost.alley, g.rat, g.step);
+        if (ga) puff(ga.x, ga.y, still() ? 3 : 8, skin.ghost);
+        showWatchGhost();
+      }
+    }
+    w.t = t;
+  }
+  function stepWatch(gap) {
+    if (!watch || clip) return;
+    if (watch.playing) {
+      advance(watch.t + Math.min(gap, 100) / 1000 * RA.RATE * watch.speed);
+      if (watch.t >= RA.LAW.steps) {
+        watch.playing = false;
+        document.getElementById('w-play').textContent = '▶';
+        document.getElementById('w-play').setAttribute('aria-label', 'Play');
+      }
+    }
+  }
+  document.getElementById('w-play').addEventListener('click', function () {
+    if (!watch || clip) return;
+    if (!watch.playing && watch.t >= RA.LAW.steps) rewind();
+    watch.playing = !watch.playing;
+    this.textContent = watch.playing ? '⏸' : '▶';
+    this.setAttribute('aria-label', watch.playing ? 'Pause' : 'Play');
+  });
+  document.getElementById('w-slow').addEventListener('click', function () {
+    if (!watch) return;
+    watch.speed = watch.speed === 1 ? 0.5 : 1;
+    this.setAttribute('aria-pressed', watch.speed < 1 ? 'true' : 'false');
+    this.textContent = watch.speed < 1 ? '1× speed' : '½× speed';
+  });
+  document.getElementById('w-again').addEventListener('click', function () {
+    if (!watch || clip) return;
+    rewind();
+    watch.playing = true;
+    document.getElementById('w-play').textContent = '⏸';
+  });
+  function closeWatch() {
+    if (clip) return;
+    watch = null;
+    watchbar.hidden = true;
+    ready();
+  }
+  document.getElementById('w-close').addEventListener('click', closeWatch);
+  document.getElementById('end-watch').addEventListener('click', function () {
+    if (!last || !last.replay) return;
+    watchRun(last.replay, { who: recall('rat-alley:name') || 'You', slot: last.slot, at: new Date().toISOString(), mine: true });
+  });
+  // Race the run being watched: it becomes the ghost.
+  document.getElementById('w-race').addEventListener('click', function () {
+    if (!watch) return;
+    friend = watch.r;
+    ghostWho = watch.who;
+    closeWatch();
+  });
+
+  // A watch link opens the page playing a kept run.
+  function watchUrl(slot) {
+    return location.origin + location.pathname + '?track=' + TRACK + '&watch=' + slot;
+  }
+  document.getElementById('w-link').addEventListener('click', function () {
+    if (!watch || !watch.slot) return;
+    var url = watchUrl(watch.slot);
+    var text = (watch.mine ? 'Watch my Rat Alley run: ' : 'Watch ' + watch.who + '’s Rat Alley run: ') + RA.words(watch.r.caught) + '.';
+    wNote.textContent = url;
+    if (navigator.share) navigator.share({ title: 'Rat Alley', text: text, url: url }).then(null, function () {});
+    else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(function () { wNote.textContent = 'Link copied: ' + url; }, function () {});
+  });
+  function openWatchLink() {
+    Beach.get(ROOM, { spindle: askedWatch }).then(function (e) {
+      if (!e || typeof e[7] !== 'string') throw new Error('none');
+      var d = RA.decode(e[7]);
+      if (!d || d.track !== TRACK) throw new Error('other alley');
+      var name = who(e) === 'A friend' ? 'A visitor' : who(e);
+      if (!watchRun(e[7], { who: name, slot: askedWatch, at: e[3], mine: isMine(e, askedWatch), race: !isMine(e, askedWatch) })) throw new Error('bad');
+    }).then(null, function () {
+      ghostLine.textContent = 'That run couldn’t be found in this alley.';
+    });
+  }
+
+  // ---- A clip -------------------------------------------------------------------
+  // The replay recorded as a short video by the phone's own recorder: a
+  // title card, the run at double speed with the ghost, and an end card
+  // with the game's name, to share like any clip. Drawn on a canvas of its
+  // own, upright, 720 by 1280.
+  var clip = null;
+  function clipKind() {
+    var kinds = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    if (!window.MediaRecorder) return '';
+    for (var i = 0; i < kinds.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(kinds[i])) return kinds[i];
+    return '';
+  }
+  document.getElementById('w-clip').addEventListener('click', function () {
+    var btn = this;
+    if (!watch || clip) return;
+    if (watch.file) return shareClip();
+    var kind = clipKind(), rec = document.createElement('canvas');
+    if (!kind || !rec.captureStream) {
+      wNote.textContent = 'This browser can’t make clips. Share the link instead.';
+      return;
+    }
+    rec.width = 720;
+    rec.height = 1280;
+    var stream = rec.captureStream(30), chunks = [];
+    var recorder = new MediaRecorder(stream, { mimeType: kind, videoBitsPerSecond: 2500000 });
+    recorder.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    recorder.onstop = function () {
+      var type = kind.split(';')[0], ext = type === 'video/mp4' ? 'mp4' : 'webm';
+      var blob = new Blob(chunks, { type: type });
+      var w = clip.watch;
+      clip = null;
+      w.file = new File([blob], 'rat-alley-' + w.r.caught + '-rats.' + ext, { type: type });
+      if (watch === w) {
+        btn.disabled = false;
+        btn.textContent = 'Share clip';
+        wNote.textContent = 'Your clip is ready (' + Math.round(blob.size / 1024) + ' KB).';
+      }
+    };
+    rewind();
+    watch.playing = false;
+    clip = { rec: rec, g: rec.getContext('2d'), recorder: recorder, start: 0, watch: watch, speed: 2 };
+    btn.disabled = true;
+    btn.textContent = 'Recording…';
+    wNote.textContent = 'Making your clip: it plays through once.';
+    recorder.start(250);
+  });
+  function shareClip() {
+    var file = watch.file;
+    var text = (watch.mine ? 'My Rat Alley run: ' : watch.who + '’s Rat Alley run: ') + RA.words(watch.r.caught) + '. Can you beat it? ' +
+      (watch.slot ? watchUrl(watch.slot) : location.origin + location.pathname);
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Rat Alley', text: text }).then(null, function () {});
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    wNote.textContent = 'Your clip is saved to your downloads. ' + text;
+  }
+  // One frame of the clip: the game as drawn, set into the upright frame,
+  // with the words over it. Title 1.3 s, the run, end card 1.8 s.
+  var TITLE = 1300, CLOSE = 1800;
+  function clipFrame(ts) {
+    var c = clip, g = c.g, W = 720, H = 1280;
+    if (!c.start) c.start = ts;
+    var el2 = ts - c.start, runMs = RA.LAW.steps / RA.RATE * 1000 / c.speed;
+    var phaseOf = el2 < TITLE ? 'title' : el2 < TITLE + runMs ? 'run' : el2 < TITLE + runMs + CLOSE ? 'end' : 'done';
+    g.fillStyle = skin.bg;
+    g.fillRect(0, 0, W, H);
+    var s = Math.min(W / canvas.width, (H - 170) / canvas.height);
+    g.drawImage(canvas, (W - canvas.width * s) / 2, 150 + (H - 170 - canvas.height * s) / 2, canvas.width * s, canvas.height * s);
+    g.textAlign = 'center';
+    g.fillStyle = skin.accent;
+    g.font = '700 40px ' + skin.font;
+    g.fillText('RAT ALLEY', W / 2, 70);
+    g.fillStyle = skin.you;
+    g.font = '700 34px ' + skin.font;
+    g.fillText((c.watch.mine ? (recall('rat-alley:name') || 'Me') : c.watch.who) + ' · ' + RA.words(c.watch.count), W / 2, 122);
+    if (phaseOf !== 'run') {
+      g.fillStyle = skin.strong;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = skin.accent;
+      g.font = '700 64px ' + skin.font;
+      g.fillText('RAT ALLEY', W / 2, H / 2 - 120);
+      g.fillStyle = skin.you;
+      g.font = '700 96px ' + skin.font;
+      g.fillText(RA.words(c.watch.r.caught), W / 2, H / 2 + 10);
+      g.fillStyle = skin.words;
+      g.font = '500 38px ' + skin.font;
+      if (phaseOf === 'title') {
+        g.fillText(c.watch.mine ? (recall('rat-alley:name') || 'My run') : c.watch.who, W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 30px ' + skin.font;
+        g.fillText(alleyDay().charAt(0).toUpperCase() + alleyDay().slice(1), W / 2, H / 2 + 140);
+      } else {
+        g.fillText('Can you beat it?', W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 28px ' + skin.font;
+        g.fillText('phenomemental.github.io', W / 2, H / 2 + 145);
+        g.fillText('/happyseaurchin-beach/rat-alley.html', W / 2, H / 2 + 185);
+      }
+    }
+    // The run moves on for the next frame.
+    if (phaseOf !== 'title') advance((el2 - TITLE) / 1000 * RA.RATE * c.speed);
+    if (phaseOf === 'done' && c.recorder.state === 'recording') c.recorder.stop();
   }
 
   // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
@@ -2838,6 +3188,7 @@
         acc -= DT;
       }
     }
+    if (phase === 'watching') stepWatch(gap);
     draw(phase === 'running' ? acc / DT : 0, Math.min(gap, 50) / 1000, ts);
     requestAnimationFrame(frame);
   }
