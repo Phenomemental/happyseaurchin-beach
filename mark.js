@@ -66,9 +66,16 @@
     return pieces.length && ns.every(Boolean) ? inOrder(ns) : [];
   }
 
+  // A day kept in their own words, with no Claude, ends with one quiet line
+  // (6.8.2.1.1), the way a placed day ends with its places line; it marks
+  // the line as Sundial's on any phone, and the places line takes its place
+  // once the day is placed.
+  var OWN = 'In your own words.';
+
   // A sheet as Claude returns it ({title, lines, tomorrow, places}) and the
   // place, as the text of the slot. (A sheet with a single `pool`, as the
-  // first law gave, writes as that one place.)
+  // first law gave, writes as that one place; a sheet in their own words,
+  // {own: true}, with no places, ends with the own line.)
   function write(sheet, place) {
     var rows = [(place ? place + ' — ' : '') + String(sheet.title || '').trim()];
     (sheet.lines || []).forEach(function (l) {
@@ -78,6 +85,7 @@
     if (tomorrow) rows.push('Tomorrow: ' + tomorrow);
     var words = placesWords(sheet.places || (sheet.pool ? [sheet.pool] : []));
     if (words) rows.push(words.charAt(0).toUpperCase() + words.slice(1) + '.');
+    else if (sheet.own) rows.push(OWN);
     return rows.join('\n');
   }
 
@@ -85,11 +93,14 @@
   // places}; the places are read only from a last line that names them.
   function read(text) {
     var rows = String(text || '').split('\n').map(function (r) { return r.trim(); }).filter(Boolean);
-    var day = { place: '', title: '', lines: [], tomorrow: '', places: [] };
+    var day = { place: '', title: '', lines: [], tomorrow: '', places: [], own: false };
     if (!rows.length) return day;
     var named = rows.length > 1 ? placesIn(rows[rows.length - 1]) : [];
     if (named.length) {
       day.places = named;
+      rows.pop();
+    } else if (rows.length > 1 && rows[rows.length - 1] === OWN) {
+      day.own = true;
       rows.pop();
     }
     var first = rows.shift(), cut = first.indexOf(' — ');
@@ -654,6 +665,7 @@
     P6: P6,
     read: read,
     write: write,
+    OWN: OWN,
     inOrder: inOrder,
     placesWords: placesWords,
     placesOf: placesOf,

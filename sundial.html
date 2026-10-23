@@ -231,6 +231,9 @@
     line-height: 1.5;
     margin: 0.8rem 0 0.6rem;
   }
+  .sd-listen-question.sd-resting {
+    font-style: italic;
+  }
   .sd-put-back {
     display: block;
     margin: 0 auto;
@@ -310,6 +313,14 @@
     border-radius: 2px;
     padding: 0.35rem 1.1rem;
     cursor: pointer;
+  }
+  /* Never silent (6.8.3.1): when a whisper isn't kept, one plain line says why. */
+  .sd-whisper-note {
+    margin: 0.5rem 0 0;
+    font-style: italic;
+  }
+  .sd-whisper-note:empty {
+    margin: 0;
   }
   .sd-heard-line.sd-whispered {
     border-left-style: dashed;
@@ -866,13 +877,36 @@
     overflow-wrap: anywhere;
     white-space: pre-line;
   }
-  .sd-words-first {
-    margin: 0.2rem 0 0.4rem;
+  .sd-words-ask {
+    margin: 0 0 0.5rem;
+    text-align: left;
+  }
+  .sd-words-ask label {
+    display: block;
+    font-size: 0.95rem;
     font-style: italic;
     color: var(--muted);
+    margin: 0 0 0.2rem;
   }
-  .sd-words-whole .sd-words-first {
-    text-align: center;
+  .sd-words-ask input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 1.05rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    padding: 0.4rem 0.6rem;
+  }
+  .sd-words-ask input:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+  }
+  .sd-words-form textarea + .mic-row + .sd-words-ask,
+  .sd-words-form textarea + .sd-words-ask {
+    margin-top: 0.6rem;
   }
   .sd-words-form {
     margin: 0.4rem 0 0.4rem;
@@ -1175,6 +1209,7 @@
         <form class="sd-whisper-form" id="whisper-form" hidden>
           <label for="whisper" class="sd-whisper-label">into the shell</label>
           <textarea id="whisper" rows="3"></textarea>
+          <p class="sd-whisper-note" id="whisper-note" role="status"></p>
           <div class="sd-whisper-row">
             <button type="submit" class="sd-whisper-send" id="whisper-send">Whisper it</button>
             <button type="button" class="sd-whisper-not" id="whisper-not">not now</button>
@@ -1338,13 +1373,13 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-23d"></script>
+<script src="mark.js?v=2026-10-23e"></script>
 <script src="shell.js?v=2026-10-23a"></script>
-<script src="days.js?v=2026-10-23c"></script>
+<script src="days.js?v=2026-10-23d"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
-<script src="whispers.js?v=2026-10-23d"></script>
-<script src="words.js?v=2026-10-23a"></script>
+<script src="whispers.js?v=2026-10-23e"></script>
+<script src="words.js?v=2026-10-23b"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-23b"></script>
 <script>
@@ -1367,7 +1402,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.8 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.9 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1426,7 +1461,7 @@
   var GENTLE = 'Would you like to just sit with it a moment? If you need someone now: your local emergency number, or Samaritans on 116 123 in the UK and Ireland.';
 
   // Listening (plan 6.8.1), Claude's second law, verbatim.
-  var LISTEN_LAW = "You are listening, with one person, to days they wrote before. They are the authority on their days. You host: you hold, notice and return, adding nothing and taking nothing away.\n\nYou receive: their days that came to rest in one place, each with its date, and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question>\"}`.\n\nChoose the way of listening that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days, where that listening is most alive. Hears: one plain sentence that notices only what is on the surface of those passages, in their own words: what they wrote of, and when (as in \"That Friday you wrote of the beach, a mountain, and others wanting the top.\"). Never say how their words are built, what they set beside what, what they mean or what they show; add no word they did not use. Question: one short question that returns them to now, open to wherever they go (as in \"Where are you with this today?\"); never back into the older day's story, never naming anything they did not name. If little is heard, say so plainly and leave heard empty.\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote suggests they may be in danger, make the question say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
+  var LISTEN_LAW = "You are listening, with one person, to days they wrote before, and to what they whispered back since. They are the authority on their days. You host: you hold, notice, follow and return, adding nothing and taking nothing away.\n\nYou receive: today's date; their days that came to rest in one place, each with its date; what they whispered back before, if anything, each with its date and the question it answered; and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question, or empty>\"}`.\n\nChoose the way of listening that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days or their whispers, where that listening is most alive. Hears: one plain sentence that notices only what is on the surface of those passages, in their own words: what they wrote or whispered of, and when (as in \"That Friday you wrote of the beach, a mountain, and others wanting the top.\"). Never say how their words are built, what they set beside what, what they mean or what they show; add no word they did not use. Question: one short question that returns them to now, open to wherever they go (as in \"Where are you with this today?\"); never back into the older day's story, never naming anything they did not name. If little is heard, say so plainly and leave heard empty.\n\nWhat they whispered is where they have led; follow it. When there are whispers, let Hears begin from the newest one, in their own words and when (as in \"Today you whispered of a good place, a deep congruence, and feeling hopeful about the future.\"), and say in the same plain way what the days held only if room remains. Never ask again a question they have already answered, and never repeat the question that went with their newest whisper. If their newest whisper was made today, they are already here: leave the question empty. If it was made on an earlier day, let the question return them to now from where they last were, naming only their own words (as in \"Last time you whispered of feeling hopeful about the future. Where are you with that today?\").\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote or whispered suggests they may be in danger, always give a question, and make it say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
   var LISTEN_SCHEMA = {
     type: 'object',
     additionalProperties: false,
@@ -1540,9 +1575,10 @@
     aheadText = ((all.days || []).filter(function (d) { return d.address === tomorrow; })[0] || {}).text || '';
     days = withPlaces((all.days || []).filter(function (d) { return d.address <= t; }));
     // A day whose own line is theirs, not Sundial's, is drawn from its
-    // moments (6.4.1 (3)): every place its moments touched.
+    // moments (6.4.1 (3)): every place its moments touched. A day Sundial
+    // kept in their own words is placed by the third law instead (6.8.2.1).
     days.forEach(function (d) {
-      if (Mark.placesOf(d).length) return;
+      if (Mark.placesOf(d).length || Mark.read(d.text).own) return;
       var ps = [];
       moments.forEach(function (m) { if (dayOfAddress(m.address) === d.address) ps = ps.concat(Mark.read(m.text).places); });
       if (ps.length) {
@@ -1795,7 +1831,7 @@
     });
     $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
     $('tide-tomorrow').hidden = !r.tomorrow;
-    var touched = Mark.placesWords(Mark.placesOf(d));
+    var touched = Mark.placesWords(Mark.placesOf(d)) || (r.own ? Mark.OWN : '');
     $('tide-pool').textContent = touched;
     $('tide-pool').hidden = !touched;
     $('tide-day').hidden = false;
@@ -2009,36 +2045,51 @@
     });
   }
 
-  // In their own words (6.4.1 (1)): the days this browser wrote with no key
-  // are remembered here, by name and address, with the line as written, so
-  // the page knows its own lines from theirs. Once the third law has placed
-  // such a day, its places line is added beneath it on the beach, with the
-  // word, only while the line still stands exactly as the page wrote it;
-  // with no word held this visit it waits for the next keep.
-  var OWN = 'sundial.own';
+  // Places belong on the beach (6.8.2.1). A day Sundial wrote with no
+  // places line (kept in their own words, ending 'In your own words.'; or,
+  // from before that line began, remembered in this browser by name,
+  // address and the line as written) has its places line written onto the
+  // end of its text once its places are known here, in place of 'In your
+  // own words.', with the word, the next time the word is held: read first
+  // to be sure the line still stands as Sundial wrote it, read back to
+  // confirm, and then this browser's copy is dropped. Quietly: a few days a
+  // visit, never more than the keeps made in it. Lines Sundial did not
+  // write are never changed; their places stay in each browser.
+  var OWN = 'sundial.own', keepsHere = 0, placedHere = 0;
   function ownKey(name, address) { return name + '@' + address; }
   function wroteHere(name) {
     return function (address, text) { return keptHere(OWN)[ownKey(name, address)] === textKey(text); };
   }
+  function lineOfNode(n) {
+    while (n && typeof n === 'object') n = n._;
+    return typeof n === 'string' ? n : '';
+  }
   function placesLines(word) {
-    var name = whoseName(), placed = keptHere(PLACED);
-    if (!name || !word) return Promise.resolve();
-    return days.reduce(function (p, d) {
-      var ns = placed[textKey(d.text)];
-      if (!wroteHere(name)(d.address, d.text) || !Array.isArray(ns) || !ns.length || Mark.read(d.text).places.length) return p;
-      var named = Mark.placesWords(ns), text = d.text + '\n' + named.charAt(0).toUpperCase() + named.slice(1) + '.';
+    var name = whoseName(), placed = keptHere(PLACED), room = Math.min(3, keepsHere) - placedHere;
+    if (!name || !word || room <= 0) return Promise.resolve();
+    var todo = days.filter(function (d) {
+      var r = Mark.read(d.text), ns = placed[textKey(d.text)];
+      return !r.places.length && (r.own || wroteHere(name)(d.address, d.text)) && Array.isArray(ns) && ns.length;
+    }).slice(0, room);
+    return todo.reduce(function (p, d) {
+      var rows = d.text.replace(/\s+$/, '').split('\n'), named = Mark.placesWords(placed[textKey(d.text)]);
+      if (Mark.read(d.text).own) rows.pop();
+      var text = rows.join('\n') + '\n' + named.charAt(0).toUpperCase() + named.slice(1) + '.';
       return p.then(function () {
         return Beach.look('now:' + name, '&spindle=' + d.address);
       }).then(function (r) {
-        var there = r.json;
-        while (there && typeof there === 'object') there = there._;
-        if (r.status !== 200 || there !== d.text) return null;
+        if (r.status !== 200 || lineOfNode(r.json) !== d.text) return null;
         return Beach.write('now:' + name, { spindle: d.address, content: text, secret: word });
       }).then(function (w) {
-        if (!w || w.status !== 200) return;
-        var mine = keptHere(OWN);
+        return w && w.status === 200 ? Beach.look('now:' + name, '&spindle=' + d.address) : null;
+      }).then(function (r) {
+        if (!r || r.status !== 200 || lineOfNode(r.json) !== text) return;
+        placedHere++;
+        var mine = keptHere(OWN), kept = keptHere(PLACED);
         delete mine[ownKey(name, d.address)];
+        delete kept[textKey(d.text)];
         store(OWN, JSON.stringify(mine));
+        store(PLACED, JSON.stringify(kept));
         d.text = text;
       });
     }, Promise.resolve());
@@ -2103,7 +2154,9 @@
     return hears || question ? { heard: heard, hears: hears, question: question } : null;
   }
   function listenWith(list, ways, whispers) {
-    var text = 'Their days:\n\n' + list.map(function (d) {
+    var now = new Date();
+    var text = 'Today is ' + now.toLocaleDateString('en-GB', { weekday: 'long' }) + ' ' +
+      now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '.\n\nTheir days:\n\n' + list.map(function (d) {
       return dateWords(Days.dateOf(d.address)) + '\n' + wordsOf(d);
     }).join('\n\n') + (whispers && whispers.length ? '\n\nWhat they whispered back before, each with the question it answered:\n\n' +
       whispers.map(function (w) { return w.date + (w.asked ? ' — asked: ' + w.asked : '') + '\n' + w.said; }).join('\n\n') : '') +
@@ -2235,8 +2288,12 @@
     $('whisper-open').hidden = false;
     $('hears').textContent = r.hears;
     $('hears').hidden = !r.hears;
-    $('listen-question').textContent = r.question;
-    $('listen-question').hidden = !r.question;
+    // With no question, the shell rests (6.8.3.2 (3)): one quiet line in the
+    // question's place, and 'whisper back' stays as it is.
+    $('listen-question').textContent = r.question || 'The shell rests with that until tomorrow.';
+    $('listen-question').setAttribute('data-asked', r.question);
+    $('listen-question').classList.toggle('sd-resting', !r.question);
+    $('listen-question').hidden = !(r.question || r.hears);
     $('heard').hidden = false;
     var still = STILL.matches || !document.body.animate;
     var from = $('shell-art').getBoundingClientRect();
@@ -2282,11 +2339,20 @@
   // next time the shell is lifted, it comes back with their words and the
   // shell listens to it too. The word is asked once a visit, in its own
   // small card, the first time it is needed; the key is made from then.
-  var wordCard = $('word-card'), wordWaiter = null, wordAsked = false;
+  var wordCard = $('word-card'), wordWaiter = null, wordAsked = false, wordFor = 'day';
+  // A stash that stood before Sundial may have its own word (6.8.3.1): it is
+  // asked once, in the same card, and held for the visit apart from the
+  // day-book word, which still keeps days.
+  var STASH_WORD = 'sundial.stash', STASH_ASK = 'Your stash has its own word. What is it?', DAY_ASK = $('wword-label').textContent;
+  var WHISPER_NOT = {
+    stash: 'That word doesn\u2019t open your stash.',
+    wrong: 'That word doesn\u2019t open your stash.',
+    unreachable: 'The beach can\u2019t be reached just now. Your words are still here.'
+  };
   var stashSealed = -1, whispersAll = null, whisperRead = null, whispering = false;
   function whoseName() { return stored(NAME) || held(LOOKING); }
   function readWhispers() {
-    var name = whoseName(), word = held(WORD);
+    var name = whoseName(), word = held(STASH_WORD) || held(WORD);
     if (!name || !word) return Promise.resolve(null);
     if (!whisperRead) {
       whisperRead = Whispers.read(name, word).then(function (list) {
@@ -2303,10 +2369,12 @@
     var phrase = Mark.POOLS[i].phrase;
     return (whispersAll || []).filter(function (w) { return w.phrase === phrase; }).slice(-3);
   }
-  function askWord() {
-    if (held(WORD)) return Promise.resolve(held(WORD));
+  function askWord(kind) {
+    wordFor = kind === 'stash' ? 'stash' : 'day';
+    if (wordFor === 'day' && held(WORD)) return Promise.resolve(held(WORD));
     return new Promise(function (ok) {
       wordWaiter = ok;
+      $('wword-label').textContent = wordFor === 'stash' ? STASH_ASK : DAY_ASK;
       $('wword').value = '';
       if (wordCard.showModal) wordCard.showModal();
       else wordCard.setAttribute('open', '');
@@ -2323,13 +2391,20 @@
     ev.preventDefault();
     var word = $('wword').value;
     if (!word) { $('wword').focus(); return; }
+    if (wordFor === 'stash') {
+      closeWord(word);
+      return;
+    }
     hold(WORD, word);
     Whispers.warm(word);
     whisperRead = null;
     closeWord(word);
   });
   $('word-not').addEventListener('click', function () { closeWord(''); });
-  wordCard.addEventListener('close', function () { closeWord(held(WORD)); });
+  wordCard.addEventListener('close', function () {
+    closeWord(wordFor === 'stash' ? '' : held(WORD));
+    $('wword-label').textContent = DAY_ASK;
+  });
 
   Beach.addMic($('whisper'));
   $('whisper-open').addEventListener('click', function () {
@@ -2347,6 +2422,7 @@
     var said = $('whisper').value.trim(), i = poolNow, name = whoseName();
     if (!said || whispering || i < 0 || !name) return;
     whispering = true;
+    $('whisper-note').textContent = '';
     askWord().then(function (word) {
       if (!word) {
         whispering = false;
@@ -2354,10 +2430,25 @@
         return;
       }
       var entry = { phrase: Mark.POOLS[i].phrase, date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-        said: said, asked: $('listen-question').textContent };
+        said: said, asked: $('listen-question').getAttribute('data-asked') || '' };
       sink($('whisper'));
       $('whisper-form').hidden = true;
-      return Whispers.keep(name, word, entry).then(function (result) {
+      // Sealed with the stash's own word when one is held, else the
+      // day-book word; a standing stash that refuses the day-book word asks
+      // once for its own (6.8.3.1).
+      function seal(w, asked) {
+        return Whispers.keep(name, w, entry).then(function (result) {
+          if (result === 'stash' && !asked && !held(STASH_WORD)) {
+            return askWord('stash').then(function (own) {
+              if (!own) return 'stash';
+              hold(STASH_WORD, own);
+              return seal(own, true);
+            });
+          }
+          return result;
+        });
+      }
+      return seal(held(STASH_WORD) || word, false).then(function (result) {
         whispering = false;
         if (result === 'kept') {
           $('whisper').value = '';
@@ -2369,12 +2460,14 @@
           $('whisper-open').hidden = false;
           return;
         }
-        // Nothing kept: the words wait in the field, and nothing is said. A
-        // word the stash's lock refused is let go, to be asked again.
-        if (result === 'wrong') {
-          hold(WORD, '');
-          whisperRead = null;
-        }
+        // Never silent (6.8.3.1): the words wait in the field and one plain
+        // line says why. A day-book word that doesn't prove is let go, to be
+        // asked again; a stash's own word that fails is let go too; the
+        // day-book word is kept when only the stash refuses it.
+        if (result === 'wrong') hold(WORD, '');
+        if (result === 'stash') hold(STASH_WORD, '');
+        whisperRead = null;
+        $('whisper-note').textContent = WHISPER_NOT[result] || WHISPER_NOT.unreachable;
         $('whisper-form').hidden = false;
         $('whisper').focus();
       });
@@ -2800,7 +2893,7 @@
     var first = (lines[0].match(/^.*?[.!?](?=\s|$)/) || [lines[0]])[0].replace(/[.!?]+$/, '').trim();
     var ws = first.split(/\s+/);
     var title = ws.length > 8 ? ws.slice(0, 8).join(' ').replace(/[,;:\u2014\u2013-]+$/, '') + '\u2026' : first;
-    return { title: title, lines: lines, tomorrow: '', places: [] };
+    return { title: title, lines: lines, tomorrow: '', places: [], own: true };
   }
   function ownWords(words) {
     greet.hidden = true;
@@ -2965,8 +3058,8 @@
   }
   function keepWith(typed, word) {
     if (!sheetNow) return;
-    var moment = Mark.write(sheetNow), who = null, first = false, own = ownNow;
-    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places });
+    var moment = Mark.write(sheetNow), who = null, first = false;
+    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places, own: sheetNow.own });
     setKeeping(true);
     Days.resolve(typed).then(function (w) {
       who = w;
@@ -2998,13 +3091,7 @@
         return { days: days.filter(function (d) { return d.address !== t; }).concat([{ address: t, text: dayText }]),
           moments: moments.concat([{ address: Days.now(), text: moment }]) };
       }).then(function (all) {
-        // A day line the page wrote in their own words is remembered as its
-        // own; then any places lines waiting on the word are added.
-        var t = todayAddress(), mine = keptHere(OWN);
-        if (own && (all.days || []).some(function (d) { return d.address === t && d.text === dayText; })) {
-          mine[ownKey(who.name, t)] = textKey(dayText);
-          store(OWN, JSON.stringify(mine));
-        }
+        keepsHere++;
         setKeeping(false);
         closeKeep();
         sheetNow = null;
@@ -3222,12 +3309,15 @@
   var wordsSaid = [], wordsTurn = 0, wordPlaces = {}, placeCount = 0;
   var NOT_TAKEN = {
     wrong: 'That word doesn\u2019t open your day book.',
+    name: 'That word doesn\u2019t open that name.',
+    first: 'Keep a day first, and you can leave a word here.',
     refused: 'That word doesn\u2019t open your words here.',
     unreachable: 'The beach can\u2019t be reached just now. Your words are still here.'
   };
+  var PASSPORT_ONCE = 'Your words here need your passport\u2019s key, once, to begin.';
   function wordsAt(address) {
     return wordsSaid.filter(function (m) { return m.at[address]; }).map(function (m) {
-      return { name: m.name, when: m.when, said: m.at[address] };
+      return { name: m.name, when: (m.dates && m.dates[address]) || m.when, said: m.at[address] };
     }).sort(function (a, b) {
       return a.when < b.when ? 1 : a.when > b.when ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
     });
@@ -3242,6 +3332,18 @@
       if (cls) e.className = cls;
       if (text) e.textContent = text;
       return e;
+    }
+    // A label and its field, as the keep card asks them.
+    function ask(id, label, password) {
+      var wrap = el('p', 'sd-words-ask'), l = el('label', '', label), input = el('input');
+      l.setAttribute('for', id);
+      input.id = id;
+      input.type = password ? 'password' : 'text';
+      ['autocomplete', 'spellcheck', 'autocapitalize'].forEach(function (k, i) { input.setAttribute(k, ['off', 'false', 'off'][i]); });
+      if (!password) input.maxLength = 40;
+      wrap.appendChild(l);
+      wrap.appendChild(input);
+      return { wrap: wrap, input: input };
     }
     var n = ++placeCount;
     box.className = 'sd-words' + (address === '2.6' ? ' sd-words-whole' : '');
@@ -3258,11 +3360,12 @@
     var list = el('div', 'sd-words-list');
     list.id = 'words-' + n;
     list.hidden = true;
-    var first = el('p', 'sd-words-first', 'Keep a day first, and you can leave a word here.');
-    first.hidden = true;
     var form = el('form', 'sd-words-form'), field = el('textarea'), note = el('p', 'sd-words-note');
+    var whoName = ask('words-name-' + n, 'your name here'), whoWord = ask('words-word-' + n, 'your word', true);
+    var passport = ask('words-key-' + n, PASSPORT_ONCE, true);
     var buttons = el('div', 'sd-whisper-row'), send = el('button', 'sd-whisper-send', 'Leave it'), not = el('button', 'sd-whisper-not', 'not now');
     form.hidden = true;
+    passport.wrap.hidden = true;
     field.rows = 3;
     field.setAttribute('aria-label', 'your words on ' + what);
     note.setAttribute('role', 'status');
@@ -3270,23 +3373,23 @@
     not.type = 'button';
     buttons.appendChild(send);
     buttons.appendChild(not);
-    form.appendChild(field);
-    form.appendChild(note);
-    form.appendChild(buttons);
-    [row, list, first, form].forEach(function (x) { box.appendChild(x); });
+    [whoName.wrap, whoWord.wrap, field, passport.wrap, note, buttons].forEach(function (x) { form.appendChild(x); });
+    [row, list, form].forEach(function (x) { box.appendChild(x); });
     Beach.addMic(field);
-    var place = { address: address, list: list, count: count, form: form, field: field, note: note, first: first, open: false, shown: 9, busy: false };
+    var place = { address: address, list: list, count: count, form: form, field: field, note: note, passport: passport.wrap, open: false, shown: 9, busy: false };
     wordPlaces[address] = place;
+    // A browser that holds no name is asked for one here, with its word
+    // (6.1.3.2); one that holds a name is asked only for the word, once a
+    // visit, in the word card.
+    function asking() {
+      var none = !whoseName();
+      whoName.wrap.hidden = whoWord.wrap.hidden = !none;
+      return none;
+    }
 
     leave.addEventListener('click', function () {
-      if (!whoseName()) {
-        form.hidden = true;
-        first.hidden = false;
-        return;
-      }
-      first.hidden = true;
       form.hidden = false;
-      field.focus();
+      (asking() && !whoName.input.value ? whoName.input : field).focus();
       roadAgain();
     });
     count.addEventListener('click', function () {
@@ -3301,51 +3404,93 @@
       leave.focus();
       roadAgain();
     });
+    function says(words, focus) {
+      note.textContent = words;
+      (focus || field).focus();
+      roadAgain();
+    }
+    // Leave the words: their name proved by the word on their day book, the
+    // mirror made or used, the words written with their date (6.1.3,
+    // 6.1.3.1). A mirror that can't be made with the day-book word asks
+    // once for the passport's key, kept nowhere (6.1.3.2.1).
+    function go(name, word, typedHere) {
+      var key = passport.wrap.hidden ? '' : passport.input.value, when = new Date().toISOString();
+      send.disabled = true;
+      return Words.leave(name, word, address, field.value.trim(), when, key, typedHere).then(function (result) {
+        place.busy = false;
+        send.disabled = false;
+        passport.input.value = '';
+        if (result === 'left') {
+          // Theirs now stands at this place: one per person per place, with
+          // its own date, and unfolded for them to see. A name given here is
+          // held for the visit, with its word, as Keep holds them.
+          if (typedHere) {
+            hold(LOOKING, name);
+            hold(WORD, word);
+            whoName.input.value = whoWord.input.value = '';
+            showDoor();
+          }
+          var mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
+          if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {}, dates: {} });
+          mine.dates = mine.dates || {};
+          mine.at[address] = field.value.trim();
+          mine.dates[address] = when;
+          field.value = '';
+          note.textContent = '';
+          passport.wrap.hidden = true;
+          form.hidden = true;
+          place.open = true;
+          place.shown = 9;
+          Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
+          roadAgain();
+          count.focus();
+          return;
+        }
+        // Not taken: the words stay in the field, and the page says why.
+        if (result === 'passport') {
+          note.textContent = '';
+          passport.wrap.hidden = false;
+          passport.input.focus();
+          roadAgain();
+          return;
+        }
+        if (result === 'wrong' && typedHere) return says(NOT_TAKEN.name, whoWord.input);
+        // A word the beach refused is let go, to be asked again.
+        if (result === 'wrong' || result === 'refused') hold(WORD, '');
+        says(NOT_TAKEN[result] || NOT_TAKEN.unreachable);
+      });
+    }
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var said = field.value.trim(), name = whoseName();
       if (place.busy) return;
-      if (!said) { field.focus(); return; }
-      if (!name) {
-        form.hidden = true;
-        first.hidden = false;
+      if (!field.value.trim()) { field.focus(); return; }
+      note.textContent = '';
+      if (asking()) {
+        var typed = Days.handle(whoName.input.value), word = whoWord.input.value;
+        if (!typed) { whoName.input.focus(); return; }
+        if (!word) { whoWord.input.focus(); return; }
+        place.busy = true;
+        Days.resolve(typed).then(function (who) {
+          // A name with no day book here: nothing is sent.
+          if (!who || who.state !== 'kept') {
+            place.busy = false;
+            return says(NOT_TAKEN.first, whoName.input);
+          }
+          return go(who.name, word, true);
+        }, function () {
+          place.busy = false;
+          says(NOT_TAKEN.unreachable);
+        });
         return;
       }
       place.busy = true;
-      note.textContent = '';
       askWord().then(function (word) {
         if (!word) {
           place.busy = false;
           field.focus();
           return;
         }
-        send.disabled = true;
-        return Words.leave(name, word, address, said).then(function (result) {
-          place.busy = false;
-          send.disabled = false;
-          if (result === 'left') {
-            // Theirs now stands at this place: one per person per place,
-            // dated as the beach will date it, and unfolded for them to see.
-            var when = new Date().toISOString(), mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
-            if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {} });
-            mine.when = when;
-            mine.at[address] = said;
-            field.value = '';
-            form.hidden = true;
-            place.open = true;
-            place.shown = 9;
-            Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
-            roadAgain();
-            count.focus();
-            return;
-          }
-          // Not taken: the words stay in the field, and the page says why.
-          // A word the beach refused is let go, to be asked again.
-          if (result === 'wrong' || result === 'refused') hold(WORD, '');
-          note.textContent = NOT_TAKEN[result] || NOT_TAKEN.unreachable;
-          field.focus();
-          roadAgain();
-        });
+        return go(whoseName(), word, false);
       });
     });
     drawPlace(place);
@@ -3393,7 +3538,7 @@
       var place = wordPlaces[a];
       place.open = false;
       place.form.hidden = true;
-      place.first.hidden = true;
+      place.passport.hidden = true;
       place.note.textContent = '';
       drawPlace(place);
     });
