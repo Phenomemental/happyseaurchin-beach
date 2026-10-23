@@ -289,6 +289,25 @@
     });
   }
 
+  // A word proved on a name's own day book the moment it is given (plan
+  // 6.8.3.5 (1)), in two steps that change nothing, as whispers.js proves
+  // it: letting go of the lock with no word is refused when it is locked;
+  // then the lock "rotated" to the same word answers 200 only for the word
+  // that holds it. Resolves 'proved'; 'wrong' (it doesn't open the day
+  // book, or the day book is open and proves nothing); or 'unreachable'.
+  function prove(name, word) {
+    return Beach.write('now:' + name, { new_lock: '' }).then(function (w) {
+      if (w.status === 200 || w.status === 404) throw 'wrong';
+      if (w.status !== 403) throw 'unreachable';
+      return Beach.write('now:' + name, { secret: word, new_lock: word });
+    }).then(function (w) {
+      if (w.status === 200) return 'proved';
+      throw w.status === 403 ? 'wrong' : 'unreachable';
+    }).catch(function (e) {
+      return typeof e === 'string' ? e : 'unreachable';
+    });
+  }
+
   // Forget me (plan 4.5): each block this page made for the name (its
   // passport line, its mirror line) is written whole as the one forgotten
   // line with the word, then its latch let go, so the name is free again.
@@ -331,6 +350,7 @@
     resolve: resolve,
     read: read,
     keep: keep,
+    prove: prove,
     sundials: sundials,
     forget: forget,
     passportLine: passportLine,
