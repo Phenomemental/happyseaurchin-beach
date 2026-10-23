@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rat Alley</title>
+<meta name="description" content="Rat Alley: rats are out round the bins in a dim alley. Squash as many as you can in thirty seconds, before the big rat comes, racing the day's best ghost.">
+<meta name="theme-color" content="#0E0B0A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Rat Alley, a back alley at night: one lamp over the dustbins, the
+     rats growing in the dark, your swings gold, the ghost's lilac.
+     The game is drawn on one canvas filling the screen; the words sit over
+     it and let touches pass through, except the buttons. */
+  :root {
+    --night: #0E0B0A;
+    --accent: #FF8A3D;
+    --you: #FFD166;
+    --ghost: #C4A1FF;
+    --miss: #FF5C5C;
+    --words: #F3EEE8;
+    --dim: #B4A99E;
+    /* The rest of a skin's colours; each skin sets them all (setSkin). */
+    --panel: rgba(14, 11, 10, 0.82);
+    --panel-strong: rgba(14, 11, 10, 0.93);
+    --edge: rgba(255, 138, 61, 0.4);
+    --line: rgba(243, 238, 232, 0.12);
+    --field-line: rgba(243, 238, 232, 0.25);
+    --field-bg: rgba(243, 238, 232, 0.06);
+    --me-row: rgba(255, 209, 102, 0.1);
+    --glow-accent: rgba(255, 138, 61, 0.55);
+    --glow-you: rgba(255, 209, 102, 0.5);
+    --shade: rgba(0, 0, 0, 0.65);
+    --how-wall: #241A17;
+    --how-ground: #17120F;
+    --how-light: #FFB25C;
+    --how-bin: #4A5157;
+    --how-lid: #6B747B;
+    --how-rat: #6E5F55;
+    --how-eye: #FF3B2F;
+    --how-club: #C98B4F;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--night);
+    color: var(--words);
+    font-family: var(--font);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .over {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--glow-accent), 0 1px 2px var(--shade);
+  }
+  .count {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--you);
+    text-shadow: 0 0 10px var(--glow-you), 0 1px 2px var(--shade);
+    white-space: nowrap;
+  }
+  .count small {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+  /* The words over the alley sit on small panels, so they read over the
+     lamp's light or the dark, in any skin. */
+  h1, .count {
+    padding: 4px 10px;
+    border-radius: 18px;
+    background: var(--panel);
+  }
+  .ghost-line, .prev-line, .left-line {
+    align-self: flex-start;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: var(--panel);
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    text-shadow: 0 1px 2px var(--shade), 0 0 6px var(--shade);
+  }
+  .ghost-line { color: var(--ghost); }
+  .prev-line { margin-top: 2px; color: var(--dim); }
+  .ghost-line:empty, .left-line:empty { display: none; }
+  .left-line {
+    margin-top: 2px;
+    color: var(--words);
+    font-variant-numeric: tabular-nums;
+  }
+  .middle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  /* The way to the Arcade's other games: under the briefing before a run,
+     and on the end screen after one; never while a run is under way. */
+  .more-games {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 20px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: var(--panel);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .more-games:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  .say[hidden] + .more-games,
+  .say.buzz + .more-games { display: none; }
+  .say {
+    max-width: 22rem;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--panel);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .say .step {
+    display: block;
+  }
+  .say .step + .step {
+    margin-top: 6px;
+  }
+  .say strong {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .say b {
+    color: var(--you);
+  }
+  /* How to play, shown: a rat peeping out from under a bin, and the bat
+     coming down on it at a finger's tap. */
+  .how {
+    display: block;
+    width: 100%;
+    max-width: 15rem;
+    height: auto;
+    margin: 4px auto 10px;
+    overflow: visible;
+  }
+  .how-wall { fill: var(--how-wall); }
+  .how-ground { fill: var(--how-ground); }
+  .how-light { stop-color: var(--how-light); }
+  .how-bin { fill: var(--how-bin); }
+  .how-lid { fill: var(--how-lid); }
+  .how-rat { fill: var(--how-rat); }
+  .how-tail {
+    fill: none;
+    stroke: var(--how-rat);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+  .how-eye { fill: var(--how-eye); }
+  .how-club { fill: var(--how-club); }
+  .how-ring {
+    fill: none;
+    stroke: var(--you);
+    stroke-width: 2.5;
+  }
+  .how-plus {
+    font: 700 10px var(--font);
+    fill: var(--you);
+  }
+  .how-finger { font-size: 20px; }
+  .end {
+    pointer-events: auto;
+    max-width: 22rem;
+    width: 100%;
+    max-height: calc(100% - 8px);
+    overflow-y: auto;
+    padding: 20px 18px;
+    border-radius: 12px;
+    background: var(--panel-strong);
+    border: 1px solid var(--edge);
+    text-align: center;
+  }
+  .end .big {
+    margin: 0;
+    font-size: 2.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--you);
+    text-shadow: 0 0 16px var(--glow-you);
+  }
+  .end p {
+    margin: 6px 0 0;
+  }
+  .end .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  button.go {
+    background: var(--you);
+    border-color: var(--you);
+    color: var(--night);
+    font-size: 1.05rem;
+    padding: 0 26px;
+  }
+  .rank {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .who {
+    display: block;
+    margin: 16px auto 0;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .who input {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    margin: 6px auto 0;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+    text-align: center;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .who input:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .link {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--dim);
+    word-break: break-all;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 12px;
+  }
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* On a narrow phone the top row keeps to one line: the count drops its
+     word, which the title already says. */
+  @media (max-width: 380px) {
+    .top { gap: 6px; }
+    .top-right { gap: 6px; }
+    .top .chip { padding: 0 10px; }
+    .count small { display: none; }
+  }
+  .chip {
+    pointer-events: auto;
+    margin: 0;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    background: var(--panel);
+  }
+  /* The board: today's runs, the wave of who jumped in when, and this
+     phone's own count, in a sheet over the game. */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--night);
+    padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .sheet-in {
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .sheet h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  .sheet h3 {
+    margin: 28px 0 4px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .sheet p {
+    margin: 6px 0 0;
+    line-height: 1.45;
+  }
+  .sheet .note {
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .board {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .board li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .board .pos {
+    flex: 0 0 1.6rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .board .name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .board .runs {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .board .badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .board .badge.first {
+    border-color: var(--you);
+    color: var(--you);
+  }
+  .board .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .board li.me {
+    background: var(--me-row);
+  }
+  .wave {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 12px;
+  }
+  .tries {
+    color: var(--you);
+    font-weight: 600;
+  }
+  /* Notes: one box for anyone to say something about the game, and what
+     people have said, newest first. */
+  .notes-form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .notes-form input,
+  .notes-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .notes-form input { min-height: 44px; }
+  .notes-form textarea { min-height: 6rem; resize: vertical; }
+  .notes-form input:focus-visible,
+  .notes-form textarea:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .notes-form .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .mic-row .mic {
+    margin: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+  .mic-row .mic.listening {
+    border-color: var(--miss);
+    color: var(--miss);
+  }
+  .mic-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list {
+    margin-top: 16px;
+  }
+  .notes-list .n {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .notes-list .n-who {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list .n-who strong {
+    color: var(--words);
+    font-weight: 600;
+  }
+  .notes-list .n-text {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .notes-list .more {
+    margin: 6px 0 0;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
+  /* The look: a skin to choose, each shown as a small picture of itself. */
+  .skins {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .skin {
+    margin: 0;
+    padding: 8px;
+    min-height: 0;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font-weight: 600;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  .skin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .skin[aria-checked="true"] {
+    border: 2px solid var(--you);
+    padding: 7px;
+  }
+  .setting {
+    margin-top: 12px;
+  }
+  /* Where you stood: the wave read from your place in it. */
+  .stood {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--field-bg);
+  }
+  .stood-head {
+    margin: 0 0 6px !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--you);
+  }
+  .stood ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .stood li {
+    margin: 4px 0;
+    line-height: 1.4;
+  }
+  .bring {
+    margin-top: 14px;
+  }
+  .bring .who {
+    text-align: left;
+    margin-top: 10px;
+  }
+  .board li.gap {
+    justify-content: center;
+    color: var(--dim);
+    padding: 2px 4px;
+  }
+  .board-more {
+    margin-top: 10px;
+  }
+  .make-line {
+    margin: 14px 0 0;
+    font-size: 0.92rem;
+  }
+  .make-line a,
+  .sheet a {
+    color: var(--accent);
+  }
+  .keep-state {
+    margin: 14px 0 0;
+    font-weight: 600;
+  }
+  .keep-state.on { color: var(--accent); }
+  .keep-state.off { color: var(--you); }
+  #save-run + #challenge { margin-left: 6px; }
+  .past, .days {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .past li, .days li {
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .past a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--words);
+  }
+  .past .day {
+    flex: 0 0 6.5rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .past .who {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: inherit;
+    color: var(--words);
+  }
+  .past .who small, .days small {
+    display: block;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+  .past .t, .days .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .days li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="A dim alley at night, with rats running round the dustbins, your swings and the ghost's"></canvas>
+<div class="over">
+  <div class="top">
+    <h1>Rat Alley</h1>
+    <div class="top-right">
+      <button type="button" class="chip" id="settings-btn" aria-label="Look and sound">⚙</button>
+      <button type="button" class="chip" id="board-btn">Board</button>
+      <span class="count" aria-hidden="true"><span id="count">0</span><small>rats</small></span>
+    </div>
+  </div>
+  <p class="ghost-line" id="ghost-line"></p>
+  <p class="prev-line" id="prev-line" hidden></p>
+  <p class="left-line" id="left" aria-hidden="true"></p>
+  <div class="middle">
+    <!-- The briefing tells three things only: where you start, your move,
+         and what you are trying to do (ways:games 1). Its words are kept at
+         game:rat-alley too; the label says which alley this is. -->
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s alley…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><radialGradient id="how-pool"><stop offset="0" class="how-light" stop-opacity="0.5"/><stop offset="1" class="how-light" stop-opacity="0"/></radialGradient><clipPath id="how-panel"><path d="M10 0 H190 A10 10 0 0 1 200 10 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 V10 A10 10 0 0 1 10 0 Z"/></clipPath></defs><g clip-path="url(#how-panel)"><rect width="200" height="80" class="how-ground"/><rect width="200" height="30" class="how-wall"/><ellipse cx="104" cy="58" rx="74" ry="24" fill="url(#how-pool)"/><g><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.34;1" calcMode="linear" path="M58 61 L100 61"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.51;1" dur="3.2s" repeatCount="indefinite"/><path d="M-7 0 Q -12 -1 -16 3" class="how-tail"/><ellipse rx="7" ry="3.6" class="how-rat"/><path d="M5 -2.6 L11 0 L5 2.6 Z" class="how-rat"/><circle cx="4" cy="-3.2" r="1.8" class="how-rat"/><circle cx="7.2" cy="-0.8" r="0.8" class="how-eye"/></g><rect x="42" y="32" width="30" height="31" rx="2" class="how-bin"/><ellipse cx="57" cy="32" rx="16" ry="4" class="how-lid"/><rect x="152" y="26" width="26" height="28" rx="2" class="how-bin"/><ellipse cx="165" cy="26" rx="14" ry="3.5" class="how-lid"/><ellipse cx="100" cy="63" rx="10" ry="1.8" class="how-rat" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.5;0.51;0.7;0.85;1" dur="3.2s" repeatCount="indefinite"/></ellipse><circle cx="100" cy="61" r="0" class="how-ring"><animate attributeName="r" values="0;0;16;16" keyTimes="0;0.5;0.68;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.5;0.52;0.72;1" dur="3.2s" repeatCount="indefinite"/></circle></g><text x="84" y="48" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.53;0.8;1" dur="3.2s" repeatCount="indefinite"/></text><g transform="translate(140 78)"><g><animateTransform attributeName="transform" type="rotate" values="90;90;23;23;90;90" keyTimes="0;0.42;0.5;0.62;0.8;1" dur="3.2s" repeatCount="indefinite"/><path d="M0 -1.4 L-22 -2.6 Q-38 -5 -41 0 Q-38 5 -22 2.6 L0 1.4 Z" class="how-club"/><circle r="2.2" class="how-club"/></g></g><text x="93" y="78" class="how-finger">👆<animateTransform attributeName="transform" type="translate" values="0 10;0 10;0 0;0 0;0 10" keyTimes="0;0.34;0.48;0.62;1" dur="3.2s" repeatCount="indefinite"/></text></svg><span class="step">Rats are out round the bins in a dim alley.</span><span class="step"><b>Tap a rat</b> to squash it with your bat.</span><span class="step">Squash as many as you can in thirty seconds, before the big rat comes.</span><span class="step">The thirty seconds start when you touch the screen.</span></p>
+    <a class="more-games" href="arcade.html">🕹 More games</a>
+    <div class="end" id="end" hidden>
+      <div aria-live="polite">
+        <p class="big" id="end-count"></p>
+        <p class="tries" id="end-tries"></p>
+        <p id="end-line"></p>
+        <p class="rank" id="end-rank"></p>
+        <p class="note" id="end-note"></p>
+      </div>
+      <!-- Keeping a run is a choice: it goes to pool:rat-alley, the game's
+           room on the beach, only once the player gives a name or asks
+           for a challenge link. -->
+      <div id="keep" hidden>
+        <p class="keep-state" id="keep-state" aria-live="polite"></p>
+        <label class="who">Your name, to put your run on the board
+          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="your name">
+        </label>
+        <button type="button" class="go" id="save-run" hidden>Save my run to the board</button>
+        <button type="button" class="go" id="challenge">Challenge a friend</button>
+        <p class="note" id="keep-note" aria-live="polite"></p>
+        <p class="link" id="keep-link" hidden></p>
+      </div>
+      <div class="row">
+        <button type="button" id="again">Play again</button>
+        <button type="button" id="end-board">See the board</button>
+        <button type="button" id="end-note-btn">Leave a note</button>
+      </div>
+      <a class="more-games" href="arcade.html">🕹 More games</a>
+      <p class="make-line"><a href="make.html">Liked it? Make the next game for the Arcade →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Look and sound: the skin this phone draws the game in, and the switch
+     for sound and vibration. Both are kept on the phone only. -->
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="settings-title">Look and sound</h2>
+      <button type="button" class="chip" id="settings-close">Close</button>
+    </div>
+    <h3>Skin</h3>
+    <p class="note">Changes only how the game looks. Every run is counted the same, whatever the skin.</p>
+    <div class="skins" id="skins" role="radiogroup" aria-label="Skin"></div>
+    <h3>Sound</h3>
+    <div class="setting">
+      <button type="button" class="chip" id="noise" aria-pressed="true">🔊 Sound and vibration: on</button>
+    </div>
+  </div>
+</div>
+
+<!-- The board, read live from pool:rat-alley: each player's best in this
+     alley, the wave of when each player first jumped in (ranking nobody, as
+     David's place-in-the-wave does), and what this phone has done here. -->
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Today’s board</h2>
+      <button type="button" class="chip" id="sheet-close">Close</button>
+    </div>
+    <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
+    <ol class="board" id="board-list"></ol>
+    <button type="button" class="chip board-more" id="board-more" hidden aria-expanded="false"></button>
+    <!-- Every earlier day's alley, read from the runs kept in the room: each
+         can be played again, with its own board, ghost and wave. -->
+    <h3>Past alleys</h3>
+    <p class="note" id="past-note">Every day has its own alley, and every run stays. Play any earlier day again, and race its best.</p>
+    <ul class="past" id="past"></ul>
+    <h3>The wave</h3>
+    <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
+    <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
+    <p id="wave-line"></p>
+    <div class="stood" id="stood" hidden>
+      <p class="stood-head">Where you stood</p>
+      <ul id="stood-list"></ul>
+    </div>
+    <div class="bring">
+      <button type="button" class="go" id="bring">Bring someone into the wave</button>
+      <label class="who" id="bring-name" hidden>Your name, so they’re linked to you
+        <input id="bring-who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done">
+      </label>
+      <p class="note" id="bring-note" aria-live="polite"></p>
+    </div>
+    <h3>On this phone</h3>
+    <p id="mine-line"></p>
+    <p id="history" hidden></p>
+    <ul class="days" id="days" hidden></ul>
+    <button type="button" class="go" id="keep-best" hidden></button>
+    <p class="note" id="keep-best-note" aria-live="polite"></p>
+    <h3 id="notes-head">Notes</h3>
+    <p class="note">Say anything about the game: what you liked, what was hard, what you’d change. Notes are open for everyone to read, here and on the beach.</p>
+    <form class="notes-form" id="notes-form" autocomplete="off">
+      <label>Your name (optional)
+        <input name="who" type="text" maxlength="40" autocomplete="nickname">
+      </label>
+      <label class="trap" aria-hidden="true">Leave this empty
+        <input name="web" type="text" tabindex="-1">
+      </label>
+      <label>Your note
+        <textarea name="note" maxlength="2000" required></textarea>
+      </label>
+      <button type="submit" class="go">Send</button>
+      <p class="note" id="notes-status" aria-live="polite"></p>
+    </form>
+    <div class="notes-list" id="notes-list"></div>
+    <h3>The Arcade</h3>
+    <p>Rat Alley is in the Arcade: quick, one-move skill games, with a new level every day for everyone. It was Stacey’s idea. Play <a href="ghost-wire.html">Ghost Wire</a> or <a href="bat-sky.html">Bat Sky</a>, <a href="arcade.html">see all the games</a>, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
+  </div>
+</div>
+
+<script src="beach.js?v=2026-10-21a"></script>
+<script src="rat-alley.js?v=2026-10-22a"></script>
+<script>
+(function () {
+  var RA = window.RatAlley;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var countEl = document.getElementById('count');
+  var leftEl = document.getElementById('left');
+  var ghostLine = document.getElementById('ghost-line');
+  var say = document.getElementById('say');
+  var end = document.getElementById('end');
+  // ---- Skins ----------------------------------------------------------------
+  // A skin is only how the game is drawn: the wall and the ground, the
+  // lamp's light and how dark the dark is, the bins, the rats, the bat and
+  // the words' look. The alley, its lamp and every rat's way are the same in
+  // every skin, so every run is counted the same. Other players' ghosts are
+  // drawn in your skin's ghost colour. The choice is kept on this phone.
+  // gloom is how dark the alley is beyond the lamp's light (0 to 1); light
+  // is the lamp's colour on the ground, giant the big rat's fur.
+  var SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  var SKINS = [
+    { id: 'lamp', name: 'Lamplight', bg: '#0E0B0A', accent: '#FF8A3D', you: '#FFD166', ghost: '#C4A1FF', miss: '#FF5C5C', font: SANS,
+      words: '#F3EEE8', dim: '#B4A99E', panel: 'rgba(14, 11, 10, 0.82)', strong: 'rgba(14, 11, 10, 0.93)', edge: 'rgba(255, 138, 61, 0.4)',
+      line: 'rgba(243, 238, 232, 0.12)', fieldLine: 'rgba(243, 238, 232, 0.25)', fieldBg: 'rgba(243, 238, 232, 0.06)', me: 'rgba(255, 209, 102, 0.1)',
+      glowAccent: 'rgba(255, 138, 61, 0.55)', glowYou: 'rgba(255, 209, 102, 0.5)', shade: 'rgba(0, 0, 0, 0.65)', glow: 1,
+      wall: '#3A2721', mortar: '#1E1411', door: '#120D0B', ground: '#2A2420', cobble: '#191411', puddle: '#141C24',
+      light: '#FFB25C', lamp: '#FFE7B0', dark: '#050304', gloom: 0.74, bin: '#59626A', lid: '#7C868E', rim: '#A9B3BA',
+      rat: '#6E5F55', ratLit: '#B89A84', eye: '#FF3B2F', tail: '#D79A9A', club: '#C98B4F', giant: '#54443C', mouth: '#2A0608', teeth: '#F5EBD8' },
+    { id: 'paper', name: 'Paper', bg: '#EFE7D8', accent: '#1D1A17', you: '#C21D4E', ghost: '#2F6690', miss: '#E07B00',
+      font: '"Cormorant Garamond", Garamond, Georgia, "Times New Roman", serif',
+      words: '#1D1A17', dim: '#6A6158', panel: 'rgba(246, 240, 228, 0.92)', strong: 'rgba(246, 240, 228, 0.97)', edge: 'rgba(29, 26, 23, 0.35)',
+      line: 'rgba(29, 26, 23, 0.14)', fieldLine: 'rgba(29, 26, 23, 0.3)', fieldBg: 'rgba(29, 26, 23, 0.04)', me: 'rgba(194, 29, 78, 0.08)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: 'rgba(246, 240, 228, 0.95)', glow: 0,
+      wall: '#D9CCB6', mortar: '#B5A68C', door: '#8A7E6E', ground: '#E6DCC8', cobble: '#C9BCA4', puddle: '#CFC8BA',
+      light: '#FFF8E8', lamp: '#FFFDF5', dark: '#3A332C', gloom: 0.5, bin: '#8A8276', lid: '#A39A8C', rim: '#5E574E',
+      rat: '#3A332C', ratLit: '#6A6158', eye: '#C21D4E', tail: '#9A7272', club: '#8B5A2B', giant: '#4A433B', mouth: '#1D1A17', teeth: '#F6F0E2' },
+    { id: 'urchin', name: 'Sea urchin', bg: '#06243A', accent: '#7FFFD4', you: '#FF7F6A', ghost: '#C4A7FF', miss: '#FFE14D', font: SANS,
+      words: '#E6F7FF', dim: '#8FB3C7', panel: 'rgba(6, 36, 58, 0.86)', strong: 'rgba(6, 36, 58, 0.94)', edge: 'rgba(127, 255, 212, 0.35)',
+      line: 'rgba(230, 247, 255, 0.14)', fieldLine: 'rgba(230, 247, 255, 0.28)', fieldBg: 'rgba(230, 247, 255, 0.06)', me: 'rgba(255, 127, 106, 0.12)',
+      glowAccent: 'rgba(127, 255, 212, 0.55)', glowYou: 'rgba(255, 127, 106, 0.5)', shade: 'rgba(0, 0, 0, 0.6)', glow: 1,
+      wall: '#0E3450', mortar: '#06192A', door: '#041420', ground: '#0A2A42', cobble: '#061C2E', puddle: '#0F4A5E',
+      light: '#7FFFD4', lamp: '#E6FFF7', dark: '#010A12', gloom: 0.72, bin: '#2E6A80', lid: '#4A8FA6', rim: '#8FD9C8',
+      rat: '#527684', ratLit: '#9FD8E0', eye: '#FF7F6A', tail: '#E09A9A', club: '#E8B07A', giant: '#3A5866', mouth: '#2A0610', teeth: '#E6FFF7' },
+    { id: 'crt', name: 'Arcade CRT', bg: '#020A02', accent: '#33FF66', you: '#E4FF5A', ghost: '#33CCFF', miss: '#FF3B3B',
+      font: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+      words: '#B8FFC8', dim: '#4FA86A', panel: 'rgba(2, 10, 2, 0.88)', strong: 'rgba(2, 10, 2, 0.95)', edge: 'rgba(51, 255, 102, 0.4)',
+      line: 'rgba(51, 255, 102, 0.16)', fieldLine: 'rgba(51, 255, 102, 0.35)', fieldBg: 'rgba(51, 255, 102, 0.05)', me: 'rgba(228, 255, 90, 0.1)',
+      glowAccent: 'rgba(51, 255, 102, 0.6)', glowYou: 'rgba(228, 255, 90, 0.5)', shade: 'rgba(0, 0, 0, 0.8)', glow: 1, scan: true,
+      wall: '#04280A', mortar: '#000A02', door: '#000800', ground: '#021A06', cobble: '#000E02', puddle: '#05300C',
+      light: '#33FF66', lamp: '#B8FFC8', dark: '#000200', gloom: 0.7, bin: '#0D4A18', lid: '#1B6E2A', rim: '#33FF66',
+      rat: '#1E7A30', ratLit: '#7DFF8E', eye: '#E4FF5A', tail: '#33CC55', club: '#E4FF5A', giant: '#0F5A1E', mouth: '#000000', teeth: '#B8FFC8' },
+    { id: 'contrast', name: 'High contrast', bg: '#000000', accent: '#FFFFFF', you: '#FFE600', ghost: '#4DA3FF', miss: '#FF5A5A', font: SANS,
+      words: '#FFFFFF', dim: '#D0D0D0', panel: 'rgba(0, 0, 0, 0.9)', strong: '#000000', edge: '#FFFFFF',
+      line: 'rgba(255, 255, 255, 0.35)', fieldLine: '#FFFFFF', fieldBg: 'rgba(255, 255, 255, 0.08)', me: 'rgba(255, 230, 0, 0.16)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: '#000000', glow: 0, thick: true,
+      wall: '#1A1A1A', mortar: '#000000', door: '#000000', ground: '#101010', cobble: '#262626', puddle: '#1A1A1A',
+      light: '#FFFFFF', lamp: '#FFFFFF', dark: '#000000', gloom: 0.35, bin: '#5A5A5A', lid: '#8A8A8A', rim: '#FFFFFF',
+      rat: '#FFFFFF', ratLit: '#FFFFFF', eye: '#FF5A5A', tail: '#D0D0D0', club: '#FFE600', giant: '#D0D0D0', mouth: '#000000', teeth: '#FFFFFF' }
+  ];
+  var skin = SKINS[0];
+  function rgbOf(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  // A colour part way from a to b (each [r, g, b]), with an opacity.
+  function mix(a, b, t, alpha) {
+    var c = [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); });
+    return alpha == null ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + alpha + ')';
+  }
+  function setSkin(id) {
+    skin = SKINS.filter(function (k) { return k.id === id; })[0] || SKINS[0];
+    var r = document.documentElement.style;
+    [['--night', 'bg'], ['--accent', 'accent'], ['--you', 'you'], ['--ghost', 'ghost'], ['--miss', 'miss'], ['--words', 'words'], ['--dim', 'dim'],
+     ['--panel', 'panel'], ['--panel-strong', 'strong'], ['--edge', 'edge'], ['--line', 'line'], ['--field-line', 'fieldLine'],
+     ['--field-bg', 'fieldBg'], ['--me-row', 'me'], ['--glow-accent', 'glowAccent'], ['--glow-you', 'glowYou'], ['--shade', 'shade'], ['--font', 'font'],
+     ['--how-wall', 'wall'], ['--how-ground', 'ground'], ['--how-light', 'light'], ['--how-bin', 'bin'], ['--how-lid', 'lid'],
+     ['--how-rat', 'rat'], ['--how-eye', 'eye'], ['--how-club', 'club']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
+    // The drawing's colours, as numbers to mix.
+    skin.c = {};
+    ['bg', 'dark', 'light', 'lamp', 'eye', 'mouth'].forEach(function (k) { skin.c[k] = rgbOf(skin[k]); });
+    var meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', skin.bg);
+  }
+  var ROOM = 'pool:rat-alley', LAW = 'game:rat-alley';
+  var MOTION = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function still() { return !!(MOTION && MOTION.matches); }
+
+  // ---- This device's memory ------------------------------------------------
+  // Storage can be missing, full or refused, so every read and write may
+  // quietly come to nothing.
+  function recall(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+  // What this phone has done in this alley: every try started, every
+  // run seen through to the big rat. A try is counted when it starts, so a finish
+  // knows its number.
+  function tally(what) {
+    var n = parseInt(recall('rat-alley:' + what + ':' + TRACK), 10);
+    return n > 0 ? n : 0;
+  }
+  function count(what) {
+    var n = tally(what) + 1;
+    remember('rat-alley:' + what + ':' + TRACK, String(n));
+    return n;
+  }
+  setSkin(recall('rat-alley:skin'));
+
+  // The slots in the room this phone has kept runs at, so the board knows
+  // which player is you.
+  function mine() {
+    try { var m = JSON.parse(recall('rat-alley:mine') || '[]'); return Array.isArray(m) ? m : []; } catch (e) { return []; }
+  }
+
+  // ---- Which alley, and whose ghost ----------------------------------------
+  // A link may name an alley (?track=) and a run kept in the room (?ghost=, its
+  // slot there). With no alley named, it is today's, from the beach's clock:
+  // the day's address at full width, the first eight digits and '00'. If the
+  // beach can't be reached, it is the practice alley.
+  var params = new URLSearchParams(location.search);
+  var asked = RA.validTrack(params.get('track')) ? params.get('track') : '';
+  var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  // A link to bring someone in carries the bringer's name (?from=). The
+  // first one a phone arrives by is kept, and each run it keeps says who
+  // brought it.
+  function broughtBy(name) {
+    name = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var own = (recall('rat-alley:name') || '').toLowerCase();
+    if (!name || name === 'A friend' || recall('rat-alley:from') || name.toLowerCase() === own) return;
+    remember('rat-alley:from', name);
+  }
+  broughtBy(params.get('from'));
+  var TRACK = '', TODAY = '', DAY = '', sk = null, BEST = '';
+  var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
+  var friend = null;                    // the run a link brought, re-run
+  var linked = null;                    // a link's run when it was your own
+
+  // A kept line is yours when this phone kept it, or it carries the name
+  // this phone signs with.
+  function isMine(entry, slot) {
+    var name = (recall('rat-alley:name') || '').toLowerCase();
+    return mine().indexOf(slot) >= 0 || (!!name && who(entry).toLowerCase() === name);
+  }
+
+  function isDay(track) { return /^\d{10}$/.test(track); }
+  function who(entry) {
+    var n = typeof entry[1] === 'string' ? entry[1].replace(/, a visitor$/, '').trim() : '';
+    return n && n !== 'a visitor' && n.length <= 40 ? n : 'A friend';
+  }
+
+  // The room as the beach holds it: a room not founded yet reads as empty,
+  // and a beach out of reach fails.
+  function pool() {
+    return Beach.look(ROOM).then(function (r) {
+      if (r.status === 200 && r.json && typeof r.json === 'object') return r.json;
+      if (r.status === 404) return {};
+      throw new Error('the beach is out of reach');
+    });
+  }
+
+  // The law is read for the beach's clock, which rides every answer, even
+  // the answer that a block isn't there yet.
+  function init() {
+    var law = Beach.look(LAW);
+    var link = askedGhost
+      ? Beach.get(ROOM, { spindle: askedGhost }).then(null, function () { return null; })
+      : Promise.resolve(null);
+    Promise.all([law, link]).then(function (got) {
+      var clock = Beach.clock();
+      if (clock) {
+        TODAY = clock.address.slice(0, 8) + '00';
+        DAY = clock.voicing.split(',')[0];
+      }
+      var entry = got[1], kept = entry && typeof entry[7] === 'string' ? RA.decode(entry[7]) : null;
+      TRACK = asked || (kept && kept.track) || TODAY || 'practice';
+      setup();
+      if (kept && kept.track === TRACK) {
+        var r = RA.rerun(entry[7], sk);
+        if (r && r.ok) {
+          if (isMine(entry, askedGhost)) linked = r;
+          else {
+            friend = r;
+            ghostWho = who(entry);
+            broughtBy(ghostWho);
+          }
+        }
+      }
+      var label = TRACK === TODAY ? 'Today’s alley' : isDay(TRACK) ? 'An earlier day’s alley' : 'Practice alley';
+      document.getElementById('say-label').textContent = label + ': ' + RA.describe(TRACK);
+      BRIEF = say.innerHTML;
+      holdHow();
+      loadGhost();
+      loadLeader();
+      if (askedGhost && !friend && !linked) {
+        ghostLine.textContent = got[1] === null && !clock
+          ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
+          : 'That ghost couldn’t be found in this alley.';
+      } else if (!clock && !asked) {
+        ghostLine.textContent = 'The beach is out of reach just now, so this is a practice alley.';
+      }
+      phase = 'ready';
+    });
+  }
+
+  // The ghost is a friend's run when a link brought one; else the best run
+  // on the board, the same for everyone; and only while the board is
+  // empty, your own best (the better of this phone's and your own run a
+  // link brought). A kept run that doesn't re-run to its count is no ghost.
+  var best = function () { return TRACK === TODAY ? 'today’s best' : 'this alley’s best'; };
+  function loadGhost() {
+    if (friend) {
+      ghost = friend;
+      ghostLine.textContent = 'Ghost: ' + ghostWho + '’s run, ' + RA.words(ghost.caught);
+      return;
+    }
+    var kept = recall(BEST);
+    var r = kept ? RA.rerun(kept, sk) : null;
+    var own = r && r.ok ? r : null;
+    if (linked && RA.better(linked, own)) own = linked;
+    if (leader) {
+      ghost = leader;
+      ghostLine.textContent = 'Ghost: ' + (leaderMine ? 'your run, ' : leaderWho + ', ') + best() + ', ' + RA.words(ghost.caught);
+      return;
+    }
+    ghost = own;
+    ghostLine.textContent = ghost
+      ? 'Ghost: your best here, ' + RA.words(ghost.caught)
+      : 'No ghost yet: your first run becomes one.';
+  }
+
+  // The best run kept in this alley, re-run, to race when no friend's
+  // link brought one. Read when the page opens, and every twenty seconds
+  // while it is open and no run is under way, so a new record reaches every
+  // phone.
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0;
+  function loadLeader() {
+    if (!isDay(TRACK)) return;
+    leaderRead = Date.now();
+    room().then(function (runs) {
+      showPrev(runs);
+      if (friend) return;
+      var me = myPlayer(runs), top = null;
+      runs.forEach(function (r) {
+        if (r.track === TRACK && RA.better(r, top)) top = r;
+      });
+      var g = top ? RA.rerun(top.replay, sk) : null;
+      if (g && g.ok) {
+        leader = g;
+        leaderWho = top.name;
+        leaderMine = top.player === me;
+      }
+      if (phase === 'ready' || phase === 'loading') loadGhost();
+    }, function () {});
+  }
+  setInterval(function () {
+    if (!document.hidden && phase !== 'running' && Date.now() - leaderRead > 20000) loadLeader();
+  }, 5000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && phase !== 'running' && leaderRead && Date.now() - leaderRead > 5000) loadLeader();
+  });
+
+  // ---- The finger --------------------------------------------------------
+  // The first touch starts the thirty seconds; every touch after it is a
+  // swing, at the place it lands in the alley, waiting in taps until the
+  // next step takes it.
+  var taps = [];
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    if (phase === 'ready') return begin();
+    if (phase !== 'running') return;
+    taps.push({ x: (e.clientX - view.ox) / view.scale, y: (e.clientY - view.oy) / view.scale });
+  });
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- Sound and vibration --------------------------------------------------
+  // Every sound is made here by the browser, nothing downloaded: a low
+  // rumble as the thirty seconds start, a thwack and a squeak for each rat
+  // squashed, a clang for a swing that hits only the ground, a heartbeat
+  // for each of the last three seconds, the big rat's growl and chomp, and
+  // a chime after, brighter for a new best. Vibration follows the same
+  // moments where the phone allows it (not iPhones). One button turns both
+  // off, and this phone remembers it. The sound starts on the first touch,
+  // as browsers ask.
+  var audio = (function () {
+    var on = recall('rat-alley:noise') !== 'off';
+    var ac = null, out = null;
+    var btn = document.getElementById('noise');
+    function show() {
+      btn.textContent = on ? '🔊 Sound and vibration: on' : '🔇 Sound and vibration: off';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      on = !on;
+      remember('rat-alley:noise', on ? 'on' : 'off');
+      if (on) wake();
+      show();
+    });
+    show();
+    function wake() {
+      if (!on) return null;
+      try {
+        if (!ac) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          ac = new AC();
+          out = ac.createGain();
+          out.gain.value = 0.5;
+          out.connect(ac.destination);
+        }
+        if (ac.state === 'suspended') ac.resume();
+      } catch (e) { ac = null; }
+      return ac;
+    }
+    function vibe(pattern) {
+      if (!on || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+    // One note: a wave of a pitch, rising and falling in loudness.
+    function note(type, freq, at, length, level, glide) {
+      var t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + length);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(level, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      o.connect(g);
+      g.connect(out);
+      o.start(t);
+      o.stop(t + length + 0.02);
+    }
+    // A burst of noise through a filter of a kind (lowpass, bandpass), its
+    // pitch falling from f0 to f1: the body of a thwack, a chomp or a growl.
+    function noise(at, length, level, kind, f0, f1) {
+      var n = Math.floor(ac.sampleRate * length), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var t = ac.currentTime + at, src = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = kind;
+      f.frequency.setValueAtTime(f0, t);
+      f.frequency.exponentialRampToValueAtTime(f1, t + length);
+      g.gain.value = level;
+      src.buffer = buf;
+      src.connect(f);
+      f.connect(g);
+      g.connect(out);
+      src.start(t);
+    }
+    return {
+      start: function () {
+        vibe(15);
+        if (!wake()) return;
+        note('sawtooth', 70, 0, 0.9, 0.05, 55);
+        noise(0, 0.7, 0.12, 'lowpass', 300, 80);
+      },
+      // n: how many squashed so far; each squeak a little higher.
+      caught: function (n) {
+        vibe(18);
+        if (!wake()) return;
+        noise(0, 0.09, 0.5, 'bandpass', 1400, 500);
+        note('sine', 150, 0, 0.14, 0.25, 55);
+        var f = 1900 + (n % 8) * 120;
+        note('square', f, 0.03, 0.08, 0.035, f * 1.5);
+      },
+      miss: function () {
+        vibe([6, 30, 6]);
+        if (!wake()) return;
+        note('triangle', 520, 0, 0.18, 0.09);
+        note('triangle', 1340, 0, 0.12, 0.05);
+        noise(0, 0.05, 0.2, 'highpass', 3000, 2000);
+      },
+      resting: function () {
+        if (!wake()) return;
+        note('sine', 160, 0, 0.05, 0.05);
+      },
+      toll: function () {
+        vibe([10, 90, 10]);
+        if (!wake()) return;
+        note('sine', 62, 0, 0.16, 0.35, 48);
+        note('sine', 58, 0.2, 0.18, 0.28, 45);
+      },
+      // The big rat: a growl rising, then a chomp as it bites.
+      roar: function () {
+        vibe([40, 30, 80, 30, 200]);
+        if (!wake()) return;
+        note('sawtooth', 55, 0, 1.0, 0.09, 95);
+        note('sawtooth', 58, 0.05, 0.95, 0.06, 88);
+        noise(0, 1.0, 0.25, 'lowpass', 220, 900);
+        noise(0.98, 0.22, 0.7, 'lowpass', 1800, 120);
+        note('sine', 90, 0.98, 0.3, 0.4, 40);
+      },
+      set: function (better) {
+        vibe(better ? [30, 40, 30, 40, 30, 40, 120] : [30, 50, 30, 50, 60]);
+        if (!wake()) return;
+        var notes = better ? [523, 659, 784, 1047] : [392, 523, 659];
+        notes.forEach(function (f, i) { note('triangle', f, i * 0.12, 0.45, 0.16); });
+      }
+    };
+  })();
+
+  // ---- The run -----------------------------------------------------------
+  // phase: 'loading' (finding the alley), 'ready' (waiting for a touch),
+  // 'running', 'done' (the big rat, then the end screen).
+  var phase = 'loading', run = null, kept = [], BRIEF = say.innerHTML;
+  var acc = 0, ghostAt = 0, ghostCaught = 0;
+  var last = null;              // the run just finished: { replay, caught, taps, slot }
+
+  // A touch while ready starts a run: the thirty seconds start on that touch.
+  function begin() {
+    if (phase !== 'ready' || !sk) return;
+    count('tries');
+    run = RA.start(sk);
+    kept = [];
+    taps = [];
+    marks = [];
+    bits = [];
+    flats = [];
+    swings = [];
+    acc = 0;
+    ghostAt = 0;
+    ghostCaught = 0;
+    phase = 'running';
+    say.hidden = true;
+    showGhostCount();
+    audio.start();
+  }
+
+  function showGhostCount() {
+    if (ghost) ghostLine.textContent = (ghostWho && ghost === friend ? ghostWho + '’s ghost: ' : 'Ghost: ') + RA.words(ghostCaught);
+  }
+
+  // One step: the swing waiting, if any, then the ghost's swings at this
+  // step, then the run goes on a step.
+  function tick() {
+    var t = taps.shift();
+    if (t) {
+      var got = RA.tap(run, t.x, t.y, sk);
+      if (got === null) {
+        mark(t.x, t.y, 'resting');
+        audio.resting();
+      } else {
+        kept.push([run.step, Math.round(t.x), Math.round(t.y)]);
+        if (got >= 0) {
+          var at = RA.at(sk, got, run.step);
+          swing(at.x, at.y);
+          mark(at.x, at.y, 'caught');
+          squash(at, run.step);
+          puff(at.x, at.y, still() ? 6 : 16, skin.you);
+          audio.caught(run.caught);
+        } else {
+          swing(t.x, t.y);
+          mark(t.x, t.y, 'miss');
+          audio.miss();
+        }
+      }
+    }
+    while (ghost && ghostAt < ghost.hits.length && ghost.hits[ghostAt].step === run.step) {
+      var h = ghost.hits[ghostAt++];
+      mark(h.x, h.y, h.rat >= 0 ? 'ghost-caught' : 'ghost');
+      if (h.rat >= 0) {
+        ghostCaught++;
+        var g = RA.at(ghost.alley || sk, h.rat, run.step);
+        if (g) puff(g.x, g.y, still() ? 3 : 8, skin.ghost);
+        showGhostCount();
+      }
+    }
+    RA.step(run);
+    var left = RA.LAW.steps - run.step;
+    if (left === 3 * RA.RATE || left === 2 * RA.RATE || left === RA.RATE) audio.toll();
+    if (run.status === 'come') finish();
+  }
+
+  // How one run stands against another, in words: rats first, then swings.
+  // aside names whose run it is ('today’s best'), set off by commas.
+  function against(a, b, name, aside) {
+    var mid = aside ? name + ', ' + aside + ',' : name, last = aside ? name + ', ' + aside : name;
+    if (a.caught > b.caught) return 'You beat ' + mid + ' by ' + RA.words(a.caught - b.caught) + (aside ? '!' : '.');
+    if (a.caught < b.caught) return RA.words(b.caught - a.caught) + ' behind ' + last + '.';
+    return a.taps < b.taps ? 'Level with ' + mid + (aside ? '' : ',') + ' and with fewer swings.'
+      : a.taps > b.taps ? 'Level with ' + mid + (aside ? '' : ',') + ' but with more swings.'
+      : 'Dead level with ' + last + '.';
+  }
+
+  function finish() {
+    phase = 'done';
+    taps = [];
+    var replay = RA.encode(TRACK, kept, run.caught);
+    var check = RA.rerun(replay, sk), sound = !!(check && check.ok) && run.caught > 0;
+    var tries = tally('tries');
+    count('finishes');
+    var now = { caught: run.caught, taps: run.taps };
+    last = { replay: sound ? replay : '', caught: run.caught, taps: run.taps, slot: '', tries: tries };
+    document.getElementById('end-tries').textContent = 'From ' + run.taps + (run.taps === 1 ? ' swing, ' : ' swings, ') +
+      (tries === 1 ? 'on your first try in this alley!' : 'on your ' + ordinal(tries) + ' try in this alley.');
+    var bestKept = recall(BEST), mineRun = bestKept ? RA.rerun(bestKept, sk) : null;
+    var was = mineRun && mineRun.ok ? mineRun : null;
+    if (linked && RA.better(linked, was)) was = linked;
+    var better = run.caught > 0 && RA.better(now, was);
+    var keptIt = better && sound && remember(BEST, replay);
+    var chime = better && was != null;
+    audio.roar();
+    if (keptIt) remember('rat-alley:best-tries:' + TRACK, String(tries));
+    var lead = !friend && ghost && ghost === leader && !leaderMine;
+    document.getElementById('end-count').textContent = RA.words(run.caught);
+    document.getElementById('end-line').textContent = friend ? against(now, ghost, ghostWho)
+      : lead ? against(now, ghost, leaderWho, best())
+      : !run.caught ? 'The big rat got you! Tap a rat to squash it.'
+      : was == null ? 'The big rat got you!'
+      : better ? (run.caught > was.caught ? 'Your best yet, by ' + RA.words(run.caught - was.caught) + '.' : 'Your best yet: as many rats, with fewer swings.')
+      : run.caught < was.caught ? RA.words(was.caught - run.caught) + ' behind your best.'
+      : 'Level with your best.';
+    document.getElementById('end-note').textContent = keptIt ? (friend || (leader && RA.better(leader, now)) ? 'It’s your best here on this device.' : 'This run is your ghost now.')
+      : better ? 'This device couldn’t keep it as your ghost.'
+      : was ? 'Your best here stays at ' + RA.words(was.caught) + '.'
+      : '';
+    if (!friend && keptIt) loadGhost();
+    else if (ghost) loadGhost();
+    // A new best goes on the board by itself once this phone has a name
+    // (or has put a run there before); a run with no name yet is saved as
+    // soon as one is typed.
+    if (keptIt && isDay(TRACK) && (mine().length || recall('rat-alley:name'))) {
+      var auto = last;
+      auto.state = 'saving';
+      keepState(auto, true);
+      saveLast(auto).then(function () {
+        auto.state = 'on';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      }, function () {
+        auto.state = 'failed';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      });
+    }
+    var rank = document.getElementById('end-rank');
+    rank.textContent = '';
+    var keep = document.getElementById('keep');
+    keep.hidden = !(isDay(TRACK) && sound);
+    keepState(last, better);
+    document.getElementById('keep-note').textContent = '';
+    document.getElementById('keep-link').hidden = true;
+    document.getElementById('challenge').disabled = false;
+    document.getElementById('who').value = recall('rat-alley:name') || '';
+    // The big rat comes first, out of the dark at the back and at the
+    // screen; the end screen once it has bitten.
+    bigRat = performance.now();
+    var shown = last;
+    setTimeout(function () {
+      if (phase !== 'done' || last !== shown) return;
+      end.hidden = false;
+      audio.set(chime);
+    }, still() ? 0 : BITE);
+    if (isDay(TRACK) && run.caught) room().then(function (runs) {
+      if (phase === 'done' && last && last.caught === now.caught && last.taps === now.taps) rank.textContent = standing(runs, now);
+    }, function () {});
+  }
+
+  // ---- The day's board ---------------------------------------------------
+  // Every run kept in the room in this alley that re-runs to its count,
+  // as { slot, ... }. The room is walked as the beach nests it: older
+  // entries under "_" once it grows, newer ones a digit deeper; an entry's
+  // slot is the digits walked to it.
+  function isEntry(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
+  }
+  function slots(node, path, out) {
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') slots(node._, path, out);
+    for (var d = 1; d <= 9; d++) {
+      var c = node[String(d)];
+      if (isEntry(c)) out.push({ slot: path + d, entry: c });
+      else if (c && typeof c === 'object') slots(c, path + d, out);
+    }
+    return out;
+  }
+  // Every run kept in the room, in any alley, that re-runs to its count
+  // in its own alley, as { slot, track, caught, taps, at, player, name,
+  // tries }. A run is re-run once and remembered by its words, so a
+  // refresh is cheap.
+  var reruns = {}, alleys = {};
+  function room() {
+    return pool().then(function (held) {
+      var runs = [];
+      slots(held, '', []).forEach(function (s) {
+        var e = s.entry, keptRun = e['7'];
+        if (typeof keptRun !== 'string') return;
+        if (!(keptRun in reruns)) {
+          var d = RA.decode(keptRun), r = null;
+          if (d) {
+            var key = d.track + '.' + d.version;
+            var k = key === sk.track + '.' + sk.version ? sk : (alleys[key] = alleys[key] || RA.alley(d.track, d.version));
+            r = RA.rerun(keptRun, k);
+          }
+          reruns[keptRun] = r && r.ok && r.caught > 0 ? { track: r.track, caught: r.caught, taps: r.taps } : null;
+        }
+        var ok = reruns[keptRun];
+        if (!ok || e['2'] !== ok.track) return;
+        var named = who(e) !== 'A friend' ? who(e) : '';
+        runs.push({
+          slot: s.slot, track: ok.track, caught: ok.caught, taps: ok.taps, at: e['3'], replay: keptRun,
+          player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
+          name: named || 'A visitor',
+          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null,
+          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : ''
+        });
+      });
+      return runs;
+    });
+  }
+  // Which player is you: the one at a slot this phone kept, or with the
+  // name this phone signs with.
+  function myPlayer(runs) {
+    var slotsHere = mine(), name = (recall('rat-alley:name') || '').toLowerCase();
+    var hit = runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0 || (name && r.player === 'name:' + name); })[0];
+    return hit ? hit.player : '';
+  }
+  // Each player's best in one alley, best first (most rats, then fewest
+  // swings): { player, name, caught, taps, tries (of that best run), runs
+  // (how many they kept there), last }.
+  function players(runs, track) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (r.track !== track) return;
+      var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, caught: -1, taps: 0, tries: null, runs: 0, last: '' });
+      p.runs++;
+      if (r.at > p.last) p.last = r.at;
+      if (RA.better(r, p)) { p.caught = r.caught; p.taps = r.taps; p.tries = r.tries; }
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) {
+      return b.caught - a.caught || a.taps - b.taps || (a.last < b.last ? -1 : 1);
+    });
+  }
+  function ordinal(n) {
+    var t = n % 100, u = n % 10;
+    return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th');
+  }
+  // Where a count would stand among the other players' bests in this alley.
+  function standing(runs, now) {
+    var me = myPlayer(runs);
+    var others = players(runs, TRACK).filter(function (p) { return p.player !== me; });
+    var when = TRACK === TODAY ? 'today' : 'in this alley';
+    if (!others.length) return 'No one else has kept a run ' + when + ' yet.';
+    var rank = 1 + others.filter(function (p) { return RA.better(p, now); }).length, total = others.length + 1;
+    var top = Math.max(1, Math.ceil(rank / total * 100));
+    if (total >= 5 && top <= 50) return 'Top ' + top + '% ' + when + '!';
+    return ordinal(rank) + ' of ' + total + ' players ' + when + '.';
+  }
+
+  // ---- The board sheet -----------------------------------------------------
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [], boardAll = false;
+  document.getElementById('board-more').addEventListener('click', function () {
+    boardAll = !boardAll;
+    refreshBoard();
+  });
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clock(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function openBoard() {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    sheet.hidden = false;
+    document.getElementById('sheet-close').focus({ preventScroll: true });
+    refreshBoard();
+    clearInterval(sheetTimer);
+    sheetTimer = setInterval(function () { if (!document.hidden) refreshBoard(); }, 30000);
+  }
+  function closeBoard() {
+    sheet.hidden = true;
+    clearInterval(sheetTimer);
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('board-btn').addEventListener('click', openBoard);
+
+  // ---- The look-and-sound sheet ---------------------------------------------
+  var settings = document.getElementById('settings'), skinList = document.getElementById('skins');
+  // Each skin is offered as a small picture of itself: its wall and ground,
+  // the lamp's light, a bin, a rat, your swing and a ghost's.
+  SKINS.forEach(function (k, i) {
+    var b = el('button', 'skin');
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.dataset.skin = k.id;
+    var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 60');
+    svg.setAttribute('aria-hidden', 'true');
+    function add(tag, at, parent) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (a) { e.setAttribute(a, at[a]); });
+      (parent || svg).appendChild(e);
+      return e;
+    }
+    var pool = add('radialGradient', { id: 'skin-pool-' + i }, add('defs', {}));
+    add('stop', { offset: 0, 'stop-color': k.light, 'stop-opacity': 0.45 }, pool);
+    add('stop', { offset: 1, 'stop-color': k.light, 'stop-opacity': 0 }, pool);
+    add('rect', { x: 0, y: 0, width: 120, height: 60, fill: k.ground });
+    add('rect', { x: 0, y: 0, width: 120, height: 18, fill: k.wall });
+    add('ellipse', { cx: 58, cy: 36, rx: 50, ry: 22, fill: 'url(#skin-pool-' + i + ')' });
+    add('rect', { x: 12, y: 22, width: 20, height: 24, rx: 2, fill: k.bin });
+    add('ellipse', { cx: 22, cy: 22, rx: 11, ry: 3.5, fill: k.lid });
+    add('path', { d: 'M48 40 Q 42 41 39 45', fill: 'none', stroke: k.tail, 'stroke-width': 1.4, 'stroke-linecap': 'round' });
+    add('ellipse', { cx: 56, cy: 40, rx: 8, ry: 4.5, fill: k.rat });
+    add('path', { d: 'M61 37 L68 40 L61 43 Z', fill: k.rat });
+    add('circle', { cx: 64, cy: 39, r: 0.9, fill: k.eye });
+    add('circle', { cx: 58, cy: 40, r: 13, fill: 'none', stroke: k.you, 'stroke-width': 2 });
+    add('circle', { cx: 100, cy: 42, r: 6, fill: 'none', stroke: k.ghost, 'stroke-width': 1.6 });
+    b.appendChild(svg);
+    b.appendChild(document.createTextNode(k.name));
+    b.addEventListener('click', function () {
+      setSkin(k.id);
+      remember('rat-alley:skin', k.id);
+      markSkin();
+      layout();
+    });
+    skinList.appendChild(b);
+  });
+  function markSkin() {
+    Array.prototype.forEach.call(skinList.children, function (b) {
+      b.setAttribute('aria-checked', b.dataset.skin === skin.id ? 'true' : 'false');
+    });
+  }
+  markSkin();
+  document.getElementById('settings-btn').addEventListener('click', function () {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    settings.hidden = false;
+    document.getElementById('settings-close').focus({ preventScroll: true });
+  });
+  function closeSettings() {
+    settings.hidden = true;
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('settings-close').addEventListener('click', closeSettings);
+  document.getElementById('end-board').addEventListener('click', openBoard);
+  document.getElementById('sheet-close').addEventListener('click', closeBoard);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeBoard();
+    if (e.key === 'Escape' && !settings.hidden) closeSettings();
+  });
+
+  // ---- Notes ---------------------------------------------------------------
+  // Anyone can say something: a line in the room that carries no run, so
+  // the board and the wave pass it by, located at the alley it was said
+  // about. A typed name is shown as a visitor's, never as a beach handle.
+  var notesForm = document.getElementById('notes-form'), notesStatus = document.getElementById('notes-status');
+  Beach.addMic(notesForm.note);
+  notesForm.who.value = recall('rat-alley:name') || '';
+  notesForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var note = notesForm.note.value.trim();
+    if (notesForm.web.value || !note) return;
+    var name = notesForm.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('rat-alley:name', name);
+    var send = notesForm.querySelector('button[type=submit]');
+    send.disabled = true;
+    notesStatus.textContent = 'Sending…';
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', note, isDay(TRACK) ? TRACK : '').then(function () {
+      notesForm.note.value = '';
+      notesStatus.textContent = 'Thank you. Your note is on the beach.';
+      drawNotes();
+    }, function () {
+      notesStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () { send.disabled = false; });
+  });
+  document.getElementById('end-note-btn').addEventListener('click', function () {
+    openBoard();
+    notesForm.who.value = notesForm.who.value || recall('rat-alley:name') || '';
+    document.getElementById('notes-head').scrollIntoView({ block: 'start' });
+    notesForm.note.focus({ preventScroll: true });
+  });
+
+  // What people have said, newest first; a long note shows its opening,
+  // with the rest a tap away.
+  function drawNotes() {
+    var list = document.getElementById('notes-list');
+    return pool().then(function (held) {
+      var notes = slots(held, '', []).filter(function (s) {
+        return typeof s.entry['7'] !== 'string' && s.entry._.trim();
+      }).sort(function (a, b) { return a.entry['3'] < b.entry['3'] ? 1 : -1; }).slice(0, 40);
+      list.textContent = '';
+      if (!notes.length) { list.appendChild(el('p', 'note', 'No notes yet. Be the first.')); return; }
+      notes.forEach(function (s) {
+        var e = s.entry, n = el('div', 'n'), meta = el('p', 'n-who');
+        var name = who(e) === 'A friend' ? 'A visitor' : who(e), when = new Date(e['3']);
+        meta.appendChild(el('strong', null, name));
+        if (!isNaN(when)) meta.appendChild(document.createTextNode(' · ' + when.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + clock(e['3'])));
+        n.appendChild(meta);
+        var full = e._.trim(), t = el('p', 'n-text');
+        if (full.length > 600) {
+          var cut = full.lastIndexOf(' ', 450);
+          t.textContent = full.slice(0, cut > 250 ? cut : 450) + '…';
+          var more = el('button', 'chip more', 'Read all');
+          more.type = 'button';
+          more.addEventListener('click', function () { t.textContent = full; more.remove(); });
+          n.appendChild(t);
+          n.appendChild(more);
+        } else {
+          t.textContent = full;
+          n.appendChild(t);
+        }
+        list.appendChild(n);
+      });
+    }, function () {});
+  }
+
+  function refreshBoard() {
+    var title = document.getElementById('sheet-title'), sum = document.getElementById('board-sum');
+    var day = isDay(TRACK);
+    title.textContent = TRACK === TODAY ? 'Today’s board' : day ? 'This alley’s board' : 'The board';
+    drawMine();
+    room().then(function (runs) {
+      lastRuns = runs;
+      var me = myPlayer(runs), list = document.getElementById('board-list');
+      list.textContent = '';
+      if (!day) {
+        sum.textContent = 'Practice runs aren’t kept. The board is for each day’s alley; play today’s from the page without a link.';
+      } else {
+        var ps = players(runs, TRACK), keptHere = runs.filter(function (r) { return r.track === TRACK; });
+        var latest = keptHere.reduce(function (a, r) { return r.at > a ? r.at : a; }, '');
+        sum.textContent = ps.length
+          ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + keptHere.length + (keptHere.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
+          : 'No one has kept a run in this alley yet. Squash some rats and add your name to be first.';
+        // The top five, and your own place when it is further down; the rest
+        // a tap away.
+        var TOP = 5, more = document.getElementById('board-more');
+        ps.forEach(function (p, i) {
+          if (!boardAll && i >= TOP && p.player !== me) return;
+          if (!boardAll && i >= TOP && p.player === me && i > TOP) list.appendChild(el('li', 'gap', '⋯'));
+          var li = el('li', p.player === me ? 'me' : '');
+          li.appendChild(el('span', 'pos', String(i + 1)));
+          var name = el('span', 'name', p.name + (p.player === me ? ' (you)' : ''));
+          name.appendChild(el('span', 'runs', (p.runs === 1 ? '1 run kept' : p.runs + ' runs kept') + ' · ' + p.taps + (p.taps === 1 ? ' swing' : ' swings')));
+          li.appendChild(name);
+          if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
+          li.appendChild(el('span', 't', RA.words(p.caught)));
+          list.appendChild(li);
+        });
+        more.hidden = ps.length <= TOP;
+        more.textContent = boardAll ? 'Show the top ' + TOP + ' only' : 'Show all ' + ps.length + ' players';
+        more.setAttribute('aria-expanded', boardAll ? 'true' : 'false');
+      }
+      drawWave(runs, me);
+      drawPast(runs, me);
+      drawHistory(runs, me);
+      offerBest(runs, me);
+      drawNotes();
+    }, function () {
+      sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
+    });
+  }
+
+  // The wave, as David's waves are read: every player at the moment they
+  // first kept a run, the count climbing as they came, with a thread from
+  // whoever brought them. It has three parts, named for what happened: the
+  // tinder, before it caught; the spark, the stretch when people came
+  // fastest; and the flame, everything since. Early is not better; nobody
+  // is ranked.
+  function waveOf(runs) {
+    var first = {};
+    runs.forEach(function (r) {
+      var f = first[r.player];
+      if (!f || r.at < f.at) first[r.player] = { player: r.player, name: r.name, at: r.at, from: (f && f.from) || r.from, t: Date.parse(r.at) };
+      else if (!f.from && r.from) f.from = r.from;
+    });
+    var order = Object.keys(first).map(function (k) { return first[k]; }).filter(function (p) { return !isNaN(p.t); })
+      .sort(function (a, b) { return a.t - b.t; });
+    var byName = {};
+    order.forEach(function (p) { if (p.player.indexOf('name:') === 0) byName[p.player.slice(5)] = p; });
+    order.forEach(function (p) {
+      var b = p.from ? byName[p.from.toLowerCase()] : null;
+      p.by = b && b !== p && b.t <= p.t ? b : null;
+    });
+    // The spark: the stretch, a sixth of the wave's span (at least a
+    // quarter of an hour), in which the most people came.
+    var spark = null;
+    if (order.length >= 4) {
+      var span = order[order.length - 1].t - order[0].t, w = Math.max(15 * 60000, span / 6), most = 0;
+      order.forEach(function (p, i) {
+        var n = 0;
+        for (var j = i; j < order.length && order[j].t - p.t <= w; j++) n++;
+        if (n > most) { most = n; spark = { from: p.t, to: p.t + w, n: n, people: order.slice(i, i + n) }; }
+      });
+      if (spark && spark.n < 3) spark = null;
+    }
+    return { order: order, spark: spark };
+  }
+  function partOf(t, spark) {
+    if (!spark) return 'the tinder';
+    return t < spark.from ? 'the tinder' : t <= spark.to ? 'the spark' : 'the flame';
+  }
+  function when(t, sameDay) {
+    var d = new Date(t);
+    return sameDay ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function minutes(ms) {
+    var m = Math.round(Math.abs(ms) / 60000);
+    return m < 60 ? m + (m === 1 ? ' minute' : ' minutes') : Math.round(m / 60) + (Math.round(m / 60) === 1 ? ' hour' : ' hours');
+  }
+
+  function drawWave(runs, me) {
+    var wv = waveOf(runs), order = wv.order, spark = wv.spark;
+    var svg = document.getElementById('wave'), NS = 'http://www.w3.org/2000/svg';
+    svg.textContent = '';
+    function add(tag, at, text) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      if (text != null) e.textContent = text;
+      svg.appendChild(e);
+      return e;
+    }
+    var line = document.getElementById('wave-line');
+    if (!order.length) {
+      line.textContent = 'No one has jumped in yet.';
+      document.getElementById('stood').hidden = true;
+      return;
+    }
+    var now = Date.now(), t0 = order[0].t, t1 = Math.max(order[order.length - 1].t, Math.min(now, order[order.length - 1].t + 3600000));
+    if (t1 - t0 < 600000) t1 = t0 + 600000;
+    var X0 = 14, X1 = 306, Y0 = 138, Y1 = 22, n = order.length;
+    function X(t) { return X0 + (t - t0) / (t1 - t0) * (X1 - X0); }
+    function Y(k) { return Y0 - k / Math.max(n, 1) * (Y0 - Y1); }
+    // The three parts, shaded behind the curve and named beneath it.
+    if (spark) {
+      add('rect', { x: X(spark.from), y: Y1 - 8, width: Math.max(2, X(Math.min(spark.to, t1)) - X(spark.from)), height: Y0 - Y1 + 8, fill: skin.you, 'fill-opacity': 0.12 });
+      [['the tinder', X0, X(spark.from)], ['the spark', X(spark.from), X(Math.min(spark.to, t1))], ['the flame', X(Math.min(spark.to, t1)), X1]].forEach(function (l) {
+        if (l[2] - l[1] > 24) add('text', { x: (l[1] + l[2]) / 2, y: 152, 'text-anchor': 'middle', fill: l[0] === 'the spark' ? skin.you : skin.dim, 'font-size': 10 }, l[0]);
+      });
+    } else {
+      add('text', { x: (X0 + X1) / 2, y: 152, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 }, 'the tinder: it hasn’t caught yet');
+    }
+    add('line', { x1: X0, y1: Y0, x2: X1, y2: Y0, stroke: skin.dim, 'stroke-opacity': 0.5, 'stroke-width': 1 });
+    var sameDay = new Date(t0).toDateString() === new Date(t1).toDateString();
+    add('text', { x: X0, y: 166, fill: skin.dim, 'font-size': 9 }, when(t0, sameDay));
+    add('text', { x: X1, y: 166, 'text-anchor': 'end', fill: skin.dim, 'font-size': 9 }, t1 >= now - 60000 ? 'now' : when(t1, sameDay));
+    // The count climbing, a step for each person who came.
+    var d = 'M' + X0 + ' ' + Y0;
+    order.forEach(function (p, i) { d += ' H' + X(p.t).toFixed(1) + ' V' + Y(i + 1).toFixed(1); });
+    d += ' H' + X(t1).toFixed(1);
+    add('path', { d: d + ' V' + Y0 + ' H' + X0 + ' Z', fill: skin.accent, 'fill-opacity': 0.1, stroke: 'none' });
+    add('path', { d: d, fill: 'none', stroke: skin.accent, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    // Threads from whoever brought each person.
+    order.forEach(function (p, i) {
+      if (!p.by) return;
+      var j = order.indexOf(p.by), ax = X(p.by.t), ay = Y(j + 1), bx = X(p.t), by = Y(i + 1);
+      add('path', { d: 'M' + ax + ' ' + ay + ' Q ' + ((ax + bx) / 2) + ' ' + (Math.min(ay, by) - 22) + ' ' + bx + ' ' + by,
+        fill: 'none', stroke: p.by.player === me || p.player === me ? skin.you : skin.ghost, 'stroke-width': 1.4, 'stroke-opacity': 0.8, 'stroke-dasharray': '3 3' });
+    });
+    order.forEach(function (p, i) {
+      add('circle', { cx: X(p.t), cy: Y(i + 1), r: p.player === me ? 5.5 : 3.8, fill: p.player === me ? skin.you : skin.ghost, stroke: skin.bg, 'stroke-width': 1.5 });
+    });
+    // How it is moving now.
+    var hour = order.filter(function (p) { return now - p.t < 3600000; }).length;
+    var before = order.filter(function (p) { return now - p.t >= 3600000 && now - p.t < 7200000; }).length;
+    line.textContent = n + (n === 1 ? ' player' : ' players') + ' so far. ' + (hour
+      ? hour + ' joined in the last hour' + (hour > before ? ', and the wave is rising.' : hour === before ? ', as many as the hour before.' : ', fewer than the hour before.')
+      : 'No one new in the last hour: the wave is resting. Bring someone in to start it again.');
+    drawStood(order, spark, me, sameDay);
+  }
+
+  // Where you stood: the wave read from your place in it, and the one
+  // thing in it no single player saw.
+  function drawStood(order, spark, me, sameDay) {
+    var box = document.getElementById('stood'), list = document.getElementById('stood-list');
+    list.textContent = '';
+    var mineHere = order.filter(function (p) { return p.player === me; })[0];
+    function tell(text) { list.appendChild(el('li', null, text)); }
+    if (mineHere) {
+      var i = order.indexOf(mineHere);
+      tell('You came in ' + partOf(mineHere.t, spark) + ', the ' + ordinal(i + 1) + ' of ' + order.length + (mineHere.by ? ', brought by ' + mineHere.by.name : '') + '.');
+      // Your ripple: everyone you brought, and everyone they brought.
+      var kids = function (p) { return order.filter(function (q) { return q.by === p; }); };
+      var direct = kids(mineHere), all = [], todo = direct.slice();
+      while (todo.length) { var q = todo.shift(); if (all.indexOf(q) < 0) { all.push(q); todo = todo.concat(kids(q)); } }
+      if (direct.length) {
+        var names = direct.map(function (p) { return p.name; });
+        var more = all.length - direct.length;
+        tell('You brought ' + direct.length + (direct.length === 1 ? ' person' : ' people') + ': ' + names.join(', ') + '.' +
+          (more > 0 ? ' They brought ' + more + ' more. Your ripple is ' + all.length + '.' : ''));
+      } else {
+        tell('You haven’t brought anyone yet. Bring someone in, and a thread will run from you to them.');
+      }
+      // Nearest to you: by best count in this alley, else by when you came.
+      var bests = {};
+      players(lastRuns, TRACK).forEach(function (p) { bests[p.player] = p.caught; });
+      var others = order.filter(function (p) { return p !== mineHere; });
+      if (others.length) {
+        var near = others.slice().sort(function (a, b) {
+          var da = bests[a.player] != null && bests[me] != null ? Math.abs(bests[a.player] - bests[me]) : Infinity;
+          var db = bests[b.player] != null && bests[me] != null ? Math.abs(bests[b.player] - bests[me]) : Infinity;
+          return da - db || Math.abs(a.t - mineHere.t) - Math.abs(b.t - mineHere.t);
+        })[0];
+        var apart = bests[near.player] != null && bests[me] != null ? Math.abs(bests[near.player] - bests[me]) : null;
+        var gap = apart == null ? '' : apart ? ', and your bests are ' + RA.words(apart) + ' apart' : ', and your bests are level';
+        tell('Nearest to you: ' + near.name + '. You came ' + minutes(near.t - mineHere.t) + ' apart' + gap + '.');
+      }
+    }
+    if (spark) {
+      var by = {};
+      spark.people.forEach(function (p) { if (p.by) by[p.by.name] = (by[p.by.name] || 0) + 1; });
+      var top = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; })[0];
+      var mins = Math.max(1, Math.round((spark.people[spark.people.length - 1].t - spark.people[0].t) / 60000));
+      tell('It caught at ' + when(spark.from, sameDay) + ', when ' + spark.n + ' people came in ' + mins + (mins === 1 ? ' minute' : ' minutes') +
+        (top && by[top] * 2 >= spark.n ? ', most of them brought by ' + top + '.' : '.'));
+    }
+    box.hidden = !list.children.length;
+    if (!mineHere && box.hidden === false) list.insertBefore(el('li', null, 'Keep a run to take your own place in the wave.'), list.firstChild);
+  }
+
+  // ---- Bringing someone in ---------------------------------------------------
+  // A plain link to the game that carries your name, so whoever comes by it
+  // is drawn with a thread from you.
+  var bring = document.getElementById('bring'), bringNote = document.getElementById('bring-note');
+  var bringName = document.getElementById('bring-name'), bringWho = document.getElementById('bring-who');
+  bring.addEventListener('click', function () {
+    var name = (recall('rat-alley:name') || bringWho.value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) {
+      bringName.hidden = false;
+      bringWho.focus();
+      bringNote.textContent = 'Add your name first, so the people you bring are linked to you.';
+      return;
+    }
+    remember('rat-alley:name', name);
+    bringName.hidden = true;
+    var url = location.origin + location.pathname + '?from=' + encodeURIComponent(name);
+    var text = 'Come and play Rat Alley with me: squash the rats round the bins before the big rat comes.';
+    bringNote.textContent = 'Send this link: ' + url;
+    if (navigator.share) {
+      navigator.share({ title: 'Rat Alley', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () { bringNote.textContent = 'The link is copied: ' + url; }, function () {});
+    }
+  });
+  bringWho.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); bring.click(); }
+  });
+
+  // When this phone's best in a day's alley beats your best on the board
+  // (or you aren't on it), one tap puts it there.
+  var keepBest = document.getElementById('keep-best');
+  function phoneBest() {
+    var keptBest = recall(BEST), r = keptBest ? RA.rerun(keptBest, sk) : null;
+    return r && r.ok ? { replay: keptBest, caught: r.caught, taps: r.taps } : null;
+  }
+  function offerBest(runs, me) {
+    var pb = isDay(TRACK) ? phoneBest() : null;
+    var board = me ? players(runs, TRACK).filter(function (p) { return p.player === me; })[0] : null;
+    keepBest.hidden = !(pb && RA.better(pb, board));
+    if (!keepBest.hidden) keepBest.textContent = 'Put my best (' + RA.words(pb.caught) + ') on the board';
+  }
+  keepBest.addEventListener('click', function () {
+    var pb = phoneBest(), note = document.getElementById('keep-best-note');
+    if (!pb) return;
+    keepBest.disabled = true;
+    note.textContent = 'Keeping your best on the beach…';
+    var tries = parseInt(recall('rat-alley:best-tries:' + TRACK), 10);
+    keepRun(pb.replay, pb.caught, tries > 0 ? tries : 0).then(function () {
+      note.textContent = 'Your best is on the board.';
+      keepBest.disabled = false;
+      refreshBoard();
+    }, function () {
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      keepBest.disabled = false;
+    });
+  });
+
+  // ---- Days ------------------------------------------------------------------
+  // The days the room holds runs for, newest first: each day's address, its
+  // date (from the first run kept that day), and its players' bests.
+  function days(runs) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (!isDay(r.track)) return;
+      var d = by[r.track] || (by[r.track] = { track: r.track, first: r.at, runs: 0 });
+      d.runs++;
+      if (r.at < d.first) d.first = r.at;
+    });
+    return Object.keys(by).map(function (k) {
+      var d = by[k];
+      d.players = players(runs, k);
+      return d;
+    }).sort(function (a, b) { return a.track < b.track ? 1 : -1; });
+  }
+  function dayName(d) {
+    var t = new Date(d.first);
+    return isNaN(t) ? d.track : t.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function alleyLink(track) {
+    return location.pathname + (track === TODAY ? '' : '?track=' + track);
+  }
+
+  // Yesterday's winner, under the ghost in today's alley.
+  function showPrev(runs) {
+    var line = document.getElementById('prev-line');
+    if (TRACK !== TODAY) { line.hidden = true; return; }
+    var before = days(runs).filter(function (d) { return d.track < TODAY && d.players.length; })[0];
+    if (!before) { line.hidden = true; return; }
+    var w = before.players[0], gap = Math.round((Date.now() - Date.parse(before.first)) / 86400000);
+    line.textContent = (gap <= 1 ? 'Yesterday' : 'Last time, ' + dayName(before)) + ': ' + w.name + ' won with ' + RA.words(w.caught) +
+      ', out of ' + before.players.length + (before.players.length === 1 ? ' player.' : ' players.');
+    line.hidden = false;
+  }
+
+  // Past alleys: every day but the one being played, with its winner and
+  // your own best that day.
+  function drawPast(runs, me) {
+    var list = document.getElementById('past'), note = document.getElementById('past-note');
+    list.textContent = '';
+    var ds = days(runs).filter(function (d) { return d.track !== TRACK; });
+    if (TRACK !== TODAY && TODAY) {
+      var li0 = el('li'), a0 = el('a');
+      a0.href = alleyLink(TODAY);
+      a0.appendChild(el('span', 'day', 'Today'));
+      a0.appendChild(el('span', 'who', 'Back to today’s alley'));
+      li0.appendChild(a0);
+      list.appendChild(li0);
+    }
+    ds.forEach(function (d) {
+      var li = el('li'), a = el('a'), w = d.players[0];
+      a.href = alleyLink(d.track);
+      a.appendChild(el('span', 'day', d.track === TODAY ? 'Today' : dayName(d)));
+      var whoEl = el('span', 'who', w ? w.name + ' won' : 'No runs kept');
+      var mineThen = d.players.filter(function (p) { return p.player === me; })[0];
+      whoEl.appendChild(el('small', null, RA.describe(d.track) + ' · ' + d.players.length + (d.players.length === 1 ? ' player' : ' players') +
+        (mineThen ? ' · you: ' + RA.words(mineThen.caught) + ', ' + ordinal(d.players.indexOf(mineThen) + 1) : '')));
+      a.appendChild(whoEl);
+      if (w) a.appendChild(el('span', 't', RA.words(w.caught)));
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    note.textContent = ds.length || TRACK !== TODAY
+      ? 'Every day has its own alley, and every run stays. Play any earlier day again, and race its best.'
+      : 'Every day has its own alley, and every run stays. Earlier days will appear here.';
+  }
+
+  // Your history: the days you played, your best each day, and how often
+  // you finished in the day's top five.
+  function drawHistory(runs, me) {
+    var line = document.getElementById('history'), list = document.getElementById('days');
+    list.textContent = '';
+    var mineDays = days(runs).map(function (d) {
+      var p = d.players.filter(function (q) { return q.player === me; })[0];
+      return p ? { d: d, p: p, place: d.players.indexOf(p) + 1 } : null;
+    }).filter(Boolean);
+    if (!me || !mineDays.length) { line.hidden = true; list.hidden = true; return; }
+    var top = mineDays.filter(function (m) { return m.place <= 5; }).length;
+    line.textContent = 'You’ve played ' + mineDays.length + (mineDays.length === 1 ? ' day' : ' days') +
+      (top ? ', in the top five on ' + top + (top === 1 ? ' of them.' : '.') : '.');
+    mineDays.slice(0, 14).forEach(function (m) {
+      var li = el('li');
+      var leftSide = el('span', null, m.d.track === TODAY ? 'Today' : dayName(m.d));
+      leftSide.appendChild(el('small', null, ordinal(m.place) + ' of ' + m.d.players.length));
+      li.appendChild(leftSide);
+      li.appendChild(el('span', 't', RA.words(m.p.caught)));
+      list.appendChild(li);
+    });
+    line.hidden = false;
+    list.hidden = false;
+  }
+
+  function drawMine() {
+    var tries = tally('tries'), pb = phoneBest();
+    document.getElementById('mine-line').textContent = tries
+      ? 'In this alley: ' + tries + (tries === 1 ? ' try' : ' tries') + (pb ? ', best ' + RA.words(pb.caught) + ' from ' + pb.taps + (pb.taps === 1 ? ' swing.' : ' swings.') : '.')
+      : 'You haven’t tried this alley on this phone yet.';
+  }
+
+  // ---- Keeping a run, and the link to race it ------------------------------
+  // A kept run goes to the room as a visitor's line, located at its alley;
+  // its slot there is the ghost in the link. A typed name is shown as a
+  // visitor's, never as a beach handle.
+  // Keep a run in the room; resolves with the slot it landed in.
+  function keepRun(replay, caught, tries) {
+    var name = (recall('rat-alley:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var line = RA.words(caught) + ' squashed in the alley of ' + (TRACK === TODAY && DAY ? DAY : TRACK);
+    var more = { 7: replay };
+    // Who brought this phone into the wave, kept with each of its runs.
+    var from = recall('rat-alley:from');
+    if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
+    if (tries) more[8] = String(tries);
+    // A save counts only once the run is read back from the room: the
+    // beach's answer alone isn't trusted, since two saves landing at once
+    // can lose one. If it isn't there, it is sent once more.
+    function find(sent) {
+      return pool().then(function (held) {
+        var hit = slots(held, '', []).filter(function (s) {
+          return s.entry['7'] === replay && (!sent || s.entry['3'] === sent.entry[3]);
+        })[0];
+        return hit ? hit.slot : null;
+      });
+    }
+    function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    function send() {
+      return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
+        return find(sent).then(function (slot) {
+          return slot || wait(1200).then(function () { return find(sent); });
+        });
+      });
+    }
+    return send().then(function (slot) {
+      return slot || wait(800).then(send);
+    }).then(function (slot) {
+      if (!slot) throw new Error('not in the room');
+      return slot;
+    }).then(function (slot) {
+      var m = mine();
+      if (m.indexOf(slot) < 0) { m.push(slot); remember('rat-alley:mine', JSON.stringify(m)); }
+      return slot;
+    });
+  }
+
+  // Save a finished run to the board, once: a second ask while it is on
+  // its way, or after it has landed, gets the same slot.
+  function saveLast(r) {
+    if (!r || !r.replay) return Promise.reject(new Error('nothing to save'));
+    if (r.slot) return Promise.resolve(r.slot);
+    if (!r.saving) {
+      r.saving = keepRun(r.replay, r.caught, r.tries).then(function (slot) {
+        r.slot = slot;
+        return slot;
+      }, function (e) {
+        r.saving = null;
+        throw e;
+      });
+    }
+    return r.saving;
+  }
+
+  // Typing a name on the end screen puts this run on the board under it;
+  // the name is kept for the next runs too. It saves when the box is left
+  // or Done is pressed.
+  var whoBox = document.getElementById('who');
+  // What the end screen says about this run and the board, and whether it
+  // offers Save: on the board, being saved, not saved, or failed.
+  var saveBtn = document.getElementById('save-run');
+  function keepState(r, isBest) {
+    var stateEl = document.getElementById('keep-state');
+    if (!r || r !== last) return;
+    var name = recall('rat-alley:name');
+    stateEl.textContent = r.slot ? '✓ This run is on the board' + (name ? ' as ' + name : '') + '.'
+      : r.state === 'saving' ? 'Saving your run to the board…'
+      : r.state === 'failed' ? 'This run didn’t reach the board. Tap Save to try again.'
+      : isBest ? 'This run isn’t on the board yet. Add your name and tap Save.'
+      : 'Only your best goes on the board automatically. Tap Save to add this one too.';
+    stateEl.className = 'keep-state ' + (r.slot ? 'on' : 'off');
+    saveBtn.hidden = !!r.slot || r.state === 'saving';
+  }
+  function saveNow() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!last || !last.replay || !isDay(TRACK)) return;
+    if (!name && !recall('rat-alley:name')) {
+      document.getElementById('keep-state').textContent = 'Type your name first, so the board knows it’s you.';
+      whoBox.focus();
+      return;
+    }
+    if (name) {
+      remember('rat-alley:name', name);
+      notesForm.who.value = notesForm.who.value || name;
+    }
+    if (last.slot) return keepState(last, true);
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+    });
+  }
+  saveBtn.addEventListener('click', saveNow);
+  // Typing a name and pressing Done saves too.
+  function nameGiven() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name || !last || last.slot || last.state === 'saving') return;
+    saveNow();
+  }
+  whoBox.addEventListener('change', nameGiven);
+  whoBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); whoBox.blur(); nameGiven(); }
+  });
+
+  document.getElementById('challenge').addEventListener('click', function () {
+    var btn = this, note = document.getElementById('keep-note');
+    if (!last || !last.replay) return;
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('rat-alley:name', name);
+    if (last.slot) return share();
+    btn.disabled = true;
+    note.textContent = 'Keeping your run on the beach…';
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+      btn.disabled = false;
+      share();
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+      btn.disabled = false;
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    });
+  });
+
+  function share() {
+    var url = location.origin + location.pathname + '?track=' + TRACK + '&ghost=' + last.slot;
+    var text = 'I squashed ' + RA.words(last.caught) + ' in ' + (TRACK === TODAY ? 'today’s' : 'a') + ' Rat Alley. Race my ghost:';
+    var note = document.getElementById('keep-note'), shown = document.getElementById('keep-link');
+    shown.textContent = url;
+    shown.hidden = false;
+    note.textContent = 'Your run is on the beach. Send this link:';
+    if (navigator.share) {
+      navigator.share({ title: 'Rat Alley', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () {
+        note.textContent = 'Your run is on the beach. The link is copied:';
+      }, function () {});
+    }
+  }
+
+  document.getElementById('again').addEventListener('click', ready);
+  // The picture of how to play holds still, the bat down on the rat just
+  // as it is squashed, for anyone who asks their device for less motion.
+  function holdHow() {
+    var how = say.querySelector('.how');
+    if (how && still() && how.pauseAnimations) {
+      try { how.pauseAnimations(); how.setCurrentTime(1.6); } catch (e) {}
+    }
+  }
+  holdHow();
+
+  function ready() {
+    if (!sk) return;
+    loadGhost();
+    if (Date.now() - leaderRead > 20000) loadLeader();
+    phase = 'ready';
+    run = null;
+    taps = [];
+    marks = [];
+    flats = [];
+    swings = [];
+    bigRat = 0;
+    end.hidden = true;
+    say.className = 'say';
+    say.innerHTML = BRIEF;
+    say.hidden = false;
+    holdHow();
+  }
+
+  // ---- Marks, puffs, squashes and swings (drawing only: the run never reads them)
+  // A mark is a ring where a swing landed, in alley units: gold opening out
+  // for a squash, a ring closing for as long as a miss leaves the hand
+  // jarred, a small dot for a tap made while jarred, and the ghost's in its
+  // colour. A squashed rat lies flat for a moment, and each swing of yours
+  // shows the bat coming down.
+  var marks = [], bits = [], flats = [], swings = [], jolt = 0;
+  var BITE = 1300;              // how long the big rat takes to bite, in ms
+  var bigRat = 0;               // when the big rat started coming, or 0
+  function mark(x, y, kind) {
+    var life = kind === 'miss' ? RA.LAW.missRest / RA.RATE * 1000 : kind === 'resting' ? 250 : 480;
+    marks.push({ x: x, y: y, kind: kind, born: performance.now(), life: life, reach: RA.reach(run ? run.step : 0) });
+    if (marks.length > 40) marks.splice(0, marks.length - 40);
+  }
+  function puff(x, y, n, color) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, v = 60 + Math.random() * 180;
+      bits.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, life: 0.4 + Math.random() * 0.4, age: 0, color: Math.random() < 0.4 ? skin.rat : color });
+    }
+    if (bits.length > 300) bits.splice(0, bits.length - 300);
+  }
+  // A rat squashed flat where it was, facing the way it ran, at its size then.
+  function squash(at, s) {
+    flats.push({ x: at.x, y: at.y, a: Math.atan2(at.hy, at.hx), u: ratSize(s), born: performance.now() });
+    if (flats.length > 20) flats.shift();
+    jolt = performance.now();
+  }
+  // The bat coming down where a swing landed.
+  function swing(x, y) {
+    if (still()) return;
+    swings.push({ x: x, y: y, born: performance.now() });
+    if (swings.length > 6) swings.shift();
+  }
+  function drawMarks(ts, dt) {
+    var sc = view.scale, thick = skin.thick ? 1.6 : 1;
+    for (var i = marks.length - 1; i >= 0; i--) {
+      var m = marks[i], f = (ts - m.born) / m.life;
+      if (f >= 1) { marks.splice(i, 1); continue; }
+      if (f < 0) f = 0;
+      var p = px(m.x, m.y);
+      ctx.beginPath();
+      if (m.kind === 'caught' || m.kind === 'ghost-caught') {
+        ctx.arc(p.x, p.y, (20 + 70 * f) * sc, 0, Math.PI * 2);
+        ctx.strokeStyle = m.kind === 'caught' ? skin.you : skin.ghost;
+        ctx.lineWidth = (m.kind === 'caught' ? 3 : 2) * thick;
+        ctx.globalAlpha = 1 - f;
+      } else if (m.kind === 'miss') {
+        ctx.arc(p.x, p.y, m.reach * (1 - f) * sc + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = skin.miss;
+        ctx.lineWidth = 2 * thick;
+        ctx.globalAlpha = 0.85;
+      } else if (m.kind === 'ghost') {
+        ctx.arc(p.x, p.y, (15 + 40 * f) * sc, 0, Math.PI * 2);
+        ctx.strokeStyle = skin.ghost;
+        ctx.lineWidth = 1.5 * thick;
+        ctx.globalAlpha = (1 - f) * 0.7;
+      } else {
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = skin.miss;
+        ctx.globalAlpha = 1 - f;
+        ctx.fill();
+        continue;
+      }
+      ctx.stroke();
+    }
+    for (i = bits.length - 1; i >= 0; i--) {
+      var b = bits[i];
+      b.age += dt;
+      if (b.age >= b.life) { bits.splice(i, 1); continue; }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.vx *= 0.93;
+      b.vy = b.vy * 0.93 + 200 * dt;
+      var q = px(b.x, b.y);
+      ctx.globalAlpha = 1 - b.age / b.life;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(q.x - 2, q.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // A squashed rat: flat out, its eyes crossed, fading.
+  function drawFlats(ts) {
+    var sc = view.scale;
+    for (var i = flats.length - 1; i >= 0; i--) {
+      var f = flats[i], age = (ts - f.born) / 800;
+      if (age >= 1) { flats.splice(i, 1); continue; }
+      var p = px(f.x, f.y), k = f.u * sc;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(f.a);
+      ctx.scale(k, k);
+      ctx.globalAlpha = 1 - age * age;
+      ctx.fillStyle = skin.rat;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 2.5, 1.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = skin.tail;
+      ctx.lineWidth = 0.25;
+      ctx.beginPath();
+      ctx.moveTo(-2.4, 0);
+      ctx.lineTo(-4.4, 0.5);
+      ctx.stroke();
+      ctx.strokeStyle = skin.ratLit;
+      ctx.lineWidth = 0.14;
+      [-0.45, 0.45].forEach(function (y) {
+        ctx.beginPath();
+        ctx.moveTo(1.4, y - 0.2); ctx.lineTo(1.8, y + 0.2);
+        ctx.moveTo(1.4, y + 0.2); ctx.lineTo(1.8, y - 0.2);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // The bat: down from up to the right onto where the swing landed, held
+  // there a moment, then lifted away.
+  function drawSwings(ts) {
+    var sc = view.scale, L = 470 * sc, hit = -2.25;
+    for (var i = swings.length - 1; i >= 0; i--) {
+      var sw = swings[i], age = ts - sw.born;
+      if (age >= 260) { swings.splice(i, 1); continue; }
+      var k = Math.min(1, age / 70), ang = hit + 1.0 * (1 - k * k), fade = age < 150 ? 1 : 1 - (age - 150) / 110;
+      var p = px(sw.x, sw.y), pivot = { x: p.x - Math.cos(hit) * L, y: p.y - Math.sin(hit) * L };
+      ctx.save();
+      ctx.translate(pivot.x, pivot.y);
+      ctx.rotate(ang);
+      ctx.globalAlpha = fade;
+      ctx.beginPath();
+      ctx.moveTo(0, -0.016 * L);
+      ctx.lineTo(0.34 * L, -0.02 * L);
+      ctx.quadraticCurveTo(0.62 * L, -0.03 * L, 0.88 * L, -0.048 * L);
+      ctx.quadraticCurveTo(1.02 * L, -0.05 * L, 1.02 * L, 0);
+      ctx.quadraticCurveTo(1.02 * L, 0.05 * L, 0.88 * L, 0.048 * L);
+      ctx.quadraticCurveTo(0.62 * L, 0.03 * L, 0.34 * L, 0.02 * L);
+      ctx.lineTo(0, 0.016 * L);
+      ctx.closePath();
+      ctx.fillStyle = skin.club;
+      ctx.fill();
+      ctx.strokeStyle = skin.thick ? '#000000' : 'rgba(0, 0, 0, 0.45)';
+      ctx.lineWidth = skin.thick ? 2.5 : 1.2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, 0.032 * L, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.globalAlpha = fade * 0.35;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = Math.max(1, 0.01 * L);
+      ctx.beginPath();
+      ctx.moveTo(0.4 * L, -0.012 * L);
+      ctx.quadraticCurveTo(0.7 * L, -0.02 * L, 0.95 * L, -0.026 * L);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- Drawing -----------------------------------------------------------
+  // The alley box (RA.W by RA.H units) is drawn as large as the screen
+  // allows, its foot at the foot of the screen; the wall runs on above it.
+  var view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0 };
+  var groundLayer = document.createElement('canvas'), scanLayer = null;
+  var lampX = 500, pipeX = 900, swingPhase = 0, flick = [1], heading = [];
+
+  function px(x, y) {
+    return { x: view.ox + x * view.scale, y: view.oy + y * view.scale };
+  }
+
+  // Numbers for drawing only, the same for everyone from the day's name.
+  function seeded(name) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < name.length; i++) { h ^= name.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    var a = h >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      var t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // The alley for this page: its bins and rats, and the lamp's place, its
+  // swing and when it flickers, which only drawing uses.
+  function setup() {
+    sk = RA.alley(TRACK);
+    BEST = 'rat-alley:best:' + TRACK;
+    var r = seeded(TRACK + ':lamp');
+    lampX = sk.door < 500 ? 620 + r() * 200 : 180 + r() * 200;
+    pipeX = sk.door < 500 ? 900 + r() * 50 : 50 + r() * 50;
+    swingPhase = r() * Math.PI * 2;
+    // A flickering lamp mostly burns, and now and then dips nearly out for
+    // a moment: one level for every six steps.
+    flick = [];
+    while (flick.length < 320) {
+      if (r() < 0.07) {
+        var dip = 0.06 + r() * 0.3, n = 1 + Math.floor(r() * 5);
+        while (n--) flick.push(dip);
+      } else flick.push(0.86 + r() * 0.14);
+    }
+    heading = [];
+    layout();
+  }
+
+  // How big the rats are at step s, in units: they grow by the second, as
+  // far as a swing reaches.
+  function ratSize(s) {
+    return RA.reach(Math.max(0, Math.min(RA.LAW.steps, s))) / 2.6;
+  }
+
+  // The lamp's light at step s: where its pool falls, how wide, and how
+  // bright (0 to 1), the same for everyone.
+  function lampAt(s) {
+    var x = lampX, level = 1;
+    if (sk.lamp === 2) x = 500 + 330 * Math.sin(s / 230 * Math.PI * 2 + swingPhase);
+    if (sk.lamp === 1) level = flick[Math.floor(Math.max(0, s) / 6) % flick.length];
+    return { x: x, y: sk.lamp === 2 ? 860 : 760, r: sk.lamp === 2 ? 600 : sk.lamp === 1 ? 800 : 780, level: level };
+  }
+
+  function layout() {
+    if (!sk) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var top = 84, foot = 6;
+    var scale = Math.min(w / RA.W, (h - top - foot) / RA.H);
+    view = { scale: scale, dpr: dpr, w: w, h: h, ox: (w - scale * RA.W) / 2, oy: h - foot - scale * RA.H };
+    // The alley, drawn once for each size: the back wall with its door and
+    // drainpipe, the cobbles, puddles and litter, and the bins.
+    groundLayer.width = canvas.width;
+    groundLayer.height = canvas.height;
+    var g = groundLayer.getContext('2d'), sc = scale, r = seeded(TRACK + ':alley');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    function P(x, y) { return px(x, y); }
+    var wy = P(0, RA.WALL).y;
+    g.fillStyle = skin.wall;
+    g.fillRect(0, 0, w, wy);
+    g.strokeStyle = skin.mortar;
+    g.lineWidth = Math.max(1, 4 * sc);
+    var bh = 46 * sc, bw = 120 * sc, row = 0, y, x;
+    for (y = wy; y > -bh; y -= bh, row++) {
+      g.beginPath();
+      g.moveTo(0, y);
+      g.lineTo(w, y);
+      for (x = ((view.ox + (row % 2) * bw / 2) % bw) - bw; x < w; x += bw) {
+        g.moveTo(x, y);
+        g.lineTo(x, y - bh);
+      }
+      g.stroke();
+    }
+    // The door the big rat waits behind, a gap of dark under it.
+    var d0 = P(sk.door - 90, RA.WALL - 290), d1 = P(sk.door + 90, RA.WALL);
+    g.fillStyle = skin.door;
+    g.fillRect(d0.x, d0.y, d1.x - d0.x, d1.y - d0.y);
+    g.strokeStyle = skin.mortar;
+    g.lineWidth = Math.max(1, 10 * sc);
+    g.strokeRect(d0.x, d0.y, d1.x - d0.x, d1.y - d0.y);
+    // The drainpipe, down the wall to the gutter.
+    var p0 = P(pipeX - 14, 0), p1 = P(pipeX + 14, RA.WALL);
+    g.fillStyle = skin.lid;
+    g.fillRect(p0.x, 0, p1.x - p0.x, p1.y);
+    g.fillStyle = skin.mortar;
+    for (y = p1.y - 60 * sc; y > 0; y -= 170 * sc) g.fillRect(p0.x - 4 * sc, y, p1.x - p0.x + 8 * sc, 10 * sc);
+    // The ground, cobbled, from the gutter at the wall's foot.
+    g.fillStyle = skin.ground;
+    g.fillRect(0, wy, w, h - wy);
+    g.fillStyle = skin.mortar;
+    g.fillRect(0, wy, w, 16 * sc);
+    g.strokeStyle = skin.cobble;
+    g.lineWidth = Math.max(1, 3 * sc);
+    var ch = 54 * sc;
+    for (y = wy + 16 * sc, row = 0; y < h; y += ch, row++) {
+      x = ((view.ox + (row % 2) * 40 * sc) % (80 * sc)) - 80 * sc;
+      while (x < w) {
+        var cw = (64 + r() * 34) * sc;
+        g.beginPath();
+        if (g.roundRect) g.roundRect(x + 3 * sc, y + 3 * sc, cw - 6 * sc, ch - 6 * sc, 14 * sc);
+        else g.rect(x + 3 * sc, y + 3 * sc, cw - 6 * sc, ch - 6 * sc);
+        g.stroke();
+        x += cw;
+      }
+    }
+    // Puddles, and litter by the bins.
+    g.fillStyle = skin.puddle;
+    for (var k = 0; k < 3; k++) {
+      var pd = P(150 + r() * 700, 700 + r() * 800);
+      g.globalAlpha = 0.85;
+      g.beginPath();
+      g.ellipse(pd.x, pd.y, (80 + r() * 70) * sc, (24 + r() * 18) * sc, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+    var bins = sk.bins.slice().sort(function (a, b) { return a.y - b.y; });
+    bins.forEach(function (b) {
+      for (var j = 0; j < 2; j++) {
+        var lt = P(b.x + (r() - 0.5) * 240, b.y + 20 + r() * 60);
+        g.fillStyle = r() < 0.5 ? skin.lid : skin.rim;
+        g.globalAlpha = 0.7;
+        g.save();
+        g.translate(lt.x, lt.y);
+        g.rotate(r() * Math.PI);
+        g.fillRect(-12 * sc, -6 * sc, 24 * sc, 12 * sc);
+        g.restore();
+      }
+      g.globalAlpha = 1;
+    });
+    // The bins: a shadow, the ribbed body, and the lid, some knocked askew.
+    bins.forEach(function (b) {
+      var c = P(b.x, b.y), rx = 64 * sc, ry = 18 * sc, tall = 150 * sc;
+      g.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      g.beginPath();
+      g.ellipse(c.x + 6 * sc, c.y + 6 * sc, rx * 1.25, ry * 1.4, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = skin.bin;
+      g.beginPath();
+      g.ellipse(c.x, c.y, rx, ry, 0, 0, Math.PI);
+      g.lineTo(c.x - rx * 1.06, c.y - tall);
+      g.lineTo(c.x + rx * 1.06, c.y - tall);
+      g.closePath();
+      g.fill();
+      if (skin.thick) {
+        g.strokeStyle = '#FFFFFF';
+        g.lineWidth = 2;
+        g.stroke();
+      }
+      g.strokeStyle = skin.rim;
+      g.globalAlpha = 0.35;
+      g.lineWidth = Math.max(1, 4 * sc);
+      [0.3, 0.62].forEach(function (f) {
+        g.beginPath();
+        g.ellipse(c.x, c.y - tall * f, rx * (1 + 0.06 * f), ry, 0, 0, Math.PI);
+        g.stroke();
+      });
+      g.globalAlpha = 0.22;
+      g.fillStyle = skin.rim;
+      g.fillRect(c.x - rx * 0.7, c.y - tall + ry, rx * 0.22, tall - ry);
+      g.globalAlpha = 1;
+      var askew = r() < 0.4, lx = c.x + (askew ? 18 * sc : 0), ly = c.y - tall - (askew ? 12 * sc : 0);
+      g.fillStyle = skin.lid;
+      g.save();
+      g.translate(lx, ly);
+      g.rotate(askew ? -0.14 : 0);
+      g.beginPath();
+      g.ellipse(0, 0, rx * 1.16, ry * 1.25, 0, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = skin.thick ? '#FFFFFF' : skin.rim;
+      g.lineWidth = Math.max(1, (skin.thick ? 2.5 : 3) * sc);
+      g.stroke();
+      g.fillStyle = skin.rim;
+      g.fillRect(-14 * sc, -ry * 0.5, 28 * sc, 8 * sc);
+      g.restore();
+    });
+    // A screen of old glass: faint lines across it, drawn over everything.
+    scanLayer = null;
+    if (skin.scan) {
+      scanLayer = document.createElement('canvas');
+      scanLayer.width = canvas.width;
+      scanLayer.height = canvas.height;
+      var sg = scanLayer.getContext('2d');
+      sg.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      for (y = 0; y < scanLayer.height; y += 3 * dpr) sg.fillRect(0, y, scanLayer.width, Math.max(1, dpr));
+    }
+  }
+
+  // A rat seen from above, nose to the right, in units of its size: its
+  // tail, its feet, its body and head, its ears and whiskers. Its eyes are
+  // drawn after the dark, so they glint in it; this answers where they are.
+  function drawRat(b, q, s, ts) {
+    var rat = sk.list[b], sc = view.scale, p = px(q.x, q.y);
+    var len = Math.sqrt(q.hx * q.hx + q.hy * q.hy);
+    var ang = len > 1e-6 ? Math.atan2(q.hy, q.hx) : (heading[b] || 0);
+    heading[b] = ang;
+    // Coming out from under a bin or the door, or going in, a rat is only
+    // half out.
+    var age = q.t * rat.life, e = 1, a = rat.pts[0], z = rat.pts[rat.pts.length - 1];
+    if (a[0] >= 0 && a[0] <= RA.W) e = Math.min(e, age / 10);
+    if (z[0] >= 0 && z[0] <= RA.W) e = Math.min(e, (rat.life - age) / 10);
+    e = Math.max(0.25, Math.min(1, e));
+    var k = ratSize(s) * sc * e;
+    var going = q.running && !still(), gait = going ? Math.sin(ts / 40 + b * 1.3) : 0;
+    var sniff = !q.running && !still() ? Math.sin(ts / 65 + b) * 0.14 : 0;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(ang);
+    ctx.scale(k, k);
+    // The tail, swishing as it runs.
+    var sw = going ? Math.sin(ts / 90 + b) * 0.8 : 0.3;
+    ctx.strokeStyle = skin.tail;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(-1.5, 0);
+    ctx.bezierCurveTo(-2.6, sw, -3.4, -sw, -4.4, sw * 0.5);
+    ctx.stroke();
+    // The feet, scurrying.
+    ctx.fillStyle = skin.tail;
+    [[1.0, 0.85, 1], [1.0, -0.85, -1], [-0.9, 0.9, -1], [-0.9, -0.9, 1]].forEach(function (f) {
+      ctx.beginPath();
+      ctx.ellipse(f[0] + 0.28 * gait * f[2], f[1], 0.32, 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = skin.rat;
+    ctx.beginPath();
+    ctx.ellipse(-0.3, 0, 1.55, 0.98, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (skin.thick) {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2.5 / k;
+      ctx.stroke();
+    }
+    var hx = 1.3 + sniff;
+    ctx.beginPath();
+    ctx.ellipse(hx, 0, 0.95, 0.72, 0, 0, Math.PI * 2);
+    ctx.moveTo(hx + 0.5, -0.5);
+    ctx.lineTo(hx + 1.4, 0);
+    ctx.lineTo(hx + 0.5, 0.5);
+    ctx.fill();
+    if (skin.thick) ctx.stroke();
+    // The sheen along its back.
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = skin.ratLit;
+    ctx.beginPath();
+    ctx.ellipse(-0.4, -0.25, 1.1, 0.42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // The ears, pink inside.
+    [-1, 1].forEach(function (side) {
+      ctx.fillStyle = skin.rat;
+      ctx.beginPath();
+      ctx.arc(hx - 0.35, side * 0.68, 0.38, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = skin.tail;
+      ctx.beginPath();
+      ctx.arc(hx - 0.35, side * 0.68, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = skin.tail;
+    ctx.beginPath();
+    ctx.arc(hx + 1.4, 0, 0.14, 0, Math.PI * 2);
+    ctx.fill();
+    // Whiskers, twitching while it sniffs.
+    ctx.strokeStyle = skin.ratLit;
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1 / k;
+    ctx.beginPath();
+    [-1, 1].forEach(function (side) {
+      ctx.moveTo(hx + 1.0, side * 0.2);
+      ctx.lineTo(hx + 1.3 + sniff, side * 1.0);
+      ctx.moveTo(hx + 1.0, side * 0.2);
+      ctx.lineTo(hx + 1.6, side * (0.75 - sniff));
+    });
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    var cs = Math.cos(ang), sn = Math.sin(ang), ex = hx + 0.45;
+    return { r: Math.max(1.8, 0.2 * k), a: { x: p.x + (ex * cs - 0.36 * sn) * k, y: p.y + (ex * sn + 0.36 * cs) * k },
+      b: { x: p.x + (ex * cs + 0.36 * sn) * k, y: p.y + (ex * sn - 0.36 * cs) * k } };
+  }
+
+  // A pair of eyes glinting: a rat's in the dark, or the big rat's.
+  function drawEyes(a, b, r, alpha) {
+    if (skin.glow) {
+      ctx.globalAlpha = alpha * 0.3;
+      ctx.fillStyle = skin.eye;
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, r * 3, 0, Math.PI * 2);
+      ctx.arc(b.x, b.y, r * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = skin.eye;
+    ctx.beginPath();
+    ctx.arc(a.x, a.y, r, 0, Math.PI * 2);
+    ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // The big rat's face, from the front, as wide as F pixels each side of
+  // its middle, its mouth open as far as open (0 to 1).
+  function drawFace(cx, cy, F, open) {
+    function blob(x, y, rx, ry, fill) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.ellipse(cx + x * F, cy + y * F, rx * F, ry * F, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    [-1, 1].forEach(function (side) {
+      blob(side * 0.8, -0.72, 0.44, 0.44, skin.giant);
+      blob(side * 0.8, -0.72, 0.27, 0.27, skin.tail);
+    });
+    blob(0, 0, 1, 0.9, skin.giant);
+    if (skin.thick) {
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.3;
+    blob(0, 0.3, 0.66, 0.5, skin.ratLit);
+    ctx.globalAlpha = 1;
+    // Its eyes, glowing, with brows drawn down.
+    [-1, 1].forEach(function (side) {
+      if (skin.glow) {
+        ctx.globalAlpha = 0.35;
+        blob(side * 0.38, -0.3, 0.22, 0.22, skin.eye);
+        ctx.globalAlpha = 1;
+      }
+      blob(side * 0.38, -0.3, 0.13, 0.13, skin.eye);
+      blob(side * 0.38, -0.3, 0.03, 0.1, '#000000');
+      ctx.strokeStyle = skin.mouth;
+      ctx.lineWidth = Math.max(2, 0.05 * F);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx + side * 0.18 * F, cy - 0.5 * F);
+      ctx.lineTo(cx + side * 0.56 * F, cy - 0.6 * F);
+      ctx.stroke();
+    });
+    // The mouth, opening under the snout: its two great front teeth hang
+    // from the top, and a row of small ones along the bottom.
+    var mt = 0.34, mw = 0.32 + 0.3 * open, mh = 0.12 + 0.5 * open, my = mt + mh;
+    blob(0, my, mw, mh, skin.mouth);
+    ctx.fillStyle = skin.teeth;
+    ctx.fillRect(cx - 0.13 * F, cy + (mt + 0.02) * F, 0.12 * F, (0.18 + 0.2 * open) * F);
+    ctx.fillRect(cx + 0.01 * F, cy + (mt + 0.02) * F, 0.12 * F, (0.18 + 0.2 * open) * F);
+    if (open > 0.3) {
+      ctx.beginPath();
+      for (var t = -3; t <= 3; t++) {
+        var tx = cx + t * mw / 4.2 * F, ty = cy + (my + mh * 0.92) * F;
+        ctx.moveTo(tx - 0.045 * F, ty);
+        ctx.lineTo(tx, ty - 0.11 * F * open);
+        ctx.lineTo(tx + 0.045 * F, ty);
+      }
+      ctx.fill();
+    }
+    blob(0, 0.16, 0.3, 0.2, skin.ratLit);
+    blob(0, 0.06, 0.12, 0.08, skin.tail);
+    ctx.strokeStyle = skin.ratLit;
+    ctx.lineWidth = Math.max(1, 0.012 * F);
+    ctx.beginPath();
+    [-1, 1].forEach(function (side) {
+      [-0.1, 0, 0.1].forEach(function (d) {
+        ctx.moveTo(cx + side * 0.28 * F, cy + (0.2 + d) * F);
+        ctx.lineTo(cx + side * 1.15 * F, cy + (0.12 + d * 2.2) * F);
+      });
+    });
+    ctx.stroke();
+  }
+
+  // The big rat, t through its coming (0 to 1): out of the door at the
+  // back, up to fill the screen with its mouth opening, then a lunge into
+  // the mouth. Holding still, it is only there, its mouth open.
+  function drawBigRat(t) {
+    var w = view.w, h = view.h, sc = view.scale;
+    var rise = still() ? 1 : Math.min(1, t / 0.6), lunge = still() ? 0 : Math.max(0, (t - 0.6) / 0.4);
+    var ease = rise * rise * (3 - 2 * rise), door = px(sk.door, RA.WALL - 140);
+    ctx.fillStyle = mix(skin.c.dark, skin.c.dark, 0, 0.55 * ease);
+    ctx.fillRect(0, 0, w, h);
+    var F = (60 * sc) + (Math.min(w, h * 0.75) * 0.44 - 60 * sc) * ease;
+    var cx = door.x + (w / 2 - door.x) * ease, cy = door.y + (h * 0.42 - door.y) * ease;
+    var Z = 1 + 7 * lunge * lunge * lunge, mx = cx, my = cy + 0.7 * F;
+    ctx.save();
+    if (lunge > 0) {
+      var shake = (1 - lunge) * 6;
+      ctx.translate(mx + (Math.random() - 0.5) * shake, my + (Math.random() - 0.5) * shake);
+      ctx.scale(Z, Z);
+      ctx.translate(-mx, -my);
+    }
+    drawFace(cx, cy, F, ease);
+    ctx.restore();
+    if (lunge > 0.75) {
+      ctx.fillStyle = mix(skin.c.mouth, skin.c.mouth, 0, (lunge - 0.75) * 4);
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
+
+  function draw(alpha, dt, ts) {
+    var w = view.w, h = view.h, sc = view.scale, c = skin.c;
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    if (!sk) {
+      ctx.fillStyle = skin.bg;
+      ctx.fillRect(0, 0, w, h);
+      return;
+    }
+    var s = run ? (phase === 'running' ? run.step + alpha : run.step) : 0;
+    // A squash jolts the picture a moment.
+    var j = !still() && ts - jolt < 90 ? (1 - (ts - jolt) / 90) * 3 : 0;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(groundLayer, (Math.random() - 0.5) * j * view.dpr, (Math.random() - 0.5) * j * view.dpr);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    var lp = lampAt(s), lc = px(lp.x, lp.y), lr = lp.r * sc;
+    // The lamp's warmth on the ground.
+    var warm = ctx.createRadialGradient(lc.x, lc.y, 0, lc.x, lc.y, lr);
+    warm.addColorStop(0, mix(c.light, c.light, 0, 0.22 * lp.level));
+    warm.addColorStop(1, mix(c.light, c.light, 0, 0));
+    ctx.fillStyle = warm;
+    ctx.fillRect(0, 0, w, h);
+    drawFlats(ts);
+    // The rats, the nearer over the further, growing by the second.
+    var out = [];
+    for (var b = 0; b < sk.n; b++) {
+      if (run && run.gone[b]) continue;
+      var q = RA.at(sk, b, s);
+      if (q) out.push({ b: b, q: q });
+    }
+    out.sort(function (m, n) { return m.q.y - n.q.y; });
+    var eyes = out.map(function (o) { return drawRat(o.b, o.q, s, ts); });
+    // The dark, everywhere but under the lamp.
+    var inner = skin.gloom * (1 - 0.92 * lp.level);
+    var dk = ctx.createRadialGradient(lc.x, lc.y, lr * 0.12, lc.x, lc.y, lr);
+    dk.addColorStop(0, mix(c.dark, c.dark, 0, inner));
+    dk.addColorStop(0.6, mix(c.dark, c.dark, 0, inner + (skin.gloom - inner) * 0.5));
+    dk.addColorStop(1, mix(c.dark, c.dark, 0, skin.gloom));
+    ctx.fillStyle = dk;
+    ctx.fillRect(0, 0, w, h);
+    // The lamp: on its bracket on the wall, or swinging on its wire.
+    var lamp = sk.lamp === 2 ? px(lp.x, 560) : px(lampX, RA.WALL - 200);
+    ctx.strokeStyle = skin.mortar;
+    ctx.lineWidth = Math.max(1.5, 6 * sc);
+    ctx.beginPath();
+    if (sk.lamp === 2) {
+      ctx.moveTo(view.ox + 500 * sc, 0);
+      ctx.lineTo(lamp.x, lamp.y - 30 * sc);
+    } else {
+      ctx.moveTo(lamp.x, lamp.y - 70 * sc);
+      ctx.lineTo(lamp.x, lamp.y - 26 * sc);
+    }
+    ctx.stroke();
+    ctx.fillStyle = skin.lid;
+    ctx.beginPath();
+    ctx.moveTo(lamp.x - 22 * sc, lamp.y - 30 * sc);
+    ctx.lineTo(lamp.x + 22 * sc, lamp.y - 30 * sc);
+    ctx.lineTo(lamp.x + 46 * sc, lamp.y);
+    ctx.lineTo(lamp.x - 46 * sc, lamp.y);
+    ctx.closePath();
+    ctx.fill();
+    if (skin.glow) {
+      var bulb = ctx.createRadialGradient(lamp.x, lamp.y + 6 * sc, 0, lamp.x, lamp.y + 6 * sc, 140 * sc);
+      bulb.addColorStop(0, mix(c.lamp, c.lamp, 0, 0.55 * lp.level));
+      bulb.addColorStop(1, mix(c.lamp, c.lamp, 0, 0));
+      ctx.fillStyle = bulb;
+      ctx.fillRect(lamp.x - 140 * sc, lamp.y - 134 * sc, 280 * sc, 280 * sc);
+    }
+    ctx.globalAlpha = 0.3 + 0.7 * lp.level;
+    ctx.fillStyle = skin.lamp;
+    ctx.beginPath();
+    ctx.ellipse(lamp.x, lamp.y + 4 * sc, 26 * sc, 12 * sc, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // Every rat's eyes, glinting in the dark.
+    eyes.forEach(function (e) { drawEyes(e.a, e.b, e.r, 0.9); });
+    // In the last five seconds the big rat's eyes open in the door's dark,
+    // wider and brighter as it comes.
+    var late = (s - (RA.LAW.steps - 5 * RA.RATE)) / (5 * RA.RATE);
+    if (run && late > 0 && !(phase === 'done' && bigRat)) {
+      late = Math.min(1, late);
+      var blink = !still() && Math.sin(ts / 260) > 0.97 ? 0.1 : 1, dc = px(sk.door, RA.WALL - 150);
+      var gap = (26 + 22 * late) * sc;
+      drawEyes({ x: dc.x - gap, y: dc.y }, { x: dc.x + gap, y: dc.y }, (8 + 8 * late) * sc * blink, 0.4 + 0.6 * late);
+    }
+    // Beyond the alley's sides, on a wide screen, it is darker still: no
+    // rat can be squashed out there.
+    if (view.ox > 1) {
+      ctx.fillStyle = mix(c.bg, c.bg, 0, 0.6);
+      ctx.fillRect(0, 0, view.ox, h);
+      ctx.fillRect(view.ox + RA.W * sc, 0, w - view.ox - RA.W * sc, h);
+    }
+    drawMarks(ts, dt);
+    drawSwings(ts);
+    if (phase === 'done' && bigRat) drawBigRat(Math.min(1, (ts - bigRat) / BITE));
+    if (scanLayer) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(scanLayer, 0, 0);
+    }
+    countEl.textContent = run ? String(run.caught) : '0';
+    leftEl.textContent = phase === 'running' ? 'The big rat comes in ' + Math.ceil((RA.LAW.steps - run.step) / RA.RATE) + ' s' : '';
+  }
+
+  // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
+  var DT = 1000 / RA.RATE, lastTs = 0;
+  function frame(ts) {
+    var gap = lastTs ? ts - lastTs : 0;
+    lastTs = ts;
+    if (phase === 'running') {
+      // A long gap (the page was away) is not caught up step by step.
+      acc += Math.min(gap, 100);
+      while (acc >= DT && phase === 'running') {
+        tick();
+        acc -= DT;
+      }
+    }
+    draw(phase === 'running' ? acc / DT : 0, Math.min(gap, 50) / 1000, ts);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+  init();
+})();
+</script>
+</body>
+</html>
