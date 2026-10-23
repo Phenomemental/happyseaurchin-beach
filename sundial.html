@@ -1302,19 +1302,19 @@
         <button type="button" class="sd-quiet" id="close-card">Close</button>
       </div>
       <div class="sd-steward" id="steward" hidden>
-        <button type="button" class="sd-quiet" id="steward-open">steward: seal a key for the roster</button>
+        <button type="button" class="sd-quiet" id="steward-open">host: share Claude with the people you bring in</button>
         <div id="steward-ask" hidden>
-          <label for="share-key">the Claude API key to share</label>
+          <label for="share-key">your Anthropic access code (it begins sk-ant-)</label>
           <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-          <label for="share-phrase">a passphrase to give out, twelve letters or more</label>
+          <label for="share-phrase">a passphrase for the people you bring in, twelve letters or more</label>
           <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
           <div class="sd-card-row">
-            <button type="button" class="sd-keep-key" id="steward-seal">Seal it</button>
+            <button type="button" class="sd-keep-key" id="steward-seal">Share it</button>
             <button type="button" class="sd-quiet" id="steward-not">Not now</button>
           </div>
           <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
         </div>
-        <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Sealed. Anyone given the passphrase can speak here now.</p>
+        <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Shared. Anyone you give the passphrase to can use Claude here now.</p>
       </div>
       <div class="sd-forget" id="forget" hidden>
         <button type="button" class="sd-quiet" id="forget-open">forget me</button>
@@ -2732,7 +2732,9 @@
   // The steward's line: a key to share and a passphrase to give out,
   // sealed to the roster here and written with the steward's word.
   // The steward is told, in plain words, what a seal still needs and how it
-  // went; this card is the steward's alone.
+  // went; this card is the steward's alone. To the person it is the host's
+  // card, in plain words with no key, beach or roster in them (agreed by
+  // Matthew, 23 October 2026).
   function stewardSays(words) {
     $('steward-note').textContent = words;
     $('steward-note').hidden = !words;
@@ -2752,17 +2754,17 @@
   var sealing = false;
   $('steward-seal').addEventListener('click', function () {
     var share = $('share-key').value.trim(), phrase = $('share-phrase').value.trim();
-    if (!share) { stewardSays('Paste the key to share first.'); $('share-key').focus(); return; }
+    if (!share) { stewardSays('Paste your access code first.'); $('share-key').focus(); return; }
     if (phrase.length < 12) { stewardSays('The passphrase needs twelve letters or more.'); $('share-phrase').focus(); return; }
     if (sealing || !stewardWord) return;
     sealing = true;
     $('steward-seal').disabled = true;
-    stewardSays('Sealing…');
+    stewardSays('Sharing…');
     Roster.seal(stewardWord, share, phrase).then(function (result) {
       sealing = false;
       $('steward-seal').disabled = false;
       if (result !== 'sealed') {
-        stewardSays(result === 'wrong' ? 'Not sealed: that word doesn’t open the roster.' : 'Not sealed: the beach didn’t take it. Try again in a moment.');
+        stewardSays(result === 'wrong' ? 'Not shared: that isn’t your word.' : 'Not shared: that didn’t go through. Try again in a moment.');
         $('steward-seal').focus();
         return;
       }
