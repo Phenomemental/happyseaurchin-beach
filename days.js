@@ -147,6 +147,28 @@
     return out.sort(function (a, b) { return a.address < b.address ? -1 : 1; });
   }
 
+  // Any day is a day (plan 6.4.1.1 (4)): a date with moments but no day
+  // line of its own, written by any tool, is still a day; its text is its
+  // moments joined in time order, each without its places line, so it
+  // names no places of its own until a Claude places it.
+  function bare(text) {
+    var rows = String(text).split('\n');
+    if (rows.length > 1 && root.Mark && root.Mark.read(text).places.length) rows.pop();
+    return rows.join('\n');
+  }
+  function withMomentDays(days, moments) {
+    var have = {}, by = {}, order = [];
+    days.forEach(function (d) { have[d.address] = 1; });
+    moments.forEach(function (m) {
+      var a = m.address.slice(0, 8) + '00';
+      if (have[a]) return;
+      if (!by[a]) { by[a] = []; order.push(a); }
+      by[a].push(bare(m.text));
+    });
+    return days.concat(order.map(function (a) { return { address: a, text: by[a].join('\n') }; }))
+      .sort(function (a, b) { return a.address < b.address ? -1 : 1; });
+  }
+
   // Who a name is on the beach. The handle keeps the spelling of a block
   // that already stands under it in any case, so a person who keeps their
   // now through Claude reaches the same mirror here. Resolves
@@ -171,8 +193,9 @@
         var passport = p.status === 200 ? p.json : null, mirror = n.status === 200 ? n.json : null;
         var state = forgotten(passport) && forgotten(mirror) ? 'free'
           : mirror && !forgotten(mirror) && floorOf(mirror) === 10 ? 'kept' : 'taken';
+        var moments = state === 'kept' ? momentsIn(mirror) : [];
         return { name: spelled, state: state, passport: passport, mirror: mirror,
-          days: state === 'kept' ? daysIn(mirror) : [], moments: state === 'kept' ? momentsIn(mirror) : [] };
+          days: state === 'kept' ? withMomentDays(daysIn(mirror), moments) : [], moments: moments };
       });
     });
   }
@@ -187,18 +210,32 @@
     return Beach.look('now:' + name).then(function (r) {
       if (!r.status) throw new Error('unreachable');
       var mirror = r.status === 200 && floorOf(r.json) === 10 ? r.json : null;
-      return { days: mirror ? daysIn(mirror) : [], moments: mirror ? momentsIn(mirror) : [] };
+      var moments = mirror ? momentsIn(mirror) : [];
+      return { days: mirror ? withMomentDays(daysIn(mirror), moments) : [], moments: moments };
     });
+  }
+
+  // A line Sundial wrote (plan 6.4.1 (3); function:front-door 4.7): one
+  // whose last line names its places, as Mark.write ends it, or one this
+  // browser wrote in the person's own words that still stands exactly as it
+  // was written (kept.wrote(address, text), from the page). Any other line
+  // is theirs, written in their own voice, and is never rewritten.
+  function sundials(text, at, wrote) {
+    if (root.Mark && root.Mark.read(text).places.length) return true;
+    return typeof wrote === 'function' && !!wrote(at, text);
   }
 
   // Keep what was said (plan 4.2): on a free name, claim it first (the
   // passport, then the mirror on the clock, both latched with the word);
-  // then the moment at this beat, the day's own line at today (folded by
-  // Claude, whoever wrote it before), and tomorrow's line when one was
-  // voiced. Each is read back before it counts. `kept` is {moment, day,
-  // ahead}, each a text or '' (a plain text, as before, is the day alone).
-  // Resolves 'kept', 'wrong' (the word doesn't open it), 'taken', or
-  // 'unreachable'.
+  // a name whose now already stands on the clock is someone's own and
+  // nothing is made for it. Then the moment at this beat; the day's own
+  // line at today, and tomorrow's line when one was voiced, each only where
+  // that place is empty or already holds a line Sundial wrote (above);
+  // otherwise their line is left exactly as it stands and the moment kept
+  // alone (6.4.1 (3)). Each write is read back before it counts. `kept` is
+  // {moment, day, ahead, wrote}, the first three a text or '' (a plain
+  // text, as before, is the day alone). Resolves 'kept', 'wrong' (the word
+  // doesn't open it), 'taken', or 'unreachable'.
   function keep(who, word, kept) {
     var name = who.name;
     if (typeof kept === 'string') kept = { moment: '', day: kept, ahead: '' };
@@ -223,6 +260,15 @@
         if (!(r.status === 200 && own(r.json) === text)) throw 'unreachable';
       });
     }
+    // A day's or tomorrow's line, only where Sundial may write it.
+    function fold(at, text) {
+      return Beach.look('now:' + name, '&spindle=' + at).then(function (r) {
+        if (!r.status || r.status >= 500) throw 'unreachable';
+        var there = r.status === 200 ? own(r.json) : '';
+        if (there && there !== text && !sundials(there, at, kept.wrote)) return null;
+        return put(at, text);
+      });
+    }
     var day;
     return claim.then(function () {
       day = today();
@@ -231,9 +277,9 @@
       if (!day) throw 'unreachable';
       return kept.moment ? put(now(), kept.moment) : null;
     }).then(function () {
-      return kept.day ? put(day, kept.day) : null;
+      return kept.day ? fold(day, kept.day) : null;
     }).then(function () {
-      return kept.ahead ? put(tomorrowOf(day), kept.ahead) : null;
+      return kept.ahead ? fold(tomorrowOf(day), kept.ahead) : null;
     }).then(function () {
       return 'kept';
     }).catch(function (e) {
@@ -277,11 +323,13 @@
     tomorrowOf: tomorrowOf,
     dateOf: dateOf,
     daysIn: daysIn,
+    withMomentDays: withMomentDays,
     momentsIn: momentsIn,
     readAll: readAll,
     resolve: resolve,
     read: read,
     keep: keep,
+    sundials: sundials,
     forget: forget,
     passportLine: passportLine,
     mirrorLine: mirrorLine
