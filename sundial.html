@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="beach.css?v=2026-10-12c">
 <link rel="stylesheet" href="night-watchman.css?v=2026-10-20o">
+<link rel="stylesheet" href="films.css?v=2026-10-23b">
 <style>
   /* Sundial, one screen (the plan on the beach at spine:front-door 7.16):
      the date and place small at the top, the sundial breathing at the
@@ -790,6 +791,18 @@
     font-size: 0.85rem;
     color: var(--muted);
   }
+  /* A road film beside its stop: the column is narrow, so its controls keep
+     whole and wrap as they need. */
+  .sd-road-stops .film {
+    margin: 0.7rem 0 0.4rem;
+  }
+  .sd-road-stops .film .ctrl {
+    flex-wrap: wrap;
+  }
+  .sd-road-stops .film .ctrl a,
+  .sd-road-stops .film .ctrl button {
+    white-space: nowrap;
+  }
 
   /* About and help (6.1.1): one quiet line at the very foot of every screen;
      About unfolds as a paper sheet over the screen, in the sheet's own look. */
@@ -1080,12 +1093,14 @@
   <dialog class="sd-about" id="about" aria-labelledby="about-head">
     <article class="sd-about-sheet">
       <p class="sd-about-standfirst">Most AI that people turn to for support is an open conversation with no shape and no end, its memory held inside someone else's product. This is the other kind: a daily practice, bounded, and the person's days are theirs.</p>
+      <div class="film" data-film="what"></div>
       <h2 class="sd-about-h" id="about-head">ABOUT</h2>
       <p>This was made by Matthew Bushell, a therapeutic coach and Emotional Fitness practitioner with 5th Place, who lives with bipolar and serves on the Lived Experience Council of the International Society for Bipolar Disorders, with David Pinto, who created the beach it stands on, and with Claude. It grew from lived experience, from Emotional Fitness, and from Presence in Action, Louie Gardiner's practice.</p>
       <h2 class="sd-about-h">WHY IT EXISTS</h2>
       <p>More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. It is bounded: each day has a limit, and when it's reached, it rests until tomorrow. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI.</p>
       <h2 class="sd-about-h">HOW IT HOLDS YOU</h2>
       <p>It reflects. It doesn't advise, interpret, diagnose or praise. Those are the instructions Claude is given here; they guide it but can't guarantee it, so you remain the judge of what's true for you. It isn't a friend or a therapist, and it won't pretend to be.</p>
+      <div class="film" data-film="listen"></div>
       <h2 class="sd-about-h">WHERE YOUR WORDS GO</h2>
       <p>When you speak, your browser turns your voice into text; Chrome may send it to Google to do that. Your words go to Claude, made by Anthropic, to be reflected back. Days you keep are written to the beach, an open system created by David Pinto, under your name. They are public: anyone who knows your name can read them. Only your word can change them, and forget me removes them.</p>
       <h2 class="sd-about-h">WHAT IT DRAWS ON</h2>
@@ -1212,6 +1227,15 @@
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-23b"></script>
 <script>
+  // The films (6.1.2): where home is; the road's stops, filled live from 3.6
+  // when the About sheet opens (the films read this same list); and the name
+  // this browser holds, carried on a shared film's link as ?from=.
+  window.SUNDIAL_HOME = location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '') + 'sundial.html';
+  window.SUNDIAL_ROAD = [];
+  try { window.SUNDIAL_FROM = localStorage.getItem('sundial.name') || ''; } catch (e) { window.SUNDIAL_FROM = ''; }
+</script>
+<script src="films.js?v=2026-10-23a"></script>
+<script>
 /* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
    7.1923). A person says where they are and what today has been like;
    Claude, called straight from this browser with a key kept only in it,
@@ -1222,7 +1246,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.5 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.6 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2767,6 +2791,7 @@
         // The first keep only: the arrival line in the community's room, and,
         // once, a quiet way to bring someone in (4.7, 6.4).
         if (first) arrive(who.name);
+        window.SUNDIAL_FROM = who.name;
         $('bring-row').hidden = !first;
         // The field comes back beneath, so they can speak again whenever
         // they like (4.2: each time a person speaks and keeps).
@@ -2845,7 +2870,7 @@
     }
     return out;
   }
-  var roadTurn = 0;
+  var roadTurn = 0, roadDrawn = '';
   function readRoad() {
     var turn = ++roadTurn;
     $('road').hidden = true;
@@ -2854,6 +2879,14 @@
       var stops = roadStops(r.json);
       if (!stops.length) return;
       var list = $('road-stops');
+      // The same road as last drawn: show it as it stands, films and all.
+      if (JSON.stringify(stops) === roadDrawn && list.children.length) {
+        $('road').hidden = false;
+        drawRoad(stops);
+        return;
+      }
+      roadDrawn = JSON.stringify(stops);
+      stillFilms();
       list.textContent = '';
       stops.forEach(function (s) {
         var li = document.createElement('li'), name = document.createElement('span'), state = document.createElement('em');
@@ -2868,9 +2901,32 @@
         list.appendChild(li);
       });
       $('road').hidden = false;
+      roadFilms(stops, list);
       drawRoad(stops);
     });
   }
+  // The road's films (6.1.2): one beside each stop, in the road's order,
+  // their names and states taken from this same reading of the road.
+  var ROAD_FILMS = ['day', 'sundial', 'chat', 'bring', 'bay', 'back', 'night'];
+  function roadFilms(stops, list) {
+    var road = window.SUNDIAL_ROAD;
+    if (!window.SundialFilms || !Array.isArray(road)) return;
+    road.splice.apply(road, [0, road.length].concat(stops.map(function (s) {
+      return { name: s.name.replace(/\.$/, ''), line: s.line, state: s.state };
+    })));
+    stops.forEach(function (s, k) {
+      if (!ROAD_FILMS[k]) return;
+      var el = document.createElement('div');
+      el.className = 'film';
+      el.setAttribute('data-film', ROAD_FILMS[k]);
+      list.children[k].appendChild(el);
+      window.SundialFilms.mount(el, ROAD_FILMS[k]);
+    });
+  }
+  function stillFilms() {
+    if (window.SundialFilms) window.SundialFilms.mounted.forEach(function (m) { m.pause(); });
+  }
+
   // The spiral, seen edge on: each stop half a turn further round and a
   // step further out from the centre, its dot level with its name; one
   // faint open line through them, widening as it goes.
@@ -2919,10 +2975,13 @@
     about.scrollTop = 0;
   });
   function foldAbout() {
+    stillFilms();
     if (about.open) about.close ? about.close() : about.removeAttribute('open');
     $('about-open').focus();
   }
   $('about-close').addEventListener('click', foldAbout);
+  // A film page's quiet 'About Sundial' link arrives as sundial.html#about.
+  if (location.hash === '#about') setTimeout(function () { $('about-open').click(); }, 0);
   about.addEventListener('click', function (ev) { if (ev.target === about) foldAbout(); });
   about.addEventListener('cancel', function (ev) { ev.preventDefault(); foldAbout(); });
 
