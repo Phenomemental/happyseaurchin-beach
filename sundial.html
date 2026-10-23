@@ -866,13 +866,36 @@
     overflow-wrap: anywhere;
     white-space: pre-line;
   }
-  .sd-words-first {
-    margin: 0.2rem 0 0.4rem;
+  .sd-words-ask {
+    margin: 0 0 0.5rem;
+    text-align: left;
+  }
+  .sd-words-ask label {
+    display: block;
+    font-size: 0.95rem;
     font-style: italic;
     color: var(--muted);
+    margin: 0 0 0.2rem;
   }
-  .sd-words-whole .sd-words-first {
-    text-align: center;
+  .sd-words-ask input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 1.05rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    padding: 0.4rem 0.6rem;
+  }
+  .sd-words-ask input:focus {
+    outline: 2px solid var(--crimson);
+    outline-offset: 1px;
+  }
+  .sd-words-form textarea + .mic-row + .sd-words-ask,
+  .sd-words-form textarea + .sd-words-ask {
+    margin-top: 0.6rem;
   }
   .sd-words-form {
     margin: 0.4rem 0 0.4rem;
@@ -3222,12 +3245,15 @@
   var wordsSaid = [], wordsTurn = 0, wordPlaces = {}, placeCount = 0;
   var NOT_TAKEN = {
     wrong: 'That word doesn\u2019t open your day book.',
+    name: 'That word doesn\u2019t open that name.',
+    first: 'Keep a day first, and you can leave a word here.',
     refused: 'That word doesn\u2019t open your words here.',
     unreachable: 'The beach can\u2019t be reached just now. Your words are still here.'
   };
+  var PASSPORT_ONCE = 'Your words here need your passport\u2019s key, once, to begin.';
   function wordsAt(address) {
     return wordsSaid.filter(function (m) { return m.at[address]; }).map(function (m) {
-      return { name: m.name, when: m.when, said: m.at[address] };
+      return { name: m.name, when: (m.dates && m.dates[address]) || m.when, said: m.at[address] };
     }).sort(function (a, b) {
       return a.when < b.when ? 1 : a.when > b.when ? -1 : a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
     });
@@ -3242,6 +3268,18 @@
       if (cls) e.className = cls;
       if (text) e.textContent = text;
       return e;
+    }
+    // A label and its field, as the keep card asks them.
+    function ask(id, label, password) {
+      var wrap = el('p', 'sd-words-ask'), l = el('label', '', label), input = el('input');
+      l.setAttribute('for', id);
+      input.id = id;
+      input.type = password ? 'password' : 'text';
+      ['autocomplete', 'spellcheck', 'autocapitalize'].forEach(function (k, i) { input.setAttribute(k, ['off', 'false', 'off'][i]); });
+      if (!password) input.maxLength = 40;
+      wrap.appendChild(l);
+      wrap.appendChild(input);
+      return { wrap: wrap, input: input };
     }
     var n = ++placeCount;
     box.className = 'sd-words' + (address === '2.6' ? ' sd-words-whole' : '');
@@ -3258,11 +3296,12 @@
     var list = el('div', 'sd-words-list');
     list.id = 'words-' + n;
     list.hidden = true;
-    var first = el('p', 'sd-words-first', 'Keep a day first, and you can leave a word here.');
-    first.hidden = true;
     var form = el('form', 'sd-words-form'), field = el('textarea'), note = el('p', 'sd-words-note');
+    var whoName = ask('words-name-' + n, 'your name here'), whoWord = ask('words-word-' + n, 'your word', true);
+    var passport = ask('words-key-' + n, PASSPORT_ONCE, true);
     var buttons = el('div', 'sd-whisper-row'), send = el('button', 'sd-whisper-send', 'Leave it'), not = el('button', 'sd-whisper-not', 'not now');
     form.hidden = true;
+    passport.wrap.hidden = true;
     field.rows = 3;
     field.setAttribute('aria-label', 'your words on ' + what);
     note.setAttribute('role', 'status');
@@ -3270,23 +3309,23 @@
     not.type = 'button';
     buttons.appendChild(send);
     buttons.appendChild(not);
-    form.appendChild(field);
-    form.appendChild(note);
-    form.appendChild(buttons);
-    [row, list, first, form].forEach(function (x) { box.appendChild(x); });
+    [whoName.wrap, whoWord.wrap, field, passport.wrap, note, buttons].forEach(function (x) { form.appendChild(x); });
+    [row, list, form].forEach(function (x) { box.appendChild(x); });
     Beach.addMic(field);
-    var place = { address: address, list: list, count: count, form: form, field: field, note: note, first: first, open: false, shown: 9, busy: false };
+    var place = { address: address, list: list, count: count, form: form, field: field, note: note, passport: passport.wrap, open: false, shown: 9, busy: false };
     wordPlaces[address] = place;
+    // A browser that holds no name is asked for one here, with its word
+    // (6.1.3.2); one that holds a name is asked only for the word, once a
+    // visit, in the word card.
+    function asking() {
+      var none = !whoseName();
+      whoName.wrap.hidden = whoWord.wrap.hidden = !none;
+      return none;
+    }
 
     leave.addEventListener('click', function () {
-      if (!whoseName()) {
-        form.hidden = true;
-        first.hidden = false;
-        return;
-      }
-      first.hidden = true;
       form.hidden = false;
-      field.focus();
+      (asking() && !whoName.input.value ? whoName.input : field).focus();
       roadAgain();
     });
     count.addEventListener('click', function () {
@@ -3301,51 +3340,93 @@
       leave.focus();
       roadAgain();
     });
+    function says(words, focus) {
+      note.textContent = words;
+      (focus || field).focus();
+      roadAgain();
+    }
+    // Leave the words: their name proved by the word on their day book, the
+    // mirror made or used, the words written with their date (6.1.3,
+    // 6.1.3.1). A mirror that can't be made with the day-book word asks
+    // once for the passport's key, kept nowhere (6.1.3.2.1).
+    function go(name, word, typedHere) {
+      var key = passport.wrap.hidden ? '' : passport.input.value, when = new Date().toISOString();
+      send.disabled = true;
+      return Words.leave(name, word, address, field.value.trim(), when, key).then(function (result) {
+        place.busy = false;
+        send.disabled = false;
+        passport.input.value = '';
+        if (result === 'left') {
+          // Theirs now stands at this place: one per person per place, with
+          // its own date, and unfolded for them to see. A name given here is
+          // held for the visit, with its word, as Keep holds them.
+          if (typedHere) {
+            hold(LOOKING, name);
+            hold(WORD, word);
+            whoName.input.value = whoWord.input.value = '';
+            showDoor();
+          }
+          var mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
+          if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {}, dates: {} });
+          mine.dates = mine.dates || {};
+          mine.at[address] = field.value.trim();
+          mine.dates[address] = when;
+          field.value = '';
+          note.textContent = '';
+          passport.wrap.hidden = true;
+          form.hidden = true;
+          place.open = true;
+          place.shown = 9;
+          Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
+          roadAgain();
+          count.focus();
+          return;
+        }
+        // Not taken: the words stay in the field, and the page says why.
+        if (result === 'passport') {
+          note.textContent = '';
+          passport.wrap.hidden = false;
+          passport.input.focus();
+          roadAgain();
+          return;
+        }
+        if (result === 'wrong' && typedHere) return says(NOT_TAKEN.name, whoWord.input);
+        // A word the beach refused is let go, to be asked again.
+        if (result === 'wrong' || result === 'refused') hold(WORD, '');
+        says(NOT_TAKEN[result] || NOT_TAKEN.unreachable);
+      });
+    }
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var said = field.value.trim(), name = whoseName();
       if (place.busy) return;
-      if (!said) { field.focus(); return; }
-      if (!name) {
-        form.hidden = true;
-        first.hidden = false;
+      if (!field.value.trim()) { field.focus(); return; }
+      note.textContent = '';
+      if (asking()) {
+        var typed = Days.handle(whoName.input.value), word = whoWord.input.value;
+        if (!typed) { whoName.input.focus(); return; }
+        if (!word) { whoWord.input.focus(); return; }
+        place.busy = true;
+        Days.resolve(typed).then(function (who) {
+          // A name with no day book here: nothing is sent.
+          if (!who || who.state !== 'kept') {
+            place.busy = false;
+            return says(NOT_TAKEN.first, whoName.input);
+          }
+          return go(who.name, word, true);
+        }, function () {
+          place.busy = false;
+          says(NOT_TAKEN.unreachable);
+        });
         return;
       }
       place.busy = true;
-      note.textContent = '';
       askWord().then(function (word) {
         if (!word) {
           place.busy = false;
           field.focus();
           return;
         }
-        send.disabled = true;
-        return Words.leave(name, word, address, said).then(function (result) {
-          place.busy = false;
-          send.disabled = false;
-          if (result === 'left') {
-            // Theirs now stands at this place: one per person per place,
-            // dated as the beach will date it, and unfolded for them to see.
-            var when = new Date().toISOString(), mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
-            if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {} });
-            mine.when = when;
-            mine.at[address] = said;
-            field.value = '';
-            form.hidden = true;
-            place.open = true;
-            place.shown = 9;
-            Object.keys(wordPlaces).forEach(function (a) { drawPlace(wordPlaces[a]); });
-            roadAgain();
-            count.focus();
-            return;
-          }
-          // Not taken: the words stay in the field, and the page says why.
-          // A word the beach refused is let go, to be asked again.
-          if (result === 'wrong' || result === 'refused') hold(WORD, '');
-          note.textContent = NOT_TAKEN[result] || NOT_TAKEN.unreachable;
-          field.focus();
-          roadAgain();
-        });
+        return go(whoseName(), word, false);
       });
     });
     drawPlace(place);
@@ -3393,7 +3474,7 @@
       var place = wordPlaces[a];
       place.open = false;
       place.form.hidden = true;
-      place.first.hidden = true;
+      place.passport.hidden = true;
       place.note.textContent = '';
       drawPlace(place);
     });
