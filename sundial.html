@@ -1340,7 +1340,7 @@
 <script src="beach.js?v=2026-10-22a"></script>
 <script src="mark.js?v=2026-10-23d"></script>
 <script src="shell.js?v=2026-10-23a"></script>
-<script src="days.js?v=2026-10-23b"></script>
+<script src="days.js?v=2026-10-23c"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
 <script src="whispers.js?v=2026-10-23d"></script>
@@ -1355,7 +1355,7 @@
   window.SUNDIAL_ROAD = [];
   try { window.SUNDIAL_FROM = localStorage.getItem('sundial.name') || ''; } catch (e) { window.SUNDIAL_FROM = ''; }
 </script>
-<script src="films.js?v=2026-10-23b"></script>
+<script src="films.js?v=2026-10-23c"></script>
 <script>
 /* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
    7.1923). A person says where they are and what today has been like;
@@ -1674,7 +1674,7 @@
     var line = '';
     if (!(stored(TAPPED) && stored(HELD)) && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length)) {
       if (days.length || moments.length) line = 'tap the sundial for your days · hold it for where they rest';
-      else if (!known()) line = 'tap the sundial if you’ve been here before';
+      else if (!known()) line = 'tap the sundial if you have a name here';
     }
     $('invite').textContent = line;
     $('invite').hidden = !line;

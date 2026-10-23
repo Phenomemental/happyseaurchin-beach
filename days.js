@@ -147,6 +147,28 @@
     return out.sort(function (a, b) { return a.address < b.address ? -1 : 1; });
   }
 
+  // Any day is a day (plan 6.4.1.1 (4)): a date with moments but no day
+  // line of its own, written by any tool, is still a day; its text is its
+  // moments joined in time order, each without its places line, so it
+  // names no places of its own until a Claude places it.
+  function bare(text) {
+    var rows = String(text).split('\n');
+    if (rows.length > 1 && root.Mark && root.Mark.read(text).places.length) rows.pop();
+    return rows.join('\n');
+  }
+  function withMomentDays(days, moments) {
+    var have = {}, by = {}, order = [];
+    days.forEach(function (d) { have[d.address] = 1; });
+    moments.forEach(function (m) {
+      var a = m.address.slice(0, 8) + '00';
+      if (have[a]) return;
+      if (!by[a]) { by[a] = []; order.push(a); }
+      by[a].push(bare(m.text));
+    });
+    return days.concat(order.map(function (a) { return { address: a, text: by[a].join('\n') }; }))
+      .sort(function (a, b) { return a.address < b.address ? -1 : 1; });
+  }
+
   // Who a name is on the beach. The handle keeps the spelling of a block
   // that already stands under it in any case, so a person who keeps their
   // now through Claude reaches the same mirror here. Resolves
@@ -171,8 +193,9 @@
         var passport = p.status === 200 ? p.json : null, mirror = n.status === 200 ? n.json : null;
         var state = forgotten(passport) && forgotten(mirror) ? 'free'
           : mirror && !forgotten(mirror) && floorOf(mirror) === 10 ? 'kept' : 'taken';
+        var moments = state === 'kept' ? momentsIn(mirror) : [];
         return { name: spelled, state: state, passport: passport, mirror: mirror,
-          days: state === 'kept' ? daysIn(mirror) : [], moments: state === 'kept' ? momentsIn(mirror) : [] };
+          days: state === 'kept' ? withMomentDays(daysIn(mirror), moments) : [], moments: moments };
       });
     });
   }
@@ -187,7 +210,8 @@
     return Beach.look('now:' + name).then(function (r) {
       if (!r.status) throw new Error('unreachable');
       var mirror = r.status === 200 && floorOf(r.json) === 10 ? r.json : null;
-      return { days: mirror ? daysIn(mirror) : [], moments: mirror ? momentsIn(mirror) : [] };
+      var moments = mirror ? momentsIn(mirror) : [];
+      return { days: mirror ? withMomentDays(daysIn(mirror), moments) : [], moments: moments };
     });
   }
 
@@ -299,6 +323,7 @@
     tomorrowOf: tomorrowOf,
     dateOf: dateOf,
     daysIn: daysIn,
+    withMomentDays: withMomentDays,
     momentsIn: momentsIn,
     readAll: readAll,
     resolve: resolve,

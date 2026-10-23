@@ -57,7 +57,7 @@
       { kind: 'light', dur: 6, beats: [[0, 'The sun moves with the hour, and the heart casts its shadow.'], [.5, 'Each day you keep adds a dot to the spiral.']] },
       { kind: 'tap', dur: 6, beats: [[0, 'Tap the sundial for your days.'], [.4, 'Each day is a shell, with its date, its title and the times you spoke.']] },
       { kind: 'hold', dur: 8, beats: [[0, 'Hold it, and see where your days have come to rest.'], [.32, 'Tap a colour to hear what rests there.'], [.52, 'Hold the shell to your ear, and your own words come back.'], [.86, 'Then one question, back to today.']] }] },
-    chat: { stop: 2, poster: .7, scenes: [{ kind: 'chat', dur: 6, beats: [[0, 'Or talk with Claude, wherever you are.'], [.5, 'The same days, kept in the same place.']] }] },
+    chat: { stop: 2, poster: .7, scenes: [{ kind: 'chat', dur: 6, beats: [[0, 'Or talk with your own Claude, wherever you are.'], [.5, 'The same days, kept in the same place.']] }] },
     bring: { stop: 3, poster: .8, scenes: [{ kind: 'bring', dur: 7, beats: [[0, 'Tap bring someone in, and send a friend your link.'], [.5, 'When they keep their first day, a thread runs from you to them.']] }] },
     bay: { stop: 4, poster: .75, scenes: [{ kind: 'bay', dur: 7, beats: [[0, 'Everyone who kept a day today, like starlings over the water.'], [.45, 'And the threads of who brought whom, as the community grows.']] }] },
     back: { stop: 5, poster: .8, scenes: [{ kind: 'back', dur: 6, beats: [[0, 'Every ninth day, the spiral turns.'], [.5, 'Look back on nine days, then eighty-one, as a page of their own.']] }] },
