@@ -67,6 +67,7 @@
     aspect-ratio: 1;
     margin: 0.4rem auto 0;
     overflow: visible;
+    touch-action: pan-y pinch-zoom;   /* a sideways flick turns it (3.7); up and down still scroll */
   }
   .sd-dial[role="button"] {
     cursor: pointer;
@@ -292,7 +293,8 @@
     color: var(--muted);
     margin: 0 0 0.3rem;
   }
-  .sd-whisper-form textarea {
+  .sd-whisper-form textarea,
+  .sd-turn-stay textarea {
     display: block;
     width: 100%;
     font: inherit;
@@ -305,7 +307,8 @@
     padding: 0.5rem 0.6rem;
     resize: vertical;
   }
-  .sd-whisper-form textarea:focus {
+  .sd-whisper-form textarea:focus,
+  .sd-turn-stay textarea:focus {
     outline: 2px solid var(--crimson);
     outline-offset: 1px;
   }
@@ -452,6 +455,78 @@
     font-size: 1.3rem;
     text-align: center;
     margin: 0 0 0.6rem;
+  }
+  /* The turn (3.7): one quiet line beneath the question, an offer only. */
+  .sd-turn-offer-row {
+    margin: -0.3rem 0 0.6rem;
+    text-align: center;
+  }
+  .sd-turn-offer {
+    font: inherit;
+    font-size: 1.05rem;
+    font-style: italic;
+    letter-spacing: normal;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.4rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.25em;
+  }
+  /* Where the turn rests, its question rises on the sheet. */
+  .sd-turn {
+    width: 100%;
+    max-width: 30rem;
+    margin: 1.2rem auto 0;
+  }
+  .sd-turn-card.rising {
+    animation: sd-rise 1.1s ease-out both;
+  }
+  @keyframes sd-rise {
+    from { opacity: 0; transform: translateY(1.2rem); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-turn-card.rising { animation: none; }
+  }
+  .sd-turn .sd-choices {
+    margin-top: 1rem;
+  }
+  .sd-turn-stay {
+    text-align: left;
+    margin: 1rem 6px 0;
+  }
+  .sd-turn-lines p {
+    font-style: italic;
+    margin: 0 0 0.7rem;
+    padding-left: 0.8rem;
+    border-left: 1px solid var(--frame);
+  }
+  .sd-turn-lines time {
+    display: block;
+    font-style: normal;
+    font-size: 0.85rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .sd-turn-label {
+    display: block;
+    font-style: italic;
+    margin: 0.4rem 0 0.4rem;
+  }
+  .sd-turn-stay textarea {
+    min-height: 4.5rem;
+    margin-bottom: 0.7rem;
+  }
+  .sd-turn-stay .mic-row {
+    margin: -0.2rem 0 0.7rem;
+  }
+  .sd-turn-stay button {
+    min-height: 2.75rem;
   }
   form.sd-speak textarea {
     min-height: 5.5rem;
@@ -1298,6 +1373,24 @@
     <p class="sd-own" id="day-own" hidden>Kept in your own words. Add Claude in the corner and it will give your days back.</p>
   </section>
 
+  <section class="sd-turn" id="turn" aria-labelledby="turn-question" hidden>
+    <div class="sd-card-day sd-turn-card" id="turn-card">
+      <p class="sd-first" id="turn-place"></p>
+      <h2 class="sd-title" id="turn-question" tabindex="-1"></h2>
+    </div>
+    <div class="sd-choices">
+      <button type="button" class="sd-letgo" id="turn-stay">Stay with it a while</button>
+      <button type="button" class="sd-letgo" id="turn-tell">Tell today from here</button>
+    </div>
+    <form class="sd-turn-stay" id="turn-stay-box" hidden>
+      <div class="sd-turn-lines" id="turn-lines"></div>
+      <label for="turn-line" class="sd-turn-label">Leave a line for whoever lands here next.</label>
+      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off"></textarea>
+      <p class="sd-soft" id="turn-note" aria-live="polite" hidden></p>
+      <div class="sd-send-row"><button type="submit" id="turn-leave">Leave it</button></div>
+    </form>
+  </section>
+
   <section class="sd-pools" id="pools" aria-labelledby="pools-line" hidden>
     <p class="sd-pools-line" id="pools-line">where your days have come to rest</p>
     <p class="sd-pools-hint" id="pools-hint" hidden>tap a colour to hear what rests there · tap the heart to gather them back</p>
@@ -1343,6 +1436,7 @@
   <div class="sd-foot">
     <form class="sd-speak" id="speak">
       <p class="sd-question" id="question">What’s with you today?</p>
+      <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
@@ -1482,7 +1576,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-23a"></script>
-<script src="mark.js?v=2026-10-23f"></script>
+<script src="mark.js?v=2026-10-23g"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23e"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -1511,7 +1605,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.13 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.14 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1661,7 +1755,7 @@
     midday: 'at midday', afternoon: 'in the afternoon', 'late afternoon': 'in the late afternoon', evening: 'in the evening', night: 'at night' };
   function tick() {
     var now = new Date();
-    $('question').textContent = 'What’s with you ' + THIS_PART[partAt(now)] + '?';
+    $('question').textContent = fromTurn ? fromTurn.question : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
     $('date').textContent = dateWords(now);
     $('place').textContent = place;
     $('place').hidden = !place;
@@ -1835,6 +1929,7 @@
       else if (top === 'shell') putBack();
       else if (top === 'pools') gatherBack();
       else if (top === 'tide') closeTide();
+      else if (top === 'turn') putTurnAway();
       if (layers[layers.length - 1] === top) layers.pop();
     }
     backing = false;
@@ -1901,6 +1996,7 @@
     $('invite').textContent = line;
     $('invite').hidden = !line;
     showDoor();
+    showTurnOffer();
   }
   // The other door (6.4.1 (4)): with no key, once a name is known or typed,
   // one quiet line at the foot of the arrive screen, the way in through
@@ -1913,6 +2009,7 @@
   }
   function tapDial() {
     if (busy || keeping) return;
+    if (turnNow) { putTurnAway(); return; }
     store(TAPPED, '1');
     if (poolsOpen) gatherBack();
     else if (tideOpen) closeTide();
@@ -2030,6 +2127,7 @@
     if (ev.key !== 'Escape' || document.querySelector('dialog[open]')) return;
     if (poolsOpen) gatherBack();
     else if (tideOpen) closeTide();
+    else if (turnNow) putTurnAway();
   });
   function openFind() {
     if (stored(NAME)) return;
@@ -2045,7 +2143,7 @@
   // A tap, or a hold of 700ms (a finger, a long press, or Enter held down).
   var HOLD_MS = 700, holdTimer = null, holdBy = '', heldNow = false, keyDown = false;
   function startHold(by) {
-    if (busy || keeping || tideOpen || poolsOpen) return;
+    if (busy || keeping || tideOpen || poolsOpen || turnNow) return;
     clearTimeout(holdTimer);
     holdBy = by;
     holdTimer = setTimeout(function () {
@@ -2071,6 +2169,7 @@
   dialEl.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
   dialEl.addEventListener('click', function () {
     if (heldNow) { heldNow = false; return; }
+    if (flicked) { flicked = false; return; }
     tapDial();
   });
   dialEl.addEventListener('keydown', function (ev) {
@@ -3092,6 +3191,7 @@
       }).join('\n') : '') +
       (same ? '\nAn earlier moment from this same beat: ' + flatText(same.text) : '') +
       (aheadText ? '\nTomorrow’s line: ' + flatText(aheadText) : '') +
+      (fromTurn ? '\nWhere they started: a turn rested at ' + fromTurn.phrase + ', with the question: ' + fromTurn.question : '') +
       '\n\nWhat they said:\n' + words;
   }
 
@@ -3246,6 +3346,7 @@
     kept.hidden = true;
     $('bring-row').hidden = true;
     if (!before) { turnsLeft = firstOfDay() ? 3 : 1; drawn = null; }
+    $('turn-offer-row').hidden = true;
     if (keepAfter) turnsLeft = 0;
     messages.push({ role: 'user', content: (before ? 'What they said:\n' + words : opening(words, now)) +
       '\n\nTurns back left for this telling: ' + turnsLeft + (turnsLeft ? '' : ' (return the sheet now, with ask empty)') + '.' });
@@ -3320,6 +3421,7 @@
 
   // Let it go: back to the start, with no trace.
   function backToStart() {
+    endFromTurn();
     messages = [];
     turnsLeft = 0;
     drawn = null;
@@ -3474,6 +3576,7 @@
         messages = [];
         turnsLeft = 0;
         drawn = null;
+        endFromTurn();
         // The first keep only: the arrival line in the community's room (4.7).
         if (first) arrive(who.name);
         window.SUNDIAL_FROM = who.name;
@@ -3661,6 +3764,184 @@
     ev.stopPropagation();
     ev.preventDefault();
   }, true);
+  // ---- The turn (3.7) ---------------------------------------------------------------
+  // Played by hand, with no key and no Claude, and only at the empty start:
+  // never once a telling is under way, where Claude follows and never picks
+  // a place. A flick across the sundial, or the quiet offer beneath the
+  // question, sets its six pools turning round the heart, each place one
+  // turn in six. Where they rest, that pool brightens and its question rises
+  // on the sheet, in the same words the Begin page turns up, read live from
+  // the same place (spine:p6; its saved copy below until the beach answers),
+  // so one change changes both. Then stay with it, and leave a line,
+  // unnamed, for whoever lands there next, in the same tide (pool:p6, at the
+  // place's own address); or tell today from there, the question standing
+  // above the field as where they started. A turn writes nothing to their
+  // day unless they then tell and keep. Its words never name where it comes
+  // from, and lines that do are not shown.
+  var TURN_WORDS = {
+    '1.1': ['What is here that you could point to: what you see, hear, or were told?', 'Leaving out what it means, what actually happened?'],
+    '1.2': ['What do you notice in your body right now?', 'What emotion is here, and where in your body do you feel it?'],
+    '1.3': ['What story are you telling yourself about this?', 'What is your mind doing with this: what have you concluded, judged or come to believe?'],
+    '2.1': ['How do you want to be in this?', 'What do you want to be doing here?'],
+    '2.2': ['What are you choosing right now, even by not choosing?', 'What is the next choice in front of you?'],
+    '2.3': ['What future are you imagining from here?', 'What do you expect will happen next, and is it a fact yet, or a story about tomorrow?']
+  };
+  var TURN_HIDE = /night\s*watchman|\bp6\b|\bportals?\b|\bwheels?\b/i;
+  var NOTHING_MUCH = /^(nothing( much| really| to say| today)*|not (much|a lot|really)( really| today)*|dunno|no idea|not sure|(i )?don'?t know( what to say)?|meh)[.!…\s]*$/i;
+  var turnNow = null, fromTurn = null, turnWordsRead = null, turnTide = null, turnMine = [];
+  function ownText(n) {
+    while (n && typeof n === 'object') n = n._;
+    return typeof n === 'string' ? n.trim() : '';
+  }
+  function readTurnWords() {
+    return Beach.look('spine:p6').then(function (r) {
+      if (r.status !== 200 || !r.json) return;
+      Mark.POOLS.forEach(function (p) {
+        var a = p.at.split('.'), place = r.json[a[0]], node = place && typeof place === 'object' ? place[a[1]] : null, qs = [];
+        for (var j = 1; node && typeof node === 'object' && j <= 9; j++) {
+          var q = ownText(node[String(j)]);
+          if (q && !TURN_HIDE.test(q)) qs.push(q);
+        }
+        if (qs.length) TURN_WORDS[p.at] = qs;
+      });
+    }, function () {});
+  }
+  // Nothing yet to follow: the page as it opens, the field empty or holding
+  // only 'nothing much'.
+  function emptyStart() {
+    var said = box.value.trim();
+    return !busy && !keeping && !momentNow && !tideOpen && !poolsOpen && !messages.length && !sheetNow && !fromTurn &&
+      day.hidden && rest.hidden && !form.hidden && ask.hidden && (!said || NOTHING_MUCH.test(said));
+  }
+  function showTurnOffer() {
+    $('turn-offer-row').hidden = !(emptyStart() && !turnNow);
+  }
+  box.addEventListener('input', showTurnOffer);
+  function giveTurn(dir) {
+    if (turnNow ? $('turn-line').value.trim() : !emptyStart()) return;
+    var k = Math.floor(Math.random() * Mark.POOLS.length), pool = Mark.POOLS[k];
+    if (!turnNow) layerOpened('turn');
+    var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '' };
+    turnWordsRead = turnWordsRead || readTurnWords();
+    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'door-line', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
+    form.hidden = true;
+    dial.turn(k, dir, STILL.matches).then(function () {
+      if (turnNow !== mine) return;
+      var words = TURN_WORDS[pool.at];
+      mine.question = words[Math.floor(Math.random() * words.length)];
+      $('turn-place').textContent = pool.phrase;
+      $('turn-question').textContent = mine.question;
+      $('turn').hidden = false;
+      var card = $('turn-card');
+      card.classList.remove('rising');
+      void card.offsetWidth;
+      card.classList.add('rising');
+      $('turn-question').focus({ preventScroll: true });
+      $('turn').scrollIntoView({ behavior: STILL.matches ? 'auto' : 'smooth', block: 'nearest' });
+    });
+  }
+  function putTurnAway() {
+    if (!turnNow) return;
+    turnNow = null;
+    dial.unturn();
+    $('turn').hidden = true;
+    $('turn-line').value = '';
+    form.hidden = false;
+    layerClosed('turn');
+    showGreeting();
+    showInvite();
+  }
+  $('turn-offer').addEventListener('click', function () { giveTurn(1); });
+  // Tell today from here: the telling opens with the question standing
+  // above it, and from there Claude follows as ever.
+  $('turn-tell').addEventListener('click', function () {
+    if (!turnNow || !turnNow.question) return;
+    fromTurn = { phrase: turnNow.phrase, question: turnNow.question };
+    turnNow = null;
+    dial.unturn();
+    $('turn').hidden = true;
+    $('turn-line').value = '';
+    layerClosed('turn');
+    form.hidden = false;
+    $('question').hidden = false;
+    $('question').textContent = fromTurn.question;
+    showInvite();
+    box.focus();
+  });
+  function endFromTurn() {
+    if (!fromTurn) return;
+    fromTurn = null;
+    tick();
+  }
+  // Stay with it a while: what others left here, newest first, and a line
+  // to leave for whoever lands here next.
+  function drawTurnLines() {
+    var lines = $('turn-lines'), here = turnNow;
+    lines.textContent = '';
+    if (!here) return;
+    var all = (turnTide || []).slice();
+    turnMine.forEach(function (m) {
+      if (!all.some(function (e) { return e.where === m.where && e.text === m.text; })) all.push(m);
+    });
+    all.filter(function (e) { return e.where === here.at && e.text && !TURN_HIDE.test(e.text); }).slice(-3).reverse().forEach(function (e) {
+      var row = document.createElement('p'), d = new Date(e.when);
+      if (!isNaN(d)) {
+        var t = document.createElement('time');
+        t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        row.appendChild(t);
+      }
+      row.appendChild(document.createTextNode(e.text.slice(0, 600)));
+      lines.appendChild(row);
+    });
+  }
+  $('turn-stay').addEventListener('click', function () {
+    if (!turnNow) return;
+    $('turn-stay-box').hidden = false;
+    $('turn-note').hidden = true;
+    drawTurnLines();
+    Beach.look('pool:p6').then(function (r) {
+      if (r.status === 200 && r.json) turnTide = Beach.entries(r.json);
+      drawTurnLines();
+    });
+    $('turn-line').focus();
+  });
+  Beach.addMic($('turn-line'), { finals: true });
+  $('turn-line').addEventListener('input', function () { $('turn-note').hidden = true; });
+  $('turn-stay-box').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var here = turnNow, text = $('turn-line').value.trim().slice(0, 600);
+    if (!here || !text) { $('turn-line').focus(); return; }
+    $('turn-leave').disabled = true;
+    Beach.note('pool:p6', 'a visitor', text, here.at).then(function () {
+      turnMine.push({ where: here.at, text: text, when: new Date().toISOString() });
+      if (turnNow === here) {
+        $('turn-line').value = '';
+        drawTurnLines();
+      }
+    }, function () {
+      $('turn-note').textContent = 'That didn’t go through just now. Your words are still here.';
+      $('turn-note').hidden = false;
+    }).then(function () { $('turn-leave').disabled = false; });
+  });
+  // The flick: across the sundial, quick and mostly sideways. Up and down
+  // still scroll the page.
+  var flickFrom = null, flicked = false;
+  dialEl.addEventListener('pointerdown', function (ev) {
+    flickFrom = ev.button === 0 ? { x: ev.clientX, y: ev.clientY, t: ev.timeStamp } : null;
+    flicked = false;
+  });
+  window.addEventListener('pointerup', function (ev) {
+    var f = flickFrom;
+    flickFrom = null;
+    if (!f) return;
+    var dx = ev.clientX - f.x, dy = ev.clientY - f.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < 1.5 * Math.abs(dy) || ev.timeStamp - f.t > 700) return;
+    if (!turnNow && !emptyStart()) return;
+    flicked = true;
+    stopHold();
+    giveTurn(dx > 0 ? 1 : -1);
+  });
+
   // ---- Arrivals and bringing someone in (4.7, 6.4) -----------------------------
   // Who brought them comes from ?from=<name> on the link that opened the
   // page, kept in this browser until the first keep. On the first keep only,
