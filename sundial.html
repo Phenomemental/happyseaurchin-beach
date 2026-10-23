@@ -369,6 +369,18 @@
     padding-left: 0.5em;
     color: var(--muted);
   }
+  /* The days kept, beneath the name, in the same small capitals (6.9). */
+  .sd-days {
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    margin: 0.35rem 0 0;
+    padding-left: 0.35em;
+    color: var(--muted);
+    text-align: center;
+  }
+  main.sd.tide-open .sd-days {
+    display: none;
+  }
   .sd-ask {
     font-style: italic;
     font-size: 1.35rem;
@@ -763,12 +775,13 @@
     </g>
   </svg>
   <p class="sd-name">SUNDIAL</p>
+  <p class="sd-days" id="days-count" hidden></p>
 
   <p class="sd-ask" id="ask" aria-live="polite" hidden></p>
   <p class="sd-rest" id="rest" hidden>That’s enough for today. Come back tomorrow.</p>
   <div class="sd-greet" id="greet" hidden>
-    <p class="sd-greet-said" id="greet-said"></p>
     <p class="sd-greet-day" id="greet-day"></p>
+    <p class="sd-greet-said" id="greet-said"></p>
   </div>
   <p class="sd-kept" id="kept" tabindex="-1" hidden></p>
 
@@ -825,7 +838,7 @@
 
   <div class="sd-foot">
     <form class="sd-speak" id="speak">
-      <p class="sd-question" id="question">Where are you, and what’s today been like?</p>
+      <p class="sd-question" id="question">What’s with you today?</p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
@@ -923,9 +936,9 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-22c"></script>
+<script src="mark.js?v=2026-10-23a"></script>
 <script src="shell.js?v=2026-10-22a"></script>
-<script src="days.js?v=2026-10-22a"></script>
+<script src="days.js?v=2026-10-23a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
 <script src="whispers.js?v=2026-10-23d"></script>
@@ -942,7 +955,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.3.1 · 23 October 2026';
+  var VERSION = 'Sundial M4.4 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -952,13 +965,14 @@
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
-  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day.\n\nYou receive: the date, time and place; what they said (a transcript); and, if they have been before, their last day's title and tomorrow line. You return ONLY JSON: `{\"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"pool\": 1-6}}`.\n\nFlow. If what they said is thin (under ~40 words) and you have asked fewer than two questions this visit, return `ask` only: one question, going deeper not wider (what they noticed; what is sitting with them underneath). Otherwise return the sheet. Title: short, from their own words. Lines: two to four, second person, drawing together what they said, nothing they did not say. Tomorrow: their intention if they voiced one, else empty. Pool: where the day mostly stood — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes).\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
+  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day.\n\nYou receive: the date, the time and the part of the day; what they said (a transcript); their last words before today, with its tomorrow line; today's line and today's earlier moments, if any; tomorrow's line, if any. You return ONLY JSON: `{\"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"pool\": 1-6}, \"day\": {\"title\": \"...\", \"lines\": [\"...\"], \"pool\": 1-6}, \"ahead\": \"<tomorrow's line, or empty>\"}`.\n\nFlow. If what they said is thin (under ~40 words) and you have asked fewer than two questions this visit, return `ask` only: one question, going deeper not wider (what they noticed; what is sitting with them underneath). Otherwise return the sheet, the day and ahead. Sheet, this moment: title short, from their own words; lines two to four, second person, drawing together what they said, nothing they did not say; if an earlier moment from this same beat is given, fold it in. Tomorrow: their intention if they voiced one, else empty. Pool: where the moment mostly stood — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes). Day, the whole day so far: fold today's line, today's earlier moments and this moment into one, keeping what was there and nothing they did not say; title short; lines two to five; pool where the day mostly stood. Ahead: tomorrow's line with any intention they voiced folded in, keeping what was there; empty if neither.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
 
   // The reply's shape, held to by the API (structured output).
+  var POOL_ENUM = { type: 'integer', enum: [1, 2, 3, 4, 5, 6] };
   var SCHEMA = {
     type: 'object',
     additionalProperties: false,
-    required: ['ask', 'sheet'],
+    required: ['ask', 'sheet', 'day', 'ahead'],
     properties: {
       ask: { type: 'string' },
       sheet: {
@@ -972,11 +986,27 @@
               title: { type: 'string' },
               lines: { type: 'array', items: { type: 'string' } },
               tomorrow: { type: 'string' },
-              pool: { type: 'integer', enum: [1, 2, 3, 4, 5, 6] }
+              pool: POOL_ENUM
             }
           }
         ]
-      }
+      },
+      day: {
+        anyOf: [
+          { type: 'null' },
+          {
+            type: 'object',
+            additionalProperties: false,
+            required: ['title', 'lines', 'pool'],
+            properties: {
+              title: { type: 'string' },
+              lines: { type: 'array', items: { type: 'string' } },
+              pool: POOL_ENUM
+            }
+          }
+        ]
+      },
+      ahead: { type: 'string' }
     }
   };
   // Should Claude decline, the law's own gentle question stands in.
@@ -1061,8 +1091,19 @@
   function timeWords(d) {
     return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }).replace(/^0/, '');
   }
+  // The day's nine parts, named by the phone's own clock so the words fit
+  // the person's day; the addresses stay on the shared clock (4.2).
+  function partAt(when) {
+    var s = when.getHours() * 3600 + when.getMinutes() * 60 + when.getSeconds();
+    return Days.PARTS[Math.min(8, Math.floor(s / 9600))];
+  }
+  var THIS_PART = { 'deep night': 'tonight', dawn: 'this dawn', 'early morning': 'this early morning', morning: 'this morning',
+    midday: 'at midday', afternoon: 'this afternoon', 'late afternoon': 'this late afternoon', evening: 'this evening', night: 'tonight' };
+  var AT_PART = { 'deep night': 'in the deep night', dawn: 'at dawn', 'early morning': 'in the early morning', morning: 'in the morning',
+    midday: 'at midday', afternoon: 'in the afternoon', 'late afternoon': 'in the late afternoon', evening: 'in the evening', night: 'at night' };
   function tick() {
     var now = new Date();
+    $('question').textContent = 'What’s with you ' + THIS_PART[partAt(now)] + '?';
     $('date').textContent = dateWords(now);
     $('place').textContent = place;
     $('place').hidden = !place;
@@ -1072,43 +1113,103 @@
   setInterval(tick, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
 
-  // ---- Their days -------------------------------------------------------------------
-  var days = [];                            // {address, text}, oldest first
-  function showDays(list, keptNow) {
-    days = withPlaces(list);
+  // ---- Their days and moments ------------------------------------------------
+  // The days (each day's own line, today and before) draw the sundial; the
+  // moments of today mark the hours they were spoken; tomorrow's line, if
+  // one stands, waits ahead (4.2).
+  var days = [], moments = [], aheadText = '';
+  function todayAddress() { return Days.today() || Days.now().slice(0, 8) + '00'; }
+  function dayOfAddress(a) { return String(a).slice(0, 8) + '00'; }
+  function showAll(all, keptNow) {
+    all = all || {};
+    var t = todayAddress(), tomorrow = Days.tomorrowOf(t);
+    moments = (all.moments || []).filter(function (m) { return dayOfAddress(m.address) <= t; });
+    aheadText = ((all.days || []).filter(function (d) { return d.address === tomorrow; })[0] || {}).text || '';
+    days = withPlaces((all.days || []).filter(function (d) { return d.address <= t; }));
     dial.days(days, keptNow);
-    hold(SEEN, JSON.stringify(list));
+    dial.moments(moments.filter(function (m) { return dayOfAddress(m.address) === t; }).map(function (m) {
+      return { when: Days.timeOf(m.address), text: m.text };
+    }));
+    var spoken = {};
+    days.forEach(function (d) { spoken[d.address] = 1; });
+    moments.forEach(function (m) { spoken[dayOfAddress(m.address)] = 1; });
+    var n = Object.keys(spoken).length;
+    $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
+    $('days-count').hidden = !n;
+    hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
   }
-  function lastDay() {
-    return days.length ? Mark.read(days[days.length - 1].text) : null;
+  // The last day before today with anything kept, as its day address.
+  function lastDayBefore() {
+    var t = todayAddress(), last = '';
+    days.concat(moments).forEach(function (x) { var d = dayOfAddress(x.address); if (d < t && d > last) last = d; });
+    return last;
   }
-  // Come back: their own tomorrow, then the last day's title.
+  // The last words before today, as {address, text}: that day's own line if
+  // it has one, else its latest moment.
+  function lastBefore() {
+    var last = lastDayBefore();
+    if (!last) return null;
+    var line = days.filter(function (d) { return d.address === last; })[0];
+    var ms = moments.filter(function (m) { return dayOfAddress(m.address) === last; });
+    return line || ms[ms.length - 1] || null;
+  }
+  // The tomorrow said on that last day: its latest moment that voiced one,
+  // else its own line's.
+  function saidBefore() {
+    var last = lastDayBefore();
+    var said = days.concat(moments).filter(function (x) { return dayOfAddress(x.address) === last; })
+      .sort(function (a, b) { return a.address < b.address ? -1 : 1; })
+      .map(function (x) { return Mark.read(x.text).tomorrow; }).filter(Boolean);
+    return last && said.length ? said[said.length - 1] : '';
+  }
+  function todaysMoments() {
+    var t = todayAddress();
+    return moments.filter(function (m) { return dayOfAddress(m.address) === t; });
+  }
+  // A day's address in words, from today: Yesterday, a weekday within the
+  // week, else the date.
+  function whenWords(address) {
+    var d = Days.dateOf(dayOfAddress(address)), t = Days.dateOf(todayAddress());
+    var gap = Math.round((t - d) / 86400000);
+    if (gap === 1) return 'Yesterday';
+    if (gap > 1 && gap < 7) return d.toLocaleDateString('en-GB', { weekday: 'long' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  }
+  // Come back (6.5): where the last words were spoken, then the tomorrow
+  // they said before today.
   function showGreeting() {
-    var d = lastDay();
-    if (!d) { greet.hidden = true; return; }
+    var mine = todaysMoments(), lead = '';
+    if (mine.length) {
+      var m = mine[mine.length - 1];
+      lead = 'Earlier today, ' + AT_PART[partAt(Days.timeOf(m.address))] + ': ' + Mark.read(m.text).title;
+    } else {
+      var b = lastBefore();
+      if (b) lead = whenWords(b.address) + ': ' + Mark.read(b.text).title;
+    }
     // Their own line, quoted, so it reads whatever its shape: "Tomorrow,
     // walk up early." as well as "Tomorrow, the drive north."
-    var t = d.tomorrow.replace(/[.\s]+$/, '');
-    if (t && !/^I\b/.test(t)) t = t.charAt(0).toLowerCase() + t.slice(1);
-    $('greet-said').textContent = t ? 'Last time you said: \u201cTomorrow, ' + t + '.\u201d' : '';
-    $('greet-said').hidden = !t;
-    $('greet-day').textContent = [d.title, d.place].filter(Boolean).join(' · ');
-    greet.hidden = false;
+    var said = saidBefore().replace(/[.\s]+$/, '');
+    if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
+    $('greet-day').textContent = lead;
+    $('greet-day').hidden = !lead;
+    $('greet-said').textContent = said ? 'You said: “Tomorrow, ' + said + '.”' : '';
+    $('greet-said').hidden = !said;
+    greet.hidden = !lead && !said;
   }
-  // On arrival with a name: their days, read with no word. Should the beach
-  // not answer, the days this visit last read stand in; else none.
+  // On arrival with a name: their days and moments, read with no word.
+  // Should the beach not answer, what this visit last read stands in.
   (function comeBack() {
     var name = stored(NAME) || held(LOOKING);
     if (!name) return;
-    Days.read(name).then(function (list) {
-      showDays(list);
+    Days.readAll(name).then(function (all) {
+      showAll(all);
       showGreeting();
     }, function () {
       var seen;
       try { seen = JSON.parse(held(SEEN)); } catch (e) { seen = null; }
-      if (Array.isArray(seen)) {
-        days = withPlaces(seen);
-        dial.days(days);
+      if (Array.isArray(seen)) seen = { days: seen, moments: [] };
+      if (seen && Array.isArray(seen.days)) {
+        showAll(seen);
         showGreeting();
       }
     });
@@ -1377,7 +1478,7 @@
         }
       });
       store(PLACED, JSON.stringify(places));
-      hold(SEEN, JSON.stringify(days));
+      hold(SEEN, JSON.stringify({ days: days, moments: moments }));
       dial.days(days);
       // The pools fill as the places come, unless one is already open.
       if (poolsOpen && poolNow < 0) {
@@ -1753,7 +1854,7 @@
       }
       hold(LOOKING, who.name);
       setDialTap();
-      showDays(who.days);
+      showAll({ days: who.days, moments: who.moments });
       if (day.hidden) showGreeting();
       closeFind();
     }, function () {
@@ -1969,7 +2070,7 @@
       hold(SEEN, '');
       hold(LOOKING, '');
       setDialTap();
-      showDays([]);
+      showAll({ days: [], moments: [] });
       greet.hidden = true;
       kept.hidden = true;
       day.hidden = true;
@@ -1996,14 +2097,28 @@
   }, true);
 
   // ---- One visit's conversation -----------------------------------------------------
-  var messages = [], asks = 0, busy = false, plain = false, sheetNow = null;
+  var messages = [], asks = 0, busy = false, plain = false, sheetNow = null, dayNow = null, aheadNow = '';
 
+  function flatText(text) {
+    var r = Mark.read(text);
+    return [r.title].concat(r.lines, r.tomorrow ? ['Tomorrow: ' + r.tomorrow] : []).filter(Boolean).join(' / ');
+  }
   function opening(words, now) {
-    var d = lastDay();
+    var t = todayAddress(), beat = Days.now(), before = lastBefore(), said = saidBefore();
+    var todayLine = (days.filter(function (d) { return d.address === t; })[0] || {}).text || '';
+    var mine = todaysMoments(), same = mine.filter(function (m) { return m.address === beat; })[0];
+    var earlier = mine.filter(function (m) { return m.address !== beat; });
     return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
       '\nTime: ' + timeWords(now) +
-      '\nPlace: ' + (place || 'not given') +
-      (d ? '\nTheir last day’s title: ' + d.title + (d.tomorrow ? '\nTheir tomorrow line then: ' + d.tomorrow : '') : '') +
+      '\nPart of the day: ' + partAt(now) +
+      (before ? '\nTheir last words before today (' + whenWords(before.address) + '): ' + flatText(before.text) : '') +
+      (said ? '\nTheir tomorrow line then: ' + said : '') +
+      (todayLine ? '\nToday’s line: ' + flatText(todayLine) : '') +
+      (earlier.length ? '\nToday’s earlier moments:\n' + earlier.map(function (m) {
+        return '- ' + partAt(Days.timeOf(m.address)) + ': ' + flatText(m.text);
+      }).join('\n') : '') +
+      (same ? '\nAn earlier moment from this same beat: ' + flatText(same.text) : '') +
+      (aheadText ? '\nTomorrow’s line: ' + flatText(aheadText) : '') +
       '\n\nWhat they said:\n' + words;
   }
 
@@ -2050,13 +2165,14 @@
   function readReply(data) {
     if (data.stop_reason === 'refusal') return { refused: true };
     var j = jsonOf(data), s = j && j.sheet;
+    function lines(x) { return (Array.isArray(x) ? x : []).filter(function (l) { return typeof l === 'string' && l.trim(); }); }
+    function pool(x) { return Number(x) >= 1 && Number(x) <= 6 ? Number(x) : 0; }
     if (s && typeof s.title === 'string' && s.title.trim() && Array.isArray(s.lines)) {
-      return { sheet: {
-        title: s.title.trim(),
-        lines: s.lines.filter(function (l) { return typeof l === 'string' && l.trim(); }),
-        tomorrow: typeof s.tomorrow === 'string' ? s.tomorrow.trim() : '',
-        pool: Number(s.pool) >= 1 && Number(s.pool) <= 6 ? Number(s.pool) : 0
-      } };
+      var sheet = { title: s.title.trim(), lines: lines(s.lines), tomorrow: typeof s.tomorrow === 'string' ? s.tomorrow.trim() : '', pool: pool(s.pool) };
+      var d = j.day, dayNow = d && typeof d.title === 'string' && d.title.trim() && Array.isArray(d.lines)
+        ? { title: d.title.trim(), lines: lines(d.lines), tomorrow: '', pool: pool(d.pool) }
+        : { title: sheet.title, lines: sheet.lines, tomorrow: '', pool: sheet.pool };
+      return { sheet: sheet, day: dayNow, ahead: typeof j.ahead === 'string' ? j.ahead.trim() : '' };
     }
     if (j && typeof j.ask === 'string' && j.ask.trim()) return { ask: j.ask.trim() };
     return null;
@@ -2141,8 +2257,13 @@
         return b.type === 'text' || b.type === 'thinking' || b.type === 'redacted_thinking';
       });
       messages.push({ role: 'assistant', content: blocks.some(function (b) { return b.type === 'text'; })
-        ? blocks : JSON.stringify(reply.sheet ? { ask: '', sheet: reply.sheet } : { ask: reply.ask, sheet: null }) });
-      if (reply.sheet) showSheet(reply.sheet, now);
+        ? blocks : JSON.stringify(reply.sheet ? { ask: '', sheet: reply.sheet, day: reply.day, ahead: reply.ahead }
+          : { ask: reply.ask, sheet: null, day: null, ahead: '' }) });
+      if (reply.sheet) {
+        dayNow = reply.day;
+        aheadNow = reply.ahead;
+        showSheet(reply.sheet, now);
+      }
       else { asks++; showAsk(reply.ask); }
     }).catch(function (e) {
       // Nothing is said: the turn is taken back and their words return.
@@ -2159,6 +2280,8 @@
     messages = [];
     asks = 0;
     sheetNow = null;
+    dayNow = null;
+    aheadNow = '';
     box.value = '';
     ask.hidden = true;
     ask.textContent = '';
@@ -2207,7 +2330,7 @@
       Days.resolve(kname.value).then(function (who) {
         if (n !== checking || !who) return;
         $('kname-note').hidden = who.state === 'free';
-        if (who.state === 'kept') showDays(who.days);
+        if (who.state === 'kept') showAll({ days: who.days, moments: who.moments });
       }, function () {});
     }, 500);
   });
@@ -2231,14 +2354,17 @@
     $('keep').disabled = on;
     $('keep-it').disabled = on;
   }
+  // Up to three writes (4.2): the moment at this beat, the day's own line
+  // folded, and tomorrow's line when one was voiced.
   function keepWith(typed, word) {
     if (!sheetNow) return;
-    var text = Mark.write(sheetNow, place), who = null, first = false;
+    var moment = Mark.write(sheetNow), who = null, first = false;
+    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', pool: sheetNow.pool });
     setKeeping(true);
     Days.resolve(typed).then(function (w) {
       who = w;
       first = w.state === 'free';
-      return Days.keep(w, word, text);
+      return Days.keep(w, word, { moment: moment, day: dayText, ahead: aheadNow });
     }).catch(function () { return 'unreachable'; }).then(function (result) {
       if (result !== 'kept') {
         // Nothing written: the field quietly reopens.
@@ -2257,21 +2383,29 @@
       hold(WORD, word);
       hold(LOOKING, '');
       setDialTap();
-      return Days.read(who.name).catch(function () {
-        return days.filter(function (d) { return d.address !== Days.today(); })
-          .concat([{ address: Days.today(), text: text }]);
-      }).then(function (list) {
+      return Days.readAll(who.name).catch(function () {
+        var t = todayAddress();
+        return { days: days.filter(function (d) { return d.address !== t; }).concat([{ address: t, text: dayText }]),
+          moments: moments.concat([{ address: Days.now(), text: moment }]) };
+      }).then(function (all) {
         setKeeping(false);
         closeKeep();
         sheetNow = null;
+        dayNow = null;
+        aheadNow = '';
         messages = [];
         asks = 0;
         day.hidden = true;
-        showDays(list, true);
+        showAll(all, true);
         kept.textContent = first
           ? 'Kept. Your first day, ' + who.name + '. Come back tomorrow and your sundial will move. On any phone: this address, your name, your word.'
           : 'Kept.';
         kept.hidden = false;
+        // The field comes back beneath, so they can speak again whenever
+        // they like (4.2: each time a person speaks and keeps).
+        box.value = '';
+        form.hidden = false;
+        $('question').hidden = false;
         kept.focus();
       });
     });

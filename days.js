@@ -48,6 +48,46 @@
     return c && /^\d{10}$/.test(c.address) ? c.address.slice(0, 8) + '00' : '';
   }
 
+  // The day's nine parts, as the beach's clock names them (bsp-mcp's
+  // src/temporal.ts): each 2h40m of the UTC day, each of nine beats.
+  var PARTS = ['deep night', 'dawn', 'early morning', 'morning', 'midday',
+    'afternoon', 'late afternoon', 'evening', 'night'];
+  var PART_S = 86400 / 9, BEAT_S = PART_S / 9;
+
+  // The ten-digit address of a moment, by the clock's own arithmetic, so the
+  // page can name the part of the day before the beach has answered.
+  function addressAt(when) {
+    var y = when.getUTCFullYear(), m = when.getUTCMonth(), d = when.getUTCDate();
+    var s = when.getUTCHours() * 3600 + when.getUTCMinutes() * 60 + when.getUTCSeconds();
+    var part = Math.floor(s / PART_S), beat = Math.floor((s - part * PART_S) / BEAT_S);
+    return String(y) + (Math.floor(m / 3) + 1) + (m % 3 + 1) + (Math.floor((d - 1) / 7) + 1) + ((d - 1) % 7 + 1) +
+      (part + 1) + (beat + 1);
+  }
+  // This beat's address: the beach's clock when it has spoken, else the
+  // phone's.
+  function now() {
+    var c = Beach.clock();
+    return c && /^\d{10}$/.test(c.address) ? c.address : addressAt(new Date());
+  }
+  // The part of the day an address falls in ('' at the day rung or above).
+  function partOf(address) {
+    var g = Number(String(address).charAt(8));
+    return g >= 1 && g <= 9 ? PARTS[g - 1] : '';
+  }
+  // The middle of the beat an address names, as a time.
+  function timeOf(address) {
+    var a = String(address), day = dateOf(a.slice(0, 8) + '00');
+    var g = Number(a.charAt(8)) || 1, b = Number(a.charAt(9)) || 5;
+    return new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()) +
+      ((g - 1) * PART_S + (b - 1) * BEAT_S + BEAT_S / 2) * 1000);
+  }
+  // The day after a day's address.
+  function tomorrowOf(address) {
+    var d = dateOf(address);
+    d.setDate(d.getDate() + 1);
+    return addressAt(new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12))).slice(0, 8) + '00';
+  }
+
   // The calendar date of a day's address (pscale://sundial 3.1): the year's
   // four digits, then season 1-4 (three months each), month of the season
   // 1-3, seven-day band of the month 1-5, day of the band 1-7. Noon, so no
@@ -82,6 +122,31 @@
     return out.sort(function (a, b) { return a.address < b.address ? -1 : 1; });
   }
 
+  // Every moment in a mirror, oldest first, as {address, text}: a line at a
+  // beat (depth 10) or a part of the day (depth 9) beneath a day.
+  function momentsIn(mirror) {
+    var out = [];
+    (function walk(node, digits) {
+      if (!node || typeof node !== 'object') return;
+      Object.keys(node).forEach(function (k) {
+        var d = k === '_' ? '0' : k;
+        var ok = digits.length === 0 ? /^[1-9]$/.test(d) : digits.length < 4 ? /^[0-9]$/.test(d) : /^[1-9]$/.test(d);
+        if (!ok) return;
+        var next = node[k];
+        if (digits.length < 8) return walk(next, digits + d);
+        // digits.length is 8 (d is the part) or 9 (d is the beat).
+        var text = typeof next === 'string' ? next : own(next);
+        if (digits.length === 9) {
+          if (text) out.push({ address: digits + d, text: text });
+          return;
+        }
+        if (text) out.push({ address: digits + d + '0', text: text });
+        if (next && typeof next === 'object') walk(next, digits + d);
+      });
+    })(mirror, '');
+    return out.sort(function (a, b) { return a.address < b.address ? -1 : 1; });
+  }
+
   // Who a name is on the beach. The handle keeps the spelling of a block
   // that already stands under it in any case, so a person who keeps their
   // now through Claude reaches the same mirror here. Resolves
@@ -107,7 +172,7 @@
         var state = forgotten(passport) && forgotten(mirror) ? 'free'
           : mirror && !forgotten(mirror) && floorOf(mirror) === 10 ? 'kept' : 'taken';
         return { name: spelled, state: state, passport: passport, mirror: mirror,
-          days: state === 'kept' ? daysIn(mirror) : [] };
+          days: state === 'kept' ? daysIn(mirror) : [], moments: state === 'kept' ? momentsIn(mirror) : [] };
       });
     });
   }
@@ -115,18 +180,28 @@
   // A name's days, read with no word. Resolves [] when nothing stands;
   // rejects when the beach can't be reached.
   function read(name) {
+    return readAll(name).then(function (all) { return all.days; });
+  }
+  // A name's days and moments together, as {days, moments}.
+  function readAll(name) {
     return Beach.look('now:' + name).then(function (r) {
       if (!r.status) throw new Error('unreachable');
-      return r.status === 200 && floorOf(r.json) === 10 ? daysIn(r.json) : [];
+      var mirror = r.status === 200 && floorOf(r.json) === 10 ? r.json : null;
+      return { days: mirror ? daysIn(mirror) : [], moments: mirror ? momentsIn(mirror) : [] };
     });
   }
 
-  // Keep a day: on a free name, claim it (the passport, then the mirror on
-  // the clock, both latched with the word), then write the day's text at
-  // today's address and read it back. Resolves 'kept', 'wrong' (the word
-  // doesn't open it), 'taken', or 'unreachable'.
-  function keep(who, word, text) {
+  // Keep what was said (plan 4.2): on a free name, claim it first (the
+  // passport, then the mirror on the clock, both latched with the word);
+  // then the moment at this beat, the day's own line at today (folded by
+  // Claude, whoever wrote it before), and tomorrow's line when one was
+  // voiced. Each is read back before it counts. `kept` is {moment, day,
+  // ahead}, each a text or '' (a plain text, as before, is the day alone).
+  // Resolves 'kept', 'wrong' (the word doesn't open it), 'taken', or
+  // 'unreachable'.
+  function keep(who, word, kept) {
     var name = who.name;
+    if (typeof kept === 'string') kept = { moment: '', day: kept, ahead: '' };
     function failed(r) { return r.status === 403 ? 'wrong' : r.status ? 'taken' : 'unreachable'; }
     var claim = Promise.resolve(null);
     if (who.state === 'taken') return Promise.resolve('taken');
@@ -139,18 +214,28 @@
           if (r.status !== 200) throw failed(r);
         });
     }
-    var at;
+    // One write, read back: the text must stand as the place's own line.
+    function put(at, text) {
+      return Beach.write('now:' + name, { spindle: at, content: text, secret: word }).then(function (r) {
+        if (r.status !== 200) throw failed(r);
+        return Beach.look('now:' + name, '&spindle=' + at);
+      }).then(function (r) {
+        if (!(r.status === 200 && own(r.json) === text)) throw 'unreachable';
+      });
+    }
+    var day;
     return claim.then(function () {
-      at = today();
-      if (!at) return Beach.look('now:' + name, '&pscale=0').then(function () { at = today(); });
+      day = today();
+      if (!day) return Beach.look('now:' + name, '&pscale=0').then(function () { day = today(); });
     }).then(function () {
-      if (!at) throw 'unreachable';
-      return Beach.write('now:' + name, { spindle: at, content: text, secret: word });
-    }).then(function (r) {
-      if (r.status !== 200) throw failed(r);
-      return Beach.look('now:' + name, '&spindle=' + at);
-    }).then(function (r) {
-      return r.status === 200 && r.json === text ? 'kept' : 'unreachable';
+      if (!day) throw 'unreachable';
+      return kept.moment ? put(now(), kept.moment) : null;
+    }).then(function () {
+      return kept.day ? put(day, kept.day) : null;
+    }).then(function () {
+      return kept.ahead ? put(tomorrowOf(day), kept.ahead) : null;
+    }).then(function () {
+      return 'kept';
     }).catch(function (e) {
       return typeof e === 'string' ? e : 'unreachable';
     });
@@ -184,8 +269,16 @@
     FORGOTTEN: FORGOTTEN,
     handle: handle,
     today: today,
+    now: now,
+    PARTS: PARTS,
+    addressAt: addressAt,
+    partOf: partOf,
+    timeOf: timeOf,
+    tomorrowOf: tomorrowOf,
     dateOf: dateOf,
     daysIn: daysIn,
+    momentsIn: momentsIn,
+    readAll: readAll,
     resolve: resolve,
     read: read,
     keep: keep,
