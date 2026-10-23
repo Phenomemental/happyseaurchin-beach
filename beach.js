@@ -346,8 +346,16 @@
   }
 
   var listening = null;     // the one microphone listening now, as its stop
+  // With opts.dictate (Sundial's fields), the words go in as
+  // happyseaurchin.com/theme.js's window.dictate puts them (spine:front-door
+  // 3.57, answering 6.8.3.4 (2)): rebuilt whole every time, never appended.
+  // The box holds what it held before, then every phrase the engine has
+  // locked (carried across a pause that restarts it), then the one phrase
+  // still being revised, the last passing guess only, with an ellipsis,
+  // replaced as it firms. A run of revisions, each saying the one before
+  // again or re-hearing it, collapses to the phrase it settled on.
   function addMic(box, opts) {
-    var finalsOnly = !!(opts && opts.finals);
+    var rebuild = !!(opts && (opts.dictate || opts.finals));
     var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Rec || !box || box.dataset.mic) return;
     box.dataset.mic = '1';
@@ -376,6 +384,7 @@
     var frozen = false;       // stopped by typing or sending: write nothing more
     var base = '';            // the box's words before this session began
     var phrases = [], live = '';
+    var prior = [], locked = [];   // rebuilding: phrases locked before this session's restart, and in it
     var began = 0, heard = false, spoke = false, quiet = 0;
 
     function label(on) {
@@ -427,10 +436,15 @@
       r.lang = lang;
       r.continuous = true;
       r.interimResults = true;
+      // the engine's own punctuation where the browser offers it (theme.js)
+      if (rebuild && 'unspokenPunctuation' in r) r.unspokenPunctuation = true;
       began = Date.now();
       heard = false;
-      phrases = [];
-      live = '';
+      locked = [];
+      if (!rebuild) {
+        phrases = [];
+        live = '';
+      }
       var fault = '';
       r.onresult = function (ev) {
         if (frozen || r !== rec) return;
@@ -442,10 +456,13 @@
           if (res.isFinal) finals.push(res[0].transcript);
           else forming = res[0].transcript;
         }
-        if (finalsOnly) {
-          phrases = collapse(finals, true);
-          live = '';
-          show(compose(false));
+        if (rebuild) {
+          locked = finals;
+          var guess = forming.trim(), runs = collapse(prior.concat(finals, guess ? [guess] : []), true);
+          var open = !!guess && runs.length > 0 && runs[runs.length - 1] === guess;
+          phrases = open ? runs.slice(0, -1) : runs;
+          live = open ? guess : '';
+          show(compose(open));
           return;
         }
         phrases = collapse(finals);
@@ -472,8 +489,17 @@
         if (wanted && !frozen) {
           if (Date.now() - began < 1000) return done('Speaking didn’t work just now. You can type instead.');
           if (!heard && ++quiet >= 2) return done('I stopped listening after a long silence. Press Speak to go on.');
-          base = compose(false);
-          show(base);
+          if (rebuild) {
+            // across the pause the locked phrases carry on, still open to
+            // a revision that begins the next session
+            prior = collapse(prior.concat(locked), true);
+            phrases = prior.slice();
+            live = '';
+            show(compose(false));
+          } else {
+            base = compose(false);
+            show(base);
+          }
           try { session(); return; } catch (e) { return done('Speaking didn’t work just now. You can type instead.'); }
         }
         done(fault);
@@ -492,6 +518,10 @@
       spoke = false;
       quiet = 0;
       base = box.value;
+      prior = [];
+      locked = [];
+      phrases = [];
+      live = '';
       try {
         session();
         label(true);
