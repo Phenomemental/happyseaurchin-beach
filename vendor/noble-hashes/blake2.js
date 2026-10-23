@@ -3,9 +3,9 @@
  * b could have been faster, but there is no fast u64 in js, so s is 1.5x faster.
  * @module
  */
-import { BSIGMA, G1s, G2s } from "./_blake.js";
-import { SHA256_IV } from "./_md.js";
-import * as u64 from "./_u64.js";
+import { BSIGMA, G1s, G2s } from "./blake-shared.js";
+import { SHA256_IV } from "./md.js";
+import * as u64 from "./u64.js";
 // prettier-ignore
 import { abytes, aexists, anumber, aoutput, checkOpts, clean, copyBytes, createHasher, swap32IfBE, swap8IfBE, u32 } from "./utils.js";
 // Same IV words as `SHA512_IV`, but endian-swapped into LE u32 low/high halves

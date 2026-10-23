@@ -25,10 +25,14 @@
       'The intentional sibling of history:' + name + ', which logs automatically. ' + LAW;
   }
 
-  // The gray module loads after the page's own scripts; wait for it.
+  // The gray module loads after the page's own scripts; wait for it, but
+  // not for ever: should it never load, a whisper comes back to its field.
   function gray() {
     if (root.Gray) return Promise.resolve(root.Gray);
-    return new Promise(function (ok) { root.addEventListener('gray-ready', function () { ok(root.Gray); }, { once: true }); });
+    return new Promise(function (ok, no) {
+      var late = setTimeout(function () { no(new Error('the seal did not load')); }, 20000);
+      root.addEventListener('gray-ready', function () { clearTimeout(late); ok(root.Gray); }, { once: true });
+    });
   }
 
   // Every sealed envelope in a block, wherever the supernesting has put it.
