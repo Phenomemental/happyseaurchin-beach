@@ -85,21 +85,25 @@
   // letting go of its lock with no word must be refused (403); then the
   // lock "rotated" to the same word must answer 200. The mirror is then
   // made whole, latched with the word, and the words written as a point at
-  // the place, with the time it was left (6.1.3.1). The beach lets a block
-  // named for a hand be latched only with that hand's passport key: for a
-  // Sundial keeper that is the day-book word, so nothing changes; a hand
-  // whose passport has another key is refused, and the page asks once for
-  // it (6.1.3.2.1), sent here as the secret with new_lock their day-book
-  // word, and kept nowhere. Resolves 'left'; 'wrong' when the word doesn't
+  // the place, with the time it was left (6.1.3.1). With `prove`, for a
+  // name given in this browser (6.1.3.2), the word is proved on the day
+  // book even when the mirror already stands.
+  //
+  // One name, one word (6.8.3.3 (2)): a name with an older word from
+  // before Sundial gives it once, as `older`, kept nowhere. The beach lets
+  // a block named for a hand be latched only with that hand's passport
+  // key, so a mirror that can't be made with the day-book word is made
+  // with the older word sent alongside; a mirror that stands under the
+  // older word is brought under the one word (its lock turned, the older
+  // word as the secret). Resolves 'left'; 'wrong' when the word doesn't
   // open the day book (or the day book proves nothing); 'passport' when the
-  // mirror can't be made without the passport's key; 'refused' when the
+  // mirror can't be made without the name's older word; 'refused' when the
   // mirror stands under another word; or 'unreachable'. `when` is the ISO
-  // time to write beside the words; `passportKey` is '' unless asked. With
-  // `prove`, for a name given in this browser (6.1.3.2), the word is proved
-  // on the day book even when the mirror already stands.
-  function leave(name, word, address, text, when, passportKey, prove) {
-    var block = PREFIX + name;
+  // time to write beside the words.
+  function leave(name, word, address, text, when, older, prove) {
+    var block = PREFIX + name, content = { _: text, 1: when || new Date().toISOString() };
     function failed(w, why) { return w.status === 403 ? why : 'unreachable'; }
+    function put() { return Beach.write(block, { spindle: address, content: content, secret: word }); }
     var stands = false;
     return Beach.look(block).then(function (r) {
       if (r.status !== 200 && r.status !== 404) throw 'unreachable';
@@ -113,13 +117,17 @@
         if (w.status !== 200) throw failed(w, 'wrong');
         if (stands) return { status: 200 };
         var make = { content: { _: mirrorLine(name) }, new_lock: word };
-        if (passportKey) make.secret = passportKey;
+        if (older) make.secret = older;
         return Beach.write(block, make);
       }).then(function (w) {
         if (w.status !== 200) throw failed(w, 'passport');
       });
-    }).then(function () {
-      return Beach.write(block, { spindle: address, content: { _: text, 1: when || new Date().toISOString() }, secret: word });
+    }).then(put).then(function (w) {
+      if (w.status !== 403 || !stands || !older) return w;
+      return Beach.write(block, { secret: older, new_lock: word }).then(function (t) {
+        if (t.status !== 200) return t;
+        return put();
+      });
     }).then(function (w) {
       if (w.status !== 200) throw failed(w, 'refused');
       return 'left';
