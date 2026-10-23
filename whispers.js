@@ -60,25 +60,37 @@
   }
 
   // A person's whispers, opened with their word, oldest first, as
-  // {phrase, date, said, asked, at}. Entries that aren't whispers, or that
-  // the word doesn't open, are passed over. Rejects when the beach can't
-  // be reached.
+  // {phrase, date, said, asked, at}. Each sealed entry is opened on its own
+  // (6.8.3.5 (2)): one that won't open never hides the rest; entries that
+  // aren't whispers, or that the word doesn't open, are passed over. The
+  // list carries `sealed` (how many sealed entries stand) and `opened` (how
+  // many the word opened), so the page can say when none did. Rejects when
+  // the beach can't be reached.
   function read(name, word) {
     return Promise.all([Beach.look('stash:' + name), gray()]).then(function (both) {
       var r = both[0], Gray = both[1];
       if (!r.status) throw new Error('unreachable');
-      if (r.status !== 200) return [];
-      return Promise.all(sealedIn(r.json).map(function (env) {
-        return Gray.open(env, word).then(function (text) {
+      var envs = r.status === 200 ? sealedIn(r.json) : [], opened = 0;
+      return Promise.all(envs.map(function (env) {
+        return Promise.resolve().then(function () {
+          return Gray.open(env, word);
+        }).then(function (text) {
+          if (text == null) return null;
+          opened++;
           var e;
           try { e = JSON.parse(text); } catch (x) { return null; }
           if (!e || typeof e._ !== 'string' || e._.indexOf(MARK) !== 0 || typeof e['1'] !== 'string') return null;
           var parts = e._.slice(MARK.length).split(' · ');
           return { phrase: parts[0] || '', date: parts[1] || '', said: e['1'], asked: typeof e['2'] === 'string' ? e['2'] : '',
             at: typeof env['3'] === 'string' ? env['3'] : '' };
+        }, function () {
+          return null;
         });
       })).then(function (all) {
-        return all.filter(Boolean).sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+        var list = all.filter(Boolean).sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+        list.sealed = envs.length;
+        list.opened = opened;
+        return list;
       });
     });
   }
