@@ -732,6 +732,65 @@
     background: rgba(29, 26, 23, 0.35);
   }
 
+  /* Bring someone in (6.4): quiet, once after the first keep, then only at
+     the foot of the strandline. Never a prompt, never a count. */
+  .sd-bring-row {
+    text-align: center;
+    margin: 0.6rem 0 0;
+  }
+  .sd-strand-foot {
+    margin: 0.4rem 0 1rem;
+  }
+  .sd-bring {
+    padding: 0.3rem 0.6rem;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-style: italic;
+    font-size: 1rem;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  /* The road (6.1.1): stops along a small faint open spiral, each with its
+     name and line beside it. */
+  .sd-road-way {
+    position: relative;
+  }
+  .sd-road-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 48px;
+    overflow: visible;
+  }
+  .sd-road-stops {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 54px;
+  }
+  .sd-road-stops li {
+    margin: 0 0 0.9rem;
+    padding: 0;
+    line-height: 1.4;
+  }
+  .sd-road-stops li::before {
+    content: none;
+  }
+  .sd-road-name {
+    font-weight: 500;
+  }
+  .sd-road-stops li.far {
+    color: var(--muted);
+  }
+  .sd-road-state {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
   /* About and help (6.1.1): one quiet line at the very foot of every screen;
      About unfolds as a paper sheet over the screen, in the sheet's own look. */
   .sd-help {
@@ -951,6 +1010,7 @@
     <p class="sd-greet-said" id="greet-said"></p>
   </div>
   <p class="sd-kept" id="kept" tabindex="-1" hidden></p>
+  <p class="sd-bring-row" id="bring-row" hidden><button type="button" class="sd-bring" id="bring">bring someone in</button></p>
 
   <section class="sd-day" id="day" aria-labelledby="day-title" hidden>
     <div class="sd-card-day">
@@ -996,6 +1056,7 @@
 
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
     <ol class="sd-strand" id="strandline" aria-label="Your days, the newest first"></ol>
+    <p class="sd-bring-row sd-strand-foot" id="bring-strand-row" hidden><button type="button" class="sd-bring" id="bring-strand">bring someone in</button></p>
     <article class="sd-card-day sd-tide-day" id="tide-day" aria-live="polite" hidden>
       <p class="sd-first" id="tide-first"></p>
       <h2 class="sd-title" id="tide-title"></h2>
@@ -1020,7 +1081,7 @@
     <article class="sd-about-sheet">
       <p class="sd-about-standfirst">Most AI that people turn to for support is an open conversation with no shape and no end, its memory held inside someone else's product. This is the other kind: a daily practice, bounded, and the person's days are theirs.</p>
       <h2 class="sd-about-h" id="about-head">ABOUT</h2>
-      <p>This was made by Matthew Bushell, a therapeutic coach who lives with bipolar and serves on the Lived Experience Council of the International Society for Bipolar Disorders, with David Pinto, who created the beach it stands on, and with Claude. It grew from lived experience, and from Presence in Action, Louie Gardiner's practice.</p>
+      <p>This was made by Matthew Bushell, a therapeutic coach and Emotional Fitness practitioner with 5th Place, who lives with bipolar and serves on the Lived Experience Council of the International Society for Bipolar Disorders, with David Pinto, who created the beach it stands on, and with Claude. It grew from lived experience, from Emotional Fitness, and from Presence in Action, Louie Gardiner's practice.</p>
       <h2 class="sd-about-h">WHY IT EXISTS</h2>
       <p>More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. It is bounded: each day has a limit, and when it's reached, it rests until tomorrow. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI.</p>
       <h2 class="sd-about-h">HOW IT HOLDS YOU</h2>
@@ -1028,12 +1089,19 @@
       <h2 class="sd-about-h">WHERE YOUR WORDS GO</h2>
       <p>When you speak, your browser turns your voice into text; Chrome may send it to Google to do that. Your words go to Claude, made by Anthropic, to be reflected back. Days you keep are written to the beach, an open system created by David Pinto, under your name. They are public: anyone who knows your name can read them. Only your word can change them, and forget me removes them.</p>
       <h2 class="sd-about-h">WHAT IT DRAWS ON</h2>
-      <p>The P6 Constellation and Presence in Action (Louie Gardiner) · Natural Inclusionality (Alan Rayner) · peer support and lived-experience recovery.</p>
+      <p>Emotional Fitness (5th Place) · The P6 Constellation and Presence in Action (Louie Gardiner) · Natural Inclusionality (Alan Rayner) · peer support and lived-experience recovery.</p>
+      <h2 class="sd-about-h">IF YOU WANT MORE</h2>
+      <p>This is a practice you keep by yourself. If you would like to work with a person, Matthew offers one-to-one therapeutic coaching through 5th Place, in Northampton and online.</p>
+      <section class="sd-road" id="road" aria-labelledby="road-head" hidden>
+        <h2 class="sd-about-h" id="road-head">WHERE IT'S GOING</h2>
+        <div class="sd-road-way"><svg class="sd-road-line" id="road-line" aria-hidden="true" focusable="false"></svg><ol class="sd-road-stops" id="road-stops"></ol></div>
+      </section>
       <h2 class="sd-about-h">WHAT IT IS NOT</h2>
       <p>It isn't therapy, a clinical service, or a way to diagnose anything. The colours are ways of looking, offered lightly, never labels.</p>
       <h2 class="sd-about-h">IF YOU NEED HELP NOW</h2>
       <p>Call your local emergency number. In the UK and Ireland, Samaritans on 116 123, any time. In the UK, NHS 111 for urgent mental health help.</p>
       <ul class="sd-about-links">
+        <li><a href="https://5th.place/matthew-bushell/" target="_blank" rel="noopener">Emotional Fitness and Matthew's coaching at 5th Place</a></li>
         <li><a href="https://potent6.co.uk" target="_blank" rel="noopener">Presence in Action and the P6 Constellation</a></li>
         <li><a href="https://occurrity.com/publications/natural-inclusionality-fromself-recovery-to-self-discovery/" target="_blank" rel="noopener">Natural Inclusionality</a></li>
         <li><a href="https://www.isbd.org" target="_blank" rel="noopener">the International Society for Bipolar Disorders</a></li>
@@ -1154,7 +1222,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.4 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.5 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1469,7 +1537,7 @@
   // sundial again (or Escape) and all comes back as it was.
   function openTide() {
     tideOpen = true;
-    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     hiddenBefore.forEach(function (h) { $(h[0]).hidden = true; });
     main.classList.add('tide-open');
     $('tide').hidden = false;
@@ -1505,6 +1573,8 @@
   function drawStrand() {
     var list = $('strandline');
     $('tide').appendChild($('tide-day'));
+    list.insertAdjacentElement('afterend', $('bring-strand-row'));
+    $('bring-strand-row').hidden = !(stored(NAME) && !held(LOOKING));
     list.textContent = '';
     strandDays().forEach(function (row) {
       var r = Mark.read(row.day.text), li = document.createElement('li'), b = document.createElement('button');
@@ -1645,7 +1715,7 @@
     store(HELD, '1');
     poolsOpen = true;
     poolNow = -1;
-    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
+    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
     ['pool-phrase', 'pool-question', 'listen', 'listen-hint', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
@@ -2363,6 +2433,7 @@
       showAll({ days: [], moments: [] });
       greet.hidden = true;
       kept.hidden = true;
+      $('bring-row').hidden = true;
       day.hidden = true;
       form.hidden = false;
       $('question').hidden = false;
@@ -2524,6 +2595,7 @@
     greet.hidden = true;
     $('invite').hidden = true;
     kept.hidden = true;
+    $('bring-row').hidden = true;
     messages.push({ role: 'user', content: before ? 'What they said:\n' + words : opening(words, now) });
     // Two questions a visit at most; past that, the sheet.
     if (asks >= 2) messages.push({ role: 'system', content: 'Two questions have been asked this visit. Return the sheet now, from what they have said.' });
@@ -2692,6 +2764,10 @@
           ? 'Kept. Your first day, ' + who.name + '. Come back tomorrow and your sundial will move. On any phone: this address, your name, your word.'
           : 'Kept.';
         kept.hidden = false;
+        // The first keep only: the arrival line in the community's room, and,
+        // once, a quiet way to bring someone in (4.7, 6.4).
+        if (first) arrive(who.name);
+        $('bring-row').hidden = !first;
         // The field comes back beneath, so they can speak again whenever
         // they like (4.2: each time a person speaks and keeps).
         box.value = '';
@@ -2702,12 +2778,143 @@
       });
     });
   }
+  // ---- Arrivals and bringing someone in (4.7, 6.4) -----------------------------
+  // Who brought them comes from ?from=<name> on the link that opened the
+  // page, kept in this browser until the first keep. On the first keep only,
+  // one line is appended to pool:sundial, the beach choosing the slot and
+  // stamping the time; who brought them only if their passport stands.
+  // Nothing else is written there.
+  var FROM = 'sundial.from', LINE = 'I keep my days here. Come and keep yours.';
+  (function cameFrom() {
+    var q = location.search.match(/[?&]from=([^&]*)/);
+    var from = q ? Days.handle(decodeURIComponent(q[1])) : '';
+    if (from && !stored(NAME)) store(FROM, from);
+  })();
+  function arrive(name) {
+    var from = stored(FROM);
+    store(FROM, '');
+    var brought = from && from !== name
+      ? Beach.look('passport:' + from).then(function (r) {
+        var own = r.json;
+        while (own && typeof own === 'object') own = own._;
+        return r.status === 200 && typeof own === 'string' && own !== Days.FORGOTTEN ? from : '';
+      })
+      : Promise.resolve('');
+    brought.then(function (by) {
+      var line = { _: name + ' came in', 1: name };
+      if (by) line['6'] = by;
+      return Beach.write('pool:sundial', { append: true, content: line });
+    }).catch(function () {});
+  }
+  // The phone's own share, or else the link copied, with the one line.
+  function bring(button) {
+    var name = stored(NAME);
+    if (!name) return;
+    var url = location.origin + location.pathname.replace(/[^\/]*$/, '') + 'sundial.html?from=' + encodeURIComponent(name);
+    if (navigator.share) {
+      navigator.share({ text: LINE, url: url }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(LINE + ' ' + url).then(function () {
+        var was = button.textContent;
+        button.textContent = 'copied';
+        setTimeout(function () { button.textContent = was; }, 2000);
+      }, function () {});
+    }
+  }
+  $('bring').addEventListener('click', function () { bring($('bring')); });
+  $('bring-strand').addEventListener('click', function () { bring($('bring-strand')); });
+
+  // ---- The road (6.1.1) ------------------------------------------------------------
+  // Read live from spine:front-door 3.6 each time the sheet opens; its stops
+  // in order along a small faint open spiral from the centre outward, each a
+  // dot with its name and line beside it: here, a full ink dot; being tried,
+  // an ink ring; next, a crimson ring; coming and later, faint rings and
+  // fainter words; the state in small italics after each line. If the beach
+  // can't be reached, the section is simply absent. A read; nothing sent.
+  var STATES = ['here', 'being tried', 'next', 'coming', 'later'];
+  function roadStops(node) {
+    var out = [];
+    for (var k = 1; k <= 9; k++) {
+      var stop = node && node[String(k)], text = stop;
+      while (text && typeof text === 'object') text = text._;
+      if (typeof text !== 'string' || !text.trim()) continue;
+      var state = stop && typeof stop === 'object' && typeof stop['1'] === 'string' ? stop['1'].trim().toLowerCase() : '';
+      var cut = text.indexOf('. ');
+      out.push({ name: cut > 0 ? text.slice(0, cut + 1) : text.trim(), line: cut > 0 ? text.slice(cut + 2).trim() : '',
+        state: STATES.indexOf(state) >= 0 ? state : 'later' });
+    }
+    return out;
+  }
+  var roadTurn = 0;
+  function readRoad() {
+    var turn = ++roadTurn;
+    $('road').hidden = true;
+    Beach.look('spine:front-door', '&spindle=3.6').then(function (r) {
+      if (turn !== roadTurn || r.status !== 200) return;
+      var stops = roadStops(r.json);
+      if (!stops.length) return;
+      var list = $('road-stops');
+      list.textContent = '';
+      stops.forEach(function (s) {
+        var li = document.createElement('li'), name = document.createElement('span'), state = document.createElement('em');
+        li.className = s.state.replace(' ', '-') + (s.state === 'coming' || s.state === 'later' ? ' far' : '');
+        name.className = 'sd-road-name';
+        name.textContent = s.name;
+        li.appendChild(name);
+        if (s.line) li.appendChild(document.createTextNode(' ' + s.line + ' '));
+        state.className = 'sd-road-state';
+        state.textContent = s.state;
+        li.appendChild(state);
+        list.appendChild(li);
+      });
+      $('road').hidden = false;
+      drawRoad(stops);
+    });
+  }
+  // The spiral, seen edge on: each stop half a turn further round and a
+  // step further out from the centre, its dot level with its name; one
+  // faint open line through them, widening as it goes.
+  function drawRoad(stops) {
+    var svg = $('road-line'), items = $('road-stops').children, h = $('road-stops').offsetHeight;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute('viewBox', '0 0 48 ' + h);
+    svg.style.height = h + 'px';
+    var pts = stops.map(function (s, k) {
+      var r = 2.8 * k;
+      return { x: 24 + (k % 2 ? r : -r), y: items[k].offsetTop + 11, state: s.state };
+    });
+    var d = 'M ' + pts[0].x.toFixed(1) + ',' + pts[0].y.toFixed(1);
+    for (var k = 1; k < pts.length; k++) {
+      var p0 = pts[k - 1], p1 = pts[k], my = (p0.y + p1.y) / 2;
+      d += ' C ' + p0.x.toFixed(1) + ',' + my.toFixed(1) + ' ' + p1.x.toFixed(1) + ',' + my.toFixed(1) + ' ' + p1.x.toFixed(1) + ',' + p1.y.toFixed(1);
+    }
+    function el(name, attrs) {
+      var n = document.createElementNS(SVG, name);
+      Object.keys(attrs).forEach(function (a) { n.setAttribute(a, attrs[a]); });
+      svg.appendChild(n);
+      return n;
+    }
+    el('path', { 'class': 'road-way', d: d, fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': 0.18, 'stroke-width': 1.2, 'stroke-linecap': 'round' });
+    pts.forEach(function (p) {
+      var look = p.state === 'here' ? { fill: 'var(--ink)' }
+        : p.state === 'being tried' ? { fill: 'var(--page)', stroke: 'var(--ink)', 'stroke-width': 1.5 }
+        : p.state === 'next' ? { fill: 'var(--page)', stroke: 'var(--crimson)', 'stroke-width': 1.8 }
+        : { fill: 'var(--page)', stroke: 'var(--ink)', 'stroke-opacity': 0.35, 'stroke-width': 1.2 };
+      look['class'] = 'road-stop ' + p.state.replace(' ', '-');
+      look.cx = p.x.toFixed(1);
+      look.cy = p.y.toFixed(1);
+      look.r = p.state === 'coming' || p.state === 'later' ? 4.5 : 5;
+      el('circle', look);
+    });
+  }
+
   // About (6.1.1): the sheet unfolds over the screen; tap outside it,
   // Escape, or close to fold it away. Nothing is written or sent.
   var about = $('about');
   $('about-open').addEventListener('click', function () {
     if (about.showModal) about.showModal();
     else about.setAttribute('open', '');
+    readRoad();
     $('about-close').focus({ preventScroll: true });
     about.scrollTop = 0;
   });
