@@ -150,7 +150,7 @@
   // (the page's CSS draws the sweep, and holds still for reduced motion).
   var SVGNS = 'http://www.w3.org/2000/svg';
   var CX = 232, CY = 140;          // the dial's centre in the heart's own units
-  var RING = 186, OUTER = 208, SHADOW = 160, STRETCH = 160;
+  var RING = 186, OUTER = 208, SHADOW = 160, STRETCH = 160, MOMENTS = 166;
   function node(name, attrs, parent) {
     var n = document.createElementNS(SVGNS, name);
     Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
@@ -221,6 +221,7 @@
         stroke: 'var(--ink)', 'stroke-opacity': '0.55', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, marks);
     }
     var lit = node('g', { 'class': 'lit' }, art);
+    var momentsAt = node('g', { 'class': 'sd-moments' }, art);
     var pooled = node('g', { 'class': 'sd-tidepools' }, svg);
 
     function time(date) {
@@ -301,7 +302,18 @@
       Array.prototype.forEach.call(pooled.querySelectorAll('.sd-tidepool'), function (g, k) { g.classList.toggle('picked', k === i); });
     }
     days([]);
-    return { time: time, answering: answering, days: days, pools: pools, gather: gather, picked: picked };
+    // Today's moments (6.9): each a small mark on its own ring at the hour
+    // and minute it was spoken, read as a 24-hour day (noon up, midnight
+    // down), in its pool's hue. `list` is [{when: Date, text}].
+    function moments(list) {
+      while (momentsAt.firstChild) momentsAt.removeChild(momentsAt.firstChild);
+      (list || []).forEach(function (m) {
+        var pool = POOLS[poolOf(m.text) - 1], h = m.when.getHours() + m.when.getMinutes() / 60;
+        var c = at(-90 + (h - 12) * 15, MOMENTS);
+        node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 4.5, fill: pool ? pool.hue : 'var(--muted)', 'class': 'moment' }, momentsAt);
+      });
+    }
+    return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
