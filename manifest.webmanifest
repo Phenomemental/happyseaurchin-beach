@@ -1,0 +1,13 @@
+{
+  "name": "Sundial",
+  "short_name": "Sundial",
+  "start_url": "sundial.html",
+  "display": "standalone",
+  "background_color": "#eee7d5",
+  "theme_color": "#eee7d5",
+  "icons": [
+    { "src": "icons/sundial-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/sundial-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/sundial-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

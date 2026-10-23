@@ -7,6 +7,10 @@
 <meta name="description" content="Say where you are and what today has been like, and see your day back in your own words.">
 <meta name="theme-color" content="#eee7d5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/sundial-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sundial">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -714,6 +718,27 @@
     color: var(--muted);
     margin: 0.35rem 0 0;
   }
+  /* On the home screen (6.1.4): one quiet line on the About sheet. */
+  .sd-install {
+    margin: -0.2rem 0 0.8rem;
+  }
+  .sd-install-open {
+    font: inherit;
+    font-style: italic;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0.3rem 0;
+    min-height: 2.75rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.25em;
+  }
+  .sd-install-how {
+    font-style: italic;
+    margin: 0 0 0.8rem;
+  }
   .sd-kept {
     font-style: italic;
     font-size: 1.25rem;
@@ -1351,6 +1376,7 @@
   </svg>
   <p class="sd-name">SUNDIAL</p>
   <p class="sd-days" id="days-count" hidden></p>
+  <p class="sd-invite sd-offline" id="offline" role="status" hidden>The beach can’t be reached just now</p>
   <p class="sd-invite" id="invite" hidden></p>
 
   <p class="sd-reflect" id="reflect" hidden></p>
@@ -1486,6 +1512,8 @@
       <p>It isn't therapy, a clinical service, or a way to diagnose anything. The colours are ways of looking, offered lightly, never labels.</p>
       <h2 class="sd-about-h">IF YOU NEED HELP NOW</h2>
       <p>Call your local emergency number. In the UK and Ireland, Samaritans on 116 123, any time. In the UK, NHS 111 for urgent mental health help.</p>
+      <p class="sd-install" id="install-row" hidden><button type="button" class="sd-install-open" id="install-open">Keep Sundial on your phone</button></p>
+      <p class="sd-install-how" id="install-how" hidden>Tap Share,<br>then Add to Home Screen.</p>
       <ul class="sd-about-links">
         <li><a href="https://5th.place/matthew-bushell/" target="_blank" rel="noopener">Emotional Fitness and Matthew's coaching at 5th Place</a></li>
         <li><a href="https://potent6.co.uk" target="_blank" rel="noopener">Presence in Action and the P6 Constellation</a></li>
@@ -1589,7 +1617,7 @@
   </dialog>
 </main>
 
-<script src="beach.js?v=2026-10-23a"></script>
+<script src="beach.js?v=2026-10-23b"></script>
 <script src="mark.js?v=2026-10-23g"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23e"></script>
@@ -1619,13 +1647,14 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.15 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.16 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
   // a browser that keeps this name's days is shown the steward's line.
   var STEWARD = 'Phenomemental';
   var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
+  var LAST = 'sundial.last';   // the days last read, kept here so the app opens with them offline (6.1.4)
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
@@ -1818,6 +1847,7 @@
     $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
     $('days-count').hidden = !n;
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
+    if (stored(NAME)) store(LAST, JSON.stringify({ name: stored(NAME), days: all.days || [], moments: all.moments || [] }));
     showInvite();
   }
   // The last day before today with anything kept, as its day address.
@@ -1884,23 +1914,34 @@
   }
   // On arrival with a name: their days and moments, read with no word.
   // Should the beach not answer, what this visit last read stands in.
-  (function comeBack() {
+  // Offline, or the beach out of reach: what was last read stands in, from
+  // this visit or, opened from the home screen, from the last visit, with
+  // one quiet line (6.1.4); the line goes the moment a read comes back.
+  function reached(ok) { $('offline').hidden = ok; }
+  function comeBack() {
     var name = stored(NAME) || held(LOOKING);
-    if (!name) return;
+    if (!name) { reached(navigator.onLine !== false); return; }
     Days.readAll(name).then(function (all) {
+      reached(true);
       showAll(all);
       showGreeting();
       returnToWhere();
     }, function () {
-      var seen;
+      reached(false);
+      var seen = null, last = null;
       try { seen = JSON.parse(held(SEEN)); } catch (e) { seen = null; }
+      try { last = JSON.parse(stored(LAST)); } catch (e) { last = null; }
+      if (!seen && last && last.name === name) seen = last;
       if (Array.isArray(seen)) seen = { days: seen, moments: [] };
       if (seen && Array.isArray(seen.days)) {
         showAll(seen);
         showGreeting();
       }
     });
-  })();
+  }
+  comeBack();
+  window.addEventListener('offline', function () { reached(false); });
+  window.addEventListener('online', function () { if (!busy && !keeping && !sheetNow) comeBack(); else reached(true); });
 
   // ---- The way back (6.8.4 (2)) ----------------------------------------------------
   // Each layer opened (the strandline, the pools, a shell lifted, About) is a
@@ -2788,7 +2829,7 @@
     $('wword-label').textContent = DAY_ASK;
   });
 
-  Beach.addMic($('whisper'), { finals: true });
+  Beach.addMic($('whisper'), { dictate: true });
   $('whisper-open').addEventListener('click', function () {
     $('whisper-open').hidden = true;
     $('whisper-form').hidden = false;
@@ -3152,6 +3193,7 @@
       store(HEARD, '');
       hold(WORD, '');
       hold(SEEN, '');
+      store(LAST, '');
       hold(LOOKING, '');
       setDialTap();
       showAll({ days: [], moments: [] });
@@ -3167,7 +3209,7 @@
   });
 
   // ---- Speaking -------------------------------------------------------------------
-  Beach.addMic(box, { finals: true });
+  Beach.addMic(box, { dictate: true });
   // The first tap on the microphone shows the quiet corner's dot. With no
   // key it no longer stops there (6.4.1 (1)): they speak, and what they
   // said comes back in their own words; the corner stays for anyone who
@@ -3923,7 +3965,7 @@
     });
     $('turn-line').focus();
   });
-  Beach.addMic($('turn-line'), { finals: true });
+  Beach.addMic($('turn-line'), { dictate: true });
   $('turn-line').insertAdjacentElement('afterend', $('turn-public'));
   $('turn-line').addEventListener('input', function () { $('turn-note').hidden = true; });
   $('turn-stay-box').addEventListener('submit', function (ev) {
@@ -3960,6 +4002,47 @@
     stopHold();
     giveTurn(dx > 0 ? 1 : -1);
   });
+
+  // ---- On the home screen (6.1.4) ---------------------------------------------------
+  // A small service worker keeps the page and its files, for an instant and
+  // an offline open; it answers for sundial.html alone (its scope), so the
+  // pages beside it are untouched. On the About sheet, under the help line,
+  // one quiet line while the page is not already installed: on Android it
+  // opens the browser's own install prompt, on iPhone it shows the two lines.
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sundial-sw.js', { scope: 'sundial.html' }).catch(function () {});
+    });
+  }
+  var installAsk = null;
+  var IPHONE = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function installed() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  }
+  function showInstall() {
+    $('install-row').hidden = installed() || !(installAsk || IPHONE);
+    if ($('install-row').hidden) $('install-how').hidden = true;
+  }
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    ev.preventDefault();
+    installAsk = ev;
+    showInstall();
+  });
+  window.addEventListener('appinstalled', function () {
+    installAsk = null;
+    showInstall();
+  });
+  $('install-open').addEventListener('click', function () {
+    if (installAsk) {
+      var ask = installAsk;
+      installAsk = null;
+      ask.prompt();
+      Promise.resolve(ask.userChoice).then(showInstall, showInstall);
+      return;
+    }
+    $('install-how').hidden = false;
+  });
+  showInstall();
 
   // ---- Arrivals and bringing someone in (4.7, 6.4) -----------------------------
   // Who brought them comes from ?from=<name> on the link that opened the
@@ -4213,7 +4296,7 @@
     buttons.appendChild(not);
     [whoName.wrap, whoWord.wrap, field, passport.wrap, note, buttons].forEach(function (x) { form.appendChild(x); });
     [row, list, form].forEach(function (x) { box.appendChild(x); });
-    Beach.addMic(field, { finals: true });
+    Beach.addMic(field, { dictate: true });
     var place = { address: address, list: list, count: count, form: form, field: field, note: note, passport: passport.wrap, open: false, shown: 9, busy: false };
     wordPlaces[address] = place;
     // A browser that holds no name is asked for one here, with its word
