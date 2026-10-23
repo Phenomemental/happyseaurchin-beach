@@ -1361,13 +1361,13 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-23d"></script>
+<script src="mark.js?v=2026-10-23e"></script>
 <script src="shell.js?v=2026-10-23a"></script>
-<script src="days.js?v=2026-10-23c"></script>
+<script src="days.js?v=2026-10-23d"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
 <script src="whispers.js?v=2026-10-23d"></script>
-<script src="words.js?v=2026-10-23a"></script>
+<script src="words.js?v=2026-10-23b"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-23b"></script>
 <script>
@@ -1818,7 +1818,7 @@
     });
     $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
     $('tide-tomorrow').hidden = !r.tomorrow;
-    var touched = Mark.placesWords(Mark.placesOf(d));
+    var touched = Mark.placesWords(Mark.placesOf(d)) || (r.own ? Mark.OWN : '');
     $('tide-pool').textContent = touched;
     $('tide-pool').hidden = !touched;
     $('tide-day').hidden = false;
@@ -2032,36 +2032,51 @@
     });
   }
 
-  // In their own words (6.4.1 (1)): the days this browser wrote with no key
-  // are remembered here, by name and address, with the line as written, so
-  // the page knows its own lines from theirs. Once the third law has placed
-  // such a day, its places line is added beneath it on the beach, with the
-  // word, only while the line still stands exactly as the page wrote it;
-  // with no word held this visit it waits for the next keep.
-  var OWN = 'sundial.own';
+  // Places belong on the beach (6.8.2.1). A day Sundial wrote with no
+  // places line (kept in their own words, ending 'In your own words.'; or,
+  // from before that line began, remembered in this browser by name,
+  // address and the line as written) has its places line written onto the
+  // end of its text once its places are known here, in place of 'In your
+  // own words.', with the word, the next time the word is held: read first
+  // to be sure the line still stands as Sundial wrote it, read back to
+  // confirm, and then this browser's copy is dropped. Quietly: a few days a
+  // visit, never more than the keeps made in it. Lines Sundial did not
+  // write are never changed; their places stay in each browser.
+  var OWN = 'sundial.own', keepsHere = 0, placedHere = 0;
   function ownKey(name, address) { return name + '@' + address; }
   function wroteHere(name) {
     return function (address, text) { return keptHere(OWN)[ownKey(name, address)] === textKey(text); };
   }
+  function lineOfNode(n) {
+    while (n && typeof n === 'object') n = n._;
+    return typeof n === 'string' ? n : '';
+  }
   function placesLines(word) {
-    var name = whoseName(), placed = keptHere(PLACED);
-    if (!name || !word) return Promise.resolve();
-    return days.reduce(function (p, d) {
-      var ns = placed[textKey(d.text)];
-      if (!wroteHere(name)(d.address, d.text) || !Array.isArray(ns) || !ns.length || Mark.read(d.text).places.length) return p;
-      var named = Mark.placesWords(ns), text = d.text + '\n' + named.charAt(0).toUpperCase() + named.slice(1) + '.';
+    var name = whoseName(), placed = keptHere(PLACED), room = Math.min(3, keepsHere) - placedHere;
+    if (!name || !word || room <= 0) return Promise.resolve();
+    var todo = days.filter(function (d) {
+      var r = Mark.read(d.text), ns = placed[textKey(d.text)];
+      return !r.places.length && (r.own || wroteHere(name)(d.address, d.text)) && Array.isArray(ns) && ns.length;
+    }).slice(0, room);
+    return todo.reduce(function (p, d) {
+      var rows = d.text.replace(/\s+$/, '').split('\n'), named = Mark.placesWords(placed[textKey(d.text)]);
+      if (Mark.read(d.text).own) rows.pop();
+      var text = rows.join('\n') + '\n' + named.charAt(0).toUpperCase() + named.slice(1) + '.';
       return p.then(function () {
         return Beach.look('now:' + name, '&spindle=' + d.address);
       }).then(function (r) {
-        var there = r.json;
-        while (there && typeof there === 'object') there = there._;
-        if (r.status !== 200 || there !== d.text) return null;
+        if (r.status !== 200 || lineOfNode(r.json) !== d.text) return null;
         return Beach.write('now:' + name, { spindle: d.address, content: text, secret: word });
       }).then(function (w) {
-        if (!w || w.status !== 200) return;
-        var mine = keptHere(OWN);
+        return w && w.status === 200 ? Beach.look('now:' + name, '&spindle=' + d.address) : null;
+      }).then(function (r) {
+        if (!r || r.status !== 200 || lineOfNode(r.json) !== text) return;
+        placedHere++;
+        var mine = keptHere(OWN), kept = keptHere(PLACED);
         delete mine[ownKey(name, d.address)];
+        delete kept[textKey(d.text)];
         store(OWN, JSON.stringify(mine));
+        store(PLACED, JSON.stringify(kept));
         d.text = text;
       });
     }, Promise.resolve());
@@ -2823,7 +2838,7 @@
     var first = (lines[0].match(/^.*?[.!?](?=\s|$)/) || [lines[0]])[0].replace(/[.!?]+$/, '').trim();
     var ws = first.split(/\s+/);
     var title = ws.length > 8 ? ws.slice(0, 8).join(' ').replace(/[,;:\u2014\u2013-]+$/, '') + '\u2026' : first;
-    return { title: title, lines: lines, tomorrow: '', places: [] };
+    return { title: title, lines: lines, tomorrow: '', places: [], own: true };
   }
   function ownWords(words) {
     greet.hidden = true;
@@ -2988,8 +3003,8 @@
   }
   function keepWith(typed, word) {
     if (!sheetNow) return;
-    var moment = Mark.write(sheetNow), who = null, first = false, own = ownNow;
-    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places });
+    var moment = Mark.write(sheetNow), who = null, first = false;
+    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places, own: sheetNow.own });
     setKeeping(true);
     Days.resolve(typed).then(function (w) {
       who = w;
@@ -3021,13 +3036,7 @@
         return { days: days.filter(function (d) { return d.address !== t; }).concat([{ address: t, text: dayText }]),
           moments: moments.concat([{ address: Days.now(), text: moment }]) };
       }).then(function (all) {
-        // A day line the page wrote in their own words is remembered as its
-        // own; then any places lines waiting on the word are added.
-        var t = todayAddress(), mine = keptHere(OWN);
-        if (own && (all.days || []).some(function (d) { return d.address === t && d.text === dayText; })) {
-          mine[ownKey(who.name, t)] = textKey(dayText);
-          store(OWN, JSON.stringify(mine));
-        }
+        keepsHere++;
         setKeeping(false);
         closeKeep();
         sheetNow = null;

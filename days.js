@@ -216,12 +216,14 @@
   }
 
   // A line Sundial wrote (plan 6.4.1 (3); function:front-door 4.7): one
-  // whose last line names its places, as Mark.write ends it, or one this
-  // browser wrote in the person's own words that still stands exactly as it
-  // was written (kept.wrote(address, text), from the page). Any other line
-  // is theirs, written in their own voice, and is never rewritten.
+  // whose last line names its places, as Mark.write ends it, or 'In your
+  // own words.' (6.8.2.1.1), or one this browser wrote in the person's own
+  // words before that line began, still standing exactly as it was written
+  // (kept.wrote(address, text), from the page). Any other line is theirs,
+  // written in their own voice, and is never rewritten.
   function sundials(text, at, wrote) {
-    if (root.Mark && root.Mark.read(text).places.length) return true;
+    var r = root.Mark ? root.Mark.read(text) : null;
+    if (r && (r.places.length || r.own)) return true;
     return typeof wrote === 'function' && !!wrote(at, text);
   }
 
