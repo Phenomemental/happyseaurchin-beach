@@ -908,6 +908,7 @@
       </div>
       <label for="kword">your secret word</label>
       <input id="kword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <p class="sd-soft" id="kword-note" aria-live="polite" hidden>That word doesn’t open your day book.</p>
       <ul class="sd-truths" id="truths">
         <li>Anyone can read your days, and only your word can add to them.</li>
         <li>Nobody else holds the word, not even us.</li>
@@ -941,7 +942,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.3 · 23 October 2026';
+  var VERSION = 'Sundial M4.3.1 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2182,6 +2183,7 @@
     $('name-row').hidden = !!name;
     $('truths').hidden = !!name;
     $('kname-note').hidden = true;
+    $('kword-note').hidden = true;
     kname.value = name || looking || '';
     kword.value = '';
     if (keepCard.showModal) keepCard.showModal();
@@ -2215,6 +2217,7 @@
     if (name && word) keepWith(name, word);
     else openKeep();
   });
+  kword.addEventListener('input', function () { $('kword-note').hidden = true; });
   $('keep-form').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var typed = stored(NAME) || kname.value, word = kword.value;
@@ -2243,6 +2246,9 @@
         hold(WORD, '');
         if (!keepCard.open) openKeep();
         if (result === 'taken') $('kname-note').hidden = false;
+        // A word the beach refused is said so, plainly, once (plan 14, agreed
+        // by Matthew 23 October 2026); the beach out of reach says nothing.
+        $('kword-note').hidden = result !== 'wrong';
         kword.value = '';
         kword.focus();
         return;
