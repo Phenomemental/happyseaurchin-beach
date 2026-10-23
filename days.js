@@ -191,14 +191,27 @@
     });
   }
 
+  // A line Sundial wrote (plan 6.4.1 (3); function:front-door 4.7): one
+  // whose last line names its places, as Mark.write ends it, or one this
+  // browser wrote in the person's own words that still stands exactly as it
+  // was written (kept.wrote(address, text), from the page). Any other line
+  // is theirs, written in their own voice, and is never rewritten.
+  function sundials(text, at, wrote) {
+    if (root.Mark && root.Mark.read(text).places.length) return true;
+    return typeof wrote === 'function' && !!wrote(at, text);
+  }
+
   // Keep what was said (plan 4.2): on a free name, claim it first (the
   // passport, then the mirror on the clock, both latched with the word);
-  // then the moment at this beat, the day's own line at today (folded by
-  // Claude, whoever wrote it before), and tomorrow's line when one was
-  // voiced. Each is read back before it counts. `kept` is {moment, day,
-  // ahead}, each a text or '' (a plain text, as before, is the day alone).
-  // Resolves 'kept', 'wrong' (the word doesn't open it), 'taken', or
-  // 'unreachable'.
+  // a name whose now already stands on the clock is someone's own and
+  // nothing is made for it. Then the moment at this beat; the day's own
+  // line at today, and tomorrow's line when one was voiced, each only where
+  // that place is empty or already holds a line Sundial wrote (above);
+  // otherwise their line is left exactly as it stands and the moment kept
+  // alone (6.4.1 (3)). Each write is read back before it counts. `kept` is
+  // {moment, day, ahead, wrote}, the first three a text or '' (a plain
+  // text, as before, is the day alone). Resolves 'kept', 'wrong' (the word
+  // doesn't open it), 'taken', or 'unreachable'.
   function keep(who, word, kept) {
     var name = who.name;
     if (typeof kept === 'string') kept = { moment: '', day: kept, ahead: '' };
@@ -223,6 +236,15 @@
         if (!(r.status === 200 && own(r.json) === text)) throw 'unreachable';
       });
     }
+    // A day's or tomorrow's line, only where Sundial may write it.
+    function fold(at, text) {
+      return Beach.look('now:' + name, '&spindle=' + at).then(function (r) {
+        if (!r.status || r.status >= 500) throw 'unreachable';
+        var there = r.status === 200 ? own(r.json) : '';
+        if (there && there !== text && !sundials(there, at, kept.wrote)) return null;
+        return put(at, text);
+      });
+    }
     var day;
     return claim.then(function () {
       day = today();
@@ -231,9 +253,9 @@
       if (!day) throw 'unreachable';
       return kept.moment ? put(now(), kept.moment) : null;
     }).then(function () {
-      return kept.day ? put(day, kept.day) : null;
+      return kept.day ? fold(day, kept.day) : null;
     }).then(function () {
-      return kept.ahead ? put(tomorrowOf(day), kept.ahead) : null;
+      return kept.ahead ? fold(tomorrowOf(day), kept.ahead) : null;
     }).then(function () {
       return 'kept';
     }).catch(function (e) {
@@ -282,6 +304,7 @@
     resolve: resolve,
     read: read,
     keep: keep,
+    sundials: sundials,
     forget: forget,
     passportLine: passportLine,
     mirrorLine: mirrorLine
