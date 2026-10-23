@@ -289,6 +289,11 @@
     // The heart's shadow is its own ink, softened.
     var blur = node('filter', { id: id + '-blur', x: '-40%', y: '-40%', width: '180%', height: '180%' }, defs);
     node('feGaussianBlur', { stdDeviation: 4 }, blur);
+    // Wet ink (8.8 (3)): soft, uneven edges, as colour spreads into paper.
+    var wet = node('filter', { id: id + '-ink', x: '-60%', y: '-60%', width: '220%', height: '220%' }, defs);
+    node('feTurbulence', { type: 'fractalNoise', baseFrequency: 0.09, numOctaves: 2, seed: 7, result: 'grain' }, wet);
+    node('feDisplacementMap', { 'in': 'SourceGraphic', in2: 'grain', scale: 7, xChannelSelector: 'R', yChannelSelector: 'G', result: 'spread' }, wet);
+    node('feGaussianBlur', { 'in': 'spread', stdDeviation: 1.6 }, wet);
     var glowFill = node('radialGradient', { id: id + '-glow' }, defs);
     node('stop', { offset: '0', 'stop-color': 'var(--wash)', 'stop-opacity': '0.3' }, glowFill);
     node('stop', { offset: '1', 'stop-color': 'var(--wash)', 'stop-opacity': '0' }, glowFill);
@@ -339,6 +344,7 @@
     // The spiral of days: the line, then a dot for each day kept.
     var spiral = node('path', { 'class': 'spiral', d: '', fill: 'none', stroke: 'var(--ink)', 'stroke-opacity': '0.15',
       'stroke-width': 1.5, 'stroke-linecap': 'round' }, art);
+    var blooms = node('g', { 'class': 'sd-blooms' }, art);
     var kept_ = node('g', { 'class': 'days-kept' }, art);
     var momentsAt = node('g', { 'class': 'sd-moments' }, art);
     var pooled = node('g', { 'class': 'sd-tidepools' }, svg);
@@ -460,7 +466,65 @@
         node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 4.5, fill: 'var(--ink)', 'fill-opacity': '0.6', 'class': 'moment' }, momentsAt);
       });
     }
-    return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked };
+    // ---- The keep, an event (8.8) ----------------------------------------------
+    // Where day k lies on the screen, for the shell to settle on.
+    function where(k) {
+      var m = svg.getScreenCTM && svg.getScreenCTM();
+      if (!m || !svg.createSVGPoint) return null;
+      var c = dayAt(k), pt = svg.createSVGPoint();
+      pt.x = c.x;
+      pt.y = c.y;
+      var s = pt.matrixTransform(m);
+      return { x: s.x, y: s.y };
+    }
+    function play(el, frames, opts) {
+      if (!el.animate) return Promise.resolve();
+      el.style.transformBox = 'fill-box';
+      el.style.transformOrigin = 'center';
+      return el.animate(frames, opts).finished.catch(function () {});
+    }
+    // Where day k lands, the day's colours bloom into the paper like wet ink
+    // (a day across several places, several colours, side by side), then
+    // settle back to the ink-only mark. A day of no place blooms in ink.
+    // `still`: a fade in place, nothing spreading. Gone once settled.
+    function bloom(k, places, still) {
+      var c = dayAt(k), hues = inOrder(places || []).map(function (q) { return POOLS[q - 1].hue; });
+      if (!hues.length) hues = ['var(--ink)'];
+      var g = node('g', { 'class': 'sd-bloom', transform: 'translate(' + c.x.toFixed(1) + ' ' + c.y.toFixed(1) + ')' }, blooms);
+      var off = hues.length > 1 ? 6 : 0;
+      return Promise.all(hues.map(function (hue, j) {
+        var a = j / hues.length * 2 * Math.PI - Math.PI / 2;
+        var blot = node('circle', { cx: (off * Math.cos(a)).toFixed(1), cy: (off * Math.sin(a)).toFixed(1), r: 20, fill: hue,
+          filter: 'url(#' + id + '-ink)', opacity: 0 }, g);
+        return play(blot, still
+          ? [{ opacity: 0 }, { opacity: 0.6, offset: 0.3 }, { opacity: 0 }]
+          : [{ opacity: 0, transform: 'scale(0.1)' }, { opacity: 0.85, transform: 'scale(0.75)', offset: 0.3 },
+            { opacity: 0.55, transform: 'scale(1.1)', offset: 0.6 }, { opacity: 0, transform: 'scale(1.25)' }],
+          { duration: still ? 1600 : 2400, delay: j * 160, easing: 'ease-out', fill: 'forwards' });
+      })).then(function () { if (g.parentNode) g.parentNode.removeChild(g); });
+    }
+    // The ninth keep: the ring of nine lights all the way round, one day
+    // after another, and folds, the ninth closing to its small open circle.
+    // Returns how long it takes, in ms.
+    var STEP = 150;
+    function ring(n, still) {
+      var g = node('g', { 'class': 'sd-ring' }, blooms), first = Math.max(1, n - 8), k, c, j;
+      for (k = first, j = 0; k <= n; k++, j++) {
+        c = dayAt(k);
+        play(node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 12, fill: 'var(--wash)', opacity: 0 }, g),
+          [{ opacity: 0 }, { opacity: 0.8, offset: 0.35 }, { opacity: 0 }], { duration: 800, delay: j * STEP, fill: 'forwards' });
+      }
+      c = dayAt(n);
+      var fold = node('circle', { cx: c.x.toFixed(1), cy: c.y.toFixed(1), r: 6, fill: 'var(--ink)', opacity: 0 }, g);
+      var at_ = (n - first + 1) * STEP + 300;
+      play(fold, still
+        ? [{ opacity: 1 }, { opacity: 1, offset: 0.4 }, { opacity: 0 }]
+        : [{ opacity: 1, transform: 'scale(1.3)' }, { opacity: 1, transform: 'scale(1)', offset: 0.4 }, { opacity: 0, transform: 'scale(0.8)' }],
+        { duration: 1000, delay: at_, fill: 'forwards' }).then(function () { if (g.parentNode) g.parentNode.removeChild(g); });
+      return at_ + 1000;
+    }
+    return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
+      where: where, bloom: bloom, ring: ring };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
