@@ -602,16 +602,6 @@
     color: var(--muted);
     margin: 0.9rem 0 0;
   }
-  .sd-pool::before {
-    content: "";
-    display: inline-block;
-    width: 0.55rem;
-    height: 0.55rem;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-    background: var(--hue, transparent);
-    vertical-align: 0.1rem;
-  }
   .sd-yours {
     font-style: italic;
     margin: 1.2rem 0 0.8rem;
@@ -963,7 +953,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-22a"></script>
-<script src="mark.js?v=2026-10-23b"></script>
+<script src="mark.js?v=2026-10-23c"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -982,7 +972,7 @@
    drawn as absence, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.2 · 23 October 2026';
+  var VERSION = 'Sundial M4.4.3 · 23 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -992,10 +982,11 @@
   var API = 'https://api.anthropic.com/v1/messages';
 
   // The law: Claude's system prompt, word for word from the plan's section 5.
-  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day.\n\nYou receive: the date, the time and the part of the day; what they said (a transcript); their last words before today, with its tomorrow line; today's line and today's earlier moments, if any; tomorrow's line, if any. You return ONLY JSON: `{\"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"pool\": 1-6}, \"day\": {\"title\": \"...\", \"lines\": [\"...\"], \"pool\": 1-6}, \"ahead\": \"<tomorrow's line, or empty>\"}`.\n\nFlow. If what they said is thin (under ~40 words) and you have asked fewer than two questions this visit, return `ask` only: one question, going deeper not wider (what they noticed; what is sitting with them underneath). Otherwise return the sheet, the day and ahead. Sheet, this moment: title short, from their own words; lines two to four, second person, drawing together what they said, nothing they did not say; if an earlier moment from this same beat is given, fold it in. Tomorrow: their intention if they voiced one, else empty. Pool: where the moment mostly stood — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes). Day, the whole day so far: fold today's line, today's earlier moments and this moment into one, keeping what was there and nothing they did not say; title short; lines two to five; pool where the day mostly stood. Ahead: tomorrow's line with any intention they voiced folded in, keeping what was there; empty if neither.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
+  var LAW = "You are helping one person see their own day. Speak to them, not about any system. They are the authority on their day.\n\nYou receive: the date, the time and the part of the day; what they said (a transcript); their last words before today, with its tomorrow line; today's line and today's earlier moments, if any; tomorrow's line, if any. You return ONLY JSON: `{\"ask\": \"<one question, or empty>\", \"sheet\": {\"title\": \"...\", \"lines\": [\"...\", \"...\"], \"tomorrow\": \"...\", \"places\": [1-6, ...]}, \"day\": {\"title\": \"...\", \"lines\": [\"...\"], \"places\": [1-6, ...]}, \"ahead\": \"<tomorrow's line, or empty>\"}`.\n\nFlow. If what they said is thin (under ~40 words) and you have asked fewer than two questions this visit, return `ask` only: one short question that follows them, staying with what they are already telling and inviting more of it, in their own words (as in \"Is there more to that?\"). Never take them deeper inward, never toward something they have not raised, and never choose for them where to go next. Otherwise return the sheet, the day and ahead. Sheet, this moment: title short, from their own words; lines two to four, second person, drawing together what they said, nothing they did not say; if an earlier moment from this same beat is given, fold it in. Tomorrow: their intention if they voiced one, else empty. Places: every place their own words touched, one or more, never ranked — 1 what happened (Facts), 2 what they felt (Feelings), 3 what they made of it (Fictions), 4 what matters (Purpose), 5 a choice (Decision), 6 what's ahead (Outcomes); a place counts only where their words are plainly in it. Day, the whole day so far: fold today's line, today's earlier moments and this moment into one, keeping what was there and nothing they did not say; title short; lines two to five; places: every place the day's text touches. Ahead: tomorrow's line with any intention they voiced folded in, keeping what was there; empty if neither.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If they seem to be struggling, `ask` gently whether they'd like to just sit with it a moment; if they may be in danger, make `ask` say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland) and that you'll stay. Never return anything but the JSON.";
 
   // The reply's shape, held to by the API (structured output).
   var POOL_ENUM = { type: 'integer', enum: [1, 2, 3, 4, 5, 6] };
+  var PLACES = { type: 'array', items: POOL_ENUM };
   var SCHEMA = {
     type: 'object',
     additionalProperties: false,
@@ -1008,12 +999,12 @@
           {
             type: 'object',
             additionalProperties: false,
-            required: ['title', 'lines', 'tomorrow', 'pool'],
+            required: ['title', 'lines', 'tomorrow', 'places'],
             properties: {
               title: { type: 'string' },
               lines: { type: 'array', items: { type: 'string' } },
               tomorrow: { type: 'string' },
-              pool: POOL_ENUM
+              places: PLACES
             }
           }
         ]
@@ -1024,11 +1015,11 @@
           {
             type: 'object',
             additionalProperties: false,
-            required: ['title', 'lines', 'pool'],
+            required: ['title', 'lines', 'places'],
             properties: {
               title: { type: 'string' },
               lines: { type: 'array', items: { type: 'string' } },
-              pool: POOL_ENUM
+              places: PLACES
             }
           }
         ]
@@ -1040,7 +1031,7 @@
   var GENTLE = 'Would you like to just sit with it a moment? If you need someone now: your local emergency number, or Samaritans on 116 123 in the UK and Ireland.';
 
   // Listening (plan 6.8.1), Claude's second law, verbatim.
-  var LISTEN_LAW = "You are listening, with one person, to days they wrote before. They are the authority on their days.\n\nYou receive: their days that came to rest in one place, each with its date, and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question>\"}`.\n\nChoose the way of listening that finds most in their own words. Heard: one to four short passages copied exactly from their days, where that listening is most alive. Hears: one plain sentence, to them, of what this listening notices in those words — about the words, never about who they are. Question: one, turning them back to the day with fresh eyes. If little is heard, say so plainly and leave heard empty.\n\nNever advise, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. If what they wrote suggests they may be in danger, make the question say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
+  var LISTEN_LAW = "You are listening, with one person, to days they wrote before. They are the authority on their days. You host: you hold, notice and return, adding nothing and taking nothing away.\n\nYou receive: their days that came to rest in one place, each with its date, and three ways of listening, A, B and C, each with what it listens for. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one sentence>\", \"question\": \"<one question>\"}`.\n\nChoose the way of listening that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days, where that listening is most alive. Hears: one plain sentence that notices only what is on the surface of those passages, in their own words: what they wrote of, and when (as in \"That Friday you wrote of the beach, a mountain, and others wanting the top.\"). Never say how their words are built, what they set beside what, what they mean or what they show; add no word they did not use. Question: one short question that returns them to now, open to wherever they go (as in \"Where are you with this today?\"); never back into the older day's story, never naming anything they did not name. If little is heard, say so plainly and leave heard empty.\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves. Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote suggests they may be in danger, make the question say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
   var LISTEN_SCHEMA = {
     type: 'object',
     additionalProperties: false,
@@ -1053,7 +1044,7 @@
     }
   };
   // Placing (plan 6.8.2), Claude's third law, verbatim.
-  var PLACE_LAW = "You receive days a person wrote, each numbered. For each, say where the day mostly stood: 1 what happened, 2 what they felt, 3 what they made of it, 4 what matters, 5 a choice, 6 what's ahead. You return ONLY JSON: `{\"places\": [{\"day\": <number>, \"pool\": 1-6}, ...]}`, one for every day. Never return anything but the JSON.";
+  var PLACE_LAW = "You receive days a person wrote, each numbered. For each, name every place the day's own words touch, one or more, never ranked: 1 what happened, 2 what they felt, 3 what they made of it, 4 what matters, 5 a choice, 6 what's ahead. A place counts only where their words are plainly in it. You return ONLY JSON: `{\"places\": [{\"day\": <number>, \"places\": [1-6, ...]}, ...]}`, one for every day. Never return anything but the JSON.";
   var PLACE_SCHEMA = {
     type: 'object',
     additionalProperties: false,
@@ -1064,8 +1055,8 @@
         items: {
           type: 'object',
           additionalProperties: false,
-          required: ['day', 'pool'],
-          properties: { day: { type: 'integer' }, pool: { type: 'integer', enum: [1, 2, 3, 4, 5, 6] } }
+          required: ['day', 'places'],
+          properties: { day: { type: 'integer' }, places: { type: 'array', items: { type: 'integer', enum: [1, 2, 3, 4, 5, 6] } } }
         }
       }
     }
@@ -1337,10 +1328,9 @@
     });
     $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
     $('tide-tomorrow').hidden = !r.tomorrow;
-    var pool = Mark.POOLS[Mark.poolOf(d) - 1];
-    $('tide-pool').textContent = pool ? 'a day of ' + pool.phrase : '';
-    $('tide-pool').hidden = !pool;
-    if (pool) $('tide-pool').style.setProperty('--hue', pool.hue);
+    var touched = Mark.placesWords(Mark.placesOf(d));
+    $('tide-pool').textContent = touched;
+    $('tide-pool').hidden = !touched;
     $('tide-day').hidden = false;
   }
   document.addEventListener('keydown', function (ev) {
@@ -1496,20 +1486,25 @@
     try { return JSON.parse(stored(k) || '{}') || {}; } catch (e) { return {}; }
   }
 
-  // Placing (6.8.2): days with no pool line, kept through Claude, are given
-  // their places once, in one call, and the places are kept here by each
-  // day's words. Nothing is written to the beach.
+  // Placing (6.8.2): days with no places line, kept through Claude, are
+  // given every place they touched, once, in one call, and the places are
+  // kept here by each day's words. A day placed here under the first law
+  // (one place, kept as a number) stands in that place until it is placed
+  // again, once, under this one. Nothing is written to the beach.
   var PLACED = 'sundial.placed', placing = false;
   function withPlaces(list) {
     var places = keptHere(PLACED);
     (list || []).forEach(function (d) {
-      var n = places[textKey(d.text)];
-      if (n && !Mark.read(d.text).pool) d.pool = n;
+      var p = places[textKey(d.text)];
+      if (p && !Mark.read(d.text).places.length) d.places = Mark.inOrder(Array.isArray(p) ? p : [p]);
     });
     return list || [];
   }
   function placeDays() {
-    var todo = days.filter(function (d) { return !Mark.poolOf(d); }).slice(0, 40);
+    var placed = keptHere(PLACED);
+    var todo = days.filter(function (d) {
+      return !Mark.read(d.text).places.length && !Array.isArray(placed[textKey(d.text)]);
+    }).slice(0, 40);
     if (placing || !todo.length || !stored(KEY) || turnsToday() >= TURNS_A_DAY) return;
     placing = true;
     countTurn();
@@ -1522,10 +1517,10 @@
       if (!j || !Array.isArray(j.places)) return;
       var places = keptHere(PLACED);
       j.places.forEach(function (p) {
-        var d = todo[Number(p.day) - 1], n = Number(p.pool);
-        if (d && n >= 1 && n <= 6) {
-          places[textKey(d.text)] = n;
-          d.pool = n;
+        var d = todo[Number(p.day) - 1], ns = Mark.inOrder(p.places);
+        if (d && ns.length) {
+          places[textKey(d.text)] = ns;
+          d.places = ns;
         }
       });
       store(PLACED, JSON.stringify(places));
@@ -1579,7 +1574,7 @@
   // words exactly, or it is dropped.
   var HEARD = 'sundial.heard', listening = false, listenTurn = 0, quietTimer = null, pending = {};
   function inPool(i) {
-    return days.filter(function (d) { return Mark.poolOf(d) === i + 1; }).slice(-12);
+    return days.filter(function (d) { return Mark.placesOf(d).indexOf(i + 1) >= 0; }).slice(-12);
   }
   function listenKey(list, whispers) {
     return textKey(list.map(function (d) { return d.address + '\n' + d.text; }).concat((whispers || []).map(function (w) {
@@ -2219,12 +2214,12 @@
     if (data.stop_reason === 'refusal') return { refused: true };
     var j = jsonOf(data), s = j && j.sheet;
     function lines(x) { return (Array.isArray(x) ? x : []).filter(function (l) { return typeof l === 'string' && l.trim(); }); }
-    function pool(x) { return Number(x) >= 1 && Number(x) <= 6 ? Number(x) : 0; }
+    function places(x) { return Mark.inOrder(x); }
     if (s && typeof s.title === 'string' && s.title.trim() && Array.isArray(s.lines)) {
-      var sheet = { title: s.title.trim(), lines: lines(s.lines), tomorrow: typeof s.tomorrow === 'string' ? s.tomorrow.trim() : '', pool: pool(s.pool) };
+      var sheet = { title: s.title.trim(), lines: lines(s.lines), tomorrow: typeof s.tomorrow === 'string' ? s.tomorrow.trim() : '', places: places(s.places) };
       var d = j.day, dayNow = d && typeof d.title === 'string' && d.title.trim() && Array.isArray(d.lines)
-        ? { title: d.title.trim(), lines: lines(d.lines), tomorrow: '', pool: pool(d.pool) }
-        : { title: sheet.title, lines: sheet.lines, tomorrow: '', pool: sheet.pool };
+        ? { title: d.title.trim(), lines: lines(d.lines), tomorrow: '', places: places(d.places) }
+        : { title: sheet.title, lines: sheet.lines, tomorrow: '', places: sheet.places };
       return { sheet: sheet, day: dayNow, ahead: typeof j.ahead === 'string' ? j.ahead.trim() : '' };
     }
     if (j && typeof j.ask === 'string' && j.ask.trim()) return { ask: j.ask.trim() };
@@ -2261,10 +2256,9 @@
     var tomorrow = sheet.tomorrow.replace(/^tomorrow:\s*/i, '');
     $('day-tomorrow').textContent = tomorrow ? 'Tomorrow: ' + tomorrow : '';
     $('day-tomorrow').hidden = !tomorrow;
-    var pool = Mark.POOLS[sheet.pool - 1];
-    $('day-pool').textContent = pool ? 'a day of ' + pool.phrase : '';
-    $('day-pool').hidden = !pool;
-    if (pool) $('day-pool').style.setProperty('--hue', pool.hue);
+    var touched = Mark.placesWords(sheet.places);
+    $('day-pool').textContent = touched;
+    $('day-pool').hidden = !touched;
     ask.hidden = true;
     greet.hidden = true;
     form.hidden = true;
@@ -2414,7 +2408,7 @@
   function keepWith(typed, word) {
     if (!sheetNow) return;
     var moment = Mark.write(sheetNow), who = null, first = false;
-    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', pool: sheetNow.pool });
+    var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places });
     setKeeping(true);
     Days.resolve(typed).then(function (w) {
       who = w;
