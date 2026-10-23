@@ -76,15 +76,28 @@
   }
 
   // Seal a whisper and append it to the stash, making the stash first if
-  // it doesn't stand. Resolves 'kept', 'wrong' (the word doesn't open the
-  // stash's lock) or 'unreachable'.
+  // it doesn't stand. Anyone can look at a name's days, so a stash is only
+  // made once the word is proved on the person's own day book, now:<name>,
+  // in two steps that change nothing (checked on the trial name, 23
+  // October 2026): letting go of its lock with no word is refused when it
+  // is locked (403) and does nothing when it is open (200); then the lock
+  // "rotated" to the same word answers 200 only for the word that holds
+  // it. An open day book proves nothing, and no stash is made. Resolves
+  // 'kept', 'wrong' (the word doesn't open the lock) or 'unreachable'.
   function keep(name, word, whisper) {
     var entry = { _: MARK + whisper.phrase + ' · ' + whisper.date, 1: whisper.said, 2: whisper.asked || '' };
     function failed(r) { return r.status === 403 ? 'wrong' : 'unreachable'; }
     return Beach.look('stash:' + name).then(function (r) {
       if (!r.status) throw 'unreachable';
       if (r.status === 200) return null;
-      return Beach.write('stash:' + name, { content: { _: stashLine(name) }, new_lock: word }).then(function (w) {
+      return Beach.write('now:' + name, { new_lock: '' }).then(function (w) {
+        if (w.status === 200) throw 'wrong';
+        if (w.status !== 403) throw 'unreachable';
+        return Beach.write('now:' + name, { secret: word, new_lock: word });
+      }).then(function (w) {
+        if (w.status !== 200) throw failed(w);
+        return Beach.write('stash:' + name, { content: { _: stashLine(name) }, new_lock: word });
+      }).then(function (w) {
         if (w.status !== 200) throw failed(w);
       });
     }).then(function () {
