@@ -460,6 +460,19 @@
     text-align: center;
     margin: 0 0 0.6rem;
   }
+  /* Claude speaks first (2.86): its one line of greeting above the question. */
+  .sd-hello {
+    font-size: 1.2rem;
+    line-height: 1.45;
+    text-align: center;
+    text-wrap: pretty;
+    margin: 0 0 0.5rem;
+  }
+  form.sd-speak textarea::placeholder {
+    font-style: italic;
+    color: var(--muted);
+    opacity: 1;
+  }
   /* The turn (3.7): one quiet line beneath the question, an offer only. */
   .sd-turn-offer-row {
     margin: -0.3rem 0 0.6rem;
@@ -523,7 +536,15 @@
     margin-left: 0.35rem;
     white-space: nowrap;
   }
+  /* Above the line box before anything is typed, and the box itself drawn
+     unlike the telling box, so it is never taken for their day (2.86). */
   .sd-turn-public {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+  }
+  .sd-turn-noname {
     font-size: 0.95rem;
     font-style: italic;
     color: var(--muted);
@@ -537,6 +558,11 @@
   .sd-turn-stay textarea {
     min-height: 4.5rem;
     margin-bottom: 0.7rem;
+    font-style: italic;
+    background: transparent;
+    border: 1px dashed var(--muted);
+    border-radius: 0.9rem;
+    padding: 0.6rem 0.9rem;
   }
   .sd-turn-stay .mic-row {
     margin: -0.2rem 0 0.7rem;
@@ -1519,8 +1545,9 @@
       <p class="sd-turn-others" id="turn-others" hidden>Left here by others.</p>
       <div class="sd-turn-lines" id="turn-lines"></div>
       <label for="turn-line" class="sd-turn-label">Leave a line for whoever lands here next.</label>
-      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off" aria-describedby="turn-public"></textarea>
-      <p class="sd-turn-public" id="turn-public">Anyone may read what you leave here. No name is kept with it.</p>
+      <p class="sd-turn-public" id="turn-public">Anyone can read this. It isn’t your day.</p>
+      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off" aria-describedby="turn-public turn-noname"></textarea>
+      <p class="sd-turn-noname" id="turn-noname">No name is kept with it.</p>
       <p class="sd-soft" id="turn-note" aria-live="polite" hidden></p>
       <div class="sd-send-row"><button type="submit" id="turn-leave">Leave it</button></div>
     </form>
@@ -1574,6 +1601,7 @@
       <button type="button" class="sd-way-go" id="way-new" aria-haspopup="dialog">I’m new</button>
     </div>
     <form class="sd-speak" id="speak">
+      <p class="sd-hello" id="hello" hidden></p>
       <p class="sd-question" id="question">What’s with you today?</p>
       <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
@@ -1854,6 +1882,18 @@
   // Should Claude decline, the law's own gentle question stands in.
   var GENTLE = 'Would you like to just sit with it a moment? If you need someone now: your local emergency number, or Samaritans on 116 123 in the UK and Ireland.';
 
+  // Claude speaks first (spine:front-door 2.86, after 2.1 and 2.4): one line
+  // of greeting, with their tomorrow line if there is one, and one question
+  // about today, before they have said anything. Under the same hosting as
+  // the law above.
+  var GREET_LAW = "You are greeting one person as they open their sundial, before they have said anything today. Speak to them, not about any system. They are the authority on their day. You host: you hold, notice, follow and reflect, adding nothing and taking nothing away, and you never interpret.\n\nYou receive: the date, the time and the part of the day; whether they have kept days here before; their last words before today, with the tomorrow line they said then, if any; today's line and today's earlier moments, if any; and tomorrow's line, if any. You return ONLY JSON: `{\"greet\": \"<one short line>\", \"ask\": \"<one question>\"}`.\n\n`greet`: one short line. If they said a tomorrow line before today, greet them with it, in their own words, as what they said they would do, adding nothing; never ask whether they did it, never judge or praise it. Otherwise greet them plainly, in a few words, for the part of the day. `ask`: one question about today, answerable from the day itself: on a first visit, where they are and what today has been like; coming back, what today has been like, from where their last words left off; if today already holds moments, what has happened since. Never ask how they are, what they are like, or why, and never walk them inward.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. Never return anything but the JSON.";
+  var GREET_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['greet', 'ask'],
+    properties: { greet: { type: 'string' }, ask: { type: 'string' } }
+  };
+
   // Listening (plan 6.8.1), Claude's second law, verbatim, as replaced by 6.8.1.1.
   var LISTEN_LAW = "You are hosting one person as they listen back to days they wrote, gathered in one place, and to what they whispered since. They are the authority on their days; no one can make meaning on their behalf. You hold, notice, follow and reflect, with nothing added and nothing taken away, and you return them to now. You never interpret.\n\nYou receive: today's date; the place these days came to rest (what happened, what you felt, what you made of it, what matters, a choice, or what's ahead); their days, each with its date; what they whispered back before, if anything, each with its date and the question it answered; three ways of listening, A, B and C, each with what it listens for, and which were used before; and the questions this shell has asked before, each with its date. You return ONLY JSON: `{\"listening\": \"A\" | \"B\" | \"C\", \"heard\": [\"<their exact words>\", ...], \"hears\": \"<one or two whole sentences>\", \"question\": \"<one question, or empty>\"}`.\n\nListening: choose a way not used last time, and among those the one that finds most in their own words; it decides only which words you gather. Heard: one to four short passages copied exactly from their days or whispers, where that listening is most alive. Hears: one noticing, brief, looking into the space, said as a host would say it aloud: one or two whole, plain sentences that read as speech, never a string of quotations or notes. Their days and their dates are on the screen above: do not list them, and do not spend words on dates. Say what is there in their own terms and what is absent from it: a place their words never enter; a thing they would like to do and have not reported doing; a feeling never named beside what happened; a word that repeats while another never comes; what the whisper added, if any. Keep to their words for what they said; name the absence plainly; add no word of meaning. A noticing shows what is there and what is not; it never says why, what it means, or what it shows about them.\n\nQuestion: one open question that returns them to now, asked from the place the absence points to: a named place other than the one these days rest in, which their words lean toward and have not entered (a wish among choices leans ahead, and under it toward what matters; a story told about what happened leans away from what happened; a hope leans on what matters). Told as stories: ask toward what happened. Looking ahead: ask toward what matters. Follow the newest words, or the whisper. The question follows on from the noticing, so the two read as one thought. Word it from their own words, so it could only be asked of them, and so that it is plain which place it asks from. The question carries no expectation and no hidden should: nothing in it says what they ought to have done or felt, and any answer, or none, is welcome. Never ask a question this shell has asked before, never one they have answered in a whisper, and never one that could be asked of anyone. When there are whispers, begin Hears from the newest one; if the newest whisper was made today, they are already here: leave the question empty. If little is heard, say so plainly and leave heard empty.\n\nNever advise, interpret, diagnose, praise or cheer; never name a feeling or state they did not name themselves; never ask why; never turn them in on themselves (how they think, what they are like, what kind of person they are). Never name or describe the way of listening, and never use the words block, pool, passport, handle, beach, pscale, Being, shell, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads, except where their own exact words contain them. If what they wrote or whispered suggests they may be in danger, always give a question, and make it say plainly where help is (their local emergency number; Samaritans 116 123 in the UK and Ireland). Never return anything but the JSON.";
   var LISTEN_SCHEMA = {
@@ -1945,7 +1985,8 @@
     midday: 'at midday', afternoon: 'in the afternoon', 'late afternoon': 'in the late afternoon', evening: 'in the evening', night: 'at night' };
   function tick() {
     var now = new Date();
-    $('question').textContent = fromTurn ? fromTurn.question : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
+    var g = greetNow();
+    $('question').textContent = fromTurn ? fromTurn.question : g ? g.ask : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
     $('date').textContent = dateWords(now);
     $('place').textContent = place;
     $('place').hidden = !place;
@@ -2054,6 +2095,9 @@
     // walk up early." as well as "Tomorrow, the drive north."
     var said = saidBefore().replace(/[.\s]+$/, '');
     if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
+    // When Claude has spoken first, it has greeted them with that tomorrow
+    // (2.86), so the page doesn't say it again.
+    if (greetNow()) said = '';
     $('greet-day').textContent = lead;
     $('greet-day').hidden = !lead;
     $('greet-said').textContent = said ? 'You said: “Tomorrow, ' + said + '.”' : '';
@@ -3444,6 +3488,7 @@
       (same ? '\nAn earlier moment from this same beat: ' + flatText(same.text) : '') +
       (aheadText ? '\nTomorrow’s line: ' + flatText(aheadText) : '') +
       (fromTurn ? '\nWhere they started: a turn rested at ' + fromTurn.phrase + ', with the question: ' + fromTurn.question : '') +
+      (greeting && !fromTurn && !greetingSpent ? '\nYou spoke first, greeting them: ' + (greeting.greet ? greeting.greet + ' ' : '') + 'And you asked: ' + greeting.ask : '') +
       '\n\nWhat they said:\n' + words;
   }
 
@@ -3594,7 +3639,14 @@
     if (!stored(KEY)) { ownWords(words); return; }
     if (turnsToday() >= TURNS_A_DAY) { restUntilTomorrow(); return; }
     var now = new Date(), before = messages.length;
+    // Spoken before Claude's greeting came: the telling goes on without it.
+    greetTurn++;
+    if (greetWaiting) {
+      greetWaiting = false;
+      $('question').hidden = !ask.hidden;
+    }
     greet.hidden = true;
+    $('hello').hidden = true;
     $('invite').hidden = true;
     $('not-you-row').hidden = true;
     kept.hidden = true;
@@ -3694,7 +3746,8 @@
     $('day-lines').textContent = '';
     form.hidden = false;
     $('question').hidden = false;
-    showGreeting();
+    showHello();
+    startUntouched();
     showInvite();
   }
   $('let-go').addEventListener('click', function () {
@@ -3812,6 +3865,7 @@
       hold(WORD, word);
       hold(LOOKING, '');
       hold(CHOSEN, '');
+      spendGreeting();
       setDialTap();
       return Days.readAll(who.name).catch(function () {
         var t = todayAddress();
@@ -3940,6 +3994,7 @@
       box.value = '';
       form.hidden = false;
       $('question').hidden = false;
+      showHello();
       showInvite();
       setDialTap();
       (m.newName ? kept : dialEl).focus({ preventScroll: true });
@@ -4067,7 +4122,11 @@
       day.hidden && rest.hidden && !form.hidden && ask.hidden && (!said || NOTHING_MUCH.test(said));
   }
   function showTurnOffer() {
-    $('turn-offer-row').hidden = !(emptyStart() && !turnNow);
+    var said = box.value.trim(), offer = false;
+    if (emptyStart() && !turnNow && !greetWaiting) {
+      offer = NOTHING_MUCH.test(said) || (!said && !stored(KEY) && untouchedLong);
+    }
+    $('turn-offer-row').hidden = !offer;
   }
   box.addEventListener('input', showTurnOffer);
   function giveTurn(dir) {
@@ -4163,7 +4222,7 @@
     $('turn-line').focus();
   });
   Beach.addMic($('turn-line'), { dictate: true });
-  $('turn-line').insertAdjacentElement('afterend', $('turn-public'));
+  $('turn-line').insertAdjacentElement('afterend', $('turn-noname'));
   $('turn-line').addEventListener('input', function () { $('turn-note').hidden = true; });
   $('turn-stay-box').addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -4194,7 +4253,8 @@
     if (!f) return;
     var dx = ev.clientX - f.x, dy = ev.clientY - f.y;
     if (Math.abs(dx) < 40 || Math.abs(dx) < 1.5 * Math.abs(dy) || ev.timeStamp - f.t > 700) return;
-    if (!turnNow && !emptyStart()) return;
+    // No flick on a first visit (2.86): only once there are days.
+    if (!turnNow && (!emptyStart() || !hasDays())) return;
     flicked = true;
     stopHold();
     giveTurn(dx > 0 ? 1 : -1);
@@ -4721,16 +4781,19 @@
     setDialTap();
     showInvite();
   }
+  var reading = null;
   function enter() {
     inside = true;
     main.classList.remove('at-door');
     $('way').hidden = true;
     form.hidden = false;
     $('question').hidden = false;
+    box.placeholder = stored(KEY) ? '' : OWN_BOX;
     showCorner();
     setDialTap();
     showInvite();
-    return comeBack();
+    reading = comeBack();
+    return reading.then(function () { if (!card.open) voiced(); });
   }
   // What one person leaves in this browser, let go so the next begins clean.
   // The key stays: it belongs to the browser, not to a name.
@@ -4761,8 +4824,106 @@
     if (!stored(KEY)) openCard();
     return read;
   }
-  // The voice card closed.
-  function voiced() {}
+  // ---- Then the sundial as designed (2.86) ------------------------------------------
+  // With a key, Claude speaks first: one line of greeting, with their
+  // tomorrow line if there is one, and one question about today; one
+  // question, one box. Once a visit, a day: kept for the visit, so a reload
+  // doesn't greet again, and spent once the day is kept. Without a key, the
+  // box says what it does.
+  var OWN_BOX = 'Your words, kept as you say them.';
+  var GREETED = 'sundial.greeted', greeting = null, greetingSpent = false, greetTurn = 0, greetWaiting = false;
+  function greetNow() {
+    return greeting && !greetingSpent && stored(KEY) && !(messages && messages.length) && !sheetNow ? greeting : null;
+  }
+  function greetingInput(now) {
+    var t = todayAddress(), before = lastBefore(), said = saidBefore(), mine = todaysMoments();
+    var todayLine = (days.filter(function (d) { return d.address === t; })[0] || {}).text || '';
+    return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
+      '\nTime: ' + timeWords(now) +
+      '\nPart of the day: ' + partAt(now) +
+      '\nKept days here before: ' + (hasDays() ? 'yes' : 'no, this is their first visit') +
+      (before ? '\nTheir last words before today (' + whenWords(before.address) + '): ' + flatText(before.text) : '') +
+      (said ? '\nTheir tomorrow line then: ' + said : '') +
+      (todayLine ? '\nToday\u2019s line: ' + flatText(todayLine) : '') +
+      (mine.length ? '\nToday\u2019s moments so far:\n' + mine.map(function (m) {
+        return '- ' + partAt(Days.timeOf(m.address)) + ': ' + flatText(m.text);
+      }).join('\n') : '') +
+      (aheadText ? '\nTomorrow\u2019s line: ' + flatText(aheadText) : '');
+  }
+  function showHello() {
+    var g = greetNow();
+    $('hello').textContent = g ? g.greet : '';
+    $('hello').hidden = !(g && g.greet) || !!(messages && messages.length);
+    tick();
+    if (inside && !busy && !(messages && messages.length) && !sheetNow) showGreeting();
+    showTurnOffer();
+  }
+  function spendGreeting() {
+    greetingSpent = true;
+    var was = null;
+    try { was = JSON.parse(held(GREETED) || 'null'); } catch (e) {}
+    if (was) {
+      was.spent = true;
+      hold(GREETED, JSON.stringify(was));
+    }
+  }
+  function greetFirst() {
+    if (!inside || !stored(KEY) || greetingSpent || greetWaiting || card.open) return;
+    var who = stored(NAME) || held(CHOSEN), t = todayAddress(), was = null;
+    try { was = JSON.parse(held(GREETED) || 'null'); } catch (e) {}
+    if (was && was.who === who && was.day === t) {
+      if (was.spent) greetingSpent = true;
+      else greeting = { greet: was.greet, ask: was.ask };
+      showHello();
+      return;
+    }
+    if (greeting || messages.length || sheetNow || busy || keeping || momentNow || turnsToday() >= TURNS_A_DAY) return;
+    var turn = ++greetTurn;
+    greetWaiting = true;
+    $('question').hidden = true;
+    dial.answering(true);
+    claude(GREET_LAW, [{ role: 'user', content: greetingInput(new Date()) }], GREET_SCHEMA, 1000).then(function (res) {
+      return res;
+    }, function () { return { status: 0, data: {} }; }).then(function (res) {
+      greetWaiting = false;
+      if (turn !== greetTurn) return;
+      dial.answering(false);
+      $('question').hidden = false;
+      var j = res.status === 200 && res.data.stop_reason !== 'refusal' ? jsonOf(res.data) : null;
+      if (res.status === 200) countTurn();
+      if (j && typeof j.ask === 'string' && j.ask.trim()) {
+        greeting = { greet: typeof j.greet === 'string' ? j.greet.trim() : '', ask: j.ask.trim() };
+        hold(GREETED, JSON.stringify({ who: who, day: t, greet: greeting.greet, ask: greeting.ask }));
+      }
+      showHello();
+    });
+  }
+  // The voice card closed, or the sundial reached: the box's words, then
+  // Claude first when a key is held.
+  function voiced() {
+    if (!inside) return;
+    box.placeholder = stored(KEY) ? '' : OWN_BOX;
+    showHello();
+    startUntouched();
+    if (stored(KEY)) (reading || Promise.resolve()).then(greetFirst);
+  }
+  // The turn only at the empty start (3.7, as 2.86 has it): with a key, when
+  // they answer Claude's first question with nothing much; with no key, also
+  // once the box has stood untouched a while. Never on arrival.
+  var UNTOUCHED_MS = 20000, untouchedTimer = null, untouchedLong = false;
+  function startUntouched() {
+    clearTimeout(untouchedTimer);
+    untouchedLong = false;
+    if (!inside || stored(KEY)) return;
+    untouchedTimer = setTimeout(function () {
+      if (box.value.trim() || stored(KEY)) return;
+      untouchedLong = true;
+      showTurnOffer();
+    }, UNTOUCHED_MS);
+  }
+  box.addEventListener('input', function () {
+    if (box.value.trim()) clearTimeout(untouchedTimer);
+  });
   $('way-back').addEventListener('click', function () { openBack(); });
   $('way-new').addEventListener('click', function () { openNew(); });
 
