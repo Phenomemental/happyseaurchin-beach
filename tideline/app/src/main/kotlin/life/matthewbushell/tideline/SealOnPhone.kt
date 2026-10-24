@@ -9,7 +9,7 @@ import java.util.Base64
  * nothing: the key and a sealed line must come out exactly as bsp-mcp's
  * keys.ts makes them (the values the seal module's tests hold), and a line
  * must seal and open again. It also times the key, which the plan wants
- * measured on the Pixel (spine:tideline 7.193).
+ * measured on the Pixel (spine:tideline 7.19, "the key is slow on purpose").
  */
 object SealOnPhone {
     class Result(val passed: Boolean, val keyMillis: Long)
