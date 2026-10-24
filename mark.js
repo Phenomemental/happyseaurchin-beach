@@ -212,9 +212,10 @@
   }
 
   // The crimson centre: scaled 0.55 to 1 by evenness once there are days;
-  // before any, half size at 0.45.
-  function centre(days, even) {
-    return days ? { scale: 0.55 + 0.45 * even, opacity: 1 } : { scale: 0.5, opacity: 0.45 };
+  // before any, half size, dull until someone has said who they are (2.81:
+  // lit while they are in), at 0.45.
+  function centre(days, even, lit) {
+    return days ? { scale: 0.55 + 0.45 * even, opacity: 1 } : { scale: 0.5, opacity: lit ? 1 : 0.45 };
   }
 
   // ---- The drawing ------------------------------------------------------------
@@ -350,7 +351,7 @@
     var pooled = node('g', { 'class': 'sd-tidepools' }, svg);
 
     // The light and the shadow at this minute; at night, the glow instead.
-    var now = null, count = 0;
+    var now = null, count = 0, evenNow = 0, lit = false;
     function light() {
       if (!now) return;
       var c = castOf(now), l = lightOf(now, count);
@@ -379,6 +380,7 @@
       opts = opts || {};
       var n = opts.count != null ? opts.count : list.length, s = shares(list), even = evenness(s);
       count = n;
+      evenNow = even;
       while (kept_.firstChild) kept_.removeChild(kept_.firstChild);
       spiral.setAttribute('d', spiralPath(n));
       // Before the first day, one faint point where the spiral will begin.
@@ -397,7 +399,7 @@
       }
       stretches.forEach(function (el, k) { el.setAttribute('opacity', tint(s[P6[k] - 1]).toFixed(3)); });
       light();
-      var cen = centre(n, even);
+      var cen = centre(n, even, lit);
       if (dot) {
         dot.setAttribute('transform', 'rotate(-18 250 138) translate(250 138) scale(' + cen.scale + ') translate(-250 -138)');
         dot.setAttribute('opacity', cen.opacity);
@@ -573,8 +575,135 @@
       while (turning.firstChild) turning.removeChild(turning.firstChild);
       if (!pooled.firstChild) svg.classList.remove('pooled');
     }
+    // ---- The way in (2.8): arriving, the beat, the days coming round --------------
+    // A fade that leaves the element's own transform alone.
+    function fade(el, from, to, opts) {
+      if (!el || !el.animate) return Promise.resolve();
+      return el.animate([{ opacity: from }, { opacity: to }], opts).finished.catch(function () {});
+    }
+    // The crimson's own transform, as days() sets it, for a keyframe.
+    function centreAt(scale) {
+      return 'translate(250px, 138px) rotate(-18deg) scale(' + scale + ') translate(-250px, -138px)';
+    }
+    // Arriving: the heart draws itself in its own order (8.71): the stroke
+    // comes in from far off along the flow line, the ring turns once round
+    // presence from where the stroke meets it, then the stroke loops and
+    // goes out open; about three seconds. Each of the two ink paths is
+    // revealed along its own line (the ring's a near-ellipse through its
+    // middle, open on the right), so neither shows before its turn. Then
+    // the light, the shadow and the dull centre come up behind it. `still`:
+    // the heart simply fades in. Resolves once drawn.
+    var RING_LINE = 'M 311.7,49.6 A 124,118 0 1 0 353.3,115.4';
+    var inkPaths = Array.prototype.filter.call(art.querySelectorAll('path'), function (p) {
+      return p.getAttribute('fill') === 'var(--ink)' && p.parentNode === art;
+    });
+    function drawMask(name, d, width) {
+      var m = node('mask', { id: id + '-' + name, maskUnits: 'userSpaceOnUse', x: -40, y: -100, width: 540, height: 480 }, defs);
+      return node('path', { d: d, fill: 'none', stroke: '#fff', 'stroke-width': width, 'stroke-linecap': 'round',
+        pathLength: 1000, 'stroke-dasharray': '1000 1000', 'stroke-dashoffset': 1000 }, m);
+    }
+    var ringLine = drawMask('draw-ring', RING_LINE, 18), strokeLine = drawMask('draw-stroke', path, 20);
+    function draw(still) {
+      if (!path || !svg.animate || inkPaths.length < 2) return Promise.resolve();
+      if (still) return fade(svg, 0, 1, { duration: 900, easing: 'ease-out' });
+      var behind = [under, cast, wash, dot].filter(Boolean), D = 3200;
+      behind.forEach(function (el) { el.style.opacity = '0'; });
+      inkPaths[0].setAttribute('mask', 'url(#' + id + '-draw-ring)');
+      inkPaths[1].setAttribute('mask', 'url(#' + id + '-draw-stroke)');
+      // In (the first quarter of the stroke), round (the ring), then out.
+      ringLine.animate([
+        { strokeDashoffset: 1000, offset: 0 }, { strokeDashoffset: 1000, offset: 0.2, easing: 'cubic-bezier(.4,0,.3,1)' },
+        { strokeDashoffset: 0, offset: 0.62 }, { strokeDashoffset: 0, offset: 1 }
+      ], { duration: D, fill: 'forwards' });
+      return strokeLine.animate([
+        { strokeDashoffset: 1000, offset: 0, easing: 'cubic-bezier(.4,0,.5,1)' }, { strokeDashoffset: 750, offset: 0.24 },
+        { strokeDashoffset: 750, offset: 0.56, easing: 'cubic-bezier(.45,0,.25,1)' }, { strokeDashoffset: 0, offset: 1 }
+      ], { duration: D, fill: 'forwards' }).finished.catch(function () {}).then(function () {
+        inkPaths.forEach(function (p) { p.removeAttribute('mask'); });
+        // The shadow eases in on its own transition; the rest fade up.
+        cast.style.opacity = '';
+        light();
+        [under, wash, dot].forEach(function (el) {
+          if (!el) return;
+          var to = el === under ? 1 : Number(el.getAttribute('opacity') || 1);
+          el.style.opacity = '';
+          fade(el, 0, to, { duration: 1400, easing: 'ease-out' });
+        });
+      });
+    }
+    // The beat (2.81): the moment the word opens, the centre swells and
+    // brightens to crimson, the light pulses once, and the centre stays lit
+    // while they are in. `still`: it brightens, nothing moves.
+    function beat(still) {
+      lit = true;
+      var cen = centre(count, evenNow, lit);
+      if (!dot) return Promise.resolve();
+      dot.setAttribute('opacity', cen.opacity);
+      if (still || !dot.animate) return Promise.resolve();
+      var s = cen.scale, ease = 'cubic-bezier(.2,.7,.3,1)';
+      fade(wash, Number(wash ? wash.getAttribute('opacity') || 0 : 0), 0.95, { duration: 450, easing: 'ease-out', direction: 'alternate', iterations: 2 });
+      if (halo) {
+        halo.animate([
+          { opacity: 0, transform: centreAt(1) },
+          { opacity: 0.45, transform: centreAt(1.35), offset: 0.35 },
+          { opacity: Number(halo.getAttribute('opacity') || 0), transform: centreAt(1) }
+        ], { duration: 1400, easing: ease });
+      }
+      return dot.animate([
+        { opacity: 0.45, transform: centreAt(s) },
+        { opacity: 1, transform: centreAt(s * 1.4), offset: 0.3 },
+        { opacity: 1, transform: centreAt(s) }
+      ], { duration: 1400, easing: ease }).finished.catch(function () {});
+    }
+    // The days coming round (2.81): their marks arrive on the spiral one by
+    // one, oldest first, the line drawing itself under them, and as the last
+    // lands the colour runs into the heart's stroke (the sweep, as on a
+    // keep) and the centre takes its shape. Draws as days() does, then
+    // animates. `still`: everything fades in together. Resolves once the
+    // marks have landed, with the colour still running.
+    function arrive(list, opts, still) {
+      var before = centre(count, evenNow, lit).scale;
+      days(list, false, opts);
+      var n = count, marks = Array.prototype.slice.call(kept_.querySelectorAll('.mark'));
+      if (!n || !svg.animate) return Promise.resolve();
+      if (still) {
+        [kept_, spiral, momentsAt].forEach(function (el) { fade(el, 0, 1, { duration: 900, easing: 'ease-out' }); });
+        return new Promise(function (ok) { setTimeout(ok, 900); });
+      }
+      var step = Math.max(45, Math.min(120, 1500 / n)), total = n * step;
+      if (n > 1) {
+        spiral.setAttribute('pathLength', 1000);
+        spiral.setAttribute('stroke-dasharray', '1000 1000');
+        spiral.animate([{ strokeDashoffset: 1000 }, { strokeDashoffset: 0 }], { duration: total + 200, easing: 'linear', fill: 'backwards' })
+          .finished.catch(function () {}).then(function () {
+            spiral.removeAttribute('pathLength');
+            spiral.removeAttribute('stroke-dasharray');
+          });
+      }
+      marks.forEach(function (m, k) {
+        play(m, [{ opacity: 0, transform: 'scale(0.2)' }, { opacity: 1, transform: 'scale(1.3)', offset: 0.55 }, { opacity: 1, transform: 'scale(1)' }],
+          { duration: 560, delay: k * step, easing: 'ease-out', fill: 'backwards' });
+      });
+      momentsAt.style.opacity = '0';
+      fade(momentsAt, 0, 1, { duration: 700, delay: total, easing: 'ease-out' }).then(function () { momentsAt.style.opacity = ''; });
+      if (dot) {
+        dot.animate([{ transform: centreAt(before) }, { transform: centreAt(centre(n, evenNow, lit).scale) }],
+          { duration: 1100, delay: total, easing: 'ease-in-out', fill: 'backwards' });
+      }
+      if (halo) fade(halo, 0, Number(halo.getAttribute('opacity') || 0), { duration: 1100, delay: total, fill: 'backwards' });
+      // The colour runs in as the last mark lands.
+      sweep.classList.remove('sweeping');
+      void sweep.getBoundingClientRect();
+      sweep.style.animationDelay = total + 'ms';
+      sweep.addEventListener('animationend', function once() {
+        sweep.removeEventListener('animationend', once);
+        sweep.style.animationDelay = '';
+      });
+      sweep.classList.add('sweeping');
+      return new Promise(function (ok) { setTimeout(ok, total + 500); });
+    }
     return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
-      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn };
+      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
