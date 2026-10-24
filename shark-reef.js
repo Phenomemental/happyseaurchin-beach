@@ -4,9 +4,9 @@
    any browser. Nothing here touches the page; shark-reef.html draws it and
    takes the input.
 
-   A run is steered: the shark swims after the finger, and each step's move
-   is how far it swims, in whole units, never faster than its top speed
-   and never turning sharper than it can. The fish flee when it comes near,
+   A run is dragged: the shark moves as the finger does, from anywhere on
+   the screen, each step's move in whole units and never more than its top
+   speed along each way. The fish flee when it comes near,
    darting aside when it comes straight at them, and swim back to their
    shoals when it has gone. Everything a step depends on is whole numbers
    and + - * / over tables built once from the day's name (a square root
@@ -17,8 +17,8 @@
 (function (root) {
   // The law runs are made under now, and every law a kept run may carry. A
   // kept run re-runs under its own law.
-  var VERSION = 'sr1';
-  var VERSIONS = ['sr1'];
+  var VERSION = 'sr2';
+  var VERSIONS = ['sr2'];
   var RATE = 60;                // steps a second
 
   // The reef is a box W wide and H tall, in whole units, made for a phone
@@ -27,12 +27,12 @@
   var W = 1000, H = 1600;
   var EDGE = { x0: 40, x1: 960, y0: 70, y1: 1470 };
 
-  // How a run goes (reef law sr1, until frozen by playing on phones).
+  // How a run goes (reef law sr2, until frozen by playing on phones).
   var LAW = {
     steps: 45 * RATE,           // forty-five seconds after the first touch, the run is over
-    most: 16,                   // the shark's top speed: a move is at most this long, in units
-    turn: 3,                    // a move differs from the one before by at most this, along each way
-    bite: 60                    // a fish this near the shark's mouth is eaten, in units
+    most: 40,                   // the most a move may be in a step, in units, along each way
+    brisk: 16,                  // a shark moving this fast a step, or faster, frightens fish from furthest
+    bite: 80                    // a fish this near the shark's mouth is eaten, in units
   };
 
   // The fish swim in sixteenths of a unit, so a slow drift can go any way.
@@ -86,12 +86,12 @@
   // (flee, and fast), and tired (tired); how far aside it darts from a
   // shark coming close and straight at it (dart, within dartNear units);
   // how near the shark may come before it flees, in units: nearStill to a
-  // still shark, nearFast to one at full speed; and how many steps it can
+  // still shark, nearFast to one moving briskly; and how many steps it can
   // flee at full speed before it tires (puff).
   var SWIM = [
-    { cruise: 40, calm: 6, flee: 128, fast: 16, tired: 56, dart: 60, dartNear: 140, nearStill: 90, nearFast: 220, puff: 45 },
-    { cruise: 40, calm: 6, flee: 136, fast: 16, tired: 56, dart: 60, dartNear: 140, nearStill: 90, nearFast: 220, puff: 45 },
-    { cruise: 44, calm: 7, flee: 150, fast: 20, tired: 64, dart: 90, dartNear: 150, nearStill: 90, nearFast: 200, puff: 60 }
+    { cruise: 40, calm: 6, flee: 96, fast: 16, tired: 40, dart: 40, dartNear: 140, nearStill: 90, nearFast: 180, puff: 30 },
+    { cruise: 40, calm: 6, flee: 104, fast: 16, tired: 40, dart: 40, dartNear: 140, nearStill: 90, nearFast: 180, puff: 30 },
+    { cruise: 44, calm: 7, flee: 120, fast: 20, tired: 48, dart: 60, dartNear: 150, nearStill: 90, nearFast: 170, puff: 40 }
   ];
 
   function whole(v) { return Math.floor(v); }
@@ -130,32 +130,32 @@
       return { pts: pts, period: 1200 + whole(r() * 1200), phase: whole(r() * 2400) };
     }
     // A place in a shoal: within a ring of the given size, never two fish
-    // closer than a fish's length.
+    // closer than about a fish's length.
     function places(n, size) {
       var out = [];
       for (var tries = 0; out.length < n && tries < 400; tries++) {
         var x = whole((r() * 2 - 1) * size), y = whole((r() * 2 - 1) * size * 0.7), ok = x * x + y * y * 2 <= size * size;
         for (var q = 0; q < out.length && ok; q++) {
           var dx = out[q][0] - x, dy = out[q][1] - y;
-          if (dx * dx + dy * dy < 34 * 34) ok = false;
+          if (dx * dx + dy * dy < 56 * 56) ok = false;
         }
         if (ok) out.push([x, y]);
       }
       return out;
     }
     if (k.fish === 0) {
-      // One big shoal of twenty-eight to thirty-two.
-      shoals.push(loop(200));
-      places(28 + whole(r() * 5), 170).forEach(function (o) { list.push({ shoal: 0, ox: o[0], oy: o[1] }); });
+      // One big shoal of twenty-four to twenty-eight.
+      shoals.push(loop(240));
+      places(24 + whole(r() * 5), 230).forEach(function (o) { list.push({ shoal: 0, ox: o[0], oy: o[1] }); });
     } else if (k.fish === 1) {
-      // Four little shoals of six to eight.
+      // Four little shoals of five to seven.
       for (i = 0; i < 4; i++) {
         shoals.push(loop(120 + i * 140));
-        places(6 + whole(r() * 3), 90).forEach(function (o) { list.push({ shoal: i, ox: o[0], oy: o[1] }); });
+        places(5 + whole(r() * 3), 120).forEach(function (o) { list.push({ shoal: i, ox: o[0], oy: o[1] }); });
       }
     } else {
-      // Fourteen to eighteen lone fish, each going round a loop of its own.
-      var lone = 14 + whole(r() * 5);
+      // Twelve to fifteen lone fish, each going round a loop of its own.
+      var lone = 12 + whole(r() * 4);
       for (i = 0; i < lone; i++) {
         shoals.push(loop(100 + whole(r() * 700)));
         list.push({ shoal: i, ox: 0, oy: 0 });
@@ -217,20 +217,10 @@
     return st;
   }
 
-  // A move as the shark can make it from where it is: whole, within its
-  // turn of the move before along each way, and no longer than its top
-  // speed (the longer way given up a unit at a time until it isn't).
-  function bound(st, qx, qy) {
-    qx = Math.round(+qx || 0);
-    qy = Math.round(+qy || 0);
-    var t = LAW.turn, m = LAW.most;
-    qx = qx > st.vx + t ? st.vx + t : qx < st.vx - t ? st.vx - t : qx;
-    qy = qy > st.vy + t ? st.vy + t : qy < st.vy - t ? st.vy - t : qy;
-    while (qx * qx + qy * qy > m * m) {
-      if (Math.abs(qx) >= Math.abs(qy)) qx += qx > 0 ? -1 : 1;
-      else qy += qy > 0 ? -1 : 1;
-    }
-    return [qx, qy];
+  // A move, made whole and no larger than the most a step allows.
+  function bound(q) {
+    q = Math.round(+q || 0);
+    return q > LAW.most ? LAW.most : q < -LAW.most ? -LAW.most : q;
   }
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -243,17 +233,16 @@
   function step(st, qx, qy, sk) {
     st.ate = [];
     if (st.status !== 'running') return st;
-    var q = bound(st, qx, qy);
-    st.vx = q[0];
-    st.vy = q[1];
-    st.x = clamp(st.x + q[0], EDGE.x0, EDGE.x1);
-    st.y = clamp(st.y + q[1], EDGE.y0, EDGE.y1);
+    st.vx = bound(qx);
+    st.vy = bound(qy);
+    st.x = clamp(st.x + st.vx, EDGE.x0, EDGE.x1);
+    st.y = clamp(st.y + st.vy, EDGE.y0, EDGE.y1);
     st.step++;
     var sw = sk.swim, SX = st.x * FINE, SY = st.y * FINE;
     var speed = isqrt(st.vx * st.vx + st.vy * st.vy);
     // How near the shark may come before a fish flees: further the faster
-    // it swims, so a shark that creeps can come close.
-    var near = (sw.nearStill + div((sw.nearFast - sw.nearStill) * speed, LAW.most)) * FINE;
+    // it moves, up to brisk, so a shark that creeps can come close.
+    var near = (sw.nearStill + div((sw.nearFast - sw.nearStill) * (speed < LAW.brisk ? speed : LAW.brisk), LAW.brisk)) * FINE;
     var bite = LAW.bite * FINE;
     var lo = { x: EDGE.x0 * FINE, y: EDGE.y0 * FINE }, hi = { x: EDGE.x1 * FINE, y: EDGE.y1 * FINE }, mid = [];
     for (var b = 0; b < sk.n; b++) {
@@ -324,12 +313,9 @@
   }
 
   // ---- A run kept: every step's move -----------------------------------------
-  // "sr1.<track>.<eaten>.<steps>.<moves>": each step's move as how it
-  // differs from the move before (the first from standing still), along
-  // each way between -3 and 3 (the shark's turn), made one number in
-  // zigzag, 7 times the first and the second, as a varint; a run of steps
-  // with no change is written 0 and how many more steps it lasted. The
-  // bytes are in base64url.
+  // "sr2.<track>.<eaten>.<steps>.<moves>": each step's move as two zigzag
+  // varints (x, then y); a run of steps without a move is written 0, 0
+  // and how many more steps it lasted. The bytes are in base64url.
 
   var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
@@ -366,24 +352,17 @@
   }
   function zig(q) { return q >= 0 ? 2 * q : -2 * q - 1; }
   function zag(n) { return n % 2 ? -(n + 1) / 2 : n / 2; }
-  var SPAN = 2 * LAW.turn + 1;
 
-  // moves: one [qx, qy] for each step of the run, as bound made them.
+  // moves: one [qx, qy] for each step of the run.
   function encode(track, moves, eaten, steps) {
-    var bytes = [], px = 0, py = 0, i, codes = [];
-    for (i = 0; i < moves.length; i++) {
-      var dx = clamp(moves[i][0] - px, -LAW.turn, LAW.turn), dy = clamp(moves[i][1] - py, -LAW.turn, LAW.turn);
-      codes.push(zig(dx) * SPAN + zig(dy));
-      px += dx;
-      py += dy;
-    }
-    for (i = 0; i < codes.length; i++) {
-      if (codes[i]) { put(bytes, codes[i]); continue; }
-      var same = 1;
-      while (i + same < codes.length && !codes[i + same]) same++;
-      put(bytes, 0);
-      put(bytes, same - 1);
-      i += same - 1;
+    var bytes = [];
+    for (var i = 0; i < moves.length; i++) {
+      var qx = bound(moves[i][0]), qy = bound(moves[i][1]);
+      if (qx || qy) { put(bytes, zig(qx)); put(bytes, zig(qy)); continue; }
+      var still = 1;
+      while (i + still < moves.length && !bound(moves[i + still][0]) && !bound(moves[i + still][1])) still++;
+      put(bytes, 0); put(bytes, 0); put(bytes, still - 1);
+      i += still - 1;
     }
     return [VERSION, track, eaten, steps, toB64(bytes)].join('.');
   }
@@ -406,18 +385,18 @@
       mul = 1;
     }
     if (mul !== 1) return null;
-    var moves = [], px = 0, py = 0;
-    for (i = 0; i < nums.length; i++) {
-      var c = nums[i];
-      if (c >= SPAN * SPAN) return null;
-      if (c) {
-        px += zag(Math.floor(c / SPAN));
-        py += zag(c % SPAN);
-        moves.push([px, py]);
+    var moves = [];
+    for (i = 0; i < nums.length; ) {
+      if (nums[i + 1] == null) return null;
+      var qx = zag(nums[i]), qy = zag(nums[i + 1]);
+      i += 2;
+      if (qx || qy) {
+        if (qx !== bound(qx) || qy !== bound(qy)) return null;
+        moves.push([qx, qy]);
         continue;
       }
-      if (nums[i + 1] == null) return null;
-      for (var k = 0; k <= nums[i + 1] && moves.length <= steps; k++) moves.push([px, py]);
+      if (nums[i] == null) return null;
+      for (var k = 0; k <= nums[i] && moves.length <= steps; k++) moves.push([0, 0]);
       i++;
     }
     if (moves.length !== steps) return null;
@@ -425,8 +404,7 @@
   }
 
   // Run a kept run again in its reef, drawn under the run's own law. It is
-  // good when every move is one the shark could make, and it ends on its
-  // very last step, every fish eaten or the time up, having eaten as many
+  // good when it ends on its very last step, every fish eaten or the time up, having eaten as many
   // as it says. x and y hold where the shark's mouth was after each step
   // (index 0 is the start), eatenAt the step each fish was eaten at (or
   // Infinity), and sea the reef it swam in.
@@ -434,18 +412,16 @@
     var r = decode(replay);
     if (!r) return null;
     sk = sk && sk.track === r.track && sk.version === r.version ? sk : sea(r.track, r.version);
-    var st = start(sk), x = [st.x], y = [st.y], eatenAt = [], good = true;
+    var st = start(sk), x = [st.x], y = [st.y], eatenAt = [];
     for (var b = 0; b < sk.n; b++) eatenAt.push(Infinity);
     for (var k = 0; k < r.moves.length && st.status === 'running'; k++) {
-      var q = bound(st, r.moves[k][0], r.moves[k][1]);
-      if (q[0] !== r.moves[k][0] || q[1] !== r.moves[k][1]) { good = false; break; }
-      step(st, q[0], q[1], sk);
+      step(st, r.moves[k][0], r.moves[k][1], sk);
       for (var a = 0; a < st.ate.length; a++) eatenAt[st.ate[a]] = st.step;
       x.push(st.x);
       y.push(st.y);
     }
     return {
-      ok: good && st.status !== 'running' && st.step === r.steps && st.eaten === r.eaten,
+      ok: st.status !== 'running' && st.step === r.steps && st.eaten === r.eaten,
       version: r.version, track: r.track, eaten: st.eaten, steps: st.step, total: sk.n,
       status: st.status, x: x, y: y, eatenAt: eatenAt, sea: sk
     };
