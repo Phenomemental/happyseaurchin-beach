@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "tideline"
 
 include(":seal")
+include(":app")

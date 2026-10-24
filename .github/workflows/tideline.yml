@@ -1,0 +1,69 @@
+# Tideline's phone app: on every push to tideline/, check it, build a signed
+# APK and put it on the release named tideline-latest (spine:tideline 7.17).
+# The signing key lives only in the repository secrets TIDELINE_SIGNING_KEY
+# (the PKCS12 file, base64) and TIDELINE_SIGNING_PASSWORD.
+name: Tideline
+
+on:
+  push:
+    paths:
+      - 'tideline/**'
+      - '.github/workflows/tideline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tideline-latest
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: tideline
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Check the seal and the rules
+        run: ./gradlew --no-daemon :seal:test :app:testDebugUnitTest
+
+      - name: Unpack the signing key
+        env:
+          TIDELINE_SIGNING_KEY: ${{ secrets.TIDELINE_SIGNING_KEY }}
+        run: |
+          if [ -z "$TIDELINE_SIGNING_KEY" ]; then
+            echo "::error::The secrets TIDELINE_SIGNING_KEY and TIDELINE_SIGNING_PASSWORD are not set, so no APK can be signed. See tideline/README.md."
+            exit 1
+          fi
+          printf '%s' "$TIDELINE_SIGNING_KEY" | base64 -d > "$RUNNER_TEMP/tideline-signing.p12"
+
+      - name: Build the app
+        env:
+          TIDELINE_SIGNING_KEY_FILE: ${{ runner.temp }}/tideline-signing.p12
+          TIDELINE_SIGNING_PASSWORD: ${{ secrets.TIDELINE_SIGNING_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Put it on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/tideline.apk"
+          gh release delete tideline-latest --cleanup-tag --yes || true
+          gh release create tideline-latest "$RUNNER_TEMP/tideline.apk" \
+            --target "$GITHUB_SHA" \
+            --title "Tideline, latest build" \
+            --notes "Built from $GITHUB_REF_NAME at ${GITHUB_SHA::7}. How to install it: tideline/README.md."
+
+      - name: Forget the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tideline-signing.p12"
