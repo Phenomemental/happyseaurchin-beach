@@ -833,6 +833,12 @@
     max-width: 24rem;
     color: var(--ink);
   }
+  /* Never silent (2.87): a failed call to Claude says why, in one line. */
+  .sd-call-fail {
+    color: var(--ink);
+    text-align: center;
+    margin: 0 0 0.6rem;
+  }
   /* The shadow the heart casts moves with the sun, eased over 2s (6.9). */
   .sd-dial .cast {
     transition: transform 2s ease, opacity 2s ease;
@@ -1562,6 +1568,7 @@
     </div>
     <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
     <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>tap the shell, then hold it to your ear</p>
+    <p class="sd-soft sd-call-fail" id="listen-fail" role="status" hidden></p>
     <div class="sd-heard" id="heard" aria-live="polite" hidden>
       <div id="heard-lines"></div>
       <p class="sd-hears" id="hears"></p>
@@ -1604,6 +1611,7 @@
       <p class="sd-hello" id="hello" hidden></p>
       <p class="sd-question" id="question">What’s with you today?</p>
       <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
+      <p class="sd-soft sd-call-fail" id="call-fail" role="status" hidden></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
@@ -1815,11 +1823,12 @@
    hands their day back as a sheet in their own words. Keep writes it as
    one plain line in their own now on the beach, latched with their word
    (days.js); on any phone, with their name, the days are there and the
-   sundial is coloured by them. No error text is ever shown: what fails is
-   drawn as absence, and the words they spoke go back into the box. */
+   sundial is coloured by them. The way in (2.8) asks who they are first,
+   then gives the page a voice. Never silent (2.87): a call that fails says
+   why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.4.16 · 23 October 2026';
+  var VERSION = 'Sundial M4.5 · 24 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2452,6 +2461,7 @@
   }
   function openPools() {
     store(HELD, '1');
+    listenSays('');
     poolsOpen = true;
     layerOpened('pools');
     poolNow = -1;
@@ -2496,6 +2506,7 @@
   }
   function pickPool(i) {
     putBack(true);
+    listenSays('');
     store(POOL_TAPPED, '1');
     poolNow = i;
     dial.picked(i);
@@ -2568,14 +2579,17 @@
     }).slice(0, 40);
     if (placing || !todo.length || !stored(KEY) || turnsToday() >= TURNS_A_DAY) return;
     placing = true;
-    countTurn();
     var text = todo.map(function (d, k) {
       return (k + 1) + '. ' + dateWords(Days.dateOf(d.address)) + '\n' + wordsOf(d);
     }).join('\n\n');
     claude(PLACE_LAW, [{ role: 'user', content: text }], PLACE_SCHEMA, 2000).then(function (res) {
       placing = false;
+      if (res.status === 200) countTurn();
       var j = res.status === 200 ? jsonOf(res.data) : null;
-      if (!j || !Array.isArray(j.places)) return;
+      if (!j || !Array.isArray(j.places)) {
+        if (poolsOpen) listenSays(whyNot(res));
+        return;
+      }
       var places = keptHere(PLACED);
       j.places.forEach(function (p) {
         var d = todo[Number(p.day) - 1], ns = Mark.inOrder(p.places);
@@ -2726,10 +2740,10 @@
       '\n\nUsed here before: ' + (before.filter(function (h) { return h.way; }).map(function (h) { return h.way + ' (' + h.date + ')'; }).join(', ') || 'none') + '.' +
       '\n\nThe questions this shell has asked before:' + (asked.length ? '\n' + asked.map(function (h) { return '- ' + h.date + ': ' + h.question; }).join('\n') : ' none.');
     return claude(LISTEN_LAW, [{ role: 'user', content: text }], LISTEN_SCHEMA, 2000).then(function (res) {
-      if (res.status === 401 || res.status === 403) throw { key: true };
-      if (res.status !== 200 || res.data.stop_reason === 'refusal') throw {};
-      var r = readListening(res.data, list, whispers);
-      if (!r) throw {};
+      if (res.status !== 200) throw { res: res };
+      countTurn();
+      var r = res.data.stop_reason === 'refusal' ? null : readListening(res.data, list, whispers);
+      if (!r) throw { res: res };
       return r;
     });
   }
@@ -2764,8 +2778,7 @@
     if (!stored(KEY) || turnsToday() >= TURNS_A_DAY) return { list: list, whispers: whispers };
     var promise = readWays().then(function (ways) {
       var here = ways && ways[i];
-      if (!here || !here.length) throw {};
-      countTurn();
+      if (!here || !here.length) throw { beach: true };
       return listenWith(list, here, whispers, i, history);
     }).then(function (r) {
       var all = heardHere();
@@ -2795,6 +2808,7 @@
   function listenTo(i) {
     var turn = ++listenTurn;
     listening = true;
+    listenSays('');
     layerOpened('shell');
     remember();
     $('listen').classList.add('lifted');
@@ -2810,7 +2824,7 @@
     opened.then(function () {
       if (turn !== listenTurn) throw {};
       var got = readingFor(i);
-      if (!got.ready && !got.promise) throw {};
+      if (!got.ready && !got.promise) throw { rest: true };
       return Promise.all([got.ready ? got.ready : got.promise, ear]).then(function (both) {
         return { r: both[0], got: got };
       });
@@ -2823,7 +2837,11 @@
       $('listen').classList.remove('waiting');
       if (turn !== listenTurn) return;
       putBack();
-      if (e && e.key) openCard($('listen'));
+      // Never silent (2.87): a key not accepted opens the voice card; every
+      // other failure says why beneath the shell.
+      if (e && refusedKey(e.res)) { openCard($('listen'), KEY_REFUSED); return; }
+      listenSays(e && e.res ? whyNot(e.res) : e && e.beach ? UNREACHED :
+        e && e.rest ? 'That\u2019s enough for today. Come back tomorrow.' : whyNot(null));
     });
   }
   // The person's own words come out of the shell one after another, each
@@ -3123,8 +3141,11 @@
       if (turn !== listenTurn || !listening || poolNow !== i) return;
       $('listen').classList.remove('waiting');
       surface(r, got.list, i, got.whispers, true);
-    }, function () {
-      if (turn === listenTurn && listening && poolNow === i) rest();
+    }, function (e) {
+      if (turn !== listenTurn || !listening || poolNow !== i) return;
+      // The whisper is kept; the shell couldn't listen again, and says why.
+      rest();
+      listenSays(e && e.res ? whyNot(e.res) : e && e.beach ? UNREACHED : whyNot(null));
     });
   }
   // The whisper's words sink into the shell's mouth, as theirs rose from it.
@@ -3514,13 +3535,40 @@
     }
     return fetch(API, { method: 'POST', headers: headers, body: JSON.stringify(body) }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
-        if (r.status === 400 && !plain) {
+        if (r.status === 400 && !plain && !noCredit({ status: 400, data: j })) {
           plain = true;
           return claude(system, msgs, schema, max);
         }
-        return { status: r.status, data: j };
+        return { status: r.status, data: j || {} };
       });
+    }, function () {
+      return { status: 0, data: {} };
     });
+  }
+  // Never silent (2.87): why a call failed, in one plain line; a key not
+  // accepted opens the voice card instead, with its own line. A call counts
+  // toward the day's turns only when it answers 200.
+  var KEY_REFUSED = 'Claude didn\u2019t accept this key. Add another, or a code.';
+  function noCredit(res) {
+    var e = res && res.data && res.data.error;
+    return res.status === 400 && !!e && /credit/i.test(e.message || '');
+  }
+  function refusedKey(res) { return !!res && (res.status === 401 || res.status === 403); }
+  function whyNot(res) {
+    if (!res) return 'Claude couldn\u2019t answer just now. Try again in a minute.';
+    if (!res.status) return 'You\u2019re offline.';
+    if (refusedKey(res)) return KEY_REFUSED;
+    if (noCredit(res)) return 'This key has run out of credit.';
+    if (res.status === 429 || res.status === 529 || res.status >= 500) return 'Claude is busy. Try again in a minute.';
+    return 'Claude couldn\u2019t answer just now. Try again in a minute.';
+  }
+  function callSays(words) {
+    $('call-fail').textContent = words || '';
+    $('call-fail').hidden = !words;
+  }
+  function listenSays(words) {
+    $('listen-fail').textContent = words || '';
+    $('listen-fail').hidden = !words;
   }
   function call() { return claude(LAW, messages, SCHEMA); }
   // The JSON in a reply's text, or null.
@@ -3656,14 +3704,14 @@
     if (keepAfter) turnsLeft = 0;
     messages.push({ role: 'user', content: (before ? 'What they said:\n' + words : opening(words, now)) +
       '\n\nTurns back left for this telling: ' + turnsLeft + (turnsLeft ? '' : ' (return the sheet now, with ask empty)') + '.' });
-    countTurn();
+    callSays('');
     setBusy(true);
     call().then(function (res) {
       setBusy(false);
-      if (res.status === 401 || res.status === 403) throw { key: true };
-      if (res.status !== 200) throw {};
+      if (res.status !== 200) throw { res: res };
+      countTurn();
       var reply = readReply(res.data);
-      if (!reply) throw {};
+      if (!reply) throw { res: res };
       if (reply.refused) {
         messages.length = before;
         keepAfter = false;
@@ -3685,17 +3733,21 @@
         showAsk(reply.ask, reply.reflect);
         return;
       }
-      if (!drawn) throw {};
+      if (!drawn) throw { res: res };
       drawSheet();
       if (keepAfter) { keepAfter = false; keepDrawn(); }
     }).catch(function (e) {
-      // Nothing is said: the turn is taken back and their words return.
+      // Never silent (2.87): the turn is taken back, their words return, and
+      // one plain line says why; a key not accepted opens the voice card.
       setBusy(false);
       messages.length = before;
       keepAfter = false;
       box.value = words;
-      if (e && e.key) openCard(send);
-      else box.focus();
+      var res = e && e.res;
+      if (refusedKey(res)) { openCard(send, KEY_REFUSED); return; }
+      callSays(whyNot(res));
+      if (!before) showHello();
+      box.focus();
     });
   });
 
@@ -3746,6 +3798,7 @@
     $('day-lines').textContent = '';
     form.hidden = false;
     $('question').hidden = false;
+    callSays('');
     showHello();
     startUntouched();
     showInvite();
@@ -4867,8 +4920,9 @@
       hold(GREETED, JSON.stringify(was));
     }
   }
+  var keyRefused = '';
   function greetFirst() {
-    if (!inside || !stored(KEY) || greetingSpent || greetWaiting || card.open) return;
+    if (!inside || !stored(KEY) || stored(KEY) === keyRefused || greetingSpent || greetWaiting || card.open) return;
     var who = stored(NAME) || held(CHOSEN), t = todayAddress(), was = null;
     try { was = JSON.parse(held(GREETED) || 'null'); } catch (e) {}
     if (was && was.who === who && was.day === t) {
@@ -4894,6 +4948,12 @@
       if (j && typeof j.ask === 'string' && j.ask.trim()) {
         greeting = { greet: typeof j.greet === 'string' ? j.greet.trim() : '', ask: j.ask.trim() };
         hold(GREETED, JSON.stringify({ who: who, day: t, greet: greeting.greet, ask: greeting.ask }));
+        callSays('');
+      } else if (refusedKey(res)) {
+        keyRefused = stored(KEY);
+        openCard(null, KEY_REFUSED);
+      } else {
+        callSays(whyNot(res.status === 200 ? null : res));
       }
       showHello();
     });
