@@ -936,18 +936,26 @@
     text-underline-offset: 0.25em;
   }
 
-  /* The quiet corner: a small dot at the foot, and its card. */
+  /* The quiet corner (2.85): 'Your Claude', small at the foot's right,
+     once someone has said who they are; and its card. */
   .sd-corner {
+    display: block;
     font: inherit;
-    font-size: 2rem;
-    line-height: 1;
+    font-size: 0.95rem;
+    font-style: italic;
     color: var(--muted);
     background: none;
     border: 0;
-    min-width: 2.75rem;
     min-height: 2.75rem;
-    margin: 0.4rem auto 0;
+    margin: 0.4rem 0 0 auto;
+    padding: 0.3rem 0.2rem;
     cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+  }
+  .sd-corner[hidden] {
+    display: none;
   }
   dialog.sd-card {
     width: min(24rem, calc(100vw - 2rem));
@@ -1155,7 +1163,6 @@
   main.sd.at-door .sd-days,
   main.sd.at-door .sd-invite:not(.sd-offline),
   main.sd.at-door .sd-greet,
-  main.sd.at-door .sd-door,
   main.sd.at-door .sd-not-you,
   main.sd.at-door .sd-corner,
   main.sd.at-door form.sd-speak {
@@ -1189,22 +1196,6 @@
   .sd-card .sd-inline {
     padding: 0 0.15rem;
     font-size: inherit;
-  }
-
-  /* The other door (6.4.1 (4)): with no key, once a name is known, the way
-     in through their own Claude, quiet above the foot. */
-  .sd-door {
-    width: 100%;
-    max-width: 30rem;
-    margin: 1.4rem auto 0;
-    font-size: 0.85rem;
-    font-style: italic;
-    line-height: 1.45;
-    color: var(--muted);
-    text-align: center;
-  }
-  .sd-door + .sd-help {
-    margin-top: 0.4rem;
   }
 
   /* About and help (6.1.1): one quiet line at the very foot of every screen;
@@ -1400,6 +1391,68 @@
     color: var(--muted);
     margin: 1rem 0 0;
   }
+  /* The voice (2.84): its heading, one plain sentence, the ways in their
+     order, the bottom line once, and keeping in your own words, last. */
+  dialog.sd-voice {
+    max-height: calc(100svh - 2rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .sd-voice-h {
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    text-align: left;
+    color: var(--ink);
+    margin: 0 0 0.6rem;
+  }
+  .sd-voice-h:focus {
+    outline: none;
+  }
+  .sd-voice-why,
+  .sd-voice-say {
+    line-height: 1.45;
+    margin: 0;
+  }
+  .sd-voice-using {
+    font-style: italic;
+    margin: 0.6rem 0 0;
+  }
+  .sd-voice-way {
+    margin: 0.9rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--frame);
+  }
+  .sd-voice-way .sd-card-row {
+    margin-top: 0.6rem;
+  }
+  .sd-voice-way-h {
+    font-style: italic;
+    margin: 0 0 0.2rem;
+  }
+  .sd-voice-how {
+    font-size: 0.98rem;
+    line-height: 1.4;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+  .sd-voice-how a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+  }
+  .sd-voice-bottom {
+    line-height: 1.45;
+    margin: 0.9rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--frame);
+  }
+  .sd-voice-own {
+    margin: 0.2rem 0 0;
+  }
 </style>
 </head>
 <body>
@@ -1526,10 +1579,9 @@
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
-    <button type="button" class="sd-corner" id="corner" aria-label="More" aria-haspopup="dialog" hidden>·</button>
+    <button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button>
   </div>
 
-  <p class="sd-door" id="door-line" hidden>Already talk to Claude in your own chat? Say: <span id="door-say"></span></p>
   <p class="sd-help" id="help-line"><button type="button" class="sd-about-open" id="about-open" aria-haspopup="dialog">About</button> · <span>If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</span></p>
 
   <dialog class="sd-about" id="about" aria-labelledby="about-head">
@@ -1572,48 +1624,61 @@
     </article>
   </dialog>
 
-  <dialog class="sd-card" id="card" aria-labelledby="key-label">
-    <form id="key-form" method="dialog">
-      <label for="key" id="key-label">your Claude API key</label>
-      <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <label for="phrase" class="sd-or">or a passphrase</label>
+  <dialog class="sd-card sd-voice" id="card" aria-labelledby="voice-head">
+    <h2 class="sd-voice-h" id="voice-head" tabindex="-1">To talk back, Sundial needs Claude.</h2>
+    <p class="sd-voice-why">Sundial gives your day back through Claude, and Claude needs a key, which costs a little for each conversation.</p>
+    <p class="sd-voice-using" id="voice-using" hidden><span id="voice-using-says"></span> <button type="button" class="sd-quiet sd-inline" id="drop-key">Take it away</button></p>
+    <p class="sd-soft" id="voice-note" role="status" hidden></p>
+    <div class="sd-voice-way" id="way-chat" hidden>
+      <p class="sd-voice-way-h">Already use Claude with the beach?</p>
+      <p class="sd-voice-say">In your own chat, say: <q id="chat-say"></q></p>
+      <button type="button" class="sd-quiet" id="chat-copy">copy</button>
+    </div>
+    <form class="sd-voice-way" id="code-form">
+      <label for="phrase">A code from a friend</label>
       <input id="phrase" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <div class="sd-card-row">
-        <button type="submit" class="sd-keep-key" id="keep-key" value="keep">Keep it here</button>
-        <button type="button" class="sd-quiet" id="drop-key" hidden>Take it away</button>
-        <button type="button" class="sd-quiet" id="close-card">Close</button>
-      </div>
-      <div class="sd-steward" id="steward" hidden>
-        <button type="button" class="sd-quiet" id="steward-open">host: share Claude with the people you bring in</button>
-        <div id="steward-ask" hidden>
-          <label for="share-key">your Anthropic access code (it begins sk-ant-)</label>
-          <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-          <label for="share-phrase">a passphrase for the people you bring in, twelve letters or more</label>
-          <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
-          <div class="sd-card-row">
-            <button type="button" class="sd-keep-key" id="steward-seal">Share it</button>
-            <button type="button" class="sd-quiet" id="steward-not">Not now</button>
-          </div>
-          <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
-        </div>
-        <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Shared. Anyone you give the passphrase to can use Claude here now.</p>
-      </div>
-      <div class="sd-forget" id="forget" hidden>
-        <button type="button" class="sd-quiet" id="forget-open">forget me</button>
-        <div id="forget-ask" hidden>
-          <p class="sd-soft" id="forget-line"></p>
-          <div id="fword-row">
-            <label for="fword">your secret word</label>
-            <input id="fword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-          </div>
-          <div class="sd-card-row">
-            <button type="button" class="sd-keep-key" id="forget-go">Forget me</button>
-            <button type="button" class="sd-quiet" id="forget-not">Not now</button>
-          </div>
-        </div>
-      </div>
-      <p class="sd-version" id="version"></p>
+      <p class="sd-soft" id="code-note" role="status" hidden></p>
+      <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-code">Use this code</button></div>
     </form>
+    <div class="sd-steward" id="steward" hidden>
+      <button type="button" class="sd-quiet" id="steward-open">host: share Claude with the people you bring in</button>
+      <div id="steward-ask" hidden>
+        <label for="share-key">your Anthropic access code (it begins sk-ant-)</label>
+        <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <label for="share-phrase">a passphrase for the people you bring in, twelve letters or more</label>
+        <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
+        <div class="sd-card-row">
+          <button type="button" class="sd-keep-key" id="steward-seal">Share it</button>
+          <button type="button" class="sd-quiet" id="steward-not">Not now</button>
+        </div>
+        <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
+      </div>
+      <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Shared. Anyone you give the passphrase to can use Claude here now.</p>
+    </div>
+    <form class="sd-voice-way" id="key-form">
+      <label for="key" id="key-label">Your own Claude API key</label>
+      <p class="sd-voice-how">Made at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>; kept only in this browser, and sent nowhere but to Claude.</p>
+      <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <p class="sd-soft" id="key-note" role="status" hidden></p>
+      <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-key">Keep it here</button></div>
+    </form>
+    <p class="sd-voice-bottom" id="voice-bottom">Without a code or a key, the page can’t talk back.</p>
+    <p class="sd-voice-own"><button type="button" class="sd-quiet" id="close-card">Keep today in your own words for now.</button></p>
+    <div class="sd-forget" id="forget" hidden>
+      <button type="button" class="sd-quiet" id="forget-open">forget me</button>
+      <div id="forget-ask" hidden>
+        <p class="sd-soft" id="forget-line"></p>
+        <div id="fword-row">
+          <label for="fword">your secret word</label>
+          <input id="fword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </div>
+        <div class="sd-card-row">
+          <button type="button" class="sd-keep-key" id="forget-go">Forget me</button>
+          <button type="button" class="sd-quiet" id="forget-not">Not now</button>
+        </div>
+      </div>
+    </div>
+    <p class="sd-version" id="version"></p>
   </dialog>
 
   <dialog class="sd-card" id="find-card" aria-label="Your days">
@@ -2144,17 +2209,7 @@
     // 'Not you?' (2.81): beneath the sundial at the start, back to the
     // first screen.
     $('not-you-row').hidden = !start;
-    showDoor();
     showTurnOffer();
-  }
-  // The other door (6.4.1 (4)): with no key, once a name is known or typed,
-  // one quiet line at the foot of the arrive screen, the way in through
-  // their own Claude.
-  var typedName = '';
-  function showDoor() {
-    var name = stored(NAME) || held(LOOKING) || typedName;
-    if (name) $('door-say').textContent = 'Open my door. I\u2019m ' + name + '.';
-    $('door-line').hidden = !(name && !stored(KEY) && !tideOpen && !poolsOpen);
   }
   function tapDial() {
     if (busy || keeping || !tappable()) return;
@@ -2173,7 +2228,7 @@
     tideOpen = true;
     layerOpened('tide');
     remember();
-    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
+    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
     hiddenBefore.forEach(function (h) { $(h[0]).hidden = true; });
     main.classList.add('tide-open');
     $('tide').hidden = false;
@@ -2356,7 +2411,7 @@
     poolsOpen = true;
     layerOpened('pools');
     poolNow = -1;
-    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
+    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
     ['pool-phrase', 'pool-question', 'listen', 'listen-hint', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
@@ -3051,10 +3106,6 @@
   findCard.addEventListener('close', function () { if (!stored(NAME)) dialEl.focus(); });
   $('find-not').addEventListener('click', closeFind);
   var finding = false;
-  fname.addEventListener('input', function () {
-    typedName = Days.handle(fname.value);
-    showDoor();
-  });
   $('find-form').addEventListener('submit', function (ev) {
     ev.preventDefault();
     if (finding || !Days.handle(fname.value)) { fname.focus(); return; }
@@ -3111,74 +3162,122 @@
     d.addEventListener('close', function () { hiders.forEach(function (h) { h(); }); });
   });
 
-  // ---- The quiet corner -----------------------------------------------------------
+  // ---- The voice (2.84, 2.85) ----------------------------------------------------------
+  // One card, straight after the way in when this browser holds no key, and
+  // at any time from 'Your Claude' in the corner: why Sundial needs Claude,
+  // then the ways, in their order (the own-chat line for a name already on
+  // the beach, a code from a friend, their own key), the bottom line once,
+  // and, quietly last, keeping today in their own words. It shows which is
+  // in use, a friend's code or their own key, never the key itself.
+  var KEY_FROM = 'sundial.keyfrom';   // 'code' or 'own': the way the key came
   var returnTo = null, phraseBox = $('phrase');
   $('version').textContent = VERSION;
-  function showCorner() { corner.hidden = false; }
-  function openCard(from) {
+  function showCorner() { corner.hidden = !inside; }
+  function voiceSays(words) {
+    $('voice-note').textContent = words || '';
+    $('voice-note').hidden = !words;
+  }
+  function codeSays(words) {
+    $('code-note').textContent = words || '';
+    $('code-note').hidden = !words;
+  }
+  function keySays(words) {
+    $('key-note').textContent = words || '';
+    $('key-note').hidden = !words;
+  }
+  function openCard(from, says) {
     returnTo = from || null;
-    var has = !!stored(KEY);
+    var has = !!stored(KEY), came = stored(KEY_FROM), name = stored(NAME);
     keyBox.value = '';
     phraseBox.value = '';
-    keyBox.placeholder = has ? 'kept in this browser' : '';
     stewardWord = '';
     continueSend = false;
+    $('voice-head').textContent = has ? 'Your Claude' : 'To talk back, Sundial needs Claude.';
+    $('voice-using-says').textContent = !has ? '' : 'In use here: ' +
+      (came === 'code' ? 'a friend\u2019s code.' : came === 'own' ? 'your own key.' : 'a key kept in this browser.');
+    $('voice-using').hidden = !has;
+    voiceSays(says);
+    codeSays('');
+    keySays('');
+    // (a) A name already on the beach can bring its own Claude instead.
+    $('way-chat').hidden = !name;
+    $('chat-say').textContent = name ? 'Open my door. I\u2019m ' + name + '.' : '';
+    $('chat-copy').textContent = 'copy';
+    $('voice-bottom').hidden = has;
+    $('close-card').textContent = has ? 'Close' : 'Keep today in your own words for now.';
     $('steward').hidden = true;
-    $('drop-key').hidden = !has;
     $('forget').hidden = !stored(NAME);
     $('forget-ask').hidden = true;
     $('forget-open').hidden = false;
     showCorner();
     if (card.showModal) card.showModal();
     else card.setAttribute('open', '');
-    keyBox.focus();
+    card.scrollTop = 0;
+    $('voice-head').focus({ preventScroll: true });
   }
   function closeCard() {
     if (card.open) card.close ? card.close() : card.removeAttribute('open');
   }
-  // Opened by Send with no key: once a key is kept, the words go on their
-  // way without a second tap.
+  // Opened when Claude didn't take the key: once another is kept, the words
+  // go on their way without a second tap. Otherwise, a key now held lets
+  // Claude speak first (2.86).
   var continueSend = false;
   card.addEventListener('close', function () {
     var go = continueSend && !!stored(KEY) && !!box.value.trim();
     continueSend = false;
-    showDoor();
     stewardWord = '';
     $('share-key').value = '';
     $('share-phrase').value = '';
     if (returnTo) returnTo.focus();
     returnTo = null;
     if (go) form.requestSubmit ? form.requestSubmit(send) : send.click();
+    else voiced();
   });
-  // A key pasted is kept as it is. A passphrase opens the roster's key
-  // (4.3), kept in this browser the same way; one that opens nothing gets
-  // nothing, and no word about it, unless it is the steward's own (6.6).
-  var unlocking = false, stewardWord = '';
-  $('key-form').addEventListener('submit', function (ev) {
-    var k = keyBox.value.trim(), p = phraseBox.value;
-    if (k) {
-      store(KEY, k);
-      continueSend = returnTo === send;
-      keyBox.value = '';
-      phraseBox.value = '';
-      return;
+  function useKey(k, came) {
+    store(KEY, k);
+    store(KEY_FROM, came);
+    continueSend = returnTo === send;
+    closeCard();
+  }
+  // (a) The line to say in their own chat, copied with one tap; where the
+  // phone can't copy, the line is selected for them.
+  $('chat-copy').addEventListener('click', function () {
+    var say = $('chat-say'), sel = window.getSelection && window.getSelection();
+    function pick() {
+      if (!sel || !document.createRange) return;
+      var r = document.createRange();
+      r.selectNodeContents(say);
+      sel.removeAllRanges();
+      sel.addRange(r);
     }
+    if (!navigator.clipboard) { pick(); return; }
+    navigator.clipboard.writeText(say.textContent).then(function () {
+      $('chat-copy').textContent = 'copied';
+    }, pick);
+  });
+  // (b) A code from a friend opens the roster's key (4.3), kept in this
+  // browser; the steward's own word opens the host's line (6.6). A code that
+  // opens nothing is said so (2.87).
+  var unlocking = false, stewardWord = '';
+  phraseBox.addEventListener('input', function () { codeSays(''); });
+  $('code-form').addEventListener('submit', function (ev) {
     ev.preventDefault();
-    if (!p.trim()) { keyBox.focus(); return; }
+    var p = phraseBox.value;
+    if (!p.trim()) { phraseBox.focus(); return; }
     if (unlocking) return;
     unlocking = true;
-    $('keep-key').disabled = true;
+    $('keep-code').disabled = true;
+    codeSays('');
     Roster.open(p).then(function (r) {
       if (r.key) return { key: r.key };
+      if (r.roster && r.roster.state === 'unreachable') return { unreachable: true };
       return Roster.steward(p, r.roster, stored(NAME) === STEWARD).then(function (yes) { return { steward: yes }; });
-    }).catch(function () { return {}; }).then(function (r) {
+    }).catch(function () { return { unreachable: true }; }).then(function (r) {
       unlocking = false;
-      $('keep-key').disabled = false;
+      $('keep-code').disabled = false;
       phraseBox.value = '';
       if (r.key) {
-        store(KEY, r.key);
-        continueSend = returnTo === send;
-        closeCard();
+        useKey(r.key, 'code');
       } else if (r.steward) {
         stewardWord = p;
         $('steward').hidden = false;
@@ -3187,9 +3286,24 @@
         $('steward-open').hidden = false;
         $('steward-open').focus();
       } else {
+        codeSays(r.unreachable ? UNREACHED : 'That code doesn\u2019t open anything.');
         phraseBox.focus();
       }
     });
+  });
+  // (c) Their own key, kept as it is, only in this browser.
+  keyBox.addEventListener('input', function () { keySays(''); });
+  $('key-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var k = keyBox.value.trim();
+    if (!k) { keyBox.focus(); return; }
+    if (!/^sk-ant-/.test(k)) {
+      keySays('That isn\u2019t a Claude key: they begin sk-ant-.');
+      keyBox.focus();
+      return;
+    }
+    keyBox.value = '';
+    useKey(k, 'own');
   });
 
   // The steward's line: a key to share and a passphrase to give out,
@@ -3242,6 +3356,7 @@
   });
   $('drop-key').addEventListener('click', function () {
     store(KEY, '');
+    store(KEY_FROM, '');
     closeCard();
   });
   $('close-card').addEventListener('click', closeCard);
@@ -3617,8 +3732,6 @@
   var NAME_HERE = 'That name is already here. If it\u2019s yours, your word opens it.';
   var NAME_TAKEN = 'That name is already someone\u2019s. If it\u2019s yours, your word will open it.';
   kname.addEventListener('input', function () {
-    typedName = Days.handle(kname.value);
-    showDoor();
     clearTimeout(checkTimer);
     var n = ++checking;
     checkTimer = setTimeout(function () {
@@ -3754,7 +3867,7 @@
     function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
     function play(el, frames, opts) { if (el && el.animate) anims.push(el.animate(frames, opts)); }
     momentNow = m;
-    ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'door-line', 'not-you-row'].forEach(function (id) { $(id).hidden = true; });
+    ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'not-you-row'].forEach(function (id) { $(id).hidden = true; });
     form.hidden = true;
     $('moment-on').textContent = m.ninth && m.nine ? MOMENT_NINE : m.first ? MOMENT_FIRST : MOMENT_ON;
     Array.prototype.forEach.call(lines, function (p) { p.classList.remove('shown'); });
@@ -3963,7 +4076,7 @@
     if (!turnNow) layerOpened('turn');
     var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '' };
     turnWordsRead = turnWordsRead || readTurnWords();
-    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'door-line', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
+    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
     form.hidden = true;
     dial.turn(k, dir, STILL.matches).then(function () {
       if (turnNow !== mine) return;
@@ -4433,7 +4546,6 @@
             hold(LOOKING, name);
             hold(WORD, word);
             whoName.input.value = whoWord.input.value = '';
-            showDoor();
           }
           var mine = wordsSaid.filter(function (m) { return m.name === name; })[0];
           if (!mine) wordsSaid.push(mine = { name: name, when: when, at: {}, dates: {} });
@@ -4649,6 +4761,8 @@
     if (!stored(KEY)) openCard();
     return read;
   }
+  // The voice card closed.
+  function voiced() {}
   $('way-back').addEventListener('click', function () { openBack(); });
   $('way-new').addEventListener('click', function () { openNew(); });
 
