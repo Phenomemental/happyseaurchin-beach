@@ -4859,6 +4859,7 @@
     hold(LOOKING, '');
     hold(SEEN, '');
     hold(OPEN, '');
+    hold(GREETED, '');
   }
   $('not-you').addEventListener('click', function () {
     leaveHere();
@@ -4903,12 +4904,17 @@
       }).join('\n') : '') +
       (aheadText ? '\nTomorrow\u2019s line: ' + flatText(aheadText) : '');
   }
+  // At the start screen only: never over the strandline, the pools, a turn
+  // or the keep.
+  function atStart() {
+    return inside && !busy && !(messages && messages.length) && !sheetNow && !tideOpen && !poolsOpen && !turnNow && !momentNow;
+  }
   function showHello() {
     var g = greetNow();
     $('hello').textContent = g ? g.greet : '';
     $('hello').hidden = !(g && g.greet) || !!(messages && messages.length);
     tick();
-    if (inside && !busy && !(messages && messages.length) && !sheetNow) showGreeting();
+    if (atStart()) showGreeting();
     showTurnOffer();
   }
   function spendGreeting() {
@@ -4963,6 +4969,7 @@
   function voiced() {
     if (!inside) return;
     box.placeholder = stored(KEY) ? '' : OWN_BOX;
+    if (!atStart()) return;
     showHello();
     startUntouched();
     if (stored(KEY)) (reading || Promise.resolve()).then(greetFirst);
