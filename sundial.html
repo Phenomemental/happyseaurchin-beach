@@ -1150,6 +1150,47 @@
     margin: 0;
   }
 
+  /* The way in (2.81): on arrival, the heart, its name, the date and two
+     choices only. Everything else waits until they have said who they are. */
+  main.sd.at-door .sd-days,
+  main.sd.at-door .sd-invite:not(.sd-offline),
+  main.sd.at-door .sd-greet,
+  main.sd.at-door .sd-door,
+  main.sd.at-door .sd-not-you,
+  main.sd.at-door .sd-corner,
+  main.sd.at-door form.sd-speak {
+    display: none;
+  }
+  .sd-way {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .sd-way[hidden] {
+    display: none;
+  }
+  .sd-way-go {
+    font: inherit;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--frame);
+    border-radius: 2px;
+    width: min(18rem, 100%);
+    min-height: 3rem;
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+  }
+  .sd-not-you {
+    margin-top: 0.2rem;
+  }
+  .sd-card .sd-inline {
+    padding: 0 0.15rem;
+    font-size: inherit;
+  }
+
   /* The other door (6.4.1 (4)): with no key, once a name is known, the way
      in through their own Claude, quiet above the foot. */
   .sd-door {
@@ -1376,6 +1417,7 @@
   </svg>
   <p class="sd-name">SUNDIAL</p>
   <p class="sd-days" id="days-count" hidden></p>
+  <p class="sd-bring-row sd-not-you" id="not-you-row" hidden><button type="button" class="sd-bring" id="not-you">Not you?</button></p>
   <p class="sd-invite sd-offline" id="offline" role="status" hidden>The beach can’t be reached just now</p>
   <p class="sd-invite" id="invite" hidden></p>
 
@@ -1474,6 +1516,10 @@
   </section>
 
   <div class="sd-foot">
+    <div class="sd-way" id="way" hidden>
+      <button type="button" class="sd-way-go" id="way-back" aria-haspopup="dialog">I’ve been here before</button>
+      <button type="button" class="sd-way-go" id="way-new" aria-haspopup="dialog">I’m new</button>
+    </div>
     <form class="sd-speak" id="speak">
       <p class="sd-question" id="question">What’s with you today?</p>
       <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
@@ -1615,6 +1661,39 @@
       </div>
     </form>
   </dialog>
+
+  <dialog class="sd-card" id="back-card" aria-labelledby="bname-label">
+    <form id="back-form">
+      <label for="bname" id="bname-label">your name here</label>
+      <input id="bname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+      <label for="bword">your secret word</label>
+      <input id="bword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <p class="sd-soft" id="back-note" role="status" hidden><span id="back-says"></span> <button type="button" class="sd-quiet sd-inline" id="back-new" hidden>New here?</button></p>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="back-go">Go on</button>
+        <button type="button" class="sd-quiet" id="back-not">Not now</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="sd-card" id="new-card" aria-labelledby="nname-label">
+    <form id="new-form">
+      <label for="nname" id="nname-label">choose a name</label>
+      <input id="nname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+      <p class="sd-soft" id="nname-note" role="status" hidden><span id="nname-says"></span> <button type="button" class="sd-quiet sd-inline" id="nname-mine" hidden>It’s mine</button></p>
+      <label for="nword">choose a secret word</label>
+      <input id="nword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <ul class="sd-truths">
+        <li>Anyone can read your days, and only your word can add to them.</li>
+        <li>Nobody else holds the word, not even us.</li>
+        <li>Write it down: without it your days stay, but you can’t add to them.</li>
+      </ul>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="new-go">Go on</button>
+        <button type="button" class="sd-quiet" id="new-not">Not now</button>
+      </div>
+    </form>
+  </dialog>
 </main>
 
 <script src="beach.js?v=2026-10-23b"></script>
@@ -1654,6 +1733,9 @@
   // a browser that keeps this name's days is shown the steward's line.
   var STEWARD = 'Phenomemental';
   var WORD = 'sundial.word', SEEN = 'sundial.days', LOOKING = 'sundial.looking';   // held for this visit only
+  // A name chosen new this visit (2.83): held with its word, and written to
+  // the beach only at the first keep, when it becomes this browser's name.
+  var CHOSEN = 'sundial.chosen';
   var LAST = 'sundial.last';   // the days last read, kept here so the app opens with them offline (6.1.4)
   var API = 'https://api.anthropic.com/v1/messages';
 
@@ -1848,6 +1930,7 @@
     $('days-count').hidden = !n;
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
     if (stored(NAME)) store(LAST, JSON.stringify({ name: stored(NAME), days: all.days || [], moments: all.moments || [] }));
+    setDialTap();
     showInvite();
   }
   // The last day before today with anything kept, as its day address.
@@ -1920,8 +2003,9 @@
   function reached(ok) { $('offline').hidden = ok; }
   function comeBack() {
     var name = stored(NAME) || held(LOOKING);
-    if (!name) { reached(navigator.onLine !== false); return; }
-    Days.readAll(name).then(function (all) {
+    if (!inside) return Promise.resolve();
+    if (!name) { reached(navigator.onLine !== false); return Promise.resolve(); }
+    return Days.readAll(name).then(function (all) {
       reached(true);
       showAll(all);
       showGreeting();
@@ -1939,9 +2023,8 @@
       }
     });
   }
-  comeBack();
   window.addEventListener('offline', function () { reached(false); });
-  window.addEventListener('online', function () { if (!busy && !keeping && !sheetNow) comeBack(); else reached(true); });
+  window.addEventListener('online', function () { if (inside && !busy && !keeping && !sheetNow) comeBack(); else reached(true); });
 
   // ---- The way back (6.8.4 (2)) ----------------------------------------------------
   // Each layer opened (the strandline, the pools, a shell lifted, About) is a
@@ -2026,7 +2109,18 @@
   var dialEl = $('dial'), findCard = $('find-card'), fname = $('fname'), main = $('sd');
   var tideOpen = false, hiddenBefore = null;
   function known() { return !!(stored(NAME) || held(LOOKING)); }
+  // The ring and the colours come only once there are days (2.86): until
+  // then, and on the first screen (2.81), the sundial is a picture, and a
+  // tap or a hold does nothing.
+  function hasDays() { return !!(days.length || moments.length); }
+  function tappable() { return inside && hasDays(); }
   function setDialTap() {
+    if (poolsOpen) return;
+    if (!tappable()) {
+      dialEl.setAttribute('role', 'img');
+      ['tabindex', 'aria-expanded', 'aria-haspopup'].forEach(function (a) { dialEl.removeAttribute(a); });
+      return;
+    }
     dialEl.setAttribute('role', 'button');
     dialEl.setAttribute('tabindex', '0');
     if (known()) {
@@ -2043,13 +2137,13 @@
   // finds them. Never while words are being spoken or a sheet is out.
   var TAPPED = 'sundial.tapped', HELD = 'sundial.held';
   function showInvite() {
-    var line = '';
-    if (!(stored(TAPPED) && stored(HELD)) && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length)) {
-      if (days.length || moments.length) line = 'tap the sundial for your days · hold it for where they rest';
-      else if (!known()) line = 'tap the sundial if you have a name here';
-    }
+    var line = '', start = inside && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length) && !sheetNow && !turnNow;
+    if (start && !(stored(TAPPED) && stored(HELD)) && hasDays()) line = 'tap the sundial for your days · hold it for where they rest';
     $('invite').textContent = line;
     $('invite').hidden = !line;
+    // 'Not you?' (2.81): beneath the sundial at the start, back to the
+    // first screen.
+    $('not-you-row').hidden = !start;
     showDoor();
     showTurnOffer();
   }
@@ -2063,7 +2157,7 @@
     $('door-line').hidden = !(name && !stored(KEY) && !tideOpen && !poolsOpen);
   }
   function tapDial() {
-    if (busy || keeping) return;
+    if (busy || keeping || !tappable()) return;
     if (turnNow) { putTurnAway(); return; }
     store(TAPPED, '1');
     if (poolsOpen) gatherBack();
@@ -2079,7 +2173,7 @@
     tideOpen = true;
     layerOpened('tide');
     remember();
-    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line'].map(function (id) { return [id, $(id).hidden]; });
+    hiddenBefore = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
     hiddenBefore.forEach(function (h) { $(h[0]).hidden = true; });
     main.classList.add('tide-open');
     $('tide').hidden = false;
@@ -2198,7 +2292,7 @@
   // A tap, or a hold of 700ms (a finger, a long press, or Enter held down).
   var HOLD_MS = 700, holdTimer = null, holdBy = '', heldNow = false, keyDown = false;
   function startHold(by) {
-    if (busy || keeping || tideOpen || poolsOpen || turnNow) return;
+    if (busy || keeping || tideOpen || poolsOpen || turnNow || !tappable()) return;
     clearTimeout(holdTimer);
     holdBy = by;
     holdTimer = setTimeout(function () {
@@ -2262,7 +2356,7 @@
     poolsOpen = true;
     layerOpened('pools');
     poolNow = -1;
-    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line'].map(function (id) { return [id, $(id).hidden]; });
+    poolsHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'door-line', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
     poolsHidden.forEach(function (h) { $(h[0]).hidden = true; });
     ['pool-phrase', 'pool-question', 'listen', 'listen-hint', 'heard'].forEach(function (id) { $(id).hidden = true; });
     $('pools').hidden = false;
@@ -3188,23 +3282,10 @@
         $('fword').focus();
         return;
       }
-      store(NAME, '');
+      // Nothing kept now: back to the first screen (2.81).
+      leaveHere();
       store(PLACED, '');
-      store(HEARD, '');
-      hold(WORD, '');
-      hold(SEEN, '');
-      store(LAST, '');
-      hold(LOOKING, '');
-      setDialTap();
-      showAll({ days: [], moments: [] });
-      greet.hidden = true;
-      kept.hidden = true;
-      $('bring-row').hidden = true;
-      day.hidden = true;
-      form.hidden = false;
-      $('question').hidden = false;
-      returnTo = box;
-      closeCard();
+      location.reload();
     });
   });
 
@@ -3382,6 +3463,7 @@
   function ownWords(words) {
     greet.hidden = true;
     $('invite').hidden = true;
+    $('not-you-row').hidden = true;
     kept.hidden = true;
     $('bring-row').hidden = true;
     dayNow = null;
@@ -3399,6 +3481,7 @@
     var now = new Date(), before = messages.length;
     greet.hidden = true;
     $('invite').hidden = true;
+    $('not-you-row').hidden = true;
     kept.hidden = true;
     $('bring-row').hidden = true;
     if (!before) { turnsLeft = firstOfDay() ? 3 : 1; drawn = null; }
@@ -3458,8 +3541,10 @@
   // 'Keep this day' beside the turn (8.721): anything typed and not yet sent
   // goes first, for the sheet to hold it; then the day as it stands is drawn
   // and kept, as the sheet's own Keep does.
+  // The name and word given at the way in (2.82, 2.83) are the ones kept
+  // with, so keeping never asks again.
   function keepDrawn() {
-    var name = stored(NAME), word = held(WORD);
+    var name = stored(NAME) || held(CHOSEN), word = held(WORD);
     if (name && word) keepWith(name, word);
     else openKeep();
   }
@@ -3507,7 +3592,7 @@
   // the word once a visit, and then one tap.
   var checking = 0, checkTimer = null, keeping = false;
   function openKeep() {
-    var name = stored(NAME), looking = held(LOOKING);
+    var name = stored(NAME), looking = held(LOOKING) || held(CHOSEN);
     $('name-row').hidden = !!name;
     $('truths').hidden = !!name;
     $('kname-note').hidden = true;
@@ -3548,9 +3633,7 @@
   });
   $('keep').addEventListener('click', function () {
     if (!sheetNow || keeping) return;
-    var name = stored(NAME), word = held(WORD);
-    if (name && word) keepWith(name, word);
-    else openKeep();
+    keepDrawn();
   });
   kword.addEventListener('input', function () { $('kword-note').hidden = true; });
   $('keep-form').addEventListener('submit', function (ev) {
@@ -3615,6 +3698,7 @@
       store(NAME, who.name);
       hold(WORD, word);
       hold(LOOKING, '');
+      hold(CHOSEN, '');
       setDialTap();
       return Days.readAll(who.name).catch(function () {
         var t = todayAddress();
@@ -3670,7 +3754,7 @@
     function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
     function play(el, frames, opts) { if (el && el.animate) anims.push(el.animate(frames, opts)); }
     momentNow = m;
-    ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'door-line'].forEach(function (id) { $(id).hidden = true; });
+    ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'door-line', 'not-you-row'].forEach(function (id) { $(id).hidden = true; });
     form.hidden = true;
     $('moment-on').textContent = m.ninth && m.nine ? MOMENT_NINE : m.first ? MOMENT_FIRST : MOMENT_ON;
     Array.prototype.forEach.call(lines, function (p) { p.classList.remove('shown'); });
@@ -3879,7 +3963,7 @@
     if (!turnNow) layerOpened('turn');
     var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '' };
     turnWordsRead = turnWordsRead || readTurnWords();
-    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'door-line', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
+    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'door-line', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
     form.hidden = true;
     dial.turn(k, dir, STILL.matches).then(function () {
       if (turnNow !== mine) return;
@@ -4500,7 +4584,187 @@
   about.addEventListener('click', function (ev) { if (ev.target === about) foldAbout(); });
   about.addEventListener('cancel', function (ev) { ev.preventDefault(); foldAbout(); });
 
-  showInvite();
+  // ---- The way in (2.8) -------------------------------------------------------------
+  // Who you are, first (2.81): the heart, its name, the date and two choices
+  // only. Coming back, one card asks the name and the word together, once,
+  // and the word is held for the visit (2.82); new, one card to choose them,
+  // with nothing written to the beach until the first keep (2.83). A browser
+  // that already holds a name and its word for this visit goes straight in,
+  // with 'Not you?' beneath the sundial to come back here.
+  var inside = false, backCard = $('back-card'), newCard = $('new-card');
+  var UNREACHED = 'The beach can’t be reached just now. Try again in a moment.';
+  function openModal(d) {
+    if (d.showModal) d.showModal();
+    else d.setAttribute('open', '');
+  }
+  function closeModal(d) {
+    if (d.open) d.close ? d.close() : d.removeAttribute('open');
+  }
+  function atDoor() {
+    inside = false;
+    main.classList.add('at-door');
+    $('way').hidden = false;
+    form.hidden = true;
+    corner.hidden = true;
+    setDialTap();
+    showInvite();
+  }
+  function enter() {
+    inside = true;
+    main.classList.remove('at-door');
+    $('way').hidden = true;
+    form.hidden = false;
+    $('question').hidden = false;
+    showCorner();
+    setDialTap();
+    showInvite();
+    return comeBack();
+  }
+  // What one person leaves in this browser, let go so the next begins clean.
+  // The key stays: it belongs to the browser, not to a name.
+  function leaveHere() {
+    store(NAME, '');
+    store(LAST, '');
+    store(HEARD, '');
+    hold(WORD, '');
+    hold(CHOSEN, '');
+    hold(LOOKING, '');
+    hold(SEEN, '');
+    hold(OPEN, '');
+  }
+  $('not-you').addEventListener('click', function () {
+    leaveHere();
+    location.reload();
+  });
+  // Said who they are: the name and word held for the visit, then the voice
+  // when this browser holds no key (2.84), then the sundial.
+  function cameIn(name, word, standing) {
+    if (!standing || stored(NAME) !== name) leaveHere();
+    if (standing) store(NAME, name);
+    else hold(CHOSEN, name);
+    hold(WORD, word);
+    closeModal(backCard);
+    closeModal(newCard);
+    var read = enter();
+    if (!stored(KEY)) openCard();
+    return read;
+  }
+  $('way-back').addEventListener('click', function () { openBack(); });
+  $('way-new').addEventListener('click', function () { openNew(); });
+
+  // Coming back (2.82): the name must stand as a day book on the clock, and
+  // the word must open it; each is said plainly when it doesn't.
+  function backSays(words, newHere) {
+    $('back-says').textContent = words;
+    $('back-new').hidden = !newHere;
+    $('back-note').hidden = !words;
+  }
+  function openBack(name) {
+    $('bname').value = name || stored(NAME);
+    $('bword').value = '';
+    backSays('');
+    openModal(backCard);
+    ($('bname').value ? $('bword') : $('bname')).focus();
+  }
+  var entering = false;
+  $('back-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var typed = $('bname').value, word = $('bword').value;
+    if (!Days.handle(typed)) { $('bname').focus(); return; }
+    if (!word) { $('bword').focus(); return; }
+    if (entering) return;
+    entering = true;
+    $('back-go').disabled = true;
+    backSays('');
+    Days.resolve(typed).then(function (who) {
+      if (!who || who.state === 'free') return 'none';
+      if (who.state !== 'kept') return 'taken';
+      return Days.prove(who.name, word).then(function (r) { return r === 'proved' ? who : r; });
+    }, function () { return 'unreachable'; }).then(function (r) {
+      entering = false;
+      $('back-go').disabled = false;
+      if (r && typeof r === 'object') { cameIn(r.name, word, true); return; }
+      if (r === 'none') { backSays('No days under that name yet.', true); return; }
+      if (r === 'wrong') {
+        backSays('That word doesn’t open these days.');
+        $('bword').value = '';
+        $('bword').focus();
+        return;
+      }
+      backSays(r === 'taken' ? 'That name is someone’s here, with no days this page can open.' : UNREACHED);
+    });
+  });
+  $('back-new').addEventListener('click', function () {
+    var name = $('bname').value;
+    closeModal(backCard);
+    openNew(name);
+  });
+  $('back-not').addEventListener('click', function () { closeModal(backCard); });
+
+  // New (2.83): a name not already someone's, and a word, with the true lines
+  // written beneath. Held for the visit; the first keep makes them.
+  var NAME_SOMEONES = 'That name is already someone’s. Choose another.';
+  var newCheck = 0, newTimer = null, choosing = false;
+  function newSays(words, mine) {
+    $('nname-says').textContent = words;
+    $('nname-mine').hidden = !mine;
+    $('nname-note').hidden = !words;
+  }
+  function openNew(name) {
+    $('nname').value = name || '';
+    $('nword').value = '';
+    newSays('');
+    openModal(newCard);
+    $('nname').focus();
+    if (name) checkNew();
+  }
+  function checkNew() {
+    clearTimeout(newTimer);
+    var n = ++newCheck;
+    newTimer = setTimeout(function () {
+      if (!Days.handle($('nname').value)) { newSays(''); return; }
+      Days.resolve($('nname').value).then(function (who) {
+        if (n !== newCheck || !who) return;
+        if (who.state === 'free') newSays('');
+        else newSays(NAME_SOMEONES, true);
+      }, function () {});
+    }, 500);
+  }
+  $('nname').addEventListener('input', function () {
+    newSays('');
+    checkNew();
+  });
+  $('nname-mine').addEventListener('click', function () {
+    var name = $('nname').value;
+    closeModal(newCard);
+    openBack(name);
+  });
+  $('new-not').addEventListener('click', function () { closeModal(newCard); });
+  $('new-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var typed = Days.handle($('nname').value), word = $('nword').value;
+    if (!typed) { $('nname').focus(); return; }
+    if (!word) { $('nword').focus(); return; }
+    if (choosing) return;
+    choosing = true;
+    $('new-go').disabled = true;
+    clearTimeout(newTimer);
+    ++newCheck;
+    Days.resolve(typed).catch(function () { return 'unreachable'; }).then(function (who) {
+      choosing = false;
+      $('new-go').disabled = false;
+      if (who === 'unreachable') { newSays(UNREACHED); return; }
+      if (!who || who.state !== 'free') {
+        newSays(NAME_SOMEONES, true);
+        $('nname').focus();
+        return;
+      }
+      cameIn(who.name, word, false);
+    });
+  });
+
+  if ((stored(NAME) || held(CHOSEN)) && held(WORD)) enter();
+  else atDoor();
 })();
 </script>
 </body>
