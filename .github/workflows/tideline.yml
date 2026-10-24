@@ -39,12 +39,28 @@ jobs:
       - name: Unpack the signing key
         env:
           TIDELINE_SIGNING_KEY: ${{ secrets.TIDELINE_SIGNING_KEY }}
+          TIDELINE_SIGNING_PASSWORD: ${{ secrets.TIDELINE_SIGNING_PASSWORD }}
         run: |
           if [ -z "$TIDELINE_SIGNING_KEY" ]; then
             echo "::error::The secrets TIDELINE_SIGNING_KEY and TIDELINE_SIGNING_PASSWORD are not set, so no APK can be signed. See tideline/README.md."
             exit 1
           fi
-          printf '%s' "$TIDELINE_SIGNING_KEY" | base64 -d > "$RUNNER_TEMP/tideline-signing.p12"
+          # A secret pasted from a chat or a document can carry line breaks or
+          # spaces; base64 has neither, so they go. The length and the start
+          # of a fingerprint say whether the whole key arrived, and give away
+          # nothing of it.
+          key=$(printf '%s' "$TIDELINE_SIGNING_KEY" | tr -d '[:space:]')
+          echo "TIDELINE_SIGNING_KEY: ${#key} characters, fingerprint $(printf '%s' "$key" | sha256sum | cut -c1-12)"
+          if ! printf '%s' "$key" | base64 -d > "$RUNNER_TEMP/tideline-signing.p12" 2>/dev/null; then
+            echo "::error::TIDELINE_SIGNING_KEY is not the key file as base64. Paste the whole text of tideline-signing.p12.base64.txt into it again."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/tideline-signing.p12" -storetype PKCS12 \
+              -storepass:env TIDELINE_SIGNING_PASSWORD -alias tideline > /dev/null 2>&1; then
+            echo "::error::The signing key and its password do not open together. Paste the whole of tideline-signing.p12.base64.txt into TIDELINE_SIGNING_KEY (1420 characters) and the password into TIDELINE_SIGNING_PASSWORD again."
+            exit 1
+          fi
+          echo "The signing key opens with its password."
 
       - name: Build the app
         env:
