@@ -54,6 +54,14 @@
     text-align: center;
     padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
   }
+  /* The masthead: once inside, the wordmark small above the date (2.81). */
+  .sd-wordmark {
+    font-size: 0.72rem;
+    letter-spacing: 0.5em;
+    padding-left: 0.5em;
+    color: var(--muted);
+    margin: 0 0 0.3rem;
+  }
   .sd-when {
     font-size: 1rem;
     font-variant-caps: all-small-caps;
@@ -417,16 +425,30 @@
     padding-left: 0.5em;
     color: var(--muted);
   }
-  /* The days kept, beneath the name, in the same small capitals (6.9). */
+  /* Inside, the person's name takes the title's place beneath the heart,
+     with the days kept beneath it in small capitals (2.81, 6.9). */
+  .sd-who {
+    font-size: 1.7rem;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    margin: 0.45rem 0 0;
+    text-wrap: balance;
+  }
+  main.sd.inside .sd-name {
+    display: none;
+  }
   .sd-days {
-    font-size: 0.7rem;
+    font-size: 0.82rem;
     letter-spacing: 0.35em;
-    margin: 0.35rem 0 0;
+    margin: 0.3rem 0 0;
     padding-left: 0.35em;
     color: var(--muted);
     text-align: center;
   }
-  main.sd.tide-open .sd-days {
+  main.sd.tide-open .sd-days,
+  main.sd.tide-open .sd-who {
     display: none;
   }
   /* The sundial's one quiet invitation (6.1), until it has been used. */
@@ -969,9 +991,17 @@
   }
 
   /* The quiet corner (2.85): 'Your Claude', small at the foot's right,
-     once someone has said who they are; and its card. */
+     once someone has said who they are, with 'Not you?' beside it; and
+     its card. */
+  .sd-foot-links {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.2rem;
+    margin: 0.4rem 0 0;
+  }
   .sd-corner {
-    display: block;
+    display: inline-block;
     font: inherit;
     font-size: 0.95rem;
     font-style: italic;
@@ -979,14 +1009,15 @@
     background: none;
     border: 0;
     min-height: 2.75rem;
-    margin: 0.4rem 0 0 auto;
+    margin: 0;
     padding: 0.3rem 0.2rem;
     cursor: pointer;
     text-decoration: underline;
     text-decoration-color: var(--frame);
     text-underline-offset: 0.2em;
   }
-  .sd-corner[hidden] {
+  .sd-corner[hidden],
+  #not-you-row[hidden] {
     display: none;
   }
   dialog.sd-card {
@@ -1190,42 +1221,99 @@
     margin: 0;
   }
 
-  /* The way in (2.81): on arrival, the heart, its name, the date and two
-     choices only. Everything else waits until they have said who they are. */
+  /* The way in (2.81): on arrival, the date, the heart, its name and two
+     choices, one composition centred in the height, the help line at the
+     foot. Everything else waits until they have said who they are. */
   main.sd.at-door .sd-days,
+  main.sd.at-door .sd-who,
+  main.sd.at-door .sd-wordmark,
   main.sd.at-door .sd-invite:not(.sd-offline),
   main.sd.at-door .sd-greet,
-  main.sd.at-door .sd-not-you,
-  main.sd.at-door .sd-corner,
-  main.sd.at-door form.sd-speak {
+  main.sd.at-door .sd-foot {
     display: none;
   }
+  main.sd.at-door .sd-when {
+    margin-top: auto;
+    font-size: 1.15rem;
+  }
+  main.sd.at-door .sd-name {
+    font-size: 1.6rem;
+    letter-spacing: 0.55em;
+    padding-left: 0.55em;
+    color: var(--ink);
+    margin-top: 0.5rem;
+  }
+  main.sd.at-door .sd-help {
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+  /* Arriving: the heart draws itself first; the words settle in after it. */
+  main.sd.arriving .sd-when,
+  main.sd.arriving .sd-name,
+  main.sd.arriving .sd-way,
+  main.sd.arriving .sd-help {
+    opacity: 0;
+  }
   .sd-way {
+    width: 100%;
+    max-width: 26rem;
+    margin: 1.5rem auto 0;
+  }
+  .sd-way[hidden],
+  .sd-way-choices[hidden],
+  .sd-way-card[hidden] {
+    display: none;
+  }
+  /* The two choices: the page speaking, not a form; a crimson hairline
+     between them. */
+  .sd-way-choices {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.9rem;
-  }
-  .sd-way[hidden] {
-    display: none;
   }
   .sd-way-go {
     font: inherit;
-    font-size: 1.25rem;
-    letter-spacing: 0.04em;
+    font-size: 1.5rem;
+    font-style: italic;
+    letter-spacing: 0.01em;
     color: var(--ink);
-    background: transparent;
-    border: 1px solid var(--frame);
-    border-radius: 2px;
-    width: min(18rem, 100%);
-    min-height: 3rem;
-    padding: 0.5rem 1.2rem;
+    background: none;
+    border: 0;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.6rem;
     cursor: pointer;
   }
-  .sd-not-you {
-    margin-top: 0.2rem;
+  .sd-way-go:hover,
+  .sd-way-go:active {
+    color: var(--crimson);
   }
-  .sd-card .sd-inline {
+  .sd-way-go:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .sd-way-rule {
+    display: block;
+    width: 2.2rem;
+    height: 1px;
+    background: var(--crimson);
+    margin: 0.5rem auto;
+  }
+  /* A card of the way in rises in place of the choices, beneath the heart. */
+  .sd-way-card {
+    text-align: left;
+    width: min(24rem, 100%);
+    margin: 0.4rem auto 0;
+    font-size: 1.15rem;
+  }
+  .sd-way-card.rising {
+    animation: sd-rise 0.9s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-way-card.rising { animation: none; }
+  }
+  .sd-card .sd-inline,
+  .sd-way-card .sd-inline {
     padding: 0 0.15rem;
     font-size: inherit;
   }
@@ -1320,12 +1408,14 @@
     text-underline-offset: 0.2em;
     cursor: pointer;
   }
-  .sd-card label {
+  .sd-card label,
+  .sd-way-card label {
     display: block;
     font-style: italic;
     margin: 0 0 0.3rem;
   }
-  .sd-card input {
+  .sd-card input,
+  .sd-way-card input {
     display: block;
     width: 100%;
     font: inherit;
@@ -1336,7 +1426,8 @@
     border-radius: 2px;
     padding: 0.45rem 0.6rem;
   }
-  .sd-card input:focus {
+  .sd-card input:focus,
+  .sd-way-card input:focus {
     outline: 2px solid var(--crimson);
     outline-offset: 1px;
   }
@@ -1347,13 +1438,15 @@
     flex-wrap: wrap;
     margin: 0.8rem 0 0;
   }
-  .sd-card button {
+  .sd-card button,
+  .sd-way-card button {
     font: inherit;
     font-size: 1.05rem;
     min-height: 2.75rem;
     cursor: pointer;
   }
-  .sd-card .sd-keep-key {
+  .sd-card .sd-keep-key,
+  .sd-way-card .sd-keep-key {
     color: var(--page);
     background: var(--crimson);
     border: 0;
@@ -1365,15 +1458,19 @@
     display: flex;
     gap: 0.3rem;
     align-items: center;
+    margin: 0 0 0.9rem;
   }
   .sd-field input {
     flex: 1;
     min-width: 0;
+    margin-bottom: 0;
   }
-  .sd-card .sd-show {
+  .sd-card .sd-show,
+  .sd-way-card .sd-show {
     min-width: 2.75rem;
   }
-  .sd-card .sd-quiet {
+  .sd-card .sd-quiet,
+  .sd-way-card .sd-quiet {
     font-style: italic;
     color: var(--ink);
     background: none;
@@ -1384,6 +1481,7 @@
     text-underline-offset: 0.25em;
   }
   .sd-card label ~ label,
+  .sd-way-card label ~ label,
   .sd-card #name-row + label {
     margin-top: 0.9rem;
   }
@@ -1489,6 +1587,7 @@
 </head>
 <body>
 <main class="sd" id="sd">
+  <p class="sd-wordmark" id="wordmark" hidden>SUNDIAL</p>
   <p class="sd-when"><span id="date"></span><span id="place" hidden></span></p>
 
   <svg class="sd-dial" id="dial" viewBox="17 -75 430 430" role="img" aria-label="A sundial: a heart drawn in ink, casting its shadow at this hour, no days kept yet">
@@ -1500,9 +1599,43 @@
       <path class="flow" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324" pathLength="1000"/>
     </g>
   </svg>
-  <p class="sd-name">SUNDIAL</p>
+  <p class="sd-name" id="sundial-name">SUNDIAL</p>
+  <p class="sd-who" id="who" hidden></p>
   <p class="sd-days" id="days-count" hidden></p>
-  <p class="sd-bring-row sd-not-you" id="not-you-row" hidden><button type="button" class="sd-bring" id="not-you">Not you?</button></p>
+  <div class="sd-way" id="way" hidden>
+    <div class="sd-way-choices" id="way-choices">
+      <button type="button" class="sd-way-go" id="way-back">I’ve been here before</button>
+      <span class="sd-way-rule" aria-hidden="true"></span>
+      <button type="button" class="sd-way-go" id="way-new">I’m new</button>
+    </div>
+    <form class="sd-way-card" id="back-form" hidden>
+      <label for="bname" id="bname-label">your name here</label>
+      <input id="bname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+      <label for="bword">your secret word</label>
+      <input id="bword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <p class="sd-soft" id="back-note" role="status" hidden><span id="back-says"></span> <button type="button" class="sd-quiet sd-inline" id="back-new" hidden>New here?</button></p>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="back-go">Go on</button>
+        <button type="button" class="sd-quiet" id="back-not">Not now</button>
+      </div>
+    </form>
+    <form class="sd-way-card" id="new-form" hidden>
+      <label for="nname" id="nname-label">choose a name</label>
+      <input id="nname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
+      <p class="sd-soft" id="nname-note" role="status" hidden><span id="nname-says"></span> <button type="button" class="sd-quiet sd-inline" id="nname-mine" hidden>It’s mine</button></p>
+      <label for="nword">choose a secret word</label>
+      <input id="nword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <ul class="sd-truths">
+        <li>Anyone can read your days, and only your word can add to them.</li>
+        <li>Nobody else holds the word, not even us.</li>
+        <li>Write it down: without it your days stay, but you can’t add to them.</li>
+      </ul>
+      <div class="sd-card-row">
+        <button type="submit" class="sd-keep-key" id="new-go">Go on</button>
+        <button type="button" class="sd-quiet" id="new-not">Not now</button>
+      </div>
+    </form>
+  </div>
   <p class="sd-invite sd-offline" id="offline" role="status" hidden>The beach can’t be reached just now</p>
   <p class="sd-invite" id="invite" hidden></p>
 
@@ -1603,10 +1736,6 @@
   </section>
 
   <div class="sd-foot">
-    <div class="sd-way" id="way" hidden>
-      <button type="button" class="sd-way-go" id="way-back" aria-haspopup="dialog">I’ve been here before</button>
-      <button type="button" class="sd-way-go" id="way-new" aria-haspopup="dialog">I’m new</button>
-    </div>
     <form class="sd-speak" id="speak">
       <p class="sd-hello" id="hello" hidden></p>
       <p class="sd-question" id="question">What’s with you today?</p>
@@ -1615,7 +1744,7 @@
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
-    <button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button>
+    <p class="sd-foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button></p>
   </div>
 
   <p class="sd-help" id="help-line"><button type="button" class="sd-about-open" id="about-open" aria-haspopup="dialog">About</button> · <span>If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</span></p>
@@ -1759,39 +1888,6 @@
       <div class="sd-card-row">
         <button type="submit" class="sd-keep-key" id="keep-it">Keep it</button>
         <button type="button" class="sd-quiet" id="keep-not">Not now</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog class="sd-card" id="back-card" aria-labelledby="bname-label">
-    <form id="back-form">
-      <label for="bname" id="bname-label">your name here</label>
-      <input id="bname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
-      <label for="bword">your secret word</label>
-      <input id="bword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <p class="sd-soft" id="back-note" role="status" hidden><span id="back-says"></span> <button type="button" class="sd-quiet sd-inline" id="back-new" hidden>New here?</button></p>
-      <div class="sd-card-row">
-        <button type="submit" class="sd-keep-key" id="back-go">Go on</button>
-        <button type="button" class="sd-quiet" id="back-not">Not now</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog class="sd-card" id="new-card" aria-labelledby="nname-label">
-    <form id="new-form">
-      <label for="nname" id="nname-label">choose a name</label>
-      <input id="nname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
-      <p class="sd-soft" id="nname-note" role="status" hidden><span id="nname-says"></span> <button type="button" class="sd-quiet sd-inline" id="nname-mine" hidden>It’s mine</button></p>
-      <label for="nword">choose a secret word</label>
-      <input id="nword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <ul class="sd-truths">
-        <li>Anyone can read your days, and only your word can add to them.</li>
-        <li>Nobody else holds the word, not even us.</li>
-        <li>Write it down: without it your days stay, but you can’t add to them.</li>
-      </ul>
-      <div class="sd-card-row">
-        <button type="submit" class="sd-keep-key" id="new-go">Go on</button>
-        <button type="button" class="sd-quiet" id="new-not">Not now</button>
       </div>
     </form>
   </dialog>
@@ -2037,12 +2133,19 @@
     // The spiral holds every day kept; today, if it has only the line set
     // ahead yesterday and no words yet, is a dot at 40% (6.9).
     dialOpts = { count: n, ahead: !!spoken[t] && !todays.length };
-    dial.days(days, keptNow, dialOpts);
+    // On the way in, the days come round one by one (2.81); otherwise drawn
+    // as they stand.
+    if (daysComing && !keptNow) {
+      daysComing = false;
+      arrived = dial.arrive(days, dialOpts, STILL.matches);
+    } else {
+      dial.days(days, keptNow, dialOpts);
+    }
     dial.moments(todays.map(function (m) {
       return { when: Days.timeOf(m.address), text: m.text };
     }));
     $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
-    $('days-count').hidden = !n;
+    $('days-count').hidden = !n || settling;   // on the way in, once the last mark has landed
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
     if (stored(NAME)) store(LAST, JSON.stringify({ name: stored(NAME), days: all.days || [], moments: all.moments || [] }));
     setDialTap();
@@ -2088,6 +2191,8 @@
   // Come back (6.5): where the last words were spoken, then the tomorrow
   // they said before today.
   function showGreeting() {
+    // While the days are coming round (2.81), nothing is said beneath them.
+    if (settling) { greet.hidden = true; return; }
     var mine = todaysMoments(), lead = '';
     var todayLine = days.filter(function (d) { return d.address === todayAddress(); })[0];
     if (mine.length) {
@@ -2255,7 +2360,7 @@
   // finds them. Never while words are being spoken or a sheet is out.
   var TAPPED = 'sundial.tapped', HELD = 'sundial.held';
   function showInvite() {
-    var line = '', start = inside && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length) && !sheetNow && !turnNow;
+    var line = '', start = inside && !settling && !tideOpen && !poolsOpen && form && !form.hidden && !(messages && messages.length) && !sheetNow && !turnNow;
     if (start && !(stored(TAPPED) && stored(HELD)) && hasDays()) line = 'tap the sundial for your days · hold it for where they rest';
     $('invite').textContent = line;
     $('invite').hidden = !line;
@@ -2382,6 +2487,7 @@
   }
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+    if (!inside && $('way-choices').hidden) { showWayChoices(true); return; }
     if (poolsOpen) gatherBack();
     else if (tideOpen) closeTide();
     else if (turnNow) putTurnAway();
@@ -4813,39 +4919,111 @@
   // Who you are, first (2.81): the heart, its name, the date and two choices
   // only. Coming back, one card asks the name and the word together, once,
   // and the word is held for the visit (2.82); new, one card to choose them,
-  // with nothing written to the beach until the first keep (2.83). A browser
-  // that already holds a name and its word for this visit goes straight in,
-  // with 'Not you?' beneath the sundial to come back here.
-  var inside = false, backCard = $('back-card'), newCard = $('new-card');
+  // with nothing written to the beach until the first keep (2.83). Each card
+  // rises in place of the choices, beneath the heart, which stays whole. A
+  // browser that already holds a name and its word for this visit goes
+  // straight in, with 'Not you?' at the foot to come back here.
+  //
+  // What moves (2.8, after the keep moment, 8.8): arriving, the heart draws
+  // itself and the words settle in after it; when the word opens, the heart
+  // beats once and the name is written beneath it; then the days come round
+  // the spiral one by one and the colour runs into the stroke; only then the
+  // box, or the voice. A touch cuts none of it short: it is a few seconds,
+  // and it is the sundial filling with their life.
+  var inside = false, daysComing = false, arrived = null, settling = false;
   var UNREACHED = 'The beach can’t be reached just now. Try again in a moment.';
-  function openModal(d) {
-    if (d.showModal) d.showModal();
-    else d.setAttribute('open', '');
+  function motion(el, frames, opts) {
+    if (!el || !el.animate || STILL.matches) return Promise.resolve();
+    return el.animate(frames, opts).finished.catch(function () {});
   }
-  function closeModal(d) {
-    if (d.open) d.close ? d.close() : d.removeAttribute('open');
+  // Settles in: up from a little beneath, over most of a second.
+  function settleIn(el, delay) {
+    return motion(el, [{ opacity: 0, transform: 'translateY(0.5rem)' }, { opacity: 1, transform: 'none' }],
+      { duration: 900, delay: delay || 0, easing: 'ease-out', fill: 'backwards' });
+  }
+  function vanish(el, ms) {
+    return motion(el, [{ opacity: 1 }, { opacity: 0 }], { duration: ms || 350, easing: 'ease-in', fill: 'forwards' })
+      .then(function () { el.hidden = true; el.getAnimations().forEach(function (a) { a.cancel(); }); });
+  }
+  function showWho(rise) {
+    var who = stored(NAME) || held(CHOSEN);
+    $('who').textContent = who;
+    $('who').hidden = !who;
+    if (who && rise) settleIn($('who'), 350);
   }
   function atDoor() {
     inside = false;
     main.classList.add('at-door');
+    main.classList.remove('inside');
     $('way').hidden = false;
+    $('sundial-name').hidden = false;
+    $('wordmark').hidden = true;
+    $('who').hidden = true;
+    showWayChoices();
     form.hidden = true;
     corner.hidden = true;
     setDialTap();
     showInvite();
   }
+  // Arriving: the heart draws itself, then the date, the name, the choices
+  // and the help line settle in, a breath apart.
+  function arriveAtDoor() {
+    main.classList.add('arriving');
+    var words = [document.querySelector('.sd-when'), $('sundial-name'), $('way'), $('help-line')];
+    var safety = setTimeout(done, 8000);
+    function done() {
+      clearTimeout(safety);
+      main.classList.remove('arriving');
+      words.forEach(function (el) { if (el.getAnimations) el.getAnimations().forEach(function (a) { a.cancel(); }); });
+    }
+    dial.draw(STILL.matches).then(function () {
+      return Promise.all(words.map(function (el, k) {
+        return motion(el, [{ opacity: 0, transform: 'translateY(0.5rem)' }, { opacity: 1, transform: 'none' }],
+          { duration: 900, delay: 200 + k * 300, easing: 'ease-out', fill: 'both' });
+      }));
+    }).then(done, done);
+  }
   var reading = null;
-  function enter() {
+  // Inside. `way`: come through the way in just now, so the box waits until
+  // the days have come round; otherwise the page opens as it stands (a
+  // reload within the visit), the days coming round only on a fresh open.
+  function enter(way) {
     inside = true;
     main.classList.remove('at-door');
+    main.classList.add('inside');
     $('way').hidden = true;
-    form.hidden = false;
-    $('question').hidden = false;
+    $('sundial-name').hidden = true;
+    $('wordmark').hidden = false;
+    showWho(false);
     box.placeholder = stored(KEY) ? '' : OWN_BOX;
+    daysComing = !!way || !held(OPEN);
+    settling = !!way;
+    form.hidden = !!way;
+    if (!way) $('question').hidden = false;
     showCorner();
     setDialTap();
     showInvite();
-    reading = comeBack();
+    arrived = null;
+    reading = comeBack().then(function () { return arrived; }).then(function () {
+      daysComing = false;
+      settling = false;
+      var rose = form.hidden && !sheetNow && !tideOpen && !poolsOpen;
+      if (rose) {
+        form.hidden = false;
+        $('question').hidden = false;
+      }
+      if (hasDays() && $('days-count').hidden) {
+        $('days-count').hidden = false;
+        settleIn($('days-count'));
+      }
+      showGreeting();
+      showInvite();
+      if (rose) {
+        if (!greet.hidden) settleIn(greet, 200);
+        settleIn(form, 450);
+        settleIn($('invite'), 700);
+      }
+    });
     return reading.then(function () { if (!card.open) voiced(); });
   }
   // What one person leaves in this browser, let go so the next begins clean.
@@ -4865,19 +5043,47 @@
     leaveHere();
     location.reload();
   });
-  // Said who they are: the name and word held for the visit, then the voice
-  // when this browser holds no key (2.84), then the sundial.
+  // Said who they are: the name and word held for the visit; the card folds
+  // away, the heart beats and the name is written; then the days come
+  // round; then the voice, when this browser holds no key (2.84).
   function cameIn(name, word, standing) {
     if (!standing || stored(NAME) !== name) leaveHere();
     if (standing) store(NAME, name);
     else hold(CHOSEN, name);
     hold(WORD, word);
-    closeModal(backCard);
-    closeModal(newCard);
-    var read = enter();
-    if (!stored(KEY)) openCard();
-    return read;
+    var gone = vanish($('way'), 350);
+    var beat = dial.beat(STILL.matches);
+    main.classList.remove('at-door');
+    main.classList.add('inside');
+    $('sundial-name').hidden = true;
+    $('wordmark').hidden = false;
+    settleIn($('wordmark'), 200);
+    showWho(true);
+    return Promise.all([gone, beat]).then(function () {
+      var read = enter(true);
+      if (!stored(KEY)) read.then(function () { if (inside) openCard(); });
+      return read;
+    });
   }
+  // The choices, or one card in their place.
+  function showWayChoices(focus) {
+    if (typeof hiders !== 'undefined') hiders.forEach(function (h) { h(); });
+    $('back-form').hidden = true;
+    $('new-form').hidden = true;
+    $('way-choices').hidden = false;
+    if (focus) $('way-back').focus();
+  }
+  function showWayCard(card_) {
+    $('way-choices').hidden = true;
+    $('back-form').hidden = card_ !== $('back-form');
+    $('new-form').hidden = card_ !== $('new-form');
+    card_.classList.remove('rising');
+    void card_.offsetWidth;
+    card_.classList.add('rising');
+  }
+  $('way-back').addEventListener('click', function () { openBack(); });
+  $('way-new').addEventListener('click', function () { openNew(); });
+
   // ---- Then the sundial as designed (2.86) ------------------------------------------
   // With a key, Claude speaks first: one line of greeting, with their
   // tomorrow line if there is one, and one question about today; one
@@ -5005,8 +5211,8 @@
     $('bname').value = name || stored(NAME);
     $('bword').value = '';
     backSays('');
-    openModal(backCard);
-    ($('bname').value ? $('bword') : $('bname')).focus();
+    showWayCard($('back-form'));
+    ($('bname').value ? $('bword') : $('bname')).focus({ preventScroll: true });
   }
   var entering = false;
   $('back-form').addEventListener('submit', function (ev) {
@@ -5036,12 +5242,8 @@
       backSays(r === 'taken' ? 'That name is someone’s here, with no days this page can open.' : UNREACHED);
     });
   });
-  $('back-new').addEventListener('click', function () {
-    var name = $('bname').value;
-    closeModal(backCard);
-    openNew(name);
-  });
-  $('back-not').addEventListener('click', function () { closeModal(backCard); });
+  $('back-new').addEventListener('click', function () { openNew($('bname').value); });
+  $('back-not').addEventListener('click', function () { showWayChoices(true); });
 
   // New (2.83): a name not already someone's, and a word, with the true lines
   // written beneath. Held for the visit; the first keep makes them.
@@ -5056,8 +5258,8 @@
     $('nname').value = name || '';
     $('nword').value = '';
     newSays('');
-    openModal(newCard);
-    $('nname').focus();
+    showWayCard($('new-form'));
+    $('nname').focus({ preventScroll: true });
     if (name) checkNew();
   }
   function checkNew() {
@@ -5076,12 +5278,8 @@
     newSays('');
     checkNew();
   });
-  $('nname-mine').addEventListener('click', function () {
-    var name = $('nname').value;
-    closeModal(newCard);
-    openBack(name);
-  });
-  $('new-not').addEventListener('click', function () { closeModal(newCard); });
+  $('nname-mine').addEventListener('click', function () { openBack($('nname').value); });
+  $('new-not').addEventListener('click', function () { showWayChoices(true); });
   $('new-form').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var typed = Days.handle($('nname').value), word = $('nword').value;
@@ -5106,7 +5304,10 @@
   });
 
   if ((stored(NAME) || held(CHOSEN)) && held(WORD)) enter();
-  else atDoor();
+  else {
+    atDoor();
+    arriveAtDoor();
+  }
 })();
 </script>
 </body>
