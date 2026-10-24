@@ -753,6 +753,21 @@
     margin-top: 0.25rem;
     font-variant-numeric: tabular-nums;
   }
+  /* A day whose line is theirs (2.7): their line, then each telling kept
+     beneath it, with the time it was spoken. */
+  .sd-lines .sd-tide-when {
+    font-size: 0.85rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 1.1rem 0 0;
+  }
+  .sd-lines .sd-tide-moment {
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0.15rem 0 0.45rem;
+  }
   .sd-tide-day {
     margin: 1rem 0 0 calc(56px + 1rem);
   }
@@ -2496,15 +2511,34 @@
     $('tide-first').textContent = [dateWords(Days.dateOf(d.address)), r.place].filter(Boolean).join(' · ');
     $('tide-title').textContent = long ? '' : r.title;
     $('tide-title').hidden = long;
-    var lines = $('tide-lines');
+    var lines = $('tide-lines'), tomorrow = r.tomorrow;
     lines.textContent = '';
     (long ? [r.title] : r.lines).forEach(function (l) {
       var p = document.createElement('p');
       p.textContent = l;
       lines.appendChild(p);
     });
-    $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
-    $('tide-tomorrow').hidden = !r.tomorrow;
+    // A day whose own line is theirs, not Sundial's (2.7), with tellings
+    // kept beneath it: their line stands, and then each moment as it was
+    // kept, in time order, so the day shows as they lived it.
+    var theirs = !r.places.length && !r.own && !d.bare;
+    (theirs ? moments.filter(function (m) { return dayOfAddress(m.address) === d.address; }) : []).forEach(function (m) {
+      var mr = Mark.read(m.text), when = document.createElement('p'), title = document.createElement('p');
+      when.className = 'sd-tide-when';
+      when.textContent = Days.timeOf(m.address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      title.className = 'sd-tide-moment';
+      title.textContent = mr.title;
+      lines.appendChild(when);
+      lines.appendChild(title);
+      mr.lines.forEach(function (l) {
+        var p = document.createElement('p');
+        p.textContent = l;
+        lines.appendChild(p);
+      });
+      if (mr.tomorrow) tomorrow = mr.tomorrow;
+    });
+    $('tide-tomorrow').textContent = tomorrow ? 'Tomorrow: ' + tomorrow : '';
+    $('tide-tomorrow').hidden = !tomorrow;
     var touched = Mark.placesWords(Mark.placesOf(d)) || (r.own ? Mark.OWN : '');
     $('tide-pool').textContent = touched;
     $('tide-pool').hidden = !touched;

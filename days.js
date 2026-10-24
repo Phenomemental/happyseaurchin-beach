@@ -165,7 +165,7 @@
       if (!by[a]) { by[a] = []; order.push(a); }
       by[a].push(bare(m.text));
     });
-    return days.concat(order.map(function (a) { return { address: a, text: by[a].join('\n') }; }))
+    return days.concat(order.map(function (a) { return { address: a, text: by[a].join('\n'), bare: true }; }))
       .sort(function (a, b) { return a.address < b.address ? -1 : 1; });
   }
 
