@@ -1,0 +1,3412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Shark Reef</title>
+<meta name="description" content="Shark Reef: drag your finger and your shark swims after it. Eat every fish in the reef as fast as you can, racing the day's fastest ghost.">
+<meta name="theme-color" content="#063B5C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Shark Reef, under the sea by a coral reef: the light from the surface,
+     the fish in their shoals, your shark grey with your gold, the ghost's
+     lilac. The game is drawn on one canvas filling the screen; the words
+     sit over it and let touches pass through, except the buttons. */
+  :root {
+    --night: #063B5C;
+    --accent: #5FE3E8;
+    --you: #FFD166;
+    --ghost: #C4A1FF;
+    --miss: #FF6B6B;
+    --words: #EAF8FC;
+    --dim: #A3C9D6;
+    /* The rest of a skin's colours; each skin sets them all (setSkin). */
+    --panel: rgba(4, 34, 52, 0.8);
+    --panel-strong: rgba(4, 34, 52, 0.93);
+    --edge: rgba(95, 227, 232, 0.4);
+    --line: rgba(234, 248, 252, 0.13);
+    --field-line: rgba(234, 248, 252, 0.26);
+    --field-bg: rgba(234, 248, 252, 0.06);
+    --me-row: rgba(255, 209, 102, 0.1);
+    --glow-accent: rgba(95, 227, 232, 0.55);
+    --glow-you: rgba(255, 209, 102, 0.5);
+    --shade: rgba(0, 0, 0, 0.55);
+    --how-top: #1AA6C9;
+    --how-deep: #0A4F78;
+    --how-sand: #E5CC97;
+    --how-coral: #FF7A8A;
+    --how-shark: #8193A6;
+    --how-belly: #E8EEF2;
+    --how-fish: #FFB04A;
+    --how-eye: #10202C;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--night);
+    color: var(--words);
+    font-family: var(--font);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .over {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--glow-accent), 0 1px 2px var(--shade);
+  }
+  .count {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--you);
+    text-shadow: 0 0 10px var(--glow-you), 0 1px 2px var(--shade);
+    white-space: nowrap;
+  }
+  .count small {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+  }
+  /* The words over the sea sit on small panels, so they read over the
+     bright water near the surface or the deep, in any skin. */
+  h1, .count {
+    padding: 4px 10px;
+    border-radius: 18px;
+    background: var(--panel);
+  }
+  .ghost-line, .prev-line, .left-line {
+    align-self: flex-start;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: var(--panel);
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    text-shadow: 0 1px 2px var(--shade), 0 0 6px var(--shade);
+  }
+  .ghost-line { color: var(--ghost); }
+  .prev-line { margin-top: 2px; color: var(--dim); }
+  .ghost-line:empty, .left-line:empty { display: none; }
+  .left-line {
+    margin-top: 2px;
+    color: var(--words);
+    font-variant-numeric: tabular-nums;
+  }
+  /* The briefing sits high, so the way to the other games under it is
+     never over the shark waiting at the foot of the reef. */
+  .middle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 3vh;
+  }
+  /* The way to the Arcade's other games: under the briefing before a run,
+     and on the end screen after one; never while a run is under way. */
+  .more-games {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 20px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: var(--panel);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .more-games:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  .say[hidden] + .more-games,
+  .say.buzz + .more-games { display: none; }
+  .say {
+    max-width: 22rem;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--panel);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .say .step {
+    display: block;
+  }
+  .say .step + .step {
+    margin-top: 6px;
+  }
+  .say strong {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .say b {
+    color: var(--you);
+  }
+  /* How to play, shown: a finger drawing the shark after it, and the
+     shark eating the fish it swims to. */
+  .how {
+    display: block;
+    width: 100%;
+    max-width: 15rem;
+    height: auto;
+    margin: 4px auto 10px;
+    overflow: visible;
+  }
+  @media (max-height: 700px) {
+    .middle { padding-top: 8px; }
+    .how { max-width: 11rem; margin-bottom: 6px; }
+    .say { padding: 10px 14px; }
+  }
+  .how-top { stop-color: var(--how-top); }
+  .how-deep { stop-color: var(--how-deep); }
+  .how-sand { fill: var(--how-sand); }
+  .how-coral { fill: var(--how-coral); }
+  .how-shark { fill: var(--how-shark); }
+  .how-belly { fill: var(--how-belly); }
+  .how-fish { fill: var(--how-fish); }
+  .how-eye { fill: var(--how-eye); }
+  .how-ring {
+    fill: none;
+    stroke: var(--you);
+    stroke-width: 2.5;
+  }
+  .how-plus {
+    font: 700 10px var(--font);
+    fill: var(--you);
+  }
+  .how-finger { font-size: 20px; }
+  .end {
+    pointer-events: auto;
+    max-width: 22rem;
+    width: 100%;
+    max-height: calc(100% - 8px);
+    overflow-y: auto;
+    padding: 20px 18px;
+    border-radius: 12px;
+    background: var(--panel-strong);
+    border: 1px solid var(--edge);
+    text-align: center;
+  }
+  .end .big {
+    margin: 0;
+    font-size: 2.6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--you);
+    text-shadow: 0 0 16px var(--glow-you);
+  }
+  .end p {
+    margin: 6px 0 0;
+  }
+  .end .note {
+    color: var(--dim);
+    font-size: 0.95rem;
+  }
+  button {
+    font: inherit;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 3px;
+  }
+  button.go {
+    background: var(--you);
+    border-color: var(--you);
+    color: var(--night);
+    font-size: 1.05rem;
+    padding: 0 26px;
+  }
+  .rank {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .who {
+    display: block;
+    margin: 16px auto 0;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .who input {
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    margin: 6px auto 0;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+    text-align: center;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .who input:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .link {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--dim);
+    word-break: break-all;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 12px;
+  }
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* On a narrow phone the top row keeps to one line: the clock drops its
+     word. */
+  @media (max-width: 380px) {
+    .top { gap: 6px; }
+    .top-right { gap: 6px; }
+    .top .chip { padding: 0 10px; }
+    .count small { display: none; }
+  }
+  .chip {
+    pointer-events: auto;
+    margin: 0;
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    background: var(--panel);
+  }
+  /* The board: today's runs, the wave of who jumped in when, and this
+     phone's own runs, in a sheet over the game. */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--night);
+    padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .sheet-in {
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .sheet h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  .sheet h3 {
+    margin: 28px 0 4px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .sheet p {
+    margin: 6px 0 0;
+    line-height: 1.45;
+  }
+  .sheet .note {
+    color: var(--dim);
+    font-size: 0.92rem;
+  }
+  .board {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .board li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .board .pos {
+    flex: 0 0 1.6rem;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .board .name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .board .runs {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .board .badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .board .badge.first {
+    border-color: var(--you);
+    color: var(--you);
+  }
+  .board .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .board li.me {
+    background: var(--me-row);
+  }
+  .wave {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 12px;
+  }
+  .tries {
+    color: var(--you);
+    font-weight: 600;
+  }
+  /* Notes: one box for anyone to say something about the game, and what
+     people have said, newest first. */
+  .notes-form label {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--dim);
+  }
+  .notes-form input,
+  .notes-form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font: inherit;
+    font-size: 1rem;
+  }
+  .notes-form input { min-height: 44px; }
+  .notes-form textarea { min-height: 6rem; resize: vertical; }
+  .notes-form input:focus-visible,
+  .notes-form textarea:focus-visible {
+    outline: 2px solid var(--you);
+    outline-offset: 2px;
+  }
+  .notes-form .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .mic-row .mic {
+    margin: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+  .mic-row .mic.listening {
+    border-color: var(--miss);
+    color: var(--miss);
+  }
+  .mic-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list {
+    margin-top: 16px;
+  }
+  .notes-list .n {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .notes-list .n-who {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+  .notes-list .n-who strong {
+    color: var(--words);
+    font-weight: 600;
+  }
+  .notes-list .n-text {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .notes-list .more {
+    margin: 6px 0 0;
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
+  /* The look: a skin to choose, each shown as a small picture of itself. */
+  .skins {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .skin {
+    margin: 0;
+    padding: 8px;
+    min-height: 0;
+    border-radius: 10px;
+    border: 1px solid var(--field-line);
+    background: var(--field-bg);
+    color: var(--words);
+    font-weight: 600;
+    letter-spacing: 0;
+    text-align: center;
+  }
+  .skin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .skin[aria-checked="true"] {
+    border: 2px solid var(--you);
+    padding: 7px;
+  }
+  .setting {
+    margin-top: 12px;
+  }
+  /* Where you stood: the wave read from your place in it. */
+  .stood {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--field-bg);
+  }
+  .stood-head {
+    margin: 0 0 6px !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--you);
+  }
+  .stood ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .stood li {
+    margin: 4px 0;
+    line-height: 1.4;
+  }
+  .bring {
+    margin-top: 14px;
+  }
+  .bring .who {
+    text-align: left;
+    margin-top: 10px;
+  }
+  .board li.gap {
+    justify-content: center;
+    color: var(--dim);
+    padding: 2px 4px;
+  }
+  .board-more {
+    margin-top: 10px;
+  }
+  .make-line {
+    margin: 14px 0 0;
+    font-size: 0.92rem;
+  }
+  .make-line a,
+  .sheet a {
+    color: var(--accent);
+  }
+  .keep-state {
+    margin: 14px 0 0;
+    font-weight: 600;
+  }
+  .keep-state.on { color: var(--accent); }
+  .keep-state.off { color: var(--you); }
+  #save-run + #challenge { margin-left: 6px; }
+  .past, .days {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .past li, .days li {
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .past a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--words);
+  }
+  .past .day {
+    flex: 0 0 6.5rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .past .who {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: inherit;
+    color: var(--words);
+  }
+  .past .who small, .days small {
+    display: block;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+  .past .t, .days .t {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--you);
+    white-space: nowrap;
+  }
+  .days li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  /* Watching a run: a bar at the foot of the screen with its controls. */
+  .watchbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: auto;
+    padding: 12px 16px max(14px, env(safe-area-inset-bottom));
+    background: var(--panel-strong);
+    border-top: 1px solid var(--edge);
+    text-align: center;
+  }
+  .watch-cap {
+    margin: 0;
+    font-weight: 600;
+  }
+  .watch-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .watch-row button { margin: 0; }
+  .watchbar .note { margin: 6px 0 0; font-size: 0.85rem; color: var(--dim); }
+  .board li.watchable { cursor: pointer; }
+  .board li .see {
+    font-size: 0.75rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game" role="img" aria-label="Under the sea by a coral reef, with shoals of fish, your shark and the ghost's"></canvas>
+<div class="over">
+  <div class="top">
+    <h1>Shark Reef</h1>
+    <div class="top-right">
+      <button type="button" class="chip" id="settings-btn" aria-label="Look and sound">⚙</button>
+      <button type="button" class="chip" id="board-btn">Board</button>
+      <span class="count" aria-hidden="true"><span id="time">0.00</span><small>s</small></span>
+    </div>
+  </div>
+  <p class="ghost-line" id="ghost-line"></p>
+  <p class="prev-line" id="prev-line" hidden></p>
+  <p class="left-line" id="left" aria-hidden="true"></p>
+  <!-- Watching a run: a replay of the moves a run was kept as, with the
+       day's best as the ghost beside it; it can be shared as a link or
+       made into a short clip. -->
+  <div class="watchbar" id="watchbar" hidden>
+    <p class="watch-cap" id="watch-cap"></p>
+    <div class="watch-row">
+      <button type="button" class="chip" id="w-play" aria-label="Pause">⏸</button>
+      <button type="button" class="chip" id="w-slow" aria-pressed="false">½× speed</button>
+      <button type="button" class="chip" id="w-again" aria-label="Watch again">↺</button>
+      <button type="button" class="chip" id="w-close">Close</button>
+    </div>
+    <div class="watch-row">
+      <button type="button" class="go" id="w-race" hidden>Race this run</button>
+      <button type="button" class="chip" id="w-clip">Make a clip</button>
+      <button type="button" class="chip" id="w-link">Share link</button>
+    </div>
+    <p class="note" id="w-note" aria-live="polite"></p>
+  </div>
+  <div class="middle">
+    <!-- The briefing tells three things only: where you start, your move,
+         and what you are trying to do (ways:games 1). Its words are kept at
+         game:shark-reef too; the label says which reef this is. -->
+    <p class="say" id="say" aria-live="polite"><strong id="say-label">Finding today’s reef…</strong><svg class="how" viewBox="0 0 200 80" aria-hidden="true"><defs><linearGradient id="how-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="how-top"/><stop offset="1" class="how-deep"/></linearGradient><clipPath id="how-panel"><path d="M10 0 H190 A10 10 0 0 1 200 10 V70 A10 10 0 0 1 190 80 H10 A10 10 0 0 1 0 70 V10 A10 10 0 0 1 10 0 Z"/></clipPath><g id="how-a-shark"><path d="M-21 0 L-28 -9 L-25 0 L-28 8 Z" class="how-shark"/><path d="M-4 -5 L1 -13 L5 -5 Z" class="how-shark"/><path d="M-22 0 Q -10 -7 6 -6 Q 16 -5 21 0 Q 16 4 6 5 Q -8 6 -22 0 Z" class="how-shark"/><path d="M-12 2 Q 2 6 17 2 Q 8 5 -12 2 Z" class="how-belly"/><path d="M0 3 L-6 10 L5 4 Z" class="how-shark"/><circle cx="14" cy="-1.5" r="1.2" class="how-eye"/><path d="M13 2.5 L19 1.5" stroke="var(--how-eye)" stroke-width="0.8" fill="none"/></g></defs><g clip-path="url(#how-panel)"><rect width="200" height="80" fill="url(#how-water)"/><path d="M0 72 Q 30 66 60 71 T 120 70 T 200 69 V80 H0 Z" class="how-sand"/><path d="M150 72 Q 148 60 152 54 M152 64 Q 158 58 160 52 M150 66 Q 142 60 141 54" stroke="var(--how-coral)" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="34" cy="70" r="5" class="how-coral" opacity="0.8"/><g><animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.1;0.6;1" calcMode="linear" path="M36 52 C 70 30, 110 58, 146 36"/><use href="#how-a-shark"/></g><g opacity="1"><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.58;0.59;1" dur="3.2s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="150 36;156 34;150 36" keyTimes="0;0.5;1" dur="1.6s" repeatCount="indefinite"/><path d="M-6 0 L-11 -4 L-11 4 Z" class="how-fish"/><ellipse rx="6.5" ry="3.6" class="how-fish"/><circle cx="3.2" cy="-0.8" r="0.9" class="how-eye"/></g><circle cx="152" cy="36" r="0" class="how-ring"><animate attributeName="r" values="0;0;16;16" keyTimes="0;0.58;0.76;1" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.58;0.6;0.8;1" dur="3.2s" repeatCount="indefinite"/></circle></g><text x="140" y="24" class="how-plus" opacity="0">+1<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.58;0.61;0.86;1" dur="3.2s" repeatCount="indefinite"/></text><text x="0" y="0" class="how-finger">👆<animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.04;0.5;1" calcMode="linear" path="M48 72 C 82 50, 122 78, 158 56"/></text></svg><span class="step">Your shark is hungry, down at the foot of the reef.</span><span class="step"><b>Drag your finger</b> and it swims after it.</span><span class="step">Eat every fish in the reef, as fast as you can.</span><span class="step">The clock starts when you touch the screen.</span></p>
+    <a class="more-games" href="arcade.html">🕹 More games</a>
+    <div class="end" id="end" hidden>
+      <div aria-live="polite">
+        <p class="big" id="end-time"></p>
+        <p class="tries" id="end-tries"></p>
+        <p id="end-line"></p>
+        <p class="rank" id="end-rank"></p>
+        <p class="note" id="end-note"></p>
+      </div>
+      <!-- Keeping a run is a choice: it goes to pool:shark-reef, the game's
+           room on the beach, only once the player gives a name or asks
+           for a challenge link. -->
+      <div id="keep" hidden>
+        <p class="keep-state" id="keep-state" aria-live="polite"></p>
+        <label class="who">Your name, to put your run on the board
+          <input id="who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done" placeholder="your name">
+        </label>
+        <button type="button" class="go" id="save-run" hidden>Save my run to the board</button>
+        <button type="button" class="go" id="challenge">Challenge a friend</button>
+        <p class="note" id="keep-note" aria-live="polite"></p>
+        <p class="link" id="keep-link" hidden></p>
+      </div>
+      <div class="row">
+        <button type="button" id="again">Play again</button>
+        <button type="button" id="end-watch">Watch my run</button>
+        <button type="button" id="end-board">See the board</button>
+        <button type="button" id="end-note-btn">Leave a note</button>
+      </div>
+      <a class="more-games" href="arcade.html">🕹 More games</a>
+      <p class="make-line"><a href="make.html">Liked it? Make the next game for the Arcade →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Look and sound: the skin this phone draws the game in, and the switch
+     for sound and vibration. Both are kept on the phone only. -->
+<div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="settings-title">Look and sound</h2>
+      <button type="button" class="chip" id="settings-close">Close</button>
+    </div>
+    <h3>Skin</h3>
+    <p class="note">Changes only how the game looks. Every run is counted the same, whatever the skin.</p>
+    <div class="skins" id="skins" role="radiogroup" aria-label="Skin"></div>
+    <h3>Sound</h3>
+    <div class="setting">
+      <button type="button" class="chip" id="noise" aria-pressed="true">🔊 Sound and vibration: on</button>
+    </div>
+  </div>
+</div>
+
+<!-- The board, read live from pool:shark-reef: each player's best in this
+     reef, the wave of when each player first jumped in (ranking nobody, as
+     David's place-in-the-wave does), and what this phone has done here. -->
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Today’s board</h2>
+      <button type="button" class="chip" id="sheet-close">Close</button>
+    </div>
+    <p class="note" id="board-sum" aria-live="polite">Reading the board from the beach…</p>
+    <ol class="board" id="board-list"></ol>
+    <button type="button" class="chip board-more" id="board-more" hidden aria-expanded="false"></button>
+    <!-- Every earlier day's reef, read from the runs kept in the room: each
+         can be played again, with its own board, ghost and wave. -->
+    <h3>Past reefs</h3>
+    <p class="note" id="past-note">Every day has its own reef, and every run stays. Play any earlier day again, and race its best.</p>
+    <ul class="past" id="past"></ul>
+    <h3>The wave</h3>
+    <p class="note">How the game is spreading: each dot is a player, at the moment they first kept a run, and a thread joins whoever brought them. Early isn’t better; it shows how the game travels.</p>
+    <svg class="wave" id="wave" viewBox="0 0 320 170" role="img" aria-label="The wave of players over time"></svg>
+    <p id="wave-line"></p>
+    <div class="stood" id="stood" hidden>
+      <p class="stood-head">Where you stood</p>
+      <ul id="stood-list"></ul>
+    </div>
+    <div class="bring">
+      <button type="button" class="go" id="bring">Bring someone into the wave</button>
+      <label class="who" id="bring-name" hidden>Your name, so they’re linked to you
+        <input id="bring-who" type="text" maxlength="40" autocomplete="nickname" enterkeyhint="done">
+      </label>
+      <p class="note" id="bring-note" aria-live="polite"></p>
+    </div>
+    <h3>On this phone</h3>
+    <p id="mine-line"></p>
+    <p id="history" hidden></p>
+    <ul class="days" id="days" hidden></ul>
+    <button type="button" class="go" id="keep-best" hidden></button>
+    <p class="note" id="keep-best-note" aria-live="polite"></p>
+    <h3 id="notes-head">Notes</h3>
+    <p class="note">Say anything about the game: what you liked, what was hard, what you’d change. Notes are open for everyone to read, here and on the beach.</p>
+    <form class="notes-form" id="notes-form" autocomplete="off">
+      <label>Your name (optional)
+        <input name="who" type="text" maxlength="40" autocomplete="nickname">
+      </label>
+      <label class="trap" aria-hidden="true">Leave this empty
+        <input name="web" type="text" tabindex="-1">
+      </label>
+      <label>Your note
+        <textarea name="note" maxlength="2000" required></textarea>
+      </label>
+      <button type="submit" class="go">Send</button>
+      <p class="note" id="notes-status" aria-live="polite"></p>
+    </form>
+    <div class="notes-list" id="notes-list"></div>
+    <h3>The Arcade</h3>
+    <p>Shark Reef is in the Arcade: quick, one-move skill games, with a new level every day for everyone. It was Stacey’s idea. Play <a href="ghost-wire.html">Ghost Wire</a>, <a href="bat-sky.html">Bat Sky</a> or <a href="rat-alley.html">Rat Alley</a>, <a href="arcade.html">see all the games</a>, or <a href="make.html">leave an idea for the next one, or make it yourself →</a></p>
+  </div>
+</div>
+
+<script src="beach.js?v=2026-10-21a"></script>
+<script src="shark-reef.js?v=2026-10-24a"></script>
+<script>
+(function () {
+  var SR = window.SharkReef;
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var timeEl = document.getElementById('time');
+  var leftEl = document.getElementById('left');
+  var ghostLine = document.getElementById('ghost-line');
+  var say = document.getElementById('say');
+  var end = document.getElementById('end');
+  // ---- Skins ----------------------------------------------------------------
+  // A skin is only how the game is drawn: the sky and the water, the light
+  // from the surface and how thick the murk is, the sand and the coral, the
+  // fish, the shark and the words' look. The reef, its shoals and every
+  // fish's way are the same in every skin, so every run is counted the same.
+  // Other players' ghosts are drawn in your skin's ghost colour. The choice
+  // is kept on this phone. gloom is how thick murky water is away from your
+  // shark (0 to 1); fish holds the shoals' colours, silver a big shoal's.
+  var SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  var SKINS = [
+    { id: 'reef', name: 'Coral reef', bg: '#063B5C', accent: '#5FE3E8', you: '#FFD166', ghost: '#C4A1FF', miss: '#FF6B6B', font: SANS,
+      words: '#EAF8FC', dim: '#A3C9D6', panel: 'rgba(4, 34, 52, 0.8)', strong: 'rgba(4, 34, 52, 0.93)', edge: 'rgba(95, 227, 232, 0.4)',
+      line: 'rgba(234, 248, 252, 0.13)', fieldLine: 'rgba(234, 248, 252, 0.26)', fieldBg: 'rgba(234, 248, 252, 0.06)', me: 'rgba(255, 209, 102, 0.1)',
+      glowAccent: 'rgba(95, 227, 232, 0.55)', glowYou: 'rgba(255, 209, 102, 0.5)', shade: 'rgba(0, 0, 0, 0.55)', glow: 1,
+      sky: '#8ED8F5', skyLow: '#C9F0FF', surf: '#E6FBFF', top: '#1AA6C9', deep: '#0A3A5E', far: '#0E5577', ray: '#E6FBFF', murk: '#2F5A47', gloom: 0.84,
+      sand: '#E5CC97', sandDark: '#C9AE76', rock: '#5B6B78', rockDark: '#3C4852', coral: ['#FF7A8A', '#FFB04A', '#B07CFF'],
+      kelp: '#3F9A4A', kelpDark: '#2A6E34', shark: '#8193A6', sharkBack: '#5E7083', belly: '#E8EEF2', eye: '#10202C', mouth: '#5A1A24', teeth: '#FFFFFF',
+      fish: ['#FFB04A', '#FF6F91', '#7CE0FF', '#B9F27C'], silver: '#D4E6F0', bubble: '#E6FBFF' },
+    { id: 'paper', name: 'Paper', bg: '#EFE7D8', accent: '#1D1A17', you: '#C21D4E', ghost: '#2F6690', miss: '#E07B00',
+      font: '"Cormorant Garamond", Garamond, Georgia, "Times New Roman", serif',
+      words: '#1D1A17', dim: '#6A6158', panel: 'rgba(246, 240, 228, 0.92)', strong: 'rgba(246, 240, 228, 0.97)', edge: 'rgba(29, 26, 23, 0.35)',
+      line: 'rgba(29, 26, 23, 0.14)', fieldLine: 'rgba(29, 26, 23, 0.3)', fieldBg: 'rgba(29, 26, 23, 0.04)', me: 'rgba(194, 29, 78, 0.08)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: 'rgba(246, 240, 228, 0.95)', glow: 0,
+      sky: '#F6F0E2', skyLow: '#EFE7D8', surf: '#1D1A17', top: '#E6DDCC', deep: '#CDBFA8', far: '#BFB098', ray: '#FFFDF5', murk: '#A89A80', gloom: 0.72,
+      sand: '#D9CCB6', sandDark: '#B5A68C', rock: '#9A8F80', rockDark: '#6A6158', coral: ['#C21D4E', '#8B5A2B', '#2F6690'],
+      kelp: '#6B7F5A', kelpDark: '#4A5A3E', shark: '#6A6158', sharkBack: '#3A332C', belly: '#F6F0E2', eye: '#1D1A17', mouth: '#1D1A17', teeth: '#FFFFFF',
+      fish: ['#C21D4E', '#2F6690', '#8B5A2B', '#E07B00'], silver: '#8A8276', bubble: '#3A332C' },
+    { id: 'urchin', name: 'Sea urchin', bg: '#06243A', accent: '#7FFFD4', you: '#FF7F6A', ghost: '#C4A7FF', miss: '#FFE14D', font: SANS,
+      words: '#E6F7FF', dim: '#8FB3C7', panel: 'rgba(6, 36, 58, 0.86)', strong: 'rgba(6, 36, 58, 0.94)', edge: 'rgba(127, 255, 212, 0.35)',
+      line: 'rgba(230, 247, 255, 0.14)', fieldLine: 'rgba(230, 247, 255, 0.28)', fieldBg: 'rgba(230, 247, 255, 0.06)', me: 'rgba(255, 127, 106, 0.12)',
+      glowAccent: 'rgba(127, 255, 212, 0.55)', glowYou: 'rgba(255, 127, 106, 0.5)', shade: 'rgba(0, 0, 0, 0.6)', glow: 1,
+      sky: '#2E1F4F', skyLow: '#6A4378', surf: '#7FFFD4', top: '#0E4A6E', deep: '#041626', far: '#0A2E48', ray: '#7FFFD4', murk: '#14262F', gloom: 0.82,
+      sand: '#2E4A5E', sandDark: '#1E3446', rock: '#3A5866', rockDark: '#22394A', coral: ['#FF7F6A', '#C4A7FF', '#7FFFD4'],
+      kelp: '#2E8F7A', kelpDark: '#1C5E50', shark: '#5F8796', sharkBack: '#3A5866', belly: '#BFE8EE', eye: '#041626', mouth: '#2A0610', teeth: '#E6FFF7',
+      fish: ['#FF7F6A', '#FFE14D', '#7FFFD4', '#C4A7FF'], silver: '#BFE8EE', bubble: '#7FFFD4' },
+    { id: 'crt', name: 'Arcade CRT', bg: '#020A02', accent: '#33FF66', you: '#E4FF5A', ghost: '#33CCFF', miss: '#FF3B3B',
+      font: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
+      words: '#B8FFC8', dim: '#4FA86A', panel: 'rgba(2, 10, 2, 0.88)', strong: 'rgba(2, 10, 2, 0.95)', edge: 'rgba(51, 255, 102, 0.4)',
+      line: 'rgba(51, 255, 102, 0.16)', fieldLine: 'rgba(51, 255, 102, 0.35)', fieldBg: 'rgba(51, 255, 102, 0.05)', me: 'rgba(228, 255, 90, 0.1)',
+      glowAccent: 'rgba(51, 255, 102, 0.6)', glowYou: 'rgba(228, 255, 90, 0.5)', shade: 'rgba(0, 0, 0, 0.8)', glow: 1, scan: true,
+      sky: '#000800', skyLow: '#021A06', surf: '#33FF66', top: '#04280A', deep: '#000A02', far: '#021A06', ray: '#33FF66', murk: '#000200', gloom: 0.8,
+      sand: '#0D4A18', sandDark: '#05300C', rock: '#0D4A18', rockDark: '#021A06', coral: ['#33FF66', '#7DFF8E', '#E4FF5A'],
+      kelp: '#1B6E2A', kelpDark: '#0D4A18', shark: '#2A9A40', sharkBack: '#0F5A1E', belly: '#7DFF8E', eye: '#000000', mouth: '#000000', teeth: '#B8FFC8',
+      fish: ['#E4FF5A', '#33CCFF', '#7DFF8E', '#B8FFC8'], silver: '#7DFF8E', bubble: '#33FF66' },
+    { id: 'contrast', name: 'High contrast', bg: '#000000', accent: '#FFFFFF', you: '#FFE600', ghost: '#4DA3FF', miss: '#FF5A5A', font: SANS,
+      words: '#FFFFFF', dim: '#D0D0D0', panel: 'rgba(0, 0, 0, 0.9)', strong: '#000000', edge: '#FFFFFF',
+      line: 'rgba(255, 255, 255, 0.35)', fieldLine: '#FFFFFF', fieldBg: 'rgba(255, 255, 255, 0.08)', me: 'rgba(255, 230, 0, 0.16)',
+      glowAccent: 'transparent', glowYou: 'transparent', shade: '#000000', glow: 0, thick: true,
+      sky: '#1A1A1A', skyLow: '#262626', surf: '#FFFFFF', top: '#06222E', deep: '#000000', far: '#0A0A0A', ray: '#FFFFFF', murk: '#000000', gloom: 0.6,
+      sand: '#5A5A5A', sandDark: '#3A3A3A', rock: '#3A3A3A', rockDark: '#1A1A1A', coral: ['#FF5A5A', '#FFE600', '#4DA3FF'],
+      kelp: '#2E7A2E', kelpDark: '#1A4A1A', shark: '#C8C8C8', sharkBack: '#8A8A8A', belly: '#FFFFFF', eye: '#000000', mouth: '#000000', teeth: '#FFFFFF',
+      fish: ['#FFE600', '#FF5A5A', '#4DA3FF', '#7CFF7C'], silver: '#FFFFFF', bubble: '#FFFFFF' }
+  ];
+  var skin = SKINS[0];
+  function rgbOf(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  // A colour part way from a to b (each [r, g, b]), with an opacity.
+  function mix(a, b, t, alpha) {
+    var c = [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); });
+    return alpha == null ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + alpha + ')';
+  }
+  function setSkin(id) {
+    skin = SKINS.filter(function (k) { return k.id === id; })[0] || SKINS[0];
+    var r = document.documentElement.style;
+    [['--night', 'bg'], ['--accent', 'accent'], ['--you', 'you'], ['--ghost', 'ghost'], ['--miss', 'miss'], ['--words', 'words'], ['--dim', 'dim'],
+     ['--panel', 'panel'], ['--panel-strong', 'strong'], ['--edge', 'edge'], ['--line', 'line'], ['--field-line', 'fieldLine'],
+     ['--field-bg', 'fieldBg'], ['--me-row', 'me'], ['--glow-accent', 'glowAccent'], ['--glow-you', 'glowYou'], ['--shade', 'shade'], ['--font', 'font'],
+     ['--how-top', 'top'], ['--how-deep', 'deep'], ['--how-sand', 'sand'], ['--how-shark', 'shark'], ['--how-belly', 'belly'],
+     ['--how-eye', 'eye']].forEach(function (v) { r.setProperty(v[0], skin[v[1]]); });
+    r.setProperty('--how-coral', skin.coral[0]);
+    r.setProperty('--how-fish', skin.fish[0]);
+    // The drawing's colours, as numbers to mix.
+    skin.c = {};
+    ['bg', 'murk', 'ray', 'deep', 'top'].forEach(function (k) { skin.c[k] = rgbOf(skin[k]); });
+    var meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', skin.bg);
+  }
+  var ROOM = 'pool:shark-reef', LAW = 'game:shark-reef';
+  var MOTION = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function still() { return !!(MOTION && MOTION.matches); }
+
+  // ---- This device's memory ------------------------------------------------
+  // Storage can be missing, full or refused, so every read and write may
+  // quietly come to nothing.
+  function recall(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function remember(key, value) {
+    try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  }
+  // What this phone has done at this reef: every try started, every run
+  // seen through to its end. A try is counted when it starts, so a finish
+  // knows its number.
+  function tally(what) {
+    var n = parseInt(recall('shark-reef:' + what + ':' + TRACK), 10);
+    return n > 0 ? n : 0;
+  }
+  function count(what) {
+    var n = tally(what) + 1;
+    remember('shark-reef:' + what + ':' + TRACK, String(n));
+    return n;
+  }
+  setSkin(recall('shark-reef:skin'));
+
+  // The slots in the room this phone has kept runs at, so the board knows
+  // which player is you.
+  function mine() {
+    try { var m = JSON.parse(recall('shark-reef:mine') || '[]'); return Array.isArray(m) ? m : []; } catch (e) { return []; }
+  }
+
+  // ---- Which reef, and whose ghost -----------------------------------------
+  // A link may name a reef (?track=) and a run kept in the room (?ghost=,
+  // its slot there). With no reef named, it is today's, from the beach's
+  // clock: the day's address at full width, the first eight digits and
+  // '00'. If the beach can't be reached, it is the practice reef.
+  var params = new URLSearchParams(location.search);
+  var asked = SR.validTrack(params.get('track')) ? params.get('track') : '';
+  var askedGhost = /^\d{1,7}$/.test(params.get('ghost') || '') ? params.get('ghost') : '';
+  var askedWatch = /^\d{1,7}$/.test(params.get('watch') || '') ? params.get('watch') : '';
+  // A link to bring someone in carries the bringer's name (?from=). The
+  // first one a phone arrives by is kept, and each run it keeps says who
+  // brought it.
+  function broughtBy(name) {
+    name = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var own = (recall('shark-reef:name') || '').toLowerCase();
+    if (!name || name === 'A friend' || recall('shark-reef:from') || name.toLowerCase() === own) return;
+    remember('shark-reef:from', name);
+  }
+  broughtBy(params.get('from'));
+  var TRACK = '', TODAY = '', DAY = '', sk = null, BEST = '';
+  var ghost = null, ghostWho = '';      // the ghost raced, and whose it is when not yours
+  var friend = null;                    // the run a link brought, re-run
+  var linked = null;                    // a link's run when it was your own
+
+  // A kept line is yours when this phone kept it, or it carries the name
+  // this phone signs with.
+  function isMine(entry, slot) {
+    var name = (recall('shark-reef:name') || '').toLowerCase();
+    return mine().indexOf(slot) >= 0 || (!!name && who(entry).toLowerCase() === name);
+  }
+
+  function isDay(track) { return /^\d{10}$/.test(track); }
+  function who(entry) {
+    var n = typeof entry[1] === 'string' ? entry[1].replace(/, a visitor$/, '').trim() : '';
+    return n && n !== 'a visitor' && n.length <= 40 ? n : 'A friend';
+  }
+
+  // The room as the beach holds it: a room not founded yet reads as empty,
+  // and a beach out of reach fails.
+  function pool() {
+    return Beach.look(ROOM).then(function (r) {
+      if (r.status === 200 && r.json && typeof r.json === 'object') return r.json;
+      if (r.status === 404) return {};
+      throw new Error('the beach is out of reach');
+    });
+  }
+
+  // The law is read for the beach's clock, which rides every answer, even
+  // the answer that a block isn't there yet.
+  function init() {
+    var law = Beach.look(LAW);
+    var link = askedGhost
+      ? Beach.get(ROOM, { spindle: askedGhost }).then(null, function () { return null; })
+      : Promise.resolve(null);
+    Promise.all([law, link]).then(function (got) {
+      var clock = Beach.clock();
+      if (clock) {
+        TODAY = clock.address.slice(0, 8) + '00';
+        DAY = clock.voicing.split(',')[0];
+      }
+      var entry = got[1], kept = entry && typeof entry[7] === 'string' ? SR.decode(entry[7]) : null;
+      TRACK = asked || (kept && kept.track) || TODAY || 'practice';
+      setup();
+      if (kept && kept.track === TRACK) {
+        var r = SR.rerun(entry[7], sk);
+        if (r && r.ok) {
+          if (isMine(entry, askedGhost)) linked = r;
+          else {
+            friend = r;
+            ghostWho = who(entry);
+            broughtBy(ghostWho);
+          }
+        }
+      }
+      var label = TRACK === TODAY ? 'Today’s reef' : isDay(TRACK) ? 'An earlier day’s reef' : 'Practice reef';
+      document.getElementById('say-label').textContent = label + ': ' + SR.describe(TRACK) + ', ' + SR.fish(sk.n);
+      BRIEF = say.innerHTML;
+      holdHow();
+      loadGhost();
+      loadLeader();
+      if (askedGhost && !friend && !linked) {
+        ghostLine.textContent = got[1] === null && !clock
+          ? 'The beach is out of reach just now, so your friend’s ghost can’t be fetched.'
+          : 'That ghost couldn’t be found at this reef.';
+      } else if (!clock && !asked) {
+        ghostLine.textContent = 'The beach is out of reach just now, so this is a practice reef.';
+      }
+      phase = 'ready';
+      if (askedWatch) openWatchLink();
+    });
+  }
+
+  // The ghost is a friend's run when a link brought one; else the best run
+  // on the board, the same for everyone; and only while the board is
+  // empty, your own best (the better of this phone's and your own run a
+  // link brought). A kept run that doesn't re-run to its end is no ghost.
+  var best = function () { return TRACK === TODAY ? 'today’s best' : 'this reef’s best'; };
+  function loadGhost() {
+    if (friend) {
+      ghost = friend;
+      ghostLine.textContent = 'Ghost: ' + ghostWho + '’s run, ' + SR.words(ghost);
+      return;
+    }
+    var kept = recall(BEST);
+    var r = kept ? SR.rerun(kept, sk) : null;
+    var own = r && r.ok ? r : null;
+    if (linked && SR.better(linked, own)) own = linked;
+    if (leader) {
+      ghost = leader;
+      ghostLine.textContent = 'Ghost: ' + (leaderMine ? 'your run, ' : leaderWho + ', ') + best() + ', ' + SR.words(ghost);
+      return;
+    }
+    ghost = own;
+    ghostLine.textContent = ghost
+      ? 'Ghost: your best here, ' + SR.words(ghost)
+      : 'No ghost yet: your first run becomes one.';
+  }
+
+  // The best run kept at this reef, re-run, to race when no friend's link
+  // brought one. Read when the page opens, and every twenty seconds while
+  // it is open and no run is under way, so a new record reaches every
+  // phone.
+  var leader = null, leaderWho = '', leaderMine = false, leaderRead = 0, leaderReplay = '';
+  function loadLeader() {
+    if (!isDay(TRACK)) return;
+    leaderRead = Date.now();
+    room().then(function (runs) {
+      showPrev(runs);
+      if (friend) return;
+      var me = myPlayer(runs), top = null;
+      runs.forEach(function (r) {
+        if (r.track === TRACK && SR.better(r, top)) top = r;
+      });
+      var g = top ? SR.rerun(top.replay, sk) : null;
+      if (g && g.ok) {
+        leader = g;
+        leaderWho = top.name;
+        leaderMine = top.player === me;
+        leaderReplay = top.replay;
+      }
+      if (phase === 'ready' || phase === 'loading') loadGhost();
+    }, function () {});
+  }
+  setInterval(function () {
+    if (!document.hidden && phase !== 'running' && Date.now() - leaderRead > 20000) loadLeader();
+  }, 5000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && phase !== 'running' && leaderRead && Date.now() - leaderRead > 5000) loadLeader();
+  });
+
+  // ---- The finger --------------------------------------------------------
+  // One finger (or a mouse held down) is where the shark swims to: the
+  // first touch starts the clock, and while it is down the shark swims
+  // after it, wherever it is on the screen. Let go, and the shark glides
+  // on, slowing.
+  var finger = null;
+  function seaAt(e) {
+    return { x: (e.clientX - view.ox) / view.scale, y: (e.clientY - view.oy) / view.scale };
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    if (phase !== 'ready' && phase !== 'running') return;
+    if (finger && finger.id !== e.pointerId) return;
+    finger = seaAt(e);
+    finger.id = e.pointerId;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    if (phase === 'ready') begin();
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!finger || e.pointerId !== finger.id) return;
+    var p = seaAt(e);
+    finger.x = p.x;
+    finger.y = p.y;
+  });
+  function lift(e) {
+    if (finger && e.pointerId === finger.id) finger = null;
+  }
+  window.addEventListener('pointerup', lift);
+  window.addEventListener('pointercancel', lift);
+  // Leaving the page lets go.
+  window.addEventListener('blur', function () { finger = null; });
+  canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // The shark's move for one step, towards the finger: at full speed until
+  // it is nearly there, and round in a turn rather than stopping dead when
+  // the finger is behind it; with no finger down, gliding on, slowing. The
+  // engine makes it a move the shark can make, and that is what is kept.
+  var GLIDE = 0.97;
+  function steer(st, f) {
+    var wx = 0, wy = 0;
+    if (f) {
+      var dx = f.x - st.x, dy = f.y - st.y, d = Math.sqrt(dx * dx + dy * dy);
+      var sp = Math.min(SR.LAW.most, d * 0.4);
+      if (d > 1e-6) { wx = dx / d * sp; wy = dy / d * sp; }
+      var v = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+      if (v > 4 && st.vx * wx + st.vy * wy < 0) {
+        var side = st.vx * dy - st.vy * dx >= 0 ? 1 : -1;
+        wx = -st.vy * side / v * sp;
+        wy = st.vx * side / v * sp;
+      }
+    } else {
+      wx = st.vx * GLIDE;
+      wy = st.vy * GLIDE;
+    }
+    return SR.bound(st, wx, wy);
+  }
+
+  // ---- Sound and vibration --------------------------------------------------
+  // Every sound is made here by the browser, nothing downloaded: a splash
+  // as the shark sets off, a chomp for each fish eaten with a bloop a note
+  // higher each time, a heartbeat for each of the last five seconds, a
+  // burp when every fish is eaten (or a sad fall of notes when time runs
+  // out), and a chime after, brighter for a new best. Vibration follows
+  // the same moments where the phone allows it (not iPhones). One button
+  // turns both off, and this phone remembers it. The sound starts on the
+  // first touch, as browsers ask.
+  var audio = (function () {
+    var on = recall('shark-reef:noise') !== 'off';
+    var ac = null, out = null;
+    var btn = document.getElementById('noise');
+    function show() {
+      btn.textContent = on ? '🔊 Sound and vibration: on' : '🔇 Sound and vibration: off';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      on = !on;
+      remember('shark-reef:noise', on ? 'on' : 'off');
+      if (on) wake();
+      show();
+    });
+    show();
+    function wake() {
+      if (!on) return null;
+      try {
+        if (!ac) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          ac = new AC();
+          out = ac.createGain();
+          out.gain.value = 0.5;
+          out.connect(ac.destination);
+        }
+        if (ac.state === 'suspended') ac.resume();
+      } catch (e) { ac = null; }
+      return ac;
+    }
+    function vibe(pattern) {
+      if (!on || !navigator.vibrate) return;
+      try { navigator.vibrate(pattern); } catch (e) {}
+    }
+    // One note: a wave of a pitch, rising and falling in loudness.
+    function note(type, freq, at, length, level, glide) {
+      var t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + length);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(level, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      o.connect(g);
+      g.connect(out);
+      o.start(t);
+      o.stop(t + length + 0.02);
+    }
+    // A burst of noise through a filter of a kind (lowpass, bandpass), its
+    // pitch falling from f0 to f1: the body of a splash, a chomp or a burp.
+    function noise(at, length, level, kind, f0, f1) {
+      var n = Math.floor(ac.sampleRate * length), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      var t = ac.currentTime + at, src = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = kind;
+      f.frequency.setValueAtTime(f0, t);
+      f.frequency.exponentialRampToValueAtTime(f1, t + length);
+      g.gain.value = level;
+      src.buffer = buf;
+      src.connect(f);
+      f.connect(g);
+      g.connect(out);
+      src.start(t);
+    }
+    return {
+      start: function () {
+        vibe(15);
+        if (!wake()) return;
+        noise(0, 0.55, 0.2, 'lowpass', 1200, 140);
+        note('sine', 230, 0, 0.35, 0.07, 110);
+      },
+      // n: how many eaten so far; each bloop a note higher, round an octave.
+      chomp: function (n) {
+        vibe(18);
+        if (!wake()) return;
+        noise(0, 0.07, 0.45, 'bandpass', 1100, 320);
+        note('square', 150, 0, 0.08, 0.1, 60);
+        var f = 523 * Math.pow(2, ((n - 1) % 13) / 12);
+        note('sine', f, 0.04, 0.13, 0.12, f * 1.6);
+      },
+      toll: function () {
+        vibe([10, 90, 10]);
+        if (!wake()) return;
+        note('sine', 62, 0, 0.16, 0.35, 48);
+        note('sine', 58, 0.2, 0.18, 0.28, 45);
+      },
+      // Every fish eaten: a big burp.
+      burp: function () {
+        vibe([30, 40, 90]);
+        if (!wake()) return;
+        note('sawtooth', 96, 0.05, 0.55, 0.11, 58);
+        note('sawtooth', 102, 0.07, 0.5, 0.06, 62);
+        noise(0.05, 0.5, 0.14, 'lowpass', 420, 110);
+      },
+      // The time up with fish still swimming: notes falling, sadly.
+      over: function () {
+        vibe([40, 60, 40]);
+        if (!wake()) return;
+        [392, 370, 349, 311].forEach(function (f, i) { note('triangle', f, i * 0.2, 0.32, 0.1); });
+      },
+      set: function (better) {
+        vibe(better ? [30, 40, 30, 40, 30, 40, 120] : [30, 50, 30, 50, 60]);
+        if (!wake()) return;
+        var notes = better ? [523, 659, 784, 1047] : [392, 523, 659];
+        notes.forEach(function (f, i) { note('triangle', f, i * 0.12, 0.45, 0.16); });
+      }
+    };
+  })();
+
+  // ---- The run -----------------------------------------------------------
+  // phase: 'loading' (finding the reef), 'ready' (waiting for a touch),
+  // 'running', 'done' (the burp or the time up, then the end screen), or
+  // 'watching' a kept run.
+  var phase = 'loading', run = null, prev = null, moves = [], BRIEF = say.innerHTML;
+  var acc = 0, ghostAt = 0, ghostEats = [];
+  var last = null;              // the run just finished: { replay, eaten, steps, total, slot }
+
+  // A touch while ready starts a run: the clock starts on that touch.
+  function begin() {
+    if (phase !== 'ready' || !sk) return;
+    count('tries');
+    run = SR.start(sk);
+    prev = snap(run);
+    moves = [];
+    marks = [];
+    bits = [];
+    bubbles = [];
+    burped = null;
+    chompAt = 0;
+    acc = 0;
+    ghostAt = 0;
+    ghostEats = eatsOf(ghost);
+    phase = 'running';
+    say.hidden = true;
+    showGhostCount(0);
+    audio.start();
+  }
+
+  // Where everything was before a step, for drawing between steps.
+  function snap(st) {
+    return { x: st.x, y: st.y, fx: st.fx.slice(), fy: st.fy.slice() };
+  }
+
+  // A re-run's fish in the order it ate them: [{ step, b }].
+  function eatsOf(r) {
+    if (!r) return [];
+    var out = [];
+    r.eatenAt.forEach(function (s, b) { if (s !== Infinity) out.push({ step: s, b: b }); });
+    return out.sort(function (a, b) { return a.step - b.step || a.b - b.b; });
+  }
+
+  function showGhostCount(n) {
+    if (!ghost) return;
+    var head = ghostWho && ghost === friend ? ghostWho + '’s ghost: ' : 'Ghost: ';
+    ghostLine.textContent = head + (n >= ghost.total ? 'every fish, in ' + SR.seconds(ghost.steps) + ' s' : SR.fish(n));
+  }
+
+  // One step: the shark's move towards the finger, kept; the reef goes on
+  // a step; each fish it ate is chomped; then the ghost's fish at this step.
+  function tick() {
+    var q = steer(run, finger);
+    moves.push(q);
+    prev = snap(run);
+    SR.step(run, q[0], q[1], sk);
+    run.ate.forEach(function (b) {
+      var x = run.fx[b] / SR.FINE, y = run.fy[b] / SR.FINE;
+      eat(run.x, run.y, x, y, b, sk);
+      audio.chomp(run.eaten);
+    });
+    var before = ghostAt;
+    while (ghostAt < ghostEats.length && ghostEats[ghostAt].step <= run.step) {
+      var g = ghostEats[ghostAt++];
+      mark(ghost.x[g.step], ghost.y[g.step], 'ghost-ate');
+    }
+    if (ghostAt !== before) showGhostCount(ghostAt);
+    var left = SR.LAW.steps - run.step;
+    if (left === 5 * SR.RATE || left === 4 * SR.RATE || left === 3 * SR.RATE || left === 2 * SR.RATE || left === SR.RATE) audio.toll();
+    if (run.status !== 'running') finish();
+  }
+
+  // How far apart two runs at this reef are, in words: in time when both
+  // ate every fish, else in fish.
+  function apart(a, b) {
+    if (a.eaten === b.eaten && a.eaten >= a.total) return SR.seconds(Math.abs(a.steps - b.steps)) + ' s';
+    return SR.fish(Math.abs(a.eaten - b.eaten));
+  }
+  // How one run stands against another, in words. aside names whose run
+  // it is ('today’s best'), set off by commas.
+  function against(a, b, name, aside) {
+    var mid = aside ? name + ', ' + aside + ',' : name, whole = aside ? name + ', ' + aside : name;
+    if (SR.better(a, b)) return 'You beat ' + mid + ' by ' + apart(a, b) + (aside ? '!' : '.');
+    if (SR.better(b, a)) return apart(a, b) + ' behind ' + whole + '.';
+    return 'Dead level with ' + whole + '.';
+  }
+
+  var BURP = 1100;              // how long the burp, or the fish getting away, lasts before the end screen, in ms
+  var endAt = 0;                // when it started, or 0
+  function finish() {
+    phase = 'done';
+    finger = null;
+    var done = run.status === 'finished';
+    var replay = SR.encode(TRACK, moves, run.eaten, run.step);
+    var check = SR.rerun(replay, sk), sound = !!(check && check.ok) && run.eaten > 0;
+    var tries = tally('tries');
+    count('finishes');
+    var now = { eaten: run.eaten, steps: run.step, total: sk.n };
+    last = { replay: sound ? replay : '', eaten: run.eaten, steps: run.step, total: sk.n, slot: '', tries: tries };
+    document.getElementById('end-watch').hidden = !last.replay;
+    document.getElementById('end-tries').textContent = (done ? 'Every fish eaten, ' : run.eaten + ' of ' + sk.n + ' fish eaten, ') +
+      (tries === 1 ? 'on your first try at this reef!' : 'on your ' + ordinal(tries) + ' try at this reef.');
+    var bestKept = recall(BEST), mineRun = bestKept ? SR.rerun(bestKept, sk) : null;
+    var was = mineRun && mineRun.ok ? mineRun : null;
+    if (linked && SR.better(linked, was)) was = linked;
+    var better = run.eaten > 0 && SR.better(now, was);
+    var keptIt = better && sound && remember(BEST, replay);
+    var chime = better && was != null;
+    if (done) audio.burp(); else audio.over();
+    if (keptIt) remember('shark-reef:best-tries:' + TRACK, String(tries));
+    var lead = !friend && ghost && ghost === leader && !leaderMine;
+    var away = sk.n - run.eaten;
+    document.getElementById('end-time').textContent = SR.words(now);
+    document.getElementById('end-line').textContent = friend ? against(now, ghost, ghostWho)
+      : lead ? against(now, ghost, leaderWho, best())
+      : !run.eaten ? 'The fish all got away! Drag your finger and the shark swims after it.'
+      : was == null ? (done ? 'Every fish eaten!' : 'Time’s up: ' + SR.fish(away) + ' got away.')
+      : better ? (was.eaten < was.total && done ? 'Your best yet: every fish this time!' : 'Your best yet, by ' + apart(now, was) + '.')
+      : SR.better(was, now) ? apart(now, was) + ' behind your best.'
+      : 'Level with your best.';
+    document.getElementById('end-note').textContent = keptIt ? (friend || (leader && SR.better(leader, now)) ? 'It’s your best here on this device.' : 'This run is your ghost now.')
+      : better ? 'This device couldn’t keep it as your ghost.'
+      : was ? 'Your best here stays at ' + SR.words(was) + '.'
+      : '';
+    if (!friend && keptIt) loadGhost();
+    else if (ghost) loadGhost();
+    // A new best goes on the board by itself once this phone has a name
+    // (or has put a run there before); a run with no name yet is saved as
+    // soon as one is typed.
+    if (keptIt && isDay(TRACK) && (mine().length || recall('shark-reef:name'))) {
+      var auto = last;
+      auto.state = 'saving';
+      keepState(auto, true);
+      saveLast(auto).then(function () {
+        auto.state = 'on';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      }, function () {
+        auto.state = 'failed';
+        if (last === auto && phase === 'done') keepState(auto, true);
+      });
+    }
+    var rank = document.getElementById('end-rank');
+    rank.textContent = '';
+    var keep = document.getElementById('keep');
+    keep.hidden = !(isDay(TRACK) && sound);
+    keepState(last, better);
+    document.getElementById('keep-note').textContent = '';
+    document.getElementById('keep-link').hidden = true;
+    document.getElementById('challenge').disabled = false;
+    document.getElementById('who').value = recall('shark-reef:name') || '';
+    // The shark burps, or the fish left get away, and then the end screen.
+    endAt = performance.now();
+    if (done) burp(run.x, run.y);
+    var shown = last;
+    setTimeout(function () {
+      if (phase !== 'done' || last !== shown) return;
+      end.hidden = false;
+      audio.set(chime);
+    }, still() ? 0 : BURP);
+    if (isDay(TRACK) && run.eaten) room().then(function (runs) {
+      if (phase === 'done' && last && last.eaten === now.eaten && last.steps === now.steps) rank.textContent = standing(runs, now);
+    }, function () {});
+  }
+
+  // ---- The day's board ---------------------------------------------------
+  // Every run kept in the room at this reef that re-runs to its end, as {
+  // slot, ... }. The room is walked as the beach nests it: older entries
+  // under "_" once it grows, newer ones a digit deeper; an entry's slot is
+  // the digits walked to it.
+  function isEntry(n) {
+    return n && typeof n === 'object' && typeof n._ === 'string' && typeof n['3'] === 'string';
+  }
+  function slots(node, path, out) {
+    if (!node || typeof node !== 'object') return out;
+    if (node._ && typeof node._ === 'object') slots(node._, path, out);
+    for (var d = 1; d <= 9; d++) {
+      var c = node[String(d)];
+      if (isEntry(c)) out.push({ slot: path + d, entry: c });
+      else if (c && typeof c === 'object') slots(c, path + d, out);
+    }
+    return out;
+  }
+  // Every run kept in the room, at any reef, that re-runs to its end in its
+  // own reef, as { slot, track, eaten, steps, total, at, player, name,
+  // tries }. A run is re-run once and remembered by its words, so a
+  // refresh is cheap.
+  var reruns = {}, seas = {};
+  function room() {
+    return pool().then(function (held) {
+      var runs = [];
+      slots(held, '', []).forEach(function (s) {
+        var e = s.entry, keptRun = e['7'];
+        if (typeof keptRun !== 'string') return;
+        if (!(keptRun in reruns)) {
+          var d = SR.decode(keptRun), r = null;
+          if (d) {
+            var key = d.track + '.' + d.version;
+            var k = key === sk.track + '.' + sk.version ? sk : (seas[key] = seas[key] || SR.sea(d.track, d.version));
+            r = SR.rerun(keptRun, k);
+          }
+          reruns[keptRun] = r && r.ok && r.eaten > 0 ? { track: r.track, eaten: r.eaten, steps: r.steps, total: r.total } : null;
+        }
+        var ok = reruns[keptRun];
+        if (!ok || e['2'] !== ok.track) return;
+        var named = who(e) !== 'A friend' ? who(e) : '';
+        runs.push({
+          slot: s.slot, track: ok.track, eaten: ok.eaten, steps: ok.steps, total: ok.total, at: e['3'], replay: keptRun,
+          player: named ? 'name:' + named.toLowerCase() : 'slot:' + s.slot,
+          name: named || 'A visitor',
+          tries: /^\d{1,5}$/.test(e['8'] || '') ? +e['8'] : null,
+          from: typeof e['6'] === 'string' && e['6'].trim() && e['6'].length <= 40 ? e['6'].trim() : ''
+        });
+      });
+      return runs;
+    });
+  }
+  // Which player is you: the one at a slot this phone kept, or with the
+  // name this phone signs with.
+  function myPlayer(runs) {
+    var slotsHere = mine(), name = (recall('shark-reef:name') || '').toLowerCase();
+    var hit = runs.filter(function (r) { return slotsHere.indexOf(r.slot) >= 0 || (name && r.player === 'name:' + name); })[0];
+    return hit ? hit.player : '';
+  }
+  // Each player's best at one reef, best first (most fish, then soonest):
+  // { player, name, eaten, steps, total, tries (of that best run), runs (how
+  // many they kept there), last }.
+  function players(runs, track) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (r.track !== track) return;
+      var p = by[r.player] || (by[r.player] = { player: r.player, name: r.name, eaten: -1, steps: 0, total: r.total, tries: null, runs: 0, last: '' });
+      p.runs++;
+      if (r.at > p.last) p.last = r.at;
+      if (SR.better(r, p)) { p.eaten = r.eaten; p.steps = r.steps; p.tries = r.tries; p.slot = r.slot; p.replay = r.replay; p.at = r.at; }
+    });
+    return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) {
+      return b.eaten - a.eaten || a.steps - b.steps || (a.last < b.last ? -1 : 1);
+    });
+  }
+  function ordinal(n) {
+    var t = n % 100, u = n % 10;
+    return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th');
+  }
+  // Where a run would stand among the other players' bests at this reef.
+  function standing(runs, now) {
+    var me = myPlayer(runs);
+    var others = players(runs, TRACK).filter(function (p) { return p.player !== me; });
+    var when = TRACK === TODAY ? 'today' : 'at this reef';
+    if (!others.length) return 'No one else has kept a run ' + when + ' yet.';
+    var rank = 1 + others.filter(function (p) { return SR.better(p, now); }).length, total = others.length + 1;
+    var top = Math.max(1, Math.ceil(rank / total * 100));
+    if (total >= 5 && top <= 50) return 'Top ' + top + '% ' + when + '!';
+    return ordinal(rank) + ' of ' + total + ' players ' + when + '.';
+  }
+
+  // ---- The board sheet -----------------------------------------------------
+  var sheet = document.getElementById('sheet'), sheetTimer = 0, opener = null, lastRuns = [], boardAll = false;
+  document.getElementById('board-more').addEventListener('click', function () {
+    boardAll = !boardAll;
+    refreshBoard();
+  });
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clock(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function openBoard() {
+    if (phase === 'running' || !sk) return;
+    opener = document.activeElement;
+    sheet.hidden = false;
+    document.getElementById('sheet-close').focus({ preventScroll: true });
+    refreshBoard();
+    clearInterval(sheetTimer);
+    sheetTimer = setInterval(function () { if (!document.hidden) refreshBoard(); }, 30000);
+  }
+  function closeBoard() {
+    sheet.hidden = true;
+    clearInterval(sheetTimer);
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('board-btn').addEventListener('click', openBoard);
+
+  // ---- The look-and-sound sheet ---------------------------------------------
+  var settings = document.getElementById('settings'), skinList = document.getElementById('skins');
+  // Each skin is offered as a small picture of itself: its water and sand,
+  // the coral, a fish, the shark with your colour round it, and a ghost's.
+  SKINS.forEach(function (k, i) {
+    var b = el('button', 'skin');
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.dataset.skin = k.id;
+    var NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 60');
+    svg.setAttribute('aria-hidden', 'true');
+    function add(tag, at, parent) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (a) { e.setAttribute(a, at[a]); });
+      (parent || svg).appendChild(e);
+      return e;
+    }
+    var water = add('linearGradient', { id: 'skin-water-' + i, x1: 0, y1: 0, x2: 0, y2: 1 }, add('defs', {}));
+    add('stop', { offset: 0, 'stop-color': k.top }, water);
+    add('stop', { offset: 1, 'stop-color': k.deep }, water);
+    add('rect', { x: 0, y: 0, width: 120, height: 60, fill: 'url(#skin-water-' + i + ')' });
+    add('rect', { x: 0, y: 0, width: 120, height: 6, fill: k.sky });
+    add('path', { d: 'M0 54 Q 30 49 60 53 T 120 52 V60 H0 Z', fill: k.sand });
+    add('path', { d: 'M100 54 Q 98 44 102 38 M102 47 Q 108 42 110 36', fill: 'none', stroke: k.coral[0], 'stroke-width': 2.4, 'stroke-linecap': 'round' });
+    add('circle', { cx: 14, cy: 53, r: 4, fill: k.coral[1] });
+    add('path', { d: 'M84 24 L79 20 L79 28 Z', fill: k.fish[0] });
+    add('ellipse', { cx: 88, cy: 24, rx: 5, ry: 2.8, fill: k.fish[0] });
+    var g = add('g', { transform: 'translate(46 32)' });
+    add('path', { d: 'M-21 0 L-28 -9 L-25 0 L-28 8 Z', fill: k.shark }, g);
+    add('path', { d: 'M-4 -5 L1 -13 L5 -5 Z', fill: k.shark }, g);
+    add('path', { d: 'M-22 0 Q -10 -7 6 -6 Q 16 -5 21 0 Q 16 4 6 5 Q -8 6 -22 0 Z', fill: k.shark }, g);
+    add('path', { d: 'M-12 2 Q 2 6 17 2 Q 8 5 -12 2 Z', fill: k.belly }, g);
+    add('circle', { cx: 14, cy: -1.5, r: 1.2, fill: k.eye }, g);
+    add('circle', { cx: 46, cy: 32, r: 26, fill: 'none', stroke: k.you, 'stroke-width': 2 });
+    add('circle', { cx: 104, cy: 18, r: 6, fill: 'none', stroke: k.ghost, 'stroke-width': 1.6 });
+    b.appendChild(svg);
+    b.appendChild(document.createTextNode(k.name));
+    b.addEventListener('click', function () {
+      setSkin(k.id);
+      remember('shark-reef:skin', k.id);
+      markSkin();
+      layout();
+    });
+    skinList.appendChild(b);
+  });
+  function markSkin() {
+    Array.prototype.forEach.call(skinList.children, function (b) {
+      b.setAttribute('aria-checked', b.dataset.skin === skin.id ? 'true' : 'false');
+    });
+  }
+  markSkin();
+  document.getElementById('settings-btn').addEventListener('click', function () {
+    if (phase === 'running') return;
+    opener = document.activeElement;
+    settings.hidden = false;
+    document.getElementById('settings-close').focus({ preventScroll: true });
+  });
+  function closeSettings() {
+    settings.hidden = true;
+    if (opener && opener.focus) opener.focus({ preventScroll: true });
+  }
+  document.getElementById('settings-close').addEventListener('click', closeSettings);
+  document.getElementById('end-board').addEventListener('click', openBoard);
+  document.getElementById('sheet-close').addEventListener('click', closeBoard);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeBoard();
+    if (e.key === 'Escape' && !settings.hidden) closeSettings();
+  });
+
+  // ---- Notes ---------------------------------------------------------------
+  // Anyone can say something: a line in the room that carries no run, so
+  // the board and the wave pass it by, located at the reef it was said
+  // about. A typed name is shown as a visitor's, never as a beach handle.
+  var notesForm = document.getElementById('notes-form'), notesStatus = document.getElementById('notes-status');
+  Beach.addMic(notesForm.note);
+  notesForm.who.value = recall('shark-reef:name') || '';
+  notesForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var note = notesForm.note.value.trim();
+    if (notesForm.web.value || !note) return;
+    var name = notesForm.who.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('shark-reef:name', name);
+    var send = notesForm.querySelector('button[type=submit]');
+    send.disabled = true;
+    notesStatus.textContent = 'Sending…';
+    Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', note, isDay(TRACK) ? TRACK : '').then(function () {
+      notesForm.note.value = '';
+      notesStatus.textContent = 'Thank you. Your note is on the beach.';
+      drawNotes();
+    }, function () {
+      notesStatus.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    }).then(function () { send.disabled = false; });
+  });
+  document.getElementById('end-note-btn').addEventListener('click', function () {
+    openBoard();
+    notesForm.who.value = notesForm.who.value || recall('shark-reef:name') || '';
+    document.getElementById('notes-head').scrollIntoView({ block: 'start' });
+    notesForm.note.focus({ preventScroll: true });
+  });
+
+  // What people have said, newest first; a long note shows its opening,
+  // with the rest a tap away.
+  function drawNotes() {
+    var list = document.getElementById('notes-list');
+    return pool().then(function (held) {
+      var notes = slots(held, '', []).filter(function (s) {
+        return typeof s.entry['7'] !== 'string' && s.entry._.trim();
+      }).sort(function (a, b) { return a.entry['3'] < b.entry['3'] ? 1 : -1; }).slice(0, 40);
+      list.textContent = '';
+      if (!notes.length) { list.appendChild(el('p', 'note', 'No notes yet. Be the first.')); return; }
+      notes.forEach(function (s) {
+        var e = s.entry, n = el('div', 'n'), meta = el('p', 'n-who');
+        var name = who(e) === 'A friend' ? 'A visitor' : who(e), when = new Date(e['3']);
+        meta.appendChild(el('strong', null, name));
+        if (!isNaN(when)) meta.appendChild(document.createTextNode(' · ' + when.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + clock(e['3'])));
+        n.appendChild(meta);
+        var full = e._.trim(), t = el('p', 'n-text');
+        if (full.length > 600) {
+          var cut = full.lastIndexOf(' ', 450);
+          t.textContent = full.slice(0, cut > 250 ? cut : 450) + '…';
+          var more = el('button', 'chip more', 'Read all');
+          more.type = 'button';
+          more.addEventListener('click', function () { t.textContent = full; more.remove(); });
+          n.appendChild(t);
+          n.appendChild(more);
+        } else {
+          t.textContent = full;
+          n.appendChild(t);
+        }
+        list.appendChild(n);
+      });
+    }, function () {});
+  }
+
+  // A player's best in a line under their name: every fish, or how many.
+  function haul(p) {
+    return p.eaten >= p.total ? 'every fish' : p.eaten + ' of ' + p.total + ' fish';
+  }
+
+  function refreshBoard() {
+    var title = document.getElementById('sheet-title'), sum = document.getElementById('board-sum');
+    var day = isDay(TRACK);
+    title.textContent = TRACK === TODAY ? 'Today’s board' : day ? 'This reef’s board' : 'The board';
+    drawMine();
+    room().then(function (runs) {
+      lastRuns = runs;
+      var me = myPlayer(runs), list = document.getElementById('board-list');
+      list.textContent = '';
+      if (!day) {
+        sum.textContent = 'Practice runs aren’t kept. The board is for each day’s reef; play today’s from the page without a link.';
+      } else {
+        var ps = players(runs, TRACK), keptHere = runs.filter(function (r) { return r.track === TRACK; });
+        var latest = keptHere.reduce(function (a, r) { return r.at > a ? r.at : a; }, '');
+        sum.textContent = ps.length
+          ? ps.length + (ps.length === 1 ? ' player' : ' players') + ' · ' + keptHere.length + (keptHere.length === 1 ? ' run' : ' runs') + ' kept' + (latest ? ' · latest at ' + clock(latest) : '')
+          : 'No one has kept a run at this reef yet. Eat the fish and add your name to be first.';
+        // The top five, and your own place when it is further down; the rest
+        // a tap away.
+        var TOP = 5, more = document.getElementById('board-more');
+        ps.forEach(function (p, i) {
+          if (!boardAll && i >= TOP && p.player !== me) return;
+          if (!boardAll && i >= TOP && p.player === me && i > TOP) list.appendChild(el('li', 'gap', '⋯'));
+          var li = el('li', p.player === me ? 'me' : '');
+          li.appendChild(el('span', 'pos', String(i + 1)));
+          var name = el('span', 'name', p.name + (p.player === me ? ' (you)' : ''));
+          name.appendChild(el('span', 'runs', (p.runs === 1 ? '1 run kept' : p.runs + ' runs kept') + ' · ' + haul(p)));
+          li.appendChild(name);
+          if (p.tries) li.appendChild(el('span', 'badge' + (p.tries === 1 ? ' first' : ''), p.tries === 1 ? '1st try' : p.tries + ' tries'));
+          li.appendChild(el('span', 't', SR.words(p)));
+          if (p.replay) {
+            li.className += ' watchable';
+            li.setAttribute('role', 'button');
+            li.tabIndex = 0;
+            li.setAttribute('aria-label', 'Watch ' + p.name + '’s run, ' + SR.words(p));
+            li.appendChild(el('span', 'see', '▶ watch'));
+            var go = function () { closeBoard(); watchRun(p.replay, { who: p.name, slot: p.slot, at: p.at, mine: p.player === me }); };
+            li.addEventListener('click', go);
+            li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+          }
+          list.appendChild(li);
+        });
+        more.hidden = ps.length <= TOP;
+        more.textContent = boardAll ? 'Show the top ' + TOP + ' only' : 'Show all ' + ps.length + ' players';
+        more.setAttribute('aria-expanded', boardAll ? 'true' : 'false');
+      }
+      drawWave(runs, me);
+      drawPast(runs, me);
+      drawHistory(runs, me);
+      offerBest(runs, me);
+      drawNotes();
+    }, function () {
+      sum.textContent = 'The beach is out of reach just now, so the board can’t be read. It will try again in a moment.';
+    });
+  }
+
+  // The wave, as David's waves are read: every player at the moment they
+  // first kept a run, the count climbing as they came, with a thread from
+  // whoever brought them. It has three parts, named for what happened: the
+  // tinder, before it caught; the spark, the stretch when people came
+  // fastest; and the flame, everything since. Early is not better; nobody
+  // is ranked.
+  function waveOf(runs) {
+    var first = {};
+    runs.forEach(function (r) {
+      var f = first[r.player];
+      if (!f || r.at < f.at) first[r.player] = { player: r.player, name: r.name, at: r.at, from: (f && f.from) || r.from, t: Date.parse(r.at) };
+      else if (!f.from && r.from) f.from = r.from;
+    });
+    var order = Object.keys(first).map(function (k) { return first[k]; }).filter(function (p) { return !isNaN(p.t); })
+      .sort(function (a, b) { return a.t - b.t; });
+    var byName = {};
+    order.forEach(function (p) { if (p.player.indexOf('name:') === 0) byName[p.player.slice(5)] = p; });
+    order.forEach(function (p) {
+      var b = p.from ? byName[p.from.toLowerCase()] : null;
+      p.by = b && b !== p && b.t <= p.t ? b : null;
+    });
+    // The spark: the stretch, a sixth of the wave's span (at least a
+    // quarter of an hour), in which the most people came.
+    var spark = null;
+    if (order.length >= 4) {
+      var span = order[order.length - 1].t - order[0].t, w = Math.max(15 * 60000, span / 6), most = 0;
+      order.forEach(function (p, i) {
+        var n = 0;
+        for (var j = i; j < order.length && order[j].t - p.t <= w; j++) n++;
+        if (n > most) { most = n; spark = { from: p.t, to: p.t + w, n: n, people: order.slice(i, i + n) }; }
+      });
+      if (spark && spark.n < 3) spark = null;
+    }
+    return { order: order, spark: spark };
+  }
+  function partOf(t, spark) {
+    if (!spark) return 'the tinder';
+    return t < spark.from ? 'the tinder' : t <= spark.to ? 'the spark' : 'the flame';
+  }
+  function when(t, sameDay) {
+    var d = new Date(t);
+    return sameDay ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function minutes(ms) {
+    var m = Math.round(Math.abs(ms) / 60000);
+    return m < 60 ? m + (m === 1 ? ' minute' : ' minutes') : Math.round(m / 60) + (Math.round(m / 60) === 1 ? ' hour' : ' hours');
+  }
+
+  function drawWave(runs, me) {
+    var wv = waveOf(runs), order = wv.order, spark = wv.spark;
+    var svg = document.getElementById('wave'), NS = 'http://www.w3.org/2000/svg';
+    svg.textContent = '';
+    function add(tag, at, text) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); });
+      if (text != null) e.textContent = text;
+      svg.appendChild(e);
+      return e;
+    }
+    var line = document.getElementById('wave-line');
+    if (!order.length) {
+      line.textContent = 'No one has jumped in yet.';
+      document.getElementById('stood').hidden = true;
+      return;
+    }
+    var now = Date.now(), t0 = order[0].t, t1 = Math.max(order[order.length - 1].t, Math.min(now, order[order.length - 1].t + 3600000));
+    if (t1 - t0 < 600000) t1 = t0 + 600000;
+    var X0 = 14, X1 = 306, Y0 = 138, Y1 = 22, n = order.length;
+    function X(t) { return X0 + (t - t0) / (t1 - t0) * (X1 - X0); }
+    function Y(k) { return Y0 - k / Math.max(n, 1) * (Y0 - Y1); }
+    // The three parts, shaded behind the curve and named beneath it.
+    if (spark) {
+      add('rect', { x: X(spark.from), y: Y1 - 8, width: Math.max(2, X(Math.min(spark.to, t1)) - X(spark.from)), height: Y0 - Y1 + 8, fill: skin.you, 'fill-opacity': 0.12 });
+      [['the tinder', X0, X(spark.from)], ['the spark', X(spark.from), X(Math.min(spark.to, t1))], ['the flame', X(Math.min(spark.to, t1)), X1]].forEach(function (l) {
+        if (l[2] - l[1] > 24) add('text', { x: (l[1] + l[2]) / 2, y: 152, 'text-anchor': 'middle', fill: l[0] === 'the spark' ? skin.you : skin.dim, 'font-size': 10 }, l[0]);
+      });
+    } else {
+      add('text', { x: (X0 + X1) / 2, y: 152, 'text-anchor': 'middle', fill: skin.dim, 'font-size': 10 }, 'the tinder: it hasn’t caught yet');
+    }
+    add('line', { x1: X0, y1: Y0, x2: X1, y2: Y0, stroke: skin.dim, 'stroke-opacity': 0.5, 'stroke-width': 1 });
+    var sameDay = new Date(t0).toDateString() === new Date(t1).toDateString();
+    add('text', { x: X0, y: 166, fill: skin.dim, 'font-size': 9 }, when(t0, sameDay));
+    add('text', { x: X1, y: 166, 'text-anchor': 'end', fill: skin.dim, 'font-size': 9 }, t1 >= now - 60000 ? 'now' : when(t1, sameDay));
+    // The count climbing, a step for each person who came.
+    var d = 'M' + X0 + ' ' + Y0;
+    order.forEach(function (p, i) { d += ' H' + X(p.t).toFixed(1) + ' V' + Y(i + 1).toFixed(1); });
+    d += ' H' + X(t1).toFixed(1);
+    add('path', { d: d + ' V' + Y0 + ' H' + X0 + ' Z', fill: skin.accent, 'fill-opacity': 0.1, stroke: 'none' });
+    add('path', { d: d, fill: 'none', stroke: skin.accent, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    // Threads from whoever brought each person.
+    order.forEach(function (p, i) {
+      if (!p.by) return;
+      var j = order.indexOf(p.by), ax = X(p.by.t), ay = Y(j + 1), bx = X(p.t), by = Y(i + 1);
+      add('path', { d: 'M' + ax + ' ' + ay + ' Q ' + ((ax + bx) / 2) + ' ' + (Math.min(ay, by) - 22) + ' ' + bx + ' ' + by,
+        fill: 'none', stroke: p.by.player === me || p.player === me ? skin.you : skin.ghost, 'stroke-width': 1.4, 'stroke-opacity': 0.8, 'stroke-dasharray': '3 3' });
+    });
+    order.forEach(function (p, i) {
+      add('circle', { cx: X(p.t), cy: Y(i + 1), r: p.player === me ? 5.5 : 3.8, fill: p.player === me ? skin.you : skin.ghost, stroke: skin.bg, 'stroke-width': 1.5 });
+    });
+    // How it is moving now.
+    var hour = order.filter(function (p) { return now - p.t < 3600000; }).length;
+    var before = order.filter(function (p) { return now - p.t >= 3600000 && now - p.t < 7200000; }).length;
+    line.textContent = n + (n === 1 ? ' player' : ' players') + ' so far. ' + (hour
+      ? hour + ' joined in the last hour' + (hour > before ? ', and the wave is rising.' : hour === before ? ', as many as the hour before.' : ', fewer than the hour before.')
+      : 'No one new in the last hour: the wave is resting. Bring someone in to start it again.');
+    drawStood(order, spark, me, sameDay);
+  }
+
+  // Where you stood: the wave read from your place in it, and the one
+  // thing in it no single player saw.
+  function drawStood(order, spark, me, sameDay) {
+    var box = document.getElementById('stood'), list = document.getElementById('stood-list');
+    list.textContent = '';
+    var mineHere = order.filter(function (p) { return p.player === me; })[0];
+    function tell(text) { list.appendChild(el('li', null, text)); }
+    if (mineHere) {
+      var i = order.indexOf(mineHere);
+      tell('You came in ' + partOf(mineHere.t, spark) + ', the ' + ordinal(i + 1) + ' of ' + order.length + (mineHere.by ? ', brought by ' + mineHere.by.name : '') + '.');
+      // Your ripple: everyone you brought, and everyone they brought.
+      var kids = function (p) { return order.filter(function (q) { return q.by === p; }); };
+      var direct = kids(mineHere), all = [], todo = direct.slice();
+      while (todo.length) { var q = todo.shift(); if (all.indexOf(q) < 0) { all.push(q); todo = todo.concat(kids(q)); } }
+      if (direct.length) {
+        var names = direct.map(function (p) { return p.name; });
+        var more = all.length - direct.length;
+        tell('You brought ' + direct.length + (direct.length === 1 ? ' person' : ' people') + ': ' + names.join(', ') + '.' +
+          (more > 0 ? ' They brought ' + more + ' more. Your ripple is ' + all.length + '.' : ''));
+      } else {
+        tell('You haven’t brought anyone yet. Bring someone in, and a thread will run from you to them.');
+      }
+      // Nearest to you: by best run at this reef (fish first, then time),
+      // else by when you came.
+      var bests = {};
+      players(lastRuns, TRACK).forEach(function (p) { bests[p.player] = p; });
+      function gap(a, b) {
+        return bests[a] && bests[b] ? Math.abs(bests[a].eaten - bests[b].eaten) * 100000 + Math.abs(bests[a].steps - bests[b].steps) : Infinity;
+      }
+      var others = order.filter(function (p) { return p !== mineHere; });
+      if (others.length) {
+        var near = others.slice().sort(function (a, b) {
+          return gap(a.player, me) - gap(b.player, me) || Math.abs(a.t - mineHere.t) - Math.abs(b.t - mineHere.t);
+        })[0];
+        var level = gap(near.player, me) === 0;
+        var words = gap(near.player, me) === Infinity ? '' : level ? ', and your bests are level' : ', and your bests are ' + apart(bests[near.player], bests[me]) + ' apart';
+        tell('Nearest to you: ' + near.name + '. You came ' + minutes(near.t - mineHere.t) + ' apart' + words + '.');
+      }
+    }
+    if (spark) {
+      var by = {};
+      spark.people.forEach(function (p) { if (p.by) by[p.by.name] = (by[p.by.name] || 0) + 1; });
+      var top = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; })[0];
+      var mins = Math.max(1, Math.round((spark.people[spark.people.length - 1].t - spark.people[0].t) / 60000));
+      tell('It caught at ' + when(spark.from, sameDay) + ', when ' + spark.n + ' people came in ' + mins + (mins === 1 ? ' minute' : ' minutes') +
+        (top && by[top] * 2 >= spark.n ? ', most of them brought by ' + top + '.' : '.'));
+    }
+    box.hidden = !list.children.length;
+    if (!mineHere && box.hidden === false) list.insertBefore(el('li', null, 'Keep a run to take your own place in the wave.'), list.firstChild);
+  }
+
+  // ---- Bringing someone in ---------------------------------------------------
+  // A plain link to the game that carries your name, so whoever comes by it
+  // is drawn with a thread from you.
+  var bring = document.getElementById('bring'), bringNote = document.getElementById('bring-note');
+  var bringName = document.getElementById('bring-name'), bringWho = document.getElementById('bring-who');
+  bring.addEventListener('click', function () {
+    var name = (recall('shark-reef:name') || bringWho.value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) {
+      bringName.hidden = false;
+      bringWho.focus();
+      bringNote.textContent = 'Add your name first, so the people you bring are linked to you.';
+      return;
+    }
+    remember('shark-reef:name', name);
+    bringName.hidden = true;
+    var url = location.origin + location.pathname + '?from=' + encodeURIComponent(name);
+    var text = 'Come and play Shark Reef with me: steer a shark round the reef and eat every fish.';
+    bringNote.textContent = 'Send this link: ' + url;
+    if (navigator.share) {
+      navigator.share({ title: 'Shark Reef', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () { bringNote.textContent = 'The link is copied: ' + url; }, function () {});
+    }
+  });
+  bringWho.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); bring.click(); }
+  });
+
+  // When this phone's best at a day's reef beats your best on the board (or
+  // you aren't on it), one tap puts it there.
+  var keepBest = document.getElementById('keep-best');
+  function phoneBest() {
+    var keptBest = recall(BEST), r = keptBest ? SR.rerun(keptBest, sk) : null;
+    return r && r.ok ? { replay: keptBest, eaten: r.eaten, steps: r.steps, total: r.total } : null;
+  }
+  function offerBest(runs, me) {
+    var pb = isDay(TRACK) ? phoneBest() : null;
+    var board = me ? players(runs, TRACK).filter(function (p) { return p.player === me; })[0] : null;
+    keepBest.hidden = !(pb && SR.better(pb, board));
+    if (!keepBest.hidden) keepBest.textContent = 'Put my best (' + SR.words(pb) + ') on the board';
+  }
+  keepBest.addEventListener('click', function () {
+    var pb = phoneBest(), note = document.getElementById('keep-best-note');
+    if (!pb) return;
+    keepBest.disabled = true;
+    note.textContent = 'Keeping your best on the beach…';
+    var tries = parseInt(recall('shark-reef:best-tries:' + TRACK), 10);
+    keepRun(pb.replay, pb, tries > 0 ? tries : 0).then(function () {
+      note.textContent = 'Your best is on the board.';
+      keepBest.disabled = false;
+      refreshBoard();
+    }, function () {
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+      keepBest.disabled = false;
+    });
+  });
+
+  // ---- Days ------------------------------------------------------------------
+  // The days the room holds runs for, newest first: each day's address, its
+  // date (from the first run kept that day), and its players' bests.
+  function days(runs) {
+    var by = {};
+    runs.forEach(function (r) {
+      if (!isDay(r.track)) return;
+      var d = by[r.track] || (by[r.track] = { track: r.track, first: r.at, runs: 0 });
+      d.runs++;
+      if (r.at < d.first) d.first = r.at;
+    });
+    return Object.keys(by).map(function (k) {
+      var d = by[k];
+      d.players = players(runs, k);
+      return d;
+    }).sort(function (a, b) { return a.track < b.track ? 1 : -1; });
+  }
+  function dayName(d) {
+    var t = new Date(d.first);
+    return isNaN(t) ? d.track : t.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function reefLink(track) {
+    return location.pathname + (track === TODAY ? '' : '?track=' + track);
+  }
+
+  // Yesterday's winner, under the ghost at today's reef.
+  function showPrev(runs) {
+    var line = document.getElementById('prev-line');
+    if (TRACK !== TODAY) { line.hidden = true; return; }
+    var before = days(runs).filter(function (d) { return d.track < TODAY && d.players.length; })[0];
+    if (!before) { line.hidden = true; return; }
+    var w = before.players[0], gap = Math.round((Date.now() - Date.parse(before.first)) / 86400000);
+    line.textContent = (gap <= 1 ? 'Yesterday' : 'Last time, ' + dayName(before)) + ': ' + w.name + ' won with ' + SR.words(w) +
+      ', out of ' + before.players.length + (before.players.length === 1 ? ' player.' : ' players.');
+    line.hidden = false;
+  }
+
+  // Past reefs: every day but the one being played, with its winner and
+  // your own best that day.
+  function drawPast(runs, me) {
+    var list = document.getElementById('past'), note = document.getElementById('past-note');
+    list.textContent = '';
+    var ds = days(runs).filter(function (d) { return d.track !== TRACK; });
+    if (TRACK !== TODAY && TODAY) {
+      var li0 = el('li'), a0 = el('a');
+      a0.href = reefLink(TODAY);
+      a0.appendChild(el('span', 'day', 'Today'));
+      a0.appendChild(el('span', 'who', 'Back to today’s reef'));
+      li0.appendChild(a0);
+      list.appendChild(li0);
+    }
+    ds.forEach(function (d) {
+      var li = el('li'), a = el('a'), w = d.players[0];
+      a.href = reefLink(d.track);
+      a.appendChild(el('span', 'day', d.track === TODAY ? 'Today' : dayName(d)));
+      var whoEl = el('span', 'who', w ? w.name + ' won' : 'No runs kept');
+      var mineThen = d.players.filter(function (p) { return p.player === me; })[0];
+      whoEl.appendChild(el('small', null, SR.describe(d.track) + ' · ' + d.players.length + (d.players.length === 1 ? ' player' : ' players') +
+        (mineThen ? ' · you: ' + SR.words(mineThen) + ', ' + ordinal(d.players.indexOf(mineThen) + 1) : '')));
+      a.appendChild(whoEl);
+      if (w) a.appendChild(el('span', 't', SR.words(w)));
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    note.textContent = ds.length || TRACK !== TODAY
+      ? 'Every day has its own reef, and every run stays. Play any earlier day again, and race its best.'
+      : 'Every day has its own reef, and every run stays. Earlier days will appear here.';
+  }
+
+  // Your history: the days you played, your best each day, and how often
+  // you finished in the day's top five.
+  function drawHistory(runs, me) {
+    var line = document.getElementById('history'), list = document.getElementById('days');
+    list.textContent = '';
+    var mineDays = days(runs).map(function (d) {
+      var p = d.players.filter(function (q) { return q.player === me; })[0];
+      return p ? { d: d, p: p, place: d.players.indexOf(p) + 1 } : null;
+    }).filter(Boolean);
+    if (!me || !mineDays.length) { line.hidden = true; list.hidden = true; return; }
+    var top = mineDays.filter(function (m) { return m.place <= 5; }).length;
+    line.textContent = 'You’ve played ' + mineDays.length + (mineDays.length === 1 ? ' day' : ' days') +
+      (top ? ', in the top five on ' + top + (top === 1 ? ' of them.' : '.') : '.');
+    mineDays.slice(0, 14).forEach(function (m) {
+      var li = el('li');
+      var leftSide = el('span', null, m.d.track === TODAY ? 'Today' : dayName(m.d));
+      leftSide.appendChild(el('small', null, ordinal(m.place) + ' of ' + m.d.players.length));
+      li.appendChild(leftSide);
+      li.appendChild(el('span', 't', SR.words(m.p)));
+      list.appendChild(li);
+    });
+    line.hidden = false;
+    list.hidden = false;
+  }
+
+  function drawMine() {
+    var tries = tally('tries'), pb = phoneBest();
+    document.getElementById('mine-line').textContent = tries
+      ? 'At this reef: ' + tries + (tries === 1 ? ' try' : ' tries') + (pb ? ', best ' + (pb.eaten < pb.total ? pb.eaten + ' of ' + pb.total + ' fish' : SR.words(pb)) + '.' : '.')
+      : 'You haven’t tried this reef on this phone yet.';
+  }
+
+  // ---- Keeping a run, and the link to race it ------------------------------
+  // A kept run goes to the room as a visitor's line, located at its reef;
+  // its slot there is the ghost in the link. A typed name is shown as a
+  // visitor's, never as a beach handle.
+  // Keep a run in the room; resolves with the slot it landed in.
+  function keepRun(replay, r, tries) {
+    var name = (recall('shark-reef:name') || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var day = TRACK === TODAY && DAY ? DAY : TRACK;
+    var line = r.eaten >= r.total ? 'Every fish eaten in ' + SR.seconds(r.steps) + ' s at the reef of ' + day
+      : r.eaten + ' of ' + r.total + ' fish eaten at the reef of ' + day;
+    var more = { 7: replay };
+    // Who brought this phone into the wave, kept with each of its runs.
+    var from = recall('shark-reef:from');
+    if (from && from.toLowerCase() !== name.toLowerCase()) more[6] = from;
+    if (tries) more[8] = String(tries);
+    // A save counts only once the run is read back from the room: the
+    // beach's answer alone isn't trusted, since two saves landing at once
+    // can lose one. If it isn't there, it is sent once more.
+    function find(sent) {
+      return pool().then(function (held) {
+        var hit = slots(held, '', []).filter(function (s) {
+          return s.entry['7'] === replay && (!sent || s.entry['3'] === sent.entry[3]);
+        })[0];
+        return hit ? hit.slot : null;
+      });
+    }
+    function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
+    function send() {
+      return Beach.note(ROOM, name ? name + ', a visitor' : 'a visitor', line, TRACK, more).then(function (sent) {
+        return find(sent).then(function (slot) {
+          return slot || wait(1200).then(function () { return find(sent); });
+        });
+      });
+    }
+    return send().then(function (slot) {
+      return slot || wait(800).then(send);
+    }).then(function (slot) {
+      if (!slot) throw new Error('not in the room');
+      return slot;
+    }).then(function (slot) {
+      var m = mine();
+      if (m.indexOf(slot) < 0) { m.push(slot); remember('shark-reef:mine', JSON.stringify(m)); }
+      return slot;
+    });
+  }
+
+  // Save a finished run to the board, once: a second ask while it is on
+  // its way, or after it has landed, gets the same slot.
+  function saveLast(r) {
+    if (!r || !r.replay) return Promise.reject(new Error('nothing to save'));
+    if (r.slot) return Promise.resolve(r.slot);
+    if (!r.saving) {
+      r.saving = keepRun(r.replay, r, r.tries).then(function (slot) {
+        r.slot = slot;
+        return slot;
+      }, function (e) {
+        r.saving = null;
+        throw e;
+      });
+    }
+    return r.saving;
+  }
+
+  // Typing a name on the end screen puts this run on the board under it;
+  // the name is kept for the next runs too. It saves when the box is left
+  // or Done is pressed.
+  var whoBox = document.getElementById('who');
+  // What the end screen says about this run and the board, and whether it
+  // offers Save: on the board, being saved, not saved, or failed.
+  var saveBtn = document.getElementById('save-run');
+  function keepState(r, isBest) {
+    var stateEl = document.getElementById('keep-state');
+    if (!r || r !== last) return;
+    var name = recall('shark-reef:name');
+    stateEl.textContent = r.slot ? '✓ This run is on the board' + (name ? ' as ' + name : '') + '.'
+      : r.state === 'saving' ? 'Saving your run to the board…'
+      : r.state === 'failed' ? 'This run didn’t reach the board. Tap Save to try again.'
+      : isBest ? 'This run isn’t on the board yet. Add your name and tap Save.'
+      : 'Only your best goes on the board automatically. Tap Save to add this one too.';
+    stateEl.className = 'keep-state ' + (r.slot ? 'on' : 'off');
+    saveBtn.hidden = !!r.slot || r.state === 'saving';
+  }
+  function saveNow() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!last || !last.replay || !isDay(TRACK)) return;
+    if (!name && !recall('shark-reef:name')) {
+      document.getElementById('keep-state').textContent = 'Type your name first, so the board knows it’s you.';
+      whoBox.focus();
+      return;
+    }
+    if (name) {
+      remember('shark-reef:name', name);
+      notesForm.who.value = notesForm.who.value || name;
+    }
+    if (last.slot) return keepState(last, true);
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+    });
+  }
+  saveBtn.addEventListener('click', saveNow);
+  // Typing a name and pressing Done saves too.
+  function nameGiven() {
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name || !last || last.slot || last.state === 'saving') return;
+    saveNow();
+  }
+  whoBox.addEventListener('change', nameGiven);
+  whoBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); whoBox.blur(); nameGiven(); }
+  });
+
+  document.getElementById('challenge').addEventListener('click', function () {
+    var btn = this, note = document.getElementById('keep-note');
+    if (!last || !last.replay) return;
+    var name = whoBox.value.replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name) remember('shark-reef:name', name);
+    if (last.slot) return share();
+    btn.disabled = true;
+    note.textContent = 'Keeping your run on the beach…';
+    var r = last;
+    r.state = 'saving';
+    keepState(r, true);
+    saveLast(r).then(function () {
+      r.state = 'on';
+      keepState(r, true);
+      btn.disabled = false;
+      share();
+    }, function () {
+      r.state = 'failed';
+      keepState(r, true);
+      btn.disabled = false;
+      note.textContent = 'That didn’t reach the beach. Please try again in a moment.';
+    });
+  });
+
+  function share() {
+    var url = location.origin + location.pathname + '?track=' + TRACK + '&ghost=' + last.slot;
+    var where = TRACK === TODAY ? 'today’s' : 'a';
+    var text = last.eaten >= last.total
+      ? 'I ate every fish in ' + where + ' Shark Reef in ' + SR.seconds(last.steps) + ' s. Race my ghost:'
+      : 'I ate ' + SR.fish(last.eaten) + ' in ' + where + ' Shark Reef. Race my ghost:';
+    var note = document.getElementById('keep-note'), shown = document.getElementById('keep-link');
+    shown.textContent = url;
+    shown.hidden = false;
+    note.textContent = 'Your run is on the beach. Send this link:';
+    if (navigator.share) {
+      navigator.share({ title: 'Shark Reef', text: text, url: url }).then(null, function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + ' ' + url).then(function () {
+        note.textContent = 'Your run is on the beach. The link is copied:';
+      }, function () {});
+    }
+  }
+
+  document.getElementById('again').addEventListener('click', ready);
+  // The picture of how to play holds still, the shark just reaching the
+  // fish, for anyone who asks their device for less motion.
+  function holdHow() {
+    var how = say.querySelector('.how');
+    if (how && still() && how.pauseAnimations) {
+      try { how.pauseAnimations(); how.setCurrentTime(1.85); } catch (e) {}
+    }
+  }
+  holdHow();
+
+  function ready() {
+    if (!sk) return;
+    loadGhost();
+    if (Date.now() - leaderRead > 20000) loadLeader();
+    phase = 'ready';
+    run = null;
+    prev = null;
+    finger = null;
+    marks = [];
+    bits = [];
+    bubbles = [];
+    burped = null;
+    endAt = 0;
+    end.hidden = true;
+    say.className = 'say';
+    say.innerHTML = BRIEF;
+    say.hidden = false;
+    holdHow();
+  }
+
+  // ---- Rings, scales and bubbles (drawing only: the run never reads them)
+  // A ring opens where a fish was eaten, gold for yours and the ghost's in
+  // its colour; a few scales glint and sink where it was; the shark's jaws
+  // snap; and bubbles rise: from the reef, behind a shark at speed, and one
+  // big one when every fish is eaten. All of it in reef units.
+  var marks = [], bits = [], bubbles = [], chompAt = 0, jolt = 0;
+  function mark(x, y, kind) {
+    marks.push({ x: x, y: y, kind: kind, born: performance.now(), life: kind === 'ate' ? 520 : 460 });
+    if (marks.length > 40) marks.splice(0, marks.length - 40);
+  }
+  function puff(x, y, n, color) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, v = 40 + Math.random() * 140;
+      bits.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5 + Math.random() * 0.5, age: 0, color: Math.random() < 0.35 ? skin.silver : color });
+    }
+    if (bits.length > 300) bits.splice(0, bits.length - 300);
+  }
+  function bubble(x, y, r, rise) {
+    if (bubbles.length > 90) bubbles.shift();
+    bubbles.push({ x: x, y: y, r: r, rise: rise, wob: Math.random() * 6.3, born: performance.now() });
+  }
+  // A fish eaten at (x, y) by a shark whose mouth is at (sx, sy).
+  function eat(sx, sy, x, y, b, sea) {
+    mark(x, y, 'ate');
+    puff(x, y, still() ? 5 : 14, fishLook(b, sea).body);
+    if (!still()) for (var i = 0; i < 2; i++) bubble(sx + (Math.random() - 0.5) * 30, sy - 10, 4 + Math.random() * 5, 120 + Math.random() * 80);
+    chompAt = performance.now();
+    jolt = chompAt;
+  }
+  // Every fish eaten: one big bubble out of the shark's mouth.
+  var burped = null;
+  function burp(x, y) {
+    burped = { x: x, y: y - 20, born: performance.now() };
+  }
+  function drawMarks(ts, dt) {
+    var sc = view.scale, thick = skin.thick ? 1.6 : 1;
+    for (var i = marks.length - 1; i >= 0; i--) {
+      var m = marks[i], f = (ts - m.born) / m.life;
+      if (f >= 1) { marks.splice(i, 1); continue; }
+      if (f < 0) f = 0;
+      var p = px(m.x, m.y);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, (20 + 70 * f) * sc, 0, Math.PI * 2);
+      ctx.strokeStyle = m.kind === 'ate' ? skin.you : skin.ghost;
+      ctx.lineWidth = (m.kind === 'ate' ? 3 : 2) * thick;
+      ctx.globalAlpha = (1 - f) * (m.kind === 'ate' ? 1 : 0.75);
+      ctx.stroke();
+    }
+    for (i = bits.length - 1; i >= 0; i--) {
+      var b = bits[i];
+      b.age += dt;
+      if (b.age >= b.life) { bits.splice(i, 1); continue; }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.vx *= 0.9;
+      b.vy = b.vy * 0.9 + 60 * dt;
+      var q = px(b.x, b.y);
+      ctx.globalAlpha = 1 - b.age / b.life;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(q.x - 1.5, q.y - 1.5, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+  }
+  function drawBubbles(ts, dt) {
+    var sc = view.scale;
+    ctx.strokeStyle = skin.bubble;
+    ctx.lineWidth = Math.max(1, 2.5 * sc);
+    for (var i = bubbles.length - 1; i >= 0; i--) {
+      var b = bubbles[i];
+      b.y -= b.rise * dt;
+      if (b.y < 10) { bubbles.splice(i, 1); continue; }
+      var p = px(b.x + Math.sin(ts / 260 + b.wob) * 6, b.y), r = b.r * sc;
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(1.5, r), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = skin.bubble;
+      ctx.beginPath();
+      ctx.arc(p.x - r * 0.35, p.y - r * 0.35, Math.max(0.8, r * 0.25), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // The big bubble, swelling out of the mouth and rising, with what it
+    // says, then fading.
+    if (burped) {
+      var age = ts - burped.born, t = still() ? 0.6 : Math.min(1, age / BURP), bp = px(burped.x, burped.y - t * 160);
+      var R = (30 + 70 * Math.min(1, t * 2.2)) * sc, fade = age > BURP + 600 ? Math.max(0, 1 - (age - BURP - 600) / 900) : 1;
+      if (!fade) { burped = null; return; }
+      ctx.globalAlpha = 0.9 * fade;
+      ctx.fillStyle = mix(skin.c.ray, skin.c.ray, 0, 0.18);
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = Math.max(2, 5 * sc);
+      ctx.stroke();
+      ctx.fillStyle = skin.you;
+      ctx.font = '700 ' + Math.round(Math.max(14, 44 * sc)) + 'px ' + skin.font;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = Math.min(1, t * 3) * fade;
+      ctx.fillText('BURP!', bp.x, bp.y);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+
+  // ---- Drawing -----------------------------------------------------------
+  // The reef box (SR.W by SR.H units) is drawn as large as the screen
+  // allows, its surface just under the words at the top; the sky shows
+  // above it, and below it the reef runs on to the foot of the screen.
+  var view = { scale: 1, ox: 0, oy: 0, dpr: 1, w: 0, h: 0 };
+  var backLayer = document.createElement('canvas'), scanLayer = null;
+  var idle = null, kelps = [], vents = [], snow = [], idleFace = [];
+  var FLOOR = 1500;             // where the sand begins, in reef units
+
+  function px(x, y) {
+    return { x: view.ox + x * view.scale, y: view.oy + y * view.scale };
+  }
+
+  // Numbers for drawing only, the same for everyone from the day's name.
+  function seeded(name) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < name.length; i++) { h ^= name.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    var a = h >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) >>> 0;
+      var t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // The reef for this page: its fish, and the kelp, the bubbling vents and
+  // the murk's specks, which only drawing uses.
+  function setup() {
+    sk = SR.sea(TRACK);
+    BEST = 'shark-reef:best:' + TRACK;
+    idle = SR.start(sk);
+    var r = seeded(TRACK + ':kelp');
+    kelps = [];
+    var nk = 7 + Math.floor(r() * 4);
+    for (var i = 0; i < nk; i++) {
+      kelps.push({ x: 60 + (i + r() * 0.8) * 880 / nk, tall: 650 + r() * 650, phase: r() * 6.3, back: r() < 0.35 });
+    }
+    vents = [];
+    for (i = 0; i < 4; i++) vents.push(80 + r() * 840);
+    snow = [];
+    for (i = 0; i < 70; i++) snow.push({ x: r() * SR.W, y: r() * SR.H, r: 1 + r() * 2.5, drift: 6 + r() * 14 });
+    // At rest before a run, each shoal faces the way it is about to swim.
+    idleFace = sk.shoals.map(function (sh, k) {
+      return SR.shoalAt(sk, k, 30).x >= SR.shoalAt(sk, k, 0).x ? 1 : -1;
+    });
+    layout();
+  }
+
+  function layout() {
+    if (!sk) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var top = 84, foot = 6;
+    var scale = Math.min(w / SR.W, (h - top - foot) / SR.H);
+    view = { scale: scale, dpr: dpr, w: w, h: h, ox: (w - scale * SR.W) / 2, oy: top };
+    // The reef, drawn once for each size: the sky, the water darkening
+    // with depth, the far reef, the sand, and the rocks and coral on it.
+    backLayer.width = canvas.width;
+    backLayer.height = canvas.height;
+    var g = backLayer.getContext('2d'), sc = scale, r = seeded(TRACK + ':reef');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    function P(x, y) { return px(x, y); }
+    var sy = P(0, 0).y, fy = P(0, FLOOR).y;
+    var sky = g.createLinearGradient(0, 0, 0, sy);
+    sky.addColorStop(0, skin.sky);
+    sky.addColorStop(1, skin.skyLow);
+    g.fillStyle = sky;
+    g.fillRect(0, 0, w, sy);
+    var water = g.createLinearGradient(0, sy, 0, fy);
+    water.addColorStop(0, skin.top);
+    water.addColorStop(1, skin.deep);
+    g.fillStyle = water;
+    g.fillRect(0, sy, w, h - sy);
+    // The far reef: low hills of it in the blue, behind everything.
+    g.fillStyle = skin.far;
+    g.globalAlpha = 0.7;
+    g.beginPath();
+    g.moveTo(0, h);
+    for (var x = -40; x <= SR.W + 80; x += 80) {
+      var q = P(x, FLOOR - 120 - r() * 220);
+      g.lineTo(q.x, q.y);
+    }
+    g.lineTo(w, h);
+    g.closePath();
+    g.fill();
+    g.globalAlpha = 1;
+    // Kelp far back, on a kelp forest's day.
+    if (sk.water === 2) kelps.forEach(function (k) { if (k.back) drawKelp(g, k, 0, skin.kelpDark, 0.6); });
+    // The sand, from its rippled edge to the foot of the screen.
+    g.fillStyle = skin.sand;
+    g.beginPath();
+    g.moveTo(0, h);
+    for (x = -20; x <= SR.W + 40; x += 40) {
+      var s = P(x, FLOOR + Math.sin(x / 90) * 10 + (r() - 0.5) * 8);
+      g.lineTo(s.x, s.y);
+    }
+    g.lineTo(w, h);
+    g.closePath();
+    g.fill();
+    var low = g.createLinearGradient(0, fy, 0, h);
+    low.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    low.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
+    g.fillStyle = low;
+    g.fillRect(0, fy, w, h - fy);
+    // Pebbles and shells on the sand, down to the foot of the screen.
+    for (var pb = 0; pb < 26; pb++) {
+      var pp = P(r() * SR.W, FLOOR + 40 + r() * Math.max(60, (h - fy) / sc - 50));
+      if (pp.y > h) continue;
+      g.fillStyle = r() < 0.7 ? skin.sandDark : skin.rock;
+      g.beginPath();
+      g.ellipse(pp.x, pp.y, (4 + r() * 8) * sc, (3 + r() * 5) * sc, r() * 3, 0, Math.PI * 2);
+      g.fill();
+    }
+    for (var sh = 0; sh < 3; sh++) {
+      var sp = P(60 + r() * 880, FLOOR + 70 + r() * Math.max(40, (h - fy) / sc - 110)), ss = (12 + r() * 8) * sc;
+      if (sp.y > h) continue;
+      g.fillStyle = skin.coral[sh % 3];
+      g.globalAlpha = 0.85;
+      g.beginPath();
+      g.moveTo(sp.x, sp.y + ss * 0.5);
+      g.arc(sp.x, sp.y + ss * 0.5, ss, Math.PI * 1.15, Math.PI * 1.85);
+      g.closePath();
+      g.fill();
+      g.globalAlpha = 1;
+      g.strokeStyle = skin.sandDark;
+      g.lineWidth = Math.max(1, 2 * sc);
+      g.beginPath();
+      for (var rb = -2; rb <= 2; rb++) {
+        g.moveTo(sp.x, sp.y + ss * 0.5);
+        g.lineTo(sp.x + Math.sin(rb * 0.28) * ss, sp.y + ss * 0.5 - Math.cos(rb * 0.28) * ss);
+      }
+      g.stroke();
+    }
+    g.strokeStyle = skin.sandDark;
+    g.lineWidth = Math.max(1, 3 * sc);
+    g.globalAlpha = 0.6;
+    for (var y = FLOOR + 40; P(0, y).y < h; y += 46) {
+      g.beginPath();
+      for (x = 0; x <= SR.W; x += 30) {
+        var t = P(x, y + Math.sin(x / 50 + y) * 6);
+        if (x) g.lineTo(t.x, t.y); else g.moveTo(t.x, t.y);
+      }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+    // Rocks, round and shaded.
+    for (var k = 0; k < 3; k++) {
+      var rc = P(80 + r() * 840, FLOOR + 30 + r() * 30), rw = (70 + r() * 60) * sc, rh = (40 + r() * 30) * sc;
+      g.fillStyle = skin.rockDark;
+      g.beginPath();
+      g.ellipse(rc.x, rc.y, rw, rh, 0, Math.PI, 0);
+      g.fill();
+      g.fillStyle = skin.rock;
+      g.beginPath();
+      g.ellipse(rc.x - rw * 0.15, rc.y - rh * 0.1, rw * 0.75, rh * 0.8, 0, Math.PI, 0);
+      g.fill();
+    }
+    // Coral: branching coral, brain coral, sea fans and tube sponges, along
+    // the sand.
+    var spots = 6 + Math.floor(r() * 3);
+    for (k = 0; k < spots; k++) {
+      var cx = 40 + (k + 0.2 + r() * 0.6) * 920 / spots, base = FLOOR + 10 + r() * 20, col = skin.coral[Math.floor(r() * 3)], kind = Math.floor(r() * 4);
+      var b0 = P(cx, base);
+      g.fillStyle = col;
+      g.strokeStyle = col;
+      g.lineCap = 'round';
+      if (kind === 0) {
+        // Branching: a stem forking twice, each tip round.
+        var branch = function (bx, by, ang, len, depth) {
+          var ex = bx + Math.cos(ang) * len, ey = by + Math.sin(ang) * len;
+          g.lineWidth = Math.max(1.5, (6 + depth * 4) * sc);
+          g.beginPath();
+          g.moveTo(P(bx, by).x, P(bx, by).y);
+          g.lineTo(P(ex, ey).x, P(ex, ey).y);
+          g.stroke();
+          if (depth > 0) {
+            branch(ex, ey, ang - 0.4 - r() * 0.3, len * 0.72, depth - 1);
+            branch(ex, ey, ang + 0.4 + r() * 0.3, len * 0.72, depth - 1);
+          } else {
+            g.beginPath();
+            g.arc(P(ex, ey).x, P(ex, ey).y, Math.max(1.5, 7 * sc), 0, Math.PI * 2);
+            g.fill();
+          }
+        };
+        branch(cx, base, -Math.PI / 2 + (r() - 0.5) * 0.3, 60 + r() * 30, 2);
+      } else if (kind === 1) {
+        // Brain coral: a dome with winding grooves.
+        var R = (50 + r() * 30) * sc;
+        g.beginPath();
+        g.ellipse(b0.x, b0.y, R, R * 0.8, 0, Math.PI, 0);
+        g.fill();
+        g.strokeStyle = 'rgba(0, 0, 0, 0.22)';
+        g.lineWidth = Math.max(1, 3 * sc);
+        for (var gr = 1; gr <= 3; gr++) {
+          g.beginPath();
+          g.ellipse(b0.x, b0.y, R * gr / 4, R * 0.8 * gr / 4, 0, Math.PI, 0);
+          g.stroke();
+        }
+      } else if (kind === 2) {
+        // A sea fan: thin ribs spreading from its foot.
+        g.globalAlpha = 0.85;
+        g.lineWidth = Math.max(1, 3 * sc);
+        var tall = 110 + r() * 60;
+        for (var f = -4; f <= 4; f++) {
+          var tip = P(cx + f * 16 + (r() - 0.5) * 10, base - tall + Math.abs(f) * 12);
+          g.beginPath();
+          g.moveTo(b0.x, b0.y);
+          g.quadraticCurveTo(b0.x + f * 4 * sc, b0.y - tall * 0.5 * sc, tip.x, tip.y);
+          g.stroke();
+        }
+        g.globalAlpha = 1;
+      } else {
+        // Tube sponges: three or four tubes, open at the top.
+        var tubes = 3 + Math.floor(r() * 2);
+        for (var u = 0; u < tubes; u++) {
+          var th = (50 + r() * 70) * sc, tw = 14 * sc, tx = b0.x + (u - tubes / 2) * 18 * sc;
+          g.fillStyle = col;
+          g.fillRect(tx - tw / 2, b0.y - th, tw, th);
+          g.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          g.beginPath();
+          g.ellipse(tx, b0.y - th, tw / 2, tw / 4, 0, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+    }
+    // Sea grass in tufts, and a starfish.
+    g.strokeStyle = skin.kelpDark;
+    g.lineWidth = Math.max(1, 3 * sc);
+    for (k = 0; k < 8; k++) {
+      var gx = 30 + r() * 940;
+      for (var bl = 0; bl < 4; bl++) {
+        var gb = P(gx + bl * 8, FLOOR + 14), gt = P(gx + bl * 8 + (r() - 0.5) * 30, FLOOR - 30 - r() * 40);
+        g.beginPath();
+        g.moveTo(gb.x, gb.y);
+        g.quadraticCurveTo(gb.x, (gb.y + gt.y) / 2, gt.x, gt.y);
+        g.stroke();
+      }
+    }
+    var star = P(150 + r() * 700, FLOOR + 60 + r() * 30), sr = 18 * sc;
+    g.fillStyle = skin.coral[1];
+    g.beginPath();
+    for (var pt = 0; pt < 10; pt++) {
+      var ang = -Math.PI / 2 + pt * Math.PI / 5, rr = pt % 2 ? sr * 0.45 : sr;
+      g.lineTo(star.x + Math.cos(ang) * rr, star.y + Math.sin(ang) * rr);
+    }
+    g.closePath();
+    g.fill();
+    // A screen of old glass: faint lines across it, drawn over everything.
+    scanLayer = null;
+    if (skin.scan) {
+      scanLayer = document.createElement('canvas');
+      scanLayer.width = canvas.width;
+      scanLayer.height = canvas.height;
+      var sg = scanLayer.getContext('2d');
+      sg.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      for (y = 0; y < scanLayer.height; y += 3 * dpr) sg.fillRect(0, y, scanLayer.width, Math.max(1, dpr));
+    }
+  }
+
+  // A stalk of kelp from the sand, swaying t (in ms), with its blades.
+  function drawKelp(g, k, t, colour, alpha) {
+    var sc = view.scale, sway = still() ? 0 : Math.sin(t / 1700 + k.phase), top = FLOOR - k.tall;
+    g.save();
+    g.globalAlpha = alpha;
+    g.strokeStyle = colour;
+    g.fillStyle = colour;
+    g.lineCap = 'round';
+    g.lineWidth = Math.max(1.5, 10 * sc);
+    g.beginPath();
+    var n = 12, pts = [];
+    for (var i = 0; i <= n; i++) {
+      var f = i / n, y = FLOOR + 20 - (FLOOR + 20 - top) * f, x = k.x + sway * 70 * f * f + Math.sin(f * 7 + k.phase) * 12;
+      pts.push({ x: x, y: y });
+      var p = px(x, y);
+      if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y);
+    }
+    g.stroke();
+    // A blade every so often, either side.
+    for (i = 1; i < n; i++) {
+      var q = px(pts[i].x, pts[i].y), side = i % 2 ? 1 : -1;
+      g.save();
+      g.translate(q.x, q.y);
+      g.rotate(side * (0.9 + sway * 0.15) - 0.2);
+      g.beginPath();
+      g.ellipse(0, -26 * sc, 9 * sc, 30 * sc, 0, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+    }
+    g.restore();
+  }
+
+  // What a fish looks like: its length in units, its body's colour and the
+  // colour of its back or stripe. A big shoal is silver with blue backs, a
+  // little shoal all one colour with a pale band, a lone darter bright with
+  // a dark stripe.
+  function fishLook(b, sea) {
+    var f = sea.list[b];
+    if (sea.fish === 0) return { len: 38, body: skin.silver, back: skin.fish[2], slim: 0.17 };
+    if (sea.fish === 1) return { len: 46, body: skin.fish[f.shoal % 4], back: skin.silver, slim: 0.22 };
+    return { len: 56, body: skin.fish[b % 4], back: skin.deep, slim: 0.18 };
+  }
+
+  // A fish seen from the side at (x, y), facing face (1 right, -1 left),
+  // tilted up or down by tilt; its tail beats faster when it flees.
+  function drawFish(b, sea, x, y, face, tilt, fleeing, ts, alpha) {
+    var look = fishLook(b, sea), p = px(x, y), k = look.len * view.scale;
+    var wag = still() ? 0 : Math.sin(ts / (fleeing ? 38 : 120) + b * 1.7) * (fleeing ? 0.45 : 0.25);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.scale(face, 1);
+    ctx.rotate(tilt * face);
+    ctx.scale(k, k);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = look.body;
+    // The tail.
+    ctx.save();
+    ctx.translate(-0.42, 0);
+    ctx.rotate(wag);
+    ctx.beginPath();
+    ctx.moveTo(0.06, 0);
+    ctx.lineTo(-0.26, -0.22);
+    ctx.quadraticCurveTo(-0.19, 0, -0.26, 0.22);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    // A fin on its back.
+    ctx.beginPath();
+    ctx.moveTo(-0.15, -look.slim * 0.8);
+    ctx.lineTo(-0.02, -look.slim - 0.12);
+    ctx.lineTo(0.12, -look.slim * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    // The body.
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 0.5, look.slim, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (skin.thick) {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.5 / k;
+      ctx.stroke();
+    }
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = look.back;
+    if (sea.fish === 0) {
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.fillRect(-0.6, -0.4, 1.2, 0.36);
+    } else if (sea.fish === 1) {
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.fillRect(0.02, -0.4, 0.1, 0.8);
+      ctx.fillRect(-0.24, -0.4, 0.08, 0.8);
+    } else {
+      ctx.globalAlpha = alpha * 0.5;
+      ctx.fillRect(-0.6, -0.03, 1.2, 0.06);
+    }
+    ctx.restore();
+    // The eye.
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(0.28, -0.04, 0.065, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = skin.eye;
+    ctx.beginPath();
+    ctx.arc(0.3, -0.04, 0.035, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // The shark seen from the side, as long as SHARK units, its mouth at (x,
+  // y), its head the way ang points; turned over when it swims left, so its
+  // fin stays up. ghost draws it as the ghost's, a shape in the ghost's
+  // colour; open is how far its jaws are open (0 to 1), and speed how hard
+  // its tail beats.
+  var SHARK = 190;
+  function drawShark(x, y, ang, flip, ts, speed, open, ghostly) {
+    var p = px(x, y), k = SHARK * view.scale;
+    var wag = still() ? 0 : Math.sin(ts / (130 - speed * 5)) * (0.12 + 0.3 * speed / SR.LAW.most);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(ang);
+    if (flip) ctx.scale(1, -1);
+    ctx.scale(k, k);
+    // The mouth is where the run counts the shark to be.
+    ctx.translate(0.03, -0.035);
+    var body = ghostly ? skin.ghost : skin.shark, dark = ghostly ? skin.ghost : skin.sharkBack;
+    if (ghostly) ctx.globalAlpha = 0.32;
+    ctx.fillStyle = body;
+    // The tail, beating.
+    ctx.save();
+    ctx.translate(-0.83, 0);
+    ctx.rotate(wag);
+    ctx.beginPath();
+    ctx.moveTo(0.03, -0.022);
+    ctx.quadraticCurveTo(-0.07, -0.12, -0.2, -0.27);
+    ctx.quadraticCurveTo(-0.15, -0.1, -0.12, 0);
+    ctx.quadraticCurveTo(-0.15, 0.08, -0.17, 0.16);
+    ctx.quadraticCurveTo(-0.07, 0.07, 0.03, 0.022);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    // The fin on its back, and the small ones near the tail.
+    ctx.beginPath();
+    ctx.moveTo(-0.19, -0.113);
+    ctx.quadraticCurveTo(-0.27, -0.2, -0.37, -0.31);
+    ctx.quadraticCurveTo(-0.38, -0.2, -0.46, -0.1);
+    ctx.closePath();
+    ctx.moveTo(-0.65, -0.05);
+    ctx.lineTo(-0.71, -0.1);
+    ctx.lineTo(-0.74, -0.035);
+    ctx.closePath();
+    ctx.moveTo(-0.63, 0.05);
+    ctx.lineTo(-0.69, 0.09);
+    ctx.lineTo(-0.72, 0.035);
+    ctx.closePath();
+    ctx.fill();
+    // The body, round at the snout and narrowing to the tail.
+    ctx.beginPath();
+    ctx.moveTo(0.08, 0.005);
+    ctx.bezierCurveTo(0.06, -0.07, -0.08, -0.125, -0.3, -0.115);
+    ctx.bezierCurveTo(-0.52, -0.105, -0.7, -0.05, -0.84, -0.018);
+    ctx.lineTo(-0.84, 0.018);
+    ctx.bezierCurveTo(-0.7, 0.05, -0.5, 0.1, -0.3, 0.1);
+    ctx.bezierCurveTo(-0.12, 0.1, 0.02, 0.075, 0.08, 0.005);
+    ctx.closePath();
+    ctx.fill();
+    if (ghostly) {
+      ctx.globalAlpha = 0.8;
+      ctx.strokeStyle = skin.ghost;
+      ctx.lineWidth = 1.6 / k;
+      ctx.stroke();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+      return;
+    }
+    if (skin.thick) {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2.5 / k;
+      ctx.stroke();
+    }
+    // Its pale belly.
+    ctx.fillStyle = skin.belly;
+    ctx.beginPath();
+    ctx.moveTo(0.06, 0.035);
+    ctx.bezierCurveTo(-0.05, 0.03, -0.3, 0.04, -0.62, 0.038);
+    ctx.bezierCurveTo(-0.5, 0.08, -0.4, 0.1, -0.3, 0.1);
+    ctx.bezierCurveTo(-0.12, 0.1, 0.02, 0.075, 0.06, 0.035);
+    ctx.fill();
+    // The fin at its side.
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.moveTo(-0.13, 0.065);
+    ctx.quadraticCurveTo(-0.2, 0.17, -0.33, 0.23);
+    ctx.quadraticCurveTo(-0.27, 0.13, -0.26, 0.08);
+    ctx.closePath();
+    ctx.fill();
+    // Gills.
+    ctx.strokeStyle = dark;
+    ctx.lineWidth = 0.008;
+    ctx.beginPath();
+    for (var gi = 0; gi < 3; gi++) {
+      var gx = -0.12 - gi * 0.028;
+      ctx.moveTo(gx, -0.035);
+      ctx.quadraticCurveTo(gx - 0.016, 0.002, gx, 0.04);
+    }
+    ctx.stroke();
+    // The eye, with a glint.
+    ctx.fillStyle = skin.eye;
+    ctx.beginPath();
+    ctx.arc(-0.012, -0.035, 0.017, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(-0.007, -0.04, 0.006, 0, Math.PI * 2);
+    ctx.fill();
+    // The mouth: a toothy grin, or the jaws open and snapping shut.
+    var jaw = 0.55 * open;
+    ctx.save();
+    ctx.translate(-0.07, 0.052);
+    ctx.fillStyle = skin.mouth;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0.145, -0.022);
+    ctx.lineTo(Math.cos(jaw) * 0.14, Math.sin(jaw) * 0.14);
+    ctx.closePath();
+    if (open > 0.05) ctx.fill();
+    ctx.strokeStyle = skin.mouth;
+    ctx.lineWidth = 0.008;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0.14, -0.022);
+    ctx.stroke();
+    ctx.fillStyle = skin.teeth;
+    ctx.beginPath();
+    for (var tt = 0; tt < 4; tt++) {
+      var tx = 0.025 + tt * 0.03, ty = -0.022 * tx / 0.14;
+      ctx.moveTo(tx - 0.009, ty);
+      ctx.lineTo(tx, ty + 0.02);
+      ctx.lineTo(tx + 0.009, ty);
+      if (open > 0.05) {
+        var bx = Math.cos(jaw) * tx, by = Math.sin(jaw) * tx;
+        ctx.moveTo(bx - 0.009, by);
+        ctx.lineTo(bx, by - 0.018);
+        ctx.lineTo(bx + 0.009, by);
+      }
+    }
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // Which way a shark is drawn, eased so it turns smoothly: ang its
+  // heading, flip whether it swims left (changed only once it is clearly
+  // going the other way).
+  function Heading() { return { ang: 0, flip: false, seen: false }; }
+  var mineHead = Heading(), ghostHead = Heading();
+  function turnTo(hd, dx, dy, dt) {
+    if (dx * dx + dy * dy > 0.25) {
+      var want = Math.atan2(dy, dx), d = want - hd.ang;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      hd.ang = hd.seen && !still() ? hd.ang + d * Math.min(1, dt * 12) : want;
+      hd.seen = true;
+    }
+    var c = Math.cos(hd.ang);
+    if (c < -0.2) hd.flip = true;
+    else if (c > 0.2) hd.flip = false;
+    return hd;
+  }
+
+  // Each fish's way as drawn: which way it faces and how it tilts, eased.
+  var fishFace = [], fishTilt = [];
+  function fishWay(b, vx, vy, dt, rest) {
+    if (fishFace[b] == null) { fishFace[b] = rest || 1; fishTilt[b] = 0; }
+    if (vx > 3) fishFace[b] = 1;
+    else if (vx < -3) fishFace[b] = -1;
+    var want = vx || vy ? Math.max(-0.6, Math.min(0.6, Math.atan2(vy, Math.abs(vx) + 1))) : 0;
+    fishTilt[b] += (want - fishTilt[b]) * Math.min(1, dt * 8);
+    return { face: fishFace[b], tilt: fishTilt[b] };
+  }
+
+  // Light from the surface: beams slanting down through the water, strong
+  // in sunlit water, dappled in a kelp forest, all but gone in murk.
+  function drawRays(ts, sea) {
+    var level = sea.water === 0 ? 1 : sea.water === 2 ? 0.6 : 0.15;
+    var top = px(0, 0).y, deep = px(0, 1150).y;
+    for (var i = 0; i < 5; i++) {
+      var drift = still() ? 0 : Math.sin(ts / 5200 + i * 1.9) * 40, x0 = 90 + i * 210 + drift, wide = 60 + (i % 3) * 30;
+      var a = px(x0 - wide, 0), b = px(x0 + wide, 0), c = px(x0 + wide + 260, 1150), d = px(x0 - wide + 180, 1150);
+      var gr = ctx.createLinearGradient(0, top, 0, deep);
+      var shine = 0.14 * level * (0.7 + 0.3 * (still() ? 1 : Math.sin(ts / 1300 + i * 2.3)));
+      gr.addColorStop(0, mix(skin.c.ray, skin.c.ray, 0, shine));
+      gr.addColorStop(1, mix(skin.c.ray, skin.c.ray, 0, 0));
+      ctx.fillStyle = gr;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineTo(c.x, c.y);
+      ctx.lineTo(d.x, d.y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // The surface, rippling, where the water meets the sky.
+  function drawSurface(ts) {
+    var sy = px(0, 0).y, w = view.w, t = still() ? 0 : ts;
+    ctx.strokeStyle = skin.surf;
+    ctx.lineWidth = Math.max(1.5, 4 * view.scale);
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    for (var x = 0; x <= w + 8; x += 8) {
+      var y = sy + Math.sin(x / 28 + t / 650) * 2.2 + Math.sin(x / 11 - t / 420) * 1;
+      if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Bubbles from the vents in the reef, now and then.
+  function ventBubbles(dt) {
+    if (still() || !vents.length) return;
+    if (Math.random() < dt * 1.2) {
+      var v = vents[Math.floor(Math.random() * vents.length)];
+      bubble(v + (Math.random() - 0.5) * 20, FLOOR - 10, 3 + Math.random() * 6, 70 + Math.random() * 60);
+    }
+  }
+
+  // The murk, everywhere but close round your shark, with specks drifting in it.
+  function drawMurk(x, y, ts) {
+    var w = view.w, h = view.h, sc = view.scale, c = skin.c, m = px(x, y);
+    var g = ctx.createRadialGradient(m.x, m.y, 170 * sc, m.x, m.y, 620 * sc);
+    g.addColorStop(0, mix(c.murk, c.murk, 0, 0));
+    g.addColorStop(0.45, mix(c.murk, c.murk, 0, skin.gloom * 0.65));
+    g.addColorStop(1, mix(c.murk, c.murk, 0, skin.gloom));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = skin.ray;
+    ctx.globalAlpha = 0.25;
+    snow.forEach(function (s) {
+      var sy = (s.y + (still() ? 0 : ts / 1000 * s.drift)) % SR.H, q = px(s.x + Math.sin(ts / 2000 + s.y) * 8, sy);
+      ctx.fillRect(q.x, q.y, s.r, s.r);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function draw(alpha, dt, ts) {
+    var w = view.w, h = view.h, sc = view.scale;
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    if (!sk) {
+      ctx.fillStyle = skin.bg;
+      ctx.fillRect(0, 0, w, h);
+      return;
+    }
+    // A run being watched is drawn at its own step, in the reef of the law
+    // it was kept under; drawing runs a step behind the run, between the
+    // last two steps.
+    var seen = phase === 'watching' && watch;
+    var sea = seen ? watch.r.sea : sk;
+    var st = seen ? watch.sim : run, pv = seen ? watch.prev : prev;
+    var a = seen ? Math.max(0, Math.min(1, watch.t - watch.sim.step)) : phase === 'running' ? alpha : 1;
+    if (seen && watch.sim.status !== 'running') a = 1;
+    var step = st ? st.step - 1 + a : 0;
+    // A bite jolts the picture a moment.
+    var j = !still() && ts - jolt < 90 ? (1 - (ts - jolt) / 90) * 3 : 0;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(backLayer, (Math.random() - 0.5) * j * view.dpr, (Math.random() - 0.5) * j * view.dpr);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    drawRays(ts, sea);
+    drawSurface(ts);
+    ventBubbles(dt);
+    // Your shark: where it is, how fast it goes, and its jaws.
+    var sx, sy, spd = 0;
+    if (seen) {
+      var k1 = Math.min(watch.sim.step, watch.r.x.length - 1), k0 = Math.max(0, k1 - 1);
+      sx = lerp(watch.r.x[k0], watch.r.x[k1], a);
+      sy = lerp(watch.r.y[k0], watch.r.y[k1], a);
+      turnTo(mineHead, watch.r.x[k1] - watch.r.x[k0], watch.r.y[k1] - watch.r.y[k0], dt);
+      spd = Math.sqrt(watch.sim.vx * watch.sim.vx + watch.sim.vy * watch.sim.vy);
+    } else if (st) {
+      sx = lerp(pv.x, st.x, a);
+      sy = lerp(pv.y, st.y, a);
+      turnTo(mineHead, st.vx, st.vy, dt);
+      spd = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+    } else {
+      sx = sea.start.x;
+      sy = sea.start.y;
+      turnTo(mineHead, 1, 0, 1);
+    }
+    // The fish, each where it is, or resting in its shoal before a run;
+    // when the time is up, the ones left getting away.
+    var away = phase === 'done' && run && run.status === 'over' && endAt ? Math.min(1, (ts - endAt) / BURP) : 0;
+    var near = 0;
+    for (var b = 0; b < sea.n; b++) {
+      var fx, fy, way, fleeing = false;
+      if (st) {
+        if (st.gone[b]) continue;
+        fx = lerp(pv.fx[b], st.fx[b], a) / SR.FINE;
+        fy = lerp(pv.fy[b], st.fy[b], a) / SR.FINE;
+        fleeing = st.fvx[b] * st.fvx[b] + st.fvy[b] * st.fvy[b] > 60 * 60;
+        way = fishWay(b, st.fvx[b], st.fvy[b], dt);
+      } else {
+        fx = idle.fx[b] / SR.FINE + (still() ? 0 : Math.sin(ts / 700 + b) * 6);
+        fy = idle.fy[b] / SR.FINE + (still() ? 0 : Math.cos(ts / 900 + b * 1.7) * 4);
+        way = fishWay(b, 0, 0, dt, idleFace[sea.list[b].shoal]);
+      }
+      if (away) {
+        var dir = fx < SR.W / 2 ? -1 : 1;
+        fx += dir * away * away * 1300;
+        way = { face: dir, tilt: 0 };
+        fleeing = true;
+      }
+      var dx = fx - sx, dy = fy - sy;
+      if (dx * dx + dy * dy < 150 * 150) near = 1;
+      drawFish(b, sea, fx, fy, way.face, way.tilt, fleeing, ts, 1 - away);
+    }
+    // The ghost's shark, behind yours, where its run had it at this step.
+    var gh = seen ? watch.ghost : ghost;
+    if (gh && (st || seen) && !(phase === 'done' && !seen)) {
+      var gs = Math.min(step, gh.steps), g1 = Math.min(gh.x.length - 1, Math.floor(gs) + 1), g0 = Math.max(0, g1 - 1), gf = gs - Math.floor(gs);
+      var gx = lerp(gh.x[g0], gh.x[g1], gs >= gh.steps ? 1 : gf), gy = lerp(gh.y[g0], gh.y[g1], gs >= gh.steps ? 1 : gf);
+      turnTo(ghostHead, gh.x[g1] - gh.x[g0], gh.y[g1] - gh.y[g0], dt);
+      ctx.globalAlpha = gs >= gh.steps ? 0.5 : 1;
+      drawShark(gx, gy, ghostHead.ang, ghostHead.flip, ts, 8, 0, true);
+      ctx.globalAlpha = 1;
+    }
+    // Your shark, its jaws opening as it comes up on a fish and snapping
+    // shut on one.
+    var snap = ts - chompAt < 160 ? 1 - (ts - chompAt) / 160 : 0;
+    var open = Math.max(snap, near && st && st.status === 'running' ? 0.55 : 0);
+    if (st && phase === 'running' && spd > 12 && Math.random() < dt * 4 && !still()) {
+      bubble(sx - Math.cos(mineHead.ang) * SHARK * 0.85, sy - Math.sin(mineHead.ang) * SHARK * 0.85, 3 + Math.random() * 4, 90);
+    }
+    drawShark(sx, sy, mineHead.ang, mineHead.flip, ts, spd, open, false);
+    // In a kelp forest, the kelp nearest you sways in front of the fish.
+    if (sea.water === 2) kelps.forEach(function (k) { if (!k.back) drawKelp(ctx, k, ts, skin.kelp, 0.9); });
+    // In murky water, you see clearly only close round your shark.
+    if (sea.water === 1) drawMurk(sx, sy, ts);
+    drawMarks(ts, dt);
+    drawBubbles(ts, dt);
+    // Beyond the reef's sides, on a wide screen, the water is darker: no
+    // fish swims out there.
+    if (view.ox > 1) {
+      ctx.fillStyle = mix(skin.c.bg, skin.c.bg, 0, 0.6);
+      ctx.fillRect(0, 0, view.ox, h);
+      ctx.fillRect(view.ox + SR.W * sc, 0, w - view.ox - SR.W * sc, h);
+    }
+    if (scanLayer) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(scanLayer, 0, 0);
+    }
+    var at = seen ? Math.floor(watch.t) : st ? st.step : 0;
+    timeEl.textContent = SR.seconds(at);
+    var eaten = seen ? watch.count : st ? st.eaten : 0, togo = Math.ceil((SR.LAW.steps - at) / SR.RATE);
+    leftEl.textContent = phase === 'running' || seen
+      ? (sea.n - eaten ? SR.fish(sea.n - eaten) + ' left' : 'Every fish eaten!') + (togo <= 10 && sea.n - eaten ? ' · ' + togo + ' s to go' : '')
+      : '';
+    if (seen && clip) clipFrame(ts);
+  }
+
+  // ---- Watching a run -------------------------------------------------------
+  // A kept run is its moves, so watching is re-running it: the shark swims
+  // as it did, step for step, the fish flee it and are eaten as they were,
+  // with the day's best as the ghost beside it (unless it is that run).
+  // Half speed slows it to see how a fish was caught.
+  var watch = null, watchbar = document.getElementById('watchbar'), wNote = document.getElementById('w-note');
+  function dateOf(at) {
+    var d = new Date(at);
+    return isNaN(d) ? '' : d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function watchRun(replay, info) {
+    var r = SR.rerun(replay, sk), d = SR.decode(replay);
+    if (!r || !r.ok || !d) return false;
+    info = info || {};
+    watch = {
+      r: r, replay: replay, moves: d.moves, who: info.who || 'You', slot: info.slot || '', at: info.at || '', mine: !!info.mine,
+      race: !!info.race, speed: 1, playing: true,
+      ghost: leader && leaderReplay !== replay ? leader : null
+    };
+    rewind();
+    phase = 'watching';
+    endAt = 0;
+    burped = null;
+    say.hidden = true;
+    end.hidden = true;
+    sheet.hidden = true;
+    settings.hidden = true;
+    watchbar.hidden = false;
+    wNote.textContent = '';
+    document.getElementById('w-race').hidden = !watch.race;
+    document.getElementById('w-link').hidden = !watch.slot;
+    document.getElementById('w-play').textContent = '⏸';
+    document.getElementById('w-slow').textContent = '½× speed';
+    document.getElementById('w-slow').setAttribute('aria-pressed', 'false');
+    document.getElementById('w-clip').disabled = false;
+    document.getElementById('w-clip').textContent = 'Make a clip';
+    caption();
+    return true;
+  }
+  function reefDay() {
+    return TRACK === TODAY ? 'today’s reef' : (watch && watch.at ? dateOf(watch.at) + '’s reef' : 'an earlier day’s reef');
+  }
+  function caption() {
+    document.getElementById('watch-cap').textContent = (watch.mine ? 'Your run' : watch.who + '’s run') + ' · ' + SR.words(watch.r) + ' · ' + reefDay() +
+      (watch.ghost ? ' · ghost: ' + leaderWho + ', ' + SR.words(watch.ghost) : '');
+  }
+  // Back to the start of the run being watched.
+  function rewind() {
+    watch.t = 0;
+    watch.sim = SR.start(watch.r.sea);
+    watch.prev = snap(watch.sim);
+    watch.count = 0;
+    watch.ghostHit = 0;
+    watch.ghostEats = eatsOf(watch.ghost);
+    marks = [];
+    bits = [];
+    bubbles = [];
+    burped = null;
+    showWatchGhost();
+  }
+  function showWatchGhost() {
+    if (!watch.ghost) return;
+    ghostLine.textContent = 'Ghost: ' + (watch.ghostHit >= watch.ghost.total ? 'every fish, in ' + SR.seconds(watch.ghost.steps) + ' s' : SR.fish(watch.ghostHit));
+  }
+  // The run being watched moved on to step t: the reef is re-run up to it,
+  // each fish eaten on the way chomped, the ghost's in its colour.
+  function advance(t) {
+    var w = watch;
+    t = Math.min(t, w.r.steps);
+    while (w.sim.step < Math.floor(t) && w.sim.status === 'running') {
+      var q = w.moves[w.sim.step];
+      w.prev = snap(w.sim);
+      SR.step(w.sim, q[0], q[1], w.r.sea);
+      w.sim.ate.forEach(function (b) {
+        w.count++;
+        eat(w.sim.x, w.sim.y, w.sim.fx[b] / SR.FINE, w.sim.fy[b] / SR.FINE, b, w.r.sea);
+      });
+      if (w.sim.status === 'finished') burp(w.sim.x, w.sim.y);
+    }
+    var before = w.ghostHit;
+    while (w.ghost && w.ghostHit < w.ghostEats.length && w.ghostEats[w.ghostHit].step <= t) {
+      var g = w.ghostEats[w.ghostHit++];
+      mark(w.ghost.x[g.step], w.ghost.y[g.step], 'ghost-ate');
+    }
+    if (w.ghostHit !== before) showWatchGhost();
+    w.t = t;
+  }
+  function stepWatch(gap) {
+    if (!watch || clip) return;
+    if (watch.playing) {
+      advance(watch.t + Math.min(gap, 100) / 1000 * SR.RATE * watch.speed);
+      if (watch.t >= watch.r.steps) {
+        watch.playing = false;
+        document.getElementById('w-play').textContent = '▶';
+        document.getElementById('w-play').setAttribute('aria-label', 'Play');
+      }
+    }
+  }
+  document.getElementById('w-play').addEventListener('click', function () {
+    if (!watch || clip) return;
+    if (!watch.playing && watch.t >= watch.r.steps) rewind();
+    watch.playing = !watch.playing;
+    this.textContent = watch.playing ? '⏸' : '▶';
+    this.setAttribute('aria-label', watch.playing ? 'Pause' : 'Play');
+  });
+  document.getElementById('w-slow').addEventListener('click', function () {
+    if (!watch) return;
+    watch.speed = watch.speed === 1 ? 0.5 : 1;
+    this.setAttribute('aria-pressed', watch.speed < 1 ? 'true' : 'false');
+    this.textContent = watch.speed < 1 ? '1× speed' : '½× speed';
+  });
+  document.getElementById('w-again').addEventListener('click', function () {
+    if (!watch || clip) return;
+    rewind();
+    watch.playing = true;
+    document.getElementById('w-play').textContent = '⏸';
+  });
+  function closeWatch() {
+    if (clip) return;
+    watch = null;
+    watchbar.hidden = true;
+    ready();
+  }
+  document.getElementById('w-close').addEventListener('click', closeWatch);
+  document.getElementById('end-watch').addEventListener('click', function () {
+    if (!last || !last.replay) return;
+    watchRun(last.replay, { who: recall('shark-reef:name') || 'You', slot: last.slot, at: new Date().toISOString(), mine: true });
+  });
+  // Race the run being watched: it becomes the ghost.
+  document.getElementById('w-race').addEventListener('click', function () {
+    if (!watch) return;
+    friend = watch.r;
+    ghostWho = watch.who;
+    closeWatch();
+  });
+
+  // A watch link opens the page playing a kept run.
+  function watchUrl(slot) {
+    return location.origin + location.pathname + '?track=' + TRACK + '&watch=' + slot;
+  }
+  document.getElementById('w-link').addEventListener('click', function () {
+    if (!watch || !watch.slot) return;
+    var url = watchUrl(watch.slot);
+    var text = (watch.mine ? 'Watch my Shark Reef run: ' : 'Watch ' + watch.who + '’s Shark Reef run: ') + SR.words(watch.r) + '.';
+    wNote.textContent = url;
+    if (navigator.share) navigator.share({ title: 'Shark Reef', text: text, url: url }).then(null, function () {});
+    else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(function () { wNote.textContent = 'Link copied: ' + url; }, function () {});
+  });
+  function openWatchLink() {
+    Beach.get(ROOM, { spindle: askedWatch }).then(function (e) {
+      if (!e || typeof e[7] !== 'string') throw new Error('none');
+      var d = SR.decode(e[7]);
+      if (!d || d.track !== TRACK) throw new Error('other reef');
+      var name = who(e) === 'A friend' ? 'A visitor' : who(e);
+      if (!watchRun(e[7], { who: name, slot: askedWatch, at: e[3], mine: isMine(e, askedWatch), race: !isMine(e, askedWatch) })) throw new Error('bad');
+    }).then(null, function () {
+      ghostLine.textContent = 'That run couldn’t be found at this reef.';
+    });
+  }
+
+  // ---- A clip -------------------------------------------------------------------
+  // The replay recorded as a short video by the phone's own recorder: a
+  // title card, the run at double speed with the ghost, and an end card
+  // with the game's name, to share like any clip. Drawn on a canvas of its
+  // own, upright, 720 by 1280.
+  var clip = null;
+  function clipKind() {
+    var kinds = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    if (!window.MediaRecorder) return '';
+    for (var i = 0; i < kinds.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(kinds[i])) return kinds[i];
+    return '';
+  }
+  document.getElementById('w-clip').addEventListener('click', function () {
+    var btn = this;
+    if (!watch || clip) return;
+    if (watch.file) return shareClip();
+    var kind = clipKind(), rec = document.createElement('canvas');
+    if (!kind || !rec.captureStream) {
+      wNote.textContent = 'This browser can’t make clips. Share the link instead.';
+      return;
+    }
+    rec.width = 720;
+    rec.height = 1280;
+    var stream = rec.captureStream(30), chunks = [];
+    var recorder = new MediaRecorder(stream, { mimeType: kind, videoBitsPerSecond: 2500000 });
+    recorder.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    recorder.onstop = function () {
+      var type = kind.split(';')[0], ext = type === 'video/mp4' ? 'mp4' : 'webm';
+      var blob = new Blob(chunks, { type: type });
+      var w = clip.watch;
+      clip = null;
+      w.file = new File([blob], 'shark-reef-' + (w.r.eaten >= w.r.total ? SR.seconds(w.r.steps).replace('.', '-') + 's' : w.r.eaten + '-fish') + '.' + ext, { type: type });
+      if (watch === w) {
+        btn.disabled = false;
+        btn.textContent = 'Share clip';
+        wNote.textContent = 'Your clip is ready (' + Math.round(blob.size / 1024) + ' KB).';
+      }
+    };
+    rewind();
+    watch.playing = false;
+    clip = { rec: rec, g: rec.getContext('2d'), recorder: recorder, start: 0, watch: watch, speed: 2 };
+    btn.disabled = true;
+    btn.textContent = 'Recording…';
+    wNote.textContent = 'Making your clip: it plays through once.';
+    recorder.start(250);
+  });
+  function shareClip() {
+    var file = watch.file;
+    var text = (watch.mine ? 'My Shark Reef run: ' : watch.who + '’s Shark Reef run: ') + SR.words(watch.r) + '. Can you beat it? ' +
+      (watch.slot ? watchUrl(watch.slot) : location.origin + location.pathname);
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Shark Reef', text: text }).then(null, function () {});
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    wNote.textContent = 'Your clip is saved to your downloads. ' + text;
+  }
+  // One frame of the clip: the game as drawn, set into the upright frame,
+  // with the words over it. Title 1.3 s, the run, end card 1.8 s.
+  var TITLE = 1300, CLOSE = 1800;
+  function clipFrame(ts) {
+    var c = clip, g = c.g, W = 720, H = 1280;
+    if (!c.start) c.start = ts;
+    var el2 = ts - c.start, runMs = c.watch.r.steps / SR.RATE * 1000 / c.speed;
+    var phaseOf = el2 < TITLE ? 'title' : el2 < TITLE + runMs ? 'run' : el2 < TITLE + runMs + CLOSE ? 'end' : 'done';
+    g.fillStyle = skin.bg;
+    g.fillRect(0, 0, W, H);
+    var s = Math.min(W / canvas.width, (H - 170) / canvas.height);
+    g.drawImage(canvas, (W - canvas.width * s) / 2, 150 + (H - 170 - canvas.height * s) / 2, canvas.width * s, canvas.height * s);
+    g.textAlign = 'center';
+    g.fillStyle = skin.accent;
+    g.font = '700 40px ' + skin.font;
+    g.fillText('SHARK REEF', W / 2, 70);
+    g.fillStyle = skin.you;
+    g.font = '700 34px ' + skin.font;
+    g.fillText((c.watch.mine ? (recall('shark-reef:name') || 'Me') : c.watch.who) + ' · ' + SR.fish(c.watch.count) + ' · ' + SR.seconds(Math.floor(c.watch.t)) + ' s', W / 2, 122);
+    if (phaseOf !== 'run') {
+      g.fillStyle = skin.strong;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = skin.accent;
+      g.font = '700 64px ' + skin.font;
+      g.fillText('SHARK REEF', W / 2, H / 2 - 120);
+      g.fillStyle = skin.you;
+      g.font = '700 96px ' + skin.font;
+      g.fillText(SR.words(c.watch.r), W / 2, H / 2 + 10);
+      g.fillStyle = skin.words;
+      g.font = '500 38px ' + skin.font;
+      if (phaseOf === 'title') {
+        g.fillText(c.watch.mine ? (recall('shark-reef:name') || 'My run') : c.watch.who, W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 30px ' + skin.font;
+        g.fillText(reefDay().charAt(0).toUpperCase() + reefDay().slice(1), W / 2, H / 2 + 140);
+      } else {
+        g.fillText('Can you beat it?', W / 2, H / 2 + 90);
+        g.fillStyle = skin.dim;
+        g.font = '500 28px ' + skin.font;
+        g.fillText('phenomemental.github.io', W / 2, H / 2 + 145);
+        g.fillText('/happyseaurchin-beach/shark-reef.html', W / 2, H / 2 + 185);
+      }
+    }
+    // The run moves on for the next frame.
+    if (phaseOf !== 'title') advance((el2 - TITLE) / 1000 * SR.RATE * c.speed);
+    if (phaseOf === 'done' && c.recorder.state === 'recording') c.recorder.stop();
+  }
+
+  // ---- The loop: steps at a fixed rate, drawn at the screen's ------------
+  var DT = 1000 / SR.RATE, lastTs = 0;
+  function frame(ts) {
+    var gap = lastTs ? ts - lastTs : 0;
+    lastTs = ts;
+    if (phase === 'running') {
+      // A long gap (the page was away) is not caught up step by step.
+      acc += Math.min(gap, 100);
+      while (acc >= DT && phase === 'running') {
+        tick();
+        acc -= DT;
+      }
+    }
+    if (phase === 'watching') stepWatch(gap);
+    draw(phase === 'running' ? acc / DT : 0, Math.min(gap, 50) / 1000, ts);
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', layout);
+  requestAnimationFrame(frame);
+  init();
+})();
+</script>
+</body>
+</html>
