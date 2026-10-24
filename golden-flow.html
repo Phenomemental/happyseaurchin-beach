@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Flow</title>
-<meta name="description" content="The golden flow: the loops between people on the beach, from where you stand, as tidewright reads them on its tide.">
+<meta name="description" content="The golden flow: what is asked and answered on the beach, from where you stand, as tidewright reads it on its tide.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -817,7 +817,7 @@
       <h1>Golden Flow</h1>
       <p class="kicker">Ask the beach, and see it from where you stand</p>
       <hr class="rule">
-      <p class="welcome">Between any two people there is something that neither of them owns. It moves when one says what they are looking for and another can help. This page lets you watch it move.</p>
+      <p class="welcome">What moves when one person asks and another answers belongs to both of them. This page lets you watch it move.</p>
       <p class="status">The beach can&rsquo;t be reached just now, so there is nothing to draw yet. Please come back in a few minutes.</p>
     </div>
 
@@ -857,7 +857,7 @@
             </form>
 
             <p class="field-label" id="with-label">Who are you with?</p>
-            <p class="hint" id="with-hint">Add anyone you want to look alongside. Their presence narrows what you see to what lies between you.</p>
+            <p class="hint" id="with-hint">Add anyone you want to look alongside. What you see narrows to the loops you share with them.</p>
             <div class="chips" id="with-chips" role="group" aria-labelledby="with-label"></div>
 
             <p class="field-label" id="rung-label">How far back to read</p>
@@ -868,8 +868,8 @@
             </div>
             <ul class="rung-words">
               <li><strong>Day:</strong> what moved today.</li>
-              <li><strong>Season:</strong> what has kept moving between the same people.</li>
-              <li><strong>Year:</strong> the paths that have worn in over time.</li>
+              <li><strong>Season:</strong> the same pair of people, drawn thicker for each loop they closed together.</li>
+              <li><strong>Year:</strong> the paths worn in over time; amber where it went both ways, dashed red where something was asked and never met.</li>
             </ul>
 
             <!-- The toggles: what the beach shows. Each carries its own key. -->
@@ -887,7 +887,7 @@
               <button type="button" class="switch" role="switch" data-show="between" aria-checked="false">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path class="key-line" d="M1 12 Q8 2 15 12"/></svg>
-                <span class="say">Draws a line between the two people each one is waiting on.</span>
+                <span class="say">Draws a line from each person to the one they are waiting on.</span>
               </button>
               <button type="button" class="switch" role="switch" data-show="flow" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
@@ -897,7 +897,7 @@
               <button type="button" class="switch" role="switch" data-show="thirds" aria-checked="true">
                 <span class="track" aria-hidden="true"></span>
                 <svg viewBox="0 0 16 16" aria-hidden="true"><ellipse class="key-third" cx="8" cy="8" rx="6" ry="4.8"/></svg>
-                <span class="say">Someone else on the beach who has met this kind of need before, and might again.</span>
+                <span class="say">Someone tidewright found who might meet what is waiting.</span>
               </button>
             </div>
 
@@ -2410,9 +2410,9 @@
     } else if (chosen.length) {
       note = rungList.length
         ? who + '’s loops with ' + names(chosen) + '.'
-        : 'Nothing is waiting between them. What was asked has been met, or nothing has been asked yet.';
+        : 'Nothing is waiting here. What was asked has been met, or nothing has been asked yet.';
     } else if (view.rung === 'day' && scene.entry && !scene.day.length && !scene.entry.closed) {
-      note = 'Nothing has moved between these people in this span. That is allowed. Try a longer span, or stand somewhere else.';
+      note = 'Nothing has moved here in this span. That is allowed. Try a longer span, or stand somewhere else.';
     }
     $('pool-note').textContent = note;
     // The handle they stand as: the one chosen, or for a name, the handle
