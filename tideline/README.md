@@ -23,22 +23,45 @@ this folder is only the code.
 5. Let it run in the background: **Settings → Apps → Tideline → Battery**
    (on some phones **App battery usage**), then **Unrestricted**.
 
-Tideline's screen should now say it is listening, and that the seal works on
-this phone, with how long its key took to make.
+6. Enter the catch's two keys: the screen asks for them once, the **edit
+   latch** and the **reading key**. Get both from your own session (they are
+   in your vault). They are kept on this phone only, in Android's encrypted
+   storage.
+
+Tideline's screen should now say it is listening, that it is ready to land in
+your catch, and that the seal works on this phone, with how long its key took
+to make.
 
 A newer build installs over the old one the same way, from the same link, and
 keeps these settings.
 
-## What this version does (stage 6.3, listening only)
+## What this version does (stage 6.4, landing)
 
 It catches messages from WhatsApp, WhatsApp Business, Messenger, Instagram and
 Signal (the rules at `spine:tideline` 3, copied into `Rules.kt` until stage
-6.5 reads them from the block), and shows each one on its screen. It sends
-nothing anywhere: this version has no internet permission at all, and what it
-catches is kept in memory only, so it goes when the app closes.
+6.5 reads them from the block) and shows each one on its screen. It also:
 
-To check it: have someone message you on two different apps, and both should
-appear on Tideline's screen.
+- **seals** each message on the phone with the catch's reading key, the
+  moment it is caught;
+- **keeps** the sealed line in a queue on the phone until the beach takes
+  it, so nothing is lost while you are offline and nothing goes twice;
+- **lands** it at the root of your catch, `tideline:Phenomemental`, under the
+  catch's edit latch: one stream that grows as it fills;
+- **tells your room**, `pool:Phenomemental`, how many arrived from which app,
+  at most once every ten minutes, with no names and no words.
+
+Inside each seal is the message as caught, as JSON: `kind` ("message"),
+`app`, `sender`, `conversation`, `text`, `time` (on the phone) and `key` (the
+conversation key that will find the reply button in stage 6.6). Your session
+opens a line with the catch's reading key as `enc_secret` and the beach
+addressed as exactly `https://beach.happyseaurchin.com`.
+
+Nothing of a message is written anywhere unsealed: not the queue, not the
+room, not a log. The list on the screen lives in memory only.
+
+To check it: when a real message arrives, the screen says it landed. Ask your
+session to open the newest line in your catch, and it should read the message
+back word for word.
 
 ## The parts
 
@@ -60,15 +83,17 @@ appear on Tideline's screen.
   never touches the network.
 - **`beach/`, the calls.** The phone's two calls to the beach, the same ones
   the Pscale tool makes: an append beneath a node (or at a block's root), and
-  a read. Plain Kotlin on Java's own HTTP client. They are proven on a trial
-  block, but the app does not use them yet. Stage 6.4 stopped when the beach
-  turned out to hold only nine entries beneath a position, so the catch's
-  inbox needs a new shape first (`spine:tideline` 7.19).
-- **`app/`, the phone.** A notification listener that opens only the five
-  apps' notifications and makes a catch of each message (`Catch.kt`), a
-  list kept in memory (`Catches.kt`), and one screen (`MainActivity.kt`).
-  The screen also checks the seal on the phone itself against values made by
-  `keys.ts`, using a test word that opens nothing.
+  a read. Plain Kotlin on Java's own HTTP client.
+- **`app/`, the phone.**
+  - A notification listener that opens only the five apps' notifications and
+    makes a catch of each message (`Catch.kt`, `Listener.kt`).
+  - Hands that seal it (`Lines.kt`, `Hands.kt`) into the queue
+    (`Queue.kt`), and a WorkManager job that lands it (`Landing.kt`,
+    `LandWorker.kt`) and sends the count note (`RoomNote.kt`).
+  - The two keys in Android's encrypted storage (`Keys.kt`).
+  - One screen (`MainActivity.kt`). It also checks the seal on the phone
+    itself against values made by `keys.ts`, using a test word that opens
+    nothing.
 
 ## Building
 
@@ -104,3 +129,15 @@ The first prints an envelope to write to the trial block. Read it back
 through the Pscale tool with the same word as `enc_secret` and the beach's
 address as `agent_id`. The second opens an envelope the tool sealed. The word
 is read from the environment, so it never sits on a command line.
+
+The landing can be tried the same way, on a trial block of its own
+(`trial-tideline`) and never the catch:
+
+    TIDELINE_READING_KEY=<trial word> TIDELINE_TRIAL_LATCH=<trial latch> \
+      ./gradlew -q :beach:beachCheck --args="trial-tideline root 3"
+    TIDELINE_READING_KEY=<trial word> TIDELINE_TRIAL_LATCH=<trial latch> TIDELINE_TRIAL_BLOCK=trial-tideline \
+      ./gradlew :app:testDebugUnitTest --tests '*LiveLandingTest*'
+
+The first lands numbered sealed lines at the block's root with the app's own
+call. The second runs the phone's whole path for one message: catch, sealed
+line, queue, landing.

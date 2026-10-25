@@ -6,7 +6,8 @@ import android.service.notification.StatusBarNotification
 /**
  * The pair of hands (spine:tideline 1, 7.12 a). Android hands it every
  * notification on the phone; it opens only those from the apps the rules
- * name, and in stage 6.3 it only keeps what it catches for the screen.
+ * name, shows each catch on the screen, and hands it on to be sealed and
+ * landed in the catch.
  */
 class Listener : NotificationListenerService() {
     override fun onListenerConnected() {
@@ -19,6 +20,7 @@ class Listener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName !in Rules.listenTo) return
-        catchOf(Shown.of(sbn))?.let { Catches.add(it) }
+        val catch = catchOf(Shown.of(sbn)) ?: return
+        if (Catches.add(catch)) Hands.take(this, listOf(catch))
     }
 }

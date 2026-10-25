@@ -17,10 +17,10 @@ kotlin {
 
 dependencies {
     // Android carries org.json itself; only a computer needs it supplied.
-    compileOnly("org.json:json:20250517")
+    compileOnly("org.json:json:20260814")
 
     testImplementation(project(":seal"))
-    testImplementation("org.json:json:20250517")
+    testImplementation("org.json:json:20260814")
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

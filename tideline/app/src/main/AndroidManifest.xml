@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- No INTERNET permission: in stage 6.3 the app can send nothing anywhere. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- To land sealed lines in the catch and the count note in the room (stage 6.4). -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"

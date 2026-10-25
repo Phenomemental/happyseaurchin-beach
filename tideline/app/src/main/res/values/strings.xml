@@ -8,7 +8,31 @@
     <string name="not_listening">Not listening yet. Tideline needs notification access to see your messages.</string>
     <string name="access">Switch on notification access</string>
 
-    <string name="sending_nothing">Sending nothing. This version has no way onto the internet: what it catches stays on this screen, and goes when the app closes.</string>
+    <string name="sealing">Each message is sealed on this phone with the catch\'s reading key before it leaves, and only your own session can open it. Your room is told how many arrived from which app: no names, no words.</string>
+
+    <string name="landing_no_keys">Not landing yet. Enter the catch\'s two keys below; until then what is caught stays on this screen only.</string>
+    <plurals name="landing_ready">
+        <item quantity="one">Ready to land in your catch. Nothing has landed yet; %1$d message waits on the phone.</item>
+        <item quantity="other">Ready to land in your catch. Nothing has landed yet; %1$d messages wait on the phone.</item>
+    </plurals>
+    <plurals name="landing_landed">
+        <item quantity="one">Landing in your catch. Last landed at %1$s; %2$d message waits on the phone.</item>
+        <item quantity="other">Landing in your catch. Last landed at %1$s; %2$d messages wait on the phone.</item>
+    </plurals>
+    <plurals name="landing_refused">
+        <item quantity="one">The beach refused the last line: %1$s. %2$d message waits on the phone.</item>
+        <item quantity="other">The beach refused the last line: %1$s. %2$d messages wait on the phone.</item>
+    </plurals>
+    <string name="note_sent">Last count note in your room at %1$s.</string>
+    <string name="note_refused">Your room refused the count note: %1$s.</string>
+
+    <string name="keys_ask">The catch\'s two keys, from your own session. They are kept on this phone only, encrypted.</string>
+    <string name="keys_latch">The catch\'s edit latch</string>
+    <string name="keys_reading">The catch\'s reading key</string>
+    <string name="keys_keep">Keep these keys</string>
+    <string name="keys_both">Both keys are needed.</string>
+    <string name="keys_kept">Both keys are kept on this phone, encrypted.</string>
+    <string name="keys_change">Change the keys</string>
     <string name="seal_checking">Checking the seal…</string>
     <string name="seal_passes">The seal works on this phone. Its key took %1$.1f seconds to make.</string>
     <string name="seal_fails">The seal check failed on this phone. Tell Claude.</string>

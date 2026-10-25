@@ -16,7 +16,8 @@ import kotlin.system.exitProcess
  *
  * seals that many numbered test lines with the app's seal and appends each
  * beneath <node> with the app's own call, printing what the beach answered.
- * Both words come from the environment, never the command line.
+ * A <node> of "root" appends at the block's root, as the catch takes its
+ * lines. Both words come from the environment, never the command line.
  */
 fun main(args: Array<String>) {
     val out = PrintStream(FileOutputStream(FileDescriptor.out), true, "UTF-8")
@@ -30,7 +31,8 @@ fun main(args: Array<String>) {
     for (n in 1..count) {
         val line = "Tideline landing check $n, 25 October 2026: sealed and landed by the app’s own calls — ça va 🌊"
         val entry = JSONObject(Gray.seal(line, key).toJson())
-        out.println("$n: " + beach.append(block, node, entry, latch))
+        val answer = if (node == "root") beach.appendAtRoot(block, entry, latch) else beach.append(block, node, entry, latch)
+        out.println("$n: $answer")
     }
 }
 

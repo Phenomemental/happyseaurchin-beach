@@ -19,7 +19,7 @@ android {
         targetSdk = 37
         // Each GitHub build counts up, so a new APK installs over the last.
         versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toInt() ?: 1
-        versionName = "stage 6.3"
+        versionName = "stage 6.4"
     }
 
     signingConfigs {
@@ -49,7 +49,12 @@ android {
 
 dependencies {
     implementation(project(":seal"))
+    implementation(project(":beach"))
+    // The job that drains the queue when there is a network (spine:tideline 7.12 c).
+    implementation("androidx.work:work-runtime:2.12.0")
 
     testImplementation(kotlin("test-junit"))
     testImplementation("junit:junit:4.13.2")
+    // Android carries org.json; tests on a computer need the real one.
+    testImplementation("org.json:json:20260814")
 }
