@@ -746,15 +746,25 @@
     font-size: 1.35rem;
     line-height: 1.25;
   }
-  .sd-strand-times {
+  /* Each moment told that day, under the row (3.891): its time, its title. */
+  .sd-strand-moment {
     display: block;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    margin-top: 0.3rem;
+  }
+  .sd-strand-time {
     font-size: 0.85rem;
     color: var(--muted);
-    margin-top: 0.25rem;
     font-variant-numeric: tabular-nums;
   }
-  /* A day whose line is theirs (2.7): their line, then each telling kept
-     beneath it, with the time it was spoken. */
+  /* An opened day: its own line, what they said they would do that day,
+     then each telling kept, with the time it was spoken. */
+  .sd-lines .sd-tide-said {
+    font-style: italic;
+    color: var(--muted);
+    margin: 1.1rem 0 0;
+  }
   .sd-lines .sd-tide-when {
     font-size: 0.85rem;
     font-variant-caps: all-small-caps;
@@ -790,6 +800,20 @@
   .sd-greet-day {
     color: var(--muted);
     margin: 0.35rem 0 0;
+  }
+  /* 'Earlier today' opens that day in the list (3.891). */
+  .sd-greet-open {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    text-align: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+    -webkit-tap-highlight-color: transparent;
   }
   /* On the home screen (6.1.4): one quiet line on the About sheet. */
   .sd-install {
@@ -1958,7 +1982,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.7.1 · 25 October 2026';
+  var VERSION = 'Sundial M4.8 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2194,9 +2218,10 @@
     setDialTap();
     showInvite();
   }
-  // The last day before today with anything kept, as its day address.
-  function lastDayBefore() {
-    var t = todayAddress(), last = '';
+  // The last day before today (or before the day given) with anything kept,
+  // as its day address.
+  function lastDayBefore(before) {
+    var t = before || todayAddress(), last = '';
     days.concat(moments).forEach(function (x) { var d = dayOfAddress(x.address); if (d < t && d > last) last = d; });
     return last;
   }
@@ -2218,15 +2243,18 @@
   // their own words with its places line off; else the tomorrow said on
   // their last day.
   function tomorrowSaid() {
-    if (!intention) return saidBefore();
-    var rows = String(intention.text).split('\n').map(function (r) { return r.trim(); }).filter(Boolean);
+    return intention ? aheadWords(intention.text) : saidBefore();
+  }
+  // A line set ahead, in their own words with its places line off.
+  function aheadWords(text) {
+    var rows = String(text).split('\n').map(function (r) { return r.trim(); }).filter(Boolean);
     if (rows.length > 1) rows.pop();
     return rows.join(' ');
   }
-  // The tomorrow said on that last day: its latest moment that voiced one,
-  // else its own line's.
-  function saidBefore() {
-    var last = lastDayBefore();
+  // The tomorrow said on that last day (before today, or before the day
+  // given): its latest moment that voiced one, else its own line's.
+  function saidBefore(before) {
+    var last = lastDayBefore(before);
     var said = days.concat(moments).filter(function (x) { return dayOfAddress(x.address) === last; })
       .sort(function (a, b) { return a.address < b.address ? -1 : 1; })
       .map(function (x) { return Mark.read(x.text).tomorrow; }).filter(Boolean);
@@ -2267,16 +2295,28 @@
     // question instead, and the page's own lead is not said.
     var said = greetNow() ? '' : saidLine();
     if (greetNow()) lead = '';
-    $('greet-day').textContent = lead;
-    $('greet-day').hidden = !lead;
+    // 'Earlier today' opens today in the day list (3.891).
+    var day = $('greet-day');
+    day.textContent = '';
+    if (lead && (mine.length || todayLine)) {
+      var open = document.createElement('button');
+      open.type = 'button';
+      open.className = 'sd-greet-open';
+      open.textContent = lead;
+      open.addEventListener('click', openToday);
+      day.appendChild(open);
+    } else {
+      day.textContent = lead;
+    }
+    day.hidden = !lead;
     $('greet-said').textContent = said;
     $('greet-said').hidden = !said;
     greet.hidden = !lead && !said;
   }
   // Their own tomorrow line, quoted exactly, so it reads whatever its
   // shape: "Tomorrow, walk up early." as well as "Tomorrow, the drive north."
-  function saidLine() {
-    var said = tomorrowSaid().replace(/[.\s]+$/, '');
+  function saidLine(text) {
+    var said = (text == null ? tomorrowSaid() : text).replace(/[.\s]+$/, '');
     if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
     return said ? 'You said: “Tomorrow, ' + said + '.”' : '';
   }
@@ -2468,19 +2508,45 @@
     setDialTap();
     dialEl.focus();
   }
-  // One row per day kept, newest first: the day's own line, else its latest
-  // moment; with the times of its moments in the phone's own time.
+  // One row per day kept, newest first (3.891): the day's own line, when it
+  // has one, and every moment told that day, in time order. A day gathered
+  // from its moments has no line of its own; nor has a day whose line is
+  // only what was set ahead for it, once moments have been told: that line
+  // is what they said they would do, quoted above the moments.
   function strandDays() {
     var t = todayAddress(), by = {};
-    days.forEach(function (d) { by[d.address] = { address: d.address, day: d, times: [] }; });
+    days.forEach(function (d) { by[d.address] = { address: d.address, day: d, moments: [] }; });
     moments.forEach(function (m) {
       var a = dayOfAddress(m.address);
       if (a > t) return;
-      if (!by[a]) by[a] = { address: a, day: null, times: [] };
-      if (!by[a].day || by[a].fromMoment) { by[a].day = { address: a, text: m.text }; by[a].fromMoment = true; }
-      by[a].times.push(Days.timeOf(m.address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+      if (!by[a]) by[a] = { address: a, day: { address: a, text: m.text, bare: true }, moments: [] };
+      by[a].moments.push(m);
     });
-    return Object.keys(by).sort().reverse().map(function (k) { return by[k]; });
+    return Object.keys(by).sort().reverse().map(function (k) {
+      var row = by[k], d = row.day;
+      row.ahead = !!row.moments.length && isAhead(d.text);
+      row.own = d.bare || row.ahead ? null : d;
+      // What they said they would do that day: the line set ahead for it,
+      // else the tomorrow said on the last day before it (as the welcome
+      // quotes today's). A line set ahead that is the day's only line
+      // stands as it always has, and is not quoted twice.
+      row.said = row.ahead ? aheadWords(d.text) : isAhead(d.text) ? '' : saidBefore(k);
+      return row;
+    });
+  }
+  // Where a row's colours come from: its day, as the sundial counts it; for
+  // a day whose line was only set ahead, its moments.
+  function rowPlaces(row) {
+    if (!row.ahead) return Mark.placesOf(row.day);
+    var ps = [];
+    row.moments.forEach(function (m) { ps = ps.concat(Mark.read(m.text).places); });
+    return Mark.inOrder(ps);
+  }
+  function timeAt(address) {
+    return Days.timeOf(address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }
+  function clipped(s) {
+    return s.length > 70 ? s.slice(0, 66).replace(/\s+\S*$/, '') + '…' : s;
   }
   var SVG = 'http://www.w3.org/2000/svg';
   function drawStrand() {
@@ -2490,7 +2556,8 @@
     $('bring-strand-row').hidden = !(stored(NAME) && !held(LOOKING));
     list.textContent = '';
     strandDays().forEach(function (row) {
-      var r = Mark.read(row.day.text), li = document.createElement('li'), b = document.createElement('button');
+      var li = document.createElement('li'), b = document.createElement('button');
+      li.setAttribute('data-day', row.address);
       b.type = 'button';
       b.className = 'sd-strand-row';
       b.setAttribute('aria-expanded', 'false');
@@ -2498,28 +2565,50 @@
       shell.setAttribute('class', 'sd-strand-shell');
       shell.setAttribute('aria-hidden', 'true');
       shell.setAttribute('focusable', 'false');
-      Mark.coil(shell, Mark.placesOf(row.day));
+      Mark.coil(shell, rowPlaces(row));
       var words = document.createElement('span');
       [['sd-strand-date', dateWords(Days.dateOf(row.address))],
-       ['sd-strand-title', r.title.length > 70 ? r.title.slice(0, 66).replace(/\s+\S*$/, '') + '…' : r.title],
-       ['sd-strand-times', row.times.join(' · ')]].forEach(function (x) {
+       ['sd-strand-title', row.own ? clipped(Mark.read(row.own.text).title) : '']].forEach(function (x) {
         if (!x[1]) return;
         var s = document.createElement('span');
         s.className = x[0];
         s.textContent = x[1];
         words.appendChild(s);
       });
+      // Each moment told that day: its time, then its title.
+      row.moments.forEach(function (m) {
+        var s = document.createElement('span'), at = document.createElement('span');
+        s.className = 'sd-strand-moment';
+        at.className = 'sd-strand-time';
+        at.textContent = timeAt(m.address);
+        s.appendChild(at);
+        s.appendChild(document.createTextNode(' ' + clipped(Mark.read(m.text).title)));
+        words.appendChild(s);
+      });
       b.appendChild(shell);
       b.appendChild(words);
-      b.addEventListener('click', function () { pickDay(row.day, li, b); });
+      b.addEventListener('click', function () { pickDay(row, li, b); });
       li.appendChild(b);
       list.appendChild(li);
     });
   }
-  // A row tapped: the day's sheet in full, beneath it; tapped again, it
-  // folds away. A day written elsewhere as one long line shows it as its
-  // words, with no title.
-  function pickDay(d, li, b) {
+  // 'Earlier today' (3.891): the day list, with today open. Today is the
+  // first row, so the page goes to its top: the small sundial (the way
+  // back), then today.
+  function openToday() {
+    if (busy || keeping || !tappable() || !known()) return;
+    if (!tideOpen) openTide();
+    var b = $('strandline').querySelector('li[data-day="' + todayAddress() + '"] .sd-strand-row');
+    if (!b) return;
+    if (b.getAttribute('aria-expanded') !== 'true') b.click();
+    b.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
+  }
+  // A row tapped: the day in full, beneath it; tapped again, it folds away.
+  // Its own line first (one written elsewhere as one long line shows as its
+  // words, with no title); then what they said they would do that day; then
+  // every moment told that day, in time order, as it was kept (3.891).
+  function pickDay(row, li, b) {
     var open = b.getAttribute('aria-expanded') === 'true';
     Array.prototype.forEach.call($('strandline').querySelectorAll('.sd-strand-row'), function (x) { x.setAttribute('aria-expanded', 'false'); });
     if (open) {
@@ -2528,26 +2617,29 @@
     }
     b.setAttribute('aria-expanded', 'true');
     li.appendChild($('tide-day'));
-    var r = Mark.read(d.text);
-    var long = !r.lines.length && r.title.length > 70;
-    $('tide-first').textContent = [dateWords(Days.dateOf(d.address)), r.place].filter(Boolean).join(' · ');
-    $('tide-title').textContent = long ? '' : r.title;
-    $('tide-title').hidden = long;
-    var lines = $('tide-lines'), tomorrow = r.tomorrow;
+    var d = row.day, r = Mark.read(d.text), own = row.own ? r : null;
+    var long = !!own && !own.lines.length && own.title.length > 70;
+    $('tide-first').textContent = [dateWords(Days.dateOf(row.address)), own && own.place].filter(Boolean).join(' · ');
+    $('tide-title').textContent = own && !long ? own.title : '';
+    $('tide-title').hidden = !own || long;
+    var lines = $('tide-lines'), tomorrow = own ? own.tomorrow : '';
     lines.textContent = '';
-    (long ? [r.title] : r.lines).forEach(function (l) {
+    (own ? (long ? [own.title] : own.lines) : []).forEach(function (l) {
       var p = document.createElement('p');
       p.textContent = l;
       lines.appendChild(p);
     });
-    // A day whose own line is theirs, not Sundial's (2.7), with tellings
-    // kept beneath it: their line stands, and then each moment as it was
-    // kept, in time order, so the day shows as they lived it.
-    var theirs = !r.places.length && !r.own && !d.bare;
-    (theirs ? moments.filter(function (m) { return dayOfAddress(m.address) === d.address; }) : []).forEach(function (m) {
+    var said = saidLine(row.said || '');
+    if (said) {
+      var q = document.createElement('p');
+      q.className = 'sd-tide-said';
+      q.textContent = said;
+      lines.appendChild(q);
+    }
+    row.moments.forEach(function (m) {
       var mr = Mark.read(m.text), when = document.createElement('p'), title = document.createElement('p');
       when.className = 'sd-tide-when';
-      when.textContent = Days.timeOf(m.address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      when.textContent = timeAt(m.address);
       title.className = 'sd-tide-moment';
       title.textContent = mr.title;
       lines.appendChild(when);
@@ -2561,7 +2653,7 @@
     });
     $('tide-tomorrow').textContent = tomorrow ? 'Tomorrow: ' + tomorrow : '';
     $('tide-tomorrow').hidden = !tomorrow;
-    var touched = Mark.placesWords(Mark.placesOf(d)) || (r.own ? Mark.OWN : '');
+    var touched = Mark.placesWords(rowPlaces(row)) || (r.own ? Mark.OWN : '');
     $('tide-pool').textContent = touched;
     $('tide-pool').hidden = !touched;
     $('tide-day').hidden = false;
