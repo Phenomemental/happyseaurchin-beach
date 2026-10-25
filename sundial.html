@@ -1507,6 +1507,136 @@
     text-align: center;
     margin: 1.2rem 0 0;
   }
+  /* Your places (3.81): three thin lines at the top left, once someone is
+     in with their name; they open the About sheet's look, from the corner. */
+  main.sd {
+    position: relative;
+  }
+  .sd-menu-open {
+    position: absolute;
+    top: max(0.4rem, env(safe-area-inset-top));
+    left: max(0.4rem, env(safe-area-inset-left));
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-menu-open[hidden] {
+    display: none;
+  }
+  .sd-menu-open svg {
+    width: 1.45rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+  }
+  .sd-menu-open:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .sd-menu-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--crimson);
+    vertical-align: 0.3em;
+    margin-left: 0.4rem;
+  }
+  .sd-menu-open .sd-menu-dot {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.45rem;
+    margin: 0;
+  }
+  .sd-menu-open .sd-menu-dot[hidden] {
+    display: none;
+  }
+  dialog.sd-menu {
+    width: min(24rem, calc(100vw - 1.5rem));
+    margin: max(0.75rem, env(safe-area-inset-top)) auto auto max(0.75rem, env(safe-area-inset-left));
+  }
+  .sd-menu-sheet {
+    padding: 0.4rem 1.4rem 1.2rem;
+    text-align: left;
+  }
+  .sd-menu-top {
+    text-align: right;
+    margin: 0 -0.9rem 0 0;
+  }
+  .sd-menu-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    font: inherit;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .sd-menu-h {
+    text-align: left;
+    margin-top: 0.4rem;
+  }
+  .sd-menu-h ~ .sd-menu-h {
+    margin-top: 1.4rem;
+  }
+  .sd-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sd-menu-list li {
+    margin: 0;
+    padding: 0;
+  }
+  .sd-menu-list li::before {
+    content: none;
+  }
+  .sd-menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.45rem 0;
+    font: inherit;
+    text-align: left;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-menu-name {
+    display: block;
+    font-style: italic;
+    font-size: 1.3rem;
+    line-height: 1.25;
+  }
+  .sd-menu-what {
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--muted);
+    margin-top: 0.1rem;
+  }
+  .sd-menu-item:focus-visible .sd-menu-name,
+  .sd-menu-item:hover .sd-menu-name {
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.2em;
+  }
   .sd-about-close {
     padding: 0.4rem 0.8rem;
     border: 0;
@@ -1709,6 +1839,7 @@
 </head>
 <body>
 <main class="sd" id="sd">
+  <button type="button" class="sd-menu-open" id="menu-open" aria-haspopup="dialog" aria-controls="menu" aria-label="Your places" hidden><svg viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M2 2.5h20M2 9h20M2 15.5h20"/></svg><span class="sd-menu-dot" id="menu-dot" hidden><span class="visually-hidden">, something new in your room</span></span></button>
   <p class="sd-wordmark" id="wordmark" hidden>SUNDIAL</p>
   <p class="sd-when"><span id="date"></span><span id="place" hidden></span></p>
 
@@ -1971,6 +2102,18 @@
     </article>
   </dialog>
 
+  <dialog class="sd-about sd-menu" id="menu" aria-label="Your places">
+    <nav class="sd-menu-sheet" aria-label="Your places">
+      <p class="sd-menu-top"><button type="button" class="sd-menu-close" id="menu-close" aria-label="Close">&times;</button></p>
+      <h2 class="sd-about-h sd-menu-h" id="menu-yours-h">YOURS</h2>
+      <ul class="sd-menu-list" id="menu-yours" aria-labelledby="menu-yours-h"></ul>
+      <h2 class="sd-about-h sd-menu-h" id="menu-work-h" hidden>YOUR WORK</h2>
+      <ul class="sd-menu-list" id="menu-work" aria-labelledby="menu-work-h" hidden></ul>
+      <h2 class="sd-about-h sd-menu-h" id="menu-pages-h" hidden>YOUR PAGES</h2>
+      <ul class="sd-menu-list" id="menu-pages" aria-labelledby="menu-pages-h" hidden></ul>
+    </nav>
+  </dialog>
+
   <dialog class="sd-card" id="find-card" aria-label="Your days">
     <form id="find-form">
       <label for="fname">your name here</label>
@@ -2049,7 +2192,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.10 · 25 October 2026';
+  var VERSION = 'Sundial M4.11 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2284,6 +2427,7 @@
     if (stored(NAME)) store(LAST, JSON.stringify({ name: stored(NAME), days: all.days || [], moments: all.moments || [] }));
     setDialTap();
     showInvite();
+    showPlaces();
   }
   // The last day before today (or before the day given) with anything kept,
   // as its day address.
@@ -2460,6 +2604,7 @@
       else if (top === 'pools') gatherBack();
       else if (top === 'tide') closeTide();
       else if (top === 'turn') putTurnAway();
+      else if (top === 'menu') closeMenu();
       if (layers[layers.length - 1] === top) layers.pop();
     }
     backing = false;
@@ -5200,6 +5345,191 @@
   about.addEventListener('click', function (ev) { if (ev.target === about) foldAbout(); });
   about.addEventListener('cancel', function (ev) { ev.preventDefault(); foldAbout(); });
 
+  // ---- Your places (spine:front-door 3.81; 3.891, part four) ----------------------
+  // Three thin lines at the top left, once someone is in with their name,
+  // open a sheet of their own places over the screen; the cross, a tap
+  // outside it, Escape or the phone's back button fold it away. YOURS:
+  // today, their days, their room, page and hand. Then YOUR WORK and YOUR
+  // PAGES, read straight from lists:<name> (its first branch) and
+  // artifacts:<name> (its eighth group) as map.html reads them; a section
+  // shows only when it has something in it. A small crimson dot, on the
+  // lines and beside Your room, when the room has changed since they last
+  // looked from here (the beach's index says when each block last
+  // changed; the look is remembered on this device only): no memory, no dot.
+  var menu = $('menu'), places = null, placesFor = '', placesRead = null;
+  var ROOM_LOOK = 'sundial.roomLook', SITE_PAGE = 'https://happyseaurchin.com/page/', SITE_HANDS = 'https://happyseaurchin.com/hands/';
+  var PLACE_STAMP = /^\s*\d{4}-\d{2}-\d{2}T[\d:.]+Z?\s*$/;
+  function showPlaces() {
+    var name = inside ? stored(NAME) : '';
+    $('menu-open').hidden = !name;
+    if (name && placesFor !== name) readPlaces();
+  }
+  function roomLooked(name) {
+    var all;
+    try { all = JSON.parse(stored(ROOM_LOOK) || '{}') || {}; } catch (e) { all = {}; }
+    return typeof all[name] === 'string' ? all[name] : '';
+  }
+  function lookAtRoom(name) {
+    var all, c = Beach.clock();
+    try { all = JSON.parse(stored(ROOM_LOOK) || '{}') || {}; } catch (e) { all = {}; }
+    all[name] = c && c.iso ? c.iso : new Date().toISOString();
+    store(ROOM_LOOK, JSON.stringify(all));
+  }
+  // Something new in the room: changed after the last look from here.
+  function roomNew() {
+    var look = places && roomLooked(places.name);
+    return !!(look && places.room && Date.parse(places.room) > Date.parse(look));
+  }
+  // The index (when the room last changed, and which of the two blocks
+  // stand), then the blocks that stand. Never throws.
+  function readPlaces() {
+    var name = stored(NAME);
+    if (!name) return Promise.resolve(null);
+    placesFor = name;
+    placesRead = Beach.look('').then(function (ix) {
+      var j = ix.json || {}, have = {};
+      (j.blocks || []).forEach(function (b) { have[typeof b === 'string' ? b : b && b.name] = 1; });
+      function one(block) { return have[block] ? Beach.look(block) : Promise.resolve({ status: 404 }); }
+      return Promise.all([one('lists:' + name), one('artifacts:' + name)]).then(function (r) {
+        if (stored(NAME) !== name) return null;
+        places = { name: name, room: ix.status === 200 ? ((j.touched || {})['pool:' + name] || '') : (places && places.room) || '',
+          lists: r[0].status === 200 ? r[0].json : null, artifacts: r[1].status === 200 ? r[1].json : null };
+        $('menu-dot').hidden = !roomNew();
+        if (menu.open) drawPlaces();
+        return places;
+      });
+    }).catch(function () { return null; });
+    return placesRead;
+  }
+  function placeWords(node) {
+    var s = Beach.text(node).trim();
+    return PLACE_STAMP.test(s) ? '' : s;
+  }
+  function capped(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  // Their projects: the first branch of lists:<name>, most standing first.
+  function workOf(lists) {
+    var out = [];
+    (function walk(node, d) {
+      if (!node || typeof node !== 'object' || d > 30) return;
+      for (var i = 1; i <= 9; i++) {
+        var t = placeWords(node[String(i)]);
+        if (t && out.indexOf(t) < 0) out.push(t);
+        walk(node[String(i)], d + 1);
+      }
+    })(lists && lists['1'], 0);
+    return out;
+  }
+  // Their pages: the eighth group of artifacts:<name>, each 'name — address
+  // — what it is' (or 'name: address. What it is.'); a line with no
+  // address, or one kept but no longer current, is not a page.
+  function pagesOf(artifacts) {
+    var group = artifacts && artifacts['8'], out = [];
+    if (!group || typeof group !== 'object') return out;
+    for (var i = 1; i <= 9; i++) {
+      var s = placeWords(group[String(i)]);
+      if (!s || /kept but not current/i.test(s) || /\bGitHub (repo|Pages)\b/.test(s)) continue;
+      if (/\b(secrets?|latch(es)?|passphrases?|passwords?)\b\s*(is\s+)?[:=]/i.test(s)) continue;
+      s = Beach.plain(s);
+      var m = /https?:\/\/[^\s]*[^\s.,;:)]/.exec(s);
+      if (!m) continue;
+      var name = s.slice(0, m.index).replace(/[\s:\u2014\u2013-]+$/, '').trim();
+      var what = s.slice(m.index + m[0].length).replace(/^[\s.,;:\u2014\u2013-]+/, '').trim();
+      what = (/^[^.;]*[.;]?/.exec(what) || [''])[0].replace(/[.;]$/, '').trim();
+      if (name) out.push({ name: capped(name), href: m[0], what: what });
+    }
+    return out;
+  }
+  // One line: its name in italic, and one grey line beneath saying what it
+  // is. A string goes to that address, in a new tab; a function acts here.
+  function placeItem(list, name, what, act, dot) {
+    var li = document.createElement('li'), outward = typeof act === 'string';
+    var el = document.createElement(outward ? 'a' : 'button');
+    el.className = 'sd-menu-item';
+    if (outward) {
+      el.href = act;
+      el.target = '_blank';
+      el.rel = 'noopener';
+    } else {
+      el.type = 'button';
+    }
+    var n = document.createElement('span'), w = document.createElement('span');
+    n.className = 'sd-menu-name';
+    n.textContent = name;
+    if (dot) {
+      var d = document.createElement('span');
+      d.className = 'sd-menu-dot';
+      d.innerHTML = '<span class="visually-hidden">, something new since you last looked</span>';
+      n.appendChild(d);
+    }
+    w.className = 'sd-menu-what';
+    w.textContent = what;
+    el.appendChild(n);
+    el.appendChild(w);
+    el.addEventListener('click', function () {
+      if (!outward) act();
+      else closeMenu(true);
+    });
+    li.appendChild(el);
+    list.appendChild(li);
+    return el;
+  }
+  function section(id, rows) {
+    var list = $('menu-' + id);
+    list.textContent = '';
+    rows.forEach(function (r) { placeItem(list, r.name, r.what, r.href); });
+    list.hidden = !rows.length;
+    $('menu-' + id + '-h').hidden = !rows.length;
+  }
+  function drawPlaces() {
+    var name = stored(NAME), yours = $('menu-yours');
+    if (!name) return;
+    yours.textContent = '';
+    placeItem(yours, 'Today', 'the sundial, as it is now', function () {
+      closeMenu();
+      if (poolsOpen) gatherBack();
+      else if (tideOpen) closeTide();
+    });
+    if (tappable()) placeItem(yours, 'Your days', 'every day you have kept, the newest first', function () {
+      closeMenu();
+      if (poolsOpen) gatherBack();
+      if (!tideOpen) openTide();
+      window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
+    });
+    var room = placeItem(yours, 'Your room', 'where people leave you a note', SITE_PAGE + encodeURIComponent(name), roomNew());
+    room.addEventListener('click', function () {
+      lookAtRoom(name);
+      $('menu-dot').hidden = true;
+    });
+    placeItem(yours, 'Your page', 'your page, as others see it', SITE_PAGE + encodeURIComponent(name));
+    placeItem(yours, 'Your hand', 'what you\u2019re holding, and what\u2019s being dealt', SITE_HANDS + encodeURIComponent(name));
+    var mine = places && places.name === name ? places : null;
+    section('work', mine ? workOf(mine.lists).map(function (p) {
+      return { name: capped(p.replace(/[-_]+/g, ' ')), what: 'a walk through it',
+        href: 'https://happyseaurchin.com/walk/' + encodeURIComponent(p) + '/' + encodeURIComponent(name) };
+    }) : []);
+    section('pages', mine ? pagesOf(mine.artifacts) : []);
+  }
+  function openMenu() {
+    if (menu.open || !stored(NAME)) return;
+    drawPlaces();
+    if (menu.showModal) menu.showModal();
+    else menu.setAttribute('open', '');
+    layerOpened('menu');
+    menu.scrollTop = 0;
+    $('menu-close').focus({ preventScroll: true });
+    readPlaces();
+  }
+  // Folded away; `away`: they followed a link out, so the focus stays put.
+  function closeMenu(away) {
+    if (menu.open) menu.close ? menu.close() : menu.removeAttribute('open');
+    layerClosed('menu');
+    if (!away && !$('menu-open').hidden) $('menu-open').focus({ preventScroll: true });
+  }
+  $('menu-open').addEventListener('click', openMenu);
+  $('menu-close').addEventListener('click', function () { closeMenu(); });
+  menu.addEventListener('click', function (ev) { if (ev.target === menu) closeMenu(); });
+  menu.addEventListener('cancel', function (ev) { ev.preventDefault(); closeMenu(); });
+
   // ---- The way in (2.8) -------------------------------------------------------------
   // Who you are, first (2.81): the heart, its name, the date and two choices
   // only. Coming back, one card asks the name and the word together, once,
@@ -5238,6 +5568,7 @@
   }
   function atDoor() {
     inside = false;
+    showPlaces();
     main.classList.add('at-door');
     main.classList.remove('inside');
     $('way').hidden = false;
@@ -5274,6 +5605,7 @@
   // reload within the visit), the days coming round only on a fresh open.
   function enter(way) {
     inside = true;
+    showPlaces();
     main.classList.remove('at-door');
     main.classList.add('inside');
     $('way').hidden = true;
