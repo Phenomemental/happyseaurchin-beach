@@ -7,11 +7,62 @@
 // foot, beneath the mark where both are. A game's own screen never scrolls,
 // so there the foot is the end of its end-of-run panel; elsewhere it is the
 // end of the page's <main>, the last thing a reader reaches.
+//   <script src="../menu.js" data-back></script>  the way back to Sundial alone
+// Inside the Sundial app, installed on a phone, there is no browser bar and
+// so no back button: there every page but Sundial carries "‹ Sundial" in its
+// top-left corner, in a thin strip of its own above the page. It goes back
+// when Sundial is the page before, so Sundial opens as it was left;
+// otherwise it opens Sundial. In a browser it never shows: the browser has
+// its own back.
 (function () {
   var s = document.currentScript;
   if (!s) return;
   var here = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   var mark = s.hasAttribute('data-mark');
+
+  function inApp() {
+    try {
+      return navigator.standalone === true || !!(window.matchMedia &&
+        (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches));
+    } catch (e) {
+      return false;
+    }
+  }
+  if (here !== 'sundial.html' && inApp()) {
+    var sundial = new URL('sundial.html', s.src).href;
+    var back = document.createElement('a');
+    back.className = 'app-back';
+    back.href = sundial;
+    back.textContent = '‹ Sundial';
+    back.setAttribute('aria-label', 'Back to Sundial');
+    back.style.cssText = 'position:absolute;top:0;left:0;z-index:60;display:flex;align-items:center;min-height:2.75rem;padding:0 1rem;' +
+      'font:italic 400 1.15rem/1 "Cormorant Garamond",Georgia,serif;color:inherit;text-decoration:none;border:0;-webkit-tap-highlight-color:transparent';
+    back.addEventListener('click', function (ev) {
+      if (document.referrer.replace(/[?#].*$/, '') === sundial && history.length > 1) {
+        ev.preventDefault();
+        history.back();
+      }
+    });
+    var strip = function () {
+      // A game's own screen is fixed over its canvas: there it is the first
+      // line of the screen, above the game's own title row.
+      var over = document.querySelector('.over');
+      if (over && getComputedStyle(over).position === 'fixed') {
+        back.style.position = 'static';
+        back.style.pointerEvents = 'auto';
+        back.style.alignSelf = 'flex-start';
+        back.style.margin = '-0.5rem 0 0 -1rem';
+        over.insertBefore(back, over.firstChild);
+        return;
+      }
+      var b = document.body, top = parseFloat(getComputedStyle(b).paddingTop) || 0;
+      b.style.paddingTop = 'calc(' + top + 'px + 2.75rem)';
+      b.insertBefore(back, b.firstChild);
+    };
+    if (document.body) strip();
+    else document.addEventListener('DOMContentLoaded', strip);
+  }
+  if (s.hasAttribute('data-back')) return;
 
   // Small italic Cormorant Garamond, in the colour of the page it sits on.
   // Pages that don't load the italic face get it here.

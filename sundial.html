@@ -1840,6 +1840,7 @@
 <body>
 <main class="sd" id="sd">
   <button type="button" class="sd-menu-open" id="menu-open" aria-haspopup="dialog" aria-controls="menu" aria-label="Your places" hidden><svg viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M2 2.5h20M2 9h20M2 15.5h20"/></svg><span class="sd-menu-dot" id="menu-dot" hidden><span class="visually-hidden">, something new in your room</span></span></button>
+  <button type="button" class="sd-menu-open" id="corner-back" aria-label="Back" hidden><svg viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M14.5 2.5 8 9l6.5 6.5"/></svg></button>
   <p class="sd-wordmark" id="wordmark" hidden>SUNDIAL</p>
   <p class="sd-when"><span id="date"></span><span id="place" hidden></span></p>
 
@@ -2060,7 +2061,7 @@
     <p class="sd-foot-links" id="foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button><button type="button" class="sd-corner" id="about-open" aria-haspopup="dialog">About</button></p>
     <p class="sd-safe">If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</p>
   </div>
-  <script src="menu.js?v=2026-10-25b" data-mark></script>
+  <script src="menu.js?v=2026-10-25c" data-mark></script>
 
   <dialog class="sd-about" id="about" aria-labelledby="about-head">
     <article class="sd-about-sheet">
@@ -2193,7 +2194,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.12 · 25 October 2026';
+  var VERSION = 'Sundial M4.13 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2579,11 +2580,13 @@
       if (restoring) history.replaceState({ sd: layers.length }, '');
       else history.pushState({ sd: layers.length }, '');
     } catch (e) {}
+    showPlaces();
   }
   function layerClosed(name) {
     var k = layers.indexOf(name);
     if (k < 0) return;
     layers.splice(k, 1);
+    showPlaces();
     if (backing) return;
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function () {
@@ -5361,10 +5364,58 @@
   var menu = $('menu'), places = null, placesFor = '', placesRead = null;
   var ROOM_LOOK = 'sundial.roomLook', SITE_PAGE = 'https://happyseaurchin.com/page/', SITE_HANDS = 'https://happyseaurchin.com/hands/';
   var PLACE_STAMP = /^\s*\d{4}-\d{2}-\d{2}T[\d:.]+Z?\s*$/;
+  // The top-left corner always takes you back (25 October 2026): at home it
+  // holds the three lines; over any other screen (the day list, the
+  // circles, a shell lifted, a turn) a back arrow that steps back one
+  // screen, as the phone's own back does. The sheets (this one and About)
+  // carry their own way out.
+  var STEPS = { tide: closeTide, pools: gatherBack, shell: putBack, turn: putTurnAway };
+  function stepOpen() {
+    for (var k = layers.length - 1; k >= 0; k--) if (STEPS[layers[k]]) return layers[k];
+    return '';
+  }
   function showPlaces() {
-    var name = inside ? stored(NAME) : '';
-    $('menu-open').hidden = !name;
+    var name = inside ? stored(NAME) : '', step = stepOpen();
+    $('corner-back').hidden = !step;
+    $('menu-open').hidden = !name || !!step;
     if (name && placesFor !== name) readPlaces();
+  }
+  $('corner-back').addEventListener('click', function () {
+    var step = stepOpen();
+    if (step) STEPS[step]();
+  });
+  // In the app (installed, with no browser bar), one of the site's own
+  // pages opens in Sundial's place, so the phone's back and that page's
+  // '‹ Sundial' come back here; other sites open over it, in the phone's
+  // own browser, with its own close. In a browser, every page opens in a
+  // new tab, as before. Sundial itself brings today, with no reload.
+  var HOME = location.href.replace(/[?#].*$/, ''), SCOPE = location.pathname.replace(/[^\/]*$/, '');
+  function inApp() {
+    try {
+      return navigator.standalone === true || !!(window.matchMedia &&
+        (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches));
+    } catch (e) {
+      return false;
+    }
+  }
+  function isHere(url) { return new URL(url, location.href).href.replace(/[?#].*$/, '') === HOME; }
+  function ours(url) {
+    var u = new URL(url, location.href);
+    return u.origin === location.origin && u.pathname.indexOf(SCOPE) === 0;
+  }
+  // Once the sheet's own step has left the page's history, so the page
+  // opened takes its place and back comes to Sundial as it was.
+  function leaveTo(url) {
+    var gone = false;
+    function go() {
+      if (gone) return;
+      gone = true;
+      window.removeEventListener('popstate', go);
+      location.assign(url);
+    }
+    window.addEventListener('popstate', go);
+    closeMenu(true);
+    setTimeout(go, 400);
   }
   function roomLooked(name) {
     var all;
@@ -5449,8 +5500,10 @@
     el.className = 'sd-menu-item';
     if (outward) {
       el.href = act;
-      el.target = '_blank';
-      el.rel = 'noopener';
+      if (!isHere(act) && !(inApp() && ours(act))) {
+        el.target = '_blank';
+        el.rel = 'noopener';
+      }
     } else {
       el.type = 'button';
     }
@@ -5467,9 +5520,12 @@
     w.textContent = what;
     el.appendChild(n);
     el.appendChild(w);
-    el.addEventListener('click', function () {
-      if (!outward) act();
-      else closeMenu(true);
+    el.addEventListener('click', function (ev) {
+      if (!outward) return act();
+      if (el.target) return closeMenu(true);
+      ev.preventDefault();
+      if (isHere(act)) toToday();
+      else leaveTo(el.href);
     });
     li.appendChild(el);
     list.appendChild(li);
@@ -5478,14 +5534,7 @@
   function section(id, rows) {
     var list = $('menu-' + id);
     list.textContent = '';
-    rows.forEach(function (r) {
-      var el = placeItem(list, r.name, r.what, r.href);
-      // Sundial's own page is this one: it brings today, with no reload.
-      if (r.href === 'sundial.html') {
-        el.removeAttribute('target');
-        el.addEventListener('click', function (ev) { ev.preventDefault(); toToday(); });
-      }
-    });
+    rows.forEach(function (r) { placeItem(list, r.name, r.what, r.href); });
     list.hidden = !rows.length;
     $('menu-' + id + '-h').hidden = !rows.length;
   }
