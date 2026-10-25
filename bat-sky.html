@@ -123,8 +123,11 @@
     color: var(--words);
     font-variant-numeric: tabular-nums;
   }
+  /* min-height 0 keeps the middle within the screen, so a long end panel
+     scrolls inside itself, down to the lines at its foot. */
   .middle {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2880,6 +2883,6 @@
   init();
 })();
 </script>
-<script src="menu.js" data-mark></script>
+<script src="menu.js?v=2026-10-25a" data-mark></script>
 </body>
 </html>

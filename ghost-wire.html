@@ -90,8 +90,11 @@
     font-size: 0.85rem;
     color: var(--ghost);
   }
+  /* min-height 0 keeps the middle within the screen, so a long end panel
+     scrolls inside itself, down to the lines at its foot. */
   .middle {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -201,6 +204,8 @@
     pointer-events: auto;
     max-width: 22rem;
     width: 100%;
+    max-height: calc(100% - 8px);
+    overflow-y: auto;
     padding: 20px 18px;
     border-radius: 12px;
     background: var(--panel-strong);
@@ -2687,6 +2692,6 @@
   init();
 })();
 </script>
-<script src="menu.js" data-mark></script>
+<script src="menu.js?v=2026-10-25a" data-mark></script>
 </body>
 </html>
