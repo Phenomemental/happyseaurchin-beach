@@ -2308,7 +2308,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.14 · 25 October 2026';
+  var VERSION = 'Sundial M4.15 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -3425,6 +3425,17 @@
     });
     return { list: list, whispers: whispers, promise: promise };
   }
+  // With no reading to be had today (the day's turns spent), their own
+  // words at this circle need no Claude (3.892): the newest three days
+  // resting here, each as it was kept, and for what's ahead the line each
+  // set ahead; then the shell rests.
+  function ownReading(list, i) {
+    var heard = list.slice(-3).map(function (d) {
+      var r = Mark.read(d.text);
+      return Mark.POOLS[i].n === 6 && r.tomorrow ? 'Tomorrow: ' + r.tomorrow : r.lines.join(' ') || r.title;
+    }).filter(Boolean);
+    return { heard: heard, hears: '', question: '', rest: true };
+  }
   $('listen').addEventListener('click', function () {
     if (listening) { putBack(); return; }
     if (poolNow < 0) return;
@@ -3456,7 +3467,10 @@
     opened.then(function () {
       if (turn !== listenTurn) throw {};
       var got = readingFor(i);
-      if (!got.ready && !got.promise) throw { rest: true };
+      if (!got.ready && !got.promise) {
+        if (!got.list.length && !got.whispers.length) throw { rest: true };
+        return ear.then(function () { return { r: ownReading(got.list, i), got: got }; });
+      }
       return Promise.all([got.ready ? got.ready : got.promise, ear]).then(function (both) {
         return { r: both[0], got: got };
       });
@@ -3518,7 +3532,7 @@
     $('listen-question').textContent = r.question || 'The shell rests with that until tomorrow.';
     $('listen-question').setAttribute('data-asked', r.question);
     $('listen-question').classList.toggle('sd-resting', !r.question);
-    $('listen-question').hidden = !(r.question || r.hears);
+    $('listen-question').hidden = !(r.question || r.hears || r.rest);
     $('heard').hidden = false;
     $('whispers-shut').hidden = !whispersShut;
     ['hears', 'listen-question'].forEach(function (id) { $(id).classList.remove('sd-fading'); });
