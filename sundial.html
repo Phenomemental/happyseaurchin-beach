@@ -1015,15 +1015,16 @@
     text-underline-offset: 0.25em;
   }
 
-  /* The quiet corner (2.85): 'Your Claude', small at the foot's right,
-     once someone has said who they are, with 'Not you?' beside it; and
-     its card. */
+  /* The quiet corner (2.85): 'Your Claude' at the foot, once someone has
+     said who they are, with 'Not you?' beside it and About after them, in
+     one row; and its card. */
   .sd-foot-links {
     display: flex;
-    justify-content: flex-end;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    gap: 1.2rem;
-    margin: 0.4rem 0 0;
+    gap: 0 1.6rem;
+    margin: 0;
   }
   .sd-corner {
     display: inline-block;
@@ -1343,8 +1344,9 @@
     font-size: inherit;
   }
 
-  /* About and help (6.1.1): one quiet line at the very foot of every screen;
-     About unfolds as a paper sheet over the screen, in the sheet's own look. */
+  /* About and help (6.1.1): at the very foot of every screen, the links in
+     one row and the help line alone beneath them; About unfolds as a paper
+     sheet over the screen, in the sheet's own look. */
   .sd-help {
     width: 100%;
     max-width: 30rem;
@@ -1355,16 +1357,10 @@
     color: var(--muted);
     text-align: center;
   }
-  .sd-about-open {
-    padding: 0.2rem 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-decoration: underline;
-    text-decoration-color: var(--frame);
-    text-underline-offset: 0.2em;
-    cursor: pointer;
+  .sd-safe {
+    max-width: 22rem;
+    margin: 0.3rem auto 0;
+    text-wrap: balance;
   }
   dialog.sd-about {
     width: min(34rem, calc(100vw - 1.5rem));
@@ -1836,10 +1832,12 @@
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
-    <p class="sd-foot-links" id="foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button></p>
   </div>
 
-  <p class="sd-help" id="help-line"><button type="button" class="sd-about-open" id="about-open" aria-haspopup="dialog">About</button> · <span>If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</span></p>
+  <div class="sd-help" id="help-line">
+    <p class="sd-foot-links" id="foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button><button type="button" class="sd-corner" id="about-open" aria-haspopup="dialog">About</button></p>
+    <p class="sd-safe">If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</p>
+  </div>
 
   <dialog class="sd-about" id="about" aria-labelledby="about-head">
     <article class="sd-about-sheet">
@@ -1959,7 +1957,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.7 · 25 October 2026';
+  var VERSION = 'Sundial M4.7.1 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -5176,7 +5174,7 @@
   function leaving(dissolve) {
     settling = true;
     window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
-    [$('who'), $('days-count'), $('wordmark'), $('hello'), greet, $('invite'), form, $('foot-links'), card, kept, $('bring-row')].forEach(function (el) {
+    [$('who'), $('days-count'), $('wordmark'), $('hello'), greet, $('invite'), form, $('not-you-row'), corner, card, kept, $('bring-row')].forEach(function (el) {
       if (el && !el.hidden) vanish(el, 500);
     });
     return dial.leave(dissolve, STILL.matches);
