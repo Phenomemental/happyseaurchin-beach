@@ -173,6 +173,9 @@
   a.make:hover .title {
     color: var(--crimson);
   }
+  .mk-part { margin-top: 1.6rem; }
+  .mk-part:first-child { margin-top: 0; }
+  .mk-part h2 { font-size: 0.9rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 0 0 0.5rem; }
   .make .num {
     flex: 0 0 1.6rem;
     color: var(--muted);
@@ -376,13 +379,7 @@
 </head>
 <body>
 <main>
-  <nav class="site-nav" aria-label="Site">
-    <a href="index.html" aria-current="page">Phenomemental</a>
-    <a href="wholeless-nights.html">Wholeless Nights</a>
-    <a href="night-watchman.html">The Night Watchman</a>
-    <a href="golden-flow.html">Golden Flow</a>
-    <a href="map.html">My map</a>
-  </nav>
+  <script src="menu.js"></script>
 
   <!-- Every word on this page is read live from the beach: the words from
        shell:Phenomemental 2.33 (2.331 to 2.335), today from my now, lately
@@ -411,14 +408,31 @@
 
     <hr class="rule">
 
-    <section id="makes" aria-labelledby="makes-head">
-      <h2 id="makes-head">What I&rsquo;m making</h2>
-      <nav class="makes" id="make-list" aria-labelledby="makes-head">
-        <a class="make" href="wholeless-nights.html"><span class="num">i</span><span class="t"><span class="title">Wholeless Nights</span><span class="desc">a book of watches kept through the night; bipolar, and the included middle</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="make" href="night-watchman.html"><span class="num">ii</span><span class="t"><span class="title">The Night Watchman</span><span class="desc">a quiet place to keep a watch of your own</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="make" href="community-recovery/"><span class="num">iii</span><span class="t"><span class="title">Community Recovery</span><span class="desc">a recovery community in Northamptonshire, built by its members</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="make" href="golden-flow.html"><span class="num">iv</span><span class="t"><span class="title">Golden Flow</span><span class="desc">seeing what people need and offer, and where they could meet</span></span><span class="arrow" aria-hidden="true">&rarr;</span></a>
-      </nav>
+    <section id="makes" aria-label="What I’m making">
+      <section id="try" class="mk-part" aria-labelledby="try-head">
+        <h2 id="try-head">Try</h2>
+        <nav class="makes" aria-labelledby="try-head">
+          <a class="make" href="sundial.html"><span class="t"><span class="title">Sundial</span><span class="desc">tell your day in your own words for a few minutes, and keep it, drawn as a sundial</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="night-watchman.html"><span class="t"><span class="title">The Night Watchman</span><span class="desc">a quiet place to read the watches, and with your own Claude to keep a watch of your own</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="arcade.html"><span class="t"><span class="title">The Arcade</span><span class="desc">quick one-move games, a new level every day, racing the day’s fastest</span></span><span class="arrow" aria-hidden="true">→</span></a>
+        </nav>
+      </section>
+      <section id="read" class="mk-part" aria-labelledby="read-head">
+        <h2 id="read-head">Read</h2>
+        <nav class="makes" aria-labelledby="read-head">
+          <a class="make" href="wholeless-nights.html"><span class="t"><span class="title">Wholeless Nights</span><span class="desc">a book of watches kept through the night; bipolar, and the included middle</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="https://happyseaurchin.com/page/Phenomemental"><span class="t"><span class="title">My diary</span><span class="desc">what I am doing on the beach, and why</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="capability-gap.html"><span class="t"><span class="title">The Capability Gap</span><span class="desc">a note for chief executives</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="flavour-spark.html"><span class="t"><span class="title">Bringing the flavour</span><span class="desc">a spark made in forty-two minutes, and how</span></span><span class="arrow" aria-hidden="true">→</span></a>
+        </nav>
+      </section>
+      <section id="work" class="mk-part" aria-labelledby="work-head">
+        <h2 id="work-head">Work with me</h2>
+        <nav class="makes" aria-labelledby="work-head">
+          <a class="make" href="community-recovery/"><span class="t"><span class="title">Community Recovery</span><span class="desc">a recovery community in Northamptonshire built by its members, and LEROs on the Commons, the same offer to any LERO; its own site, kept by its members</span></span><span class="arrow" aria-hidden="true">→</span></a>
+          <a class="make" href="golden-flow.html"><span class="t"><span class="title">Golden Flow</span><span class="desc">seeing what people need and offer, and where they could meet</span></span><span class="arrow" aria-hidden="true">→</span></a>
+        </nav>
+      </section>
     </section>
 
     <!-- Today and Lately are mine as they are now, so they show only once
@@ -516,17 +530,6 @@
   var RECENT = 2 * 86400000;
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  var ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix'];
-  // Where each thing I'm making lives, by its name.
-  var PLACES = {
-    'wholeless nights': 'wholeless-nights.html',
-    'the night watchman': 'night-watchman.html',
-    'community recovery': 'community-recovery/',
-    'golden flow': 'golden-flow.html',
-    'the capability gap': 'capability-gap.html',
-    'bringing the flavour': 'flavour-spark.html',
-    'my map': 'map.html'
-  };
 
   function $(id) { return document.getElementById(id); }
   function el(tag, cls, s) {
@@ -607,7 +610,6 @@
     }
     if (w.Care && flat(w.Care) !== flat($('care').textContent)) care($('care'), w.Care);
 
-    renderMakes(own(brief['2']));
     renderMore(own(brief['4']));
 
     var n = fields(own(brief['5']), ['Under it', 'Foot']);
@@ -615,33 +617,83 @@
     set($('foot'), bare(n.Foot));
   }
 
-  // What I'm making: "Name, what it is." for each, i to iv.
-  function renderMakes(s) {
-    var items = sentences(afterHead(s)).map(function (x) {
-      var i = x.indexOf(', ');
-      return i < 0 ? null : { title: x.slice(0, i).trim(), desc: bare(x.slice(i + 2)) };
-    }).filter(Boolean);
-    if (!items.length) return;
-    var box = $('make-list');
-    var sig = JSON.stringify(items);
+  // What I'm making: three lists, TRY, READ and WORK WITH ME, each line
+  // "Name (address), what it is." The address is the line's own, so a new
+  // thing needs one line at 2.336 and no work here.
+  var HEADS = [['TRY', 'try', 'Try'], ['READ', 'read', 'Read'], ['WORK WITH ME', 'work', 'Work with me']];
+  function listsIn(s) {
+    var at = [];
+    HEADS.forEach(function (h) {
+      var m = new RegExp('\\b' + h[0] + '[,:] ').exec(s);
+      if (m) at.push({ h: h, i: m.index });
+    });
+    if (at.length !== HEADS.length) return null;
+    at.sort(function (a, b) { return a.i - b.i; });
+    var out = [];
+    at.forEach(function (a, k) {
+      var end = k + 1 < at.length ? at[k + 1].i : s.length;
+      var body = s.slice(a.i, end);
+      var colon = body.indexOf(': ');
+      body = colon < 0 ? '' : body.slice(colon + 2);
+      if (k + 1 === at.length) body = body.replace(/\s+THE [A-Z]{3,}\b[\s\S]*$/, '');
+      var re = /(?:^|\.\s+)([A-Z][^().]*?) \(([^)]+)\),\s+/g, m, heads = [];
+      while ((m = re.exec(body))) heads.push({ title: m[1].trim(), href: m[2].split(/[\s,]/)[0], at: m.index, from: m.index + m[0].length });
+      var items = heads.map(function (h, j) {
+        return { title: h.title, href: h.href, desc: bare(body.slice(h.from, j + 1 < heads.length ? heads[j + 1].at : body.length)) };
+      });
+      if (!items.length) return;
+      out.push({ id: a.h[1], head: a.h[2], items: items });
+    });
+    return out.length === HEADS.length ? out : null;
+  }
+  function renderLists(s) {
+    var lists = listsIn(s);
+    if (!lists) return;
+    var box = $('makes');
+    var sig = JSON.stringify(lists);
     if (box.dataset.sig === sig) return;
     box.dataset.sig = sig;
     box.textContent = '';
-    items.forEach(function (m, k) {
-      var href = PLACES[m.title.toLowerCase()];
-      var row = el(href ? 'a' : 'div', 'make');
-      if (href) row.href = href;
-      row.appendChild(el('span', 'num', ROMAN[k] || String(k + 1)));
-      var t = el('span', 't');
-      t.appendChild(el('span', 'title', m.title));
-      t.appendChild(el('span', 'desc', m.desc));
-      row.appendChild(t);
-      if (href) {
-        var arrow = el('span', 'arrow', '→');
+    lists.forEach(function (l) {
+      var part = el('section', 'mk-part');
+      part.id = l.id;
+      part.setAttribute('aria-labelledby', l.id + '-head');
+      var h = el('h2', null, l.head);
+      h.id = l.id + '-head';
+      part.appendChild(h);
+      var nav = el('nav', 'makes');
+      nav.setAttribute('aria-labelledby', l.id + '-head');
+      l.items.forEach(function (m) {
+        var row = el('a', 'make');
+        row.href = m.href;
+        var t = el('span', 't');
+        t.appendChild(el('span', 'title', m.title));
+        t.appendChild(el('span', 'desc', m.desc));
+        row.appendChild(t);
+        var arrow = el('span', 'arrow', '\u2192');
         arrow.setAttribute('aria-hidden', 'true');
         row.appendChild(arrow);
-      }
-      box.appendChild(row);
+        nav.appendChild(row);
+      });
+      part.appendChild(nav);
+      box.appendChild(part);
+    });
+  }
+  // The lists stand at 2.336 of my shell; found as that one part, or
+  // anywhere in what the beach returns.
+  function listsText(r) {
+    if (typeof r === 'string') return /\bTRY[,:] /.test(r) && /\bWORK WITH ME[,:] /.test(r) ? r : null;
+    if (!r || typeof r !== 'object') return null;
+    for (var k in r) {
+      var f = listsText(r[k]);
+      if (f) return f;
+    }
+    return null;
+  }
+  function readLists() {
+    return Beach.get(WORDS, { spindle: '2336' }).then(function (r) {
+      var s = listsText(r);
+      if (s) renderLists(s);
     });
   }
 
@@ -1155,6 +1207,7 @@
   var refresh = Beach.live(function () {
     return Promise.all([
       quietly(readWords()),
+      quietly(readLists()),
       quietly(Beach.get(NOW).then(renderToday)),
       quietly(Beach.get(DIARY).then(renderLately)),
       quietly(readFamily())
