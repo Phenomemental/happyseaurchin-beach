@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A walk</title>
+<meta name="description" content="A project's own design document, walked part by part, read live as it stands.">
+<meta name="theme-color" content="#eee7d5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="beach.css?v=2026-10-12c">
+<link rel="stylesheet" href="night-watchman.css?v=2026-10-20o">
+<style>
+  /* A walk (walk.html?p=<project>): the project's design document, read
+     live from spine:<project> and nothing else, in Sundial's look: paper
+     and ink, the framed sheet, crimson the one accent. Light or dark as
+     the phone is set: Sundial's own night look. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #16130f;
+      --page: #1d1914;
+      --ink: #ede4d3;
+      --muted: #a79c8b;
+      --rule: #d0525a;
+      --frame: #4a4237;
+      --crimson: #ef5d85;
+      --wash: #b3a73c;
+    }
+  }
+  .walk {
+    text-align: center;
+  }
+  .walk h1 {
+    margin-top: 0.2rem;
+  }
+  .walk-opening {
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 30rem;
+    margin: 0.8rem auto 0;
+    text-wrap: pretty;
+  }
+  .walk-note {
+    font-style: italic;
+    color: var(--ink);
+    margin: 1.2rem 0 0;
+  }
+  /* The parts, as the document holds them; one tapped opens what is
+     beneath it, in place. No numbers, no addresses. */
+  .walk-parts {
+    list-style: none;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    font-size: 1.15rem;
+    line-height: 1.5;
+  }
+  .walk-parts li {
+    margin: 0 0 0.9rem;
+    padding: 0;
+  }
+  .walk-parts li::before {
+    content: none;
+  }
+  .walk-parts p {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+  .walk-parts summary {
+    position: relative;
+    padding-left: 1.25rem;
+    list-style: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .walk-parts summary::-webkit-details-marker {
+    display: none;
+  }
+  .walk-parts summary::before {
+    content: '';
+    position: absolute;
+    left: 0.15rem;
+    top: 0.5em;
+    width: 0.45em;
+    height: 0.45em;
+    border-right: 1.5px solid var(--crimson);
+    border-bottom: 1.5px solid var(--crimson);
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+  }
+  .walk-parts details[open] > summary::before {
+    transform: rotate(45deg);
+    top: 0.35em;
+  }
+  .walk-parts summary:focus {
+    outline: none;
+  }
+  .walk-parts summary:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 3px;
+  }
+  .walk-parts details > .walk-parts {
+    margin: 0.7rem 0 0 0.45rem;
+    padding-left: 0.8rem;
+    border-left: 1px solid var(--frame);
+    font-size: 1.08rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .walk-parts summary::before { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <article class="sheet walk" aria-labelledby="title">
+    <h1 id="title">A walk</h1>
+    <p class="walk-opening" id="opening" hidden></p>
+    <hr class="rule">
+    <p class="walk-note" id="note" role="status" hidden></p>
+    <ol class="walk-parts" id="parts"></ol>
+  </article>
+  <script src="menu.js?v=2026-10-25b" data-mark></script>
+</main>
+<script src="beach.js?v=2026-10-25d"></script>
+<script src="projects.js?v=2026-10-25d"></script>
+<script>
+/* Reads spine:<project> and nothing else: never the index, never a
+   <project>:<handle> mirror (recovery capital's own rule: no one's own
+   reading is opened from a shared surface). The opening is the document's
+   own line, in italics beneath the project's name; then its parts at the
+   first level, each opening in place onto what is beneath it, drawn only
+   when opened. Told in plain words (Beach.plain, as map.html tells the
+   map). If the document can't be read, one plain line says so. */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var slug = (new URLSearchParams(location.search).get('p') || '').trim().toLowerCase();
+  function say(line) {
+    $('note').textContent = line;
+    $('note').hidden = false;
+  }
+  if (!/^[a-z0-9][a-z0-9-]{0,80}$/.test(slug)) {
+    say('No walk is named here.');
+    return;
+  }
+  var name = Projects.name(slug);
+  $('title').textContent = name;
+  document.title = name;
+
+  // A part's own words: its line, or the line beneath its "_".
+  function own(node) {
+    while (node && typeof node === 'object') node = node._;
+    // A position left after a block's plain name ('lero nnh:3') goes too;
+    // a time ('10:30') stays.
+    return typeof node === 'string' ? Beach.plain(node.trim()).replace(/([a-z]):\d+(?:\.\d+)*\b/gi, '$1') : '';
+  }
+  function hasParts(node) {
+    if (!node || typeof node !== 'object') return false;
+    for (var i = 1; i <= 9; i++) if (own(node[String(i)]) || hasParts(node[String(i)])) return true;
+    return false;
+  }
+  // The parts beneath a node, in order, into a list; false if none.
+  function draw(node, list) {
+    var any = false;
+    for (var i = 1; i <= 9; i++) {
+      var part = node[String(i)], words = own(part), deeper = hasParts(part);
+      if (!words && !deeper) continue;
+      any = true;
+      list.appendChild(partOf(part, words, deeper));
+    }
+    return any;
+  }
+  function partOf(part, words, deeper) {
+    var li = document.createElement('li');
+    if (!deeper) {
+      var p = document.createElement('p');
+      p.textContent = words;
+      li.appendChild(p);
+      return li;
+    }
+    var d = document.createElement('details'), s = document.createElement('summary'), inner = document.createElement('ol');
+    s.textContent = words || 'More';
+    inner.className = 'walk-parts';
+    d.appendChild(s);
+    d.appendChild(inner);
+    d.addEventListener('toggle', function () {
+      if (d.open && !inner.firstChild) draw(part, inner);
+    });
+    li.appendChild(d);
+    return li;
+  }
+
+  Beach.look('spine:' + slug).then(function (r) {
+    if (r.status === 404) return say('There is nothing to walk here yet.');
+    if (r.status !== 200 || !r.json || typeof r.json !== 'object') return say('This walk can’t be read just now. Try again in a moment.');
+    // The opening view is the disc at pscale 0: the level whose own line
+    // is the document's opening, beneath any "_" it was wrapped in.
+    var top = r.json;
+    while (top._ && typeof top._ === 'object') top = top._;
+    var opening = own(top);
+    $('opening').textContent = opening;
+    $('opening').hidden = !opening;
+    if (!draw(top, $('parts')) && !opening) say('There is nothing to walk here yet.');
+  });
+})();
+</script>
+</body>
+</html>
