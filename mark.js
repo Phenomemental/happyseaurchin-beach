@@ -57,6 +57,13 @@
   function placesWords(places) {
     return inOrder(places).map(function (n) { return POOLS[n - 1].phrase; }).join(' · ');
   }
+  // The same places said in a sentence, in P6's order (spine:front-door
+  // 3.83): "what happened, and what you felt"; "what happened, what’s
+  // ahead, and what you felt" ('' for none).
+  function placesSaid(places) {
+    var ws = inOrder(places).map(function (n) { return POOLS[n - 1].phrase; });
+    return ws.length > 1 ? ws.slice(0, -1).join(', ') + ', and ' + ws[ws.length - 1] : ws.join('');
+  }
   // A last line that names places: every piece a place's phrase.
   function placesIn(row) {
     var old = /^a day of (.+?)\.?$/i.exec(row);
@@ -432,6 +439,7 @@
         node('circle', p.days
           ? { 'class': 'sd-tidepool-water', r: p.r.toFixed(1), fill: pool.hue, 'fill-opacity': 0.9 }
           : { 'class': 'sd-tidepool-water', r: p.r, fill: 'none', stroke: 'var(--frame)', 'stroke-width': 2 }, inner);
+        caption(g, pool.phrase, p.r);
         g.addEventListener('click', function (ev) { ev.stopPropagation(); pick(i); });
         g.addEventListener('keydown', function (ev) {
           if (ev.key !== 'Enter' && ev.key !== ' ') return;
@@ -441,6 +449,18 @@
         });
       });
       svg.classList.add('pooled');
+    }
+    // Each place's phrase beneath its circle, so colour never carries the
+    // meaning alone (spine:front-door 3.83); an empty circle carries its
+    // phrase and nothing else. A long phrase takes two lines, so it keeps
+    // clear of its neighbours on a narrow phone. The circle's own label
+    // already says it for a screen reader.
+    function caption(g, phrase, r) {
+      var t = node('text', { 'class': 'sd-tidepool-label', x: 0, y: (r + 20).toFixed(1), 'text-anchor': 'middle', 'aria-hidden': 'true' }, g);
+      captionLines(phrase).forEach(function (line, k) {
+        var s = node('tspan', k ? { x: 0, dy: 21 } : { x: 0 }, t);
+        s.textContent = line;
+      });
     }
     function gather() {
       svg.classList.remove('pooled');
@@ -799,6 +819,22 @@
       comeBack: comeBack, leave: leave };
   }
 
+  // A circle's phrase as the lines it is drawn in: one, or, past fourteen
+  // letters, two, broken where the longer line is shortest ("what you" /
+  // "made of it").
+  function captionLines(phrase) {
+    var words = String(phrase).split(' '), best = [phrase], most = String(phrase).length;
+    if (most <= 14) return best;
+    for (var k = 1; k < words.length; k++) {
+      var a = words.slice(0, k).join(' '), b = words.slice(k).join(' ');
+      if (Math.max(a.length, b.length) < most) {
+        most = Math.max(a.length, b.length);
+        best = [a, b];
+      }
+    }
+    return best;
+  }
+
   // ---- Hold: the pools -----------------------------------------------------------
   // The six tide-pools in a ring round the centre (6.8), in P6's order:
   // Facts at the top, then clockwise Outcomes, Fictions, Decision, Purpose,
@@ -900,6 +936,12 @@
       write({ title: 'T', lines: [], places: [4, 1, 4, 9, 3] }) === 'T\nWhat happened · what you made of it · what matters.');
     check('one place, and a sheet with the first law’s single pool, write as one place',
       write({ title: 'T', lines: ['x'], places: [6] }) === 'T\nx\nWhat’s ahead.' && write({ title: 'T', lines: [], pool: 5 }) === 'T\nA choice.');
+    check('places said in a sentence, in P6’s order: one alone, else "a, b, and c"; nothing for none',
+      placesSaid([1]) === 'what happened' && placesSaid([2, 1]) === 'what happened, and what you felt' &&
+      placesSaid([2, 6, 1]) === 'what happened, what’s ahead, and what you felt' && placesSaid([]) === '');
+    check('a circle’s phrase on one line, or past fourteen letters on two, broken where the longer is shortest',
+      captionLines('what happened').join('|') === 'what happened' && captionLines('a choice').join('|') === 'a choice' &&
+      captionLines('what you made of it').join('|') === 'what you|made of it');
     check('a straight apostrophe names the same place', placesOf('Here — A day\nSome words.\nWhat happened · what\'s ahead.').join() === '1,6' &&
       placesOf('Here — A day\nSome words.\nA day of what\'s ahead.').join() === '6');
     check('a day of one plain line has a title and no places',
@@ -1004,6 +1046,8 @@
     OWN: OWN,
     inOrder: inOrder,
     placesWords: placesWords,
+    placesSaid: placesSaid,
+    captionLines: captionLines,
     placesOf: placesOf,
     counts: counts,
     shares: shares,

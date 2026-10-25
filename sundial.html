@@ -110,6 +110,25 @@
     from { opacity: 0; transform: scale(0.2); }
     to { opacity: 1; transform: scale(1); }
   }
+  /* Each circle's phrase beneath it (3.83), so colour never carries the
+     meaning alone; darker on the circle tapped. */
+  .sd-dial .sd-tidepool-label {
+    font-size: 19px;
+    font-style: italic;
+    fill: var(--muted);
+    paint-order: stroke;          /* a rim of paper, so the faded heart's ink never runs through the words */
+    stroke: var(--paper);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    animation: sd-label 0.9s ease-out 0.3s both;
+  }
+  .sd-dial .sd-tidepool.picked .sd-tidepool-label {
+    fill: var(--ink);
+  }
+  @keyframes sd-label {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
   .sd-dial .sd-tidepool:focus-visible .sd-tidepool-hit,
   .sd-dial .sd-tidepool.picked .sd-tidepool-hit {
     stroke: var(--crimson);
@@ -117,7 +136,8 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .sd-dial .breathe { transition: none; }
-    .sd-dial .sd-tidepool-grow { animation: none; }
+    .sd-dial .sd-tidepool-grow,
+    .sd-dial .sd-tidepool-label { animation: none; }
   }
   .sd-pools {
     width: 100%;
@@ -136,6 +156,15 @@
   .sd-pools-line {
     font-size: 1.05rem;
     margin: 0 0 0.6rem;
+  }
+  /* The one sentence beneath it, naming only the places present (3.83). */
+  .sd-pools-said {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    text-align: center;
+    text-wrap: balance;
+    margin: -0.2rem auto 0.8rem;
+    max-width: 24rem;
   }
   .sd-pools-hint {
     font-size: 0.95rem;
@@ -1750,6 +1779,7 @@
 
   <section class="sd-pools" id="pools" aria-labelledby="pools-line" hidden>
     <p class="sd-pools-line" id="pools-line">where your days have come to rest</p>
+    <p class="sd-pools-said" id="pools-said" hidden></p>
     <p class="sd-pools-hint" id="pools-hint" hidden>tap a colour to hear what rests there · tap the heart to gather them back</p>
     <div aria-live="polite">
       <p class="sd-pool-phrase" id="pool-phrase" hidden></p>
@@ -1952,7 +1982,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-23b"></script>
-<script src="mark.js?v=2026-10-25b"></script>
+<script src="mark.js?v=2026-10-25c"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-25a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -1982,7 +2012,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.8 · 25 October 2026';
+  var VERSION = 'Sundial M4.9 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2738,6 +2768,12 @@
     dial.pools(days, function (pool, n) {
       return pool.phrase + ', ' + (n ? n + (n === 1 ? ' day' : ' days') : 'nothing yet');
     }, pickPool);
+    // One plain sentence naming only the places their days have rested in
+    // (spine:front-door 3.83); none, before any day is placed.
+    var counts = Mark.counts(days), here = Mark.POOLS.filter(function (p, i) { return counts[i]; }).map(function (p) { return p.n; });
+    var said = here.length ? 'So far your days have rested in ' + Mark.placesSaid(here) + '.' : '';
+    $('pools-said').textContent = said;
+    $('pools-said').hidden = !said;
   }
   function openPools() {
     store(HELD, '1');
