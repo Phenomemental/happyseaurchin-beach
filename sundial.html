@@ -134,10 +134,62 @@
     stroke: var(--crimson);
     stroke-width: 2;
   }
+  /* The turn (3.72, reworked): the six circles, named, and the tide over
+     them, as on the Begin page. */
+  .sd-dial .sd-turnplace {
+    cursor: pointer;
+  }
+  .sd-dial .sd-turnplace:focus {
+    outline: none;
+  }
+  .sd-dial .sd-turnplace-water {
+    fill-opacity: 0.9;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.4s ease, fill-opacity 0.4s ease;
+  }
+  .sd-dial .sd-turnplace.lit .sd-turnplace-water {
+    transform: scale(1.3);
+    fill-opacity: 1;
+  }
+  .sd-dial .sd-turnplace.dim .sd-turnplace-water {
+    fill-opacity: 0.28;
+  }
+  .sd-dial .sd-turnplace.dim .sd-tidepool-label {
+    opacity: 0.6;
+  }
+  .sd-dial .sd-turnplace.lit .sd-tidepool-label {
+    fill: var(--ink);
+  }
+  .sd-dial .sd-turnplace:focus-visible .sd-turnplace-hit {
+    stroke: var(--crimson);
+    stroke-width: 2;
+  }
+  .sd-dial .sd-tide-fair {
+    stroke: var(--muted);
+    stroke-opacity: 0.5;
+    stroke-width: 1.5;
+    stroke-dasharray: 2 7;
+  }
+  .sd-dial .sd-tide-curve {
+    fill: var(--crimson);
+    fill-opacity: 0.12;
+    stroke: var(--crimson);
+    stroke-opacity: 0.7;
+    stroke-width: 2;
+  }
+  .sd-dial .sd-tide-curve.swell {
+    animation: sd-swell 1.8s ease-out;
+  }
+  @keyframes sd-swell {
+    30% { fill-opacity: 0.32; stroke-opacity: 1; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .sd-dial .breathe { transition: none; }
     .sd-dial .sd-tidepool-grow,
     .sd-dial .sd-tidepool-label { animation: none; }
+    .sd-dial .sd-turnplace-water { transition: none; }
+    .sd-dial .sd-tide-curve.swell { animation: none; }
   }
   .sd-pools {
     width: 100%;
@@ -563,37 +615,185 @@
     margin: -0.3rem 0 0.6rem;
     text-align: center;
   }
-  /* At the door, beneath the two choices (3.72); and the question a turn
-     left standing there, while they come in to tell from it. */
-  .sd-way .sd-turn-offer-row {
-    margin: 0.8rem 0 0;
-  }
-  .sd-way-from {
-    margin: 0 0 1.1rem;
-    text-align: center;
-    font-style: italic;
-    font-size: 1.3rem;
-    line-height: 1.4;
-    color: var(--ink);
-    text-wrap: balance;
-  }
-  .sd-way-from[hidden] {
-    display: none;
-  }
   .sd-turn-offer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
     font: inherit;
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     font-style: italic;
     letter-spacing: normal;
-    color: var(--muted);
+    color: var(--ink);
     background: none;
     border: 0;
     padding: 0.3rem 0.4rem;
     min-height: 2.75rem;
     cursor: pointer;
+  }
+  .sd-turn-offer span {
     text-decoration: underline;
-    text-decoration-color: var(--frame);
+    text-decoration-color: var(--crimson);
     text-underline-offset: 0.25em;
+  }
+  .sd-six {
+    width: 1.45rem;
+    height: 1.45rem;
+    flex: none;
+  }
+  /* Above a question a turn left in today, the place it came from. */
+  .sd-from-place {
+    margin: 0 0 0.1rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    font-variant-caps: all-small-caps;
+    color: var(--muted);
+  }
+  /* The first screen (3.72, reworked): what Sundial is, Give it a go
+     leading, and keeping your own days beneath, smaller. */
+  .sd-way-what {
+    max-width: 20rem;
+    margin: 0 auto 1.6rem;
+    text-align: center;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-style: italic;
+    opacity: 0.85;
+    text-wrap: balance;
+  }
+  button.sd-give {
+    justify-content: center;
+    font: inherit;
+    font-size: 1.9rem;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    min-height: 3.6rem;
+    padding: 0.3rem 2.4rem;
+    cursor: pointer;
+  }
+  button.sd-give:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 4px;
+  }
+  .sd-way-keep {
+    margin: 2.2rem 0 0.2rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.22em;
+    font-variant-caps: all-small-caps;
+    color: var(--muted);
+  }
+  .sd-way-pair {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem 0.5rem;
+    margin: 0;
+  }
+  .sd-way-pair .sd-way-go {
+    font-size: 1.3rem;
+  }
+  .sd-way-dot {
+    color: var(--crimson);
+  }
+  /* The turn (3.72, reworked): bring one thing to mind, turn it or choose;
+     where it rests, its name, what it notices, its question and a box
+     beneath; what others left there; then what Sundial is for. */
+  .sd-turn-start {
+    text-align: center;
+  }
+  .sd-turn-mind {
+    max-width: 21rem;
+    margin: 0.6rem auto 0;
+    font-size: 1.35rem;
+    line-height: 1.35;
+    font-style: italic;
+    text-wrap: balance;
+  }
+  .sd-turn-how {
+    max-width: 21rem;
+    margin: 0.5rem auto 0;
+    font-size: 1.05rem;
+    line-height: 1.45;
+    color: var(--muted);
+    text-wrap: balance;
+  }
+  .sd-turn-go-row {
+    margin: 1.2rem 0 0;
+    text-align: center;
+  }
+  .sd-turn-go-row[hidden] {
+    display: none;
+  }
+  .sd-turn-tide-h {
+    margin: 2.2rem 0 0.1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.22em;
+    font-variant-caps: all-small-caps;
+    color: var(--muted);
+  }
+  .sd-turn-tide {
+    max-width: 21rem;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--muted);
+    text-wrap: balance;
+  }
+  .sd-turn-gloss {
+    margin: -0.2rem 0 0.6rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .sd-turn-left {
+    text-align: left;
+    margin: 1.4rem 6px 0;
+  }
+  .sd-turn-yours-h {
+    color: var(--crimson);
+  }
+  .sd-turn-lines.sd-turn-yours p {
+    color: var(--ink);
+  }
+  .sd-turn-after {
+    max-width: 22rem;
+    margin: 1.6rem auto 0;
+    text-align: center;
+  }
+  .sd-turn-once {
+    margin: 1.2rem 0 0;
+    font-size: 1.3rem;
+    font-style: italic;
+  }
+  .sd-turn-whole {
+    margin: 0.6rem 0 0;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+  .sd-turn .sd-letgo {
+    font: inherit;
+    font-size: 1.2rem;
+    font-style: italic;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+  .sd-turn-after .sd-turn-go-row + .sd-turn-go-row {
+    margin-top: 0.5rem;
+  }
+  .sd-turn-again {
+    margin: 2rem 0 0;
+    text-align: center;
+  }
+  .sd-turn-again .sd-turn-how {
+    margin-top: 0.3rem;
+    font-style: italic;
+  }
+  .sd-turn-again .sd-keep {
+    font: inherit;
+    font-size: 1.3rem;
+    font-style: italic;
+    min-height: 2.9rem;
+    cursor: pointer;
   }
   /* Where the turn rests, its question rises on the sheet. */
   .sd-turn {
@@ -610,9 +810,6 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .sd-turn-card.rising { animation: none; }
-  }
-  .sd-turn .sd-choices {
-    margin-top: 1rem;
   }
   .sd-turn-stay {
     text-align: left;
@@ -2057,13 +2254,12 @@
   <p class="sd-who" id="who" hidden></p>
   <p class="sd-days" id="days-count" hidden></p>
   <div class="sd-way" id="way" hidden>
-    <p class="sd-way-from" id="way-from" hidden></p>
     <div class="sd-way-choices" id="way-choices">
-      <button type="button" class="sd-way-go" id="way-back">I’ve been here before</button>
-      <span class="sd-way-rule" aria-hidden="true"></span>
-      <button type="button" class="sd-way-go" id="way-new">I’m new</button>
+      <p class="sd-way-what">Tell your day in your own words. Sundial keeps it, and shows you where your days come to rest.</p>
+      <button type="button" class="sd-keep sd-give" id="door-turn">Give it a go</button>
+      <p class="sd-way-keep">Keep your own days</p>
+      <p class="sd-way-pair"><button type="button" class="sd-way-go" id="way-new">I’m new</button><span class="sd-way-dot" aria-hidden="true">·</span><button type="button" class="sd-way-go" id="way-back">I’ve been here before</button></p>
     </div>
-    <p class="sd-turn-offer-row" id="door-turn-row" hidden><button type="button" class="sd-turn-offer" id="door-turn">Or give it a turn.</button></p>
     <form class="sd-way-card" id="back-form" hidden>
       <label for="bname" id="bname-label">your name here</label>
       <input id="bname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
@@ -2128,25 +2324,46 @@
     <p class="sd-own" id="day-own" hidden>Kept in your own words. Add Claude in the corner and it will give your days back.</p>
   </section>
 
-  <section class="sd-turn" id="turn" aria-labelledby="turn-question" hidden>
-    <div class="sd-card-day sd-turn-card" id="turn-card">
-      <p class="sd-first" id="turn-place"></p>
-      <h2 class="sd-title" id="turn-question" tabindex="-1"></h2>
+  <section class="sd-turn" id="turn" aria-label="A turn" hidden>
+    <div class="sd-turn-start" id="turn-start">
+      <p class="sd-turn-mind">Bring one thing to mind: something from today, small or large.</p>
+      <p class="sd-turn-how">Turn it, and answer where it comes to rest. Or tap a circle to choose your own.</p>
+      <p class="sd-turn-go-row"><button type="button" class="sd-keep sd-give" id="turn-go">Turn it</button></p>
+      <p class="sd-turn-tide-h" id="turn-tide-h" hidden>The tide</p>
+      <p class="sd-turn-tide" id="turn-tide" hidden></p>
     </div>
-    <div class="sd-choices">
-      <button type="button" class="sd-letgo" id="turn-stay">Stay with it a while</button>
-      <button type="button" class="sd-letgo" id="turn-tell">Tell today from here</button>
+    <div class="sd-turn-rest" id="turn-rest" hidden>
+      <div class="sd-card-day sd-turn-card" id="turn-card">
+        <p class="sd-first" id="turn-place"></p>
+        <p class="sd-turn-gloss" id="turn-gloss"></p>
+        <h2 class="sd-title" id="turn-question" tabindex="-1"></h2>
+      </div>
+      <form class="sd-turn-stay" id="turn-stay-box">
+        <label for="turn-line" class="sd-turn-label">Write what comes, or only notice.</label>
+        <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off" placeholder="for whoever lands here next" aria-describedby="turn-noname"></textarea>
+        <p class="sd-turn-noname" id="turn-noname">Anyone may read what is left here. No name is kept with it.</p>
+        <p class="sd-soft" id="turn-note" aria-live="polite" hidden></p>
+        <div class="sd-send-row"><button type="submit" id="turn-leave">Leave it</button></div>
+      </form>
+      <div class="sd-turn-left" aria-live="polite">
+        <p class="sd-turn-others sd-turn-yours-h" id="turn-yours-h" hidden>Yours, just now.</p>
+        <div class="sd-turn-lines sd-turn-yours" id="turn-yours"></div>
+        <p class="sd-turn-others" id="turn-others" hidden>Left here by others.</p>
+        <div class="sd-turn-lines" id="turn-lines"></div>
+      </div>
+      <div class="sd-turn-after" id="turn-after" hidden>
+        <span class="sd-way-rule" aria-hidden="true"></span>
+        <p class="sd-turn-once">That was one moment, noticed one way.</p>
+        <p class="sd-turn-whole">Sundial does this with a whole day. You tell it how today went, in your own words; it gives your day back and keeps it. Over the days, the sundial shows where they come to rest.</p>
+        <p class="sd-turn-go-row"><button type="button" class="sd-keep sd-give" id="turn-keep">Keep your own days</button></p>
+        <p class="sd-turn-go-row"><button type="button" class="sd-letgo" id="turn-been">I’ve been here before</button></p>
+      </div>
+      <p class="sd-turn-go-row" id="turn-today-row" hidden><button type="button" class="sd-letgo" id="turn-today">Answer it in today</button></p>
+      <div class="sd-turn-again">
+        <button type="button" class="sd-keep" id="turn-again">Turn it again</button>
+        <p class="sd-turn-how">or tap another circle</p>
+      </div>
     </div>
-    <form class="sd-turn-stay" id="turn-stay-box" hidden>
-      <p class="sd-turn-others" id="turn-others" hidden>Left here by others.</p>
-      <div class="sd-turn-lines" id="turn-lines"></div>
-      <label for="turn-line" class="sd-turn-label">Leave a line for whoever lands here next.</label>
-      <p class="sd-turn-public" id="turn-public">Anyone can read this. It isn’t your day.</p>
-      <textarea id="turn-line" rows="3" maxlength="600" autocomplete="off" aria-describedby="turn-public turn-noname"></textarea>
-      <p class="sd-turn-noname" id="turn-noname">No name is kept with it.</p>
-      <p class="sd-soft" id="turn-note" aria-live="polite" hidden></p>
-      <div class="sd-send-row"><button type="submit" id="turn-leave">Leave it</button></div>
-    </form>
   </section>
 
   <section class="sd-pools" id="pools" aria-labelledby="pools-line" hidden>
@@ -2257,8 +2474,9 @@
     </section>
     <form class="sd-speak" id="speak">
       <p class="sd-hello" id="hello" hidden></p>
+      <p class="sd-from-place" id="from-place" hidden></p>
       <p class="sd-question" id="question">What’s with you today?</p>
-      <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
+      <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer"><svg class="sd-six" viewBox="0 0 30 30" aria-hidden="true" focusable="false"><circle cx="15" cy="4" r="3.4" fill="#4A6B8A"/><circle cx="24.5" cy="9.5" r="3.4" fill="#6FA8DC"/><circle cx="24.5" cy="20.5" r="3.4" fill="#7A5C99"/><circle cx="15" cy="26" r="3.4" fill="#B8860B"/><circle cx="5.5" cy="20.5" r="3.4" fill="#2E7D6B"/><circle cx="5.5" cy="9.5" r="3.4" fill="#B0413E"/></svg><span>or give it a turn</span></button></p>
       <p class="sd-soft sd-call-fail" id="call-fail" role="status" hidden></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-rung-not" id="rung-not" hidden>not now</button><button type="button" class="sd-keep-now" id="keep-now" hidden><svg class="sd-keep-heart" viewBox="0 10 390 325" aria-hidden="true" focusable="false"><path class="ring" d="M 311.7,49.6 A 124,118 0 1 0 353.3,115.4"/><path class="line" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324"/><ellipse cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)"/></svg>Keep today</button><button type="submit" class="sd-send" id="send">Send</button></div>
@@ -2371,7 +2589,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-25d"></script>
-<script src="mark.js?v=2026-10-25d"></script>
+<script src="mark.js?v=2026-10-25e"></script>
 <script src="shell.js?v=2026-10-25d"></script>
 <script src="days.js?v=2026-10-25e"></script>
 <script src="seal.js?v=2026-10-25d"></script>
@@ -2402,7 +2620,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.17 · 25 October 2026';
+  var VERSION = 'Sundial M4.18 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2571,6 +2789,8 @@
     var g = greetNow();
     $('question').textContent = rungSaid ? rungSaid : rungAsk ? 'What\u2019s ' + rungAsk.words + ' about?'
       : fromTurn ? fromTurn.question : g ? g.ask : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
+    $('from-place').textContent = fromTurn && !rungSaid && !rungAsk ? fromTurn.phrase : '';
+    $('from-place').hidden = !$('from-place').textContent;
     $('date').textContent = dateWords(now);
     $('place').textContent = place;
     $('place').hidden = !place;
@@ -4998,22 +5218,26 @@
     ev.stopPropagation();
     ev.preventDefault();
   }, true);
-  // ---- The turn (3.7; on the first screen, 3.72) -----------------------------------
-  // Played by hand, with no name, no key and no Claude, at the empty start:
-  // never once a telling is under way, where Claude follows and never picks
-  // a place. For anyone: inside, 'Or give it a turn' stands beneath the
-  // day's question until a telling begins; at the door, beneath the two
-  // choices. A flick across the sundial does the same, on a first visit
-  // too. It sets the six pools turning round the heart, each place one
-  // turn in six. Where they rest, that pool brightens and its question rises
-  // on the sheet, in the same words the Begin page turns up, read live from
-  // the same place (spine:p6; its saved copy below until the beach answers),
-  // so one change changes both. Then stay with it, and leave a line,
-  // unnamed, for whoever lands there next, in the same tide (pool:p6, at the
-  // place's own address); or tell today from there, the question standing
-  // above the field as where they started (from the door, once they have
-  // come in by either way). A turn writes nothing to their day unless they
-  // then tell and keep. Its words never name where it comes
+  // ---- The turn (3.7; reworked on the first screen, 3.72) ---------------------------
+  // Played by hand, with no name, no key and no Claude, from the first
+  // screen: at the door, 'Give it a go' leads; inside, 'or give it a turn'
+  // stands beneath the day's question until a telling begins (never once
+  // one is under way, where Claude follows and never picks a place). A
+  // flick across the sundial does the same. The six circles come out round
+  // the heart, each named, with the tide over them, as on the Begin page:
+  // where the lines people have left have come to rest, read from the same
+  // tide (pool:p6), against a fair share. 'Bring one thing to mind' gives
+  // the question its 'this'. Turn it, and the circles turn round the heart,
+  // each place one turn in six, and rest one at the top; or tap a circle to
+  // choose it. There its name, what it notices, and its question, in the
+  // words the Begin page reads (spine:p6; the saved copy below until the
+  // beach answers), with a box beneath for a line, unnamed, for whoever
+  // lands there next, and what others left there, as theirs (3.71). A line
+  // left joins the tide, which swells. Then, at the door, what Sundial does
+  // with a whole day and the way to keep your own; with a name, 'Answer it
+  // in today', which brings the question, and its place, above the box.
+  // Turn it again, or tap another circle. A turn writes nothing to anyone's
+  // day unless they then tell and keep. Its words never name where it comes
   // from, and lines that do are not shown.
   var TURN_WORDS = {
     '1.1': ['What is here that you could point to: what you see, hear, or were told?', 'Leaving out what it means, what actually happened?'],
@@ -5022,6 +5246,14 @@
     '2.1': ['How do you want to be in this?', 'What do you want to be doing here?'],
     '2.2': ['What are you choosing right now, even by not choosing?', 'What is the next choice in front of you?'],
     '2.3': ['What future are you imagining from here?', 'What do you expect will happen next, and is it a fact yet, or a story about tomorrow?']
+  };
+  var TURN_GLOSS = {
+    '1.1': 'what you could point to, leaving out what it means',
+    '1.2': 'what your body knows, and the feeling in it',
+    '1.3': 'the story you tell about what happened',
+    '2.1': 'how you want to be, underneath',
+    '2.2': 'what you are choosing, even by not choosing',
+    '2.3': 'what you expect, and whether it is so yet'
   };
   var TURN_HIDE = /night\s*watchman|\bp6\b|\bportals?\b|\bwheels?\b/i;
   var NOTHING_MUCH = /^(nothing( much| really| to say| today)*|not (much|a lot|really)( really| today)*|dunno|no idea|not sure|(i )?don'?t know( what to say)?|meh)[.!…\s]*$/i;
@@ -5050,44 +5282,111 @@
     return inside && !busy && !keeping && !momentNow && !tideOpen && !poolsOpen && !messages.length && !sheetNow && !fromTurn && !rungAsk &&
       day.hidden && rest.hidden && !form.hidden && ask.hidden && (!said || NOTHING_MUCH.test(said));
   }
-  // At the door, the two choices showing.
+  // At the door, its choices showing.
   function doorStart() {
     return !inside && !$('way').hidden && !$('way-choices').hidden;
   }
   function showTurnOffer() {
     $('turn-offer-row').hidden = !(emptyStart() && !turnNow && !greetWaiting);
-    $('door-turn-row').hidden = !(doorStart() && !turnNow);
   }
   box.addEventListener('input', showTurnOffer);
-  function giveTurn(dir) {
-    if (turnNow ? $('turn-line').value.trim() : !(emptyStart() || doorStart())) return;
-    var k = Math.floor(Math.random() * Mark.POOLS.length), pool = Mark.POOLS[k];
-    var door = turnNow ? turnNow.door : !inside;
-    if (!turnNow) layerOpened('turn');
-    var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '', door: door };
-    turnWordsRead = turnWordsRead || readTurnWords();
-    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note', 'turn-offer-row', 'door-turn-row'].forEach(function (id) { $(id).hidden = true; });
-    if (door) {
-      fromTurn = null;
-      $('way-from').hidden = true;
-      $('way').hidden = true;
-    } else {
-      form.hidden = true;
-    }
-    dial.turn(k, dir, STILL.matches).then(function () {
-      if (turnNow !== mine) return;
-      var words = TURN_WORDS[pool.at];
-      mine.question = words[Math.floor(Math.random() * words.length)];
-      $('turn-place').textContent = pool.phrase;
-      $('turn-question').textContent = mine.question;
-      $('turn').hidden = false;
-      var card = $('turn-card');
-      card.classList.remove('rising');
-      void card.offsetWidth;
-      card.classList.add('rising');
-      $('turn-question').focus({ preventScroll: true });
-      $('turn').scrollIntoView({ behavior: STILL.matches ? 'auto' : 'smooth', block: 'nearest' });
+  // The lines left at the six places (the tide), the beach's and this
+  // visit's own, oldest first.
+  function turnLines() {
+    var all = (turnTide || []).filter(function (e) { return Mark.POOLS.some(function (p) { return p.at === e.where; }); });
+    turnMine.forEach(function (m) {
+      if (!all.some(function (e) { return e.where === m.where && e.text === m.text; })) all.push(m);
     });
+    return all;
+  }
+  // Of the last hundred, how many came to rest at each place.
+  function tideCounts() {
+    var last = turnLines().slice(-100);
+    return Mark.POOLS.map(function (p) { return last.filter(function (e) { return e.where === p.at; }).length; });
+  }
+  function sayTide() {
+    var n = turnLines().slice(-100).length;
+    $('turn-tide').textContent = n ? 'Where people\u2019s lines have come to rest: ' + n + ' so far. The dotted ring is a fair share.'
+      : 'No lines have come to rest yet. Yours could be the first.';
+    $('turn-tide').hidden = $('turn-tide-h').hidden = turnTide === null && !n;
+  }
+  function readTurnTide() {
+    return Beach.look('pool:p6').then(function (r) {
+      if (r.status === 200 && r.json) turnTide = Beach.entries(r.json);
+      else if (r.status === 404) turnTide = [];
+      if (!turnNow) return;
+      dial.turnTide(tideCounts());
+      sayTide();
+      drawTurnLines();
+    });
+  }
+  function openTurn(dir) {
+    if (turnNow) { turnAgain(dir || 1); return; }
+    if (!(emptyStart() || doorStart())) return;
+    var door = !inside;
+    turnNow = { door: door, k: -1, at: '', phrase: '', question: '', left: '' };
+    layerOpened('turn');
+    turnWordsRead = turnWordsRead || readTurnWords();
+    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'not-you-row', 'turn-offer-row'].forEach(function (id) { $(id).hidden = true; });
+    if (door) $('way').hidden = true;
+    else form.hidden = true;
+    // While the circles are out the sundial holds them (a group, not a
+    // button): each circle takes its own tap.
+    dialEl.setAttribute('role', 'group');
+    ['tabindex', 'aria-expanded', 'aria-haspopup'].forEach(function (a) { dialEl.removeAttribute(a); });
+    dial.turnShow(tideCounts(), pickPlace, function (p) { return p.phrase; });
+    $('turn-start').hidden = false;
+    $('turn-rest').hidden = true;
+    $('turn-go').disabled = false;
+    $('turn').hidden = false;
+    sayTide();
+    readTurnTide();
+    if (dir) turnAgain(dir);
+    else $('turn-go').focus({ preventScroll: true });
+  }
+  // Turned: the circles go round, and where they rest, its question rises.
+  function turnAgain(dir) {
+    if (!turnNow) return;
+    var k = Math.floor(Math.random() * Mark.POOLS.length);
+    $('turn-rest').hidden = true;
+    $('turn-start').hidden = false;
+    $('turn-go').disabled = true;
+    dial.turn(k, dir, STILL.matches).then(function () { rested(k); });
+  }
+  // Chosen: a circle tapped turns the short way to the top.
+  function pickPlace(k) {
+    if (!turnNow) return;
+    $('turn-go').disabled = true;
+    dial.turnRest(k, STILL.matches).then(function () { rested(k); });
+  }
+  function rested(k) {
+    if (!turnNow) return;
+    var pool = Mark.POOLS[k], words = TURN_WORDS[pool.at], moved = turnNow.k !== k;
+    turnNow.k = k;
+    turnNow.at = pool.at;
+    turnNow.phrase = pool.phrase;
+    turnNow.question = words[Math.floor(Math.random() * words.length)];
+    turnNow.left = '';
+    $('turn-place').textContent = pool.phrase;
+    $('turn-gloss').textContent = TURN_GLOSS[pool.at] || '';
+    $('turn-question').textContent = turnNow.question;
+    if (moved) $('turn-line').value = '';
+    $('turn-note').hidden = true;
+    $('turn-stay-box').hidden = false;
+    $('turn-yours-h').hidden = true;
+    $('turn-yours').textContent = '';
+    $('turn-after').hidden = true;
+    $('turn-today-row').hidden = turnNow.door;
+    $('turn-start').hidden = true;
+    $('turn-go').disabled = false;
+    $('turn-rest').hidden = false;
+    drawTurnLines();
+    var card = $('turn-card');
+    card.classList.remove('rising');
+    void card.offsetWidth;
+    card.classList.add('rising');
+    $('turn-question').focus({ preventScroll: true });
+    card.scrollIntoView({ behavior: STILL.matches ? 'auto' : 'smooth', block: 'nearest' });
   }
   function putTurnAway() {
     if (!turnNow) return;
@@ -5103,36 +5402,26 @@
       form.hidden = false;
     }
     layerClosed('turn');
+    setDialTap();
     showGreeting();
     showInvite();
     showTurnOffer();
   }
-  $('turn-offer').addEventListener('click', function () { giveTurn(1); });
-  $('door-turn').addEventListener('click', function () { giveTurn(1); });
-  // Tell today from here: the telling opens with the question standing
-  // above it, and from there Claude follows as ever. From the door, the
-  // question stands above the two choices while they come in, and above
-  // the box once they are in.
-  $('turn-tell').addEventListener('click', function () {
-    if (!turnNow || !turnNow.question) return;
-    var door = turnNow.door && !inside;
+  $('turn-offer').addEventListener('click', function () { openTurn(0); });
+  $('door-turn').addEventListener('click', function () { openTurn(0); });
+  $('turn-go').addEventListener('click', function () { turnAgain(1); });
+  $('turn-again').addEventListener('click', function () { turnAgain(1); });
+  // At the door, after a line: keep your own days, by either way in.
+  $('turn-keep').addEventListener('click', function () { putTurnAway(); openNew(); });
+  $('turn-been').addEventListener('click', function () { putTurnAway(); openBack(); });
+  // With a name: the question, and its place, above the box; the telling
+  // opens from there, and Claude follows as ever.
+  $('turn-today').addEventListener('click', function () {
+    if (!turnNow || !turnNow.question || turnNow.door) return;
     fromTurn = { phrase: turnNow.phrase, question: turnNow.question };
-    turnNow = null;
-    dial.unturn();
-    $('turn').hidden = true;
-    $('turn-line').value = '';
-    layerClosed('turn');
-    if (door) {
-      $('way-from').textContent = fromTurn.question;
-      $('way-from').hidden = false;
-      $('way').hidden = false;
-      showWayChoices(true);
-      return;
-    }
-    form.hidden = false;
+    putTurnAway();
+    tick();
     $('question').hidden = false;
-    $('question').textContent = fromTurn.question;
-    showInvite();
     box.focus();
   });
   function endFromTurn() {
@@ -5140,63 +5429,60 @@
     fromTurn = null;
     tick();
   }
-  // Stay with it a while: what others left here, newest first, and a line
-  // to leave for whoever lands here next.
+  // What others left at this place, newest first, as theirs; and, once
+  // left, their own line above.
+  function lineRow(e) {
+    var row = document.createElement('p'), said = document.createElement('q'), d = new Date(e.when);
+    said.textContent = e.text.slice(0, 600);
+    row.appendChild(said);
+    if (!isNaN(d)) {
+      var t = document.createElement('time');
+      t.dateTime = e.when;
+      t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+      row.appendChild(t);
+    }
+    return row;
+  }
   function drawTurnLines() {
     var lines = $('turn-lines'), here = turnNow;
     lines.textContent = '';
-    if (!here) return;
-    var all = (turnTide || []).slice();
-    turnMine.forEach(function (m) {
-      if (!all.some(function (e) { return e.where === m.where && e.text === m.text; })) all.push(m);
-    });
-    var shown = all.filter(function (e) { return e.where === here.at && e.text && !TURN_HIDE.test(e.text); }).slice(-3).reverse();
-    shown.forEach(function (e) {
-      var row = document.createElement('p'), said = document.createElement('q'), d = new Date(e.when);
-      said.textContent = e.text.slice(0, 600);
-      row.appendChild(said);
-      if (!isNaN(d)) {
-        var t = document.createElement('time');
-        t.dateTime = e.when;
-        t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
-        row.appendChild(t);
-      }
-      lines.appendChild(row);
-    });
+    if (!here || !here.at) return;
+    var shown = turnLines().filter(function (e) {
+      return e.where === here.at && e.text && !TURN_HIDE.test(e.text) && !(here.left && e.text === here.left);
+    }).slice(-5).reverse();
+    shown.forEach(function (e) { lines.appendChild(lineRow(e)); });
     $('turn-others').hidden = !shown.length;
   }
-  $('turn-stay').addEventListener('click', function () {
-    if (!turnNow) return;
-    $('turn-stay-box').hidden = false;
-    $('turn-note').hidden = true;
-    drawTurnLines();
-    Beach.look('pool:p6').then(function (r) {
-      if (r.status === 200 && r.json) turnTide = Beach.entries(r.json);
-      drawTurnLines();
-    });
-    $('turn-line').focus();
-  });
   Beach.addMic($('turn-line'), { dictate: true });
   $('turn-line').insertAdjacentElement('afterend', $('turn-noname'));
   $('turn-line').addEventListener('input', function () { $('turn-note').hidden = true; });
   $('turn-stay-box').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var here = turnNow, text = $('turn-line').value.trim().slice(0, 600);
-    if (!here || !text) { $('turn-line').focus(); return; }
+    if (!here || !here.at || !text) { $('turn-line').focus(); return; }
     $('turn-leave').disabled = true;
     Beach.note('pool:p6', 'a visitor', text, here.at).then(function () {
-      turnMine.push({ where: here.at, text: text, when: new Date().toISOString() });
-      if (turnNow === here) {
-        $('turn-line').value = '';
-        drawTurnLines();
-      }
+      var mine = { where: here.at, text: text, when: new Date().toISOString() };
+      turnMine.push(mine);
+      if (turnNow !== here) return;
+      here.left = text;
+      $('turn-line').value = '';
+      $('turn-stay-box').hidden = true;
+      $('turn-yours').textContent = '';
+      $('turn-yours').appendChild(lineRow(mine));
+      $('turn-yours-h').hidden = false;
+      drawTurnLines();
+      dial.turnTide(tideCounts(), true);
+      sayTide();
+      $('turn-after').hidden = !here.door;
     }, function () {
-      $('turn-note').textContent = 'That didn’t go through just now. Your words are still here.';
+      $('turn-note').textContent = 'That didn\u2019t go through just now. Your words are still here.';
       $('turn-note').hidden = false;
     }).then(function () { $('turn-leave').disabled = false; });
   });
   // The flick: across the sundial, quick and mostly sideways. Up and down
-  // still scroll the page.
+  // still scroll the page. It opens a turn where one may begin, and turns
+  // the circles again while one is out (never over a line half written).
   var flickFrom = null, flicked = false;
   dialEl.addEventListener('pointerdown', function (ev) {
     flickFrom = ev.button === 0 ? { x: ev.clientX, y: ev.clientY, t: ev.timeStamp } : null;
@@ -5208,11 +5494,10 @@
     if (!f) return;
     var dx = ev.clientX - f.x, dy = ev.clientY - f.y;
     if (Math.abs(dx) < 40 || Math.abs(dx) < 1.5 * Math.abs(dy) || ev.timeStamp - f.t > 700) return;
-    // On a first visit too, and at the door (3.72).
-    if (!turnNow && !emptyStart() && !doorStart()) return;
+    if (turnNow ? $('turn-line').value.trim() && !$('turn-rest').hidden && !$('turn-stay-box').hidden : !emptyStart() && !doorStart()) return;
     flicked = true;
     stopHold();
-    giveTurn(dx > 0 ? 1 : -1);
+    openTurn(dx > 0 ? 1 : -1);
   });
 
   // ---- On the home screen (6.1.4) ---------------------------------------------------
@@ -6386,7 +6671,6 @@
   }
   function showWayCard(card_) {
     $('way-choices').hidden = true;
-    $('door-turn-row').hidden = true;
     $('back-form').hidden = card_ !== $('back-form');
     $('new-form').hidden = card_ !== $('new-form');
     card_.classList.remove('rising');
