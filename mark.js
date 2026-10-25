@@ -300,8 +300,10 @@
     node('stop', { offset: '1', 'stop-color': 'var(--wash)', 'stop-opacity': '0' }, glowFill);
     // The sweep: colour shows only where this line has drawn so far.
     var mask = node('mask', { id: id + '-sweep', maskUnits: 'userSpaceOnUse', x: 17, y: -75, width: 430, height: 430 }, defs);
+    // The gap outruns the line by more than the cap, so nothing of the far
+    // end shows before the dash has reached it.
     var sweep = node('path', { 'class': 'sweep', d: path, fill: 'none', stroke: '#fff', 'stroke-width': 14,
-      'stroke-linecap': 'round', pathLength: 1000, 'stroke-dasharray': '1000 1000' }, mask);
+      'stroke-linecap': 'round', pathLength: 1000, 'stroke-dasharray': '1000 1040' }, mask);
 
     var under = node('g', { 'class': 'under' });
     art.insertBefore(under, art.firstChild);
@@ -600,7 +602,7 @@
     function drawMask(name, d, width) {
       var m = node('mask', { id: id + '-' + name, maskUnits: 'userSpaceOnUse', x: -40, y: -100, width: 540, height: 480 }, defs);
       return node('path', { d: d, fill: 'none', stroke: '#fff', 'stroke-width': width, 'stroke-linecap': 'round',
-        pathLength: 1000, 'stroke-dasharray': '1000 1000', 'stroke-dashoffset': 1000 }, m);
+        pathLength: 1000, 'stroke-dasharray': '1000 1040', 'stroke-dashoffset': 1000 }, m);
     }
     var ringLine = drawMask('draw-ring', RING_LINE, 18), strokeLine = drawMask('draw-stroke', path, 20);
     function draw(still) {
@@ -711,8 +713,90 @@
         { strokeDashoffset: -150, opacity: 0 }
       ], { duration: 2600, easing: 'ease-in-out' }).finished.catch(function () {});
     }
+    // Coming back ('Come back tomorrow. It will move.', 8.8): on the first
+    // open of a new day, the shadow swings round from the hour of their last
+    // words to this hour, along the arc a shadow takes, and yesterday's mark
+    // blooms in its colours. `from` is when they last spoke (null when not
+    // known); `k` yesterday's mark and `places` its places. Last words in
+    // the night: the shadow comes in from dusk. Now the night: the glow
+    // breathes once instead. `still`: the bloom's fade alone.
+    function comeBack(from, k, places, still) {
+      if (!now) return Promise.resolve();
+      var bloomed = k ? bloom(k, places, still) : Promise.resolve();
+      var is = castOf(now);
+      if (still || !svg.animate) return bloomed;
+      if (!is) {
+        play(glow, [{ transform: 'scale(1)' }, { transform: 'scale(1.18)', offset: 0.5 }, { transform: 'scale(1)' }],
+          { duration: 2800, easing: 'ease-in-out' });
+        return bloomed;
+      }
+      // The hours between, sampled, so the shadow swings rather than slides;
+      // from dusk's long shadow when their last words were in the night.
+      var h0 = from && castOf(from) ? hourOf(from) : (hourOf(now) < 12.75 ? 6 : 19.5), h1 = hourOf(now), frames = [], N = 16;
+      for (var i = 0; i <= N; i++) {
+        var h = h0 + (h1 - h0) * i / N, d = new Date(now);
+        d.setHours(Math.floor(h), Math.round((h % 1) * 60), 0, 0);
+        var c = castOf(d) || { dx: 0, dy: 0, opacity: 0 };
+        frames.push({ transform: 'translate(' + c.dx.toFixed(1) + 'px, ' + c.dy.toFixed(1) + 'px)', opacity: i === 0 && !(from && castOf(from)) ? 0 : c.opacity, offset: i / N });
+      }
+      cast.style.transition = 'none';
+      return cast.animate(frames, { duration: 3400, easing: 'cubic-bezier(.45,0,.25,1)' }).finished.catch(function () {}).then(function () {
+        cast.style.transition = '';
+        light();
+        return bloomed;
+      });
+    }
+    // Leaving (2.81 'Not you?', 2.5 forget me): the reverse of arriving. The
+    // marks lift off the spiral and go, newest first, the line undraws, the
+    // colour drains from the stroke, the centre dulls and the light lowers;
+    // the heart is left in ink alone. `dissolve`: for forget me, the marks
+    // dissolve where they are rather than lifting. `still`: a fade. Resolves
+    // once gone, the dial drawn empty.
+    function leave(dissolve, still) {
+      lit = false;
+      var marks = Array.prototype.slice.call(kept_.querySelectorAll('.mark')).reverse(), n = marks.length;
+      if (!svg.animate) { days([]); return Promise.resolve(); }
+      if (still) {
+        return Promise.all([kept_, spiral, momentsAt, tints].map(function (el) {
+          return fade(el, 1, 0, { duration: 900, easing: 'ease-in', fill: 'forwards' });
+        })).then(function () {
+          [kept_, spiral, momentsAt, tints].forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+          days([]);
+        });
+      }
+      var step = n ? Math.max(25, Math.min(70, 900 / n)) : 0, total = n * step;
+      marks.forEach(function (m, j) {
+        var x = Number(m.getAttribute('cx')) - CX, y = Number(m.getAttribute('cy')) - CY, r = Math.sqrt(x * x + y * y) || 1;
+        var away = dissolve ? 'scale(1.8)' : 'translate(' + (x / r * 16).toFixed(1) + 'px, ' + (y / r * 16).toFixed(1) + 'px) scale(0.3)';
+        play(m, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: away }],
+          { duration: dissolve ? 900 : 600, delay: j * step, easing: 'ease-in', fill: 'forwards' });
+      });
+      if (n > 1) {
+        spiral.setAttribute('pathLength', 1000);
+        spiral.setAttribute('stroke-dasharray', '1000 1000');
+        spiral.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -1000 }], { duration: total + 300, easing: 'linear', fill: 'forwards' });
+      }
+      fade(momentsAt, 1, 0, { duration: 600, easing: 'ease-in', fill: 'forwards' });
+      // The colour drains back the way it came.
+      sweep.classList.remove('sweeping');
+      sweep.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: 1000 }], { duration: 1400, delay: Math.max(0, total - 400), easing: 'ease-in', fill: 'forwards' });
+      var wait = Math.max(total, 0) + 1200;
+      if (dot) {
+        var s = centre(count, evenNow, true).scale;
+        dot.animate([{ opacity: 1, transform: centreAt(s) }, { opacity: 0.45, transform: centreAt(0.5) }],
+          { duration: 1200, delay: Math.max(0, wait - 1200), easing: 'ease-in-out', fill: 'forwards' });
+      }
+      if (halo) fade(halo, Number(halo.getAttribute('opacity') || 0), 0, { duration: 900, delay: Math.max(0, wait - 1200), fill: 'forwards' });
+      return new Promise(function (ok) { setTimeout(ok, wait + 100); }).then(function () {
+        [kept_, spiral, momentsAt, sweep, dot, halo].forEach(function (el) { if (el && el.getAnimations) el.getAnimations().forEach(function (a) { a.cancel(); }); });
+        spiral.removeAttribute('pathLength');
+        spiral.removeAttribute('stroke-dasharray');
+        days([]);
+      });
+    }
     return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
-      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive, voice: voice };
+      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive, voice: voice,
+      comeBack: comeBack, leave: leave };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
