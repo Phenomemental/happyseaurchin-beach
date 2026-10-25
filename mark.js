@@ -547,54 +547,134 @@
         { duration: 1000, delay: at_, fill: 'forwards' }).then(function () { if (g.parentNode) g.parentNode.removeChild(g); });
       return at_ + 1000;
     }
-    // ---- The turn (3.7) ---------------------------------------------------------
-    // A flick sets the six pools turning round the heart, each in its own
-    // colour and all one size, so each place is one turn in six; where they
-    // rest, the pool at the top brightens. `k` is the pool to rest on (an
-    // index into POOLS), chosen fairly by the page; `dir` 1 turns clockwise,
-    // -1 the other way; `still`: nothing turns, that pool simply brightens.
-    // Resolves once it rests.
-    var turning = node('g', { 'class': 'sd-turning', 'pointer-events': 'none' }, svg), turnRun = 0;
-    function turn(k, dir, still) {
-      var run = ++turnRun;
+    // ---- The turn (3.7; reworked 25 October 2026) --------------------------------
+    // The six circles round the heart, each in its own colour and all one
+    // size, so each place is one turn in six, each with its phrase beneath
+    // it; and over them the tide: of the lines people have left at the
+    // places, each place's share, drawn as one closed curve whose reach at
+    // each place is its share, against a dotted ring where a fair share (one
+    // in six) would sit. turnShow(counts, pick, label) lays them out, the
+    // first place at the top; a tap on a circle calls pick(k) (an index into
+    // POOLS). turn(k, dir, still) sets them turning round the heart, the
+    // words kept upright, and rests k at the top, brightened; turnRest(k,
+    // still) turns the short way to k. `dir` 1 turns clockwise, -1 the other
+    // way; `still`: nothing turns. turnTide(counts, swell) redraws the curve.
+    // Each resolves once it rests. unturn() takes them away.
+    var turning = node('g', { 'class': 'sd-turning' }, svg), turnRun = 0, turnAt = 0, turnPlaces = null, turnCurve = null;
+    var TIDE_FAIR = 88, TIDE_LOW = 52, TIDE_HIGH = 118;
+    function tidePath(counts) {
+      var sum = 0;
+      (counts || []).forEach(function (c) { sum += c || 0; });
+      var pts = P6.map(function (n, j) {
+        var c = (counts || [])[n - 1] || 0;
+        var r = !sum ? TIDE_FAIR : c ? Math.max(TIDE_LOW, Math.min(TIDE_HIGH, TIDE_FAIR * Math.sqrt(c * POOLS.length / sum))) : TIDE_LOW;
+        return at(-90 + j * 60, r);
+      });
+      // One smooth closed curve through the six reaches.
+      var d = 'M ' + pts[0].x.toFixed(1) + ',' + pts[0].y.toFixed(1);
+      for (var i = 0; i < pts.length; i++) {
+        var p0 = pts[(i + 5) % 6], p1 = pts[i], p2 = pts[(i + 1) % 6], p3 = pts[(i + 2) % 6];
+        d += ' C ' + (p1.x + (p2.x - p0.x) / 6).toFixed(1) + ',' + (p1.y + (p2.y - p0.y) / 6).toFixed(1) + ' ' +
+          (p2.x - (p3.x - p1.x) / 6).toFixed(1) + ',' + (p2.y - (p3.y - p1.y) / 6).toFixed(1) + ' ' + p2.x.toFixed(1) + ',' + p2.y.toFixed(1);
+      }
+      return d + ' Z';
+    }
+    function layOut() {
+      if (!turnPlaces) return;
+      turnPlaces.forEach(function (g, k) {
+        var a = at(-90 + P6.indexOf(POOLS[k].n) * 60 + turnAt, POOL_RING);
+        g.setAttribute('transform', 'translate(' + a.x.toFixed(1) + ' ' + a.y.toFixed(1) + ')');
+      });
+      if (turnCurve) turnCurve.setAttribute('transform', 'rotate(' + turnAt.toFixed(2) + ' ' + CX + ' ' + CY + ')');
+    }
+    function lightPlace(k) {
+      (turnPlaces || []).forEach(function (g, i) {
+        g.classList.toggle('lit', i === k);
+        g.classList.toggle('dim', k >= 0 && i !== k);
+      });
+    }
+    function turnShow(counts, pick, label) {
+      turnRun++;
       while (turning.firstChild) turning.removeChild(turning.firstChild);
       svg.classList.add('pooled');
-      var wheel = node('g', {}, turning), dots = POOLS.map(function (p) {
-        var a = at(-90 + P6.indexOf(p.n) * 60, POOL_RING);
-        return node('circle', { cx: a.x.toFixed(1), cy: a.y.toFixed(1), r: 22, fill: p.hue, 'fill-opacity': 0.55 }, wheel);
-      });
-      var end = -P6.indexOf(POOLS[k].n) * 60;
-      end = ((end % 360) + 360) % 360;
-      if (dir < 0) end -= 360;
-      end += (dir < 0 ? -1 : 1) * 360 * 3;
-      function rest(at_) {
-        wheel.setAttribute('transform', 'rotate(' + at_.toFixed(2) + ' ' + CX + ' ' + CY + ')');
-        dots.forEach(function (d, i) {
-          d.setAttribute('fill-opacity', i === k ? 0.95 : 0.16);
-          d.setAttribute('r', i === k ? 27 : 20);
+      turnAt = 0;
+      node('circle', { 'class': 'sd-tide-fair', cx: CX, cy: CY, r: TIDE_FAIR, fill: 'none' }, turning);
+      turnCurve = node('path', { 'class': 'sd-tide-curve', d: tidePath(counts) }, turning);
+      turnPlaces = [];
+      // Drawn, and reached by Tab, in P6's order from the top.
+      P6.forEach(function (n) {
+        var k = n - 1, p = POOLS[k];
+        var g = node('g', { 'class': 'sd-turnplace', role: 'button', tabindex: 0, 'data-pool': k, 'aria-label': label ? label(p) : p.phrase }, turning);
+        node('circle', { 'class': 'sd-turnplace-hit', r: 30, fill: 'transparent' }, g);
+        node('circle', { 'class': 'sd-turnplace-water', r: 22, fill: p.hue }, g);
+        caption(g, p.phrase, 22);
+        g.addEventListener('click', function (ev) { ev.stopPropagation(); if (pick) pick(k); });
+        g.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+        g.addEventListener('keydown', function (ev) {
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (!ev.repeat && pick) pick(k);
         });
-      }
-      if (still || !window.requestAnimationFrame) {
-        rest(0);
-        return Promise.resolve();
-      }
+        turnPlaces[k] = g;
+      });
+      layOut();
+    }
+    function spin(run, from, to, ms) {
       return new Promise(function (ok) {
-        var t0 = null, D = 2800;
+        var t0 = null;
         function frame(now) {
-          if (run !== turnRun) return ok();
+          if (run !== turnRun) return ok(false);
           if (t0 === null) t0 = now;
-          var t = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - t, 3);
-          wheel.setAttribute('transform', 'rotate(' + (end * e).toFixed(2) + ' ' + CX + ' ' + CY + ')');
+          var t = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - t, 3);
+          turnAt = from + (to - from) * e;
+          layOut();
           if (t < 1) return requestAnimationFrame(frame);
-          rest(end);
-          ok();
+          turnAt = ((to % 360) + 360) % 360;
+          layOut();
+          ok(true);
         }
         requestAnimationFrame(frame);
       });
     }
+    function settle(run, k, to, ms, still) {
+      lightPlace(-1);
+      if (still || !window.requestAnimationFrame || to === turnAt) {
+        turnAt = ((to % 360) + 360) % 360;
+        layOut();
+        lightPlace(k);
+        return Promise.resolve();
+      }
+      return spin(run, turnAt, to, ms).then(function (done) { if (done) lightPlace(k); });
+    }
+    function turn(k, dir, still) {
+      if (!turnPlaces) turnShow();
+      var run = ++turnRun, d = dir < 0 ? -1 : 1, to = -P6.indexOf(POOLS[k].n) * 60;
+      // From where they stand, the long way round: two whole turns and more.
+      while (d > 0 ? to <= turnAt : to >= turnAt) to += d * 360;
+      return settle(run, k, to + d * 720, 2800, still);
+    }
+    function turnRest(k, still) {
+      if (!turnPlaces) turnShow();
+      var run = ++turnRun, to = -P6.indexOf(POOLS[k].n) * 60;
+      var delta = (((to - turnAt) % 360) + 540) % 360 - 180;   // the short way
+      return settle(run, k, turnAt + delta, 700, still);
+    }
+    function turnTide(counts, swell) {
+      if (!turnCurve) return;
+      turnCurve.setAttribute('d', tidePath(counts));
+      if (swell) {
+        turnCurve.classList.remove('swell');
+        void turnCurve.getBoundingClientRect();
+        turnCurve.classList.add('swell');
+      }
+    }
     function unturn() {
       turnRun++;
       while (turning.firstChild) turning.removeChild(turning.firstChild);
+      turnPlaces = null;
+      turnCurve = null;
+      turnAt = 0;
       if (!pooled.firstChild) svg.classList.remove('pooled');
     }
     // ---- The way in (2.8): arriving, the beat, the days coming round --------------
@@ -815,7 +895,7 @@
       });
     }
     return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
-      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive, voice: voice,
+      where: where, bloom: bloom, ring: ring, turn: turn, turnShow: turnShow, turnRest: turnRest, turnTide: turnTide, unturn: unturn, draw: draw, beat: beat, arrive: arrive, voice: voice,
       comeBack: comeBack, leave: leave };
   }
 
