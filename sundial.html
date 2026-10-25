@@ -529,6 +529,30 @@
     text-wrap: pretty;
     margin: 0 0 0.8rem;
   }
+  /* The turn of a week, a month, a season, a year (3.82): in the
+     question's own place, always in its warm italic. */
+  .sd-question.sd-rung,
+  main.sd.voiced .sd-question.sd-rung {
+    font-style: italic;
+  }
+  form.sd-speak button.sd-rung-not {
+    margin-right: auto;
+    font: inherit;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0.45rem 0.2rem;
+    min-height: 2.75rem;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.25em;
+    cursor: pointer;
+  }
+  form.sd-speak button.sd-rung-not[hidden] {
+    display: none;
+  }
   form.sd-speak textarea::placeholder {
     font-style: italic;
     color: var(--muted);
@@ -807,6 +831,67 @@
     font-size: 1.35rem;
     line-height: 1.25;
   }
+  /* Your room (3.81, 25 October 2026): the notes left for them, newest
+     first, each with who left it and when, and nothing else on the screen. */
+  main.sd.room-open .sd-dial,
+  main.sd.room-open .sd-wordmark,
+  main.sd.room-open .sd-when,
+  main.sd.room-open .sd-name,
+  main.sd.room-open .sd-who,
+  main.sd.room-open .sd-days {
+    display: none;
+  }
+  .sd-room {
+    width: 100%;
+    max-width: 34rem;
+    margin: 2.4rem auto 0;
+    text-align: left;
+  }
+  .sd-room-note {
+    font-style: italic;
+    text-align: center;
+    margin: 1rem 0;
+  }
+  .sd-room-notes,
+  .sd-room-replies {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sd-room-notes > li {
+    margin: 0;
+    padding: 1.1rem 0;
+    border-top: 1px solid var(--frame);
+  }
+  .sd-room-notes > li:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .sd-room-notes li::before {
+    content: none;
+  }
+  .sd-room-by {
+    font-size: 0.85rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 0 0 0.3rem;
+  }
+  .sd-room-text {
+    font-size: 1.15rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 0;
+  }
+  .sd-room-replies {
+    margin: 0.8rem 0 0 0.5rem;
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--frame);
+  }
+  .sd-room-replies > li {
+    margin: 0 0 0.8rem;
+  }
   /* Each moment told that day, under the row (3.891): its time, its title. */
   .sd-strand-moment {
     display: block;
@@ -1044,6 +1129,29 @@
   .sd-tomorrow {
     font-style: italic;
     margin: 0.2rem 0 0.6rem;
+  }
+  /* When what's ahead is for (25 October 2026): three small grey words
+     beneath its line, the one chosen lit. */
+  .sd-horizon {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: -0.5rem 0 0.6rem;
+  }
+  .sd-horizon button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0.4rem 0.1rem;
+    min-height: 2.5rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-horizon button[aria-pressed="true"] {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--crimson);
+    text-underline-offset: 0.25em;
   }
   .sd-pool {
     font-style: italic;
@@ -1914,6 +2022,7 @@
       <h1 class="sd-title" id="day-title" tabindex="-1"></h1>
       <div class="sd-lines" id="day-lines"></div>
       <p class="sd-tomorrow" id="day-tomorrow" hidden></p>
+      <p class="sd-horizon" id="day-horizon" role="group" aria-label="When it is for" hidden><button type="button" data-h="tomorrow" aria-pressed="true">tomorrow</button><span aria-hidden="true"> · </span><button type="button" data-h="week" aria-pressed="false">this week</button><span aria-hidden="true"> · </span><button type="button" data-h="month" aria-pressed="false">this month</button></p>
       <p class="sd-pool" id="day-pool" hidden></p>
     </div>
     <p class="sd-yours">This is your day, in your words.</p>
@@ -1976,6 +2085,11 @@
       </div>
       <button type="button" class="sd-put-back" id="put-back">put it back</button>
     </div>
+  </section>
+
+  <section class="sd-room" id="room" aria-label="Your room" hidden>
+    <p class="sd-room-note" id="room-note" role="status" hidden></p>
+    <ol class="sd-room-notes" id="room-notes"></ol>
   </section>
 
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
@@ -2053,7 +2167,7 @@
       <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
       <p class="sd-soft sd-call-fail" id="call-fail" role="status" hidden></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
-      <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden><svg class="sd-keep-heart" viewBox="0 10 390 325" aria-hidden="true" focusable="false"><path class="ring" d="M 311.7,49.6 A 124,118 0 1 0 353.3,115.4"/><path class="line" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324"/><ellipse cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)"/></svg>Keep today</button><button type="submit" class="sd-send" id="send">Send</button></div>
+      <div class="sd-send-row"><button type="button" class="sd-rung-not" id="rung-not" hidden>not now</button><button type="button" class="sd-keep-now" id="keep-now" hidden><svg class="sd-keep-heart" viewBox="0 10 390 325" aria-hidden="true" focusable="false"><path class="ring" d="M 311.7,49.6 A 124,118 0 1 0 353.3,115.4"/><path class="line" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324"/><ellipse cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)"/></svg>Keep today</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
   </div>
 
@@ -2165,12 +2279,12 @@
 <script src="beach.js?v=2026-10-25d"></script>
 <script src="mark.js?v=2026-10-25d"></script>
 <script src="shell.js?v=2026-10-25d"></script>
-<script src="days.js?v=2026-10-25d"></script>
+<script src="days.js?v=2026-10-25e"></script>
 <script src="seal.js?v=2026-10-25d"></script>
 <script src="roster.js?v=2026-10-25d"></script>
 <script src="whispers.js?v=2026-10-25d"></script>
 <script src="words.js?v=2026-10-25d"></script>
-<script src="projects.js?v=2026-10-25d"></script>
+<script src="projects.js?v=2026-10-25e"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
 <script type="module" src="gray.js?v=2026-10-25d"></script>
 <script>
@@ -2194,7 +2308,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.13 · 25 October 2026';
+  var VERSION = 'Sundial M4.14 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2361,7 +2475,8 @@
   function tick() {
     var now = new Date();
     var g = greetNow();
-    $('question').textContent = fromTurn ? fromTurn.question : g ? g.ask : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
+    $('question').textContent = rungSaid ? rungSaid : rungAsk ? 'What\u2019s ' + rungAsk.words + ' about?'
+      : fromTurn ? fromTurn.question : g ? g.ask : 'What’s with you ' + THIS_PART[partAt(now)] + '?';
     $('date').textContent = dateWords(now);
     $('place').textContent = place;
     $('place').hidden = !place;
@@ -2430,6 +2545,8 @@
     setDialTap();
     showInvite();
     showPlaces();
+    if (all.rungs) rungsNow = all.rungs;
+    askRungs();
   }
   // The last day before today (or before the day given) with anything kept,
   // as its day address.
@@ -2589,13 +2706,25 @@
     showPlaces();
     if (backing) return;
     clearTimeout(syncTimer);
+    syncing = true;
     syncTimer = setTimeout(function () {
+      syncing = false;
       var extra = depthNow() - layers.length;
       if (extra > 0 && !backing) {
         skipPop++;
         history.go(-extra);
       }
     }, 0);
+  }
+  // Once the steps of layers just closed have left history: a screen
+  // opened from the menu then takes one step of its own, so one back
+  // closes it.
+  var syncing = false;
+  function settled(fn) {
+    (function wait(n) {
+      if ((syncing || skipPop) && n < 40) return setTimeout(function () { wait(n + 1); }, 25);
+      fn();
+    })(0);
   }
   window.addEventListener('popstate', function (ev) {
     if (skipPop) { skipPop--; return; }
@@ -2609,6 +2738,7 @@
       else if (top === 'tide') closeTide();
       else if (top === 'turn') putTurnAway();
       else if (top === 'menu') closeMenu();
+      else if (top === 'room') closeRoom();
       if (layers[layers.length - 1] === top) layers.pop();
     }
     backing = false;
@@ -4166,9 +4296,10 @@
       p.textContent = l;
       lines.appendChild(p);
     });
-    var tomorrow = sheet.tomorrow.replace(/^tomorrow:\s*/i, '');
-    $('day-tomorrow').textContent = tomorrow ? 'Tomorrow: ' + tomorrow : '';
+    var tomorrow = wishOf(sheet);
     $('day-tomorrow').hidden = !tomorrow;
+    $('day-horizon').hidden = !tomorrow;
+    setHorizon('tomorrow');
     var touched = Mark.placesWords(sheet.places);
     $('day-pool').textContent = touched;
     $('day-pool').hidden = !touched;
@@ -4178,6 +4309,25 @@
     day.hidden = false;
     $('day-title').focus();
   }
+  // What's ahead reaches the now (25 October 2026): beneath a sheet's line
+  // of what's ahead, three small grey words say when it is for. Tomorrow,
+  // lit at first, keeps it as tomorrow's line, as always; this week or this
+  // month lays it in that pile of their hand in their own now,
+  // ahead:now:<name>, instead (function:ahead: the one shared ahead:<name>
+  // became a hand per project on 12 October; now's is ahead:now:<name>).
+  var AHEAD_AS = { tomorrow: 'Tomorrow', week: 'This week', month: 'This month' }, horizon = 'tomorrow';
+  function wishOf(sheet) { return String((sheet && sheet.tomorrow) || '').replace(/^tomorrow:\s*/i, '').trim(); }
+  function setHorizon(h) {
+    horizon = AHEAD_AS[h] ? h : 'tomorrow';
+    Array.prototype.forEach.call($('day-horizon').querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-h') === horizon ? 'true' : 'false');
+    });
+    var wish = wishOf(sheetNow);
+    $('day-tomorrow').textContent = wish ? AHEAD_AS[horizon] + ': ' + wish : '';
+  }
+  Array.prototype.forEach.call($('day-horizon').querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () { if (!keeping) setHorizon(b.getAttribute('data-h')); });
+  });
   function restUntilTomorrow() {
     hideTurn();
     form.hidden = true;
@@ -4210,6 +4360,7 @@
     ev.preventDefault();
     var words = box.value.trim();
     if (!words || busy) return;
+    if (rungAsk) { answerRung(words); return; }
     showCorner();
     if (!stored(KEY)) { ownWords(words); return; }
     if (turnsToday() >= TURNS_A_DAY) { restUntilTomorrow(); return; }
@@ -4335,6 +4486,78 @@
     box.focus();
   });
 
+  // ---- The turn of a week, a month, a season, a year (3.82) ------------------------
+  // On the first day told in a new week, in the question's own place and
+  // its warm italic: 'What's this week about?' The answer, in their own
+  // words, sets the week's rung of now:<name>; the same once at the turn of
+  // a month, a season and a year, the widest first. Asked only where
+  // nothing stands at that rung, never before a first kept day, and, let
+  // be with 'not now', not again until the next turn (remembered on this
+  // device; an answer is kept in their own day book).
+  var RUNG_ASKED = 'sundial.rungs', rungsNow = null, rungAsk = null, rungSaid = '', rungTurn = 0;
+  var RUNGS = [[4, 'this year'], [5, 'this season'], [6, 'this month'], [7, 'this week']];
+  function nextRung() {
+    var name = stored(NAME), t = todayAddress();
+    if (!inside || !name || !held(WORD) || !rungsNow || (messages && messages.length) || sheetNow || turnNow) return null;
+    var told = days.map(function (d) { return d.address; }).concat(moments.map(function (m) { return dayOfAddress(m.address); }));
+    var asked = keptHere(RUNG_ASKED)[name] || {};
+    for (var k = 0; k < RUNGS.length; k++) {
+      var n = RUNGS[k][0], period = t.slice(0, n);
+      if (asked[n] === period || rungsNow[n]) continue;
+      var before = told.some(function (a) { return a.slice(0, n) < period; });
+      var earlier = told.some(function (a) { return a.slice(0, n) === period && a < t; });
+      if (before && !earlier) return { digits: n, period: period, words: RUNGS[k][1] };
+    }
+    return null;
+  }
+  function rungAsked(r) {
+    var all = keptHere(RUNG_ASKED), name = stored(NAME);
+    all[name] = all[name] || {};
+    all[name][r.digits] = r.period;
+    store(RUNG_ASKED, JSON.stringify(all));
+  }
+  function askRungs() {
+    rungAsk = nextRung();
+    $('rung-not').hidden = !rungAsk;
+    $('question').classList.toggle('sd-rung', !!(rungAsk || rungSaid));
+    if (rungAsk) {
+      $('keep-now').hidden = true;
+      $('turn-offer-row').hidden = true;
+    }
+    tick();
+  }
+  function answerRung(words) {
+    var r = rungAsk, turn = ++rungTurn;
+    callSays('');
+    setBusy(true);
+    Days.setRung(stored(NAME), held(WORD), r.digits, todayAddress(), words).then(function (res) {
+      setBusy(false);
+      if (turn !== rungTurn) return;
+      if (res === 'kept') {
+        rungAsked(r);
+        rungsNow[r.digits] = words;
+        box.value = '';
+        rungSaid = 'Kept for ' + r.words + '.';
+        askRungs();
+        setTimeout(function () { rungSaid = ''; askRungs(); }, 2600);
+      } else if (res === 'stands') {
+        rungAsked(r);
+        rungsNow[r.digits] = rungsNow[r.digits] || words;
+        askRungs();
+        callSays('Words already stand for ' + r.words + '. Yours are still here.');
+      } else {
+        callSays(res === 'wrong' ? 'That word doesn\u2019t open your days.' : 'That didn\u2019t go through just now. Your words are still here.');
+      }
+      box.focus();
+    });
+  }
+  $('rung-not').addEventListener('click', function () {
+    if (!rungAsk || busy) return;
+    rungAsked(rungAsk);
+    askRungs();
+    box.focus();
+  });
+
   // ---- Keep ---------------------------------------------------------------------------
   // The first time: a name and a word, with three plain truths. After that,
   // the word once a visit, and then one tap.
@@ -4407,14 +4630,19 @@
   }
   function keepWith(typed, word) {
     if (!sheetNow) return;
-    var moment = Mark.write(sheetNow), who = null, first = false;
+    // For this week or this month: the moment says so, tomorrow's line is
+    // not written, and the line goes to that pile once the day is kept.
+    var wish = wishOf(sheetNow), later = wish && horizon !== 'tomorrow' ? horizon : '', note = '';
+    var moment = later
+      ? Mark.write({ title: sheetNow.title, lines: sheetNow.lines.concat([AHEAD_AS[later] + ': ' + wish]), tomorrow: '', places: sheetNow.places, own: sheetNow.own })
+      : Mark.write(sheetNow), who = null, first = false;
     var dayText = Mark.write(dayNow || { title: sheetNow.title, lines: sheetNow.lines, tomorrow: '', places: sheetNow.places, own: sheetNow.own });
     $('keep-fail').hidden = true;
     setKeeping(true);
     Days.resolve(typed).then(function (w) {
       who = w;
       first = w.state === 'free';
-      return Days.keep(w, word, { moment: moment, day: dayText, ahead: aheadNow ? aheadLine(aheadNow) : '', wrote: wroteHere(w.name) });
+      return Days.keep(w, word, { moment: moment, day: dayText, ahead: later ? '' : aheadNow ? aheadLine(aheadNow) : '', wrote: wroteHere(w.name) });
     }).catch(function () { return 'unreachable'; }).then(function (result) {
       // The write didn't land (8.8): said plainly on the sheet, their words
       // still on screen, to try again. A word held from before stays held.
@@ -4447,7 +4675,19 @@
       hold(CHOSEN, '');
       spendGreeting();
       setDialTap();
-      return Days.readAll(who.name).catch(function () {
+      // The line to its pile; should the pile not take it, it is kept for
+      // tomorrow, as it always was, and one plain line says so after.
+      return (later ? Days.card(who.name, word, later, wish).then(function (res) {
+        if (res === 'kept') return null;
+        note = (res === 'full' ? AHEAD_AS[later] + ' already holds nine'
+          : res === 'wrong' ? 'Your hand opens with another word'
+          : 'That line couldn\u2019t reach ' + AHEAD_AS[later].toLowerCase() + ' just now') + ', so it\u2019s kept for tomorrow.';
+        return Days.resolve(who.name).then(function (w) {
+          return Days.keep(w, word, { moment: '', day: '', ahead: aheadLine(aheadNow || wish), wrote: wroteHere(w.name) });
+        }).catch(function () { return null; });
+      }) : Promise.resolve(null)).then(function () {
+        return Days.readAll(who.name);
+      }).catch(function () {
         var t = todayAddress();
         return { days: days.filter(function (d) { return d.address !== t; }).concat([{ address: t, text: dayText }]),
           moments: moments.concat([{ address: Days.now(), text: moment }]) };
@@ -4470,7 +4710,7 @@
         window.SUNDIAL_FROM = who.name;
         // Every write is read back as landed: now the moment (8.8).
         keptMoment({ all: all, word: word, places: Mark.read(dayText).places, newName: first,
-          first: before === 0 && after === 1, ninth: after > before && after % 9 === 0, nine: after === 9, at: Math.max(after, 1) });
+          first: before === 0 && after === 1, ninth: after > before && after % 9 === 0, nine: after === 9, at: Math.max(after, 1), note: note });
       });
     });
   }
@@ -4569,8 +4809,8 @@
       momentNow = null;
       $('moment').hidden = true;
       Array.prototype.forEach.call(lines, function (p) { p.classList.remove('shown'); });
-      kept.textContent = m.newName ? 'On any phone: this address, your name, your word.' : '';
-      kept.hidden = !m.newName;
+      kept.textContent = m.note || (m.newName ? 'On any phone: this address, your name, your word.' : '');
+      kept.hidden = !(m.note || m.newName);
       $('bring-row').hidden = !m.newName;
       box.value = '';
       form.hidden = false;
@@ -5354,22 +5594,23 @@
   // open a sheet of their own places over the screen; the cross, a tap
   // outside it, Escape or the phone's back button fold it away. YOURS:
   // today, their days, their room, page and hand. Then YOUR WORK and YOUR
-  // PAGES, read straight from lists:<name> (its first branch; each by its
-  // proper name, to its own page or its walk, projects.js) and
-  // artifacts:<name> (its eighth group) as map.html reads them; a section
+  // PAGES, read straight from lists:<name> (its first branch, read as the
+  // walk and recency pages read it) and artifacts:<name> (its eighth
+  // group) as map.html reads it; a section
   // shows only when it has something in it. A small crimson dot, on the
   // lines and beside Your room, when the room has changed since they last
   // looked from here (the beach's index says when each block last
   // changed; the look is remembered on this device only): no memory, no dot.
   var menu = $('menu'), places = null, placesFor = '', placesRead = null;
   var ROOM_LOOK = 'sundial.roomLook', SITE_PAGE = 'https://happyseaurchin.com/page/', SITE_HANDS = 'https://happyseaurchin.com/hands/';
+  var SITE_WALK = 'https://happyseaurchin.com/walk/';
   var PLACE_STAMP = /^\s*\d{4}-\d{2}-\d{2}T[\d:.]+Z?\s*$/;
   // The top-left corner always takes you back (25 October 2026): at home it
   // holds the three lines; over any other screen (the day list, the
   // circles, a shell lifted, a turn) a back arrow that steps back one
   // screen, as the phone's own back does. The sheets (this one and About)
   // carry their own way out.
-  var STEPS = { tide: closeTide, pools: gatherBack, shell: putBack, turn: putTurnAway };
+  var STEPS = { tide: closeTide, pools: gatherBack, shell: putBack, turn: putTurnAway, room: closeRoom };
   function stepOpen() {
     for (var k = layers.length - 1; k >= 0; k--) if (STEPS[layers[k]]) return layers[k];
     return '';
@@ -5459,17 +5700,21 @@
     return PLACE_STAMP.test(s) ? '' : s;
   }
   function capped(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-  // Their projects: the first branch of lists:<name>, most standing first.
+  // Their projects: the first branch of lists:<name>, nested so that rank
+  // is depth (25 October 2026). Each rung is a family: its "_" the
+  // family's name, its 1 the next rung, its 2 their own line on how they
+  // stand to it. Read straight down, top first, as theme.js
+  // (chainToItems) reads it for the walk and recency pages.
   function workOf(lists) {
-    var out = [];
-    (function walk(node, d) {
-      if (!node || typeof node !== 'object' || d > 30) return;
-      for (var i = 1; i <= 9; i++) {
-        var t = placeWords(node[String(i)]);
-        if (t && out.indexOf(t) < 0) out.push(t);
-        walk(node[String(i)], d + 1);
+    var out = [], seen = {}, n = lists && lists['1'] && lists['1']['1'], guard = 0;
+    while (n && typeof n === 'object' && guard++ < 200) {
+      var family = typeof n._ === 'string' ? n._.trim() : '';
+      if (family && !seen[family]) {
+        seen[family] = 1;
+        out.push({ family: family, line: typeof n['2'] === 'string' ? Beach.plain(n['2'].trim()) : '' });
       }
-    })(lists && lists['1'], 0);
+      n = n['1'];
+    }
     return out;
   }
   // Their pages: the eighth group of artifacts:<name>, each 'name — address
@@ -5519,7 +5764,7 @@
     w.className = 'sd-menu-what';
     w.textContent = what;
     el.appendChild(n);
-    el.appendChild(w);
+    if (what) el.appendChild(w);
     el.addEventListener('click', function (ev) {
       if (!outward) return act();
       if (el.target) return closeMenu(true);
@@ -5551,20 +5796,21 @@
     if (tappable()) placeItem(yours, 'Your days', 'every day you have kept, the newest first', function () {
       closeMenu();
       if (poolsOpen) gatherBack();
-      if (!tideOpen) openTide();
-      window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
+      if (roomOpen) closeRoom();
+      settled(function () {
+        if (!tideOpen) openTide();
+        window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
+      });
     });
-    var room = placeItem(yours, 'Your room', 'where people leave you a note', SITE_PAGE + encodeURIComponent(name), roomNew());
-    room.addEventListener('click', function () {
-      lookAtRoom(name);
-      $('menu-dot').hidden = true;
-    });
+    placeItem(yours, 'Your room', 'where people leave you a note', openRoom, roomNew());
     placeItem(yours, 'Your page', 'your page, as others see it', SITE_PAGE + encodeURIComponent(name));
     placeItem(yours, 'Your hand', 'what you\u2019re holding, and what\u2019s being dealt', SITE_HANDS + encodeURIComponent(name));
     var mine = places && places.name === name ? places : null;
-    // Each project by its proper name: to the page Matthew made for it,
-    // else walked at walk.html?p=<project> (projects.js).
-    section('work', mine ? workOf(mine.lists).map(function (p) { return Projects.place(p, name); }) : []);
+    // Each family by its name, made readable (projects.js), with their own
+    // line beneath it, to its walk on David's site, as theirs.
+    section('work', mine ? workOf(mine.lists).map(function (f) {
+      return { name: Projects.titled(f.family), what: f.line, href: SITE_WALK + encodeURIComponent(f.family) + '/' + encodeURIComponent(name) };
+    }) : []);
     section('pages', mine ? pagesOf(mine.artifacts) : []);
   }
   function openMenu() {
@@ -5582,6 +5828,89 @@
     if (menu.open) menu.close ? menu.close() : menu.removeAttribute('open');
     layerClosed('menu');
     if (!away && !$('menu-open').hidden) $('menu-open').focus({ preventScroll: true });
+  }
+  // ---- Your room (3.81, amended 25 October 2026) ---------------------------------
+  // Opened from Your places, inside Sundial: the notes left in pool:<name>,
+  // read live, the newest first, each with who left it and when (a reply
+  // beneath the note it answers), and nothing else on the screen. The
+  // corner's back arrow, or the phone's back, returns. Opening it is the
+  // look the crimson dot is measured from. A sealed note is passed over:
+  // only its writer could read it.
+  var roomOpen = false, roomHidden = null, roomRead = 0, SEALED = /^Encrypted \(gray\)/;
+  function openRoom() {
+    var name = stored(NAME);
+    if (!name || roomOpen) return;
+    closeMenu(true);
+    if (poolsOpen) gatherBack();
+    if (tideOpen) closeTide();
+    if (turnNow) putTurnAway();
+    lookAtRoom(name);
+    $('menu-dot').hidden = true;
+    settled(function () {
+      if (roomOpen) return;
+      roomOpen = true;
+      roomHidden = ['greet', 'invite', 'ask', 'rest', 'kept', 'bring-row', 'day', 'speak', 'not-you-row'].map(function (id) { return [id, $(id).hidden]; });
+      roomHidden.forEach(function (h) { $(h[0]).hidden = true; });
+      main.classList.add('room-open');
+      $('room').hidden = false;
+      layerOpened('room');
+      window.scrollTo(0, 0);
+      drawRoom(name);
+    });
+  }
+  function closeRoom() {
+    if (!roomOpen) return;
+    roomOpen = false;
+    roomRead++;
+    layerClosed('room');
+    (roomHidden || []).forEach(function (h) { $(h[0]).hidden = h[1]; });
+    main.classList.remove('room-open');
+    $('room').hidden = true;
+    showInvite();
+    setDialTap();
+    if (!$('menu-open').hidden) $('menu-open').focus({ preventScroll: true });
+  }
+  function roomSays(line) {
+    $('room-note').textContent = line;
+    $('room-note').hidden = !line;
+  }
+  function drawRoom(name) {
+    var list = $('room-notes'), turn = ++roomRead;
+    list.textContent = '';
+    roomSays('');
+    Beach.look('pool:' + name).then(function (r) {
+      if (turn !== roomRead || !roomOpen) return;
+      if (r.status === 404) return roomSays('Nobody has left a note here yet.');
+      if (r.status !== 200 || !r.json || typeof r.json !== 'object') return roomSays('Your room can\u2019t be read just now. Try again in a moment.');
+      var notes = Beach.entries(r.json).filter(function (e) { return !SEALED.test(e.text); }).reverse();
+      if (!notes.length) return roomSays('Nobody has left a note here yet.');
+      notes.forEach(function (e) { list.appendChild(noteOf(e)); });
+    });
+  }
+  // When a note was left: its day and time, and its year when not this one.
+  function noteWhen(iso) {
+    var d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d)) return '';
+    var day = d.getFullYear() === new Date().getFullYear() ? dateWords(d)
+      : d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return day + ', ' + timeWords(d);
+  }
+  function noteOf(e) {
+    var item = document.createElement('li'), by = document.createElement('p'), text = document.createElement('p');
+    by.className = 'sd-room-by';
+    by.textContent = [e.who, noteWhen(e.when)].filter(Boolean).join(' \u00b7 ');
+    text.className = 'sd-room-text';
+    text.textContent = String(e.text).trim();
+    if (by.textContent) item.appendChild(by);
+    item.appendChild(text);
+    var replies = (e.replies || []).filter(function (r) { return !SEALED.test(r.text); });
+    if (replies.length) {
+      var ol = document.createElement('ol');
+      ol.className = 'sd-room-replies';
+      replies.forEach(function (r) { ol.appendChild(noteOf(r)); });
+      item.appendChild(ol);
+    }
+    return item;
   }
   $('menu-open').addEventListener('click', openMenu);
   $('menu-close').addEventListener('click', function () { closeMenu(); });
