@@ -869,6 +869,20 @@
     text-align: center;
     margin: 1rem 0;
   }
+  /* The room made readable (3.811): grouped by day under small headings;
+     each note one row, who and when, and a heading from its first
+     sentence; a tap opens it in place. */
+  .sd-room-day {
+    font-size: 0.85rem;
+    font-weight: 400;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 1.8rem 0 0.2rem;
+  }
+  .sd-room-day:first-child {
+    margin-top: 0;
+  }
   .sd-room-notes,
   .sd-room-replies {
     list-style: none;
@@ -877,22 +891,64 @@
   }
   .sd-room-notes > li {
     margin: 0;
-    padding: 1.1rem 0;
+    padding: 0;
     border-top: 1px solid var(--frame);
   }
   .sd-room-notes > li:first-child {
     border-top: 0;
-    padding-top: 0;
   }
-  .sd-room-notes li::before {
+  .sd-room-notes li::before,
+  .sd-room-replies li::before {
     content: none;
   }
+  .sd-room-row {
+    display: block;
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0.85rem 0;
+    min-height: 2.75rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sd-room-row:focus {
+    outline: none;
+  }
+  .sd-room-row:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
   .sd-room-by {
+    display: block;
     font-size: 0.85rem;
     font-variant-caps: all-small-caps;
     letter-spacing: 0.12em;
     color: var(--muted);
-    margin: 0 0 0.3rem;
+    margin: 0 0 0.2rem;
+  }
+  .sd-room-head {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 1.15rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  /* Open, the note's own words in full stand in for its heading. */
+  .sd-room-open .sd-room-head {
+    display: none;
+  }
+  .sd-room-body {
+    padding: 0 0 1.1rem;
+  }
+  .sd-room-body[hidden],
+  .sd-room-replies[hidden] {
+    display: none;
   }
   .sd-room-text {
     font-size: 1.15rem;
@@ -901,13 +957,32 @@
     overflow-wrap: anywhere;
     margin: 0;
   }
+  .sd-room-count {
+    font: inherit;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0.5rem 0;
+    margin-top: 0.4rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--frame);
+    text-underline-offset: 0.25em;
+  }
   .sd-room-replies {
-    margin: 0.8rem 0 0 0.5rem;
+    margin: 0.2rem 0 0 0.5rem;
     padding-left: 0.9rem;
     border-left: 1px solid var(--frame);
   }
   .sd-room-replies > li {
-    margin: 0 0 0.8rem;
+    margin: 0 0 0.9rem;
+    padding: 0;
+  }
+  .sd-room-replies .sd-room-by {
+    margin-top: 0.2rem;
   }
   /* Each moment told that day, under the row (3.891): its time, its title. */
   .sd-strand-moment {
@@ -2108,7 +2183,7 @@
 
   <section class="sd-room" id="room" aria-label="Your room" hidden>
     <p class="sd-room-note" id="room-note" role="status" hidden></p>
-    <ol class="sd-room-notes" id="room-notes"></ol>
+    <div class="sd-room-days" id="room-notes"></div>
   </section>
 
   <section class="sd-tide" id="tide" aria-label="Your days" hidden>
@@ -2327,7 +2402,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.16 · 25 October 2026';
+  var VERSION = 'Sundial M4.17 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -5888,13 +5963,18 @@
     layerClosed('menu');
     if (!away && !$('menu-open').hidden) $('menu-open').focus({ preventScroll: true });
   }
-  // ---- Your room (3.81, amended 25 October 2026) ---------------------------------
+  // ---- Your room (3.81, amended 25 October 2026; made readable, 3.811) -------------
   // Opened from Your places, inside Sundial: the notes left in pool:<name>,
-  // read live, the newest first, each with who left it and when (a reply
-  // beneath the note it answers), and nothing else on the screen. The
-  // corner's back arrow, or the phone's back, returns. Opening it is the
-  // look the crimson dot is measured from. A sealed note is passed over:
-  // only its writer could read it.
+  // read live, and nothing else on the screen. Grouped by day, newest
+  // first, under Today, Yesterday, then the date. Each note is one row: who
+  // and when, and beneath it a heading from its first sentence, its opening
+  // address taken off ('@Phenomemental — weft:', 'Ada to Matthew:'), since
+  // who is already shown. A tap opens the whole note in place, a tap again
+  // closes it; one open at a time. Its replies show as a count inside it,
+  // opened the same way. A note newer than the last look carries the
+  // crimson dot. The corner's back arrow, or the phone's back, returns.
+  // Opening the room is the next look. A sealed note is passed over: only
+  // its writer could read it.
   var roomOpen = false, roomHidden = null, roomRead = 0, SEALED = /^Encrypted \(gray\)/;
   function openRoom() {
     var name = stored(NAME);
@@ -5903,6 +5983,7 @@
     if (poolsOpen) gatherBack();
     if (tideOpen) closeTide();
     if (turnNow) putTurnAway();
+    var since = roomLooked(name);
     lookAtRoom(name);
     $('menu-dot').hidden = true;
     settled(function () {
@@ -5914,7 +5995,7 @@
       $('room').hidden = false;
       layerOpened('room');
       window.scrollTo(0, 0);
-      drawRoom(name);
+      drawRoom(name, since);
     });
   }
   function closeRoom() {
@@ -5933,43 +6014,172 @@
     $('room-note').textContent = line;
     $('room-note').hidden = !line;
   }
-  function drawRoom(name) {
-    var list = $('room-notes'), turn = ++roomRead;
-    list.textContent = '';
+  function drawRoom(name, since) {
+    var days = $('room-notes'), turn = ++roomRead;
+    days.textContent = '';
     roomSays('');
     Beach.look('pool:' + name).then(function (r) {
       if (turn !== roomRead || !roomOpen) return;
       if (r.status === 404) return roomSays('Nobody has left a note here yet.');
       if (r.status !== 200 || !r.json || typeof r.json !== 'object') return roomSays('Your room can\u2019t be read just now. Try again in a moment.');
-      var notes = Beach.entries(r.json).filter(function (e) { return !SEALED.test(e.text); }).reverse();
+      var notes = Beach.entries(r.json).filter(function (e) { return !SEALED.test(e.text); }).map(function (e, k) {
+        return { e: e, k: k, t: Date.parse(e.when) };
+      });
       if (!notes.length) return roomSays('Nobody has left a note here yet.');
-      notes.forEach(function (e) { list.appendChild(noteOf(e)); });
+      // Newest first; a note with no time keeps its place, after the rest.
+      notes.sort(function (x, y) {
+        var a = isNaN(x.t) ? -Infinity : x.t, b = isNaN(y.t) ? -Infinity : y.t;
+        return b - a || y.k - x.k;
+      });
+      var look = Date.parse(since), group = null, list = null;
+      notes.forEach(function (n) {
+        var day = roomDay(n.e.when);
+        if (day !== group) {
+          group = day;
+          var h = document.createElement('h2');
+          h.className = 'sd-room-day';
+          h.textContent = day;
+          list = document.createElement('ol');
+          list.className = 'sd-room-notes';
+          days.appendChild(h);
+          days.appendChild(list);
+        }
+        var fresh = !isNaN(look) && [n.e].concat(n.e.replies || []).some(function (x) { return Date.parse(x.when) > look; });
+        list.appendChild(noteOf(n.e, fresh));
+      });
     });
   }
-  // When a note was left: its day and time, and its year when not this one.
+  // Today, Yesterday, then the date; the year only when not this one.
+  function roomDate(d) {
+    return d.getFullYear() === new Date().getFullYear() ? null : dateWords(d) + ' ' + d.getFullYear();
+  }
+  function daysAgo(d) {
+    var a = new Date(d.getFullYear(), d.getMonth(), d.getDate()), now = new Date(), b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((b - a) / 86400000);
+  }
+  function roomDay(iso) {
+    var d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d)) return 'No date';
+    var ago = daysAgo(d);
+    return ago === 0 ? 'Today' : ago === 1 ? 'Yesterday' : roomDate(d) || dateWords(d);
+  }
+  // When, on the row: 'today, 11:02', 'yesterday, 11:02', '23 October, 11:02'.
   function noteWhen(iso) {
     var d = iso ? new Date(iso) : null;
     if (!d || isNaN(d)) return '';
-    var day = d.getFullYear() === new Date().getFullYear() ? dateWords(d)
-      : d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    var ago = daysAgo(d);
+    var day = ago === 0 ? 'today' : ago === 1 ? 'yesterday'
+      : d.toLocaleDateString('en-GB', d.getFullYear() === new Date().getFullYear() ? { day: 'numeric', month: 'long' } : { day: 'numeric', month: 'long', year: 'numeric' });
     return day + ', ' + timeWords(d);
   }
-  function noteOf(e) {
-    var item = document.createElement('li'), by = document.createElement('p'), text = document.createElement('p');
+  // A note's heading: its first sentence, its opening address taken off
+  // (to whom, from whom, the date it was written), with the next sentence
+  // too when the first is only a few words.
+  function noteHeading(e) {
+    var t = String(e.text || '').replace(/\s+/g, ' ').trim(), whole = t, was;
+    var who = String(e.who || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    do {
+      was = t;
+      t = t.replace(/^@[\w.-]+\s*[\u2014\u2013-]\s*/, '')
+        .replace(/^(For\s+)?(Matthew|Phenomemental)(\s*\([^)]*\))?\s*(\u2014|\u2013|-|,|:)\s*/i, '')
+        .replace(/^[\w.-]+\s+to\s+(Matthew|Phenomemental)(\s*\([^)]*\))?\s*,(?!\s*\d)\s*/i, '')
+        .replace(/^[\w.-]+(\s+here)?(\s+to\s+[\w.-]+(\s*\([^)]*\))?)?(,\s*\d{1,2}\s+[A-Za-z]+\.?)?\s*(:|\u2014|\u2013)\s+/, '')
+        .replace(/^[\w.-]+\s+here\s*,\s*/i, '');
+      if (who) t = t.replace(new RegExp('^' + who + '\\s*(,|:|\u2014|\u2013)\\s*', 'i'), '');
+    } while (t && t !== was);
+    var out = '', rest = t || whole;
+    while (rest && out.length < 30) {
+      var m = /^.*?[.!?\u2026](?=["'\u2019\u201d)\]]*(\s|$))["'\u2019\u201d)\]]*/.exec(rest), one = m ? m[0] : rest;
+      out = out ? out + ' ' + one : one;
+      rest = rest.slice(one.length).trim();
+    }
+    if (out.length > 160) out = out.slice(0, 150).replace(/\s+\S*$/, '') + '\u2026';
+    // A name keeps its own case ('sandpiper cannot reach …').
+    return who && new RegExp('^' + who + '\\b', 'i').test(out) ? out : out.charAt(0).toUpperCase() + out.slice(1);
+  }
+  function roomBy(e, fresh) {
+    var by = document.createElement('span');
     by.className = 'sd-room-by';
     by.textContent = [e.who, noteWhen(e.when)].filter(Boolean).join(' \u00b7 ');
+    if (fresh) {
+      var dot = document.createElement('span');
+      dot.className = 'sd-menu-dot';
+      dot.innerHTML = '<span class="visually-hidden">, new since you last looked</span>';
+      by.appendChild(dot);
+    }
+    return by;
+  }
+  var roomIds = 0;
+  function noteOf(e, fresh) {
+    var item = document.createElement('li'), row = document.createElement('button'), head = document.createElement('span');
+    var body = document.createElement('div'), text = document.createElement('p'), id = 'room-note-' + (++roomIds);
+    row.type = 'button';
+    row.className = 'sd-room-row';
+    row.setAttribute('aria-expanded', 'false');
+    row.setAttribute('aria-controls', id);
+    head.className = 'sd-room-head';
+    head.textContent = noteHeading(e);
+    row.appendChild(roomBy(e, fresh));
+    row.appendChild(head);
+    body.className = 'sd-room-body';
+    body.id = id;
+    body.hidden = true;
     text.className = 'sd-room-text';
     text.textContent = String(e.text).trim();
-    if (by.textContent) item.appendChild(by);
-    item.appendChild(text);
+    body.appendChild(text);
     var replies = (e.replies || []).filter(function (r) { return !SEALED.test(r.text); });
     if (replies.length) {
-      var ol = document.createElement('ol');
+      var count = document.createElement('button'), ol = document.createElement('ol');
+      count.type = 'button';
+      count.className = 'sd-room-count';
+      count.textContent = replies.length === 1 ? '1 reply' : replies.length + ' replies';
+      count.setAttribute('aria-expanded', 'false');
       ol.className = 'sd-room-replies';
-      replies.forEach(function (r) { ol.appendChild(noteOf(r)); });
-      item.appendChild(ol);
+      ol.id = id + '-replies';
+      ol.hidden = true;
+      count.setAttribute('aria-controls', ol.id);
+      replies.forEach(function (r) {
+        var li = document.createElement('li'), p = document.createElement('p');
+        li.appendChild(roomBy(r, false));
+        p.className = 'sd-room-text';
+        p.textContent = String(r.text).trim();
+        li.appendChild(p);
+        ol.appendChild(li);
+      });
+      count.addEventListener('click', function () {
+        ol.hidden = !ol.hidden;
+        count.setAttribute('aria-expanded', String(!ol.hidden));
+      });
+      body.appendChild(count);
+      body.appendChild(ol);
     }
+    row.addEventListener('click', function () {
+      var open = body.hidden;
+      if (open) {
+        var was = $('room-notes').querySelector('.sd-room-open');
+        if (was) shutNote(was);
+      }
+      if (open) {
+        item.classList.add('sd-room-open');
+        body.hidden = false;
+        row.setAttribute('aria-expanded', 'true');
+        var top = row.getBoundingClientRect().top;
+        if (top < 0) window.scrollBy(0, top - 12);
+      } else {
+        shutNote(item);
+      }
+    });
+    item.appendChild(row);
+    item.appendChild(body);
     return item;
+  }
+  function shutNote(item) {
+    item.classList.remove('sd-room-open');
+    item.querySelector('.sd-room-body').hidden = true;
+    item.querySelector('.sd-room-row').setAttribute('aria-expanded', 'false');
+    var ol = item.querySelector('.sd-room-replies'), count = item.querySelector('.sd-room-count');
+    if (ol) ol.hidden = true;
+    if (count) count.setAttribute('aria-expanded', 'false');
   }
   $('menu-open').addEventListener('click', openMenu);
   $('menu-close').addEventListener('click', function () { closeMenu(); });
