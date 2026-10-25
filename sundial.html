@@ -634,10 +634,15 @@
   form.sd-speak textarea {
     min-height: 5.5rem;
     background: var(--page);
-    margin-bottom: 0.7rem;
+    margin-bottom: 0;
   }
+  /* Speak leads, directly under the box with no gap (3.891); where the
+     browser has no voice, Send keeps its old distance from the box. */
   form.sd-speak .mic-row {
-    margin: -0.2rem 0 0.7rem;
+    margin: -1px 0 0.7rem;
+  }
+  form.sd-speak textarea + .sd-send-row {
+    margin-top: 0.7rem;
   }
   .sd-send-row {
     display: flex;
@@ -656,21 +661,48 @@
   .sd-reflect + .sd-ask {
     margin-top: 0.6rem;
   }
-  /* The day's Keep, in reach beside the turn. */
+  /* The day's Keep, in reach beside the turn: 'Keep today', a bordered
+     crimson button with the small heart (3.891), as on the sheet. */
   form.sd-speak button.sd-keep-now {
     margin-right: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     font: inherit;
     font-size: 1.1rem;
     letter-spacing: 0.04em;
     color: var(--crimson);
-    background: none;
-    border: 0;
-    padding: 0.45rem 0.2rem;
+    background: transparent;
+    border: 1px solid var(--crimson);
+    border-radius: 2px;
+    padding: 0.3rem 0.9rem 0.3rem 0.7rem;
     min-height: 2.75rem;
-    text-decoration: underline;
-    text-decoration-color: currentColor;
-    text-underline-offset: 0.25em;
     cursor: pointer;
+  }
+  form.sd-speak button.sd-keep-now[hidden] {
+    display: none;
+  }
+  /* The small heart: the sundial's own ring, its line and its crimson centre. */
+  .sd-keep-heart {
+    flex: none;
+    width: 1.35em;
+    height: 1.15em;
+    overflow: visible;
+  }
+  .sd-keep-heart .ring,
+  .sd-keep-heart .line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-linecap: round;
+  }
+  .sd-keep-heart .ring {
+    stroke-width: 24;
+  }
+  .sd-keep-heart .line {
+    stroke-width: 16;
+  }
+  .sd-keep-heart ellipse {
+    fill: var(--crimson);
   }
   form.sd-speak button.sd-send {
     color: var(--ink);
@@ -1045,13 +1077,18 @@
     min-height: 2.75rem;
     cursor: pointer;
   }
+  /* 'Keep today' (3.891): the same bordered crimson button, with the small
+     heart, as beside the turn. */
   .sd-keep {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     letter-spacing: 0.06em;
-    color: var(--page);
-    background: var(--crimson);
-    border: 0;
+    color: var(--crimson);
+    background: transparent;
+    border: 1px solid var(--crimson);
     border-radius: 2px;
-    padding: 0.45rem 1.4rem;
+    padding: 0.4rem 1.2rem 0.4rem 0.9rem;
   }
   .sd-keep:disabled {
     opacity: 0.45;
@@ -1750,7 +1787,7 @@
     <p class="sd-yours">This is your day, in your words.</p>
     <p class="sd-keep-fail" id="keep-fail" role="status" hidden>That didn’t keep. Your words are still here. Try again.</p>
     <div class="sd-choices">
-      <button type="button" class="sd-keep" id="keep">Keep this day</button>
+      <button type="button" class="sd-keep" id="keep"><svg class="sd-keep-heart" viewBox="0 10 390 325" aria-hidden="true" focusable="false"><path class="ring" d="M 311.7,49.6 A 124,118 0 1 0 353.3,115.4"/><path class="line" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324"/><ellipse cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)"/></svg>Keep today</button>
       <button type="button" class="sd-letgo" id="let-go">Let it go</button>
     </div>
     <p class="sd-own" id="day-own" hidden>Kept in your own words. Add Claude in the corner and it will give your days back.</p>
@@ -1786,7 +1823,7 @@
       <p class="sd-pool-question" id="pool-question" hidden></p>
     </div>
     <button type="button" class="sd-listen" id="listen" aria-pressed="false" aria-label="Listen to the shell" hidden><svg id="shell-art" viewBox="-60 -60 120 120" aria-hidden="true" focusable="false"></svg></button>
-    <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>tap the shell, then hold it to your ear</p>
+    <p class="sd-listen-hint" id="listen-hint" aria-hidden="true" hidden>tap the shell and listen · sound up</p>
     <p class="sd-soft sd-call-fail" id="listen-fail" role="status" hidden></p>
     <div class="sd-heard" id="heard" aria-live="polite" hidden>
       <div id="heard-lines"></div>
@@ -1884,7 +1921,7 @@
       <p class="sd-turn-offer-row" id="turn-offer-row" hidden><button type="button" class="sd-turn-offer" id="turn-offer">Or give it a turn.</button></p>
       <p class="sd-soft sd-call-fail" id="call-fail" role="status" hidden></p>
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
-      <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
+      <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden><svg class="sd-keep-heart" viewBox="0 10 390 325" aria-hidden="true" focusable="false"><path class="ring" d="M 311.7,49.6 A 124,118 0 1 0 353.3,115.4"/><path class="line" d="M 375,25 C 320,45 262,78 215,102 C 196,113 186,138 192,156 C 199,172 232,180 262,174 C 300,166 304,122 284,106 C 264,92 240,96 222,108 C 195,118 172,165 150,212 C 122,262 68,300 14,324"/><ellipse cx="250" cy="138" rx="40" ry="24" transform="rotate(-18 250 138)"/></svg>Keep today</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
   </div>
 
@@ -1958,7 +1995,7 @@
     </form>
   </dialog>
 
-  <dialog class="sd-card" id="keep-card" aria-label="Keep this day">
+  <dialog class="sd-card" id="keep-card" aria-label="Keep today">
     <form id="keep-form">
       <div id="name-row">
         <label for="kname">your name here</label>
@@ -2012,7 +2049,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.9 · 25 October 2026';
+  var VERSION = 'Sundial M4.10 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -4098,7 +4135,7 @@
     aheadNow = drawn.ahead;
     showSheet(drawn.sheet, drawn.when);
   }
-  // 'Keep this day' beside the turn (8.721): anything typed and not yet sent
+  // 'Keep today' beside the turn (8.721): anything typed and not yet sent
   // goes first, for the sheet to hold it; then the day as it stands is drawn
   // and kept, as the sheet's own Keep does.
   // The name and word given at the way in (2.82, 2.83) are the ones kept
