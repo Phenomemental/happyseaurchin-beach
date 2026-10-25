@@ -1836,7 +1836,7 @@
       <textarea id="words" name="words" rows="3" aria-labelledby="question" autocomplete="off"></textarea>
       <div class="sd-send-row"><button type="button" class="sd-keep-now" id="keep-now" hidden>Keep this day</button><button type="submit" class="sd-send" id="send">Send</button></div>
     </form>
-    <p class="sd-foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button></p>
+    <p class="sd-foot-links" id="foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button></p>
   </div>
 
   <p class="sd-help" id="help-line"><button type="button" class="sd-about-open" id="about-open" aria-haspopup="dialog">About</button> · <span>If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</span></p>
@@ -3648,10 +3648,12 @@
         $('fword').focus();
         return;
       }
-      // Nothing kept now: back to the first screen (2.81).
-      leaveHere();
-      store(PLACED, '');
-      location.reload();
+      // Nothing kept now: the days go, and the first screen again (2.81).
+      leaving(true).then(function () {
+        leaveHere();
+        store(PLACED, '');
+        location.reload();
+      });
     });
   });
 
@@ -5077,6 +5079,7 @@
     showWho(false);
     box.placeholder = stored(KEY) ? '' : OWN_BOX;
     daysComing = !!way || !held(OPEN);
+    var fresh = daysComing;
     settling = !!way;
     form.hidden = !!way;
     if (!way) $('question').hidden = false;
@@ -5103,8 +5106,41 @@
         settleIn(form, 450);
         settleIn($('invite'), 700);
       }
+      if (fresh) comingBack();
     });
     return reading.then(function () { if (card.hidden) voiced(); });
+  }
+  // Coming back ('Come back tomorrow. It will move.', 8.8): on the first
+  // open of a new day with days kept before it, once the days have come
+  // round, the shadow swings from the hour of their last words to now and
+  // yesterday's mark blooms in its colours. Once a day, in this browser.
+  var CAME_BACK = 'sundial.cameBack';
+  function comingBack() {
+    var last = lastDayBefore(), who = stored(NAME) || held(CHOSEN);
+    if (!last || !who) return;
+    var mark = who + ' ' + ymd(new Date());
+    if (stored(CAME_BACK) === mark) return;
+    store(CAME_BACK, mark);
+    var ms = moments.filter(function (m) { return dayOfAddress(m.address) === last; });
+    var from = ms.length ? Days.timeOf(ms[ms.length - 1].address) : null;
+    var spoken = {};
+    days.forEach(function (d) { spoken[d.address] = 1; });
+    moments.forEach(function (m) { spoken[dayOfAddress(m.address)] = 1; });
+    var k = Object.keys(spoken).sort().indexOf(last) + 1;
+    var day = days.filter(function (d) { return d.address === last; })[0];
+    dial.comeBack(from, k, day ? Mark.placesOf(day) : [], STILL.matches);
+  }
+  // Leaving (the reverse of arriving): the words fade, the marks lift off
+  // the spiral and go, the colour drains, the centre dulls; then the page
+  // begins again, as it would for the next person. Forget me the same, the
+  // marks dissolving where they are.
+  function leaving(dissolve) {
+    settling = true;
+    window.scrollTo({ top: 0, behavior: STILL.matches ? 'auto' : 'smooth' });
+    [$('who'), $('days-count'), $('wordmark'), $('hello'), greet, $('invite'), form, $('foot-links'), card, kept, $('bring-row')].forEach(function (el) {
+      if (el && !el.hidden) vanish(el, 500);
+    });
+    return dial.leave(dissolve, STILL.matches);
   }
   // What one person leaves in this browser, let go so the next begins clean.
   // The key stays: it belongs to the browser, not to a name.
@@ -5120,8 +5156,11 @@
     hold(GREETED, '');
   }
   $('not-you').addEventListener('click', function () {
-    leaveHere();
-    location.reload();
+    if (busy || keeping || !inside) return;
+    leaving(false).then(function () {
+      leaveHere();
+      location.reload();
+    });
   });
   // Said who they are: the name and word held for the visit; the card folds
   // away, the heart beats and the name is written; then the days come
