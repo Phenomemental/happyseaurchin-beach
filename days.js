@@ -205,13 +205,105 @@
   function read(name) {
     return readAll(name).then(function (all) { return all.days; });
   }
-  // A name's days and moments together, as {days, moments}.
+  // A name's days and moments together, as {days, moments, rungs}: rungs
+  // are the words standing over today (rungsIn).
   function readAll(name) {
     return Beach.look('now:' + name).then(function (r) {
       if (!r.status) throw new Error('unreachable');
       var mirror = r.status === 200 && floorOf(r.json) === 10 ? r.json : null;
       var moments = mirror ? momentsIn(mirror) : [];
-      return { days: mirror ? withMomentDays(daysIn(mirror), moments) : [], moments: moments };
+      return { days: mirror ? withMomentDays(daysIn(mirror), moments) : [], moments: moments,
+        rungs: mirror ? rungsIn(mirror, today()) : {} };
+    });
+  }
+
+  // The words standing at the coarser rungs over a day, read down its own
+  // digits, as {4: year, 5: season, 6: month, 7: week}, '' where none.
+  function rungsIn(mirror, address) {
+    var out = {}, node = mirror, a = String(address || '');
+    if (!/^\d{10}$/.test(a)) return out;
+    for (var i = 0; i < 7; i++) {
+      node = node && typeof node === 'object' ? node[a.charAt(i) === '0' ? '_' : a.charAt(i)] : null;
+      if (i >= 3) out[i + 1] = own(node);
+    }
+    return out;
+  }
+  // A rung's address: the day's first digits, then noughts (the week of
+  // 2026414300 is 2026414000).
+  function rungOf(address, digits) {
+    return String(address).slice(0, digits) + '0000000000'.slice(digits);
+  }
+
+  // A rung of their own now set in their own words (spine:front-door 3.82):
+  // the year, season, month or week (4 to 7 of the day's digits) the day
+  // falls in, written only where nothing stands, and read back before it
+  // counts. Resolves 'kept'; 'stands' (words were already there, nothing
+  // written); 'wrong' (the word doesn't open it); or 'unreachable'.
+  function setRung(name, word, digits, address, text) {
+    var at = rungOf(address, digits);
+    return Beach.look('now:' + name, '&spindle=' + at).then(function (r) {
+      if (!r.status || r.status >= 500) throw 'unreachable';
+      if (r.status === 200 && own(r.json)) return 'stands';
+      return Beach.write('now:' + name, { spindle: at, content: text, secret: word }).then(function (w) {
+        if (w.status !== 200) throw w.status === 403 ? 'wrong' : 'unreachable';
+        return Beach.look('now:' + name, '&spindle=' + at);
+      }).then(function (back) {
+        if (!(back.status === 200 && own(back.json) === text)) throw 'unreachable';
+        return 'kept';
+      });
+    }).catch(function (e) {
+      return typeof e === 'string' ? e : 'unreachable';
+    });
+  }
+
+  // An intention sized for this week or this month (function:ahead): a card
+  // in the person's own hand in their now, ahead:now:<name>, at a free slot
+  // of that rung's pile (3 this week, 4 this month): their sentence, with
+  // the stamp of the change beneath it, and nothing else (a card in the
+  // holder's own words carries no dealer). A pile holds nine and is never
+  // appended to: an empty slot first, then one whose card is done or
+  // dropped. The hand is made whole, latched with the word, if it doesn't
+  // stand yet. Read back before it counts. Resolves 'kept'; 'full' (nine
+  // standing at that rung); 'wrong'; or 'unreachable'.
+  var PILES = { week: '3', month: '4' };
+  function handLine(name) {
+    return 'AHEAD \u2014 ' + name + "'s hand in their own now: cards held toward doing, each at the rung it is sized for, nine to a rung, " +
+      'unordered within it, never arriving unless pulled into doing and landed as record in now:' + name +
+      '. Sovereign; a rung is appetite, not sequence (function:ahead).';
+  }
+  function card(name, word, rung, sentence) {
+    var pile = PILES[rung], block = 'ahead:now:' + name, at = '';
+    if (!pile || !sentence) return Promise.resolve('unreachable');
+    function failed(w) { return w.status === 403 ? 'wrong' : 'unreachable'; }
+    return Beach.look(block).then(function (r) {
+      if (r.status === 404) {
+        return Beach.write(block, { content: { _: handLine(name) }, new_lock: word }).then(function (w) {
+          if (w.status !== 200) throw failed(w);
+          return {};
+        });
+      }
+      if (r.status !== 200 || !r.json || typeof r.json !== 'object') throw 'unreachable';
+      return r.json;
+    }).then(function (hand) {
+      var row = hand[pile], i, c;
+      if (row != null && typeof row !== 'object' && own(row)) throw 'unreachable';
+      row = row && typeof row === 'object' ? row : {};
+      for (i = 1; i <= 9 && !at; i++) if (!own(row[String(i)])) at = pile + '.' + i;
+      for (i = 1; i <= 9 && !at; i++) {
+        c = row[String(i)];
+        if (c && typeof c === 'object' && (c['4'] === 'done' || c['4'] === 'drop')) at = pile + '.' + i;
+      }
+      if (!at) throw 'full';
+      var clock = Beach.clock(), stamp = (clock && clock.iso ? clock.iso : new Date().toISOString()).slice(0, 16) + 'Z';
+      return Beach.write(block, { spindle: at, content: { _: sentence, 3: stamp }, secret: word });
+    }).then(function (w) {
+      if (w.status !== 200) throw failed(w);
+      return Beach.look(block, '&spindle=' + at);
+    }).then(function (back) {
+      if (!(back.status === 200 && own(back.json) === sentence)) throw 'unreachable';
+      return 'kept';
+    }).catch(function (e) {
+      return typeof e === 'string' ? e : 'unreachable';
     });
   }
 
@@ -347,6 +439,11 @@
     withMomentDays: withMomentDays,
     momentsIn: momentsIn,
     readAll: readAll,
+    rungsIn: rungsIn,
+    rungOf: rungOf,
+    setRung: setRung,
+    card: card,
+    handLine: handLine,
     resolve: resolve,
     read: read,
     keep: keep,

@@ -1,9 +1,10 @@
 /* Projects by their proper names, and the pages Matthew has made for his
-   (as Matthew named them, 25 October 2026). Sundial's YOUR WORK reads
-   these, and so does walk.html for its title. A project with a page of
-   its own goes there; every other project is walked at
-   walk.html?p=<project>, never on David's walk. For anyone but Matthew,
-   every project is walked, named from its block name. */
+   (as Matthew named them, 25 October 2026). walk.html reads these for its
+   title. Sundial's YOUR WORK takes only titled(), for each family's name;
+   since the lists were nested (25 October 2026) each family there goes to
+   its walk on David's site. place() gives a project's own page or
+   walk.html?p=<project>. For anyone but Matthew, a project is named from
+   its block name. */
 (function (root) {
   var MATTHEW = 'phenomemental';
   var NAMES = {
@@ -25,10 +26,12 @@
   };
   var WALK = 'a walk through it';
 
-  // A block name with each word capitalised: "golden-flow" → "Golden Flow".
+  // A block name as a title: "golden-flow" → "Golden Flow",
+  // "leros-on-the-commons" → "Leros on the Commons".
+  var SMALL = { a: 1, an: 1, and: 1, as: 1, at: 1, by: 1, 'for': 1, 'in': 1, of: 1, on: 1, or: 1, the: 1, to: 1, with: 1 };
   function titled(slug) {
-    return String(slug).split(/[-_\s]+/).filter(Boolean).map(function (w) {
-      return w.charAt(0).toUpperCase() + w.slice(1);
+    return String(slug).split(/[-_\s]+/).filter(Boolean).map(function (w, i) {
+      return i && SMALL[w.toLowerCase()] ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1);
     }).join(' ');
   }
   function walkOf(slug) { return 'walk.html?p=' + encodeURIComponent(slug); }
