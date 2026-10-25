@@ -58,6 +58,12 @@ appear on Tideline's screen.
   It is plain Kotlin with no Android in it, so the app carries it and any
   computer can check it. The cryptography comes from Bouncy Castle, which
   never touches the network.
+- **`beach/`, the calls.** The phone's two calls to the beach, the same ones
+  the Pscale tool makes: an append beneath a node (or at a block's root), and
+  a read. Plain Kotlin on Java's own HTTP client. They are proven on a trial
+  block, but the app does not use them yet. Stage 6.4 stopped when the beach
+  turned out to hold only nine entries beneath a position, so the catch's
+  inbox needs a new shape first (`spine:tideline` 7.19).
 - **`app/`, the phone.** A notification listener that opens only the five
   apps' notifications and makes a catch of each message (`Catch.kt`), a
   list kept in memory (`Catches.kt`), and one screen (`MainActivity.kt`).
@@ -83,7 +89,7 @@ one. Without the secrets, the workflow stops and builds nothing.
 
 To build or check it on a computer, with Java 17 or later and the Android SDK:
 
-    ./gradlew :seal:test :app:testDebugUnitTest :app:assembleRelease
+    ./gradlew :seal:test :beach:test :app:testDebugUnitTest :app:assembleRelease
 
 ## Checking the seal against the beach
 

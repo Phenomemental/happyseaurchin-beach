@@ -33,8 +33,8 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - name: Check the seal and the rules
-        run: ./gradlew --no-daemon :seal:test :app:testDebugUnitTest
+      - name: Check the seal, the beach calls and the rules
+        run: ./gradlew --no-daemon :seal:test :beach:test :app:testDebugUnitTest
 
       - name: Unpack the signing key
         env:

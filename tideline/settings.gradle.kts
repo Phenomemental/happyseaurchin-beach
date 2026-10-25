@@ -17,4 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "tideline"
 
 include(":seal")
+include(":beach")
 include(":app")
