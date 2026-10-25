@@ -1,11 +1,10 @@
 // Sundial on the home screen (spine:front-door 6.1.4): a small service worker
 // that keeps the page, its scripts, styles, fonts and the heart, so the app
-// opens at once, and opens offline too. It answers only for sundial.html (it
-// is registered with that scope), and only GETs of this site's own files
-// and the fonts. The beach and Claude are never touched here: every read
-// and every write goes to them live, and nothing is ever kept back to send
-// later.
-var KEPT = 'sundial-files-1';
+// opens offline too. It answers only for sundial.html (it is registered with
+// that scope), and only GETs of this site's own files and the fonts. The
+// beach and Claude are never touched here: every read and every write goes
+// to them live, and nothing is ever kept back to send later.
+var KEPT = 'sundial-files-2';
 // Files the page loads itself (gray.js's own imports) and the app's own.
 var ALWAYS = [
   'sundial.html',
@@ -20,6 +19,9 @@ var ALWAYS = [
   'vendor/noble-hashes/u64.js',
   'vendor/noble-hashes/utils.js'
 ];
+// Online, the page and its own files come fresh; the kept copy answers when
+// the network fails, or is slower than this.
+var SLOW_MS = 3000;
 
 // Every file sundial.html names (scripts and stylesheets on this site, the
 // fonts' stylesheet), so a page kept here always has its files kept too.
@@ -40,7 +42,7 @@ function keepPage(cache, res) {
   return res.clone().text().then(function (html) {
     var all = named(html, res.url), own = all.filter(function (u) { return new URL(u).origin === self.location.origin; });
     all.filter(function (u) { return own.indexOf(u) < 0; }).forEach(function (u) { cache.add(u).catch(function () {}); });
-    return cache.addAll(own);
+    return cache.addAll(own.map(function (u) { return new Request(u, { cache: 'no-cache' }); }));
   }).then(function () {
     return cache.put(new URL('sundial.html', self.location.href).href, res);
   });
@@ -48,7 +50,7 @@ function keepPage(cache, res) {
 
 self.addEventListener('install', function (ev) {
   ev.waitUntil(caches.open(KEPT).then(function (cache) {
-    return cache.addAll(ALWAYS).then(function () {
+    return cache.addAll(ALWAYS.map(function (u) { return new Request(u, { cache: 'no-cache' }); })).then(function () {
       return fetch('sundial.html', { cache: 'no-cache' }).then(function (res) { return keepPage(cache, res); });
     });
   }).then(function () { return self.skipWaiting(); }));
@@ -64,25 +66,48 @@ function ours(url) {
   return url.origin === self.location.origin || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
 }
 
-// The kept copy at once, and a fresh one fetched behind it for next time.
-// The page itself is kept whatever its address says after it (?from=).
+// The page and this site's own files: fresh from the network, asked of the
+// server each time (so a change is seen on the first open after it) and
+// kept for later; the kept copy only when the network fails or is slow, and
+// so offline. The fonts, which never change: the kept copy at once, a fresh
+// one fetched behind it. The page is kept whatever its address says after
+// it (?from=).
 self.addEventListener('fetch', function (ev) {
   var req = ev.request, url = new URL(req.url);
   if (req.method !== 'GET' || !ours(url)) return;
-  var page = req.mode === 'navigate' || (url.origin === self.location.origin && /\/sundial\.html$/.test(url.pathname));
+  var own = url.origin === self.location.origin;
+  var page = req.mode === 'navigate' || (own && /\/sundial\.html$/.test(url.pathname));
   ev.respondWith(caches.open(KEPT).then(function (cache) {
     var key = page ? new URL('sundial.html', self.location.href).href : req;
-    return cache.match(key).then(function (hit) {
-      var fresh = fetch(req).then(function (res) {
-        if (page && res.ok) return keepPage(cache, res.clone()).then(function () { return res; }, function () { return res; });
-        if (res.ok || res.type === 'opaque') cache.put(req, res.clone());
-        return res;
-      });
-      if (hit) {
-        ev.waitUntil(fresh.catch(function () {}));
-        return hit;
+    // A navigation can't be refetched as itself with options, so by its address.
+    var fresh = fetch(own ? new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' }) : req).then(function (res) {
+      if (page && res.ok) return keepPage(cache, res.clone()).then(function () { return res; }, function () { return res; });
+      if (res.ok || res.type === 'opaque') cache.put(key, res.clone());
+      return res;
+    });
+    ev.waitUntil(fresh.catch(function () {}));
+    if (!own) {
+      return cache.match(key).then(function (hit) { return hit || fresh; });
+    }
+    return new Promise(function (answer) {
+      var done = false;
+      function give(res) {
+        if (done || !res) return;
+        done = true;
+        answer(res);
       }
-      return fresh;
+      function kept(otherwise) {
+        return cache.match(key).then(function (hit) { give(hit || otherwise); });
+      }
+      var slow = setTimeout(function () { cache.match(key).then(give); }, SLOW_MS);
+      fresh.then(function (res) {
+        clearTimeout(slow);
+        if (res.ok) give(res);
+        else kept(res);
+      }, function () {
+        clearTimeout(slow);
+        kept(Response.error());
+      });
     });
   }));
 });

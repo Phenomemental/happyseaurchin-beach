@@ -1929,9 +1929,9 @@
 </main>
 
 <script src="beach.js?v=2026-10-23b"></script>
-<script src="mark.js?v=2026-10-25a"></script>
+<script src="mark.js?v=2026-10-25b"></script>
 <script src="shell.js?v=2026-10-23a"></script>
-<script src="days.js?v=2026-10-23e"></script>
+<script src="days.js?v=2026-10-25a"></script>
 <script src="seal.js?v=2026-10-22a"></script>
 <script src="roster.js?v=2026-10-22a"></script>
 <script src="whispers.js?v=2026-10-23g"></script>
@@ -1959,7 +1959,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.6 · 25 October 2026';
+  var VERSION = 'Sundial M4.7 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -2140,7 +2140,7 @@
   // The days (each day's own line, today and before) draw the sundial; the
   // moments of today mark the hours they were spoken; tomorrow's line, if
   // one stands, waits ahead (4.2).
-  var days = [], moments = [], aheadText = '', dialOpts = null;
+  var days = [], moments = [], aheadText = '', dialOpts = null, intention = null;
   function todayAddress() { return Days.today() || Days.now().slice(0, 8) + '00'; }
   function dayOfAddress(a) { return String(a).slice(0, 8) + '00'; }
   function showAll(all, keptNow) {
@@ -2148,7 +2148,15 @@
     var t = todayAddress(), tomorrow = Days.tomorrowOf(t);
     moments = (all.moments || []).filter(function (m) { return dayOfAddress(m.address) <= t; });
     aheadText = ((all.days || []).filter(function (d) { return d.address === tomorrow; })[0] || {}).text || '';
-    days = withPlaces((all.days || []).filter(function (d) { return d.address <= t; }));
+    // A line set ahead for today (Sundial's, ending in what's ahead, written
+    // the day before), with nothing said yet today, is what they said they
+    // would do today, not a day kept: quoted at the welcome, never a row on
+    // the strandline nor counted among the days; on the sundial, today's
+    // faint dot (6.9).
+    var todays = moments.filter(function (m) { return dayOfAddress(m.address) === t; });
+    var todayLine = (all.days || []).filter(function (d) { return d.address === t; })[0];
+    intention = todayLine && !todays.length && isAhead(todayLine.text) ? todayLine : null;
+    days = withPlaces((all.days || []).filter(function (d) { return d.address <= t && d !== intention; }));
     // A day whose own line is theirs, not Sundial's, is drawn from its
     // moments (6.4.1 (3)): every place its moments touched. A day Sundial
     // kept in their own words is placed by the third law instead (6.8.2.1).
@@ -2164,7 +2172,8 @@
     var spoken = {};
     days.forEach(function (d) { spoken[d.address] = 1; });
     moments.forEach(function (m) { spoken[dayOfAddress(m.address)] = 1; });
-    var n = Object.keys(spoken).length, todays = moments.filter(function (m) { return dayOfAddress(m.address) === t; });
+    if (intention) spoken[t] = 1;
+    var n = Object.keys(spoken).length, kept = n - (intention ? 1 : 0);
     // The spiral holds every day kept; today, if it has only the line set
     // ahead yesterday and no words yet, is a dot at 40% (6.9).
     dialOpts = { count: n, ahead: !!spoken[t] && !todays.length };
@@ -2179,8 +2188,8 @@
     dial.moments(todays.map(function (m) {
       return { when: Days.timeOf(m.address), text: m.text };
     }));
-    $('days-count').textContent = n ? n + (n === 1 ? ' DAY' : ' DAYS') : '';
-    $('days-count').hidden = !n || settling;   // on the way in, once the last mark has landed
+    $('days-count').textContent = kept ? kept + (kept === 1 ? ' DAY' : ' DAYS') : '';
+    $('days-count').hidden = !kept || settling;   // on the way in, once the last mark has landed
     hold(SEEN, JSON.stringify({ days: all.days || [], moments: all.moments || [] }));
     if (stored(NAME)) store(LAST, JSON.stringify({ name: stored(NAME), days: all.days || [], moments: all.moments || [] }));
     setDialTap();
@@ -2192,14 +2201,28 @@
     days.concat(moments).forEach(function (x) { var d = dayOfAddress(x.address); if (d < t && d > last) last = d; });
     return last;
   }
-  // The last words before today, as {address, text}: that day's own line if
-  // it has one, else its latest moment.
+  // The last words before today, as {address, text}: that day's latest
+  // telling, the last thing they said; else, with no tellings, its own line.
   function lastBefore() {
     var last = lastDayBefore();
     if (!last) return null;
     var line = days.filter(function (d) { return d.address === last; })[0];
     var ms = moments.filter(function (m) { return dayOfAddress(m.address) === last; });
-    return line || ms[ms.length - 1] || null;
+    return ms[ms.length - 1] || line || null;
+  }
+  // A line Sundial set ahead: its only place what's ahead (6.4.1 (3)).
+  function isAhead(text) {
+    var ps = Mark.read(text).places;
+    return ps.length === 1 && ps[0] === 6;
+  }
+  // What they said they would do today: the line set ahead for today, in
+  // their own words with its places line off; else the tomorrow said on
+  // their last day.
+  function tomorrowSaid() {
+    if (!intention) return saidBefore();
+    var rows = String(intention.text).split('\n').map(function (r) { return r.trim(); }).filter(Boolean);
+    if (rows.length > 1) rows.pop();
+    return rows.join(' ');
   }
   // The tomorrow said on that last day: its latest moment that voiced one,
   // else its own line's.
@@ -2254,7 +2277,7 @@
   // Their own tomorrow line, quoted exactly, so it reads whatever its
   // shape: "Tomorrow, walk up early." as well as "Tomorrow, the drive north."
   function saidLine() {
-    var said = saidBefore().replace(/[.\s]+$/, '');
+    var said = tomorrowSaid().replace(/[.\s]+$/, '');
     if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
     return said ? 'You said: “Tomorrow, ' + said + '.”' : '';
   }
@@ -3680,8 +3703,11 @@
     return [r.title].concat(r.lines, r.tomorrow ? ['Tomorrow: ' + r.tomorrow] : []).filter(Boolean).join(' / ');
   }
   function opening(words, now) {
-    var t = todayAddress(), beat = Days.now(), before = lastBefore(), said = saidBefore();
+    var t = todayAddress(), beat = Days.now(), before = lastBefore(), said = tomorrowSaid();
     var todayLine = (days.filter(function (d) { return d.address === t; })[0] || {}).text || '';
+    // The line set ahead for today stays today's line to fold (4.2), named
+    // for what it is.
+    if (!todayLine && intention) todayLine = intention.text;
     var mine = todaysMoments(), same = mine.filter(function (m) { return m.address === beat; })[0];
     var earlier = mine.filter(function (m) { return m.address !== beat; });
     return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
@@ -3690,7 +3716,7 @@
       '\nThis telling: ' + (firstOfDay() ? 'the first of the day' : 'a moment added to a day already kept') +
       (before ? '\nTheir last words before today (' + whenWords(before.address) + '): ' + flatText(before.text) : '') +
       (said ? '\nTheir tomorrow line then: ' + said : '') +
-      (todayLine ? '\nToday’s line: ' + flatText(todayLine) : '') +
+      (todayLine ? '\nToday’s line' + (intention && todayLine === intention.text ? ' (set yesterday as what’s ahead; nothing said today yet)' : '') + ': ' + flatText(todayLine) : '') +
       (earlier.length ? '\nToday’s earlier moments:\n' + earlier.map(function (m) {
         return '- ' + partAt(Days.timeOf(m.address)) + ': ' + flatText(m.text);
       }).join('\n') : '') +
@@ -4116,7 +4142,8 @@
         keepsHere++;
         setKeeping(false);
         closeKeep();
-        var before = dialOpts ? dialOpts.count : 0, after = countIn(all);
+        // Today's line set ahead was not yet a day; keeping today makes it one.
+        var before = (dialOpts ? dialOpts.count : 0) - (intention ? 1 : 0), after = countIn(all);
         sheetNow = null;
         ownNow = false;
         dayNow = null;
@@ -4510,6 +4537,18 @@
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sundial-sw.js', { scope: 'sundial.html' }).catch(function () {});
+    });
+    // A new helper taking over means the page has changed: the fresh page is
+    // brought in at once, while nothing has been begun (the two choices, or
+    // inside before a word is typed), never twice in quick succession.
+    var hadHelper = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadHelper || Date.now() - Number(held('sundial.refreshed') || 0) < 20000) return;
+      var begun = inside ? busy || keeping || sheetNow || momentNow || (messages && messages.length) || !card.hidden : $('way-choices').hidden;
+      var typed = [].some.call(document.querySelectorAll('input, textarea'), function (f) { return f.value.trim(); });
+      if (begun || typed) return;
+      hold('sundial.refreshed', String(Date.now()));
+      location.reload();
     });
   }
   var installAsk = null;
@@ -5215,7 +5254,7 @@
     return greeting && !greetingSpent && stored(KEY) && !(messages && messages.length) && !sheetNow ? greeting : null;
   }
   function greetingInput(now) {
-    var t = todayAddress(), before = lastBefore(), said = saidBefore(), mine = todaysMoments();
+    var t = todayAddress(), before = lastBefore(), said = tomorrowSaid(), mine = todaysMoments();
     var todayLine = (days.filter(function (d) { return d.address === t; })[0] || {}).text || '';
     return 'Date: ' + now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
       '\nTime: ' + timeWords(now) +
