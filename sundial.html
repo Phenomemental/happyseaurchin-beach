@@ -563,6 +563,23 @@
     margin: -0.3rem 0 0.6rem;
     text-align: center;
   }
+  /* At the door, beneath the two choices (3.72); and the question a turn
+     left standing there, while they come in to tell from it. */
+  .sd-way .sd-turn-offer-row {
+    margin: 0.8rem 0 0;
+  }
+  .sd-way-from {
+    margin: 0 0 1.1rem;
+    text-align: center;
+    font-style: italic;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .sd-way-from[hidden] {
+    display: none;
+  }
   .sd-turn-offer {
     font: inherit;
     font-size: 1.05rem;
@@ -1965,11 +1982,13 @@
   <p class="sd-who" id="who" hidden></p>
   <p class="sd-days" id="days-count" hidden></p>
   <div class="sd-way" id="way" hidden>
+    <p class="sd-way-from" id="way-from" hidden></p>
     <div class="sd-way-choices" id="way-choices">
       <button type="button" class="sd-way-go" id="way-back">I’ve been here before</button>
       <span class="sd-way-rule" aria-hidden="true"></span>
       <button type="button" class="sd-way-go" id="way-new">I’m new</button>
     </div>
+    <p class="sd-turn-offer-row" id="door-turn-row" hidden><button type="button" class="sd-turn-offer" id="door-turn">Or give it a turn.</button></p>
     <form class="sd-way-card" id="back-form" hidden>
       <label for="bname" id="bname-label">your name here</label>
       <input id="bname" autocomplete="off" spellcheck="false" autocapitalize="off" maxlength="40">
@@ -2308,7 +2327,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.15 · 25 October 2026';
+  var VERSION = 'Sundial M4.16 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -4492,7 +4511,6 @@
     $('question').hidden = false;
     callSays('');
     showHello();
-    startUntouched();
     showInvite();
   }
   $('let-go').addEventListener('click', function () {
@@ -4512,7 +4530,7 @@
   var RUNGS = [[4, 'this year'], [5, 'this season'], [6, 'this month'], [7, 'this week']];
   function nextRung() {
     var name = stored(NAME), t = todayAddress();
-    if (!inside || !name || !held(WORD) || !rungsNow || (messages && messages.length) || sheetNow || turnNow) return null;
+    if (!inside || !name || !held(WORD) || !rungsNow || (messages && messages.length) || sheetNow || turnNow || fromTurn) return null;
     var told = days.map(function (d) { return d.address; }).concat(moments.map(function (m) { return dayOfAddress(m.address); }));
     var asked = keptHere(RUNG_ASKED)[name] || {};
     for (var k = 0; k < RUNGS.length; k++) {
@@ -4534,11 +4552,9 @@
     rungAsk = nextRung();
     $('rung-not').hidden = !rungAsk;
     $('question').classList.toggle('sd-rung', !!(rungAsk || rungSaid));
-    if (rungAsk) {
-      $('keep-now').hidden = true;
-      $('turn-offer-row').hidden = true;
-    }
+    if (rungAsk) $('keep-now').hidden = true;
     tick();
+    showTurnOffer();
   }
   function answerRung(words) {
     var r = rungAsk, turn = ++rungTurn;
@@ -4907,19 +4923,22 @@
     ev.stopPropagation();
     ev.preventDefault();
   }, true);
-  // ---- The turn (3.7) ---------------------------------------------------------------
-  // Played by hand, with no key and no Claude, and only at the empty start:
+  // ---- The turn (3.7; on the first screen, 3.72) -----------------------------------
+  // Played by hand, with no name, no key and no Claude, at the empty start:
   // never once a telling is under way, where Claude follows and never picks
-  // a place. A flick across the sundial, or the quiet offer beneath the
-  // question, sets its six pools turning round the heart, each place one
+  // a place. For anyone: inside, 'Or give it a turn' stands beneath the
+  // day's question until a telling begins; at the door, beneath the two
+  // choices. A flick across the sundial does the same, on a first visit
+  // too. It sets the six pools turning round the heart, each place one
   // turn in six. Where they rest, that pool brightens and its question rises
   // on the sheet, in the same words the Begin page turns up, read live from
   // the same place (spine:p6; its saved copy below until the beach answers),
   // so one change changes both. Then stay with it, and leave a line,
   // unnamed, for whoever lands there next, in the same tide (pool:p6, at the
   // place's own address); or tell today from there, the question standing
-  // above the field as where they started. A turn writes nothing to their
-  // day unless they then tell and keep. Its words never name where it comes
+  // above the field as where they started (from the door, once they have
+  // come in by either way). A turn writes nothing to their day unless they
+  // then tell and keep. Its words never name where it comes
   // from, and lines that do are not shown.
   var TURN_WORDS = {
     '1.1': ['What is here that you could point to: what you see, hear, or were told?', 'Leaving out what it means, what actually happened?'],
@@ -4953,25 +4972,33 @@
   // only 'nothing much'.
   function emptyStart() {
     var said = box.value.trim();
-    return !busy && !keeping && !momentNow && !tideOpen && !poolsOpen && !messages.length && !sheetNow && !fromTurn &&
+    return inside && !busy && !keeping && !momentNow && !tideOpen && !poolsOpen && !messages.length && !sheetNow && !fromTurn && !rungAsk &&
       day.hidden && rest.hidden && !form.hidden && ask.hidden && (!said || NOTHING_MUCH.test(said));
   }
+  // At the door, the two choices showing.
+  function doorStart() {
+    return !inside && !$('way').hidden && !$('way-choices').hidden;
+  }
   function showTurnOffer() {
-    var said = box.value.trim(), offer = false;
-    if (emptyStart() && !turnNow && !greetWaiting) {
-      offer = NOTHING_MUCH.test(said) || (!said && !stored(KEY) && untouchedLong);
-    }
-    $('turn-offer-row').hidden = !offer;
+    $('turn-offer-row').hidden = !(emptyStart() && !turnNow && !greetWaiting);
+    $('door-turn-row').hidden = !(doorStart() && !turnNow);
   }
   box.addEventListener('input', showTurnOffer);
   function giveTurn(dir) {
-    if (turnNow ? $('turn-line').value.trim() : !emptyStart()) return;
+    if (turnNow ? $('turn-line').value.trim() : !(emptyStart() || doorStart())) return;
     var k = Math.floor(Math.random() * Mark.POOLS.length), pool = Mark.POOLS[k];
+    var door = turnNow ? turnNow.door : !inside;
     if (!turnNow) layerOpened('turn');
-    var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '' };
+    var mine = turnNow = { k: k, at: pool.at, phrase: pool.phrase, question: '', door: door };
     turnWordsRead = turnWordsRead || readTurnWords();
-    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note'].forEach(function (id) { $(id).hidden = true; });
-    form.hidden = true;
+    ['greet', 'invite', 'ask', 'kept', 'bring-row', 'not-you-row', 'turn', 'turn-stay-box', 'turn-note', 'turn-offer-row', 'door-turn-row'].forEach(function (id) { $(id).hidden = true; });
+    if (door) {
+      fromTurn = null;
+      $('way-from').hidden = true;
+      $('way').hidden = true;
+    } else {
+      form.hidden = true;
+    }
     dial.turn(k, dir, STILL.matches).then(function () {
       if (turnNow !== mine) return;
       var words = TURN_WORDS[pool.at];
@@ -4989,26 +5016,44 @@
   }
   function putTurnAway() {
     if (!turnNow) return;
+    var door = turnNow.door && !inside;
     turnNow = null;
     dial.unturn();
     $('turn').hidden = true;
     $('turn-line').value = '';
-    form.hidden = false;
+    if (door) {
+      $('way').hidden = false;
+      showWayChoices();
+    } else {
+      form.hidden = false;
+    }
     layerClosed('turn');
     showGreeting();
     showInvite();
+    showTurnOffer();
   }
   $('turn-offer').addEventListener('click', function () { giveTurn(1); });
+  $('door-turn').addEventListener('click', function () { giveTurn(1); });
   // Tell today from here: the telling opens with the question standing
-  // above it, and from there Claude follows as ever.
+  // above it, and from there Claude follows as ever. From the door, the
+  // question stands above the two choices while they come in, and above
+  // the box once they are in.
   $('turn-tell').addEventListener('click', function () {
     if (!turnNow || !turnNow.question) return;
+    var door = turnNow.door && !inside;
     fromTurn = { phrase: turnNow.phrase, question: turnNow.question };
     turnNow = null;
     dial.unturn();
     $('turn').hidden = true;
     $('turn-line').value = '';
     layerClosed('turn');
+    if (door) {
+      $('way-from').textContent = fromTurn.question;
+      $('way-from').hidden = false;
+      $('way').hidden = false;
+      showWayChoices(true);
+      return;
+    }
     form.hidden = false;
     $('question').hidden = false;
     $('question').textContent = fromTurn.question;
@@ -5088,8 +5133,8 @@
     if (!f) return;
     var dx = ev.clientX - f.x, dy = ev.clientY - f.y;
     if (Math.abs(dx) < 40 || Math.abs(dx) < 1.5 * Math.abs(dy) || ev.timeStamp - f.t > 700) return;
-    // No flick on a first visit (2.86): only once there are days.
-    if (!turnNow && (!emptyStart() || !hasDays())) return;
+    // On a first visit too, and at the door (3.72).
+    if (!turnNow && !emptyStart() && !doorStart()) return;
     flicked = true;
     stopHold();
     giveTurn(dx > 0 ? 1 : -1);
@@ -6127,9 +6172,11 @@
     $('new-form').hidden = true;
     $('way-choices').hidden = false;
     if (focus) $('way-back').focus();
+    showTurnOffer();
   }
   function showWayCard(card_) {
     $('way-choices').hidden = true;
+    $('door-turn-row').hidden = true;
     $('back-form').hidden = card_ !== $('back-form');
     $('new-form').hidden = card_ !== $('new-form');
     card_.classList.remove('rising');
@@ -6210,7 +6257,7 @@
       greetSettled();
       return;
     }
-    if (greeting || messages.length || sheetNow || busy || keeping || momentNow || turnsToday() >= TURNS_A_DAY) { greetSettled(); return; }
+    if (greeting || fromTurn || messages.length || sheetNow || busy || keeping || momentNow || turnsToday() >= TURNS_A_DAY) { greetSettled(); return; }
     var turn = ++greetTurn;
     greetWaiting = true;
     greetPending = false;
@@ -6250,8 +6297,7 @@
     keyJustKept = false;
     if (!atStart()) return;
     showHello();
-    startUntouched();
-    if (stored(KEY) && !greetingSpent && !greeting && stored(KEY) !== keyRefused) {
+    if (stored(KEY) && !greetingSpent && !greeting && !fromTurn && stored(KEY) !== keyRefused) {
       // Nothing is said while the line lights and Claude is asked.
       greetPending = true;
       $('question').hidden = true;
@@ -6259,23 +6305,6 @@
       (reading || Promise.resolve()).then(function () { return lit ? dial.voice(STILL.matches) : null; }).then(greetFirst);
     }
   }
-  // The turn only at the empty start (3.7, as 2.86 has it): with a key, when
-  // they answer Claude's first question with nothing much; with no key, also
-  // once the box has stood untouched a while. Never on arrival.
-  var UNTOUCHED_MS = 20000, untouchedTimer = null, untouchedLong = false;
-  function startUntouched() {
-    clearTimeout(untouchedTimer);
-    untouchedLong = false;
-    if (!inside || stored(KEY)) return;
-    untouchedTimer = setTimeout(function () {
-      if (box.value.trim() || stored(KEY)) return;
-      untouchedLong = true;
-      showTurnOffer();
-    }, UNTOUCHED_MS);
-  }
-  box.addEventListener('input', function () {
-    if (box.value.trim()) clearTimeout(untouchedTimer);
-  });
   $('way-back').addEventListener('click', function () { openBack(); });
   $('way-new').addEventListener('click', function () { openNew(); });
 
