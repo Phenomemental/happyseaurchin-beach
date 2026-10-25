@@ -2060,7 +2060,7 @@
     <p class="sd-foot-links" id="foot-links"><span id="not-you-row" hidden><button type="button" class="sd-corner" id="not-you">Not you?</button></span><button type="button" class="sd-corner" id="corner" aria-haspopup="dialog" hidden>Your Claude</button><button type="button" class="sd-corner" id="about-open" aria-haspopup="dialog">About</button></p>
     <p class="sd-safe">If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).</p>
   </div>
-  <script src="menu.js?v=2026-10-25a" data-mark></script>
+  <script src="menu.js?v=2026-10-25b" data-mark></script>
 
   <dialog class="sd-about" id="about" aria-labelledby="about-head">
     <article class="sd-about-sheet">
@@ -2161,16 +2161,17 @@
   </dialog>
 </main>
 
-<script src="beach.js?v=2026-10-23b"></script>
-<script src="mark.js?v=2026-10-25c"></script>
-<script src="shell.js?v=2026-10-23a"></script>
-<script src="days.js?v=2026-10-25a"></script>
-<script src="seal.js?v=2026-10-22a"></script>
-<script src="roster.js?v=2026-10-22a"></script>
-<script src="whispers.js?v=2026-10-23g"></script>
-<script src="words.js?v=2026-10-23c"></script>
+<script src="beach.js?v=2026-10-25d"></script>
+<script src="mark.js?v=2026-10-25d"></script>
+<script src="shell.js?v=2026-10-25d"></script>
+<script src="days.js?v=2026-10-25d"></script>
+<script src="seal.js?v=2026-10-25d"></script>
+<script src="roster.js?v=2026-10-25d"></script>
+<script src="whispers.js?v=2026-10-25d"></script>
+<script src="words.js?v=2026-10-25d"></script>
+<script src="projects.js?v=2026-10-25d"></script>
 <script src="vendor/tweetnacl/nacl.js?v=1.0.3"></script>
-<script type="module" src="gray.js?v=2026-10-23b"></script>
+<script type="module" src="gray.js?v=2026-10-25d"></script>
 <script>
   // The films (6.1.2): where home is; the road's stops, filled live from 3.6
   // when the About sheet opens (the films read this same list); and the name
@@ -2179,7 +2180,7 @@
   window.SUNDIAL_ROAD = [];
   try { window.SUNDIAL_FROM = localStorage.getItem('sundial.name') || ''; } catch (e) { window.SUNDIAL_FROM = ''; }
 </script>
-<script src="films.js?v=2026-10-23c"></script>
+<script src="films.js?v=2026-10-25d"></script>
 <script>
 /* Sundial: speak, see, keep and come back (spine:front-door 7.1922 and
    7.1923). A person says where they are and what today has been like;
@@ -2192,7 +2193,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.11 · 25 October 2026';
+  var VERSION = 'Sundial M4.12 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -5350,7 +5351,8 @@
   // open a sheet of their own places over the screen; the cross, a tap
   // outside it, Escape or the phone's back button fold it away. YOURS:
   // today, their days, their room, page and hand. Then YOUR WORK and YOUR
-  // PAGES, read straight from lists:<name> (its first branch) and
+  // PAGES, read straight from lists:<name> (its first branch; each by its
+  // proper name, to its own page or its walk, projects.js) and
   // artifacts:<name> (its eighth group) as map.html reads them; a section
   // shows only when it has something in it. A small crimson dot, on the
   // lines and beside Your room, when the room has changed since they last
@@ -5476,19 +5478,27 @@
   function section(id, rows) {
     var list = $('menu-' + id);
     list.textContent = '';
-    rows.forEach(function (r) { placeItem(list, r.name, r.what, r.href); });
+    rows.forEach(function (r) {
+      var el = placeItem(list, r.name, r.what, r.href);
+      // Sundial's own page is this one: it brings today, with no reload.
+      if (r.href === 'sundial.html') {
+        el.removeAttribute('target');
+        el.addEventListener('click', function (ev) { ev.preventDefault(); toToday(); });
+      }
+    });
     list.hidden = !rows.length;
     $('menu-' + id + '-h').hidden = !rows.length;
+  }
+  function toToday() {
+    closeMenu();
+    if (poolsOpen) gatherBack();
+    else if (tideOpen) closeTide();
   }
   function drawPlaces() {
     var name = stored(NAME), yours = $('menu-yours');
     if (!name) return;
     yours.textContent = '';
-    placeItem(yours, 'Today', 'the sundial, as it is now', function () {
-      closeMenu();
-      if (poolsOpen) gatherBack();
-      else if (tideOpen) closeTide();
-    });
+    placeItem(yours, 'Today', 'the sundial, as it is now', toToday);
     if (tappable()) placeItem(yours, 'Your days', 'every day you have kept, the newest first', function () {
       closeMenu();
       if (poolsOpen) gatherBack();
@@ -5503,10 +5513,9 @@
     placeItem(yours, 'Your page', 'your page, as others see it', SITE_PAGE + encodeURIComponent(name));
     placeItem(yours, 'Your hand', 'what you\u2019re holding, and what\u2019s being dealt', SITE_HANDS + encodeURIComponent(name));
     var mine = places && places.name === name ? places : null;
-    section('work', mine ? workOf(mine.lists).map(function (p) {
-      return { name: capped(p.replace(/[-_]+/g, ' ')), what: 'a walk through it',
-        href: 'https://happyseaurchin.com/walk/' + encodeURIComponent(p) + '/' + encodeURIComponent(name) };
-    }) : []);
+    // Each project by its proper name: to the page Matthew made for it,
+    // else walked at walk.html?p=<project> (projects.js).
+    section('work', mine ? workOf(mine.lists).map(function (p) { return Projects.place(p, name); }) : []);
     section('pages', mine ? pagesOf(mine.artifacts) : []);
   }
   function openMenu() {
