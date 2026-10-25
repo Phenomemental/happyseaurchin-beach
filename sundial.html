@@ -482,13 +482,23 @@
     text-align: center;
     margin: 0 0 0.6rem;
   }
-  /* Claude speaks first (2.86): its one line of greeting above the question. */
-  .sd-hello {
-    font-size: 1.2rem;
+  /* Claude speaks first (2.86): their tomorrow line quoted exactly, then
+     Claude's one question, as one thought set left above the box. */
+  main.sd.voiced .sd-hello {
+    font-size: 1.25rem;
+    font-style: italic;
     line-height: 1.45;
-    text-align: center;
+    text-align: left;
     text-wrap: pretty;
     margin: 0 0 0.5rem;
+  }
+  main.sd.voiced .sd-question {
+    font-style: normal;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    text-align: left;
+    text-wrap: pretty;
+    margin: 0 0 0.8rem;
   }
   form.sd-speak textarea::placeholder {
     font-style: italic;
@@ -742,6 +752,21 @@
     color: var(--muted);
     margin-top: 0.25rem;
     font-variant-numeric: tabular-nums;
+  }
+  /* A day whose line is theirs (2.7): their line, then each telling kept
+     beneath it, with the time it was spoken. */
+  .sd-lines .sd-tide-when {
+    font-size: 0.85rem;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin: 1.1rem 0 0;
+  }
+  .sd-lines .sd-tide-moment {
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0.15rem 0 0.45rem;
   }
   .sd-tide-day {
     margin: 1rem 0 0 calc(56px + 1rem);
@@ -1522,11 +1547,22 @@
     margin: 1rem 0 0;
   }
   /* The voice (2.84): its heading, one plain sentence, the ways in their
-     order, the bottom line once, and keeping in your own words, last. */
-  dialog.sd-voice {
-    max-height: calc(100svh - 2rem);
-    overflow: auto;
-    overscroll-behavior: contain;
+     order, the bottom line once, and keeping in your own words, last. It
+     rises in place of the box, beneath the heart, never over it. */
+  .sd-voice {
+    width: 100%;
+    margin: 0.4rem auto 0;
+    text-align: left;
+    font-size: 1.15rem;
+  }
+  .sd-voice[hidden] {
+    display: none;
+  }
+  .sd-voice.rising {
+    animation: sd-rise 0.9s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-voice.rising { animation: none; }
   }
   .sd-voice-h {
     font-size: 1.45rem;
@@ -1736,6 +1772,62 @@
   </section>
 
   <div class="sd-foot">
+    <section class="sd-card sd-voice" id="card" aria-labelledby="voice-head" hidden>
+      <h2 class="sd-voice-h" id="voice-head" tabindex="-1">To talk back, Sundial needs Claude.</h2>
+      <p class="sd-voice-why">Sundial gives your day back through Claude, and Claude needs a key, which costs a little for each conversation.</p>
+      <p class="sd-voice-using" id="voice-using" hidden><span id="voice-using-says"></span> <button type="button" class="sd-quiet sd-inline" id="drop-key">Take it away</button></p>
+      <p class="sd-soft" id="voice-note" role="status" hidden></p>
+      <div class="sd-voice-way" id="way-chat" hidden>
+        <p class="sd-voice-way-h">Already use Claude with the beach?</p>
+        <p class="sd-voice-say">In your own chat, say: <q id="chat-say"></q></p>
+        <button type="button" class="sd-quiet" id="chat-copy">copy</button>
+      </div>
+      <form class="sd-voice-way" id="code-form">
+        <label for="phrase">A code from a friend</label>
+        <input id="phrase" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <p class="sd-soft" id="code-note" role="status" hidden></p>
+        <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-code">Use this code</button></div>
+      </form>
+      <div class="sd-steward" id="steward" hidden>
+        <button type="button" class="sd-quiet" id="steward-open">host: share Claude with the people you bring in</button>
+        <div id="steward-ask" hidden>
+          <label for="share-key">your Anthropic access code (it begins sk-ant-)</label>
+          <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <label for="share-phrase">a passphrase for the people you bring in, twelve letters or more</label>
+          <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
+          <div class="sd-card-row">
+            <button type="button" class="sd-keep-key" id="steward-seal">Share it</button>
+            <button type="button" class="sd-quiet" id="steward-not">Not now</button>
+          </div>
+          <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
+        </div>
+        <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Shared. Anyone you give the passphrase to can use Claude here now.</p>
+      </div>
+      <form class="sd-voice-way" id="key-form">
+        <label for="key" id="key-label">Your own Claude API key</label>
+        <p class="sd-voice-how">Made at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>; kept only in this browser, and sent nowhere but to Claude.</p>
+        <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <p class="sd-soft" id="key-note" role="status" hidden></p>
+        <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-key">Keep it here</button></div>
+      </form>
+      <p class="sd-voice-bottom" id="voice-bottom">Without a code or a key, the page can’t talk back.</p>
+      <p class="sd-voice-own"><button type="button" class="sd-quiet" id="close-card">Keep today in your own words for now.</button></p>
+      <div class="sd-forget" id="forget" hidden>
+        <button type="button" class="sd-quiet" id="forget-open">forget me</button>
+        <div id="forget-ask" hidden>
+          <p class="sd-soft" id="forget-line"></p>
+          <div id="fword-row">
+            <label for="fword">your secret word</label>
+            <input id="fword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
+          </div>
+          <div class="sd-card-row">
+            <button type="button" class="sd-keep-key" id="forget-go">Forget me</button>
+            <button type="button" class="sd-quiet" id="forget-not">Not now</button>
+          </div>
+        </div>
+      </div>
+      <p class="sd-version" id="version"></p>
+    </section>
     <form class="sd-speak" id="speak">
       <p class="sd-hello" id="hello" hidden></p>
       <p class="sd-question" id="question">What’s with you today?</p>
@@ -1789,63 +1881,6 @@
     </article>
   </dialog>
 
-  <dialog class="sd-card sd-voice" id="card" aria-labelledby="voice-head">
-    <h2 class="sd-voice-h" id="voice-head" tabindex="-1">To talk back, Sundial needs Claude.</h2>
-    <p class="sd-voice-why">Sundial gives your day back through Claude, and Claude needs a key, which costs a little for each conversation.</p>
-    <p class="sd-voice-using" id="voice-using" hidden><span id="voice-using-says"></span> <button type="button" class="sd-quiet sd-inline" id="drop-key">Take it away</button></p>
-    <p class="sd-soft" id="voice-note" role="status" hidden></p>
-    <div class="sd-voice-way" id="way-chat" hidden>
-      <p class="sd-voice-way-h">Already use Claude with the beach?</p>
-      <p class="sd-voice-say">In your own chat, say: <q id="chat-say"></q></p>
-      <button type="button" class="sd-quiet" id="chat-copy">copy</button>
-    </div>
-    <form class="sd-voice-way" id="code-form">
-      <label for="phrase">A code from a friend</label>
-      <input id="phrase" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <p class="sd-soft" id="code-note" role="status" hidden></p>
-      <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-code">Use this code</button></div>
-    </form>
-    <div class="sd-steward" id="steward" hidden>
-      <button type="button" class="sd-quiet" id="steward-open">host: share Claude with the people you bring in</button>
-      <div id="steward-ask" hidden>
-        <label for="share-key">your Anthropic access code (it begins sk-ant-)</label>
-        <input id="share-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-        <label for="share-phrase">a passphrase for the people you bring in, twelve letters or more</label>
-        <input id="share-phrase" autocomplete="off" spellcheck="false" autocapitalize="off" minlength="12">
-        <div class="sd-card-row">
-          <button type="button" class="sd-keep-key" id="steward-seal">Share it</button>
-          <button type="button" class="sd-quiet" id="steward-not">Not now</button>
-        </div>
-        <p class="sd-soft" id="steward-note" aria-live="polite" hidden></p>
-      </div>
-      <p class="sd-soft" id="steward-done" tabindex="-1" aria-live="polite" hidden>Shared. Anyone you give the passphrase to can use Claude here now.</p>
-    </div>
-    <form class="sd-voice-way" id="key-form">
-      <label for="key" id="key-label">Your own Claude API key</label>
-      <p class="sd-voice-how">Made at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>; kept only in this browser, and sent nowhere but to Claude.</p>
-      <input id="key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-      <p class="sd-soft" id="key-note" role="status" hidden></p>
-      <div class="sd-card-row"><button type="submit" class="sd-keep-key" id="keep-key">Keep it here</button></div>
-    </form>
-    <p class="sd-voice-bottom" id="voice-bottom">Without a code or a key, the page can’t talk back.</p>
-    <p class="sd-voice-own"><button type="button" class="sd-quiet" id="close-card">Keep today in your own words for now.</button></p>
-    <div class="sd-forget" id="forget" hidden>
-      <button type="button" class="sd-quiet" id="forget-open">forget me</button>
-      <div id="forget-ask" hidden>
-        <p class="sd-soft" id="forget-line"></p>
-        <div id="fword-row">
-          <label for="fword">your secret word</label>
-          <input id="fword" type="password" autocomplete="off" spellcheck="false" autocapitalize="off">
-        </div>
-        <div class="sd-card-row">
-          <button type="button" class="sd-keep-key" id="forget-go">Forget me</button>
-          <button type="button" class="sd-quiet" id="forget-not">Not now</button>
-        </div>
-      </div>
-    </div>
-    <p class="sd-version" id="version"></p>
-  </dialog>
-
   <dialog class="sd-card" id="find-card" aria-label="Your days">
     <form id="find-form">
       <label for="fname">your name here</label>
@@ -1894,7 +1929,7 @@
 </main>
 
 <script src="beach.js?v=2026-10-23b"></script>
-<script src="mark.js?v=2026-10-23g"></script>
+<script src="mark.js?v=2026-10-25a"></script>
 <script src="shell.js?v=2026-10-23a"></script>
 <script src="days.js?v=2026-10-23e"></script>
 <script src="seal.js?v=2026-10-22a"></script>
@@ -1924,7 +1959,7 @@
    why in one plain line, and the words they spoke go back into the box. */
 (function () {
   var MODEL = 'claude-sonnet-5-5';          // a current Sonnet
-  var VERSION = 'Sundial M4.5 · 24 October 2026';
+  var VERSION = 'Sundial M4.6 · 25 October 2026';
   var TURNS_A_DAY = 40;
   var KEY = 'sundial.key', TURNS = 'sundial.turns', NAME = 'sundial.name';
   // The roster's steward (plan 6.6): before the roster is first sealed, only
@@ -1991,12 +2026,12 @@
   // of greeting, with their tomorrow line if there is one, and one question
   // about today, before they have said anything. Under the same hosting as
   // the law above.
-  var GREET_LAW = "You are greeting one person as they open their sundial, before they have said anything today. Speak to them, not about any system. They are the authority on their day. You host: you hold, notice, follow and reflect, adding nothing and taking nothing away, and you never interpret.\n\nYou receive: the date, the time and the part of the day; whether they have kept days here before; their last words before today, with the tomorrow line they said then, if any; today's line and today's earlier moments, if any; and tomorrow's line, if any. You return ONLY JSON: `{\"greet\": \"<one short line>\", \"ask\": \"<one question>\"}`.\n\n`greet`: one short line. If they said a tomorrow line before today, greet them with it, in their own words, as what they said they would do, adding nothing; never ask whether they did it, never judge or praise it. Otherwise greet them plainly, in a few words, for the part of the day. `ask`: one question about today, answerable from the day itself: on a first visit, where they are and what today has been like; coming back, what today has been like, from where their last words left off; if today already holds moments, what has happened since. Never ask how they are, what they are like, or why, and never walk them inward.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. Never return anything but the JSON.";
+  var GREET_LAW = "You are greeting one person as they open their sundial, before they have said anything today. Speak to them, not about any system. They are the authority on their day. You host: you hold, notice, follow and reflect, adding nothing and taking nothing away, and you never interpret.\n\nYou receive: the date, the time and the part of the day; whether they have kept days here before; their last words before today; the tomorrow line they said then, if any, which the page shows them in their own words just before your question, so you never repeat, paraphrase or answer it; today's line and today's earlier moments, if any; and tomorrow's line, if any. You return ONLY JSON: `{\"ask\": \"<one question>\"}`.\n\n`ask`: one question about today, in plain words, as a host would ask it aloud. If they said a tomorrow line, your question follows from it and asks it from the day (where it went, what came of it, what today held of it), so that their line and your question read as one thought; never ask whether they did it, and never judge, praise or cheer. If today already holds moments, ask what has come since, in their own terms from those moments, never naming a title or a label. On a first visit, with no days kept, ask where they are and what today has been like. Always something they can answer from the day itself. Never ask how they are, what they are like, or why; never walk them inward; never ask two questions.\n\nNever advise, interpret, diagnose, praise or cheer. Never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision, Outcomes in anything the person reads. Never return anything but the JSON.";
   var GREET_SCHEMA = {
     type: 'object',
     additionalProperties: false,
-    required: ['greet', 'ask'],
-    properties: { greet: { type: 'string' }, ask: { type: 'string' } }
+    required: ['ask'],
+    properties: { ask: { type: 'string' } }
   };
 
   // Listening (plan 6.8.1), Claude's second law, verbatim, as replaced by 6.8.1.1.
@@ -2191,8 +2226,9 @@
   // Come back (6.5): where the last words were spoken, then the tomorrow
   // they said before today.
   function showGreeting() {
-    // While the days are coming round (2.81), nothing is said beneath them.
-    if (settling) { greet.hidden = true; return; }
+    // While the days are coming round (2.81), or Claude is about to speak
+    // first (2.86), nothing is said beneath them.
+    if (settling || greetPending || greetWaiting) { greet.hidden = true; return; }
     var mine = todaysMoments(), lead = '';
     var todayLine = days.filter(function (d) { return d.address === todayAddress(); })[0];
     if (mine.length) {
@@ -2205,18 +2241,22 @@
       var b = lastBefore();
       if (b) lead = whenWords(b.address) + ': ' + Mark.read(b.text).title;
     }
-    // Their own line, quoted, so it reads whatever its shape: "Tomorrow,
-    // walk up early." as well as "Tomorrow, the drive north."
-    var said = saidBefore().replace(/[.\s]+$/, '');
-    if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
-    // When Claude has spoken first, it has greeted them with that tomorrow
-    // (2.86), so the page doesn't say it again.
-    if (greetNow()) said = '';
+    // When Claude speaks first (2.86), their line is quoted above its
+    // question instead, and the page's own lead is not said.
+    var said = greetNow() ? '' : saidLine();
+    if (greetNow()) lead = '';
     $('greet-day').textContent = lead;
     $('greet-day').hidden = !lead;
-    $('greet-said').textContent = said ? 'You said: “Tomorrow, ' + said + '.”' : '';
+    $('greet-said').textContent = said;
     $('greet-said').hidden = !said;
     greet.hidden = !lead && !said;
+  }
+  // Their own tomorrow line, quoted exactly, so it reads whatever its
+  // shape: "Tomorrow, walk up early." as well as "Tomorrow, the drive north."
+  function saidLine() {
+    var said = saidBefore().replace(/[.\s]+$/, '');
+    if (said && !/^I\b/.test(said)) said = said.charAt(0).toLowerCase() + said.slice(1);
+    return said ? 'You said: “Tomorrow, ' + said + '.”' : '';
   }
   // On arrival with a name: their days and moments, read with no word.
   // Should the beach not answer, what this visit last read stands in.
@@ -2471,15 +2511,34 @@
     $('tide-first').textContent = [dateWords(Days.dateOf(d.address)), r.place].filter(Boolean).join(' · ');
     $('tide-title').textContent = long ? '' : r.title;
     $('tide-title').hidden = long;
-    var lines = $('tide-lines');
+    var lines = $('tide-lines'), tomorrow = r.tomorrow;
     lines.textContent = '';
     (long ? [r.title] : r.lines).forEach(function (l) {
       var p = document.createElement('p');
       p.textContent = l;
       lines.appendChild(p);
     });
-    $('tide-tomorrow').textContent = r.tomorrow ? 'Tomorrow: ' + r.tomorrow : '';
-    $('tide-tomorrow').hidden = !r.tomorrow;
+    // A day whose own line is theirs, not Sundial's (2.7), with tellings
+    // kept beneath it: their line stands, and then each moment as it was
+    // kept, in time order, so the day shows as they lived it.
+    var theirs = !r.places.length && !r.own && !d.bare;
+    (theirs ? moments.filter(function (m) { return dayOfAddress(m.address) === d.address; }) : []).forEach(function (m) {
+      var mr = Mark.read(m.text), when = document.createElement('p'), title = document.createElement('p');
+      when.className = 'sd-tide-when';
+      when.textContent = Days.timeOf(m.address).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      title.className = 'sd-tide-moment';
+      title.textContent = mr.title;
+      lines.appendChild(when);
+      lines.appendChild(title);
+      mr.lines.forEach(function (l) {
+        var p = document.createElement('p');
+        p.textContent = l;
+        lines.appendChild(p);
+      });
+      if (mr.tomorrow) tomorrow = mr.tomorrow;
+    });
+    $('tide-tomorrow').textContent = tomorrow ? 'Tomorrow: ' + tomorrow : '';
+    $('tide-tomorrow').hidden = !tomorrow;
     var touched = Mark.placesWords(Mark.placesOf(d)) || (r.own ? Mark.OWN : '');
     $('tide-pool').textContent = touched;
     $('tide-pool').hidden = !touched;
@@ -2488,6 +2547,7 @@
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape' || document.querySelector('dialog[open]')) return;
     if (!inside && $('way-choices').hidden) { showWayChoices(true); return; }
+    if (!card.hidden) { closeCard(); return; }
     if (poolsOpen) gatherBack();
     else if (tideOpen) closeTide();
     else if (turnNow) putTurnAway();
@@ -3381,33 +3441,53 @@
     $('forget-ask').hidden = true;
     $('forget-open').hidden = false;
     showCorner();
-    if (card.showModal) card.showModal();
-    else card.setAttribute('open', '');
-    card.scrollTop = 0;
+    // In place of the box, beneath the heart, with nothing said above it;
+    // the box and the page's own words come back when it closes.
+    cardHidForm = !form.hidden;
+    form.hidden = true;
+    greet.hidden = true;
+    $('invite').hidden = true;
+    card.hidden = false;
+    card.classList.remove('rising');
+    void card.offsetWidth;
+    card.classList.add('rising');
     $('voice-head').focus({ preventScroll: true });
+    // Brought into view only when its heading is below the fold: the heart
+    // stays where it is.
+    var top = $('voice-head').getBoundingClientRect().top;
+    if (top > window.innerHeight * 0.7) window.scrollBy({ top: top - window.innerHeight * 0.5, behavior: STILL.matches ? 'auto' : 'smooth' });
   }
+  // Closed: opened when Claude didn't take the key, once another is kept
+  // the words go on their way without a second tap; otherwise, a key now
+  // held lights the line once and lets Claude speak first (2.86).
+  var continueSend = false, cardHidForm = false, keyJustKept = false;
   function closeCard() {
-    if (card.open) card.close ? card.close() : card.removeAttribute('open');
-  }
-  // Opened when Claude didn't take the key: once another is kept, the words
-  // go on their way without a second tap. Otherwise, a key now held lets
-  // Claude speak first (2.86).
-  var continueSend = false;
-  card.addEventListener('close', function () {
+    if (card.hidden) return;
+    card.hidden = true;
+    hiders.forEach(function (h) { h(); });
+    // The box comes back: the one the card stood in for, or, on the way in,
+    // the one that waited for the card.
+    if (form.hidden && (cardHidForm || (day.hidden && rest.hidden && !tideOpen && !poolsOpen && !turnNow && !momentNow))) {
+      form.hidden = false;
+      $('question').hidden = !ask.hidden;
+      settleIn(form);
+    }
+    cardHidForm = false;
     var go = continueSend && !!stored(KEY) && !!box.value.trim();
     continueSend = false;
     stewardWord = '';
     $('share-key').value = '';
     $('share-phrase').value = '';
-    if (returnTo) returnTo.focus();
+    if (returnTo) returnTo.focus({ preventScroll: true });
     returnTo = null;
     if (go) form.requestSubmit ? form.requestSubmit(send) : send.click();
     else voiced();
-  });
+  }
   function useKey(k, came) {
     store(KEY, k);
     store(KEY_FROM, came);
     continueSend = returnTo === send;
+    keyJustKept = true;
     closeCard();
   }
   // (a) The line to say in their own chat, copied with one tap; where the
@@ -3615,7 +3695,7 @@
       (same ? '\nAn earlier moment from this same beat: ' + flatText(same.text) : '') +
       (aheadText ? '\nTomorrow’s line: ' + flatText(aheadText) : '') +
       (fromTurn ? '\nWhere they started: a turn rested at ' + fromTurn.phrase + ', with the question: ' + fromTurn.question : '') +
-      (greeting && !fromTurn && !greetingSpent ? '\nYou spoke first, greeting them: ' + (greeting.greet ? greeting.greet + ' ' : '') + 'And you asked: ' + greeting.ask : '') +
+      (greeting && !fromTurn && !greetingSpent ? '\nYou spoke first' + (said ? ', beneath their tomorrow line shown in their own words' : '') + ', and asked: ' + greeting.ask : '') +
       '\n\nWhat they said:\n' + words;
   }
 
@@ -5007,7 +5087,7 @@
     reading = comeBack().then(function () { return arrived; }).then(function () {
       daysComing = false;
       settling = false;
-      var rose = form.hidden && !sheetNow && !tideOpen && !poolsOpen;
+      var rose = form.hidden && !sheetNow && !tideOpen && !poolsOpen && !(way && !stored(KEY));
       if (rose) {
         form.hidden = false;
         $('question').hidden = false;
@@ -5024,7 +5104,7 @@
         settleIn($('invite'), 700);
       }
     });
-    return reading.then(function () { if (!card.open) voiced(); });
+    return reading.then(function () { if (card.hidden) voiced(); });
   }
   // What one person leaves in this browser, let go so the next begins clean.
   // The key stays: it belongs to the browser, not to a name.
@@ -5061,7 +5141,7 @@
     showWho(true);
     return Promise.all([gone, beat]).then(function () {
       var read = enter(true);
-      if (!stored(KEY)) read.then(function () { if (inside) openCard(); });
+      if (!stored(KEY)) read.then(function () { if (inside && card.hidden) openCard(); });
       return read;
     });
   }
@@ -5091,7 +5171,7 @@
   // doesn't greet again, and spent once the day is kept. Without a key, the
   // box says what it does.
   var OWN_BOX = 'Your words, kept as you say them.';
-  var GREETED = 'sundial.greeted', greeting = null, greetingSpent = false, greetTurn = 0, greetWaiting = false;
+  var GREETED = 'sundial.greeted', greeting = null, greetingSpent = false, greetTurn = 0, greetWaiting = false, greetPending = false;
   function greetNow() {
     return greeting && !greetingSpent && stored(KEY) && !(messages && messages.length) && !sheetNow ? greeting : null;
   }
@@ -5115,13 +5195,19 @@
   function atStart() {
     return inside && !busy && !(messages && messages.length) && !sheetNow && !tideOpen && !poolsOpen && !turnNow && !momentNow;
   }
-  function showHello() {
-    var g = greetNow();
-    $('hello').textContent = g ? g.greet : '';
-    $('hello').hidden = !(g && g.greet) || !!(messages && messages.length);
+  function showHello(arrived) {
+    var g = greetNow(), said = g ? saidLine() : '';
+    $('hello').textContent = said;
+    $('hello').hidden = !said || !!(messages && messages.length);
+    main.classList.toggle('voiced', !!g && !(messages && messages.length));
     tick();
     if (atStart()) showGreeting();
     showTurnOffer();
+    // Claude's words settle in, the line first, then the question.
+    if (arrived && g) {
+      if (said) settleIn($('hello'));
+      settleIn($('question'), said ? 500 : 0);
+    }
   }
   function spendGreeting() {
     greetingSpent = true;
@@ -5133,19 +5219,26 @@
     }
   }
   var keyRefused = '';
+  // Claude is not going to speak first after all: the page's own words.
+  function greetSettled() {
+    greetPending = false;
+    $('question').hidden = !ask.hidden;
+    showHello();
+  }
   function greetFirst() {
-    if (!inside || !stored(KEY) || stored(KEY) === keyRefused || greetingSpent || greetWaiting || card.open) return;
+    if (!inside || !stored(KEY) || stored(KEY) === keyRefused || greetingSpent || greetWaiting || !card.hidden) { greetSettled(); return; }
     var who = stored(NAME) || held(CHOSEN), t = todayAddress(), was = null;
     try { was = JSON.parse(held(GREETED) || 'null'); } catch (e) {}
     if (was && was.who === who && was.day === t) {
       if (was.spent) greetingSpent = true;
-      else greeting = { greet: was.greet, ask: was.ask };
-      showHello();
+      else greeting = { ask: was.ask };
+      greetSettled();
       return;
     }
-    if (greeting || messages.length || sheetNow || busy || keeping || momentNow || turnsToday() >= TURNS_A_DAY) return;
+    if (greeting || messages.length || sheetNow || busy || keeping || momentNow || turnsToday() >= TURNS_A_DAY) { greetSettled(); return; }
     var turn = ++greetTurn;
     greetWaiting = true;
+    greetPending = false;
     $('question').hidden = true;
     dial.answering(true);
     claude(GREET_LAW, [{ role: 'user', content: greetingInput(new Date()) }], GREET_SCHEMA, 1000).then(function (res) {
@@ -5158,10 +5251,13 @@
       var j = res.status === 200 && res.data.stop_reason !== 'refusal' ? jsonOf(res.data) : null;
       if (res.status === 200) countTurn();
       if (j && typeof j.ask === 'string' && j.ask.trim()) {
-        greeting = { greet: typeof j.greet === 'string' ? j.greet.trim() : '', ask: j.ask.trim() };
-        hold(GREETED, JSON.stringify({ who: who, day: t, greet: greeting.greet, ask: greeting.ask }));
+        greeting = { ask: j.ask.trim() };
+        hold(GREETED, JSON.stringify({ who: who, day: t, ask: greeting.ask }));
         callSays('');
-      } else if (refusedKey(res)) {
+        showHello(true);
+        return;
+      }
+      if (refusedKey(res)) {
         keyRefused = stored(KEY);
         openCard(null, KEY_REFUSED);
       } else {
@@ -5175,10 +5271,18 @@
   function voiced() {
     if (!inside) return;
     box.placeholder = stored(KEY) ? '' : OWN_BOX;
+    var lit = keyJustKept;
+    keyJustKept = false;
     if (!atStart()) return;
     showHello();
     startUntouched();
-    if (stored(KEY)) (reading || Promise.resolve()).then(greetFirst);
+    if (stored(KEY) && !greetingSpent && !greeting && stored(KEY) !== keyRefused) {
+      // Nothing is said while the line lights and Claude is asked.
+      greetPending = true;
+      $('question').hidden = true;
+      greet.hidden = true;
+      (reading || Promise.resolve()).then(function () { return lit ? dial.voice(STILL.matches) : null; }).then(greetFirst);
+    }
   }
   // The turn only at the empty start (3.7, as 2.86 has it): with a key, when
   // they answer Claude's first question with nothing much; with no key, also

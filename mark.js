@@ -702,8 +702,17 @@
       sweep.classList.add('sweeping');
       return new Promise(function (ok) { setTimeout(ok, total + 500); });
     }
+    // The voice arriving (2.84): when a key is kept, the line lights once
+    // along its length, as it does while Claude answers, and goes out.
+    function voice(still) {
+      if (still || !flow || !flow.animate) return Promise.resolve();
+      return flow.animate([
+        { strokeDashoffset: 1000, opacity: 0 }, { opacity: 0.8, offset: 0.25 }, { opacity: 0.8, offset: 0.75 },
+        { strokeDashoffset: -150, opacity: 0 }
+      ], { duration: 2600, easing: 'ease-in-out' }).finished.catch(function () {});
+    }
     return { time: time, answering: answering, days: days, moments: moments, pools: pools, gather: gather, picked: picked,
-      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive };
+      where: where, bloom: bloom, ring: ring, turn: turn, unturn: unturn, draw: draw, beat: beat, arrive: arrive, voice: voice };
   }
 
   // ---- Hold: the pools -----------------------------------------------------------
