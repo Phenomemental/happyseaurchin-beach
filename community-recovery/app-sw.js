@@ -5,7 +5,7 @@
 // every write goes to it live, and nothing is ever kept back to send later. Online, the page and
 // its files always come fresh from the network (network first); the kept copy only answers when
 // the network fails or is slow.
-var KEPT = 'cr-app-files-1';
+var KEPT = 'cr-app-files-2';
 // Files the page loads itself (gray.js's own imports) and the app's own.
 var ALWAYS = [
   'app.html',
