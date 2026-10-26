@@ -238,8 +238,7 @@
   }
 
   // ---- the card: a picture of the name and its words, to keep -----------------------------------
-  function cardPicture(name, words, home) {
-    home = home || CFG.home || '';
+  function cardPicture(name, words) {
     var c = document.createElement('canvas'); c.width = 900; c.height = 560;
     // Community Recovery's own colours and face, from the block 'brand' (as brand.css)
     var g = c.getContext('2d'), font = '"Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -255,7 +254,7 @@
     g.fillText(line, 70, 372);
     g.fillStyle = '#746882'; g.font = '34px ' + font;
     g.fillText('The only key to this name. Keep it safe.', 70, 448);
-    fit(home, '', 30); g.fillText(home, 70, 494);
+    fit(CFG.home || '', '', 30); g.fillText(CFG.home || '', 70, 494);
     return c.toDataURL('image/png');
   }
 
@@ -919,10 +918,6 @@
     listenButton: listenButton, speakButton: speakButton, circle: circle, family: family,
     keeperWords: keeperWords, setKeeper: setKeeper, dot: dot,
     // for the checks only
-    _t: { tidyWords: tidyWords, tidyName: tidyName, nearest: nearest, threeWords: threeWords, apart: apart },
-    // for Community Recovery's app (app.html), which draws its own screens round the same steps
-    // the name sheet takes; added beside the rest, nothing above changes
-    app: { foundName: foundName, comeBack: comeBack, newWords: newWords, keepMe: keepMe, cardPicture: cardPicture,
-           threeWords: threeWords, tidyName: tidyName, device: DEVICE }
+    _t: { tidyWords: tidyWords, tidyName: tidyName, nearest: nearest, threeWords: threeWords, apart: apart }
   };
 })();
