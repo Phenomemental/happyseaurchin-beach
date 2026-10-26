@@ -14,7 +14,8 @@
     'golden-flow': 'Golden Flow',
     'night-watchman': 'The Night Watchman',
     'front-door': 'Sundial',
-    'tideline': 'Tideline'
+    'tideline': 'Tideline',
+    'leros-on-the-commons': 'LEROs on the Commons'
   };
   // Each made page, and one short line saying what it is.
   var PAGES = {
@@ -22,7 +23,8 @@
     'golden-flow': { href: 'golden-flow.html', what: 'what is asked and answered, from where you stand' },
     'night-watchman': { href: 'night-watchman.html', what: 'a quiet place to keep a watch of your own' },
     'front-door': { href: 'sundial.html', what: 'your day back, in your own words' },
-    'community-recovery-design': { href: 'community-recovery/', what: 'recovery, grown in the open' }
+    'community-recovery-design': { href: 'community-recovery/', what: 'recovery, grown in the open' },
+    'leros-on-the-commons': { href: 'leros-on-the-commons.html', what: 'recovery the nation can see, without anyone being watched' }
   };
   var WALK = 'a walk through it';
 
