@@ -527,6 +527,55 @@
     return s;
   };
 
+  // SAVING THE WORDS: to the phone's own password store, or as the card picture.
+  // Chrome on Android takes the words straight in (PasswordCredential). Elsewhere a
+  // real sign-in form is filled and submitted out of sight, which is what makes
+  // Safari and other browsers offer to save the password.
+  function savePassword(m, st) {
+    var label = 'Community Recovery: ' + m.name;
+    if (window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+      try {
+        var c = new window.PasswordCredential({ id: m.name, password: m.words, name: label });
+        navigator.credentials.store(c).then(function () {
+          st.textContent = 'Your phone has your words now. It will fill them in next time.';
+        }, function () { formSave(m, st); });
+        return;
+      } catch (e) { /* fall through to the form */ }
+    }
+    formSave(m, st);
+  }
+  function formSave(m, st) {
+    var f = el('form', 'pw-save'); f.method = 'post'; f.action = '#';
+    f.setAttribute('aria-hidden', 'true');
+    var u = el('input'); u.type = 'text'; u.name = 'username'; u.autocomplete = 'username'; u.value = m.name; u.tabIndex = -1;
+    var pw = el('input'); pw.type = 'password'; pw.name = 'password'; pw.autocomplete = 'new-password'; pw.value = m.words; pw.tabIndex = -1;
+    var sb = el('button'); sb.type = 'submit'; sb.tabIndex = -1;
+    add(f, u, pw, sb);
+    document.body.appendChild(f);
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 1200);
+    });
+    if (f.requestSubmit) f.requestSubmit(sb); else sb.click();
+    st.textContent = 'When your phone offers to save the password, say yes.';
+  }
+  function savePicture(src, m, st) {
+    var fname = 'community-recovery-' + m.name + '.png';
+    fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+      var file = new File([b], fname, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], title: 'My Community Recovery card' }).then(function () {
+          st.textContent = 'Saved. Keep it with your photos.';
+        });
+      }
+      var a = el('a'); a.href = src; a.download = fname;
+      document.body.appendChild(a); a.click(); a.parentNode.removeChild(a);
+      st.textContent = 'Saved. You can also press and hold the picture to keep it.';
+    }).catch(function () {
+      st.textContent = 'Press and hold the picture above to save it to your phone.';
+    });
+  }
+
   // YOUR WORDS: the card to keep, as Join us shows it
   SCREENS.words = function (arg) {
     arg = arg || {};
@@ -541,10 +590,16 @@
     var src = null;
     try { src = Kit.app.cardPicture(m.name, m.words, myLink()); } catch (e) { src = null; }
     if (src) {
-      var save = el('a', 'btn line', 'Save the picture'); save.href = src; save.download = 'my-card-' + m.name + '.png';
-      save.style.marginTop = '22px';
-      add(s, save);
+      var img = el('img', 'key-card'); img.src = src;
+      img.alt = 'Your card: ' + m.name + ', ' + m.words.split('-').join(', ');
+      add(s, img);
     }
+    var keep = el('div', 'stack'); keep.style.marginTop = '18px'; keep.style.gap = '10px';
+    var kst = status();
+    add(keep, button('btn line', 'Save to my phone’s passwords', function () { savePassword(m, kst); }));
+    if (src) add(keep, button('btn line', 'Save the picture', function () { savePicture(src, m, kst); }));
+    add(keep, kst);
+    add(s, keep);
     var lost = p('quiet-s', LOST); lost.style.marginTop = '16px';
     add(s, lost);
     var go = el('div', 'stack push'), st = status();
@@ -568,8 +623,14 @@
     add(s, h);
     var form = el('form', 'stack'); form.noValidate = true; form.style.marginTop = '28px'; form.style.gap = '18px';
     var nm = field('Your name', 'cr-name2', false, '', 24); nm.input.setAttribute('autocapitalize', 'words');
+    nm.input.name = 'username'; nm.input.autocomplete = 'username';
     var wd = field('Your three words', 'cr-words', false, '', 80);
     wd.input.setAttribute('autocapitalize', 'none'); wd.input.spellcheck = false;
+    // A password field, so the phone can fill in words it has saved.
+    wd.input.type = 'password'; wd.input.name = 'password'; wd.input.autocomplete = 'current-password';
+    var showW = tick('Show my words', false);
+    showW.input.addEventListener('change', function () { wd.input.type = showW.input.checked ? 'text' : 'password'; });
+    wd.box.appendChild(showW.box);
     var rem = tick('Remember me on this ' + Kit.app.device, true);
     var st = status();
     var go = el('button', 'btn', 'Come in'); go.type = 'submit';
@@ -746,6 +807,7 @@
     var row = el('div', 'menu-foot');
     add(row,
       button(null, 'About', function () { show('about'); }),
+      button(null, 'My words', function () { show('words', { again: true }); }),
       button(null, 'Not you?', function () { signOut(); }),
       button(null, 'Forget me', function () { show('forget'); }));
     add(foot, row, p('tiny-s', HELP_ALL));
