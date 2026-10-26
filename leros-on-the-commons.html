@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LEROs on the Commons</title>
+<meta name="description" content="Recovery the nation can see, without anyone being watched. A proposal by Matthew Bushell for CLERO and the LEROs leading the way, drawn live from the beach.">
+<link rel="canonical" href="https://phenomemental.github.io/happyseaurchin-beach/leros-on-the-commons.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LEROs on the Commons">
+<meta property="og:description" content="Recovery the nation can see, without anyone being watched. A proposal by Matthew Bushell.">
+<meta property="og:url" content="https://phenomemental.github.io/happyseaurchin-beach/leros-on-the-commons.html">
+<meta property="og:image" content="https://phenomemental.github.io/happyseaurchin-beach/icons/sundial-512.png">
+<meta name="theme-color" content="#eee7d5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icons/sundial-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+<link rel="stylesheet" href="door.css?v=2026-10-26a">
+<style>
+/* LEROs on the Commons: the crafted page planned at spine:leros-on-the-commons 2.4. A framed paper
+   proposal: the national need in drawings from the evidence, then the answer in drawings made from
+   one real LERO, then the offer. Every drawing's headline, line, source and share name are read from
+   the spine at 2.1 to 2.3; the return and the wheel are read live from Community Recovery's place.
+   Tokens from look:Phenomemental. */
+:root{
+  --ground:#eee7d5; --ink:#1d1a17; --muted:#5a5147; --panel:#f6f1e6; --line:#b9ad9a; --accent:#c21d4e; --soft:rgba(194,29,78,.28); --gold:#b8860b;
+  --serif:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--accent:#ef5d85;--soft:rgba(239,93,133,.32);--gold:#d9a93a;color-scheme:dark}}
+:root[data-theme="dark"]{--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--accent:#ef5d85;--soft:rgba(239,93,133,.32);--gold:#d9a93a;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:1rem;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:1.2rem;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:max(1.5rem,env(safe-area-inset-top,0px));padding-bottom:max(3rem,env(safe-area-inset-bottom,0px))}
+.sheet{max-width:44rem;margin:0 auto;display:flex;flex-direction:column;gap:3.2rem}
+.mark{font-size:.78rem;letter-spacing:.45em;text-transform:uppercase;color:var(--muted);line-height:1.6}
+h1{font-weight:500;font-size:clamp(2.1rem,7.5vw,3.3rem);line-height:1.04;margin:.3rem 0 0;text-wrap:balance}
+h1 em{color:var(--accent)}
+h2{font-weight:500;font-size:1.75rem;line-height:1.1;margin:0;text-wrap:balance}
+p{margin:0;max-width:32rem}
+a{color:var(--accent);text-underline-offset:.15em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.line{font-style:italic;color:var(--muted);font-size:1.08rem;overflow-wrap:anywhere}
+.src{font-size:.95rem;color:var(--muted);overflow-wrap:anywhere}
+.src a{color:var(--muted)}
+.hint{font-size:.98rem;color:var(--muted)}
+.eyebrow-row{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;min-height:1.6rem}
+.eyebrow{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.part{font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);text-align:center;display:flex;align-items:center;gap:1rem}
+.part::before,.part::after{content:"";flex:1;border-top:1px solid var(--line)}
+section,header{display:flex;flex-direction:column;gap:.8rem;scroll-margin-top:1rem}
+.frame{background:var(--panel);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--serif)}
+button{font-family:var(--serif);font-size:1.05rem;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:2px;padding:.25rem .8rem;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar button[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:.45rem;padding:.65rem .9rem;border-top:1px solid var(--line);align-items:center}
+.note{padding:.65rem .9rem;border-top:1px solid var(--line);font-size:1.05rem;min-height:3.2em;overflow-wrap:anywhere}
+.note b{font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}
+.stats div{display:flex;flex-direction:column;align-items:center;padding:.6rem .3rem;text-align:center;line-height:1.15;font-size:1rem}
+.stats div + div{border-left:1px solid var(--line)}
+.stats b{font-size:2rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1}
+.asks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.asks div{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.3rem;font-size:1rem;line-height:1.25}
+.asks svg{width:3.4rem}
+.big-quote{font-size:clamp(1.8rem,6vw,2.6rem);line-height:1.15;font-style:italic;text-align:center;text-wrap:balance;margin:0 auto;max-width:30rem}
+.big-quote::before{content:"\201C";display:block;font-size:4rem;line-height:.6;color:var(--accent);font-style:normal}
+.recs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line)}
+@media (min-width:40rem){.recs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.recs div{background:var(--panel);display:flex;flex-direction:column;gap:.3rem;padding:.8rem .7rem;font-size:1rem;line-height:1.25;min-width:0;overflow-wrap:break-word}
+.recs svg{width:2.6rem}
+.recs .r{color:var(--muted);font-style:italic}
+.recs .a{border-top:1px solid var(--line);padding-top:.35rem}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line)}
+.cards div{background:var(--panel);display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.7rem .3rem;text-align:center;font-size:.98rem;line-height:1.2;min-width:0;overflow-wrap:break-word}
+.cards svg{width:2.8rem}
+.cards .d{font-variant:small-caps;letter-spacing:.12em;color:var(--accent);font-size:.95rem}
+.cards .ghost,.cards .ghost .d{color:var(--muted)}
+.split{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:.5rem .9rem;border-top:1px solid var(--line);background:var(--panel)}
+.measures{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem;padding:.4rem .6rem .9rem;text-align:center;font-size:.95rem;line-height:1.15}
+.measures div{min-width:0;overflow-wrap:break-word}
+.measures svg{width:2.4rem;margin:0 auto .2rem}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line)}
+.pair div{background:var(--panel);display:flex;flex-direction:column;align-items:center;text-align:center;gap:.2rem;padding:.8rem .5rem;font-size:1rem;line-height:1.25;min-width:0}
+.pair svg{width:4rem}
+.pair b{font-weight:500;font-size:1.15rem}
+.petal,.cell,.mk{cursor:pointer}.petal:focus,.cell:focus,.mk:focus{outline:none}
+.petal:focus-visible .o{stroke:var(--accent);stroke-width:3}.cell:focus-visible rect{stroke:var(--accent);stroke-width:2.5}
+.mk:focus-visible .hit{fill:var(--soft)}.mk:focus-visible .ring{stroke:var(--accent);stroke-width:3}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.anim-pulse{animation:pulse 2.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.anim-pulse{animation:none}}
+/* the share control and the voices under each drawing */
+.share{font-size:.95rem;border:0;background:none;color:var(--muted);padding:.1rem .15rem;text-decoration:underline;text-underline-offset:.2em;white-space:nowrap}
+.share:hover{color:var(--ink)}
+.share-note{font-size:.9rem;color:var(--accent);font-style:italic}
+.voices{display:flex;flex-direction:column;gap:.55rem}
+.said{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem;font-size:1.05rem;line-height:1.4}
+.said li{border-left:2px solid var(--line);padding-left:.75rem;overflow-wrap:anywhere;max-width:36rem}
+.said b{font-weight:600}
+.said .you{color:var(--muted);font-style:italic;font-size:.95rem}
+details.say summary{cursor:pointer;color:var(--accent);font-size:1.08rem;list-style:none;display:inline-flex;align-items:baseline;gap:.45rem;padding:.1rem 0}
+details.say summary::-webkit-details-marker{display:none}
+details.say summary::before{content:"+";display:inline-block;width:1rem;text-align:center;font-size:1.2rem;line-height:1}
+details.say[open] summary::before{content:"\2212"}
+details.say summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.say-count{color:var(--muted);font-size:.95rem;font-style:italic}
+.say-form{display:flex;flex-direction:column;gap:.45rem;margin-top:.55rem;max-width:36rem}
+.say-form textarea{font:inherit;font-size:1.12rem;line-height:1.45;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:.5rem .65rem;min-height:5.6rem;resize:vertical;width:100%}
+.say-form textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.public{font-size:.97rem;color:var(--muted);font-style:italic}
+.say-row{display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center}
+.say-row button[type=submit]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.say-row button[type=submit]:disabled{opacity:.55;cursor:default}
+.say-as{font-size:.97rem;color:var(--muted)}
+.say-status{font-size:1rem;color:var(--accent)}
+.say-status:empty{display:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.answer p{max-width:34rem}
+.links{display:flex;flex-wrap:wrap;gap:.5rem}
+.links a{display:inline-block;border:1px solid var(--line);border-radius:2px;padding:.3rem .9rem;color:var(--ink);text-decoration:none}
+.links a:hover{border-color:var(--ink)}
+.links a.primary{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.who-line{font-size:1rem;color:var(--muted)}
+.who-line strong{font-weight:600;color:var(--ink)}
+footer{border-top:1px solid var(--line);padding-top:1rem;font-size:.95rem;color:var(--muted);display:flex;flex-direction:column;gap:.25rem}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header data-at="2.11" id="england">
+  <div class="eyebrow-row"><div class="mark"><span data-w="title">LEROs on the Commons</span> &middot; a proposal</div></div>
+  <h1 data-w="head">Recovery the nation can see, <em>without anyone being watched</em></h1>
+  <p class="line">A proposal by Matthew Bushell, for CLERO and the LEROs leading the way.</p>
+  <div class="frame">
+    <svg id="tiles" viewBox="0 0 400 190" role="img" data-w="label" aria-label="England's counties and unitary authorities fill tile by tile: 92 with no LERO, 44 with one, 16 with two or more."></svg>
+    <div class="stats">
+      <div><b style="color:var(--muted)">92</b>areas with<br>no LERO</div>
+      <div><b style="color:var(--accent);opacity:.7">44</b>with one</div>
+      <div><b style="color:var(--accent)">16</b>with two<br>or more</div>
+    </div>
+  </div>
+  <p class="src" data-w="src">LERO census, September 2024: Bradford et al., The barriers and facilitators to supporting, commissioning and working with LEROs in systems of care in England, RAND Europe for NIHR, 2026. By November 2025 OHID knew of 60 LEROs.</p>
+  <div class="asks" aria-label="What we ask of CLERO">
+    <div><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="22" cy="30" r="14" fill="none" stroke="var(--ink)"/><circle cx="38" cy="30" r="14" fill="none" stroke="var(--accent)"/></svg>Join us<br>as a peer</div>
+    <div><svg viewBox="0 0 60 60" aria-hidden="true"><g fill="none" stroke="var(--line)"><circle cx="14" cy="22" r="5"/><circle cx="30" cy="16" r="5"/><circle cx="46" cy="22" r="5"/><circle cx="14" cy="42" r="5"/><circle cx="46" cy="42" r="5"/></g><circle cx="30" cy="38" r="7" fill="var(--accent)"/></svg>Choose one LERO<br>to lead a trial</div>
+    <div><svg viewBox="0 0 60 60" aria-hidden="true"><g stroke="var(--ink)" fill="none"><circle cx="30" cy="30" r="20"/><path d="M30 10v6M30 44v6M10 30h6M44 30h6"/></g><circle cx="30" cy="30" r="5" fill="var(--accent)" class="anim-pulse"/></svg>Read the picture<br>in ten days</div>
+  </div>
+</header>
+
+<div class="part">The need</div>
+
+<section data-at="2.12" id="uneven">
+  <div class="eyebrow-row"><div class="eyebrow">Uneven</div></div>
+  <h2 data-w="head">Where you live decides whether there is one</h2>
+  <div class="frame"><svg id="regions" viewBox="0 0 400 200" role="img" aria-label="Share of areas with a LERO by region"></svg></div>
+  <p class="line" data-w="line">Share of each region's areas with a LERO: Yorkshire and the Humber 82%, East Midlands 75%, South East 32%, West Midlands 31%, South West 7%.</p>
+  <p class="src" data-w="src">RAND Europe for NIHR, 2026.</p>
+</section>
+
+<section data-at="2.13" id="unseen">
+  <div class="eyebrow-row"><div class="eyebrow">Unseen</div></div>
+  <h2 data-w="head">Two in five commissioners got it wrong</h2>
+  <div class="frame"><svg id="comms" viewBox="0 0 400 210" role="img" aria-label="Commissioners asked whether their area had a LERO: 24 said yes when there was none, 7 said no when there was one"></svg></div>
+  <p class="line" data-w="line">Of commissioners asked whether their area had a LERO, 41% misreported it: 24 said there was one when there was none, 7 said there was none when there was one.</p>
+  <p class="src" data-w="src">OHID's 2022 survey of commissioners, checked against the LERO census, as analysed in RAND Europe for NIHR, 2026.</p>
+</section>
+
+<section data-at="2.14" id="alone">
+  <div class="eyebrow-row"><div class="eyebrow">Alone</div></div>
+  <h2 data-w="head">Sixteen LEROs with no one to lean on</h2>
+  <div class="frame"><svg id="net1" viewBox="0 0 400 300" role="img" aria-label="52 LEROs: 32 in one network, two working as a pair, 16 with no identified links"></svg></div>
+  <p class="line" data-w="line">52 LEROs: 32 in one large network, one pair, 16 with no identified links. Positions are drawn, not geographic.</p>
+  <p class="src" data-w="src">RAND Europe for NIHR, 2026.</p>
+</section>
+
+<section data-at="2.15" id="unmeasured">
+  <div class="eyebrow-row"><div class="eyebrow">Unmeasured</div></div>
+  <h2 data-w="head">What the measures catch, and what falls through</h2>
+  <div class="frame"><svg id="sieve" viewBox="0 0 400 320" role="img" aria-label="National monitoring catches treatment completed; belonging, hope, a role, prevention fall through unseen; under 5% of budgets per recovery support type"></svg></div>
+  <p class="line" data-w="line">National monitoring catches treatment completed; belonging, hope, a role and prevention fall through unseen. Councils spent under 5% of treatment and recovery budgets on each type of recovery support.</p>
+  <p class="src" data-w="src">RAND Europe for NIHR, 2026; OHID, Recovery support services and lived experience initiatives, part 3.</p>
+</section>
+
+<section data-at="2.16" id="turn" data-held hidden style="gap:1rem;padding-block:1rem">
+  <div class="eyebrow-row"><div class="eyebrow">The turn</div></div>
+  <p class="big-quote" data-w="head">People before data, but the data follows.</p>
+  <p class="src" data-w="src" style="text-align:center;margin:0 auto">Dave Memery, CEO, Create Strength Group, a CLERO member, on LinkedIn, 9 October 2026.</p>
+  <p class="line" data-w="line" style="text-align:center;margin:0 auto">This is how the data follows.</p>
+</section>
+
+<div class="part">The answer</div>
+
+<section data-at="2.21" id="recommendations">
+  <div class="eyebrow-row"><div class="eyebrow">RAND&rsquo;s six recommendations</div></div>
+  <h2 data-w="head">Each recommendation, answered on one ground</h2>
+  <div class="frame recs" id="recs" role="group" aria-describedby="recs-words"></div>
+  <p class="sr-only" id="recs-words" data-w="line">Make clear what a LERO is: each LERO shows itself against the standards, in its own words. Support grassroots LEROs to start: a ready kit of welcome, agreement, constitution, standards and journey. Fund LEROs for the longer term: evidence that builds over years, never a snapshot. Bring LEROs into governance: decisions held and kept in the LERO's own room. Respect between LEROs and treatment: one ground both can read, each keeping its own account. LEROs collect and share their value: days told in members' own words, with no forms to fill.</p>
+  <p class="src" data-w="src">RAND Europe for NIHR, 2026, chapter 6.</p>
+</section>
+
+<section data-at="2.22" id="return">
+  <div class="eyebrow-row"><div class="eyebrow">The data follows</div></div>
+  <h2 data-w="head">A year's evidence, written by no one</h2>
+  <div class="frame" id="ret-frame">
+    <svg id="ret" viewBox="0 0 400 330" role="group" aria-label="Community Recovery's journey threading into the standards it evidences"></svg>
+    <div class="note" id="ret-note" aria-live="polite">Reading Community Recovery&rsquo;s journey from the beach&hellip;</div>
+    <div class="bar"><button type="button" id="b-ret" disabled>Play it again</button></div>
+  </div>
+  <p class="line" data-w="line">Community Recovery's own dated journey threads down into the 33 standards it evidences.</p>
+  <p class="hint">Read live from Community Recovery&rsquo;s place on the beach. Open rings are still ahead. Tap a moment or a standard.</p>
+  <p class="src" data-w="src">Community Recovery's journey, kept by its keepers and by sandpiper.</p>
+</section>
+
+<section data-at="2.23" id="standards">
+  <div class="eyebrow-row"><div class="eyebrow">What a LERO is, shown</div></div>
+  <h2 data-w="head">One LERO, against all 33</h2>
+  <div class="frame" id="wheel-frame">
+    <svg id="wheel" viewBox="0 0 400 400" role="group" aria-label="Community Recovery against the 33 standards"></svg>
+    <div class="note" id="detail" aria-live="polite">Reading the standards from the beach&hellip;</div>
+  </div>
+  <p class="line" data-w="line">Community Recovery's reading against CLERO's 33 standards as petals in four groups: in place, partly there, not yet.</p>
+  <p class="hint">Ink is in place, crimson half is partly there, dashed is not yet. Each standard in CLERO&rsquo;s own words. Tap a petal.</p>
+  <p class="src" data-w="src">sandpiper's evidence reading, first written 14 October 2026 and kept current; CLERO's criteria at <a href="https://clero.co.uk/clero-standards" rel="noopener">clero.co.uk/clero-standards</a>.</p>
+</section>
+
+<section data-at="2.24" id="seen">
+  <div class="eyebrow-row"><div class="eyebrow">No one watched</div></div>
+  <h2 data-w="head">Who sees what</h2>
+  <div class="frame">
+    <svg id="rings" viewBox="0 0 400 400" role="img" aria-label="Rings of who can see what"></svg>
+    <div class="bar" role="group" aria-label="Look as">
+      <button type="button" class="who" data-w="0" aria-pressed="false">Member</button>
+      <button type="button" class="who" data-w="1" aria-pressed="false">Peer leader</button>
+      <button type="button" class="who" data-w="2" aria-pressed="false">LERO</button>
+      <button type="button" class="who" data-w="3" aria-pressed="true">CLERO</button>
+    </div>
+  </div>
+  <p class="line" data-w="line">Rings for a member, their peer leader, the LERO and CLERO. Whoever is looking, what is sealed from them shows hatched: a member's day and growth go outward only with their yes; names stay on paper; CLERO sees counts only in the fold.</p>
+  <p class="src" data-w="src">The proposal's own design: each person holds their own account under their own key; what is private is sealed, what is shared is chosen.</p>
+</section>
+
+<section data-at="2.25" id="joined">
+  <div class="eyebrow-row"><div class="eyebrow">No one alone</div></div>
+  <h2 data-w="head">One ground, one picture held by nobody</h2>
+  <div class="frame">
+    <svg id="net2" viewBox="0 0 400 300" role="img" aria-label="The same 52 LEROs joined on one ground, with a sketch of a national fold of standards readings"></svg>
+    <div class="bar"><button type="button" id="b-join" aria-pressed="false">Join them on one ground</button></div>
+  </div>
+  <p class="line" data-w="line">The same 52 LEROs joined on one ground, and their readings folded into one picture of the 33 standards, shown only once enough have spoken. A sketch of what could be.</p>
+  <p class="src" data-w="src">The LEROs are RAND Europe's counts for NIHR, 2026; the joining and the fold are the proposal's national picture, not yet built.</p>
+</section>
+
+<section data-at="2.31" id="built">
+  <div class="eyebrow-row"><div class="eyebrow">Proof, dated</div></div>
+  <h2 data-w="head">Already built, and still to build</h2>
+  <div class="frame" role="group" aria-describedby="built-words">
+    <div class="cards" id="built-cards"></div>
+    <div class="split">Still to build</div>
+    <div class="cards" id="missing-cards"></div>
+  </div>
+  <p class="sr-only" id="built-words" data-w="line">Built: the recovery capital tool (10 August), constitution and agreement (late September), live presentation (14 October), one site (15 October), a meeting kept (16 October), Sundial (21 October). Still to build: days to recovery capital, a kit for any LERO, the national fold, the agreement, measured evidence, and the safety alert before the trial.</p>
+  <p class="src" data-w="src">What Matthew and David have built on the beach since August 2026, and what the proposal names as still missing.</p>
+</section>
+
+<section data-at="2.32" id="trial">
+  <div class="eyebrow-row"><div class="eyebrow">The proposal</div></div>
+  <h2 data-w="head">Ten working days, evidence from day one</h2>
+  <div class="frame">
+    <svg id="days" viewBox="0 0 400 120" role="img" aria-label="Ten working days, first evidence on day one"></svg>
+    <div class="measures">
+      <div><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 6h16M12 34h16M13 6c0 10 14 10 14 14S13 24 13 34M27 6c0 10-14 10-14 14s14 4 14 14" fill="none" stroke="var(--ink)"/></svg>hours spent proving value</div>
+      <div><svg viewBox="0 0 40 40" aria-hidden="true"><g fill="var(--ink)"><circle cx="10" cy="14" r="3"/><circle cx="20" cy="10" r="3"/><circle cx="30" cy="14" r="3"/><circle cx="14" cy="26" r="3"/><circle cx="26" cy="26" r="3"/></g><circle cx="20" cy="32" r="3" fill="var(--accent)"/></svg>members taking part</div>
+      <div><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 20c6-9 26-9 32 0-6 9-26 9-32 0z" fill="none" stroke="var(--ink)"/><circle cx="20" cy="20" r="5" fill="var(--accent)"/></svg>CLERO can read it</div>
+      <div><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 10h24v16H18l-6 6v-6H8z" fill="none" stroke="var(--ink)"/><path d="M14 16h12M14 20h8" stroke="var(--muted)"/></svg>what members say</div>
+    </div>
+  </div>
+  <p class="line" data-w="line">Ten days filling, first evidence on day one, CLERO reading the picture at the end. Measured: hours spent proving value, members taking part, whether CLERO can read it, what members say.</p>
+  <p class="src" data-w="src">The trial as the proposal sets it out: one LERO leading the way for ten working days.</p>
+</section>
+
+<section data-at="2.33" id="paid">
+  <div class="eyebrow-row"><div class="eyebrow">How it is paid for</div></div>
+  <h2 data-w="head">Members pay nothing</h2>
+  <div class="frame"><svg id="money" viewBox="0 0 400 300" role="img" aria-label="Funders pay the service; members pay nothing; a share returns to Community Recovery"></svg></div>
+  <p class="line" data-w="line">Commissioners, public bodies, funders and national programmes fund the service; members pay nothing; a share returns to Community Recovery. The first price is still open, to be set with CLERO.</p>
+  <p class="src" data-w="src">The economy as the proposal sets it out: members pay nothing, those who need the evidence fund the service, and a share returns to the LERO the kit was shaped with.</p>
+</section>
+
+<section>
+  <div class="eyebrow-row"><div class="eyebrow">Who brings it</div></div>
+  <h2>Made from inside the work</h2>
+  <div class="frame pair">
+    <div><svg viewBox="0 0 80 60" aria-hidden="true"><path d="M30 20 A14 14 0 1 1 34 44" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="40" cy="32" r="6" fill="var(--accent)"/></svg><b>Matthew Bushell</b>lived experience; works inside the system that grows LEROs; mentored on the ImROC LERO programme</div>
+    <div><svg viewBox="0 0 80 60" aria-hidden="true"><g stroke="var(--ink)" fill="none"><path d="M6 44 Q40 36 74 44"/><path d="M6 50 Q40 42 74 50" stroke="var(--line)"/></g><g fill="var(--gold)"><circle cx="22" cy="34" r="2.5"/><circle cx="40" cy="31" r="2.5"/><circle cx="58" cy="34" r="2.5"/></g></svg><b>David Pinto</b>mathematician; built the open ground it all runs on</div>
+  </div>
+  <p class="src">Sources: Bradford et al., The barriers and facilitators to supporting, commissioning and working with LEROs in systems of care in England, RAND Europe for NIHR, 2026; OHID, Recovery support services and lived experience initiatives, part 3; Day, LEROs in England: From Harm to Hope, 2025. The full proposal: <a href="https://happyseaurchin.com/proposal/leros-on-the-commons">happyseaurchin.com/proposal/leros-on-the-commons</a></p>
+</section>
+
+<section class="answer" aria-labelledby="answer-head">
+  <div class="eyebrow-row"><div class="eyebrow">Your word</div></div>
+  <h2 id="answer-head">Six decisions, and a room</h2>
+  <p>The proposal asks six decisions. Anyone may answer them, each in their own words, on the proposal&rsquo;s own page. For talk that is not a decision (questions, people who should see this, offers of help) there is the room.</p>
+  <div class="links">
+    <a class="primary" href="https://happyseaurchin.com/proposal/leros-on-the-commons">Answer the six decisions</a>
+    <a href="https://mirror.onen.ai/?pool=leros-on-the-commons">Talk in the room</a>
+    <a href="https://happyseaurchin.com/walk/leros-on-the-commons">Read it step by step</a>
+  </div>
+  <p class="src">A voice given under a drawing here is kept on the beach in its writer&rsquo;s own name, at that drawing&rsquo;s place in the proposal, and shows wherever the proposal is read.</p>
+</section>
+
+<p class="who-line" id="who-line"></p>
+
+<footer>
+  <span>Made by Matthew Bushell.</span>
+  <span><a href="https://beach.happyseaurchin.com">With thanks to David Pinto, who built the ground these pages stand on.</a></span>
+</footer>
+</div>
+
+<script src="beach.js?v=2026-10-26a"></script>
+<script>
+window.DOOR = {
+  place: 'LEROs on the Commons',
+  beach: 'https://beach.happyseaurchin.com',
+  home: 'https://phenomemental.github.io/happyseaurchin-beach/leros-on-the-commons.html',
+  room: 'https://mirror.onen.ai/?pool=leros-on-the-commons'
+};
+</script>
+<script src="door.js?v=2026-10-26a"></script>
+<script>
+(function(){
+'use strict';
+var FAM='leros-on-the-commons';
+var BEACH='https://beach.happyseaurchin.com';
+var WIRE=BEACH+'/.well-known/pscale-beach';
+var CR=BEACH+'/w/community-recovery/.well-known/pscale-beach';
+var PROPOSAL='https://happyseaurchin.com/proposal/'+FAM;
+var MIRRORS='https://happyseaurchin.com/api/mirrors?family='+FAM;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var NS='http://www.w3.org/2000/svg';
+function $(id){return document.getElementById(id)}
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function txt(p,x,y,s,o){const t=el('text',Object.assign({x,y,'text-anchor':'middle','font-size':13,fill:'var(--ink)'},o||{}),p);t.textContent=s;return t}
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function onView(node,fn){if(reduce||!('IntersectionObserver' in window)){fn(true);return}let done=false;const io=new IntersectionObserver(es=>{if(es[0].isIntersecting&&!done){done=true;fn(false);io.disconnect()}},{threshold:.35});io.observe(node)}
+/* whether a node is on screen now, so a loop that never ends only runs while it can be seen */
+function watch(node){const s={on:true};if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{s.on=es[0].isIntersecting});io.observe(node)}return s}
+function esc(s){const d=document.createElement('span');d.textContent=s==null?'':String(s);return d.innerHTML}
+function clip(t,n){t=String(t||'').replace(/\s+/g,' ').trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t}
+
+/* ── reading the beach ── */
+function get(wire,block){
+  const ctl=window.AbortController?new AbortController():null,timer=setTimeout(()=>{if(ctl)ctl.abort()},9000);
+  return fetch(wire+(block?'?block='+encodeURIComponent(block):''),{cache:'no-store',headers:{Accept:'application/json'},signal:ctl?ctl.signal:undefined})
+    .then(r=>{clearTimeout(timer);if(r.status===404)return null;if(!r.ok)throw new Error('HTTP '+r.status);return r.json()},e=>{clearTimeout(timer);throw e});
+}
+function text(n){while(n&&typeof n==='object')n=n._;return typeof n==='string'?n.trim():''}
+function nodeAt(b,addr){let n=b;const ds=String(addr).replace('.','').split('');for(const d of ds){if(!n||typeof n!=='object')return undefined;n=n[d]}return n}
+
+/* ── words from the spine (2.43): headline at a drawing's underscore, line at 1, source at 2, share name at 3 ── */
+/* a word's own case, learned from where it stands in ordinary sentences on the spine, so a title in capitals reads as prose */
+const CASES={};
+function learnCase(spine){
+  const all=[];(function walk(n){if(typeof n==='string')all.push(n);else if(n&&typeof n==='object')for(const k in n)walk(n[k])})(spine);
+  all.forEach(t=>{const re=/[A-Za-z][A-Za-z’'\-]*[A-Za-z]|[A-Za-z]/g,toks=[];let m;while((m=re.exec(t)))toks.push([m[0],m.index]);
+    toks.forEach((tk,j)=>{const w=tk[0],at=tk[1],p=toks[j-1],q=toks[j+1],caps=x=>x===x.toUpperCase()&&/[A-Z]/.test(x);
+      if(caps(w)){if((p&&caps(p[0]))||(q&&caps(q[0])))return}
+      else if(/^[A-Z]/.test(w)&&(at===0||/(?:[.?!:]\s+|—\s+|['"‘“(]\s*)$/.test(t.slice(Math.max(0,at-3),at))))return;
+      const c=CASES[w.toUpperCase()]||(CASES[w.toUpperCase()]={});c[w]=(c[w]||0)+1})});
+}
+function formOf(k){const c=CASES[k];let best='',n=0;if(c)for(const f in c)if(c[f]>n||(c[f]===n&&f!==f.toUpperCase())){best=f;n=c[f]}return best}
+function prose(t){return String(t||'').replace(/[A-Za-z][A-Za-z’'\-]*/g,w=>w===w.toUpperCase()&&w.length>1?(formOf(w)||w.toLowerCase()):w)}
+function titleOf(spine,addr){const t=text(nodeAt(spine,addr)),i=t.indexOf(' — ');return i>0?prose(t.slice(0,i)):''}
+/* the generic page's step that holds an address: the run of 1s it begins with (1.115 sits in step 1.11) */
+function stepOf(addr){const m=/^1+/.exec(String(addr).replace('.',''));return m?m[0]:'1'}
+function joined(parts){return parts.length<2?parts.join(''):parts.slice(0,-1).join(', ')+' and '+parts[parts.length-1]}
+function linked(t){
+  let h=esc(t);
+  h=h.replace(/\bhttps?:\/\/[^\s<>"')\]]+/g,u=>{const c=u.replace(/[.,;:!?]+$/,'');return '<a href="'+c+'" rel="noopener">'+c.replace(/^https?:\/\//,'')+'</a>'+u.slice(c.length)});
+  h=h.replace(/(^|[\s(])((?:[a-z0-9-]+\.)+(?:com|co\.uk|org|org\.uk|ai|net|uk)\/[^\s<>"')\],;]*)/g,(all,pre,u)=>{const c=u.replace(/[.:!?]+$/,'');return pre+'<a href="https://'+c+'" rel="noopener">'+c+'</a>'+u.slice(c.length)});
+  return h;
+}
+/* 'The design at 1.115 and 1.122.' becomes the names of those parts of the proposal, each a link to it */
+function sourceHTML(t,spine){
+  const addrs=t.match(/\b1\.\d+\b/g)||[];
+  if(!/^The design at\b/i.test(t)||!addrs.length)return linked(t);
+  return 'From the proposal: '+joined(addrs.map(a=>'<a href="'+PROPOSAL+'#s-'+stepOf(a)+'">'+esc(titleOf(spine,a)||a)+'</a>'))+'.';
+}
+function heroHTML(t){const i=t.indexOf(', ');return i>0?esc(t.slice(0,i+1))+' <em>'+esc(t.slice(i+2))+'</em>':esc(t)}
+let scrolled=false;
+function applyWords(spine){
+  learnCase(spine);
+  const root=text(spine),i=root.indexOf(' — ');
+  if(i>0){const t=root.slice(0,i).trim();document.querySelectorAll('[data-w=title]').forEach(n=>n.textContent=t)}
+  document.querySelectorAll('[data-at]').forEach(sec=>{
+    if(sec.classList.contains('voices'))return;
+    const node=nodeAt(spine,sec.dataset.at);if(node==null)return;
+    const head=text(node),line=text(node['1']),src=text(node['2']),share=text(node['3']);
+    if(!head)return;
+    if(/^HOLD\b/i.test(head)){sec.hidden=true;return}
+    if(sec.hasAttribute('data-held'))sec.hidden=false;
+    const h=sec.querySelector('[data-w=head]');
+    if(h){if(h.tagName==='H1')h.innerHTML=heroHTML(head);else h.textContent=head}
+    const l=sec.querySelector('[data-w=line]');if(l&&line)l.textContent=line;
+    const lab=sec.querySelector('[data-w=label]');if(lab&&line)lab.setAttribute('aria-label',line);
+    const s=sec.querySelector('[data-w=src]');if(s&&src)s.innerHTML=sourceHTML(src,spine);
+    if(/^[a-z0-9][a-z0-9-]*$/i.test(share)&&!document.getElementById(share))sec.id=share;
+  });
+  /* opening at a drawing's name scrolls to it, once its name is known */
+  if(!scrolled&&location.hash.length>1){const t=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(t&&!t.hidden){scrolled=true;t.scrollIntoView({behavior:'auto'})}}
+}
+
+/* ── the voices under each drawing (2.45): in the reader's own mirror, leros-on-the-commons:<name>, at the drawing's address ── */
+let MINE={},VOICES={};
+function readMirrors(){
+  return fetch(MIRRORS,{headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null,()=>null).then(d=>{
+    if(d&&d.mirrors)return d.mirrors;
+    /* where the site's shared read can't be had, the beach read straight */
+    return get(WIRE,'').then(ix=>{
+      const names=(ix&&ix.blocks||[]).map(b=>typeof b==='string'?b:(b&&b.name)||'').filter(n=>n.indexOf(FAM+':')===0&&n.indexOf(':',FAM.length+1)<0);
+      const out={};
+      return Promise.all(names.map(n=>get(WIRE,n).then(b=>{if(b)out[n.slice(FAM.length+1)]=b},()=>{}))).then(()=>out);
+    });
+  }).then(m=>{
+    const me=window.Door&&Door.me();
+    if(!me)return m;
+    /* the person's own mirror always read fresh */
+    return get(WIRE,FAM+':'+me.name).then(own=>{if(own)m[me.name]=own;return m},()=>m);
+  });
+}
+function voicesAt(addr){
+  const me=window.Door&&Door.me(),out=[];
+  Object.keys(VOICES).forEach(h=>{const n=nodeAt(VOICES[h],addr);const t=typeof n==='string'?n.trim():(n&&typeof n==='object'&&typeof n._==='string'?n._.trim():'');if(t)out.push({who:h,t,you:!!(me&&me.name===h)})});
+  return out.sort((a,b)=>(b.you-a.you)||a.who.localeCompare(b.who));
+}
+function paintVoices(){
+  document.querySelectorAll('.voices').forEach(v=>{
+    const list=voicesAt(v.dataset.at),ul=v.querySelector('.said');
+    ul.innerHTML=list.map(x=>'<li><b>'+esc(x.who)+'</b>'+(x.you?' <span class="you">(you)</span>':'')+' &middot; '+esc(x.t)+'</li>').join('');
+    ul.hidden=!list.length;
+    const c=v.querySelector('.say-count');c.textContent=list.length?(list.length===1?'one voice here':list.length+' voices here'):'';
+  });
+}
+function refreshVoices(){return readMirrors().then(m=>{VOICES=m||{};paintVoices()},()=>{})}
+function paintAs(){
+  const me=window.Door&&Door.me();
+  document.querySelectorAll('.say-as').forEach(s=>{s.innerHTML=me?'as <strong>'+esc(me.name)+'</strong>':'You&rsquo;ll choose a name first, or come in with yours.'});
+}
+function voiceBlock(sec){
+  const at=sec.dataset.at,id=at.replace('.',''),head=sec.querySelector('[data-w=head]');
+  const wrap=document.createElement('div');wrap.className='voices';wrap.dataset.at=at;
+  wrap.innerHTML='<ul class="said" hidden></ul>'+
+    '<details class="say"><summary>Say something <span class="say-count"></span></summary>'+
+    '<form class="say-form" novalidate>'+
+      '<label class="sr-only" for="say-'+id+'">Your words on this drawing</label>'+
+      '<textarea id="say-'+id+'" maxlength="2000" rows="3" placeholder="Your words on this drawing"></textarea>'+
+      '<p class="public">'+esc(window.Door?Door.PUBLIC:'What you write here is public, under the name you chose.')+'</p>'+
+      '<div class="say-row"><button type="submit">Say it</button><span class="say-as"></span></div>'+
+      '<p class="say-status" role="status"></p>'+
+    '</form></details>';
+  sec.appendChild(wrap);
+  const box=wrap.querySelector('textarea'),form=wrap.querySelector('form'),st=wrap.querySelector('.say-status'),send=form.querySelector('button[type=submit]');
+  if(!window.Door){wrap.querySelector('details').hidden=true;return}
+  const clear=Door.keepDraft(box,FAM+':'+at);
+  if(box.value)wrap.querySelector('details').open=true;
+  Door.mic(box);
+  form.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const t=box.value.trim().replace(/\s+/g,' ');
+    if(!t){st.textContent='Write something first.';box.focus();return}
+    send.disabled=true;st.textContent='Saying it on the beach…';
+    Door.say({family:FAM,at,text:t}).then(r=>{
+      send.disabled=false;
+      if(!r.ok){
+        st.textContent=r.why==='closed'?'':r.why==='key'?'Those words aren’t the ones your words here are kept under. Choose “not you?” at the foot of the page and come in again.':'That didn’t reach the beach. Your words are kept here; please try again in a moment.';
+        return;
+      }
+      clear();box.value='';
+      st.textContent='Said. It stands on the beach under '+r.name+'.';
+      return refreshVoices();
+    });
+  });
+  /* the quiet share control (2.46): the page's address with this drawing's name */
+  const row=sec.querySelector('.eyebrow-row');
+  if(row){
+    const b=document.createElement('button');b.type='button';b.className='share';b.textContent='Share';
+    b.setAttribute('aria-label','Share this drawing'+(head?': '+head.textContent:''));
+    const note=document.createElement('span');note.className='share-note';note.setAttribute('role','status');
+    const grp=document.createElement('span');grp.style.cssText='display:inline-flex;gap:.5rem;align-items:baseline';grp.appendChild(note);grp.appendChild(b);
+    row.appendChild(grp);
+    b.addEventListener('click',()=>{
+      const url=location.origin+location.pathname+'#'+sec.id,title=(head&&head.textContent)||document.title;
+      const say=t=>{note.textContent=t;setTimeout(()=>{note.textContent=''},2600)};
+      if(navigator.share&&matchMedia('(pointer: coarse)').matches){navigator.share({title,url}).catch(()=>{});return}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>say('Link copied'),()=>say(url));return}
+      say(url);
+    });
+  }
+}
+
+/* ── the drawings ── */
+/* hero tiles */
+(function(){const svg=$('tiles');const cols=19,cs=17,gap=3,x0=(400-cols*(cs+gap)+gap)/2,y0=14;const R=rng(3);
+  const kinds=[];for(let i=0;i<92;i++)kinds.push(0);for(let i=0;i<44;i++)kinds.push(1);for(let i=0;i<16;i++)kinds.push(2);
+  for(let i=kinds.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[kinds[i],kinds[j]]=[kinds[j],kinds[i]]}
+  const rects=kinds.map((k,i)=>el('rect',{x:x0+(i%cols)*(cs+gap),y:y0+Math.floor(i/cols)*(cs+gap),width:cs,height:cs,rx:1.5,fill:'transparent',stroke:'var(--line)'},svg));
+  const paint=(i)=>{const k=kinds[i];if(k===1){rects[i].setAttribute('fill','var(--soft)');rects[i].setAttribute('stroke','var(--accent)')}if(k===2){rects[i].setAttribute('fill','var(--accent)');rects[i].setAttribute('stroke','var(--accent)')}};
+  onView(svg,instant=>{if(instant){kinds.forEach((_,i)=>paint(i));return}const order=kinds.map((_,i)=>i).filter(i=>kinds[i]>0);order.forEach((i,n)=>setTimeout(()=>paint(i),200+n*45))});
+})();
+
+/* regions */
+(function(){const svg=$('regions');const D=[['Yorkshire and the Humber',82],['East Midlands',75],['South East',32],['West Midlands',31],['South West',7]];
+  const x0=170,W=180;const bars=[];
+  D.forEach(([n,v],i)=>{const y=24+i*34;txt(svg,x0-10,y+14,n,{'text-anchor':'end','font-size':14});el('rect',{x:x0,y,width:W,height:20,fill:'transparent',stroke:'var(--line)'},svg);const b=el('rect',{x:x0,y,width:0,height:20,fill:v<35?'var(--soft)':'var(--ink)'},svg);const t=txt(svg,x0+4,y+15,v+'%',{'text-anchor':'start','font-size':14,fill:'var(--ink)'});bars.push([b,t,v])});
+  const set=(f)=>bars.forEach(([b,t,v])=>{const w=W*v/100*f;b.setAttribute('width',w);t.setAttribute('x',x0+w+6)});
+  onView(svg,instant=>{if(instant){set(1);return}const t0=performance.now();const step=now=>{const f=Math.min(1,(now-t0)/1400);set(1-Math.pow(1-f,3));if(f<1)requestAnimationFrame(step)};requestAnimationFrame(step)});
+})();
+
+/* commissioners */
+(function(){const svg=$('comms');const cols=15,gx=24,gy=26,x0=32,y0=22;const R=rng(17);
+  const kind=[];for(let i=0;i<24;i++)kind.push(1);for(let i=0;i<7;i++)kind.push(2);for(let i=0;i<44;i++)kind.push(0);for(let i=kind.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[kind[i],kind[j]]=[kind[j],kind[i]]}
+  const dots=kind.map((k,i)=>{const x=x0+(i%cols)*gx,y=y0+Math.floor(i/cols)*gy;const g=el('g',{},svg);el('circle',{cx:x,cy:y-4,r:3.5,fill:'var(--ink)'},g);el('path',{d:`M${x-6} ${y+8}a6 6 0 0 1 12 0z`,fill:'var(--ink)'},g);return {g,k}});
+  const paint=d=>{if(d.k===1)d.g.querySelectorAll('*').forEach(e=>e.setAttribute('fill','var(--accent)'));if(d.k===2)d.g.querySelectorAll('*').forEach(e=>{e.setAttribute('fill','transparent');e.setAttribute('stroke','var(--accent)');e.setAttribute('stroke-dasharray','2 2')})};
+  const ly=y0+5*gy+10;
+  el('circle',{cx:40,cy:ly,r:4,fill:'var(--accent)'},svg);txt(svg,50,ly+4,'said there was a LERO; there was none',{'text-anchor':'start','font-size':13});
+  el('circle',{cx:40,cy:ly+20,r:4,fill:'transparent',stroke:'var(--accent)','stroke-dasharray':'2 2'},svg);txt(svg,50,ly+24,'said there was none; one was there',{'text-anchor':'start','font-size':13});
+  onView(svg,instant=>{const wrong=dots.filter(d=>d.k);if(instant){wrong.forEach(paint);return}wrong.forEach((d,n)=>setTimeout(()=>paint(d),300+n*70))});
+})();
+
+/* networks: the 52 as they stand, then the same 52 on one ground with a sketch of the fold */
+function buildNet(svg,joinable){const R=rng(29);const cx=175,cy=150;const nodes=[];
+  for(let i=0;i<32;i++){const a=R()*Math.PI*2,r=Math.sqrt(R())*72;nodes.push({x:cx+Math.cos(a)*r*1.25,y:cy+Math.sin(a)*r,t:'c'})}
+  nodes.push({x:338,y:54,t:'p'},{x:358,y:72,t:'p'});
+  const spots=[[30,30],[80,24],[300,24],[372,140],[30,110],[24,200],[60,270],[130,280],[230,282],[300,268],[372,240],[350,190],[250,40],[150,26],[20,160],[320,150]];
+  spots.forEach(([x,y])=>nodes.push({x,y,t:'i'}));
+  const links=[];const cl=nodes.filter(n=>n.t==='c');
+  cl.forEach((a,i)=>{const d=cl.map((b,j)=>[j,Math.hypot(a.x-b.x,a.y-b.y)]).filter(e=>e[0]!==i).sort((p,q)=>p[1]-q[1]);d.slice(0,2).forEach(([j])=>links.push([a,cl[j]]))});
+  const gL=el('g',{},svg),gJ=el('g',{},svg),gN=el('g',{},svg);
+  links.forEach(([a,b])=>el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'var(--line)'},gL));
+  el('line',{x1:338,y1:54,x2:358,y2:72,stroke:'var(--line)'},gL);
+  nodes.forEach(n=>el('circle',{cx:n.x,cy:n.y,r:n.t==='i'?6:5,fill:n.t==='i'?'var(--panel)':'var(--ink)',stroke:n.t==='i'?'var(--accent)':'none','stroke-width':1.5},gN));
+  if(!joinable){txt(svg,cx,cy+104,'32 in one network',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});txt(svg,348,96,'a pair',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});
+    txt(svg,38,60,'16 alone',{'font-size':14,fill:'var(--accent)','text-anchor':'start'});return}
+  /* the fold is a sketch of what could be, drawn as one, never a reading of anyone (2.251) */
+  const fold=el('g',{opacity:0},svg);const fx=175,fy=150,fr=46;el('circle',{cx:fx,cy:fy,r:fr+4,fill:'var(--panel)',opacity:.85},fold);
+  let d='';for(let i=0;i<33;i++){const v=.35+R()*.6,a=-Math.PI/2+i/33*Math.PI*2,r=fr*(.25+.75*v);d+=(i?'L':'M')+(fx+Math.cos(a)*r)+' '+(fy+Math.sin(a)*r)}
+  el('path',{d:d+'Z',fill:'var(--gold)','fill-opacity':.22,stroke:'var(--gold)','stroke-width':1.6,'stroke-dasharray':'4 3'},fold);
+  txt(fold,fx,fy+fr+18,'the fold, a sketch',{'font-size':13,'font-style':'italic',fill:'var(--gold)'});
+  const loose=nodes.filter(n=>n.t!=='c');
+  let joined=false;
+  function join(on){gJ.textContent='';if(!on){fold.setAttribute('opacity',0);return}
+    loose.forEach((n,k)=>{let best=cl[0],bd=1e9;cl.forEach(c=>{const dd=Math.hypot(c.x-n.x,c.y-n.y);if(dd<bd){bd=dd;best=c}});const p=el('path',{d:`M${n.x} ${n.y} Q${(n.x+best.x)/2+(n.y-best.y)*.15} ${(n.y+best.y)/2} ${best.x} ${best.y}`,fill:'none',stroke:'var(--gold)','stroke-width':1.4},gJ);
+      if(!reduce){const L=p.getTotalLength();p.style.strokeDasharray=L;p.style.strokeDashoffset=L;p.getBoundingClientRect();p.style.transition=`stroke-dashoffset .7s ease ${k*.06}s`;p.style.strokeDashoffset=0}});
+    if(reduce)fold.setAttribute('opacity',1);else{fold.style.transition='opacity 1s ease 1.3s';fold.getBoundingClientRect();fold.setAttribute('opacity',1)}}
+  const b=$('b-join');b.onclick=()=>{joined=!joined;b.setAttribute('aria-pressed',joined);b.textContent=joined?'As they stand today':'Join them on one ground';join(joined)};
+  onView(svg,()=>{joined=true;b.setAttribute('aria-pressed',true);b.textContent='As they stand today';join(true)});
+}
+buildNet($('net1'),false);
+buildNet($('net2'),true);
+
+/* sieve */
+(function(){const svg=$('sieve');const sy=128;
+  for(let x=30;x<=370;x+=16)el('line',{x1:x,y1:sy-6,x2:x,y2:sy+6,stroke:'var(--muted)'},svg);
+  el('line',{x1:24,y1:sy,x2:376,y2:sy,stroke:'var(--ink)','stroke-width':2},svg);
+  txt(svg,24,sy+24,'national monitoring',{'text-anchor':'start','font-size':13,'font-style':'italic',fill:'var(--muted)'});
+  const items=[['treatment completed',62,true],['belonging',165],['hope',222],['a role',272],['prevention',332]];
+  const balls=items.map(([n,x,caught],i)=>{const g=el('g',{},svg);const c=el('circle',{cx:x,cy:20,r:caught?9:7,fill:caught?'var(--ink)':'var(--accent)',opacity:caught?1:.8},g);const t=txt(g,x,0,n,{'font-size':13,fill:caught?'var(--ink)':'var(--accent)'});return {c,t,x,caught,ph:i*.55}});
+  txt(svg,200,226,'unseen',{'font-size':15,'font-style':'italic',fill:'var(--muted)'});
+  el('line',{x1:60,y1:212,x2:340,y2:212,stroke:'var(--line)','stroke-dasharray':'2 4'},svg);
+  const by=262;el('rect',{x:24,y:by,width:352,height:18,fill:'transparent',stroke:'var(--line)'},svg);el('rect',{x:24,y:by,width:352*.05,height:18,fill:'var(--accent)'},svg);
+  txt(svg,24,by-8,'a council’s treatment and recovery budget',{'text-anchor':'start','font-size':13,fill:'var(--muted)'});
+  txt(svg,44,by+36,'under 5% on each type of recovery support',{'text-anchor':'start','font-size':13,fill:'var(--accent)'});
+  function pos(b,t){const T=(t+b.ph)%3.2;let y;if(b.caught){y=Math.min(sy-9,26+T*120)}else{y=26+T*95;if(y>196)y=196}const vis=b.caught?1:(y>=196?Math.max(0,1-(T-1.79)*1.2):1);b.c.setAttribute('cy',y);b.c.setAttribute('opacity',(b.caught?1:.85)*Math.max(vis,0));b.t.setAttribute('y',Math.max(12,y-14));b.t.setAttribute('opacity',Math.max(vis,0))}
+  if(reduce){balls.forEach(b=>{b.c.setAttribute('cy',b.caught?sy-9:190);b.t.setAttribute('y',b.caught?sy-24:176)});return}
+  const seen=watch(svg),t0=performance.now();(function f(now){if(seen.on&&!document.hidden){const t=(now-t0)/1000;balls.forEach(b=>pos(b,t))}requestAnimationFrame(f)})(t0);
+})();
+
+/* six recommendations */
+(function(){const G={
+  flower:'<g stroke="var(--ink)" fill="none"><circle cx="20" cy="20" r="14"/></g><path d="M20 6v8M34 20h-8M20 34v-8M6 20h8M30 10l-6 6M30 30l-6-6M10 30l6-6M10 10l6 6" stroke="var(--accent)"/>',
+  seed:'<path d="M20 34V20" stroke="var(--ink)" fill="none"/><path d="M20 22c-6 0-9-5-9-9 6 0 9 4 9 9zM20 20c5 0 8-4 8-8-5 0-8 3-8 8z" fill="var(--accent)"/>',
+  years:'<path d="M4 28h32" stroke="var(--ink)"/><g fill="var(--accent)"><rect x="6" y="20" width="3" height="8"/><rect x="13" y="17" width="3" height="11"/><rect x="20" y="14" width="3" height="14"/><rect x="27" y="10" width="3" height="18"/></g>',
+  seats:'<g fill="var(--ink)"><circle cx="20" cy="8" r="3"/><circle cx="31" cy="15" r="3"/><circle cx="31" cy="27" r="3"/><circle cx="9" cy="27" r="3"/><circle cx="9" cy="15" r="3"/></g><circle cx="20" cy="33" r="3.5" fill="var(--accent)"/><circle cx="20" cy="20" r="6" fill="none" stroke="var(--line)"/>',
+  equal:'<circle cx="15" cy="20" r="10" fill="none" stroke="var(--ink)"/><circle cx="25" cy="20" r="10" fill="none" stroke="var(--accent)"/>',
+  words:'<path d="M6 8h28v18H18l-7 7v-7H6z" fill="none" stroke="var(--ink)"/><path d="M11 14h18M11 19h12" stroke="var(--accent)"/>'};
+  const R=[['flower','Make clear what a LERO is','Each LERO shows itself against the standards, in its own words'],['seed','Support grassroots LEROs to start','A ready kit: welcome, agreement, constitution, standards, journey'],['years','Fund LEROs for the longer term','Evidence that builds over years, never a snapshot'],['seats','Bring LEROs into governance','Decisions held and kept in the LERO’s own room'],['equal','Respect between LEROs and treatment','One ground both can read, each keeping its own account'],['words','LEROs collect and share their value','Days told in members’ own words, with no forms to fill']];
+  $('recs').innerHTML=R.map(([g,r,a])=>`<div aria-hidden="true"><svg viewBox="0 0 40 40">${G[g]}</svg><span class="r">${r}</span><span class="a">${a}</span></div>`).join('');
+})();
+
+/* the return (2.22), read live: Community Recovery's dated journey threading into the standards it evidences */
+const MONTHS={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+function whenKey(s){const t=String(s||'').toLowerCase();let m;
+  if((m=/(\d{1,2})\s+([a-z]+)\s+(\d{4})/.exec(t))&&m[2] in MONTHS)return Date.UTC(+m[3],MONTHS[m[2]],+m[1]);
+  if((m=/(early|mid|late)?\s*([a-z]+)\s+(\d{4})/.exec(t))&&m[2] in MONTHS)return Date.UTC(+m[3],MONTHS[m[2]],m[1]==='late'?25:m[1]==='mid'?15:m[1]==='early'?5:1);
+  if((m=/(spring|summer|autumn|winter)\s+(\d{4})/.exec(t)))return Date.UTC(+m[2],{spring:3,summer:6,autumn:8,winter:11}[m[1]],1);
+  return null}
+/* CLERO's 33, from the frame: each line 'Standard N.' then CLERO's wording, at its own address */
+function standardsOf(frame){
+  if(!frame||typeof frame!=='object')return null;
+  const list=[],groups=[],byAddr={};
+  for(let g=1;g<=9;g++){const node=frame[String(g)];if(node==null)continue;
+    const gname=text(node).split(' — ')[0].replace(/^[A-Z]\.\s*/,'').trim(),ns=[];
+    (function walk(n,addr){if(n==null)return;const m=/^Standard\s+(\d+)\.?\s*([\s\S]*)$/.exec(text(n));
+      if(m&&addr.indexOf('.')>0){const s={n:+m[1],addr,words:m[2].replace(/\s+/g,' ').trim()};list.push(s);byAddr[addr]=s;ns.push(s.n);return}
+      if(typeof n==='object')for(let d=1;d<=9;d++)walk(n[String(d)],addr+(addr.indexOf('.')<0?'.':'')+d)})(node,String(g));
+    if(ns.length)groups.push([gname,Math.min.apply(null,ns)-1,Math.max.apply(null,ns)]);
+  }
+  list.sort((a,b)=>a.n-b.n);
+  return list.length?{list,groups,byAddr}:null;
+}
+function momentsOf(journey,std){
+  const out=[];
+  (function walk(n){if(!n||typeof n!=='object')return;
+    if(typeof n['1']==='string'&&typeof n['2']==='string'&&/^\s*(past|ahead)\s*$/i.test(n['2'])&&typeof n._==='string'){
+      const ns=[];(String(n['3']||'').match(/\b\d\.\d+\b/g)||[]).forEach(a=>{const s=std.byAddr[a];if(s&&ns.indexOf(s.n)<0)ns.push(s.n)});
+      out.push({when:n['1'].trim(),text:n._.trim(),ahead:/ahead/i.test(n['2']),ns:ns.sort((a,b)=>a-b)});return}
+    if(n._&&typeof n._==='object')walk(n._);
+    for(let d=1;d<=9;d++)walk(n[String(d)]);
+  })(journey);
+  /* in date order where the date reads, else in the order written */
+  let last=-Infinity;out.forEach(e=>{const k=whenKey(e.when);e.key=k!=null?k:(e.ahead?Infinity:last);if(k!=null)last=k});
+  return out.sort((a,b)=>a.key-b.key);
+}
+function drawReturn(E,std){
+  const svg=$('ret'),note=$('ret-note'),btn=$('b-ret');svg.textContent='';
+  const N=std.list.length,n=E.length;if(!n)throw new Error('no moments');
+  const words={};std.list.forEach(s=>{words[s.n]=s.words});
+  const mx=i=>n>1?30+i*(340/(n-1)):200,my=52;
+  el('line',{x1:20,y1:my,x2:380,y2:my,stroke:'var(--line)'},svg);
+  txt(svg,22,28,E[0].when,{'font-size':13,'font-style':'italic',fill:'var(--muted)','text-anchor':'start'});
+  txt(svg,378,28,E[n-1].when,{'font-size':13,'font-style':'italic',fill:'var(--muted)','text-anchor':'end'});
+  const cellX=k=>18+((k-1)%11)*33.2,cellY=k=>196+Math.floor((k-1)/11)*36;
+  const threads=el('g',{},svg);const cells={};
+  for(let k=1;k<=N;k++){const g=el('g',{class:'cell',tabindex:0,role:'button','aria-label':`Standard ${k}: ${clip(words[k],90)}`},svg);const r=el('rect',{x:cellX(k),y:cellY(k),width:30,height:30,rx:2,fill:'transparent',stroke:'var(--line)'},g);const t=txt(g,cellX(k)+15,cellY(k)+20,String(k),{'font-size':13,fill:'var(--muted)','pointer-events':'none'});cells[k]={r,t,ev:[]};
+    g.addEventListener('click',()=>showCell(k));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showCell(k)}})}
+  txt(svg,200,318,'your '+N+' standards',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});
+  const marks=E.map((e,i)=>{const g=el('g',{class:'mk',tabindex:0,role:'button','aria-label':e.when+', '+e.text+(e.ahead?' Still ahead.':'')},svg);el('circle',{class:'hit',cx:mx(i),cy:my,r:13,fill:'transparent'},g);
+    const c=el('circle',{class:'ring',cx:mx(i),cy:my,r:6,fill:e.ahead?'var(--ground)':'var(--panel)',stroke:e.ahead?'var(--muted)':'var(--ink)','stroke-dasharray':e.ahead?'2 2':'none'},g);
+    g.addEventListener('click',()=>showEv(i));g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();showEv(i)}});return c});
+  function light(i,anim){const e=E[i];if(e.ahead)return;marks[i].setAttribute('fill','var(--accent)');marks[i].setAttribute('stroke','var(--accent)');
+    e.ns.forEach(k=>{if(!cells[k])return;const x2=cellX(k)+15,y2=cellY(k);const p=el('path',{d:`M${mx(i)} ${my+6} C${mx(i)} ${my+70} ${x2} ${y2-70} ${x2} ${y2}`,fill:'none',stroke:'var(--accent)','stroke-width':1,opacity:.45},threads);
+      if(anim){const L=p.getTotalLength();p.style.strokeDasharray=L;p.style.strokeDashoffset=L;p.getBoundingClientRect();p.style.transition='stroke-dashoffset .8s ease';p.style.strokeDashoffset=0}
+      cells[k].r.setAttribute('fill','var(--accent)');cells[k].r.setAttribute('stroke','var(--accent)');cells[k].t.setAttribute('fill','var(--ground)');if(!cells[k].ev.includes(i))cells[k].ev.push(i)})}
+  const count=()=>Object.values(cells).filter(c=>c.ev.length).length,past=E.filter(e=>!e.ahead).length,ahead=n-past;
+  const done=()=>{note.innerHTML=`<b>${count()} of ${N} standards evidenced</b> from ${past} dated moments`+(ahead?`, with ${ahead} still ahead`:'')+`. Forms filled: <b>none</b>.`};
+  function showEv(i){const e=E[i];note.innerHTML=`<b>${esc(e.when)}:</b> ${esc(e.text)} `+(e.ahead?'<i>Still ahead, so not yet evidence.</i>':e.ns.length?`<i>Evidence for standards ${e.ns.join(', ')}.</i>`:'')}
+  function showCell(k){const c=cells[k];note.innerHTML=`<b>${k}. ${esc(words[k])}</b> `+(c.ev.length?c.ev.map(i=>esc(E[i].when)+', '+esc(clip(E[i].text,90))).join('; '):'<i>Nothing in these moments yet.</i>')}
+  let timer;function reset(){clearTimeout(timer);threads.textContent='';Object.values(cells).forEach(c=>{c.ev=[];c.r.setAttribute('fill','transparent');c.r.setAttribute('stroke','var(--line)');c.t.setAttribute('fill','var(--muted)')});marks.forEach((m,i)=>{if(E[i].ahead)return;m.setAttribute('fill','var(--panel)');m.setAttribute('stroke','var(--ink)')})}
+  function play(){reset();if(reduce){E.forEach((_,i)=>light(i,false));done();return}let i=0;const step=()=>{if(i>=n){done();return}light(i,true);const e=E[i];note.innerHTML=`<b>${esc(e.when)}:</b> ${esc(clip(e.text,140))} <span style="color:var(--muted)">${count()} of ${N} so far</span>`;i++;timer=setTimeout(step,850)};step()}
+  btn.onclick=play;btn.disabled=false;
+  E.forEach((_,i)=>light(i,false));done();onView(svg,instant=>{if(!instant)play()});
+}
+
+/* the wheel (2.23), read live: sandpiper's evidence reading of Community Recovery against CLERO's 33. No totals (function:standards). */
+function drawWheel(std,reading){
+  const svg=$('wheel'),detail=$('detail');svg.textContent='';
+  const HEAD={S:'In place',P:'Partly there',N:'Not yet',U:'Not yet read'};
+  const S=std.list.map(s=>{const r=nodeAt(reading,s.addr),t=text(r),st=/^spoken\b/i.test(t)?'S':/^partly\b/i.test(t)?'P':/^not yet\b/i.test(t)?'N':'U';
+    return [s.words,st,text(r&&r['3']).replace(/^what would show it:\s*/i,'')]});
+  const N=S.length,cx=200,cy=200,r0=60,r1=150,G=std.groups.length,total=Math.PI*2-.07*G,per=total/N;let a=-Math.PI/2+.035;const ang=[],grp=[];
+  std.groups.forEach(([nm,s,e])=>{const g0=a;for(let i=s;i<e;i++){ang[i]=[a+.006,a+per-.006];a+=per}grp.push([nm,g0,a]);a+=.07});
+  const ap=(a0,a1,ri,ro)=>{const p=(t,r)=>[cx+Math.cos(t)*r,cy+Math.sin(t)*r];const [x0,y0]=p(a0,ro),[x1,y1]=p(a1,ro),[x2,y2]=p(a1,ri),[x3,y3]=p(a0,ri);return `M${x0} ${y0}A${ro} ${ro} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${ri} ${ri} 0 0 0 ${x3} ${y3}Z`};
+  const defs=el('defs',{},svg);
+  grp.forEach(([nm,g0,g1],gi)=>{const rr=r1+16,mid=(g0+g1)/2,flip=Math.sin(mid)>.1,s0=flip?g1:g0,s1=flip?g0:g1;const id='gp'+gi;el('path',{id,d:`M${cx+Math.cos(s0)*rr} ${cy+Math.sin(s0)*rr}A${rr} ${rr} 0 0 ${flip?0:1} ${cx+Math.cos(s1)*rr} ${cy+Math.sin(s1)*rr}`},defs);const t=el('text',{'font-size':14,'font-style':'italic',fill:'var(--muted)',dy:flip?10:0},svg);const tp=el('textPath',{href:'#'+id,startOffset:'50%','text-anchor':'middle'},t);tp.textContent=nm});
+  const outs=[];
+  S.forEach((s,i)=>{if(!ang[i])return;const [a0,a1]=ang[i];const g=el('g',{class:'petal',tabindex:0,role:'button','aria-label':`Standard ${i+1}, ${HEAD[s[1]]}`},svg);
+    if(s[1]==='S')el('path',{d:ap(a0,a1,r0,r1),fill:'var(--ink)'},g);
+    if(s[1]==='P')el('path',{d:ap(a0,a1,r0,r0+(r1-r0)*.5),fill:'var(--soft)'},g);
+    outs[i]=el('path',{class:'o',d:ap(a0,a1,r0,r1),fill:'transparent',stroke:s[1]==='S'?'var(--ink)':s[1]==='P'?'var(--accent)':'var(--muted)','stroke-dasharray':s[1]==='N'||s[1]==='U'?'3 3':'none'},g);
+    const am=(a0+a1)/2;txt(g,cx+Math.cos(am)*(r1-11),cy+Math.sin(am)*(r1-11)+4,String(i+1),{'font-size':11,fill:s[1]==='S'?'var(--ground)':'var(--ink)','pointer-events':'none'});
+    g.addEventListener('click',()=>sel(i));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel(i)}})});
+  el('circle',{cx,cy,r:r0-8,fill:'var(--panel)',stroke:'var(--line)'},svg);
+  txt(svg,cx,cy-4,'sandpiper’s',{'font-size':14,'font-style':'italic',fill:'var(--muted)'});
+  txt(svg,cx,cy+14,'evidence reading',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});
+  function sel(i){outs.forEach((o,k)=>{if(o)o.setAttribute('stroke-width',k===i?3:1)});const s=S[i];detail.innerHTML=`<b>${i+1}. ${esc(s[0])}</b> &middot; <i>${HEAD[s[1]]}.</i>`+(s[2]?' What would show it: '+esc(s[2].charAt(0).toLowerCase()+s[2].slice(1)):'')}
+  sel(0);
+}
+
+/* who sees */
+(function(){const svg=$('rings');const cx=200,cy=200;
+  const defs=el('defs',{},svg);const pat=el('pattern',{id:'hatch',width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);el('line',{x1:0,y1:0,x2:0,y2:5,stroke:'var(--muted)','stroke-width':1.4},pat);
+  const RINGS=[[48,'member'],[96,'peer leader'],[144,'LERO'],[190,'CLERO']];
+  const bands=[];for(let k=3;k>=0;k--)bands[k]=el('circle',{cx,cy,r:RINGS[k][0],fill:'transparent',stroke:'var(--line)'},svg);
+  RINGS.forEach(([r,n])=>{const t=-2.35;txt(svg,cx+Math.cos(t)*(r-10),cy+Math.sin(t)*(r-10),n,{'font-size':13,'font-style':'italic',fill:'var(--muted)'})});
+  const I=[['their day',200,168,['o','y','s','s']],['their growth',200,214,['o','y','s','s']],['names',86,236,['o','o','p','s']],['counts',314,236,['o','o','o','f']],['public record',200,84,['o','o','o','o']],['the fold',200,362,['o','o','o','o']]];
+  const items=I.map(([n,x,y,st])=>{const c=el('circle',{cx:x,cy:y,r:10},svg);const t=txt(svg,x,y+26,n,{'font-size':13});return {c,t,st,n}});
+  function render(w){bands.forEach((b,k)=>{b.setAttribute('fill',k===w?'var(--soft)':'transparent');b.setAttribute('fill-opacity',k===w?.35:0)});
+    items.forEach(it=>{const s=it.st[w];it.c.setAttribute('fill',s==='s'?'url(#hatch)':s==='y'?'var(--accent)':s==='f'?'var(--gold)':s==='p'?'var(--panel)':'var(--ink)');it.c.setAttribute('stroke',s==='s'?'var(--muted)':s==='p'?'var(--ink)':'none');it.c.setAttribute('stroke-dasharray',s==='p'?'2 2':'none');it.t.setAttribute('fill',s==='s'?'var(--muted)':'var(--ink)');it.t.textContent=it.n+(s==='y'?' · with their yes':s==='f'?' · folded':s==='p'?' · on paper':s==='s'?' · sealed':'')})}
+  document.querySelectorAll('.who').forEach(b=>b.onclick=()=>{document.querySelectorAll('.who').forEach(x=>x.setAttribute('aria-pressed',x===b));render(+b.dataset.w)});
+  render(3);
+})();
+
+/* built and missing */
+(function(){const G={
+  seed:'<path d="M20 34V20" stroke="var(--ink)" fill="none"/><path d="M20 22c-6 0-9-5-9-9 6 0 9 4 9 9zM20 20c5 0 8-4 8-8-5 0-8 3-8 8z" fill="var(--accent)"/>',
+  scroll:'<rect x="9" y="6" width="22" height="28" fill="none" stroke="var(--ink)"/><path d="M13 13h14M13 18h14M13 23h10" stroke="var(--muted)"/><circle cx="26" cy="29" r="3" fill="var(--accent)"/>',
+  screen:'<rect x="6" y="9" width="28" height="19" fill="none" stroke="var(--ink)"/><path d="M17 14l8 4.5-8 4.5z" fill="var(--accent)"/><path d="M14 33h12" stroke="var(--ink)"/>',
+  pages:'<rect x="6" y="11" width="16" height="20" fill="var(--panel)" stroke="var(--ink)"/><rect x="18" y="8" width="16" height="20" fill="var(--panel)" stroke="var(--ink)"/><path d="M15 21h12" stroke="var(--accent)" stroke-width="2"/>',
+  meet:'<g fill="var(--ink)"><circle cx="20" cy="8" r="3"/><circle cx="31" cy="15" r="3"/><circle cx="31" cy="27" r="3"/><circle cx="20" cy="33" r="3"/><circle cx="9" cy="27" r="3"/><circle cx="9" cy="15" r="3"/></g><circle cx="20" cy="20" r="4" fill="var(--accent)"/>',
+  sun:'<path d="M14 11a11 11 0 1 1 3 20" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="20" cy="20" r="4.5" fill="var(--accent)"/>',
+  bridge:'<path d="M5 30Q20 8 35 30" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/><path d="M5 30h30" stroke="var(--muted)"/>',
+  kit:'<rect x="8" y="12" width="24" height="20" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/><path d="M15 12V8h10v4" fill="none" stroke="var(--muted)"/>',
+  flower:'<path d="M20 6l4 9 10-1-7 7 4 9-11-4-9 4 4-9-7-7 10 1z" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>',
+  agree:'<circle cx="15" cy="20" r="10" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/><circle cx="25" cy="20" r="10" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>',
+  bars:'<path d="M9 32V22M17 32V16M25 32V12M33 32V7" stroke="var(--muted)" stroke-width="4" stroke-dasharray="3 2"/>',
+  bell:'<path d="M12 27V18a8 8 0 0 1 16 0v9l3 3H9z" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/><circle cx="20" cy="33" r="2" fill="var(--muted)"/>'};
+  const B=[['seed','10 Aug','recovery capital tool'],['scroll','late Sept','constitution and agreement'],['screen','14 Oct','live presentation'],['pages','15 Oct','one site'],['meet','16 Oct','a meeting, kept'],['sun','21 Oct','Sundial']];
+  const M=[['bridge','next','days to capital'],['kit','next','a kit for any LERO'],['flower','next','the national fold'],['agree','next','the agreement'],['bars','next','measured evidence'],['bell','before trial','the safety alert']];
+  const fill=(id,list,ghost)=>{$(id).innerHTML=list.map(([g,d,l])=>`<div class="${ghost?'ghost':''}" aria-hidden="true"><svg viewBox="0 0 40 40">${G[g]}</svg><span class="d">${d}</span>${l}</div>`).join('')};
+  fill('built-cards',B,false);fill('missing-cards',M,true);
+})();
+
+/* ten days */
+(function(){const svg=$('days');const xs=i=>28+i*38;const cs=[];
+  el('line',{x1:28,y1:50,x2:370,y2:50,stroke:'var(--line)'},svg);
+  for(let i=0;i<10;i++){cs.push(el('circle',{cx:xs(i),cy:50,r:12,fill:'var(--panel)',stroke:'var(--ink)'},svg));txt(svg,xs(i),84,String(i+1),{'font-size':13,fill:'var(--muted)'})}
+  txt(svg,28,22,'first evidence',{'font-size':13,'font-style':'italic',fill:'var(--accent)','text-anchor':'start'});txt(svg,370,22,'CLERO reads it',{'font-size':13,'font-style':'italic','text-anchor':'end'});
+  txt(svg,200,108,'working days',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});
+  let d=0;const tick=()=>{cs.forEach((c,i)=>{c.setAttribute('fill',i<d?(i===0?'var(--accent)':'var(--ink)'):'var(--panel)');c.setAttribute('stroke',i===0&&d>0?'var(--accent)':'var(--ink)')});d=d>=10?0:d+1};
+  if(reduce){d=10;tick()}else{const seen=watch(svg);tick();setInterval(()=>{if(seen.on&&!document.hidden)tick()},700)}
+})();
+
+/* money */
+(function(){const svg=$('money');const src=['Commissioners','Public bodies','Funders','National programmes'];const sy=i=>48+i*52;const C=[218,134];const paths=[];
+  src.forEach((s,i)=>{txt(svg,12,sy(i)+4,s,{'font-size':13,'text-anchor':'start'});const d=`M112 ${sy(i)} C160 ${sy(i)} 170 ${C[1]} ${C[0]-26} ${C[1]}`;el('path',{d,fill:'none',stroke:'var(--line)'},svg);paths.push(d)});
+  el('circle',{cx:C[0],cy:C[1],r:26,fill:'var(--panel)',stroke:'var(--ink)','stroke-width':1.5},svg);txt(svg,C[0],C[1]-2,'the',{'font-size':12,'font-style':'italic',fill:'var(--muted)'});txt(svg,C[0],C[1]+13,'service',{'font-size':14});
+  const outs=[[`M${C[0]+26} ${C[1]} C300 ${C[1]} 300 70 340 70`,340,70],[`M${C[0]+26} ${C[1]+8} C300 ${C[1]+8} 300 180 340 180`,340,180]];
+  outs.forEach(([d,x,y])=>{el('path',{d,fill:'none',stroke:'var(--line)'},svg);el('circle',{cx:x+12,cy:y,r:9,fill:'var(--ink)'},svg)});
+  txt(svg,352,98,'LEROs',{'font-size':13});txt(svg,352,206,'members',{'font-size':13});txt(svg,352,224,'pay £0',{'font-size':15,fill:'var(--accent)','font-weight':500});
+  const costD=`M${C[0]} ${C[1]+26} L${C[0]} 236`;el('path',{d:costD,fill:'none',stroke:'var(--line)'},svg);txt(svg,C[0],254,'AI, hosting, the people who keep it',{'font-size':13,'font-style':'italic',fill:'var(--muted)'});
+  const backD=`M352 61 C352 20 250 18 ${C[0]} ${C[1]-26}`;el('path',{d:backD,fill:'none',stroke:'var(--accent)','stroke-dasharray':'3 4'},svg);txt(svg,282,12,'a share back to Community Recovery',{'font-size':12,'font-style':'italic',fill:'var(--accent)'});
+  el('rect',{x:128,y:268,width:180,height:26,fill:'none',stroke:'var(--accent)','stroke-dasharray':'3 3',rx:2},svg);txt(svg,218,286,'first price: set with CLERO',{'font-size':12,'font-style':'italic',fill:'var(--accent)'});
+  if(!reduce){const mk=(d,col,dur,begin)=>{const c=el('circle',{r:3.2,fill:col},svg);el('animateMotion',{dur:dur+'s',repeatCount:'indefinite',begin:begin+'s',path:d},c)};
+    paths.forEach((d,i)=>{mk(d,'var(--gold)',2.4,i*.6);mk(d,'var(--gold)',2.4,i*.6+1.2)});mk(outs[0][0],'var(--gold)',1.8,.3);mk(costD,'var(--gold)',1.4,.8);mk(backD,'var(--accent)',3,1)}
+})();
+
+/* ── the voices, the share controls and the door ── */
+document.querySelectorAll('header[data-at], section[data-at]').forEach(voiceBlock);
+if(window.Door){
+  Door.family(FAM);
+  Door.whoLine($('who-line'));
+  Door.onNamed(()=>{paintAs();refreshVoices()});
+}
+paintAs();
+
+/* ── the live reads ── */
+let liveDone={ret:false,wheel:false};
+function readLive(){
+  if(liveDone.ret&&liveDone.wheel)return;
+  const frame=get(CR,'spine:standards').then(standardsOf);
+  if(!liveDone.ret)Promise.all([frame,get(CR,'journey')]).then(([std,j])=>{if(!std||!j)throw new Error('missing');drawReturn(momentsOf(j,std),std);liveDone.ret=true},()=>{
+    $('ret').style.display='none';$('ret-note').textContent='Community Recovery’s journey can’t be read from the beach just now. It will draw here when it can.';});
+  if(!liveDone.wheel)Promise.all([frame,get(CR,'standards:sandpiper')]).then(([std,r])=>{if(!std||!r)throw new Error('missing');drawWheel(std,r);liveDone.wheel=true},()=>{
+    $('wheel').style.display='none';$('detail').textContent='The standards can’t be read from the beach just now. They will draw here when they can.';});
+}
+function liveAgain(){if(liveDone.ret)$('ret').style.display='';if(liveDone.wheel)$('wheel').style.display=''}
+get(WIRE,'spine:'+FAM).then(s=>{if(s)applyWords(s)},()=>{});
+readLive();
+refreshVoices();
+setInterval(()=>{if(document.hidden)return;refreshVoices();if(!(liveDone.ret&&liveDone.wheel)){readLive();setTimeout(liveAgain,9500)}},45000);
+})();
+</script>
+</body>
+</html>
