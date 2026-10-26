@@ -238,7 +238,8 @@
   }
 
   // ---- the card: a picture of the name and its words, to keep -----------------------------------
-  function cardPicture(name, words) {
+  function cardPicture(name, words, home) {
+    home = home || CFG.home || '';
     var c = document.createElement('canvas'); c.width = 900; c.height = 560;
     // Community Recovery's own colours and face, from the block 'brand' (as brand.css)
     var g = c.getContext('2d'), font = '"Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -254,7 +255,7 @@
     g.fillText(line, 70, 372);
     g.fillStyle = '#746882'; g.font = '34px ' + font;
     g.fillText('The only key to this name. Keep it safe.', 70, 448);
-    fit(CFG.home || '', '', 30); g.fillText(CFG.home || '', 70, 494);
+    fit(home, '', 30); g.fillText(home, 70, 494);
     return c.toDataURL('image/png');
   }
 

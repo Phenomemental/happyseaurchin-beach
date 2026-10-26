@@ -65,6 +65,12 @@
     three: 'Your words are three words. Please type all three.',
     stand: 'Your old words still stand. A keeper can clear them with you in person first.'
   };
+  // The crossing agent's own name. Matthew names the agent; this must match the name it writes
+  // at position 1 of every crossing, or its crossings show as ordinary words.
+  var CROSSING_AGENT = 'turnstone';
+  var FORGOTTEN = "Forgotten at the holder's request.";
+  var RESETTING = 'Your keeper is finishing your reset. You can keep days again once it\u2019s done.';
+  var SEALED = 'Sealed with your words. Keepers can\u2019t read them.';
   var LOST = 'Lost your words? A keeper can reset them with you in person. Your days stay private, even from them.';
 
   function sget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -219,7 +225,7 @@
       G = g;
       if (S.now) return null;
       return post({ block: block, content: floorChain(nowLine(m.name)), new_lock: m.words }).then(function (r) {
-        if (!r.ok) throw SAY.beach;
+        if (!r.ok) { if (r.status === 403 || r.data.code === 'confirm_required') { sset('cr:app:reset:' + m.name, '1'); throw RESETTING; } throw SAY.beach; }
         S.now = floorChain(nowLine(m.name));
       });
     }).then(function () {
@@ -233,7 +239,10 @@
       return G.seal(full, m.words);
     }).then(function (env) {
       return post({ block: block, spindle: at, content: env, secret: m.words }).then(function (r) {
-        if (!r.ok) throw r.status === 403 ? SAY.words : SAY.beach;
+        // the person's words were proved at the door, so a refusal here is a day book still
+        // latched to old words: the keeper's reset is unfinished
+        if (!r.ok) { if (r.status === 403) { sset('cr:app:reset:' + m.name, '1'); throw RESETTING; } throw SAY.beach; }
+        sset('cr:app:reset:' + m.name, null);
         return read(block);
       });
     }).then(function (back) {
@@ -297,7 +306,7 @@
     })(pool, '');
     return out;
   }
-  function isCrossing(e) { return /^CROSSING:/i.test(e.text); }
+  function isCrossing(e) { return /^CROSSING:/.test(e.text) && e.who === CROSSING_AGENT; }
   function crossings() { return entriesOf(S.pool).filter(isCrossing).reverse(); }
   function wordsFor() {
     var mine = S.me ? S.me.name.toLowerCase() : '';
@@ -481,7 +490,7 @@
     }
     paint();
     add(wf, wl, chips);
-    var priv = p('quiet-s', 'Your days stay yours: sealed with your words, read by you alone. What you choose to bring is open for the community to see.');
+    var priv = p('quiet-s', 'Your days stay yours. ' + SEALED + ' What you choose to bring is open for the community to see.');
     var lost = p('quiet-s', LOST);
     var adult = tick('I am 18 or over', false);
     var rem = tick('Remember me on this ' + Kit.app.device, true);
@@ -530,7 +539,7 @@
     m.words.split('-').forEach(function (w) { chips.appendChild(el('span', 'w', w)); });
     add(s, chips);
     var src = null;
-    try { src = Kit.app.cardPicture(m.name, m.words); } catch (e) { src = null; }
+    try { src = Kit.app.cardPicture(m.name, m.words, myLink()); } catch (e) { src = null; }
     if (src) {
       var save = el('a', 'btn line', 'Save the picture'); save.href = src; save.download = 'my-card-' + m.name + '.png';
       save.style.marginTop = '22px';
@@ -538,11 +547,12 @@
     }
     var lost = p('quiet-s', LOST); lost.style.marginTop = '16px';
     add(s, lost);
-    var go = el('div', 'stack push');
-    add(go, button('btn', 'I’ve kept them', function () {
-      if (arg.org) show('org-new', null, true);
-      else { load().then(function () { show('today', null, true); }); }
-    }));
+    var go = el('div', 'stack push'), st = status();
+    add(go, button('btn', 'I\u2019ve kept them', function () {
+      if (arg.org) { show('org-new', null, true); return; }
+      st.textContent = 'Opening your days\u2026';
+      load().then(function (ok) { show(ok ? 'today' : 'welcome', null, true); }, function () { st.textContent = SAY.beach; });
+    }), st);
     add(s, go);
     return s;
   };
@@ -578,7 +588,7 @@
         S.me = m;
         if (arg.org) sset('cr:app:org:' + m.name, '1');
         st.textContent = 'Opening your days…';
-        load().then(function () { show(arg.org ? 'org-new' : 'today', null, true); }, function () { st.textContent = SAY.beach; });
+        load().then(function (ok) { show(ok ? (arg.org ? 'org-new' : 'today') : 'welcome', null, true); }, function () { st.textContent = SAY.beach; });
       });
     });
     setTimeout(function () { nm.input.focus(); }, 30);
@@ -610,7 +620,10 @@
         Kit.app.keepMe(m, true);
         S.me = m;
         // the day book and the count answer to the new words too, where the beach allows it
-        Promise.all(['now:', 'mark:'].map(function (b) { return post({ block: b + m.name, new_lock: m.words }); })).then(function () {
+        Promise.all(['now:', 'mark:'].map(function (b) {
+          return read(b + m.name).then(function (have) { return have ? post({ block: b + m.name, new_lock: m.words }) : { ok: true }; }, function () { return { ok: true }; });
+        })).then(function (rs) {
+          sset('cr:app:reset:' + m.name, rs.every(function (x) { return x.ok; }) ? null : '1');
           show('words', { org: arg && arg.org }, true);
         });
       });
@@ -621,6 +634,7 @@
   // TODAY
   SCREENS.today = function () {
     var m = S.me, s = screen();
+    if (!m) return SCREENS.welcome();
     var bar = el('div', 'topbar');
     add(bar, iconBtn('menu', 'Menu', function () { show('menu'); }), p('eyebrow-q', topDate() + ' · COMMUNITY RECOVERY'));
     add(s, bar);
@@ -656,6 +670,7 @@
     var keep = el('button', 'btn', 'Keep today'); keep.type = 'submit';
     var st = status();
     add(foot, lab, ta, mic, noteP, keep, st);
+    if (sget('cr:app:reset:' + m.name) === '1') st.textContent = RESETTING;
     var hard = p('tiny-s', SAMARITANS); hard.style.textAlign = 'center'; hard.style.marginTop = '4px';
     add(foot, hard);
     add(s, foot);
@@ -688,7 +703,7 @@
     add(s, r);
     var h = el('h1', 'fade-in later', 'Today is kept'); h.style.marginTop = '28px'; h.style.textAlign = 'center';
     add(s, h);
-    var c = p('fade-in later', daysWords(count()) + '. Only you can read them.'); c.style.cssText = 'margin-top:8px;font-size:16px;text-align:center';
+    var c = p('fade-in later', daysWords(count()) + '. ' + SEALED); c.style.cssText = 'margin-top:8px;font-size:16px;text-align:center';
     add(s, c);
     var hand = p('hand-s gold fade-in latest', 'Stronger together.'); hand.style.marginTop = '18px';
     add(s, hand);
@@ -1060,6 +1075,7 @@
   // ABOUT: the six policies as six short pages
   SCREENS.about = function () {
     return loading('about', 'About', function () { return policies(); }, function (b) {
+      if (!b) return [];
       return ['2', '3', '4', '5', '6', '7'].map(function (k) {
         var sp = split(Kit.text(b[k]));
         return { eyebrow: 'About', title: Kit.cap(sp.title.toLowerCase()), after: function (body) {
@@ -1214,7 +1230,7 @@
       }));
       add(c, p('tiny-s', 'On an Android phone, hold a blank card to the back. A card carries your link only, never your words.'));
     } else {
-      add(c, p('tiny-s', 'On an iPhone, any Android phone in the room can write it for you.'));
+      add(c, p('tiny-s', 'On other phones, any Android phone in the room can write it for you.'));
     }
     add(c, st);
     return c;
@@ -1429,53 +1445,100 @@
   // FORGET ME: asked here, in the page
   SCREENS.forget = function () {
     var m = S.me, s = screen();
+    if (!m) return SCREENS.welcome();
     add(s, backBar('menu'), el('h1', null, 'Forget me'));
     add(s, p('lead-s', 'This removes ' + m.name + ' from Community Recovery’s place: your card, your days, what you bring, your notebooks and your room. It cannot be brought back.'));
     add(s, p('quiet-s', 'Your arrival stays in the record as a name only. Ask a keeper if you want that gone too.'));
     var box = el('div', 'confirm-s'); box.style.marginTop = '22px';
     var st = status();
+    var busy = false;
     var yes = button('btn', 'Yes, forget me', function () {
-      yes.disabled = true; no.disabled = true; st.textContent = 'Removing everything…';
-      forgetAll().then(function (ok) {
-        if (ok) { signOut(); return; }
+      if (busy) return;
+      busy = true; yes.disabled = true; no.disabled = true; st.textContent = 'Removing everything…';
+      // every step can be repeated safely, so a second tap simply tries again
+      forgetAll().then(function (res) {
+        busy = false;
+        if (res.ok) { signOut(); show('left', { notes: res.notes }, true); return; }
         yes.disabled = false; no.disabled = false; st.textContent = SAY.beach;
-      });
+      }, function () { busy = false; yes.disabled = false; no.disabled = false; st.textContent = SAY.beach; });
     });
     var no = button('btn line', 'Keep me', function () { show('menu', null, true); });
     add(box, yes, no, st);
     add(s, box);
     return s;
   };
-  // Kit.leave removes the card and every notebook named for the person (now: and mark: among
-  // them), but leaves pool: blocks; so the room goes first, and the person is taken out of any
-  // organisation (an organisation they alone stand in goes with them).
+  SCREENS.left = function (arg) {
+    var s = screen('center');
+    add(s, ring({ cls: 'small', dots: false }));
+    var h = el('h1', null, 'You’ve left'); h.style.marginTop = '18px';
+    add(s, h, p('lead-s', 'Everything you kept here is gone.'));
+    ((arg && arg.notes) || []).forEach(function (n) { var x = p('quiet-s', n); x.style.marginTop = '12px'; add(s, x); });
+    var b = button('btn line small', 'Back to the start', function () { show('welcome', null, true); });
+    b.style.marginTop = '24px';
+    add(s, b);
+    return s;
+  };
+  // Gone: no block, or a block that holds only the forgotten line at its root.
+  function isGone(b) { return b == null || Kit.text(b) === FORGOTTEN; }
+  // A block written whole as the one forgotten line, so nothing beneath it stays (on the beach a
+  // deleted block can keep its children). A latched block takes the person's words; an open one
+  // (a room) is written without them.
+  function forgetWhole(block, words) {
+    var c = { _: FORGOTTEN };
+    return post({ block: block, content: c, secret: words, confirm: true }).then(function (r) {
+      return r.ok ? r : post({ block: block, content: c, confirm: true });
+    });
+  }
+  // Every block of the person's is first written whole as the forgotten line, then removed as
+  // Kit.leave removes them (it leaves pool: blocks, so the room is removed here too). The person
+  // is taken out of any organisation; one they alone stand in goes with them. Resolves
+  // {ok, notes}: ok once nothing of theirs is left but the forgotten line; notes say plainly
+  // what a founder still has to do.
   function forgetAll() {
-    var m = S.me;
+    var m = S.me, notes = [];
+    var low = m.name.toLowerCase();
     var orgs = S.orgs.slice();
+    var mine = [];
     return orgs.reduce(function (pr, o) {
       return pr.then(function () {
-        var rest = peopleOf(o.data).filter(function (x) { return x.toLowerCase() !== m.name.toLowerCase(); });
-        if (!rest.length) return Kit.wipe(o.block, m.words);
+        var ppl = peopleOf(o.data), rest = ppl.filter(function (x) { return x.toLowerCase() !== low; });
+        if (!rest.length) return forgetWhole(o.block, m.words).then(function () { return Kit.wipe(o.block, m.words); });
         var c = {}; Object.keys(o.data).forEach(function (k) { c[k] = o.data[k]; }); c['4'] = rest.join(', ');
-        return post({ block: o.block, content: c, secret: m.words, confirm: true });
+        return post({ block: o.block, content: c, secret: m.words, confirm: true }).then(function (r) {
+          if (!r.ok) notes.push('Ask ' + (ppl[0] || 'its founder') + ' to take your name off ' + (Kit.text(o.data) || 'your organisation') + '.');
+        });
       });
     }, Promise.resolve()).then(function () {
-      return read('pool:' + m.name);
-    }).then(function (pool) {
-      return pool ? Kit.wipe('pool:' + m.name, m.words) : { ok: true };
+      return Kit.index();
+    }).then(function (idx) {
+      mine = Kit.names(idx).filter(function (n) {
+        return n.indexOf(':') > 0 && n.slice(n.lastIndexOf(':') + 1) === m.name && !/^(sed|grain|org):/.test(n);
+      });
+      ['passport:', 'now:', 'mark:', 'pool:'].forEach(function (pre) { if (mine.indexOf(pre + m.name) < 0) mine.push(pre + m.name); });
+      return mine.reduce(function (pr, b) {
+        return pr.then(function () {
+          return read(b).then(function (have) { return have && !isGone(have) ? forgetWhole(b, m.words) : null; }, function () { return null; });
+        });
+      }, Promise.resolve());
     }).then(function () {
-      return Kit.leave();
-    }).then(function (ok) {
-      if (!ok) return false;
-      sset('cr:app:org:' + m.name, null); sset(seenKey(), null); sset(levelKey(), null);
-      return Promise.all(['now:', 'mark:', 'pool:', 'passport:'].map(function (b) { return read(b + m.name).catch(function () { return 'x'; }); }))
-        .then(function (left) { return left.every(function (x) { return x == null; }); });
-    }, function () { return false; });
+      return read('pool:' + m.name).then(function (pool) { return pool ? Kit.wipe('pool:' + m.name, m.words) : null; }, function () { return null; });
+    }).then(function () {
+      return Kit.leave().catch(function () { return false; });
+    }).then(function () {
+      return Promise.all(mine.map(function (b) { return read(b).catch(function () { return { _: 'unreachable' }; }); }));
+    }).then(function (left) {
+      var ok = left.every(isGone);
+      if (ok) { sset('cr:app:org:' + m.name, null); sset(seenKey(), null); sset(levelKey(), null); sset('cr:app:reset:' + m.name, null); }
+      return { ok: ok, notes: notes };
+    }, function () { return { ok: false, notes: notes }; });
   }
 
   // ---- the footer: Community Recovery's own lines, policies part 1, as nav.js draws them ---------
   var reading = null;
-  function policies() { return reading || (reading = read('policies')); }
+  function policies() {
+    if (!reading) reading = read('policies').then(function (b) { if (!b) reading = null; return b; }, function (e) { reading = null; throw e; });
+    return reading;
+  }
   // Words with their links, as nav.js makes them, keeping only what the app may link to: help
   // lines (tel: and sms:), email, and Community Recovery's Facebook. A web address stays as words.
   var LINKS = new RegExp([
