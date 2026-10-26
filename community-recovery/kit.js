@@ -918,6 +918,10 @@
     listenButton: listenButton, speakButton: speakButton, circle: circle, family: family,
     keeperWords: keeperWords, setKeeper: setKeeper, dot: dot,
     // for the checks only
-    _t: { tidyWords: tidyWords, tidyName: tidyName, nearest: nearest, threeWords: threeWords, apart: apart }
+    _t: { tidyWords: tidyWords, tidyName: tidyName, nearest: nearest, threeWords: threeWords, apart: apart },
+    // for Community Recovery's app (app.html), which draws its own screens round the same steps
+    // the name sheet takes; added beside the rest, nothing above changes
+    app: { foundName: foundName, comeBack: comeBack, newWords: newWords, keepMe: keepMe, cardPicture: cardPicture,
+           threeWords: threeWords, tidyName: tidyName, device: DEVICE }
   };
 })();
