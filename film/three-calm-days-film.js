@@ -13,6 +13,10 @@
                                        copy, try, trytext, src, srclist and note
      film.words(scenes)                scenes: ten of {t, s, stamp}
      film.currents(labels)             scene two's currents, one a label, in order
+     film.voice(v)                     the film's narrator: v.say(i) resolves when scene i's words
+                                       (or the closing card's, at 10) are spoken; v.pause, v.resume, v.stop
+     film.listen(on, keep)             turn listening on or off; keep false leaves the reader's choice alone
+     film.onListen = fn                told when the reader turns Listen on or off
      film.copy = text                  what "Copy the three things" puts on the clipboard */
 window.CalmFilm = function (box) {
 'use strict';
@@ -186,19 +190,49 @@ let idx=0,t=0,playing=!reduce,T=0,last=performance.now(),copyText='';
 const LAST=SCENES.length-1;
 /* the film runs only while it can be seen */
 let seen=true;if('IntersectionObserver' in window)new IntersectionObserver(es=>{seen=es[0].isIntersecting}).observe(stage);
+/* the film speaks (spine:three-calm-days 6.5): the page hands in a voice that says scene i, or the closing
+   card as LAST+1. While listening, each scene holds until its words are done, then a breath, then moves on */
+let voice=null,listening=false,nIdx=-1,nTok=0,nDone=0,blocked=false,onListen=null;
+const BREATH=900,listenBtn=$('listen');
+function narrate(i){if(!voice)return;const tk=++nTok;nIdx=i;nDone=0;
+  voice.say(i).then(r=>{if(tk!==nTok)return;if(r&&r.blocked)blocked=true;nDone=performance.now();},()=>{if(tk===nTok)nDone=performance.now();});}
+function hush(){nTok++;nIdx=-1;nDone=0;if(voice)voice.stop();}
+function said(){return nDone>0&&performance.now()-nDone>=BREATH;}
+function setListen(on,keep){listening=!!on&&!!voice;listenBtn.setAttribute('aria-pressed',String(listening));if(keep!==false&&onListen)onListen(listening);}
+/* a browser that will not speak before the reader has touched the page begins at the first touch */
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,()=>{if(listening&&blocked){blocked=false;hush();t=0;}},true));
 /* with reduced motion a paused scene stands at its end; a playing one holds there for its length */
-function go(i){idx=Math.max(0,Math.min(LAST,i));t=reduce&&!playing?SCENES[idx].d*0.999:0;show();}
+function go(i){if(listening)hush();idx=Math.max(0,Math.min(LAST,i));t=reduce&&!playing?SCENES[idx].d*0.999:0;show();}
 function show(){const sc=SCENES[idx];capT.textContent=sc.t;capS.textContent=sc.s;stamp.textContent=sc.stamp;stamp.classList.toggle('on',!!sc.stamp);
   const on=idx===LAST&&t>=sc.d*0.6;closing.classList.toggle('on',on);closing.setAttribute('aria-hidden',String(!on));playBtn.textContent=playing?'Pause':'Play';}
 function tick(now){const dt=Math.min(0.1,(now-last)/1000);last=now;
-  if(!seen||document.hidden){requestAnimationFrame(tick);return;}
-  T+=reduce?0:dt;
-  if(playing){t+=dt;const d=SCENES[idx].d;if(t>=d){if(idx<LAST){idx++;t=0;}else{t=d;playing=false;}show();}}
+  /* out of sight it rests, unless it is being listened to */
+  const away=!seen||document.hidden;
+  if(away&&!listening){requestAnimationFrame(tick);return;}
+  T+=reduce||away?0:dt;
+  if(playing){
+    if(listening&&nIdx!==idx&&nIdx!==LAST+1)narrate(idx);
+    t+=dt;const d=SCENES[idx].d;
+    if(t>=d){
+      if(listening&&!said())t=d;
+      else if(idx<LAST){idx++;t=0;if(listening)narrate(idx);show();}
+      else if(listening&&nIdx===LAST){t=d;narrate(LAST+1);}
+      else{t=d;playing=false;show();}
+    }
+  }
   if(idx===LAST&&!closing.classList.contains('on')&&t>=SCENES[idx].d*0.6)show();
   [...track.children].forEach((b,i)=>{b.firstChild.style.width=(i<idx?100:i>idx?0:C01(t/SCENES[idx].d)*100)+'%';});
   /* with reduced motion, each scene is drawn as it ends, and holds still */
-  frame(idx,reduce?0.999:C01(t/SCENES[idx].d),T);requestAnimationFrame(tick);}
-function playPause(){if(!playing&&idx===LAST&&t>=SCENES[idx].d*(reduce?0.999:1)){go(0);}playing=!playing;if(playing&&reduce)t=0;show();}
+  if(!away)frame(idx,reduce?0.999:C01(t/SCENES[idx].d),T);requestAnimationFrame(tick);}
+function playPause(){if(!playing&&idx===LAST&&t>=SCENES[idx].d*(reduce?0.999:1)){go(0);}playing=!playing;if(playing&&reduce)t=0;
+  if(listening&&voice){if(!playing)voice.pause();else if(nIdx>=0&&!nDone)voice.resume();}
+  show();}
+/* Listen: on, the film plays from the start of the scene in view with its words; off, the voice stops at once */
+listenBtn.onclick=e=>{e.stopPropagation();
+  if(listening){setListen(false);hush();show();return;}
+  setListen(true);
+  if(idx===LAST&&!playing&&t>=SCENES[LAST].d*0.6){playing=true;go(0);}
+  playing=true;t=0;hush();narrate(idx);show();};
 playBtn.onclick=playPause;
 $('back').onclick=()=>go(t>1.5&&!reduce?idx:idx-1);
 $('next').onclick=()=>go(idx+1);
@@ -217,6 +251,10 @@ return {
   words(list){(list||[]).forEach((w,i)=>{const sc=SCENES[i];if(!sc||!w)return;sc.t=w.t||'';sc.s=w.s||'';sc.stamp=w.stamp||'';
     track.children[i].setAttribute('aria-label','Scene '+(i+1)+' of '+SCENES.length+(sc.t?': '+sc.t:''));});show();},
   currents(list){if(Array.isArray(list)&&list.length)CURRENTS=list.map(String);},
+  voice(v){voice=v||null;listenBtn.hidden=!voice;if(!voice)setListen(false,false);},
+  listen(on,keep){if(!on)hush();setListen(on,keep);show();},
+  get listening(){return listening;},
+  set onListen(fn){onListen=fn;},
   set copy(v){copyText=String(v||'');},
   get copy(){return copyText;}
 };
