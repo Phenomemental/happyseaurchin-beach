@@ -38,11 +38,12 @@
 [hidden]{display:none!important}
 html{scroll-padding-top:1rem;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:1.2rem;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:max(1.5rem,env(safe-area-inset-top,0px));padding-bottom:max(3rem,env(safe-area-inset-bottom,0px))}
-.sheet{max-width:44rem;margin:0 auto;display:flex;flex-direction:column;gap:2.2rem}
+.sheet{max-width:36rem;margin:0 auto;display:flex;flex-direction:column;gap:2.2rem}
+.cols,.left,.right{display:flex;flex-direction:column;gap:2.2rem;min-width:0}
 h1{font-weight:500;font-size:clamp(2.4rem,9vw,3.6rem);line-height:1.02;margin:0;text-wrap:balance}
 h2{font-weight:500;font-size:1.75rem;line-height:1.1;margin:0;text-wrap:balance}
 h3,h4{font-weight:500;margin:0}
-p{margin:0;max-width:32rem}
+p{margin:0;max-width:36rem}
 a{color:var(--accent);text-underline-offset:.15em}
 a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .line{font-style:italic;color:var(--muted);font-size:1.08rem;overflow-wrap:anywhere}
@@ -63,7 +64,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 .bar{display:flex;flex-wrap:wrap;gap:.45rem .8rem;padding:.65rem .9rem;border-top:1px solid var(--line);align-items:center;justify-content:space-between}
 
 /* the film (6): a square stage, captions scene by scene, a closing card with its sources */
-.film,#film>.eyebrow-row{width:min(100%,max(62vh,340px));width:min(100%,max(62svh,340px))}
+.film-stick{display:flex;flex-direction:column;gap:.8rem}
 .stage{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--ground);border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .stage:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -96,7 +97,9 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 @media (prefers-reduced-motion:reduce){.stamp,.closing,.closing.on{transition:none}}
 
 /* the signals board (2, 8.71): nine tiles, one open beneath at a time */
-.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:30rem}
+#signals,#three-days{container-type:inline-size}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@container (min-width:600px){.board{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .tile{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:.55rem .3rem .5rem;display:flex;flex-direction:column;align-items:center;gap:.22rem;text-align:center;font-size:1.06rem;line-height:1.1;min-height:7.4rem;min-width:0;overflow-wrap:anywhere;scroll-margin-top:1rem}
 .tile svg{width:46px;height:46px;flex:none}
 .tile .tm{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);line-height:1.3}
@@ -149,7 +152,9 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 .react button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
 
 /* the three days (3, 8.73): the cupboard that fills, and the list to tick, kept on the phone only */
-.cupboard{display:flex;flex-direction:column;gap:.45rem;max-width:26rem}
+.days-grid{display:flex;flex-direction:column;gap:.8rem}
+.cupboard{display:flex;flex-direction:column;gap:.45rem;width:100%;max-width:26rem;margin-inline:auto}
+@container (min-width:540px){.days-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:1.2rem;align-items:start}.cupboard{max-width:none}}
 .cupboard canvas{width:100%;aspect-ratio:1/0.8;background:var(--panel);border:1px solid var(--line);border-radius:2px;display:block}
 .tally{font-size:1.35rem;line-height:1.2}
 .tally b{font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -227,13 +232,37 @@ details.say[open] summary::before{content:"\2212"}
 footer{border-top:1px solid var(--line);margin-top:2rem;padding-top:1rem;font-size:.95rem;color:var(--muted);display:flex;flex-direction:column;gap:.25rem}
 footer a{color:var(--muted)}
 
+/* the page takes the shape of the screen (8.751) */
+/* a phone on its side: the film's stage the height of the screen less a little, its caption and controls
+   beside it; the rest one column, centred, using the width */
+@media (orientation:landscape) and (max-width:899px){
+  :root{--lstage:clamp(220px,min(calc(100vh - 2rem),58vw),560px);--lstage:clamp(220px,min(calc(100svh - 2rem),58vw),560px)}
+  .sheet{max-width:54rem}
+  .film{display:grid;grid-template-columns:var(--lstage) minmax(0,1fr)}
+  .film .stage{border-bottom:0;border-right:1px solid var(--line)}
+  .film-body{justify-content:center}
+  .caption{min-height:0}
+}
+/* wide screens: two columns, the film held in view on the left while the rest reads on the right */
+@media (min-width:900px){
+  :root{--stage:clamp(320px,min(40vw,calc(100vh - 23rem)),620px);--stage:clamp(320px,min(40vw,calc(100svh - 23rem)),620px)}
+  .sheet{max-width:calc(var(--stage) + 3rem + 46rem)}
+  .cols{display:grid;grid-template-columns:var(--stage) minmax(0,46rem);column-gap:3rem;align-items:stretch}
+  #film{flex:1}
+  #film>.eyebrow-row{order:1}#film>h2{order:2}#film>.src{order:3}#film>.film-stick{order:4}
+  .film-stick{position:sticky;top:1rem}
+  .film-stick:has(details[open]){position:static}
+  .caption{min-height:8.5em}
+}
+
 /* printed, the list alone: what to have, the date, and the official advice */
 @media print{
   :root,:root[data-theme="dark"]{--ground:#fff;--panel:#fff;--ink:#000;--muted:#333;--line:#999;--accent:#000;color-scheme:light}
   @page{margin:16mm}
   body{background:#fff;color:#000;padding:0;font-size:13pt}
   .sheet{max-width:none;gap:0}
-  .sheet > :not(#three-days){display:none!important}
+  .sheet > :not(.cols),.left,.right > :not(#three-days){display:none!important}
+  .cols,.right,.days-grid{display:block!important}
   #three-days .eyebrow-row,#three-days .bar,#three-days .no-print,#three-days .vbtn,#three-days .vpanel{display:none!important}
   #three-days .print-only{display:block}
   .print-head{font-size:11pt;letter-spacing:.14em;text-transform:uppercase;color:#333;margin-bottom:.2rem}
@@ -252,9 +281,12 @@ footer a{color:var(--muted)}
   <p class="lede" id="lede">A calm, honest guide to being ready, for British homes and streets. Not the government.</p>
 </header>
 
+<div class="cols">
+<div class="left">
 <section data-at="6" id="film">
   <div class="eyebrow-row"><div class="eyebrow">The film</div></div>
   <h2 data-w="head">One wave with two faces</h2>
+  <div class="film-stick" id="film-stick">
   <div class="frame film" data-film="box">
     <div class="stage" data-film="stage" tabindex="0" role="img" aria-label="Animated film: a swell far out at sea, lifted by rain named for the AI labs; other currents join it, one for each signal; the wave nears a small street on the shore whose grid also feeds data centres; the street goes dark; a ladder loses its lowest rungs; panic turns the water brown and empties a shelf; a cupboard fills slowly; threads to the big platforms snap and neighbours draw lines between their windows; and finally the street stays lit as the wave arrives, a rider on its face.">
       <canvas aria-hidden="true"></canvas>
@@ -285,8 +317,12 @@ footer a{color:var(--muted)}
       </div>
     </div>
   </div>
+  </div>
   <p class="src" data-w="src"></p>
 </section>
+</div>
+
+<div class="right">
 
 <div class="part">What is happening</div>
 
@@ -305,6 +341,7 @@ footer a{color:var(--muted)}
   <p class="print-only print-head"><span data-w="title">Three Calm Days</span> &middot; <span id="printed"></span></p>
   <h2 data-w="head">The three days</h2>
   <p class="line" data-w="line"></p>
+  <div class="days-grid">
   <div class="cupboard no-print">
     <canvas id="cup" role="img" aria-label="Your cupboard, filling as you tick"></canvas>
     <p class="tally" id="tally" aria-live="polite"></p>
@@ -312,6 +349,7 @@ footer a{color:var(--muted)}
   <div class="frame">
     <ul class="ticks" id="ticks"></ul>
     <div class="bar"><span class="hint">Your ticks stay on this device only.</span><button type="button" id="print">Print this list</button></div>
+  </div>
   </div>
   <p class="how" id="how"></p>
   <p class="src">The official advice: <a href="https://www.gov.uk/prepare" rel="noopener">www.gov.uk/prepare</a></p>
@@ -348,6 +386,8 @@ footer a{color:var(--muted)}
   <div class="links"><a href="https://mirror.onen.ai/?pool=three-calm-days">Talk in the room</a></div>
   <p class="who-line" id="who-line"></p>
 </section>
+</div>
+</div>
 
 <footer>
   <span>Made by Matthew Bushell.</span>
@@ -873,11 +913,13 @@ function applyWords(spine){
 
 /* ── putting it together ── */
 document.querySelectorAll('#film .eyebrow-row,#three-days .eyebrow-row').forEach(row=>{const s=row.closest('section');shareButton(row,s.id,s.querySelector('h2').textContent)});
-voiceBlock($('film'),'6','Your words on the film','folded');
+voiceBlock($('film-stick'),'6','Your words on the film','folded');
 voiceBlock($('foot-say'),'7','Your words');
 printed();window.addEventListener('beforeprint',printed);
 $('print').addEventListener('click',()=>{printed();window.print()});
+/* the cupboard redraws, sharp, whenever its size changes: the screen turned, or the window resized (8.751) */
 if('ResizeObserver' in window)new ResizeObserver(sizeCup).observe(cv);
+window.addEventListener('orientationchange',()=>setTimeout(sizeCup,300));
 setAside(SAVED);applyWords(SAVED);sizeCup();
 const scheme=matchMedia('(prefers-color-scheme: dark)');if(scheme.addEventListener)scheme.addEventListener('change',()=>{drawCup()});
 if(window.Door){
