@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three Calm Days</title>
+<meta name="description" content="A calm, honest guide to being ready, for British homes and streets: what is actually happening, the three days in the weekly shop, your own copies and your own people. Not the government; the official advice is at gov.uk/prepare.">
+<link rel="canonical" href="https://phenomemental.github.io/happyseaurchin-beach/three-calm-days.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Three Calm Days">
+<meta property="og:description" content="A calm, honest guide to being ready, for British homes and streets. Not the government; the official advice is at gov.uk/prepare.">
+<meta property="og:url" content="https://phenomemental.github.io/happyseaurchin-beach/three-calm-days.html">
+<meta property="og:image" content="https://phenomemental.github.io/happyseaurchin-beach/three-calm-days.jpg">
+<meta name="theme-color" content="#eee7d5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16130f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icons/sundial-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@1,400&display=swap">
+<link rel="stylesheet" href="door.css?v=2026-10-26a">
+<style>
+/* Three Calm Days: the page planned at spine:three-calm-days 8. A framed paper sheet: the film first,
+   then what is actually happening, the three days to tick and keep, your own copies, neighbours, and
+   why you can trust it. Every word is read from the spine; a saved copy of its words stands in the page
+   for when the beach is slow. EB Garamond is for the film's drawing alone, as in its source.
+   Tokens from look:Phenomemental; --sea, --slop, --lamp and --night are the film's own. */
+:root{
+  --ground:#eee7d5; --ink:#1d1a17; --muted:#5a5147; --panel:#f6f1e6; --line:#b9ad9a; --accent:#c21d4e; --soft:rgba(194,29,78,.28);
+  --sea:#3E5F87; --slop:#8A7A52; --lamp:#D59A2E; --night:#2A2520; --card:rgba(246,241,230,.97);
+  --serif:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--accent:#ef5d85;--soft:rgba(239,93,133,.32);--sea:#7F9FD6;--slop:#A89A72;--lamp:#E8BD5C;--night:#000000;--card:rgba(29,25,20,.97);color-scheme:dark}}
+:root[data-theme="dark"]{--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--accent:#ef5d85;--soft:rgba(239,93,133,.32);--sea:#7F9FD6;--slop:#A89A72;--lamp:#E8BD5C;--night:#000000;--card:rgba(29,25,20,.97);color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:1rem;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:1.2rem;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:max(1.5rem,env(safe-area-inset-top,0px));padding-bottom:max(3rem,env(safe-area-inset-bottom,0px))}
+.sheet{max-width:44rem;margin:0 auto;display:flex;flex-direction:column;gap:3.2rem}
+h1{font-weight:500;font-size:clamp(2.4rem,9vw,3.6rem);line-height:1.02;margin:0;text-wrap:balance}
+h2{font-weight:500;font-size:1.75rem;line-height:1.1;margin:0;text-wrap:balance}
+h3{font-weight:500;margin:0}
+p{margin:0;max-width:32rem}
+a{color:var(--accent);text-underline-offset:.15em}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.line{font-style:italic;color:var(--muted);font-size:1.08rem;overflow-wrap:anywhere}
+.lede{font-size:clamp(1.25rem,4.4vw,1.5rem);line-height:1.35;font-style:italic;color:var(--muted);max-width:30rem;text-wrap:pretty}
+.notgov{font-size:1.05rem;border-top:1px solid var(--line);padding-top:.7rem;max-width:30rem}
+.src{font-size:.95rem;color:var(--muted);overflow-wrap:anywhere}
+.src a{color:var(--muted)}
+.hint{font-size:.98rem;color:var(--muted)}
+.eyebrow-row{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;min-height:1.6rem}
+.eyebrow{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.part{font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);text-align:center;display:flex;align-items:center;gap:1rem}
+.part::before,.part::after{content:"";flex:1;border-top:1px solid var(--line)}
+section,header{display:flex;flex-direction:column;gap:.8rem;scroll-margin-top:1rem}
+.frame{background:var(--panel);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+button{font-family:var(--serif);font-size:1.05rem;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:2px;padding:.25rem .8rem;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:.45rem .8rem;padding:.65rem .9rem;border-top:1px solid var(--line);align-items:center;justify-content:space-between}
+
+/* the film (6): a square stage, captions scene by scene, a closing card with its sources */
+.film,#film>.eyebrow-row{width:min(100%,max(62vh,340px));width:min(100%,max(62svh,340px))}
+.stage{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--ground);border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.stage:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stamp{position:absolute;right:10px;top:10px;padding:3px 12px 5px;background:var(--card);border:1px solid var(--line);font-style:italic;font-size:1.02rem;opacity:0;transition:opacity .4s;pointer-events:none}
+.stamp.on{opacity:1}
+.closing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s,visibility 0s linear .7s}
+.closing.on{opacity:1;visibility:visible;pointer-events:auto;cursor:default;transition:opacity .7s}
+.film-card{background:var(--card);border:1px solid var(--line);padding:16px 18px 14px;max-width:30rem;max-height:100%;overflow:auto;user-select:text;-webkit-user-select:text;box-shadow:0 12px 30px rgba(20,14,8,.18)}
+.film-card h3{font-weight:600;font-size:clamp(1.4rem,1.1rem + 1.2vw,1.8rem);line-height:1.15;margin:0 0 .5em;color:var(--accent);text-wrap:balance}
+.film-card p{margin:0 0 .6em;font-size:1.02rem;line-height:1.45;color:var(--muted)}
+.film-card p strong{color:var(--ink);font-weight:600}
+.film-card .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:.7em}
+.film-card ul{margin:.7em 0 0;padding-left:1.1em;font-size:.95rem;line-height:1.4;color:var(--muted)}
+.film-card ul li{margin:0 0 .35em}
+.film-card ul li.n{font-style:italic}
+.film-card a{color:var(--ink);text-decoration-color:var(--line)}
+.film-try,.film-note{color:var(--ink)!important;font-style:italic;margin:.7em 0 0!important}
+.film-body{display:flex;flex-direction:column;gap:12px;padding:12px 14px 14px}
+.track{display:flex;gap:4px}
+.seg{flex:1;height:24px;border:0;padding:0;background:transparent;cursor:pointer;position:relative;border-radius:0}
+.seg::before{content:"";position:absolute;left:0;right:0;top:11px;height:2px;background:var(--line)}
+.seg i{position:absolute;left:0;top:10px;height:4px;width:0;background:var(--accent)}
+.seg:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.caption{min-height:9.5em}
+.caption h3{font-weight:600;font-size:clamp(1.45rem,1.2rem + 1.1vw,1.85rem);line-height:1.18;margin:0 0 .35em;text-wrap:balance}
+.caption p{font-size:clamp(1.08rem,1rem + .25vw,1.18rem);line-height:1.5;color:var(--muted);max-width:62ch}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font-size:1.02rem;padding:6px 16px 8px;min-height:42px}
+.btn.primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.stamp,.closing,.closing.on{transition:none}}
+
+/* what is actually happening (2): one card a signal, fact kept apart from our reading */
+.signals{display:flex;flex-direction:column;gap:1.2rem}
+.signal{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:.9rem 1rem 1rem;display:flex;flex-direction:column;gap:.5rem;scroll-margin-top:1rem}
+.signal.last{border-color:var(--accent)}
+.sig-row{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem}
+.signal h3{font-size:1.55rem;line-height:1.12;text-wrap:balance}
+.signal p{max-width:34rem}
+.tag{align-self:flex-start;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;padding:.02rem .5rem .06rem;border:1px solid var(--ink);border-radius:2px;line-height:1.5;margin-top:.15rem}
+.tag-reading{border-color:var(--accent);color:var(--accent)}
+.reading{display:flex;flex-direction:column;gap:.4rem;border-left:2px solid var(--accent);padding-left:.8rem;margin-top:.2rem}
+.reading p:not(.tag){font-style:italic}
+.sig-k{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:.35rem}
+.signal .src{border-top:1px solid var(--line);padding-top:.5rem;margin-top:.3rem;max-width:none}
+
+/* the three days (3): a list to tick, kept on the phone only */
+.ticks{list-style:none;margin:0;padding:0}
+.ticks li + li{border-top:1px solid var(--line)}
+.ticks label{display:flex;gap:.8rem;align-items:flex-start;padding:.75rem .9rem;cursor:pointer;line-height:1.4}
+.ticks input{width:1.35rem;height:1.35rem;flex:none;margin:.12rem 0 0;accent-color:var(--accent);cursor:pointer}
+.ticks input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ticks b,.how b{font-weight:600}
+.tally{font-style:italic;color:var(--muted);font-size:1.05rem}
+.tally b{font-style:normal;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.print-only{display:none}
+
+/* your own copies, neighbours, and why you can trust this page */
+.points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem;max-width:34rem}
+.points li{position:relative;padding-left:1.15rem;line-height:1.45}
+.points li::before{content:"";position:absolute;left:.1rem;top:.62em;width:.4rem;height:.4rem;border-radius:50%;background:var(--accent)}
+.trust{border-top:1px solid var(--line);padding-top:1.4rem}
+.trust h2{font-size:1.45rem}
+.trust .plain{font-size:1.3rem;font-weight:500}
+.trust .points{font-size:1.05rem;color:var(--muted)}
+.trust .points li::before{background:var(--line)}
+
+/* the share control and the voices */
+.share{font-size:.95rem;border:0;background:none;color:var(--muted);padding:.1rem .15rem;text-decoration:underline;text-underline-offset:.2em;white-space:nowrap}
+.share:hover{color:var(--ink)}
+.share-note{font-size:.9rem;color:var(--accent);font-style:italic}
+.voices{display:flex;flex-direction:column;gap:.55rem}
+.said{list-style:none;margin:.3rem 0 0;padding:0;display:flex;flex-direction:column;gap:.45rem;font-size:1.05rem;line-height:1.4}
+.said li{border-left:2px solid var(--line);padding-left:.75rem;overflow-wrap:anywhere;max-width:36rem}
+.said b{font-weight:600}
+.said .you{color:var(--muted);font-style:italic;font-size:.95rem}
+details.say summary{cursor:pointer;color:var(--accent);font-size:1.08rem;list-style:none;display:inline-flex;align-items:baseline;gap:.45rem;padding:.1rem 0}
+details.say summary::-webkit-details-marker{display:none}
+details.say summary::before{content:"+";display:inline-block;width:1rem;text-align:center;font-size:1.2rem;line-height:1}
+details.say[open] summary::before{content:"\2212"}
+details.say summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.say-count{color:var(--muted);font-size:.95rem;font-style:italic}
+.say-form{display:flex;flex-direction:column;gap:.45rem;margin-top:.55rem;max-width:36rem}
+.say-form textarea{font:inherit;font-size:1.12rem;line-height:1.45;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:.5rem .65rem;min-height:5.6rem;resize:vertical;width:100%}
+.say-form textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.public{font-size:.97rem;color:var(--muted);font-style:italic}
+.say-row{display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center}
+.say-row button[type=submit]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.say-row button[type=submit]:disabled{opacity:.55;cursor:default}
+.say-as{font-size:.97rem;color:var(--muted)}
+.say-status{font-size:1rem;color:var(--accent)}
+.say-status:empty{display:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.links{display:flex;flex-wrap:wrap;gap:.5rem}
+.links a{display:inline-block;border:1px solid var(--line);border-radius:2px;padding:.3rem .9rem;color:var(--ink);text-decoration:none}
+.links a:hover{border-color:var(--ink)}
+.who-line{font-size:1rem;color:var(--muted)}
+.who-line strong{font-weight:600;color:var(--ink)}
+footer{border-top:1px solid var(--line);margin-top:2.5rem;padding-top:1rem;font-size:.95rem;color:var(--muted);display:flex;flex-direction:column;gap:.25rem}
+footer a{color:var(--muted)}
+
+/* printed, the list alone: what to have, the date, and the official advice */
+@media print{
+  :root,:root[data-theme="dark"]{--ground:#fff;--panel:#fff;--ink:#000;--muted:#333;--line:#999;--accent:#000;color-scheme:light}
+  @page{margin:16mm}
+  body{background:#fff;color:#000;padding:0;font-size:13pt}
+  .sheet{max-width:none;gap:0}
+  .sheet > :not(#three-days){display:none!important}
+  #three-days .eyebrow-row,#three-days .bar,#three-days .no-print{display:none!important}
+  #three-days .print-only{display:block}
+  .print-head{font-size:11pt;letter-spacing:.14em;text-transform:uppercase;color:#333;margin-bottom:.2rem}
+  .frame{border:1px solid #999}
+  .ticks label{padding:.45rem .7rem}
+  .ticks li{break-inside:avoid}
+  .ticks input{accent-color:#000}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header data-at="0" id="top">
+  <h1 data-w="title">Three Calm Days</h1>
+  <p class="lede" id="lede">A calm, honest guide to being ready, for British homes and streets.</p>
+  <p class="notgov" id="notgov">Not the government; the official advice is at <a href="https://gov.uk/prepare" rel="noopener">gov.uk/prepare</a>.</p>
+</header>
+
+<section data-at="6" id="film">
+  <div class="eyebrow-row"><div class="eyebrow">The film</div></div>
+  <h2 data-w="head">One wave with two faces</h2>
+  <div class="frame film" data-film="box">
+    <div class="stage" data-film="stage" tabindex="0" role="img" aria-label="Animated film: a swell far out at sea, lifted by rain named for the AI labs; other currents join it (war, gas, fertiliser, cyber attacks, cut cables); the wave nears a small street on the shore whose grid also feeds data centres; the street goes dark; a ladder loses its lowest rungs; panic turns the water brown and empties a shelf; a cupboard fills slowly; threads to the big platforms snap and neighbours draw lines between their windows; and finally the street stays lit as the wave arrives, a rider on its face.">
+      <canvas aria-hidden="true"></canvas>
+      <div class="stamp" data-film="stamp"></div>
+      <div class="closing" data-film="closing" aria-hidden="true">
+        <div class="film-card">
+          <h3 id="card-head">Be ready. Calmly.</h3>
+          <div id="card-words"></div>
+          <div class="row">
+            <button class="btn primary" data-film="again" type="button">Watch again</button>
+            <button class="btn" data-film="copy" type="button">Copy the three things</button>
+            <button class="btn" data-film="try" type="button" aria-expanded="false" aria-controls="card-try">Try it</button>
+            <button class="btn" data-film="src" type="button" aria-expanded="false" aria-controls="card-src">Sources</button>
+          </div>
+          <p class="film-try" id="card-try" data-film="trytext" hidden></p>
+          <ul id="card-src" data-film="srclist" hidden></ul>
+          <p class="film-note" data-film="note" role="status" hidden></p>
+        </div>
+      </div>
+    </div>
+    <div class="film-body">
+      <div class="track" data-film="track"></div>
+      <div class="caption" aria-live="polite"><h3 data-film="title"></h3><p data-film="line"></p></div>
+      <div class="controls">
+        <button class="btn" data-film="back" type="button">Back</button>
+        <button class="btn primary" data-film="play" type="button">Pause</button>
+        <button class="btn" data-film="next" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+  <p class="src" data-w="src"></p>
+</section>
+
+<div class="part">What is happening</div>
+
+<section data-at="2" id="signals">
+  <div class="eyebrow-row"><div class="eyebrow" id="checked"></div></div>
+  <h2>What is actually happening</h2>
+  <p class="line" data-w="line"></p>
+  <div class="signals" id="signal-cards"></div>
+</section>
+
+<div class="part">What to do</div>
+
+<section data-at="3" id="three-days">
+  <div class="eyebrow-row"><div class="eyebrow">A list to keep</div></div>
+  <p class="print-only print-head"><span data-w="title">Three Calm Days</span> &middot; <span id="printed"></span></p>
+  <h2 data-w="head">The three days</h2>
+  <p class="line" data-w="line"></p>
+  <div class="frame">
+    <ul class="ticks" id="ticks"></ul>
+    <div class="bar"><span class="tally" id="tally" aria-live="polite"></span><button type="button" id="print">Print this list</button></div>
+  </div>
+  <p class="how" id="how"></p>
+  <p class="src">The official advice: <a href="https://www.gov.uk/prepare" rel="noopener">www.gov.uk/prepare</a></p>
+  <p class="hint no-print">Your ticks are kept on this device only, and go nowhere else.</p>
+</section>
+
+<section data-at="4" id="copies">
+  <h2 data-w="head">Your own copies</h2>
+  <p class="line" data-w="line"></p>
+  <ul class="points" data-w="list"></ul>
+</section>
+
+<section data-at="5" id="neighbours">
+  <h2 data-w="head">Neighbours</h2>
+  <p class="line" data-w="line"></p>
+  <ul class="points" data-w="list"></ul>
+</section>
+
+<section data-at="1" id="trust" class="trust">
+  <h2>Why you can trust this page</h2>
+  <p class="plain">This is not the government.</p>
+  <ul class="points" data-w="list"></ul>
+</section>
+
+<section data-at="7" id="your-word">
+  <div class="eyebrow-row"><div class="eyebrow">Your word</div></div>
+  <h2>What would you add?</h2>
+  <p class="hint">A question, something you have heard and want checked, or what would help on your own street.</p>
+  <div id="foot-say"></div>
+  <div class="links"><a href="https://mirror.onen.ai/?pool=three-calm-days">Talk in the room</a></div>
+  <p class="who-line" id="who-line"></p>
+</section>
+
+<footer>
+  <span>Made by Matthew Bushell.</span>
+  <span><a href="https://beach.happyseaurchin.com">With thanks to David Pinto, who built the ground these pages stand on.</a></span>
+</footer>
+</div>
+
+<script src="beach.js?v=2026-10-26a"></script>
+<script>
+window.DOOR = {
+  place: 'Three Calm Days',
+  beach: 'https://beach.happyseaurchin.com',
+  home: 'https://phenomemental.github.io/happyseaurchin-beach/three-calm-days.html',
+  room: 'https://mirror.onen.ai/?pool=three-calm-days',
+  /* the door's own lines, in everyday words (spine:three-calm-days 8.13) */
+  say: {
+    taken: 'Someone here already goes by that name. Pick another, or add a letter.',
+    beach: 'That didn’t get through. Please try again in a moment.',
+    noname: 'There’s nobody here by that name yet. Check the spelling, or choose “I’m new”.',
+    back: 'Three words, or the key you already use, exactly as you chose it.',
+    lost: 'Nobody can look them up, and nobody here can clear them on the spot: only a check of them is kept, never the words. Losing them loses no words you wrote, only the pen.'
+  }
+};
+</script>
+<script src="door.js?v=2026-10-27a"></script>
+<script src="film/three-calm-days-film.js?v=2026-10-27a"></script>
+<script>
+(function(){
+'use strict';
+var FAM='three-calm-days';
+var BEACH='https://beach.happyseaurchin.com';
+var WIRE=BEACH+'/.well-known/pscale-beach';
+var HOME='https://phenomemental.github.io/happyseaurchin-beach/three-calm-days.html';
+var MIRRORS='https://happyseaurchin.com/api/mirrors?family='+FAM;
+/* the spine's words as last saved (its opening line and 1 to 6), so the page reads before the beach answers, or when it can't */
+var SAVED={"_":"Three Calm Days — a calm, honest guide to being ready, for British homes and streets, made by Matthew Bushell (Phenomemental) with Claude, on David Pinto's beach. Two faces of one wave meet here: the lights going out (power, water, phones, food in short supply) and the big players reshaping our lives (the platforms that hold our memory, and AI arriving faster than work and the grid can absorb). The answer to both is the same: your own cupboard, your own copies, your own people. Not the government; the official advice is at gov.uk/prepare. Founded 27 October 2026, five days after the government's Be Ready campaign began. The page is not built yet; when it is, its address stands first in this line.","1":{"1":"Not the government, and it says so on every page. Every household item is traced to the official advice (gov.uk/prepare and the Be Ready checklist).","2":"Nothing for sale: no affiliate links, no tracking, and no donations at the start. Money asked for too early, riding a government campaign, looks like a scam.","3":"Fact is kept apart from reading. Every signal says which it is, with its date and its source, and says what we don't know.","4":"A person with lived experience is the last check: nothing goes public until Matthew has read it.","5":"Calm by design: no doomsday language, no military look. Fear is met with one small thing to do. Avoidance is common, so the page starts small.","6":"Everyday words only on the page. No beach terms.","7":"Kept current, every day. While the wave keeps building, the signals are checked daily and show the date they were last checked, so you can always see how fresh they are. New signals are added when enough of you ask for them. Each day's check ends with one calm thing to do. As the signals change, so does the wave in the film.","_":"STANCE — what makes this a safe place to turn when people don't know what to believe."},"2":{"1":"WAR AND ENERGY. FACT: the Iran war has restricted gas (LNG) exports from the Gulf, and European gas prices are up about 150% this year. UK gas storage was 48% full at the start of October, and its whole capacity is about seven days of average winter demand. The grid asked France for up to 1,200 MW of emergency electricity in October. Cornwall Insight forecasts the price cap rising 16% to £1,999 in January. FOR A HOUSEHOLD: higher bills, and a small but real chance of power cuts on the coldest days. ACTION: warm layers and blankets in reach, and the Priority Services Register if anyone at home depends on power. SOURCE: The National, 12 October 2026, https://www.thenationalnews.com/news/uk/2026/10/12/britain-faces-sharp-energy-squeeze-as-european-gas-prices-jump-150-this-year/","2":"SHIPPING. FACT: in the spring the Strait of Hormuz was effectively closed and global seaborne crude shipments fell 16%; a ceasefire followed, but tanker traffic had not recovered by mid-April. FOR A HOUSEHOLD: fuel, and anything that travels by sea, costs more. ACTION: if you rely on a car, keep its tank from running low. SOURCE: BIMCO via Hellenic Shipping News, 15 April 2026, https://www.hellenicshippingnews.com/global-seaborne-crude-oil-shipments-down-16-since-start-of-the-iran-war/","3":"FOOD. FACT: in March China told exporters to stop shipping nitrogen-potassium fertiliser blends and kept its curbs on urea, because the war is disrupting the trade in crop nutrients. The UK planned for shortages of CO2 (used for greenhouse vegetables, salad packaging and refrigeration) and restarted a bioethanol plant to make more at home. No general shortage has been reported; supermarkets said supply was stable. FOR A HOUSEHOLD: food prices rise, and some salad and greenhouse vegetables may be short at times. ACTION: build the three days slowly in the weekly shop. Panic buying is what empties shelves. SOURCES: Bloomberg Government, 16 March 2026, https://news.bgov.com/bloomberg-government-news/china-reins-in-fertilizer-exports-as-war-pushes-up-global-prices ; FreshPlaza, 17 April 2026, https://www.freshplaza.com/europe/article/9830449/uk-prepares-for-food-supply-disruption-as-input-shortages-raise-costs/","4":"CYBER. FACT: the National Cyber Security Centre handled 200 incidents affecting the UK's critical infrastructure between June 2025 and May 2026, about three-quarters of them linked to hostile states: Russia, China and Iran. FOR A HOUSEHOLD: an attack could stop power, water, payments or phones for a time. ACTION: some cash, numbers on paper, a radio. SOURCE: Infosecurity Magazine, 18 June 2026, https://infosecurity-magazine.com/news/hostile-states-cni-75-percent-ncsc","5":"CABLES. FACT: power and data cables under the Baltic Sea were damaged again and again from 2023 to January 2026, several by ships dragging their anchors; some cases were ruled accidental, others are still open. READING: the cables that carry the UK's own internet and power run under the sea too. FOR A HOUSEHOLD: the internet and mobile signal could be slow or gone for a while. ACTION: know two ways to reach each person who matters. SOURCE: Malay Mail timeline, 6 January 2026, https://www.malaymail.com/news/world/2026/01/06/baltic-sea-cable-sabotage-timeline-from-nord-stream-to-2026-whos-behind-the-attacks/204485","6":"AI AND WORK. FACT: 36% of UK employers cut entry-level roles over the past year; among large employers, 60% said AI and automation reduced the jobs available. FOR A HOUSEHOLD: the first job is harder to find, and income can feel less sure. ACTION: learn to use AI well, as a tool you steer, and keep your skills and your ties local. SOURCE: Work Foundation and Survation, reported 27 August 2026, https://sea.peoplemattersglobal.com/news/recruitment/one-in-three-uk-employers-cut-entry-level-jobs-as-ai-and-automation-reshape-hiring-51727","7":"AI AND THE GRID. FACT: Ofgem said about 140 planned data centres could together need about 50 GW, more than Great Britain's highest-ever electricity demand. READING: AI and our homes draw on the same strained power. FOR A HOUSEHOLD: one more pressure on bills and on the grid in winter. SOURCE: The Guardian via eceee, 23 February 2026, https://www.eceee.org/all-news/news/new-datacentres-risk-doubling-great-britains-electricity-use-regulator-says/","8":"ONE WAVE. READING: energy, food, the internet and AI draw on one strained system, so they arrive together. David Pinto's Before It Breaks shows AI as a wave an organisation can catch or be dumped by; this is the same wave reaching the kitchen. AI squeezes the first rung of work and competes with homes for power, and it is also the best tool we have for reading all of this. Both are true.","9":"WHAT THE GOVERNMENT SAYS, AND WHAT IT LEAVES OUT. FACT: the Cabinet Office launched Be Ready on 22 October 2026, a three-year campaign asking households to manage three days of disruption to power, water, phones and the internet, in line with France, Ireland and the Netherlands; more than 500 organisations signed up to share it. The campaign does not tie itself to war; alongside it sits a Defence Readiness Bill for responding to escalation. READING: people sense that gap, and that is why they don't know what to believe. SOURCE: UK Defence Journal, https://ukdefencejournal.org.uk/households-asked-to-prepare-for-three-days-of-disruption/","_":"THE SIGNALS — what is actually happening behind the government's decision, as at 27 October 2026. Each signal gives what happened and when, the source, what it means for a household, one calm action, and whether it is FACT or our READING."},"3":{"1":"Water: at least 3 litres per person per day for drinking, for three days. A family of four needs 36 litres, and more for cooking and washing.","2":"Food that needs no cooking and no fridge, the kind you would eat anyway, and a tin opener that works by hand.","3":"Light and warmth: a torch with spare batteries, blankets, warm clothes. Candles are a fire risk; a torch is safer.","4":"News: a battery or wind-up radio. If something happens near you: go in, stay in, tune in.","5":"Power: a power bank, kept charged.","6":"Money: some cash in small notes and coins. Card machines and cash points need power and lines.","7":"Paper: copies of ID, the numbers you would need, and the details of any medication.","8":"Care: a first aid kit, your medicines, hygiene things, and where needed ready-to-feed baby formula, nappies and pet food.","9":"How: check your cupboards first, add one thing a week, and check the dates every six months.","_":"THE THREE DAYS — the household list, from the government's own checklist, built slowly in the weekly shop."},"4":{"1":"What we hand over: our photos, messages, money and memory, held on servers we will never see. When a platform changes its terms, raises its price, goes down or shuts an account, what we kept there goes with it, and we have no say.","2":"Keep your own copy of what matters: photos on a drive at home, key documents on paper.","3":"Know two ways to reach each person who matters, not only one app.","4":"Use AI as a tool you steer, not a place you live: ask it, check it, and keep the answer yourself.","_":"YOUR OWN COPIES — the second face of the wave, at home."},"5":{"1":"Know who on your street lives alone, is older, or depends on power for their care.","2":"Knock on one door this week, and swap numbers on paper.","3":"Share what you have: a camping stove, a radio, a skill.","4":"Agree one place to meet if phones are down.","_":"NEIGHBOURS — the network that needs no server."},"6":{"1":"First sketch, 27 October 2026 before this frame was agreed: the two waves told separately, with no labs or AI named. Matthew said it should be one synthesis. Kept as a sketch only.","2":"Second version, One Wave, 27 October 2026 (private until Matthew shares it): https://claude.ai/artifact/1VQuyW6c8GuEXYuQNSj4AF. Ten scenes, about ninety seconds. The wave: a swell lifted by the labs' releases (ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta); other currents join it (war in Iran, gas up 150%, fertiliser held back, attacks on power and water, cables cut); one shore, where data centres and homes share the grid; on the face, before the peak (Be Ready, 22 October). When it breaks: a street goes dark; a ladder loses its first three rungs; panic makes its own wave (slop, emptied shelves). Catching it: the cupboard, built slowly; your own copies, your own people (threads to the platforms snap, neighbours draw lines between windows). Together: the street stays lit as the wave arrives, riders on its face. Closing card: three things this week, Try it (ask your own AI, then check gov.uk/prepare), and sources.","3":{"1":{"1":"A wave is coming. — Far out, a swell began with ChatGPT in November 2022. Since then Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta and others have released new models every few weeks, and each one lifts it.","2":"It is not one current. — War in Iran, gas up about 150% this year, China holding back fertiliser, attacks on our power and water, cables cut under the sea. Different currents, one sea.","3":"They share one shore. — Planned data centres could need more power than Britain has ever used at once. Our gas storage holds about a week of winter. AI and our homes draw on the same strained grid.","4":"We are on the face, before the peak. — Five days ago the government launched Be Ready and asked every household to manage three days on its own. It named storms and cyber attacks. The wider reasons are these.","_":"The wave"},"2":{"1":"On a street, it breaks as darkness. — One fault far away, one attack, one cut cable, and the lights, the phones and the card machine go together. The cyber centre handled 200 attacks on our infrastructure in a year.","2":"On a life, it breaks as a missing rung. — Over a third of employers cut entry-level jobs this year, and most large ones say AI and automation are part of why. The first rung goes before anyone notices.","3":"Panic makes its own wave. — Fear moves faster than thought. Used in a panic, AI fills the water with slop. Shopping in a panic empties the shelves. Both are the wave breaking on us from inside.","_":"When it breaks"},"3":{"1":"Catch it calmly: the cupboard. — One extra thing a week. Water, three litres each a day. Food you would eat anyway. A torch, a radio, some cash, numbers on paper. Three days, built slowly.","2":"Your own copies, your own people. — Keep your own copy of what matters, and use AI as a tool you steer, not a place you live. Then knock on a door. The ties between neighbours need no server.","_":"Catching it"},"4":{"1":"All of us on the same wave. — A street that is ready rides the wave instead of being dumped by it. Three calm days, your own copies, your own people. That is the whole of it.","_":"Together"},"_":"THE SCENES — the film's words, which the page reads from here: four acts, each scene a headline, then a dash, then its line. Change a word here and the film changes with it."},"4":{"1":"Three things this week. An extra tin and a pack of water in the weekly shop. A paper list of the numbers you would need. A knock on one neighbour's door.","2":"This is not the government. It is people on your side of the screen, keeping what is known apart from what is guessed. The official advice is at gov.uk/prepare.","3":"Try it tonight: one hour without power. Switch off the lights and the wifi for an hour after dark, and live by torch. Notice what you reached for that didn't work. Whatever you noticed is the first thing on your list.","4":"The wave and the labs' releases: after David Pinto's film Before It Breaks (release dates checked 25 October 2026).","5":"The wave's shape, and the panic scene, are a reading, not a measure.","_":"THE CLOSING CARD — Be ready. Calmly."},"_":"THE FILM — one wave with two faces: a synthesis of David Pinto's Before It Breaks (the AI wave, and how to catch it before it breaks) with Three Calm Days (the lights going out, and shortages). Built like David's: a square stage, captions scene by scene, a closing card with its sources. It names the AI labs factually, as David's does, and the real signals with their dates, and ends with three things to do this week."}};
+function $(id){return document.getElementById(id)}
+function esc(s){const d=document.createElement('span');d.textContent=s==null?'':String(s);return d.innerHTML}
+
+/* ── reading the beach ── */
+function get(wire,block){
+  const ctl=window.AbortController?new AbortController():null,timer=setTimeout(()=>{if(ctl)ctl.abort()},9000);
+  return fetch(wire+(block?'?block='+encodeURIComponent(block):''),{cache:'no-store',headers:{Accept:'application/json'},signal:ctl?ctl.signal:undefined})
+    .then(r=>{clearTimeout(timer);if(r.status===404)return null;if(!r.ok)throw new Error('HTTP '+r.status);return r.json()},e=>{clearTimeout(timer);throw e});
+}
+function text(n){while(n&&typeof n==='object')n=n._;return typeof n==='string'?n.trim():''}
+function nodeAt(b,addr){let n=b;const ds=String(addr).replace('.','').split('');for(const d of ds){if(!n||typeof n!=='object')return undefined;n=n[d]}return n}
+/* the lines beneath a place, 1 to 9, in order */
+function under(spine,addr){const out=[];for(let d=1;d<=9;d++){const a=addr+(addr.indexOf('.')<0?'.':'')+d,t=text(nodeAt(spine,a));if(t)out.push({at:a,t})}return out}
+
+/* a word's own case, learned from where it stands in ordinary sentences on the spine, so a title in capitals reads as prose */
+const CASES={};
+function learnCase(spine){
+  for(const k in CASES)delete CASES[k];
+  const all=[];(function walk(n){if(typeof n==='string')all.push(n);else if(n&&typeof n==='object')for(const k in n)walk(n[k])})(spine);
+  all.forEach(t=>{const re=/[A-Za-z][A-Za-z’'\-]*[A-Za-z]|[A-Za-z]/g,toks=[];let m;while((m=re.exec(t)))toks.push([m[0],m.index]);
+    toks.forEach((tk,j)=>{const w=tk[0],at=tk[1],p=toks[j-1],q=toks[j+1],caps=x=>x===x.toUpperCase()&&/[A-Z]/.test(x);
+      if(caps(w)){if((p&&caps(p[0]))||(q&&caps(q[0])))return}
+      else if(/^[A-Z]/.test(w)&&(at===0||/(?:[.?!:]\s+|—\s+|['"‘“(]\s*)$/.test(t.slice(Math.max(0,at-3),at))))return;
+      const c=CASES[w.toUpperCase()]||(CASES[w.toUpperCase()]={});c[w]=(c[w]||0)+1})});
+}
+function formOf(k){const c=CASES[k];let best='',n=0;if(c)for(const f in c)if(c[f]>n||(c[f]===n&&f!==f.toUpperCase())){best=f;n=c[f]}return best}
+/* a word in capitals takes its ordinary form where the spine shows one; else a short one stays (AI, UK), a long one is lowered (FACT) */
+function prose(t){return String(t||'').replace(/[A-Za-z][A-Za-z’'\-]*/g,w=>{if(w!==w.toUpperCase()||w.length<2)return w;const f=formOf(w);return f&&f!==f.toUpperCase()?f:w.length<=3?(f||w):w.toLowerCase()})}
+function cap(s){s=String(s||'').trim();return s.charAt(0).toUpperCase()+s.slice(1)}
+/* a heading in capitals, in ordinary case: WAR AND ENERGY reads War and energy */
+function ordinary(s){return cap(prose(s))}
+function headOf(t){const i=t.indexOf(' — ');return i>0?t.slice(0,i).trim():''}
+function afterHead(t){const i=t.indexOf(' — ');return i>0?t.slice(i+3).trim():t}
+function sentences(t){const p=String(t||'').split(/([.!?]["'’”)]*\s+)/),out=[];for(let i=0;i<p.length;i+=2)out.push(p[i]+(p[i+1]||''));return out.filter(s=>s.trim())}
+/* everyday words only (8.13): a sentence that carries one of the beach's own words is left out */
+const OFF=/\b(beach|block|spine|pool|pscale|handles?)\b/i;
+function bare(s){return String(s).replace(/https?:\/\/\S+/g,'')}
+function everyday(t){t=String(t||'').trim();if(!OFF.test(bare(t)))return t;return sentences(t).filter(s=>!OFF.test(bare(s))).join('').trim()}
+function linked(t){
+  let h=esc(t);
+  h=h.replace(/\bhttps?:\/\/[^\s<>"')\]]+/g,u=>{const c=u.replace(/[.,;:!?]+$/,'');return '<a href="'+c+'" rel="noopener">'+c.replace(/^https?:\/\//,'')+'</a>'+u.slice(c.length)});
+  h=h.replace(/(^|[\s(])((?:[a-z0-9-]+\.)+(?:com|co\.uk|org|org\.uk|ai|net|uk)\/[^\s<>"')\],;]*)/g,(all,pre,u)=>{const c=u.replace(/[.:!?]+$/,'');return pre+'<a href="https://'+c+'" rel="noopener">'+c+'</a>'+u.slice(c.length)});
+  return h;
+}
+/* a line whose opening names it, the name in bold: 'Water: at least 3 litres…', 'Food that needs no cooking…' */
+function leadHTML(t){const i=t.indexOf(':');if(i>0&&i<28)return '<b>'+esc(t.slice(0,i+1))+'</b>'+linked(t.slice(i+1));const m=/^(\S+)(\s[\s\S]*)$/.exec(t);return m?'<b>'+esc(m[1])+'</b>'+linked(m[2]):linked(t)}
+
+/* ── a signal (2.1 to 2.9): its heading, then FACT, READING, FOR A HOUSEHOLD, ACTION and its source ── */
+const SHARE=['energy','shipping','food','cyber','cables','ai-work','ai-grid','one-wave','government'];
+function partsOf(rest){const re=/\b(FACT|READING|FOR A HOUSEHOLD|ACTION|SOURCES?):\s*/g,out={};let m,key=null,from=0;
+  const put=(k,v)=>{v=v.trim();if(v)out[k]=out[k]?out[k]+' '+v:v};
+  while((m=re.exec(rest))){if(key)put(key,rest.slice(from,m.index));key=m[1]==='SOURCES'?'SOURCE':m[1];from=re.lastIndex}
+  if(key)put(key,rest.slice(from));return out}
+/* 'The National, 12 October 2026, https://…' as the site's name, linked, then its date */
+function sourcesOf(s){return String(s||'').split(/\s+;\s+/).map(x=>{
+  const u=/https?:\/\/[^\s;]+/.exec(x),href=u?u[0].replace(/[.,;:)]+$/,''):'',before=(u?x.slice(0,u.index):x).replace(/[\s,;:]+$/,'').trim();
+  const d=/,\s*((?:reported\s+|published\s+)?\d{1,2}\s+[A-Z][a-z]+\s+\d{4})$/.exec(before);
+  return {name:d?before.slice(0,d.index).trim():before,date:d?d[1]:'',href}}).filter(x=>x.name||x.href)}
+function sourceHTML(x){const n=esc(x.name||x.href.replace(/^https?:\/\//,''));return (x.href?'<a href="'+esc(x.href)+'" rel="noopener">'+n+'</a>':n)+(x.date?', '+esc(x.date):'')}
+function signalsOf(spine){
+  const out=[];
+  for(let d=1;d<=9;d++){
+    const at='2.'+d,t=text(nodeAt(spine,at));
+    /* a signal still a draft is not shown until Matthew has read it (1.4) */
+    if(!t||/^(HOLD|DRAFT)\b/i.test(t))continue;
+    const dot=t.indexOf('.'),p=partsOf(dot>0?t.slice(dot+1):'');
+    out.push({at,id:SHARE[d-1],head:ordinary(dot>0?t.slice(0,dot):t),fact:everyday(p.FACT),reading:everyday(p.READING),home:everyday(p['FOR A HOUSEHOLD']),action:everyday(p.ACTION),sources:sourcesOf(p.SOURCE)});
+  }
+  return out;
+}
+
+/* ── the share control: the page's address with a part's name ── */
+function shareButton(row,id,title){
+  const b=document.createElement('button');b.type='button';b.className='share';b.textContent='Share';
+  b.setAttribute('aria-label','Share'+(title?': '+title:''));
+  const note=document.createElement('span');note.className='share-note';note.setAttribute('role','status');
+  const grp=document.createElement('span');grp.style.cssText='display:inline-flex;gap:.5rem;align-items:baseline';grp.appendChild(note);grp.appendChild(b);
+  row.appendChild(grp);
+  b.addEventListener('click',()=>{
+    const url=location.origin+location.pathname+'#'+id,t=title||document.title;
+    const say=x=>{note.textContent=x;setTimeout(()=>{note.textContent=''},2600)};
+    if(navigator.share&&matchMedia('(pointer: coarse)').matches){navigator.share({title:t,url}).catch(()=>{});return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>say('Link copied'),()=>say(url));return}
+    say(url);
+  });
+}
+
+/* ── the words, from the spine ── */
+const film=window.CalmFilm?CalmFilm(document.querySelector('[data-film=box]')):null;
+const SCENES=['6.311','6.312','6.313','6.314','6.321','6.322','6.323','6.331','6.332','6.341'];
+let shown='',scrolled=false;
+function applyWords(spine){
+  const key=JSON.stringify(['_','1','2','3','4','5','6'].map(k=>spine[k]));
+  if(key===shown)return;shown=key;
+  learnCase(spine);
+  const sec=a=>document.querySelector('[data-at="'+a+'"]');
+  const put=(el,t)=>{if(el&&t)el.textContent=t};
+
+  /* the masthead (8.21 a): the title, and the first sentence of the opening line without its maker (8.81) */
+  const root=text(spine).replace(/^\s*https?:\/\/\S+\s*(?:[—–·:-]\s*)?/,''),title=headOf(root);
+  if(title)document.querySelectorAll('[data-w=title]').forEach(n=>n.textContent=title);
+  const first=(sentences(afterHead(root))[0]||'').split(', made by')[0].trim().replace(/[.,;:\s]+$/,'');
+  const lede=everyday(first?cap(first)+'.':'');if(lede)$('lede').textContent=lede;
+  const ng=sentences(root).find(s=>/^Not the government\b/i.test(s.trim()));
+  if(ng)$('notgov').innerHTML=linked(everyday(ng));
+
+  /* the film (8.22) */
+  const six=afterHead(text(nodeAt(spine,'6'))),colon=six.indexOf(':');
+  put(sec('6').querySelector('[data-w=head]'),everyday(cap(colon>0?six.slice(0,colon):'')));
+  put(sec('6').querySelector('[data-w=src]'),everyday(cap(sentences(colon>0?six.slice(colon+1):'')[0]||'')));
+  const scenes=SCENES.map((a,i)=>{const t=text(nodeAt(spine,a)),j=t.indexOf(' — ');
+    return {t:everyday(j>0?t.slice(0,j):t),s:everyday(j>0?t.slice(j+3):''),stamp:i===3?'22 October 2026':everyday(text(nodeAt(spine,a.slice(0,4))))}});
+  const sig=signalsOf(spine);
+  const head=afterHead(text(nodeAt(spine,'6.4'))),p41=everyday(text(nodeAt(spine,'6.41'))),p42=everyday(text(nodeAt(spine,'6.42'))),p43=everyday(text(nodeAt(spine,'6.43')));
+  if(head)$('card-head').textContent=head;
+  const s41=sentences(p41);
+  $('card-words').innerHTML=(p41?'<p>'+(s41.length>1?'<strong>'+esc(s41[0].trim())+'</strong> '+linked(s41.slice(1).join('').trim()):linked(p41))+'</p>':'')+(p42?'<p>'+linked(p42)+'</p>':'');
+  $('card-try').textContent=cap(p43.replace(/^Try it:\s*/i,''));
+  $('card-src').innerHTML=sig.filter(s=>s.sources.length).map(s=>'<li>'+esc(s.head)+': '+s.sources.map(sourceHTML).join('; ')+'</li>').join('')+
+    under(spine,'6.4').filter(x=>+x.at.slice(-1)>3).map(x=>'<li class="n">'+linked(everyday(x.t))+'</li>').join('');
+  if(film){film.words(scenes);film.copy=[(title||'Three Calm Days')+'.',p41,'The official advice: gov.uk/prepare.',HOME].filter(Boolean).join(' ')}
+
+  /* what is actually happening (8.23), last checked as THE SIGNALS line says (8.5) */
+  const two=text(nodeAt(spine,'2')),asAt=/\bas at ([^.;]+)/i.exec(two);
+  $('checked').textContent=asAt?'Last checked '+asAt[1].trim():'';
+  put(sec('2').querySelector('[data-w=line]'),everyday(prose(sentences(afterHead(two))[1]||'')));
+  const cards=$('signal-cards');cards.textContent='';
+  sig.forEach((s,k)=>{
+    const a=document.createElement('article');a.className='signal'+(k===sig.length-1&&s.at==='2.9'?' last':'');a.id=s.id;a.dataset.at=s.at;
+    let h='<div class="sig-row"><h3>'+esc(s.head)+'</h3></div>';
+    if(s.fact)h+='<p class="tag">Fact</p><p>'+linked(cap(s.fact))+'</p>';
+    if(s.reading)h+='<div class="reading"><p class="tag tag-reading">Our reading</p><p>'+linked(cap(s.reading))+'</p></div>';
+    if(s.home)h+='<p class="sig-k">What it means for your home</p><p>'+linked(cap(s.home))+'</p>';
+    if(s.action)h+='<p class="sig-k">One calm thing to do</p><p>'+linked(cap(s.action))+'</p>';
+    if(s.sources.length)h+='<p class="src">'+(s.sources.length>1?'Sources':'Source')+': '+s.sources.map(sourceHTML).join('; ')+'.</p>';
+    a.innerHTML=h;shareButton(a.querySelector('.sig-row'),s.id,s.head);cards.appendChild(a);
+  });
+
+  /* the three days (8.24) */
+  const three=text(nodeAt(spine,'3'));
+  put(sec('3').querySelector('[data-w=head]'),ordinary(headOf(three)));
+  put(sec('3').querySelector('[data-w=line]'),everyday(cap(afterHead(three))));
+  days(under(spine,'3').filter(x=>x.at!=='3.9'));
+  const how=everyday(text(nodeAt(spine,'3.9')));$('how').innerHTML=how?leadHTML(how):'';
+
+  /* your own copies, neighbours (8.25), and why you can trust this page, every line beneath 1 (8.5) */
+  ['4','5','1'].forEach(a=>{
+    const s=sec(a),t=text(nodeAt(spine,a));
+    if(a!=='1'){put(s.querySelector('[data-w=head]'),ordinary(headOf(t)));put(s.querySelector('[data-w=line]'),everyday(cap(afterHead(t))))}
+    s.querySelector('[data-w=list]').innerHTML=under(spine,a).map(x=>everyday(x.t)).filter(Boolean).map(x=>'<li>'+linked(x)+'</li>').join('');
+  });
+
+  /* opening at a part's name scrolls to it, once the part is drawn */
+  if(!scrolled&&location.hash.length>1){scrolled=true;const t=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(t)t.scrollIntoView({behavior:'auto'})}
+}
+
+/* ── the list to tick: the ticks stay on this device (localStorage), kept by the item's place ── */
+const TICKS='three-calm-days:ticks';
+function recall(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function remember(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+let ticked={};try{ticked=JSON.parse(recall(TICKS)||'{}')||{}}catch(e){ticked={}}
+function tally(){const boxes=[...document.querySelectorAll('#ticks input')],n=boxes.filter(b=>b.checked).length;
+  $('tally').innerHTML='<b>'+n+'</b> of '+boxes.length+' ticked'}
+function days(items){
+  const ul=$('ticks');ul.textContent='';
+  items.forEach(x=>{const t=everyday(x.t);if(!t)return;const id='tick-'+x.at.replace('.','');
+    const li=document.createElement('li');li.innerHTML='<label for="'+id+'"><input type="checkbox" id="'+id+'"><span>'+leadHTML(t)+'</span></label>';
+    const box=li.querySelector('input');box.checked=!!ticked[x.at];
+    box.addEventListener('change',()=>{if(box.checked)ticked[x.at]=true;else delete ticked[x.at];remember(TICKS,JSON.stringify(ticked));tally()});
+    ul.appendChild(li)});
+  tally();
+}
+function printed(){$('printed').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}
+printed();window.addEventListener('beforeprint',printed);
+$('print').addEventListener('click',()=>{printed();window.print()});
+
+/* ── the voices: each reader's words in their own mirror, three-calm-days:<name>, at the place they speak to ── */
+let VOICES={};
+function readMirrors(){
+  return fetch(MIRRORS,{headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null,()=>null).then(d=>{
+    if(d&&d.mirrors)return d.mirrors;
+    /* where the site's shared read can't be had, the beach read straight */
+    return get(WIRE,'').then(ix=>{
+      const names=(ix&&ix.blocks||[]).map(b=>typeof b==='string'?b:(b&&b.name)||'').filter(n=>n.indexOf(FAM+':')===0&&n.indexOf(':',FAM.length+1)<0);
+      const out={};
+      return Promise.all(names.map(n=>get(WIRE,n).then(b=>{if(b)out[n.slice(FAM.length+1)]=b},()=>{}))).then(()=>out);
+    });
+  }).then(m=>{
+    const me=window.Door&&Door.me();
+    if(!me)return m;
+    /* the person's own mirror always read fresh */
+    return get(WIRE,FAM+':'+me.name).then(own=>{if(own)m[me.name]=own;return m},()=>m);
+  });
+}
+function voicesAt(addr){
+  const me=window.Door&&Door.me(),out=[];
+  Object.keys(VOICES).forEach(h=>{const n=nodeAt(VOICES[h],addr);const t=typeof n==='string'?n.trim():(n&&typeof n==='object'&&typeof n._==='string'?n._.trim():'');if(t)out.push({who:h,t,you:!!(me&&me.name===h)})});
+  return out.sort((a,b)=>(b.you-a.you)||a.who.localeCompare(b.who));
+}
+function paintVoices(){
+  document.querySelectorAll('.voices').forEach(v=>{
+    const list=voicesAt(v.dataset.at),ul=v.querySelector('.said');
+    ul.innerHTML=list.map(x=>'<li><b>'+esc(x.who)+'</b>'+(x.you?' <span class="you">(you)</span>':'')+' &middot; '+esc(x.t)+'</li>').join('');
+    ul.hidden=!list.length;
+    const c=v.querySelector('.say-count');if(c)c.textContent=list.length?(list.length===1?'one voice here':list.length+' voices here'):'';
+  });
+}
+function refreshVoices(){return readMirrors().then(m=>{VOICES=m||{};paintVoices()},()=>{})}
+function paintAs(){
+  const me=window.Door&&Door.me();
+  document.querySelectorAll('.say-as').forEach(s=>{s.innerHTML=me?'as <strong>'+esc(me.name)+'</strong>':'You&rsquo;ll choose a name first, or come in with yours.'});
+}
+/* a say box at an address: folded behind 'Say something' under the film, open at the foot */
+function voiceBlock(mount,at,folded,ask){
+  const id=at.replace('.','');
+  const wrap=document.createElement('div');wrap.className='voices';wrap.dataset.at=at;
+  const form='<form class="say-form" novalidate>'+
+      '<label class="sr-only" for="say-'+id+'">'+esc(ask)+'</label>'+
+      '<textarea id="say-'+id+'" maxlength="2000" rows="3" placeholder="'+esc(ask)+'"></textarea>'+
+      '<p class="public">'+esc(window.Door?Door.PUBLIC:'What you write here is public, under the name you chose.')+'</p>'+
+      '<div class="say-row"><button type="submit">Say it</button><span class="say-as"></span></div>'+
+      '<p class="say-status" role="status"></p>'+
+    '</form>';
+  wrap.innerHTML=(folded?'<details class="say"><summary>Say something <span class="say-count"></span></summary>'+form+'</details>':form)+'<ul class="said" hidden></ul>';
+  mount.appendChild(wrap);
+  const box=wrap.querySelector('textarea'),f=wrap.querySelector('form'),st=wrap.querySelector('.say-status'),send=f.querySelector('button[type=submit]'),det=wrap.querySelector('details');
+  if(!window.Door){(det||f).hidden=true;return}
+  const clear=Door.keepDraft(box,FAM+':'+at);
+  if(box.value&&det)det.open=true;
+  Door.mic(box);
+  f.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const t=box.value.trim().replace(/\s+/g,' ');
+    if(!t){st.textContent='Write something first.';box.focus();return}
+    send.disabled=true;st.textContent='Saying it…';
+    Door.say({family:FAM,at,text:t}).then(r=>{
+      send.disabled=false;
+      if(!r.ok){
+        st.textContent=r.why==='closed'?'':r.why==='key'?'Those words aren’t the ones your words here are kept under. Choose “not you?” at the foot of the page and come in again.':'That didn’t get through. Your words are kept here; please try again in a moment.';
+        return;
+      }
+      clear();box.value='';
+      st.textContent='Said, under the name '+r.name+'.';
+      return refreshVoices();
+    });
+  });
+}
+
+/* ── putting it together ── */
+document.querySelectorAll('#film .eyebrow-row,#three-days .eyebrow-row').forEach(row=>{const s=row.closest('section');shareButton(row,s.id,s.querySelector('h2').textContent)});
+voiceBlock($('film'),'6',true,'Your words on the film');
+voiceBlock($('foot-say'),'7',false,'Your words');
+applyWords(SAVED);
+if(window.Door){
+  Door.family(FAM);
+  Door.whoLine($('who-line'));
+  Door.onNamed(()=>{paintAs();refreshVoices()});
+}
+paintAs();
+function refreshWords(){return get(WIRE,'spine:'+FAM).then(s=>{if(s&&typeof s==='object'&&text(s))applyWords(s)},()=>{})}
+refreshWords();
+refreshVoices();
+setInterval(()=>{if(!document.hidden)refreshVoices()},45000);
+setInterval(()=>{if(!document.hidden)refreshWords()},300000);
+})();
+</script>
+</body>
+</html>
