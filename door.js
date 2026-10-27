@@ -5,12 +5,13 @@
  * the page's own look: door.css reads the page's colour tokens (--ground, --ink, --muted, --panel,
  * --line, --accent, --serif) and falls back to Matthew's (look:Phenomemental).
  *
- *   <script>window.DOOR = { place, beach, home, room, key };</script>   all optional
+ *   <script>window.DOOR = { place, beach, home, room, key, say };</script>   all optional
  *   <script src="door.js"></script>
  *
  * place is printed on the card; beach is where names live (the main beach by default); home is the
  * page's address, printed on the card; room is where 'lost my words' sends a person; key is the
- * storage name this phone keeps them under.
+ * storage name this phone keeps them under; say gives any of the door's own lines (SAY below) in the
+ * page's words, as a page that keeps to everyday words needs.
  *
  * Two ways in. "I'm new": a name nobody on the beach already answers to (any block named for it,
  * not passports only, and without regard to capitals, spaces or hyphens, so no twin is ever made),
@@ -333,8 +334,12 @@
     noname: 'There’s nobody on the beach by that name yet. Check the spelling, or choose “I’m new”.',
     nokey: 'Please type your words, or your key.',
     key: 'Those aren’t the words for that name. Look at the first letter: phones capitalise it.',
-    adult: 'This is for people aged 18 or over. Please tick the box if that’s you.'
+    adult: 'This is for people aged 18 or over. Please tick the box if that’s you.',
+    back: 'Three words, or the key you already use on the beach, exactly as you chose it.',
+    lost: 'Nobody can look them up, and nobody here can clear them on the spot: the beach keeps only a check of them, never the words. Losing them loses no words you wrote, only the pen.'
   };
+  // A page that keeps to everyday words gives any of these lines in its own (window.DOOR.say).
+  Object.keys(CFG.say || {}).forEach(function (k) { if (typeof CFG.say[k] === 'string') SAY[k] = CFG.say[k]; });
   var sheetOpen = null, onNamed = [], family = '';
   function sheet(start) {
     if (sheetOpen) return sheetOpen;
@@ -436,7 +441,7 @@
         show.input.addEventListener('change', function () { wd.input.type = show.input.checked ? 'text' : 'password'; });
         var rem = tick('Remember me on this ' + DEVICE, 'door-rem2', true);
         var st = status(), b = go('Come in');
-        [nm.box, wd.box, show.box, small('Three words, or the key you already use on the beach, exactly as you chose it.'), rem.box, b, st]
+        [nm.box, wd.box, show.box, small(SAY.back), rem.box, b, st]
           .forEach(function (x) { form.appendChild(x); });
         body.appendChild(head('Welcome back'));
         body.appendChild(form);
@@ -462,7 +467,7 @@
       function lostView() {
         body.textContent = '';
         body.appendChild(head('Lost your words?'));
-        body.appendChild(small('Nobody can look them up, and nobody here can clear them on the spot: the beach keeps only a check of them, never the words. Losing them loses no words you wrote, only the pen.'));
+        body.appendChild(small(SAY.lost));
         var p = el('p', 'door-small');
         var a = el('a', null, 'The ways back to your key'); a.href = LOST; a.rel = 'noopener';
         p.appendChild(a);
