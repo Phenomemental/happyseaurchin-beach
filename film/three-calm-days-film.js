@@ -12,6 +12,7 @@
                                        closing, track, title, line, play, back, next, again,
                                        copy, try, trytext, src, srclist and note
      film.words(scenes)                scenes: ten of {t, s, stamp}
+     film.currents(labels)             scene two's currents, one a label, in order
      film.copy = text                  what "Copy the three things" puts on the clipboard */
 window.CalmFilm = function (box) {
 'use strict';
@@ -68,8 +69,10 @@ function rain(p,T,cx,amp,w){LABS.forEach((lab,k)=>{const a=ss(p,0.02+k*0.09,0.1+
   label(lab,x0,y0,a,0.034,P.ink);for(let j=0;j<3;j++){const u=((T*0.3+j/3+k*0.13)%1);const y=lerp(y0+0.02,surf(x0,cx,amp,w,T),u);ctx.strokeStyle=rgba(P.sea,.7*a);ctx.lineWidth=X(0.0025);ctx.beginPath();ctx.moveTo(X(x0),X(y-0.022));ctx.lineTo(X(x0),X(y));ctx.stroke();}});
   label('a new model every few weeks',0.35,0.3,ss(p,0.8,0.92),0.03,P.sea);}
 /* the other currents */
-const CURRENTS=[['war in Iran',0.15],['gas up 150%',0.225],['fertiliser held back',0.30],['attacks on power and water',0.375],['cables cut under the sea',0.45]];
-function currents(p,T){CURRENTS.forEach(([name,y],k)=>{const a=ss(p,0.08+k*0.12,0.2+k*0.12);if(a<=0)return;const reach=lerp(0.02,0.42,a);
+/* one current for each signal the page hands in (spine:three-calm-days 8.77), over the same span of the
+   scene and down the same band of sky however many there are: five draw exactly as the film's own five */
+let CURRENTS=['war in Iran','gas up 150%','fertiliser held back','attacks on power and water','cables cut under the sea'];
+function currents(p,T){const n=CURRENTS.length,gap=n>1?0.3/(n-1):0,lag=n>1?0.48/(n-1):0;CURRENTS.forEach((name,k)=>{const y=0.15+k*gap,a=ss(p,0.08+k*lag,0.2+k*lag);if(a<=0)return;const reach=lerp(0.02,0.42,a);
   ctx.strokeStyle=rgba(P.crimson,.75*a);ctx.lineWidth=X(0.0025);ctx.beginPath();for(let i=0;i<=40;i++){const x=i/40*reach;const yy=y+0.012*Math.sin(x*30-T*3+k);i?ctx.lineTo(X(x),X(yy)):ctx.moveTo(X(x),X(yy));}ctx.stroke();
   ctx.fillStyle=rgba(P.crimson,a);ctx.beginPath();const hx=reach,hy=y+0.012*Math.sin(hx*30-T*3+k);ctx.moveTo(X(hx+0.014),X(hy));ctx.lineTo(X(hx-0.004),X(hy-0.01));ctx.lineTo(X(hx-0.004),X(hy+0.01));ctx.fill();
   label(name,0.03,y-0.018,a,0.032,P.crimson,'left');});}
@@ -213,6 +216,7 @@ go(0);requestAnimationFrame(tick);
 return {
   words(list){(list||[]).forEach((w,i)=>{const sc=SCENES[i];if(!sc||!w)return;sc.t=w.t||'';sc.s=w.s||'';sc.stamp=w.stamp||'';
     track.children[i].setAttribute('aria-label','Scene '+(i+1)+' of '+SCENES.length+(sc.t?': '+sc.t:''));});show();},
+  currents(list){if(Array.isArray(list)&&list.length)CURRENTS=list.map(String);},
   set copy(v){copyText=String(v||'');},
   get copy(){return copyText;}
 };
