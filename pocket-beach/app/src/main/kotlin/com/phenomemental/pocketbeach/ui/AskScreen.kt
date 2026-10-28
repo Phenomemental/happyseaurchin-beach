@@ -335,6 +335,10 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
             }, tag = "open-beach")
         }
         is Posted.Refused -> Notice(p.why, tag = "not-posted")
+        is Posted.Unreached -> {
+            Notice("${p.why} It's kept below, and on the Shore, to post when you tap Post now.", tag = "not-posted")
+            Waiting(model)
+        }
         null -> {}
     }
     over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }

@@ -18,6 +18,7 @@ import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.model.Gemma
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
+import com.phenomemental.pocketbeach.net.Connection
 import com.phenomemental.pocketbeach.net.HttpsWire
 import com.phenomemental.pocketbeach.ui.Asking
 import com.phenomemental.pocketbeach.ui.Received
@@ -54,9 +55,38 @@ class PocketApp : Application() {
     /** What has been posted already, and where it landed. */
     val posts by lazy { Posts(this) }
 
-    /** Send [message] once, as Matthew confirmed it, and keep where it landed. Blocking: call it off the main thread. */
-    fun post(message: PoolMessage): Posted =
-        PoolPost.send(message, wire).also { if (it is Posted.Landed) posts.record(message, it.slot) }
+    /** What the beach couldn't be reached for, kept for "Post now". */
+    val unsent by lazy { Unsent(this) }
+
+    /** Whether the phone has a connection, as Android says: only so "Post now" waits for one. */
+    private var connected by mutableStateOf(false)
+
+    /** The device tests say the connection is up or down, whatever Android says. */
+    var connectedForTests by mutableStateOf<Boolean?>(null)
+
+    val online: Boolean get() = connectedForTests ?: connected
+
+    override fun onCreate() {
+        super.onCreate()
+        runCatching { Connection.watch(this) { connected = it } }
+    }
+
+    /**
+     * Send [message] once, as Matthew confirmed it: where it landed is kept,
+     * and if the beach couldn't be reached the message is kept instead, to go
+     * only when he taps "Post now". Blocking: call it off the main thread.
+     */
+    fun post(message: PoolMessage): Posted = PoolPost.send(message, wire).also { p ->
+        val now = System.currentTimeMillis()
+        when (p) {
+            is Posted.Landed -> {
+                posts.record(message, p.slot)
+                unsent.drop(message)
+            }
+            is Posted.Unreached -> unsent.keep(message, p.why, p.mayHaveLanded, now)
+            is Posted.Refused -> unsent.note(message, p.why, now)
+        }
+    }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)

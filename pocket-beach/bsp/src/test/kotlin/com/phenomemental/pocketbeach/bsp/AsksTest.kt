@@ -432,7 +432,12 @@ class AsksTest {
         assertContains(assertIs<Posted.Refused>(PoolPost.send(m, wire(429, """{"error":"pool is full for today"}"""))).why, "pool is full for today")
         assertContains(assertIs<Posted.Refused>(PoolPost.send(m, wire(500, "oops"))).why, "(500)")
         assertContains(assertIs<Posted.Refused>(PoolPost.send(m, wire(200, "{}"))).why, "without saying where")
-        assertContains(assertIs<Posted.Refused>(PoolPost.send(m) { _, _ -> throw java.io.IOException("no route") }).why, "couldn't be reached")
+        val unreached = assertIs<Posted.Unreached>(PoolPost.send(m) { _, _ -> throw java.io.IOException("no route") })
+        assertContains(unreached.why, "couldn't be reached")
+        assertFalse(unreached.mayHaveLanded)
+        val unanswered = assertIs<Posted.Unreached>(PoolPost.send(m) { _, _ -> throw NoAnswer("Read timed out") })
+        assertContains(unanswered.why, "may have landed")
+        assertTrue(unanswered.mayHaveLanded)
         assertEquals(5, sent.size, "one request each, never retried")
     }
 }

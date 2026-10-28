@@ -4,6 +4,9 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.3.3** is being made: a post the beach couldn't be reached
+for is kept, with "Post now" (see "What 0.3.3 changes").
+
 **pocket-beach-v0.3.2** is released, from Matthew's first hello world with
 the companion on 0.3.1 (see "What 0.3.2 changes"). It has been on the
 Releases page since 28 October, its tag at `6ed8f7f` on main, signed with
@@ -19,6 +22,30 @@ and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.3.3 changes
+
+Matthew's offline test of 0.3.2 passed: the writes landed, and the post
+failed plainly and sent nothing. Now such a post is kept:
+
+- **When the beach can't be reached,** the message he said yes to is kept on
+  the phone, with when it failed and why. It shows under "Waiting to be
+  posted" on the Shore, at the end of the Ask, and on the test screen.
+- **"Post now"** can be tapped only while the phone has a connection that
+  reaches the internet, as Android says. Offline it reads "Waiting for a
+  connection". Coming back online sends nothing: a kept post goes only on
+  his tap, and once it lands it is no longer kept, and it ends in "Posted to
+  your pool at entry N".
+- **"Discard"** drops a kept post after asking. The writes it came with stay.
+- **If the message went but no answer came back,** it is kept too, saying it
+  may be on the beach already, so he can look at the pool before posting it
+  again.
+- **A post the beach answered and refused** (a key needed, too many for the
+  moment) is not kept, as before. If a kept post is refused on "Post now",
+  it stays kept with the beach's answer.
+- The Ask log says when a post was kept.
+- The connection is read in `net/HttpsWire.kt`, beside the one post. It
+  remains one of the only two files that name a network API.
 
 ### What 0.3.2 changes
 
@@ -197,7 +224,8 @@ aeroplane mode too.
   - `net/HttpsWire.kt` opens a connection for one thing: one POST of one
     message to a pool on the beach, only after Matthew taps to confirm. It
     takes no address but the beach's pool append, follows no redirect, and
-    keeps no cookie or cache.
+    keeps no cookie or cache. It also reads whether the phone is connected,
+    only so a kept post's "Post now" waits for a connection.
   - `net/ModelFetch.kt` is the only other code that opens one, for the
     model's one download (see "The model").
   - The posts go only to `pool:Phenomemental`, under the name Phenomemental.
@@ -250,7 +278,7 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 `Pages.remove`).
 **Piece 1, unchanged:** the local bsp, the teaching shelf, storage.
 
-**The app itself:** version 0.3.2 (`versionCode` 5), Android 12 or later.
+**The app itself:** version 0.3.3 (`versionCode` 6), Android 12 or later.
 
 - Permissions:
   - the internet, for the one confirmed post and the model's one download,

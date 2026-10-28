@@ -1,23 +1,29 @@
 package com.phenomemental.pocketbeach.net
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.os.Handler
+import android.os.Looper
+import com.phenomemental.pocketbeach.bsp.NoAnswer
 import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.bsp.WireReply
+import java.io.IOException
 import java.net.URI
 import javax.net.ssl.HttpsURLConnection
 
 /**
- * The app's one way out (decision 18), and the only code in it that opens a
- * connection: one POST of one message to a pool on the beach, made only after
- * Matthew has tapped to confirm it. It takes no address but the beach's pool
- * append, follows no redirect, keeps no cookie or cache, and reads back at
- * most a short answer. The network security config trusts no certificate for
- * any host but the beach, so nothing else could get out over TLS, and plain
- * HTTP is refused everywhere.
+ * The app's one way out (decision 18): one POST of one message to a pool on
+ * the beach, made only after Matthew has tapped to confirm it. It takes no
+ * address but the beach's pool append, follows no redirect, keeps no cookie
+ * or cache, and reads back at most a short answer. Plain HTTP is refused
+ * everywhere. The model's one download (`ModelFetch.kt`) is the only other
+ * code that opens a connection.
  *
- * The model's one download is made by Android's download manager on the
- * app's behalf, outside this process; nothing in the app reads from the
- * network.
+ * Once the whole message has gone, a failure to hear back is [NoAnswer]: it
+ * may have landed, and Matthew is told so.
  */
 object HttpsWire : Wire {
     private const val PREFIX = PoolPost.BEACH + "/.well-known/pscale-beach?block=pool:"
@@ -38,7 +44,11 @@ object HttpsWire : Wire {
             val bytes = body.toByteArray(Charsets.UTF_8)
             connection.setFixedLengthStreamingMode(bytes.size)
             connection.outputStream.use { it.write(bytes) }
-            val status = connection.responseCode
+            val status = try {
+                connection.responseCode
+            } catch (e: IOException) {
+                throw NoAnswer(e.message ?: e::class.java.simpleName, e)
+            }
             val stream = if (status >= 400) connection.errorStream else connection.inputStream
             val text = stream?.use { input ->
                 val out = java.io.ByteArrayOutputStream()
@@ -54,5 +64,24 @@ object HttpsWire : Wire {
         } finally {
             connection.disconnect()
         }
+    }
+}
+
+/**
+ * Whether the phone has a connection that reaches the internet, as Android
+ * says: told to [changed] now and whenever it changes, on the main thread.
+ * Nothing is sent because it changes; it says only when "Post now" can be
+ * tapped.
+ */
+object Connection {
+    fun watch(context: Context, changed: (Boolean) -> Unit) {
+        val connectivity = context.getSystemService(ConnectivityManager::class.java)
+        fun up(caps: NetworkCapabilities?) = caps != null &&
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        changed(up(connectivity.getNetworkCapabilities(connectivity.activeNetwork)))
+        connectivity.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = changed(up(caps))
+            override fun onLost(network: Network) = changed(false)
+        }, Handler(Looper.getMainLooper()))
     }
 }
