@@ -1,6 +1,8 @@
 package com.phenomemental.pocketbeach
 
 import android.graphics.Bitmap
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
@@ -44,8 +46,7 @@ class ScreenTour {
             compose.tap("new-block")
             compose.waitFor("block-name")
             compose.onNodeWithTag("block-name").performTextInput("garden")
-            compose.waitFor("make-block")
-            Thread.sleep(500)
+            compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("make-block") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
             shot("$theme-02-new-block")
             compose.tap("make-block")
             compose.waitFor("standing", "garden at pocket.")

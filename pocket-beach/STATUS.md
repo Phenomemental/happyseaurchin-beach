@@ -4,123 +4,132 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 is released: **pocket-beach-v0.1**, on the repo's Releases page since
-28 October, signed with Matthew's key. The tag is at `9bd153b` on main. The
-local bsp is its own pure Kotlin module (decision 7), and CI is green on
-Linux, on Windows and on a Pixel emulator.
-
-A release is started with "Run workflow" on main, and the release job makes
-the tag itself (see "Starting a release"). A Claude session can't push a tag,
-but it can start this, as it did for 0.1.
+Piece 2, the empty beach, is built as version 0.2 and waits on its release
+(see "Next"). Piece 1 is released as **pocket-beach-v0.1** and works on
+Matthew's Pixel, in aeroplane mode too.
 
 Before Piece 3, wearing a shell offline is built and matched against the
-original (decisions 8–12), as set out under "Wearing a shell offline".
+original (decisions 8–12). Today's finish line is set out under "Today's
+finish line".
 
 ### What is built
 
-- **The local bsp**, a Kotlin port of bsp-mcp-server and the beach duties, is
-  its own module, `bsp/`.
-  - It is plain Kotlin on the JVM: no Android APIs, no Context, no Android
-    library. It needs only a JDK, so the same tested core can run on a Windows
-    laptop.
-  - A front end hands it two things through interfaces: a `BlockStorage` for
-    the blocks and a `ShelfSource` for the teaching blocks. It gets text back
-    from `PocketBsp.call`.
-  - It covers the full surface for ordinary blocks: point, path-walk,
-    path-walk plus descent, disc, whole block, star (`*`), listing blocks
-    (block left out), writes of every shape, and append.
-  - Append takes the next free slot, and supernests when a block's root fills.
-    A position inside a block holds nine and refuses a tenth.
-- **The Android app** (`app/`) uses the core only through those interfaces. It
-  supplies a `FileStorage` on its private files and an `AssetShelfSource`
-  reading the shelf from its assets.
-- **The teaching shelf** (`shelf/`): the 27 blocks bsp-mcp-server bundles,
-  under 28 names, byte for byte, with its MIT licence. It is the read-only
-  `pscale` region.
-- **Storage.** The core ships two storages.
-  - `FileStorage` keeps blocks as files: `regions/pocket/<name>.json` under a
-    root folder (on the phone, its private files). Each write goes to a
-    temporary file and is renamed into place. When each block was touched and
-    born is kept beside them, in `regions/pocket.meta.json`.
-  - File names are safe on every system. "garden" is `garden.json`; capitals,
-    spaces and other marks are written `%XX`, so "Garden" is `%47arden.json`
-    and never shares a file with "garden" where case is ignored (Windows, a
-    Mac); and Windows' reserved names (con, nul, com1…) are escaped.
-  - `MemoryStorage` keeps blocks in memory, for tests and any front end that
-    keeps nothing.
-- **The test screen.** It has a field for each bsp parameter, a Run button, the
-  call sent, the raw result, and how long it took. Two shortcut buttons fill in
-  "The whetstone" and "My blocks".
-- **The app itself.**
-  - It has no internet permission: nothing can leave the phone.
-  - Android's cloud backup and device-to-device transfer are both off.
-  - App id `com.phenomemental.pocketbeach`. This can never change without
-    losing updates.
-  - Version 0.1, Android 12 or later, built against Android 17 (SDK 37).
+**Piece 2: the screens**, in Matthew's book look: warm paper, near-black ink,
+block text on a framed sheet, Cormorant Garamond (bundled, SIL Open Font
+License), one crimson accent, and a dark version of all of it.
+
+- **The Shore.**
+  - Matthew's blocks, the most recently changed first, each with its opening
+    line.
+  - Below them, the 27 teaching blocks, in the shelf's own order.
+  - "Make a new block" asks for a name only. The block opens with the line the
+    beach gives a new block ("garden at pocket."), which can then be changed.
+  - When a copy was last saved; three days after the last copy, if anything has
+    changed since, a reminder (decision 3).
+- **A block** opens on its disc at pscale 0: the opening line, then every line
+  at pscale 0, each with its address and how many lines stand beneath it.
+  - Tap a line to stand on it and see the lines beneath. The trail at the top
+    leads back up, and back steps up one level before it leaves the block.
+  - It says when a line holds all it can ("Every place beneath this line is
+    taken"), when the opening holds nine (the next line wraps it), and when the
+    block has wrapped. A wrapped block's lines are set in nines.
+  - It says when the beach's convention owes a summary ("A summary is owed at
+    10"), with a link to write it.
+  - An appended line's arrival stamp is shown as its date, not as a line.
+  - Teaching blocks read the same way, read only.
+- **Write**, from wherever Matthew stands: "Change this line" or "Add beneath".
+  - Before anything is saved, it shows where the line will land ("A new line at
+    1.3, beneath “autumn”", or that the block wraps first) and the exact bsp()
+    call.
+  - "Speak the line" puts spoken words into the line, recognised on the phone
+    only (decision 16).
+- **Save a copy** writes every block, with its stamps, as one JSON file wherever
+  Matthew chooses through Android's file picker. **Restore a copy** brings one
+  back after a plain warning, replacing every block at once.
+- **About**: what the app is, in two sentences; the type's and the shelf's
+  licences; "Try a call by hand" (Piece 1's test screen); and at the bottom
+  "Made by Matthew Bushell" and the thanks to David Pinto, linked to
+  https://beach.happyseaurchin.com.
+
+**In the core** (pure Kotlin, so a laptop front end gets the same):
+
+- `Pages` gives a front end its pages and its writes. Reads go through the same
+  walker bsp() reads with. Every write is a bsp() call, run first on a copy of
+  the block alone; it goes ahead only if that shows exactly one line changed,
+  or one new line arrived, and where. It is then run for real at the same
+  instant, and the result is compared with the dry run's.
+  - So a write that would move or change any other line is refused with a
+    plain reason, never made.
+  - One case needed it already: on a block wrapped twice, re-voicing the opening
+    line through spindle "0" reaches one step too deep and would overwrite the
+    first 81 lines, as it does upstream. The pages change it with a whole-block
+    write carrying the one changed line instead.
+- `Copies` makes and reads a copy file, and the reminder rule. A restored block
+  is stored byte for byte as it was saved.
+- `FileStorage` restores by writing the new blocks into a folder of their own
+  and swapping folders. A restore stopped part way is finished or abandoned on
+  the next start, never left half done.
+
+**Piece 1, unchanged beneath it:** the local bsp, the teaching shelf, storage,
+and the conformance tests below.
+
+- The local bsp, a Kotlin port of bsp-mcp-server and the beach duties, is its
+  own module, `bsp/`: plain Kotlin on the JVM, no Android in it (decision 7). A
+  front end hands it a `BlockStorage` and a `ShelfSource`.
+- It covers point, path-walk, path-walk plus descent, disc, whole block, star
+  (`*`), listing blocks, writes of every shape, and append with next free slot
+  and supernesting.
+- `FileStorage` keeps blocks as `regions/pocket/<name>.json` under the app's
+  private files, written whole through a temporary file. File names are safe
+  on every system ("Garden" is `%47arden.json`).
+
+**The app itself:** no internet permission; the microphone permission, for
+speaking a line only; Android's backup off; version 0.2 (`versionCode` 2),
+Android 12 or later.
 
 ### What was checked
 
-- **Golden calls** (`conformance/`). 833 calls in 256 cases ran through the
-  original bsp-mcp-server and pscale-beach at the pinned commits, with the clock
-  frozen. The Kotlin gives the identical reply and identical stored blocks for
-  every one.
-  - The calls are 23 hand-made cases and 233 random ones.
-  - Separately, 7,563 more random calls on three other seeds also matched.
-  - The test was shown to fail when an expected reply or block is altered.
-- **bsp-mcp-server's `smoke:unit`**, ported assertion for assertion, against
-  sunstone and whetstone: passes.
-- **The pocket's own rules** pass: the refusals, the files, the tenth line
-  wrapping the root, and names with spaces, colons and accents.
-- **JavaScript's rules** for numbers, escapes, key order, dates and whitespace
-  pass, checked against Node 22.
-- **The core is pure.** A test reads every compiled class of the core and finds
-  no Android API named: 0 of 57 classes, where 7 of the app's 8 name one.
-- **The golden replay passes on both storages,** in files and in memory: the
-  core answers identically whatever stands beneath it.
-- **The core builds and passes its tests with no Android SDK in reach**
-  (`-PcoreOnly`).
-- **The app builds** on the interfaces: debug, release, and the on-device tests.
-- **CI on GitHub** is green, most recently on main at `9608a3c`, after the merge.
-  - The golden calls regenerated from the original code match the committed
-    ones, and the shelf matches upstream.
-  - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
-  - On Windows, with no Android SDK, every core test passes, and the golden
-    replay matches all 833 calls in files and again in memory.
-  - On a Pixel emulator running Android 16, the app installed and opened, and
-    all 5 on-device tests passed:
-    - the whetstone from the shelf;
-    - a line written and read back from its own file;
-    - the beach refused;
-    - the test screen: fields, Run, and the result;
-    - the full 833-call golden replay on Android's own runtime.
-- **The 0.1 release.**
-  - The APK is signed with Matthew's key, certificate `CN=Matthew Bushell`,
-    SHA-256 `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`.
-  - apksigner verified it in CI, and again after downloading it from the
-    Release.
-  - It is version 0.1 (`versionCode` 1).
-  - It has no internet permission. Its only declared permission is one AndroidX
-    adds for the app's own receivers.
-- **Starting a release** passes actionlint. The step that picks the tag was run
-  locally for five cases:
-  - a start on main makes `pocket-beach-v0.1`;
-  - a start elsewhere is refused;
-  - a malformed version, including one carrying a shell command, is refused;
-  - a version that already has its tag is refused;
-  - a tag pushed by hand is taken as given.
+- **The core's tests** (JVM, and again on Windows with no Android SDK): 43, all
+  passing.
+  - The pages: a block built by plans alone; ten lines at the opening wrapping
+    it; the twice-wrapped opening changed whole; a full line refusing more; a
+    plan that would now land elsewhere writing nothing; a write that would
+    disturb a hidden line refused; and every teaching block, with every line
+    one and two steps into it, opening.
+  - Copies: a restore byte for byte, including all 27 teaching blocks stored as
+    blocks; bad files refused in plain words; a restore stopped at each step
+    left whole one way or the other; the three-day rule.
+- **Golden calls:** all 833 still match the original, in files and in memory, on
+  Linux, Windows and the emulator. CI also regenerates them from the pinned
+  upstream and replays 1,000 fresh random cases.
+- **On a Pixel emulator (Android 16)** the on-device tests check:
+  - a block made, changed, added to, walked and wrapped at ten lines, by taps
+    alone;
+  - a full line refusing more;
+  - speaking ending in words (heard, or a plain note), never at a server;
+  - a teaching block walked, with no write offered;
+  - a copy saved and restored through the same path the file picker uses;
+  - the test screen behind About, and Piece 1's checks.
+- **The screen tour** photographs every screen, light and dark, on the
+  emulator, for checking by eye before a release.
 
 ### Not yet checked
 
-- The app on Matthew's own phone.
+- Piece 2 on Matthew's own phone.
+- Speaking a line on a phone that recognises speech on the device. The
+  emulator either has no on-device recogniser or hears nothing.
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.1.apk` from the Release and tries it:
-   - open it and read the whetstone;
-   - make a block, write a line, and read it back;
-   - then all of it again in aeroplane mode.
+1. Release v0.2 ("Run workflow" on main, version 0.2), then Matthew tries:
+   - build a small block of his own from nothing, by tapping alone;
+   - walk it;
+   - add ten lines to its opening and see it wrap (decision 1);
+   - save a copy.
 2. Before Piece 3: wearing a shell offline is built and matched against the
    original (decisions 8–12).
+3. Piece 3, the assistant, with decisions 6, 13, 15, 16 and 19.
+4. Today's finish line, the hello-world test (decisions 17 and 18).
 
 ### Running the core on a laptop
 
@@ -239,7 +248,7 @@ pinned bsp-mcp-server `27908e1`.
   sundial stamp and its voicing, and a `now` reference walks the clock, so the
   port needs part of `temporal.ts`.
 
-### What it means for v0.1
+### What it means until it is built
 
 A read of a node shaped like a bundle comes back without its window, so it
 differs from the original. No teaching block is shaped like one, and no golden
@@ -392,7 +401,7 @@ Chosen in Phase 0, or found while building Piece 1.
     because "block" contains "lock".
   - A write that makes a new block reports "landed at" with a leading dot
     (`.1`).
-- **Bundle windows are left out of v0.1 only.** In bsp-mcp-server, reading a
+- **Bundle windows are left out until wearing a shell is built.** In bsp-mcp-server, reading a
   position whose lines are mostly references to other blocks that exist adds a
   window compiling those blocks. No teaching block triggers it. It is the
   shell's gathering mechanism, so it is built before Piece 3 (decision 8).
