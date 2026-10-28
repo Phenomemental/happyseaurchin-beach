@@ -91,16 +91,18 @@ class ModelStore(private val context: Context) {
         prefs.edit().remove("failed").apply()
         dir.mkdirs()
         part.delete()
-        val request = DownloadManager.Request(Uri.parse(URL))
-            .setTitle("The companion's model")
-            .setDescription("Gemma 4 E2B for Pocket beach, ${gb(SIZE)}")
-            .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
-            .setAllowedOverMetered(false)
-            .setAllowedOverRoaming(false)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-            .setDestinationUri(Uri.fromFile(part))
-        prefs.edit().putLong("download", downloads.enqueue(request)).apply()
+        prefs.edit().putLong("download", downloads.enqueue(request(part))).apply()
     }
+
+    /** The one request the download manager is given, for the file at [into]. */
+    fun request(into: File): DownloadManager.Request = DownloadManager.Request(Uri.parse(URL))
+        .setTitle("The companion's model")
+        .setDescription("Gemma 4 E2B for Pocket beach, ${gb(SIZE)}")
+        .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+        .setAllowedOverMetered(false)
+        .setAllowedOverRoaming(false)
+        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+        .setDestinationUri(Uri.fromFile(into))
 
     /** Stop fetching, and remove what has come so far. */
     fun stop() {

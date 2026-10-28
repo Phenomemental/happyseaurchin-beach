@@ -146,6 +146,9 @@ jobs:
           # more on its own so its pictures can be copied off the emulator.
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell am instrument -w -e diagnose download -e class com.phenomemental.pocketbeach.DownloadDiagnosis com.phenomemental.pocketbeach.test/androidx.test.runner.AndroidJUnitRunner || true
+            adb logcat -d | grep -E "PocketDiag|DownloadManager|DownloadProvider|insane|JobScheduler" | tail -250 || true
             adb shell am start -W -n com.phenomemental.pocketbeach/.MainActivity
             ./gradlew :app:connectedDebugAndroidTest
             ./gradlew :app:installDebug :app:installDebugAndroidTest
