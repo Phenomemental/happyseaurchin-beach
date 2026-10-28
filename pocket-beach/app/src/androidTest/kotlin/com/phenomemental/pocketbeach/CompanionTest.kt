@@ -159,7 +159,7 @@ class CompanionTest {
             assertTrue(wire.sent.single().second.contains(HelloWorld.messageFor(app.storage.read(HelloWorld.BLOCK))!!))
 
             // Once posted, the same message goes again only on purpose.
-            compose.onNodeWithTag("hello-post", useUnmergedTree = true).assertIsNotEnabled().assertTextContains("Posted at entry 7")
+            compose.onNodeWithTag("hello-post").assertIsNotEnabled().assertTextContains("Posted at entry 7")
             compose.tap("hello-post-again")
             compose.waitFor("hello-message")
             compose.tap("hello-not-now")
