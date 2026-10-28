@@ -163,6 +163,22 @@ class PagesTest {
     }
 
     @Test
+    fun everyTeachingBlockOpensAndEveryLineInItOpens() {
+        var opened = 0
+        for (b in pages.shore().teaching) {
+            val view = assertNotNull(pages.position(Region.TEACHING, b.name), b.name)
+            assertNotNull(view.text, "${b.name} has an opening line")
+            for (line in view.lines) {
+                val at = assertNotNull(pages.position(Region.TEACHING, b.name, line.address), "${b.name} ${line.address}")
+                assertEquals(line.text, at.text, "${b.name} ${line.address}")
+                for (deeper in at.lines) assertNotNull(pages.position(Region.TEACHING, b.name, deeper.address), "${b.name} ${deeper.address}")
+                opened++
+            }
+        }
+        assertTrue(opened > 100, "opened $opened lines")
+    }
+
+    @Test
     fun theShoreListsTheMostRecentlyChangedFirst() {
         done(pages.planNewBlock("a"))
         done(pages.planNewBlock("b"))

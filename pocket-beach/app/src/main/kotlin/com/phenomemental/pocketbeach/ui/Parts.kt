@@ -113,7 +113,7 @@ fun Label(text: String, modifier: Modifier = Modifier) {
     Text(text.uppercase(), style = Type.label, color = LocalInk.current.soft, modifier = modifier)
 }
 
-/** A button in the book's manner: crimson capitals in a crimson frame, or crimson filled for the one that saves. */
+/** A button in the book's manner: crimson words in a crimson frame, or crimson filled for the one that saves. */
 @Composable
 fun Action(
     text: String,
@@ -132,11 +132,11 @@ fun Action(
             .background(if (strong) ink.crimson else ink.paper, shape)
             .border(BorderStroke(1.dp, ink.crimson), shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 12.dp, vertical = 11.dp)
             .testTag(tag),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text.uppercase(), style = Type.action, color = if (strong) ink.paper else ink.crimson, textAlign = TextAlign.Center, maxLines = 1)
+        Text(text, style = Type.action, color = if (strong) ink.paper else ink.crimson, textAlign = TextAlign.Center, maxLines = 2)
     }
 }
 

@@ -83,7 +83,7 @@ object Type {
     val small = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Medium, fontSize = 17.sp, lineHeight = 23.sp)
     val label = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 18.sp, letterSpacing = 0.16.em)
     val address = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 30.sp)
-    val action = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Bold, fontSize = 17.sp, lineHeight = 22.sp, letterSpacing = 0.06.em)
+    val action = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Bold, fontSize = 19.sp, lineHeight = 22.sp, letterSpacing = 0.01.em)
     val call = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp)
 }
 
