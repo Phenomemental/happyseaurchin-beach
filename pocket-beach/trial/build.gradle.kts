@@ -34,5 +34,6 @@ tasks.named<JavaExec>("run") {
     systemProperty("pocket.shelf", rootProject.file("shelf").path)
     // One cache for the engine's prepared weights (about 0.8 GB), reused run to run.
     findProperty("engineCache")?.let { systemProperty("pocket.cache", it.toString()) }
+    findProperty("only")?.let { systemProperty("pocket.only", it.toString()) }
     workingDir = rootProject.projectDir
 }

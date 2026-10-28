@@ -242,7 +242,7 @@ object Asks {
     }
 
     /** How a proposal's refusal begins when it is the app's own write that can't go ahead: not the companion's to answer again. */
-    private const val APP_WRITE = "The app's own write to"
+    internal const val APP_WRITE = "The app's own write to"
 
     private val POSTING = Regex("""\bpost(s|ed|ing)?\b|\bpool\b|\bbeach\b|hello[\s-]*world""", RegexOption.IGNORE_CASE)
 
@@ -293,7 +293,7 @@ object Asks {
     }
 
     /** Whether an answer is the hello world's: it writes to `hello-world`, or offers a post that speaks of it. */
-    private fun isHello(answer: Answer): Boolean =
+    internal fun isHello(answer: Answer): Boolean =
         answer.writes.any { it.block == HelloWorld.BLOCK } || answer.post?.let { HelloWorld.isHelloPost(it.message) } == true
 
     /**
@@ -318,17 +318,17 @@ object Asks {
     }
 
     /** A make that gives the block's opening line is two writes: the make, then the opening line changed. */
-    private fun expand(steps: List<Step>): List<Step> = steps.flatMap { s ->
+    internal fun expand(steps: List<Step>): List<Step> = steps.flatMap { s ->
         if (s.act == Act.MAKE && s.text != null) listOf(Step(Act.MAKE, s.block, "", null), Step(Act.CHANGE, s.block, "", s.text))
         else listOf(s)
     }
 
-    private sealed class Outcome {
+    internal sealed class Outcome {
         object Landed : Outcome()
         class Stopped(val why: String) : Outcome()
     }
 
-    private class Run(val pages: Pages, val storage: BlockStorage, val shellOpening: String, val seal: String) {
+    internal class Run(val pages: Pages, val storage: BlockStorage, val shellOpening: String, val seal: String) {
         val done = mutableListOf<Planned>()
         var made: String? = null
         var written: String? = null
