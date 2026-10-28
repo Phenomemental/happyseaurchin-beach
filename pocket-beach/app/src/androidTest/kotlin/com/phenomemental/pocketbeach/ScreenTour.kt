@@ -191,7 +191,8 @@ class ScreenTour {
             }
             app.connectedForTests = null
             app.unsent.clear()
-            // The bench, run with the stand-in, and the block it keeps.
+            // The bench, run with the stand-in, and the block it keeps; it is offered between asks, so the Ask still waiting on Yes is let go.
+            app.asking.reset()
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.tap("open-bench")
