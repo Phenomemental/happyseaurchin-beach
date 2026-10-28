@@ -127,6 +127,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
         Column(Modifier.padding(top = 4.dp)) {
             TextLink("Save a copy", { saveTo.launch("pocket-beach-copy-${LocalDate.now()}.json") }, tag = "save-copy")
             TextLink("Restore a copy", { openCopy.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }, tag = "restore-copy")
+            TextLink("Settings", { nav.go(Screen.Settings) }, tag = "settings")
             TextLink("About", { nav.go(Screen.About) }, tag = "about")
         }
     }

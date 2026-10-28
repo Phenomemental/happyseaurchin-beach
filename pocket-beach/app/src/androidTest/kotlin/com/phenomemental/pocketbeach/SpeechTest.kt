@@ -7,11 +7,14 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import com.phenomemental.pocketbeach.ui.BUSY
+import com.phenomemental.pocketbeach.ui.busy
 import com.phenomemental.pocketbeach.ui.Heard
 import com.phenomemental.pocketbeach.ui.Recogniser
 import com.phenomemental.pocketbeach.ui.Speech
@@ -19,6 +22,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -79,6 +83,17 @@ class SpeechTest {
         assertEquals(app.speech.holding, held == 1)
     }
 
+    /**
+     * Tap Speak and wait until the recogniser it makes is listening: with the
+     * keyboard up, the app hides it first and listens a moment later.
+     */
+    private fun listen() {
+        val before = made.size
+        compose.tap("speak")
+        compose.waitUntil(5_000) { made.size == before + 1 }
+        compose.waitFor("speak", "Listening")
+    }
+
     private fun lineText(): String =
         compose.onNodeWithTag("line-text").fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
 
@@ -92,8 +107,7 @@ class SpeechTest {
     fun aTapToStopLetsItGoAndKeepsWhatItHeard() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(1, made.size)
             assertTrue(app.speech.holding)
             main { made[0].heard!!.partial("plant the bulbs") }
@@ -110,8 +124,7 @@ class SpeechTest {
     fun theEndOfListeningLetsItGo() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             main { made[0].heard!!.done("prune the roses") }
             compose.waitFor("speak", "Speak the line")
             assertTrue(made[0].destroyed)
@@ -119,8 +132,7 @@ class SpeechTest {
             assertEquals("prune the roses", lineText())
 
             // Again: a new recogniser, the last one long gone.
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(2, made.size)
             oneAtMost()
             main { made[1].heard!!.failed(SpeechRecognizer.ERROR_NO_MATCH) }
@@ -134,24 +146,43 @@ class SpeechTest {
     fun busySpeechIsSaidPlainlyAndNothingIsTriedAgainUntilItsTime() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             main { made[0].heard!!.failed(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS) }
-            compose.waitFor("speech-note", BUSY)
+            // Which error, by its number, so Matthew's test says which.
+            compose.waitFor("speech-note", busy(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS))
+            compose.waitFor("speech-note", "the phone's error 10")
             assertTrue(made[0].destroyed)
             oneAtMost()
 
             // A tap while it's busy makes nothing, and nothing is tried by itself.
             compose.tap("speak")
-            compose.waitFor("speech-note", BUSY)
+            compose.waitFor("speech-note", busy(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS))
             Thread.sleep(1_500)
             assertEquals("no recogniser made while speech is busy", 1, made.size)
 
             // After the wait, a tap listens again.
             Thread.sleep(Speech.BUSY_MS)
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(2, made.size)
+            oneAtMost()
+        }
+    }
+
+    @Test
+    fun theKeyboardGoesBeforeListening() {
+        Fresh.open().use { scenario ->
+            openALine()
+            compose.onNodeWithTag("line-text").performClick()
+            fun keyboardUp(): Boolean {
+                var up = false
+                scenario.onActivity { a -> up = ViewCompat.getRootWindowInsets(a.window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) == true }
+                return up
+            }
+            val shown = runCatching { compose.waitUntil(5_000) { keyboardUp() } }.isSuccess
+            assumeTrue("this emulator shows no keyboard", shown)
+            compose.tap("speak")
+            compose.waitUntil(5_000) { !keyboardUp() }
+            compose.waitUntil(5_000) { made.size == 1 }
             oneAtMost()
         }
     }
@@ -160,8 +191,7 @@ class SpeechTest {
     fun leavingTheScreenLetsItGo() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             compose.tap("back")
             compose.waitUntil(10_000) { made[0].destroyed }
             assertFalse(app.speech.holding)
@@ -172,8 +202,7 @@ class SpeechTest {
     fun theAppInTheBackgroundLetsItGo() {
         Fresh.open().use { scenario ->
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             // As when Matthew goes to another app, where Gboard's voice typing must work.
             scenario.moveToState(Lifecycle.State.CREATED)
             compose.waitUntil(10_000) { made[0].destroyed }

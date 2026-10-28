@@ -40,6 +40,8 @@ class BenchTest {
     fun rightAnswersAreJudgedRight() {
         val answers = mapOf(
             1 to """{"say": "I'm the pocket companion.", "steps": []}""",
+            5 to """{"say": "A block is a page of lines, each line in its own place.", "steps": []}""",
+            6 to """{"say": "You're welcome. Bye for now!", "steps": []}""",
             7 to """{"say": "garden holds: Autumn: plant the bulbs, and Winter: prune the roses.", "steps": []}""",
             13 to """{"say": "Adding it.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "buy more compost"}]}""",
             14 to """{"say": "Under autumn.", "steps": [{"do": "add", "block": "garden", "at": "1", "text": "tulips came from Holland"}]}""",
@@ -48,14 +50,14 @@ class BenchTest {
             20 to "{\"say\": \"Here.\", " + HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: {").replace("HIS SECRET", Bench.SECRET),
         )
         for ((n, json) in answers) {
-            val r = Bench.one(Bench.ASKS[n - 1], shelf, now, plan { json })
+            val r = Bench.one(Bench.ASKS[n - 1], shelf, now, answer = plan { json })
             assertTrue(r.right, "ask $n: ${r.problems}")
         }
     }
 
     @Test
     fun wrongAnswersSayWhy() {
-        fun problems(n: Int, json: String) = Bench.one(Bench.ASKS[n - 1], shelf, now, plan { json }).problems.joinToString(" ")
+        fun problems(n: Int, json: String) = Bench.one(Bench.ASKS[n - 1], shelf, now, answer = plan { json }).problems.joinToString(" ")
         assertContains(problems(1, """{"say": "", "steps": []}"""), "It said nothing.")
         assertContains(problems(1, """{"say": "Hello.", "steps": []}"""), "didn't say")
         assertContains(problems(4, """{"say": "Sure.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "spring plan"}]}"""), "for an ask that needs none")
@@ -63,19 +65,26 @@ class BenchTest {
         assertContains(problems(14, """{"say": "x", "steps": [{"do": "add", "block": "garden", "at": "1", "text": "Autumn: plant the bulbs"}]}"""), "didn't plan a line \"tulips came from Holland\" in garden at 1.1")
         assertContains(problems(13, """{"say": "x", "steps": [{"do": "add", "block": "garden", "at": "1", "text": "buy more compost"}]}"""), "at 3")
         assertContains(problems(20, """{"say": "No.", "steps": []}"""), "planned nothing")
+        // As 0.3 answered on Matthew's Pixel, and the bench first judged right.
+        assertContains(problems(5, """{"say": "I'm sorry, Matthew, I don't see any block named 'block' in the pocket or on the teaching shelf.", "steps": []}"""), "looking for a block nobody asked about")
+        assertContains(problems(6, """{"say": "I apologize, Matthew, but I don't see any block named 'hello-world' in the pocket or on the teaching shelf.", "steps": []}"""), "looking for a block nobody asked about")
+        assertContains(problems(6, """{"say": "Thanks.", "steps": [{"do": "read", "block": "pocket-companion", "at": "", "text": ""}]}"""), "needs no reading")
+        assertContains(problems(1, """{"say": "I'm the pocket companion.", "steps": [{"do": "read", "block": "pocket-companion", "at": "", "text": ""}]}"""), "needs no reading")
         assertContains(problems(20, "{\"say\": \"Here.\", " + HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: {").replace("HIS SECRET", "42")), "word for word")
     }
 
     @Test
     fun theRunIsOneBlockWithNineLinesOrFewerAtEachLevel() {
-        val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
-        val block = Bench.block(results, listOf("The phone: a laptop", "The engine: none"), now)
+        val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, answer = plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
+        val block = Bench.block(listOf(Bench.Run("0.3", results), Bench.Run("0.4", results)), listOf("The phone: a laptop", "The engine: none"), now)
         val opening = collectUnderscore(block)!!
-        assertContains(opening, "of 20 right")
-        val talk = block["1"] as JsObj
-        assertEquals("Talk: 6 of 6 right.", collectUnderscore(talk))
-        assertTrue((block["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
-        assertEquals("How it was run", collectUnderscore(block["4"]))
+        assertContains(opening, "0.3: 1 of 20 right.")
+        assertContains(opening, "0.4: 1 of 20 right.")
+        val before = block["1"] as JsObj
+        assertContains(collectUnderscore(before)!!, "0.3: 1 of 20 right.")
+        assertEquals("Talk: 1 of 6 right.", collectUnderscore(before["1"]))
+        assertTrue((before["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
+        assertEquals("How it was run", collectUnderscore(block["3"]))
         assertTrue(Bench.line(results[0]).startsWith("✓ 1. What's your name? (first token 0.1 s, shown 2.0 s, total 2.0 s, 1 exchange, read 1300, wrote 60 tokens)."))
         assertTrue(Bench.line(results[12]).startsWith("✗ 13."))
         assertContains(Bench.line(results[12]), "Taken as talk.")

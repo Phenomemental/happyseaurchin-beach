@@ -9,6 +9,7 @@ import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
+import com.google.ai.edge.litertlm.Message
 import com.google.ai.edge.litertlm.ExperimentalApi
 import com.google.ai.edge.litertlm.ExperimentalFlags
 import com.google.ai.edge.litertlm.Modality
@@ -33,6 +34,14 @@ import kotlinx.coroutines.withContext
 class Gemma(private val store: ModelStore, private val cacheDir: String, private val nativeLibraryDir: String) : Mind {
     companion object {
         const val IDLE_MS = 3 * 60_000L
+
+        /**
+         * Speculative decoding: off. On Matthew's Pixel 9 Pro XL (Tensor G4,
+         * GPU) it wrote 13.2 tokens a second against 13.9 without, and with
+         * it on the engine can't hold a reply to a form. The bench still
+         * times it, on and off.
+         */
+        const val SPECULATIVE = false
     }
 
     /** One thread for every call into the engine, so it is never used from two at once. */
@@ -41,6 +50,9 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     private val letGo = Runnable { release() }
 
     @Volatile private var engine: Engine? = null
+
+    /** Why holding her first word failed on this phone, once it has; her replies are then free for the rest of the app's run. */
+    @Volatile private var whyNotHeld: String? = null
 
     /** Conversations open now; the model is let go only when none is. */
     private var open = 0
@@ -59,18 +71,103 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     override suspend fun warm(): Long? = withContext(thread) {
         if (engine != null) return@withContext null
+        engineNow().second
+    }
+
+    /** The engine, loaded if it isn't; how long loading took, if it had to. */
+    private fun engineNow(): Pair<Engine, Long?> {
+        engine?.let { return it to null }
         val started = System.nanoTime()
-        engine = load()
-        (System.nanoTime() - started) / 1_000_000
+        val e = load(SPECULATIVE)
+        engine = e
+        return e to (System.nanoTime() - started) / 1_000_000
+    }
+
+    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean): Mind.Talker = withContext(thread) {
+        main.removeCallbacks(letGo)
+        val (e, loadMs) = engineNow()
+        val holding = held && whyNotHeld == null
+        synchronized(this@Gemma) { open++ }
+        Talker(e, instruction, history, holding, conversation(e, instruction, history, holding), Pace(processor, whyNotGpu, loadMs))
+    }
+
+    /** A conversation of 0.4's: the instruction and the earlier exchanges given, her replies held to begin with the route word if [held]. */
+    private fun conversation(e: Engine, instruction: String, history: List<Pair<String, String>>, held: Boolean): Conversation = e.createConversation(
+        ConversationConfig(
+            systemInstruction = Contents.of(instruction),
+            initialMessages = history.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
+            samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
+            maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+            thinkingConfig = ThinkingConfig(enableThinking = false),
+            enableResponseFormat = held,
+        ),
+    )
+
+    /**
+     * 0.4's conversation: each reply streamed, timed from the message to its
+     * first piece, and held to begin with her route word. Should holding
+     * fail before anything comes, she is asked again free, in a conversation
+     * opened afresh with the exchanges so far, and stays free for the rest of
+     * the app's run.
+     */
+    inner class Talker(
+        private val engine: Engine,
+        private val instruction: String,
+        private val history: List<Pair<String, String>>,
+        private var held: Boolean,
+        private var conversation: Conversation,
+        override val pace: Pace,
+    ) : Mind.Talker {
+        private val done = mutableListOf<Pair<String, String>>()
+
+        override val route: String get() = if (held) "held by the engine" else "free" + (whyNotHeld?.let { ": holding it failed on this phone ($it)" } ?: "")
+
+        override val stream = com.phenomemental.pocketbeach.bsp.Talks.Stream { message, piece ->
+            kotlinx.coroutines.runBlocking(thread) {
+                val started = System.nanoTime()
+                var first: Double? = null
+                val whole = StringBuilder()
+                suspend fun send() {
+                    val flow = if (held) conversation.sendMessageAsync(message, responseFormat = ResponseFormat.regex(com.phenomemental.pocketbeach.bsp.Talks.HELD))
+                    else conversation.sendMessageAsync(message)
+                    flow.collect { m ->
+                        if (first == null) first = (System.nanoTime() - started) / 1e9
+                        val text = m.toString()
+                        whole.append(text)
+                        piece(text)
+                    }
+                }
+                try {
+                    send()
+                } catch (t: Throwable) {
+                    if (!held || first != null || t is kotlinx.coroutines.CancellationException) throw t
+                    Log.w("Gemma", "Holding her first word failed; she answers free from now on.", t)
+                    whyNotHeld = firstLine(t)
+                    held = false
+                    runCatching { conversation.close() }
+                    conversation = conversation(engine, instruction, history + done, held = false)
+                    send()
+                }
+                counted(conversation)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
+                whole.toString().also { done += message to it }
+            }
+        }
+
+        override fun stop() { runCatching { conversation.cancelProcess() } }
+
+        override fun close() {
+            kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
+            val now = synchronized(this@Gemma) {
+                open--
+                letGoWhenDone && open == 0
+            }
+            if (now) release() else main.postDelayed(letGo, IDLE_MS)
+        }
     }
 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
-        var loadMs: Long? = null
-        val e = engine ?: run {
-            val started = System.nanoTime()
-            load().also { engine = it; loadMs = (System.nanoTime() - started) / 1_000_000 }
-        }
+        val (e, loadMs) = engineNow()
         val conversation = e.createConversation(
             ConversationConfig(
                 systemInstruction = Contents.of(instruction),
@@ -132,14 +229,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         return e
     }
 
-    private fun load(): Engine {
+    private fun load(speculative: Boolean = false): Engine {
         return try {
-            open(Backend.GPU(), counting = true).also { processor = "GPU"; whyNotGpu = null }
+            open(Backend.GPU(), counting = true, speculative = speculative).also { processor = "GPU"; whyNotGpu = null }
         } catch (t: Throwable) {
             Log.w("Gemma", "The GPU couldn't load the model.", t)
             // Counting is the one thing asked of the GPU beyond what 0.3.1 asked, so it is tried once more without it before the CPU.
-            runCatching { open(Backend.GPU(), counting = false) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
-                ?: open(Backend.CPU(), counting = true).also {
+            runCatching { open(Backend.GPU(), counting = false, speculative = speculative) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
+                ?: open(Backend.CPU(), counting = true, speculative = speculative).also {
                     processor = "CPU"
                     whyNotGpu = t.message?.lineSequence()?.firstOrNull { line -> line.isNotBlank() }?.trim()?.take(240) ?: t::class.java.simpleName
                 }
@@ -149,9 +246,9 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     /**
      * What the bench asks of the engine itself, a line each: what the model
      * file says it runs on; a plain answer timed on the GPU (or the CPU) with
-     * speculative decoding off, then on; whether a one-word choice held by
-     * the engine survives speculative decoding; and the NPU, where the file
-     * has a build for it. The model is let go first and after, so the next
+     * speculative decoding off, then on; and the NPU, where the file has a
+     * build for it. (Whether her first word can be held, the bench's 0.4
+     * run says.) The model is let go first and after, so the next
      * Ask loads it as ever. [step] says what is being tried.
      */
     suspend fun probes(step: (String) -> Unit): List<String> = withContext(thread) {
@@ -186,10 +283,6 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
                 continue
             }
             lines += "Speculative decoding ${if (speculative) "on" else "off"}, on the $where (loaded in ${secs(loadMs)} s): " + plainAnswer(e)
-            if (speculative) {
-                step("Trying a held one-word choice with speculative decoding on")
-                lines += "A one-word choice held by the engine, speculative decoding on: " + heldChoice(e)
-            }
             runCatching { e.close() }
         }
 
@@ -229,25 +322,6 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
             val b = c.getBenchmarkInfo()
             "first word after ${secs(first ?: total)} s, ${b.lastDecodeTokenCount} tokens written at ${one(b.lastDecodeTokensPerSecond)} a second, " +
                 "${secs(total)} s in all, in $pieces pieces."
-        }
-    }.getOrElse { "it failed: ${firstLine(it)}." }
-
-    /** Three asks, each answered with one word held to talk, read or act by the engine. */
-    private fun heldChoice(e: Engine): String = runCatching {
-        e.createConversation(
-            ConversationConfig(
-                systemInstruction = Contents.of("Before answering Matthew, say how: talk, read or act."),
-                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-                maxOutputToken = 8,
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-                enableResponseFormat = true,
-            ),
-        ).use { c ->
-            listOf("What's your name?", "What's in my garden block?", "Add a line to garden: buy compost.").joinToString(", ") { q ->
-                val started = System.nanoTime()
-                val word = c.sendMessage("Matthew asks: $q\nOne word: talk, read or act.", responseFormat = ResponseFormat.regex("(talk|read|act)")).toString().trim()
-                "\"$q\" → $word (${secs((System.nanoTime() - started) / 1_000_000)} s)"
-            } + "."
         }
     }.getOrElse { "it failed: ${firstLine(it)}." }
 

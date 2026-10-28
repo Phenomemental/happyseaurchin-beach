@@ -15,8 +15,8 @@ figures judge everything in 0.4.
 **pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
 "What 0.3.4 changes"). Its tag is at `f3bf644` on main.
 
-**0.4 is being made,** on the laptop's bench until the Pixel's figures come
-(see "What 0.4 changes, so far").
+**pocket-beach-v0.4** is being made, finished against the Pixel's bench of
+0.3 (see "What 0.4 changes").
 
 **pocket-beach-v0.3.3** is released: a post the beach couldn't be reached
 for is kept, with "Post now" (see "What 0.3.3 changes"). Its tag is at
@@ -35,12 +35,29 @@ main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
 
-### What 0.4 changes, so far
+### What 0.4 changes
 
-Not released. Built to Matthew's plan (see "0.4: as fast and dependable as
-the phone allows") and tried with the bench on the laptop's CPU. The Pixel's
-figures decide.
+From Matthew's plan (see "0.4: as fast and dependable as the phone allows"),
+finished against his Pixel's bench of 0.3 (28 October).
 
+**His Pixel's bench of 0.3:**
+- The phone: a Pixel 9 Pro XL, Tensor G4, 16 GB, Android 17. The model ran
+  on its GPU.
+- 0.3 got 17 of 20 right, with a median of 26 s an answer.
+- The engine itself is quick: the first token came after 1.6 s every time,
+  and it wrote about 14 tokens a second on the GPU.
+- The wait was 0.3's way of asking:
+  - a whole JSON plan held to its form, written at about 8 tokens a second
+    against 14 free;
+  - two rounds for talk and read;
+  - nothing shown until the end.
+- Its misses (11, 14, 15) are the kinds 0.4 is built for: naming a line by
+  its words, adding beneath a line, and one line a step.
+- Speculative decoding gained nothing there: 13.2 tokens a second on, 13.9
+  off.
+- There is no NPU build for the Tensor G4.
+
+**What changes:**
 - **Short actions** (`Acts`). An act is one action a line:
   - `new <block>`, or `new <block>: <its opening line>`;
   - `add <block>: <line>`;
@@ -72,23 +89,27 @@ figures decide.
   - a quote of a block's opening, meaning the block itself;
   - the shell's opening written out where the shell's line goes.
 - **Three ways of answering, by her first word:** talk, read or act.
-  - Her reply is read whole. She often says a few words before acting;
-    those are what she says with the act.
+  - **The first word is held by the engine:** each reply must begin with
+    talk, read or act on a line of its own, and anything may follow
+    (`Talks.HELD`). With speculative decoding off this works. Should it fail
+    on a phone, she is asked again free, and stays free for the app's run.
+  - Her reply is read whole. Any words she says before an act are what she
+    says with it.
   - An act needs actions after it, and a read needs read lines (or the
     blocks she named). Anything else is talk: when unsure, talk.
   - A read of a block that isn't there is still answered: she is told so,
     and answers in plain words.
-  - The first word is not held by the engine. Holding even a one-word
-    choice doesn't mix with speculative decoding in this release (see "What
-    the engine allows"). The bench tries it on the Pixel's GPU.
-- **Talk streams as she writes,** with speculative decoding on, and so does
-  her answer after a read. Under each answer: "Took … s, first words after
-  … s".
+- **Speculative decoding is off.** It gained nothing on the Pixel, and it
+  stops the engine holding a reply to a form. The bench still times it,
+  on and off.
+- **Talk streams as she writes,** and so does her answer after a read.
 - **One conversation, kept while Ask is open.**
   - The model loads as Ask opens. Her instruction and the shell are read
     once; each later ask adds only its own words.
   - When writes land, it is opened afresh (her instruction shows the
-    pocket), carrying the last six exchanges.
+    pocket), carrying the last six exchanges. It is also opened afresh
+    after a reply is stopped part way, since the engine won't take another
+    ask in that conversation.
   - She is told how her last act ended (yes, or not now).
   - The earlier exchanges show above the ask.
 - **Her instruction** lists each block with its opening (named as its
@@ -99,37 +120,61 @@ figures decide.
   add hello-world: Secret: HIS SECRET / post: Hello world`. Ask offers to
   update an older line.
 - **Show timings** (Settings, new, from the Shore; on by default for now).
-  On, every answer (talk, read or act) shows how long it took, when her
-  first words came, and whether the GPU or CPU ran her; the earlier
-  exchanges too. Off, answers show nothing extra. The ask log keeps the
-  times either way. A read-and-say answer now shows its time line like any
-  other (on 0.3.2 it showed none).
-- **The bench** puts the twenty asks first to 0.3's way (before), then to
-  0.4's (after). Then it asks three questions of one kept conversation,
-  then runs the engine's probes. All of it is kept as one block.
+  - On, every answer (talk, read or act) shows how long it took, when her
+    first words came, and whether the GPU or CPU ran her; the earlier
+    exchanges do too.
+  - Off, answers show nothing extra.
+  - The ask log keeps the times either way.
+  - A read-and-say answer now shows its time line like any other.
+- **Speaking a line, beside the keyboard** (from Matthew's Pixel on 0.3.5;
+  see "Next"):
+  - the busy message now gives the phone's error by its number ("Speech is
+    busy (the phone's error 10). Try again in a moment."), so his next test
+    says which;
+  - if the keyboard is up, it is hidden first, and listening starts a
+    moment later.
+- **The bench:**
+  - it puts the twenty asks to 0.3's way (before), then to 0.4's twice:
+    with her first word held, then free;
+  - then it asks three questions of one kept conversation, then runs the
+    engine's probes;
+  - it is kept as one block;
+  - **its judge is stricter on talk.** 0.3's "I don't see any block named
+    'block'" (to "In one sentence, what is a block?") and "… named
+    'hello-world'" (to "Thanks, that's all for now.") were marked right. Now
+    each talk ask has words it must say, a talk or read answer that looks
+    for a block nobody asked about is wrong, and a greeting, a thanks or
+    "What's your name?" answered by reading a block is wrong.
 
-**On the laptop's CPU.** A laptop's CPU is far slower than a Pixel's GPU, so
-only the comparison counts:
+  Judged this way, his Pixel's 0.3 run comes to 13 of 20, not 17: 1, 3, 5
+  and 6 are now wrong.
+
+**On the laptop's CPU** (Gemma 4 E2B, the same twenty asks, the stricter
+judge, speculative decoding off). A laptop's CPU is far slower than a
+Pixel's GPU, so only the comparison counts:
 
 | | Right | First words, median | Whole answer, median |
 |---|---|---|---|
-| 0.3 (the first 13 asks) | 12 of 13 | 35.2 s (shown only when whole) | 35.2 s |
-| 0.4, examples written in | 18 of 20 | 4.8 s | 5.6 s |
-| 0.4, examples as first turns (built) | 20 of 20 | 5.3 s | 6.0 s |
+| 0.3 (the first 13 asks, the old judge) | 12 of 13 | 35.2 s (shown only when whole) | 35.2 s |
+| 0.4, her first word held | 20 of 20 | 8.9 s | 9.5 s |
+| 0.4, her first word free | 20 of 20 | 5.4 s | 5.8 s |
 
-Most of 0.4's first-word time is her reading the instruction (about 1,075
-tokens). In one kept conversation, every ask after the first had its first
-token in 0.7 s, and its whole answer in 0.7 to 1.7 s.
+- Each of the bench's asks is a fresh conversation. The held first word
+  costs about 3.5 s once per conversation (setting up the form), and
+  nothing after it.
+- Ask keeps one conversation, where that cost falls once.
+- In one kept conversation, every ask after the first had its first token
+  in 0.6 to 0.8 s, held or free, and its whole answer in 1.0 to 2.5 s.
+- Writing ran at about 11 tokens a second, held or free.
 
 **Not built, and why:**
-- **The first word held by the engine:** it fails with speculative decoding
-  on (above). Built instead as her free first word, which the laptop bench
-  routed right 20 of 20. The Pixel's probe says whether the GPU differs.
-- **The NPU:** Gemma 4 E2B has NPU builds only for Tensor G5 and G6, as
-  separate 3.1 and 3.3 GB files. The bench names the Pixel's chip.
+- **The NPU:** Gemma 4 E2B has NPU builds only for Tensor G5 and G6; his
+  Pixel has a G4.
 - **FunctionGemma:** Google's base model is gated behind a licence an account
   must accept, and comes as weights to fine-tune and convert. The
-  ready-made builds are tuned for other tasks.
+  ready-made builds are tuned for other tasks. 0.4's own acts were 8 of 8
+  on the laptop, so there is little room for it to be both faster and more
+  accurate.
 
 ### What 0.3.5 changes
 
@@ -652,37 +697,26 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.3.5.apk` over the version he has. It
-   carries 0.3.3's kept post and 0.3.4's bench too. Then:
-   - **Speech beside Gboard.** With the app open, use Gboard's voice typing
-     in a line of the app (the microphone on the keyboard): it should work.
-     Then use "Speak the line" once or twice, stop one part way, and leave
-     the screen; Gboard's voice typing should still work, in the app and in
-     another app.
-   - **Ask, then "Run the bench"** (beneath the ask). Keep the app open; it
-     keeps the screen on, and takes about ten minutes. Nothing of his is
-     written but the one block it keeps, and nothing is posted.
-   - **Share the block it keeps,** `bench-` and the date: open it from the
-     bench, then "Share this block", and send it back.
-   - If he likes: **Post now.** With the phone offline, do the hello world
-     and post it: it is kept under "Waiting to be posted" on the Shore.
-     Back online, nothing goes until he taps "Post now".
-2. **Speech busy with the keyboard open (0.3.5, Matthew's Pixel), for the
-   next build.** In Ask, with the keyboard up, "Speak the line" said
-   "Speech is busy. Try again in a moment.": the phone's on-device
-   recogniser turned the app down, with error 10 (too many requests) or 8
-   (busy). His guess: Gboard holds the speech service while the keyboard is
-   up. For the next build:
-   - find out why;
-   - show the error's number in the busy message, so his next test says
-     which;
-   - see whether hiding the keyboard before listening fixes it.
-3. With the Pixel's bench: 0.4 is finished against its figures and
-   released, with its own bench of 0.3 and 0.4 side by side.
-4. Matthew's decisions, from the bench: the NPU (only if his Pixel has a
-   Tensor G5 or G6, a 3.1 or 3.3 GB download), and FunctionGemma (a licence
-   to accept, then a fine-tune; adopted only if both faster and more
-   accurate).
+1. Matthew installs `pocket-beach-v0.4.apk` over 0.3.5. Then:
+   - **Ask, then "Run the bench".** It puts the twenty asks to 0.3's way,
+     then to 0.4's with her first word held, then free; then three asks of
+     one kept conversation, then the engine's probes. Keep the app open, as
+     before. Share the `bench-` block it keeps.
+   - **Ask her things, one after another,** in one visit to Ask: a question,
+     a read ("What's in my garden block?"), an act ("Under the autumn line
+     in garden, note …"). Talk should begin to show at once and stream; an
+     act shows its writes for Yes. The first ask also reads her
+     instruction; the ones after should be quicker.
+   - **Show timings** (Settings, from the Shore): under every answer, the
+     time and GPU or CPU; off, nothing.
+   - **Speaking a line with the keyboard up,** in Ask: the keyboard should
+     go, and listening start. If it still says speech is busy, the message
+     now gives the phone's error number (10 or 8): send it back.
+2. With the Pixel's bench of 0.4: whether her first word stays held (it
+   costs a little once per conversation), and what comes next.
+3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+   enough (no source documents the two competing; the error number will
+   say which way it is turned down).
 
 ### Running the core on a laptop
 
@@ -1008,6 +1042,15 @@ laptop):
   - The bench tries this on the phone's GPU too.
 - **A held form stays held** for the whole conversation. A later turn asked
   without it is still held to it.
+- **With speculative decoding off, holding works** (the laptop, 0.18.0).
+  - It holds the first word to talk, read or act, and lets anything follow.
+  - It costs about 2 to 3.5 s once per conversation, to set up the form,
+    and nothing after: each later turn's first token came as fast as free,
+    and writing ran as fast.
+  - On the Pixel's GPU, 0.3.4's probe tried it with speculative decoding on
+    only, and it failed. The 0.4 bench says how it does with it off.
+- **A reply stopped part way ends its conversation:** the next ask in it is
+  cancelled at once. Ask opens a new one after a stop.
 - **One conversation kept open** processes its instruction once; each later
   turn adds only its own words. No release lets a processed instruction be
   copied for a fresh conversation.

@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -204,6 +205,38 @@ class ScreenTour {
                 compose.tap("open-bench-block")
                 compose.waitFor("standing", "Bench, ")
                 shot("$theme-31-bench-block")
+            }
+            // 0.4's conversation: a plain answer, then an act whose quote matches two lines, put to Matthew, then planned.
+            app.asking.reset()
+            app.pages.carryOut(app.pages.planNewBlock("orchard"))
+            app.pages.carryOut(app.pages.planAdd("orchard", "", "Apples: pick in the autumn"))
+            app.pages.carryOut(app.pages.planAdd("orchard", "", "Pears: prune in the winter"))
+            (app.mind as StandIn).script += listOf(
+                "talk\nI'm the pocket companion. I read your blocks freely, and write only when you say yes.",
+                "act\nadd orchard under \"in the\": net the trees against the birds",
+            )
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextInput("What's your name?")
+                compose.tap("ask")
+                compose.waitFor("over", "She talked.")
+                shot("$theme-32-ask-talk")
+                compose.onNodeWithTag("question").performTextClearance()
+                compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
+                compose.tap("ask")
+                compose.waitFor("which-line")
+                shot("$theme-33-ask-which-line")
+                compose.tap("choose:1")
+                compose.waitFor("writes")
+                shot("$theme-34-ask-chosen")
+            }
+            app.asking.reset()
+            // Settings: whether each answer shows its time.
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("settings")
+                compose.waitFor("show-timings")
+                shot("$theme-35-settings")
             }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
