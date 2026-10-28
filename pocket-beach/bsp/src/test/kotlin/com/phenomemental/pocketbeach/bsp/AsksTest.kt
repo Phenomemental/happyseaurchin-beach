@@ -181,11 +181,12 @@ class AsksTest {
     @Test
     fun theInstructionCarriesTheShellAndThePocket() {
         pages.carryOut(pages.planNewBlock("garden"))
-        val text = Asks.instruction(HelloWorld.SHELL, "pocket-companion: \"$opening\"", pages.shore().mine)
+        val text = Asks.instruction(HelloWorld.SHELL, "pocket-companion: \"$opening\"", Asks.plainWindow(pages, "garden"), pages.shore().mine)
         assertContains(text, "You wear the shell pocket-companion")
         assertContains(text, opening)
         assertContains(text, "- garden: \"garden at pocket.\"")
         assertContains(text, "{{fingerprint}}")
+        assertContains(text, "The shell's lines, plainly:\ngarden: \"garden at pocket.\"")
     }
 
     // ── the hello world by hand ──
@@ -218,7 +219,7 @@ class AsksTest {
         assertEquals(HelloWorld.SHELL_OPENING, shell.text)
         assertEquals(listOf(HelloWorld.SHELL_RECIPE), shell.lines.map { it.text })
         assertFailsWith<IllegalArgumentException> { HelloWorld.makeShell(pages) }
-        // The recipe's own answer, its secret written in, is a hello world that checks out.
+        // The shell's own answer, its secret written in, is a hello world that checks out.
         val answer = HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: ").replace("HIS SECRET", "purple walrus")
         val shown = Asks.propose(Asks.parse(answer), storage, shelf, opening, seal, now)
         val carried = Asks.carryOut(shown, pages, storage, opening)

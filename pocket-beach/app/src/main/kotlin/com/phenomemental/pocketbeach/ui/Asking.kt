@@ -12,6 +12,8 @@ import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.Shells
+import com.phenomemental.pocketbeach.model.Mind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,7 +43,7 @@ class Asking(private val app: PocketApp) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var job: Job? = null
-    private var chat: com.phenomemental.pocketbeach.model.Gemma.Chat? = null
+    private var chat: Mind.Chat? = null
 
     /** Told whenever the Ask changes the pocket, so the pages show it. */
     var changed: () -> Unit = {}
@@ -63,8 +65,8 @@ class Asking(private val app: PocketApp) {
             val started = System.nanoTime()
             val outcome = withContext(Dispatchers.IO) {
                 runCatching {
-                    val instruction = Asks.instruction(HelloWorld.SHELL, Companion.window(app), app.pages.shore().mine)
-                    app.gemma.chat(instruction).use { c ->
+                    val instruction = Asks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages.shore().mine)
+                    app.mind.chat(instruction).use { c ->
                         chat = c
                         try {
                             Asks.ask(q, c.talk, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal()) { System.currentTimeMillis() }
@@ -144,6 +146,13 @@ class Asking(private val app: PocketApp) {
         end(w.shown, w.carried, null, "Matthew said yes; " + landed(w.carried) + " He said not now to the post.", w.shown.took)
     }
 
+    /** Forget the Ask in hand without logging it, as the device tests begin. */
+    fun reset() {
+        job?.cancel()
+        question = ""
+        stage = Stage.Writing
+    }
+
     /** Begin again, the last Ask's words kept to change or clear. */
     fun again() {
         if (stage is Stage.Over) stage = Stage.Writing
@@ -158,7 +167,7 @@ class Asking(private val app: PocketApp) {
     private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?) {
         stage = Stage.Over(shown, carried, posted, note)
         val exchanges = shown?.asked?.exchanges?.size ?: 0
-        val time = took?.let { "Took %.1f s to answer".format(it / 1000.0) + (app.gemma.processor?.let { p -> ", on the $p" } ?: "") + ", in ${Words.count(exchanges, "exchange")}." }
+        val time = took?.let { "Took %.1f s to answer".format(it / 1000.0) + (app.mind.processor?.let { p -> ", on the $p" } ?: "") + ", in ${Words.count(exchanges, "exchange")}." }
             ?: "Stopped."
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal), note, time)) } }
@@ -166,8 +175,8 @@ class Asking(private val app: PocketApp) {
         }
     }
 
-    /** What the companion is shown of the shell it wears. */
+    /** What the companion is shown of the shell it wears: the shell put on as the play door puts it on, offline. */
     object Companion {
-        fun window(app: PocketApp): String = Asks.plainWindow(app.pages, HelloWorld.SHELL)
+        fun window(app: PocketApp): String = Shells(app.storage, app.shelf).wear(HelloWorld.SHELL, System.currentTimeMillis()).window
     }
 }

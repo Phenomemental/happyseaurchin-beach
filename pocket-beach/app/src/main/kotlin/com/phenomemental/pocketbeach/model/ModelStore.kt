@@ -17,8 +17,7 @@ import java.security.MessageDigest
  */
 class ModelStore(private val context: Context) {
     companion object {
-        const val URL = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/" +
-            "6e5c4f1e395deb959c494953478fa5cec4b8008f/gemma-4-E2B-it.litertlm?download=true"
+        const val URL = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/6e5c4f1e395deb959c494953478fa5cec4b8008f/gemma-4-E2B-it.litertlm?download=true"
         const val FILE = "gemma-4-E2B-it.litertlm"
         const val SIZE = 2_588_147_712L
         const val SHA256 = "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c"

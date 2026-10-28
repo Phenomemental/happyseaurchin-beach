@@ -24,30 +24,33 @@ object HelloWorld {
     const val SHELL = "pocket-companion"
     const val SHELL_OPENING = "Pocket companion. I live on this phone, read freely, and write only when Matthew says yes."
 
-    /** The shell's line that tells the companion how to do the hello world, written into the shell when Matthew makes it. */
-    const val SHELL_RECIPE = "Hello world: when Matthew asks for the hello world, answer with exactly these steps and this post, " +
-        "writing the secret he gives where it says HIS SECRET and changing nothing else: " +
-        "{\"steps\": [{\"do\": \"make\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"\"}, " +
-        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"{{shell}}\"}, " +
-        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Secret: HIS SECRET\"}, " +
-        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Seal: {{seal}}\"}, " +
-        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Fingerprint: {{fingerprint}}\"}], " +
-        "\"post\": {\"pool\": \"Phenomemental\", \"message\": \"Hello world from the pocket. Secret: HIS SECRET. " +
-        "Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world.\"}}"
+    /** The four lines of a hello world, as the shell gives them: the app fills the gaps, the companion writes in the secret. */
+    val SHELL_LINES = listOf("{{shell}}", "Secret: HIS SECRET", "Seal: {{seal}}", "Fingerprint: {{fingerprint}}")
+
+    /** The post a hello world offers, as the shell gives it. */
+    const val SHELL_POST = "Hello world from the pocket. Secret: HIS SECRET. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
 
     /**
-     * Make the companion's shell, by Matthew's tap: the block
-     * [SHELL] with [SHELL_OPENING] as its opening line and [SHELL_RECIPE]
-     * beneath it. Each a guarded write.
+     * How the companion does the hello world, as one line of its shell: the
+     * answer itself, to be copied with the secret written in. (A small model
+     * copies a whole answer more surely than it follows a description of one.)
      */
+    val SHELL_RECIPE: String = "Hello world: when Matthew asks for the hello world, answer with exactly these steps and this post, " +
+        "writing the secret he gives where it says HIS SECRET and changing nothing else: " +
+        "{\"steps\": [{\"do\": \"make\", \"block\": \"$BLOCK\", \"at\": \"\", \"text\": \"\"}, " +
+        SHELL_LINES.joinToString(", ") { "{\"do\": \"add\", \"block\": \"$BLOCK\", \"at\": \"\", \"text\": \"$it\"}" } + "], " +
+        "\"post\": {\"pool\": \"$POOL\", \"message\": \"$SHELL_POST\"}}"
+
+    /** The companion's shell as it is first made: its opening line, and how to do the hello world. */
+    fun shellBlock(): JsObj = JsObj.of("_" to str(SHELL_OPENING), "1" to str(SHELL_RECIPE))
+
+    /** Make the companion's shell, by Matthew's tap: [shellBlock], as one guarded write. */
     fun makeShell(pages: Pages) {
         require(!pages.exists(SHELL)) { "There's already a block called $SHELL." }
-        for (plan in listOf({ pages.planNewBlock(SHELL) }, { pages.planChange(SHELL, "", SHELL_OPENING) }, { pages.planAdd(SHELL, "", SHELL_RECIPE) })) {
-            val p = plan()
-            p.refusal?.let { throw IllegalStateException(it) }
-            val done = pages.carryOut(p)
-            check(done.ok) { done.problem ?: "A write did not land." }
-        }
+        val plan = pages.planKeep(SHELL, shellBlock())
+        plan.refusal?.let { throw IllegalStateException(it) }
+        val done = pages.carryOut(plan)
+        check(done.ok) { done.problem ?: "The shell was not made." }
     }
 
     /** 128 random bits from the phone's secure random source, as 32 hex digits. */

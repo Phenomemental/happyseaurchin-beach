@@ -12,7 +12,6 @@ import com.google.ai.edge.litertlm.SamplerConfig
 import com.google.ai.edge.litertlm.ThinkingConfig
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Talk
-import java.io.Closeable
 import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -23,7 +22,7 @@ import kotlinx.coroutines.withContext
  * minutes or whenever Android asks for memory back (decision 13). Its GPU is
  * tried first, the CPU if the GPU can't take it.
  */
-class Gemma(private val store: ModelStore, private val cacheDir: String) {
+class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind {
     companion object {
         const val IDLE_MS = 3 * 60_000L
     }
@@ -36,13 +35,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) {
     @Volatile private var engine: Engine? = null
 
     /** Which of the phone's processors runs it, once loaded: "GPU" or "CPU". */
-    @Volatile var processor: String? = null
+    @Volatile override var processor: String? = null
         private set
 
-    val loaded: Boolean get() = engine != null
+    override val loaded: Boolean get() = engine != null
 
-    /** A conversation with the companion, its standing [instruction] given; send to it with [Chat.send], close it when the Ask is over. */
-    suspend fun chat(instruction: String): Chat = withContext(thread) {
+    override fun state(): ModelStore.State = store.state()
+
+    override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
         val e = engine ?: load().also { engine = it }
         Chat(
@@ -58,15 +58,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) {
         )
     }
 
-    inner class Chat(private val conversation: com.google.ai.edge.litertlm.Conversation) : Closeable {
-        /** The core's way of speaking to it; blocking, so called off the main thread. */
-        val talk = Talk { message ->
+    inner class Chat(private val conversation: com.google.ai.edge.litertlm.Conversation) : Mind.Chat {
+        override val talk = Talk { message ->
             kotlinx.coroutines.runBlocking(thread) {
                 conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA)).toString()
             }
         }
 
-        fun stop() = runCatching { conversation.cancelProcess() }
+        override fun stop() { runCatching { conversation.cancelProcess() } }
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }

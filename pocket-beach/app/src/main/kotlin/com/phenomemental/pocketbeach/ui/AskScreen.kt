@@ -49,7 +49,7 @@ fun AskScreen(model: Model, nav: Nav) {
     LaunchedEffect(shell, model.version) { shellChecked = true }
     val modelState by produceState<ModelStore.State?>(null) {
         while (true) {
-            val s = withContext(Dispatchers.IO) { model.app.models.state() }
+            val s = withContext(Dispatchers.IO) { model.app.mind.state() }
             value = s
             if (s is ModelStore.State.Fetched) value = withContext(Dispatchers.IO) { model.app.models.check() }
             delay(if (s is ModelStore.State.Fetching) 1000 else 3000)
@@ -102,7 +102,7 @@ fun AskScreen(model: Model, nav: Nav) {
                 LaunchedEffect(stage) { while (true) { delay(1000); now = System.currentTimeMillis() } }
                 val secs = ((now - stage.since) / 1000).coerceAtLeast(0)
                 Text(
-                    if (model.app.gemma.loaded) "Thinking… ${secs} s" else "Loading the companion, then thinking… ${secs} s",
+                    if (model.app.mind.loaded) "Thinking… ${secs} s" else "Loading the companion, then thinking… ${secs} s",
                     style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"),
                 )
             }

@@ -13,6 +13,7 @@ import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.ShelfSource
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.model.Gemma
+import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
 import com.phenomemental.pocketbeach.net.HttpsWire
 import com.phenomemental.pocketbeach.ui.Asking
@@ -33,6 +34,12 @@ class PocketApp : Application() {
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
     val models by lazy { ModelStore(this) }
     val gemma by lazy { Gemma(models, cacheDir.path) }
+
+    /** What the Ask screen asks: Gemma. The device tests put a stand-in here, since no test can run the model. */
+    @Volatile private var standIn: Mind? = null
+    var mind: Mind
+        get() = standIn ?: gemma
+        set(value) { standIn = value }
     val asking by lazy { Asking(this) }
 
     /** A block another app has just shared in, waiting to be looked at. */

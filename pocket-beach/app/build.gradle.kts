@@ -35,6 +35,8 @@ android {
         release {
             isMinifyEnabled = false
             if (releaseKeystore != null) signingConfig = signingConfigs.getByName("release")
+            // Phones are arm64; the emulator's x86_64 is for the debug build's tests only.
+            ndk { abiFilters += "arm64-v8a" }
         }
     }
 

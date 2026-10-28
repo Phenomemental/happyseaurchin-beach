@@ -387,10 +387,11 @@ object Asks {
 
     /**
      * The companion's standing instruction: how it answers, the gaps the app
-     * fills, the shell it wears ([window], as wearing it compiles), and the
-     * blocks in the pocket.
+     * fills, the shell it wears ([window], as wearing it compiles, then its
+     * lines once more [plain], without the escaping a block's JSON carries,
+     * which a small model reads more surely), and the blocks in the pocket.
      */
-    fun instruction(shell: String, window: String, blocks: List<BlockSummary>): String = buildString {
+    fun instruction(shell: String, window: String, plain: String, blocks: List<BlockSummary>): String = buildString {
         appendLine("You are the companion in Pocket beach, an app on Matthew's phone that keeps pscale blocks. You wear the shell $shell, shown below; let it guide you.")
         appendLine()
         appendLine("Answer with one JSON object and nothing else:")
@@ -400,10 +401,12 @@ object Asks {
         appendLine("- \"do\" is one of read, make, add, change.")
         appendLine("- \"block\" is only the block's name, such as \"garden\".")
         appendLine("- \"at\" is a line's address in that block, such as \"1\" or \"2.3\"; \"\" means the block's opening line.")
-        appendLine("- \"text\" is the words of the line to write; \"\" for read and make.")
+        appendLine("- \"text\" is the words of one line to write; \"\" for read and make. A step writes one line: never put two lines in one step's text.")
         appendLine("read looks at the block at \"at\" and you are shown what it found; make makes a new block; add puts a new line beneath the line at \"at\" (\"at\": \"\" puts it beneath the opening line); change rewrites the line at \"at\".")
         appendLine("For example, if Matthew asks to note \"plant the bulbs\" in his garden block, answer:")
         appendLine("""{"say": "I'll add it to garden.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "plant the bulbs"}]}""")
+        appendLine("And to note two things, \"water the roses\" and \"cut the hedge\", give two steps:")
+        appendLine("""{"say": "Two lines for garden.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "water the roses"}, {"do": "add", "block": "garden", "at": "", "text": "cut the hedge"}]}""")
         appendLine("Nothing you propose is written until Matthew says yes, and a post goes only if he says yes to it as well.")
         appendLine("The app fills these gaps when it writes; use them exactly as written and never make up a seal or a fingerprint:")
         appendLine("{{shell}} the shell's opening line; {{seal}} a random seal the app makes; {{fingerprint}} a fingerprint of the block as it stands just before that line; {{address}} the pocket address of the block you made.")
@@ -411,6 +414,9 @@ object Asks {
         appendLine()
         appendLine("The shell you wear:")
         appendLine(window.trim())
+        appendLine()
+        appendLine("The shell's lines, plainly:")
+        appendLine(plain.trim())
         appendLine()
         if (blocks.isEmpty()) appendLine("The pocket holds no blocks yet.")
         else {

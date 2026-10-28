@@ -16,6 +16,7 @@ import com.phenomemental.pocketbeach.bsp.MemoryStorage
 import com.phenomemental.pocketbeach.bsp.Pages
 import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
+import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talk
 import com.phenomemental.pocketbeach.bsp.collectUnderscore
 import com.phenomemental.pocketbeach.bsp.JsObj
@@ -52,7 +53,8 @@ fun main(args: Array<String>) {
         val storage = MemoryStorage()
         val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { now }) { now }
         HelloWorld.makeShell(pages)
-        val system = Asks.instruction(HelloWorld.SHELL, Asks.plainWindow(pages, HelloWorld.SHELL), pages.shore().mine)
+        val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
+        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages.shore().mine)
         val seal = HelloWorld.seal()
         val config = ConversationConfig(
             systemInstruction = Contents.of(system),
