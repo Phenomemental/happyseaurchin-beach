@@ -102,7 +102,8 @@ Android 12 or later.
 - **Golden calls:** all 833 still match the original, in files and in memory, on
   Linux, Windows and the emulator. CI also regenerates them from the pinned
   upstream and replays 1,000 fresh random cases.
-- **On a Pixel emulator (Android 16)** the on-device tests check:
+- **On a Pixel emulator (Android 16)** all 12 on-device tests pass (commit
+  `b0e0e73`). They check:
   - a block made, changed, added to, walked and wrapped at ten lines, by taps
     alone;
   - a full line refusing more;
@@ -111,7 +112,16 @@ Android 12 or later.
   - a copy saved and restored through the same path the file picker uses;
   - the test screen behind About, and Piece 1's checks.
 - **The screen tour** photographs every screen, light and dark, on the
-  emulator, for checking by eye before a release.
+  emulator, and all 24 pictures were read by eye before release. The first
+  reading led to six changes, then checked again in the second:
+  - lining figures throughout, as Cormorant's old-style 1 made 1.1 read like
+    I.I;
+  - a drawn chevron for back;
+  - a passing message belongs to its own screen, on a ruled slip of paper;
+  - on Write, where the line lands stands above the field, clear of the
+    keyboard;
+  - the block's label no longer repeats its name;
+  - no doubled full stop in the new-block dialog.
 
 ### Not yet checked
 
