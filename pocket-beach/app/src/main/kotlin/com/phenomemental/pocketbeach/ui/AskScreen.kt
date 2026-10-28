@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -37,6 +38,7 @@ import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Proposal
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.model.FetchService
 import com.phenomemental.pocketbeach.model.ModelStore
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +70,12 @@ fun AskScreen(model: Model, nav: Nav) {
         }
     }
     val stage = asking.stage
+    // The model stays loaded, and the conversation open, while Ask is.
+    val ready = modelState is ModelStore.State.Ready && shell != null
+    DisposableEffect(ready) {
+        if (ready) asking.opened()
+        onDispose { asking.closed() }
+    }
     // A message posted already is not sent again unless Matthew asks for that on purpose.
     val postedBefore = (stage as? Asking.Stage.Written)?.carried?.post?.let(model.app.posts::landed)
 
@@ -91,7 +99,7 @@ fun AskScreen(model: Model, nav: Nav) {
                     "${Words.quoted(HelloWorld.SHELL_OPENING, 60)} and holds the line that says how to do the hello world.",
                 link = "Make the companion's shell" to {
                     scope.launch {
-                        val made = withContext(Dispatchers.IO) { runCatching { HelloWorld.makeShell(model.pages) } }
+                        val made = withContext(Dispatchers.IO) { runCatching { HelloWorld.makeShell(model.pages, Talks.SHELL_RECIPE) } }
                         model.changed()
                         made.onSuccess { model.say(Screen.Ask, "Made ${HelloWorld.SHELL}.") }
                             .onFailure { model.say(Screen.Ask, it.message ?: "The shell wasn't made.") }
@@ -100,13 +108,14 @@ fun AskScreen(model: Model, nav: Nav) {
                 tag = "make-shell",
             )
         }
-        if (HelloWorld.recipeIsOlder(recipe)) {
+        if (HelloWorld.recipeIsOlder(recipe, Talks.SHELL_RECIPE)) {
             Notice(
-                "The companion's shell has an older hello world line. In the new one the companion writes only your secret, " +
-                    "and the app writes the seal, the fingerprint and the post. Updating it changes that one line of ${HelloWorld.SHELL}.",
+                "The companion's shell has an older hello world line. The new one is in the companion's short actions: she writes " +
+                    "only the block, your secret and the post, and the app writes the seal, the fingerprint and the message. " +
+                    "Updating it changes that one line of ${HelloWorld.SHELL}.",
                 link = "Update the hello world line" to {
                     scope.launch {
-                        val done = withContext(Dispatchers.IO) { model.pages.carryOut(model.pages.planChange(HelloWorld.SHELL, "1", HelloWorld.SHELL_RECIPE)) }
+                        val done = withContext(Dispatchers.IO) { model.pages.carryOut(model.pages.planChange(HelloWorld.SHELL, "1", Talks.SHELL_RECIPE)) }
                         model.changed()
                         model.say(Screen.Ask, if (done.ok) "Updated the hello world line of ${HelloWorld.SHELL}." else done.problem ?: "It wasn't updated.")
                     }
@@ -117,16 +126,23 @@ fun AskScreen(model: Model, nav: Nav) {
 
         ModelPart(model, modelState)
 
+        // The conversation so far; the last, once over, is shown in full below.
+        val earlier = if (stage is Asking.Stage.Over) asking.history.dropLast(1) else asking.history.toList()
+        earlier.forEach { Earlier(it, model.app.showTimings) }
+
         if (modelState is ModelStore.State.Ready && shell != null) when (stage) {
             Asking.Stage.Writing, is Asking.Stage.Over -> {
                 if (stage is Asking.Stage.Over) Over(model, stage)
                 Label("Your ask")
                 PaperField(asking.question, { asking.question = it }, "Ask the companion something, or for the hello world with your secret", tag = "question")
                 Speak { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
-                TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
+                if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
+                TextLink(if (asking.benchRunning) "See the bench" else "Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
             }
             is Asking.Stage.Thinking -> {
                 Asked(asking.question)
+                // Her words as she writes them.
+                if (asking.live.isNotBlank()) Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
                 var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
                 LaunchedEffect(stage) { while (true) { delay(1000); now = System.currentTimeMillis() } }
                 val secs = ((now - stage.since) / 1000).coerceAtLeast(0)
@@ -135,14 +151,15 @@ fun AskScreen(model: Model, nav: Nav) {
                     style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"),
                 )
             }
-            is Asking.Stage.Shown -> Proposed(asking.question, stage)
+            is Asking.Stage.Choosing -> Choosing(asking, stage)
+            is Asking.Stage.Shown -> Proposed(asking.question, stage, model.app.showTimings)
             is Asking.Stage.Declining -> {
-                Proposed(asking.question, stage.shown)
+                Proposed(asking.question, stage.shown, model.app.showTimings)
                 Label("Why not now?")
                 Text("One tap says why, so the log keeps it.", style = Type.small, color = ink.soft)
             }
             is Asking.Stage.Carrying -> {
-                Proposed(asking.question, stage.shown)
+                Proposed(asking.question, stage.shown, model.app.showTimings)
                 Text("Writing…", style = Type.aside, color = ink.soft)
             }
             is Asking.Stage.Written -> {
@@ -161,9 +178,10 @@ fun AskScreen(model: Model, nav: Nav) {
 /** The actions at the foot, by stage. */
 private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBefore: String?): (@Composable androidx.compose.foundation.layout.RowScope.() -> Unit)? = when (stage) {
     Asking.Stage.Writing, is Asking.Stage.Over -> if (!ready) null else ({
-        Action("Ask", { asking.ask() }, Modifier.weight(1f), enabled = asking.question.isNotBlank(), strong = true, tag = "ask")
+        Action("Ask", { asking.ask() }, Modifier.weight(1f), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
     })
     is Asking.Stage.Thinking -> ({ Action("Stop", { asking.stop() }, Modifier.weight(1f), tag = "stop") })
+    is Asking.Stage.Choosing -> ({ Action("Not now", { asking.dropChoice() }, Modifier.weight(1f), tag = "not-now") })
     is Asking.Stage.Shown -> ({
         Action("Not now", { asking.notNow() }, Modifier.weight(1f), tag = "not-now")
         Action("Yes, write it", { asking.yes() }, Modifier.weight(1f), strong = true, tag = "yes")
@@ -189,6 +207,35 @@ private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBe
     })
 }
 
+/** An earlier exchange of the conversation: what Matthew asked, what she said, how it ended and how long it took. */
+@Composable
+private fun Earlier(e: Asking.Exchange, timings: Boolean) {
+    val ink = LocalInk.current
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("earlier")) {
+        Text(e.question, style = Type.small, color = ink.soft)
+        if (e.said.isNotBlank()) Text(e.said, style = Type.body, color = ink.ink)
+        Text(if (timings) e.note + " " + e.time else e.note, style = Type.small, color = ink.soft)
+        Rule()
+    }
+}
+
+/** A quote in her act matches more than one line: each line, to tap the one meant. */
+@Composable
+private fun Choosing(asking: Asking, stage: Asking.Stage.Choosing) {
+    val ink = LocalInk.current
+    val choice = stage.answered.planned?.choose ?: return
+    Asked(asking.question)
+    Text(
+        "She means the line “${choice.quote}” in ${choice.block}, and ${choice.lines.size} lines say that. Which one?",
+        style = Type.body, color = ink.ink, modifier = Modifier.testTag("which-line"),
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        choice.lines.forEach { line ->
+            Action(Words.quoted(line.text ?: "", 80), { asking.choose(line.address) }, Modifier.fillMaxWidth(), tag = "choose:${line.address}")
+        }
+    }
+}
+
 @Composable
 private fun Asked(question: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -199,7 +246,7 @@ private fun Asked(question: String) {
 
 /** What the companion said and proposes, before anything is written. */
 @Composable
-private fun Proposed(question: String, shown: Asking.Stage.Shown) {
+private fun Proposed(question: String, shown: Asking.Stage.Shown, timings: Boolean) {
     val ink = LocalInk.current
     Asked(question)
     val answer = shown.asked.answer
@@ -219,12 +266,17 @@ private fun Proposed(question: String, shown: Asking.Stage.Shown) {
     }
     p.postRefusal?.let { Notice("It offered a post the pocket can't send: $it", tag = "post-refusal") }
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            "Took %.1f s".format(shown.took / 1000.0) + (shown.pace?.where?.takeIf(String::isNotEmpty)?.let { " $it" } ?: "") +
-                ", in ${Words.count(shown.asked.exchanges.size, "exchange")}. Nothing is written until you say yes.",
-            style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
-        )
-        shown.pace?.detail()?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("pace")) }
+        // The time and the chip, when Settings shows timings; that nothing is written yet, always.
+        if (timings) {
+            Text(
+                "Took %.1f s".format(shown.took / 1000.0) + (shown.pace?.where?.takeIf(String::isNotEmpty)?.let { " $it" } ?: "") +
+                    (shown.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
+                    ", in ${Words.count(shown.asked.exchanges.size, "exchange")}.",
+                style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
+            )
+            shown.pace?.detail()?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("pace")) }
+        }
+        Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
     }
 }
 
@@ -258,6 +310,7 @@ private fun WriteRow(w: Planned) {
 private fun byApp(w: Planned): String = when {
     w.step.text?.startsWith("Seal: ") == true -> "The app's own write: a new seal, made for this Ask."
     w.step.text?.startsWith("Fingerprint: ") == true -> "The app's own write: the block's fingerprint, made as this line is written, after every other."
+    w.step.text == HelloWorld.SHELL_LINES.first() -> "The app's own write: the shell's opening line, which a hello world begins with."
     else -> "The app's own write."
 }
 
@@ -344,6 +397,8 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
     }
     over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
     Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+    // Every answer's time and chip, talk, read or act, when Settings shows timings.
+    if (model.app.showTimings) model.app.asking.history.lastOrNull()?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }
     Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
     Rule()
 }
