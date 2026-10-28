@@ -4,14 +4,16 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.3.5** is being made: speaking a line no longer holds the
+**pocket-beach-v0.3.5** is released: speaking a line no longer holds the
 phone's speech recogniser, which on Matthew's Pixel (0.3.2) failed with
 "error 10" and stopped Gboard's voice typing while the app ran (see "What
-0.3.5 changes").
+0.3.5 changes"). Its tag is at `ad69a9c` on main. On his Pixel, in Ask
+with the keyboard open, "Speak the line" still said speech was busy; that
+is for the next build (see "Next", 2). His bench block is coming: its
+figures judge everything in 0.4.
 
 **pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
-"What 0.3.4 changes"). Next is Matthew running it on his Pixel and sharing
-the block it keeps (see "Next"): its figures judge everything in 0.4.
+"What 0.3.4 changes"). Its tag is at `f3bf644` on main.
 
 **0.4 is being made,** on the laptop's bench until the Pixel's figures come
 (see "What 0.4 changes, so far").
@@ -96,6 +98,12 @@ figures decide.
 - **The shell's hello world line,** in actions: `act / new hello-world /
   add hello-world: Secret: HIS SECRET / post: Hello world`. Ask offers to
   update an older line.
+- **Show timings** (Settings, new, from the Shore; on by default for now).
+  On, every answer (talk, read or act) shows how long it took, when her
+  first words came, and whether the GPU or CPU ran her; the earlier
+  exchanges too. Off, answers show nothing extra. The ask log keeps the
+  times either way. A read-and-say answer now shows its time line like any
+  other (on 0.3.2 it showed none).
 - **The bench** puts the twenty asks first to 0.3's way (before), then to
   0.4's (after). Then it asks three questions of one kept conversation,
   then runs the engine's probes. All of it is kept as one block.
@@ -535,6 +543,21 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.3.5 release
+
+- Its tag is at `ad69a9c` on main, published 28 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.5 (`versionCode` 8), for arm64 phones, 50 MB. Its SHA-256 is
+  `a84f7c8185c9d9895032aa2aecbf6e96347dab023a1fbc0f0f40672add133c2d`.
+- Read back from the downloaded APK: the same five hosts, each without
+  subdomains, and nothing else; plain HTTP refused everywhere; the same
+  seven permissions as 0.3.4.
+- Built by the release run on main after every test passed again there,
+  the speech tests among them. The CI run before it lost its emulator to a
+  failed download before any test ran; the one re-run passed.
+
 ### The 0.3.4 release
 
 - Its tag is at `f3bf644` on main, published 28 October.
@@ -619,7 +642,7 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   engine allows on its GPU (and its NPU, if it has one).
 - "Post now" on the phone, back online after a post that couldn't go.
 - Speaking a line on the phone since 0.3.5, and Gboard's voice typing
-  beside it.
+  beside it. First result: busy with the keyboard open (see "Next", 2).
 - Sharing with real apps, and speaking on a phone that recognises speech on
   the device.
 
@@ -644,9 +667,19 @@ post offline failing plainly, with nothing sent (0.3.2).
    - If he likes: **Post now.** With the phone offline, do the hello world
      and post it: it is kept under "Waiting to be posted" on the Shore.
      Back online, nothing goes until he taps "Post now".
-2. With the Pixel's bench: 0.4 is finished against its figures and
+2. **Speech busy with the keyboard open (0.3.5, Matthew's Pixel), for the
+   next build.** In Ask, with the keyboard up, "Speak the line" said
+   "Speech is busy. Try again in a moment.": the phone's on-device
+   recogniser turned the app down, with error 10 (too many requests) or 8
+   (busy). His guess: Gboard holds the speech service while the keyboard is
+   up. For the next build:
+   - find out why;
+   - show the error's number in the busy message, so his next test says
+     which;
+   - see whether hiding the keyboard before listening fixes it.
+3. With the Pixel's bench: 0.4 is finished against its figures and
    released, with its own bench of 0.3 and 0.4 side by side.
-3. Matthew's decisions, from the bench: the NPU (only if his Pixel has a
+4. Matthew's decisions, from the bench: the NPU (only if his Pixel has a
    Tensor G5 or G6, a 3.1 or 3.3 GB download), and FunctionGemma (a licence
    to accept, then a fine-tune; adopted only if both faster and more
    accurate).
