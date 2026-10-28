@@ -123,6 +123,7 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
             if (screen.kind == Kind.ADD) "The new line" else "The line as it should read",
             focus = true, tag = "line-text",
         )
+        Speak { words -> text = if (typed.isBlank()) words else typed.trimEnd() + " " + words; done = null }
 
         Label("Where it lands")
         val refusal = p?.refusal?.takeIf { screen.kind == Kind.ADD || (!unchanged && typed.isNotBlank()) }

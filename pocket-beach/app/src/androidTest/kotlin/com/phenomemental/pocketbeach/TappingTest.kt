@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach
 
+import android.Manifest
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.performClick
@@ -7,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.floorDepth
 import com.phenomemental.pocketbeach.bsp.parseJson
@@ -21,6 +23,9 @@ import org.junit.runner.RunWith
 class TappingTest {
     @get:Rule
     val compose = createEmptyComposeRule()
+
+    @get:Rule
+    val microphone: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
     @Test
     fun aBlockIsBuiltWalkedAndWrappedByTapping() {
@@ -61,6 +66,19 @@ class TappingTest {
             for (i in 1..8) compose.save("add", "item $i")
             compose.waitFor("full", "Every place beneath this line is taken")
             compose.onNodeWithTag("add").assertIsNotEnabled()
+        }
+    }
+
+    @Test
+    fun speakingEndsInAPlainSentenceAndNeverAServer() {
+        Fresh.open().use {
+            compose.makeBlock("spoken")
+            compose.tap("add")
+            compose.waitFor("speak")
+            compose.tap("speak")
+            // On a phone with on-device recognition this listens and, hearing nothing, says so;
+            // on one without, it says speaking is off. Either way it ends in words, not silence.
+            compose.waitFor("speech-note", timeoutMs = 30_000)
         }
     }
 

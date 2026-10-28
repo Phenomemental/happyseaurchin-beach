@@ -338,6 +338,41 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     arrives from other people (blocks read from the online beach, relay
     requests) is untrusted. It can be read, but it never leads to a write
     without Matthew's confirmation. See "Later".
+15. **Piece 3: every Ask is logged.** Each Ask leaves an entry in a local log
+    block: what Matthew asked, the calls proposed, whether he confirmed, and the
+    time taken.
+    - "Not now" offers one tap for why: wrong place, wrong block, or
+      misunderstood.
+    - The log is an ordinary block, so it goes out with every saved copy, and
+      the assistant's shell can be refined from real use.
+16. **Speaking is built in.** A microphone on Ask (Piece 3) and on the Write
+    screen, so lines can be spoken straight into a block.
+    - Only Android's on-device speech recognition is used, never a server's.
+    - If the phone can't recognise speech on the device, the app says so
+      plainly and does not fall back to the cloud.
+    - The Write screen's microphone comes in Piece 2: it was simple, one
+      Android call that makes an on-device recogniser.
+17. **Today's finish line is a hello-world test across every node,** built
+    after Pieces 2 and 3. See "Today's finish line".
+18. **One narrow way out, early.** The app may append one message to a pool on
+    the online beach, only after Matthew taps to confirm, with nothing else
+    able to reach the network. It is a deliberate early piece of "Reach the
+    beach".
+    - It widens principle 5 by this one confirmed message: until now nothing
+      left the phone but the model download and links Matthew taps.
+    - Decision 2 stands for bsp(): a URL `agent_id` is still refused. The
+      message goes by its own action, never through bsp().
+    - Appending to `pool:Phenomemental` needs no key (see "Today's finish
+      line"). If a pool ever needs one, that key is kept in the Android
+      Keystore, never Matthew's passport key.
+19. **Piece 3: share a block out, receive a block in,** through Android's share
+    menu, so a block (the Ask log, say, or a coaching block) can move between
+    the pocket and other apps without the beach.
+    - Sharing out is Matthew's act, like saving a copy: the block goes only
+      where he sends it.
+    - A block received arrives as data (decision 14). Keeping it in the pocket
+      is a write he taps, and adopting it into a shell is a separate, explicit
+      choice of his.
 
 ## Other differences from bsp-mcp-server
 
@@ -371,9 +406,62 @@ Chosen in Phase 0, or found while building Piece 1.
 - **CI also runs when only its own workflow file changes,** so a change to the
   build is itself tested.
 
+## Today's finish line: hello world (after Pieces 2 and 3)
+
+A test across every node (decision 17):
+
+1. **On the phone,** the assistant (Gemma wearing a shell) makes a block
+   `hello-world` in the pocket, holding:
+   - the shell's opening line;
+   - a fun secret Matthew gives it;
+   - a seal the app makes at random, which neither Matthew nor the model
+     chooses.
+
+   The app then computes a short fingerprint of the whole block.
+2. **With Matthew's confirmation,** the app posts one message to
+   `pool:Phenomemental` on https://beach.happyseaurchin.com, carrying the
+   secret, the seal, the fingerprint and the block's pocket address.
+
+If Gemma can't do step 1 reliably by the end of today, both steps are made to
+work by hand from the test screen, so the chain can still be shown.
+
+### Does appending to the pool need a key? No.
+
+- **The beach's code** (pscale-beach `4770a49`, `api/pscale-beach.js`): an
+  append at a block's root needs a key only when the root (`_`) is locked.
+  - The rule that ties a block to its handle's passport governs setting a
+    lock, not appending.
+  - With no lock, only the beach's caps apply (size, appends a minute), and
+    they are off unless the operator turns them on.
+- **The conventions** (block-conventions 4.9): `pool:<handle>` is the handle's
+  own room, where visitors' words land as entries under their own names.
+- **The pool itself**, read on 28 October, opens "open, no key needed to leave
+  something here". It holds 164 entries, left by weft, David, Dwayne and
+  Matthew's agents.
+- So the app sends no key. If the beach ever answers that a key is required,
+  the app says so plainly and stops.
+
+### How the message goes (to be built)
+
+- **One HTTPS POST** to `https://beach.happyseaurchin.com/.well-known/pscale-beach`:
+  `{block: "pool:Phenomemental", content: {_: <the message>, 1: <author>}, append: true}`.
+  This is the shape bsp-mcp-server's pool tool sends, and the beach adds the
+  arrival stamp.
+- **Only after a tap,** on a screen that shows the whole message first.
+- **Nothing else reaches the network:**
+  - one class holds the only network code, with the beach's address fixed in
+    it, and a test fails the build if any other class names a network API;
+  - the app's network security settings trust no certificate for any other
+    host and allow no unencrypted traffic. The model's download host in Piece
+    3 is the one other name they carry (principle 5).
+- **The seal:** 128 random bits from the phone's secure random source.
+- **The fingerprint:** the first 16 hex digits of the SHA-256 of the block's
+  stored text.
+
 ## Later
 
-Work after Piece 3. Nothing here is built yet.
+Work after Piece 3. Nothing here is built yet, except the first piece of
+"Reach the beach", which comes early for the finish line (decision 18).
 
 - **What other people send is data, never instructions** (decision 14). This
   covers blocks read from the online beach and relay requests. Such content can
@@ -409,4 +497,8 @@ Work after Piece 3. Nothing here is built yet.
 
 ## Open questions
 
-None.
+1. **Whose name the pool entry carries** at its position 1. I'd suggest
+   `Phenomemental`, since Matthew confirms each message, with the message
+   saying it came from the pocket.
+2. **Which shell the assistant wears** on the phone, and so whose opening line
+   goes into `hello-world`.
