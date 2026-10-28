@@ -4,13 +4,14 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 (the local bsp, release v0.1) is built, with the local bsp its own
-pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
-Pixel emulator. It is merged into main, and the four signing secrets are in
-(28 October). A release is now started with "Run workflow" on main, and the
-release job makes the tag itself (see "Starting a release"). A Claude session
-can't push a tag: its GitHub access covers only its own branch. 0.1 is the
-first release.
+Piece 1 is released: **pocket-beach-v0.1**, on the repo's Releases page since
+28 October, signed with Matthew's key. The tag is at `9bd153b` on main. The
+local bsp is its own pure Kotlin module (decision 7), and CI is green on
+Linux, on Windows and on a Pixel emulator.
+
+A release is started with "Run workflow" on main, and the release job makes
+the tag itself (see "Starting a release"). A Claude session can't push a tag,
+but it can start this, as it did for 0.1.
 
 Before Piece 3, wearing a shell offline is built and matched against the
 original (decisions 8–12), as set out under "Wearing a shell offline".
@@ -92,6 +93,14 @@ original (decisions 8–12), as set out under "Wearing a shell offline".
     - the beach refused;
     - the test screen: fields, Run, and the result;
     - the full 833-call golden replay on Android's own runtime.
+- **The 0.1 release.**
+  - The APK is signed with Matthew's key, certificate `CN=Matthew Bushell`,
+    SHA-256 `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`.
+  - apksigner verified it in CI, and again after downloading it from the
+    Release.
+  - It is version 0.1 (`versionCode` 1).
+  - It has no internet permission. Its only declared permission is one AndroidX
+    adds for the app's own receivers.
 - **Starting a release** passes actionlint. The step that picks the tag was run
   locally for five cases:
   - a start on main makes `pocket-beach-v0.1`;
@@ -102,19 +111,15 @@ original (decisions 8–12), as set out under "Wearing a shell offline".
 
 ### Not yet checked
 
-- The signed release with the real key. A throwaway key made the same way (an
-  OpenSSL `.p12`, one password for store and key) signed and verified in the
-  release build, in OpenSSL's current format and in the older one a Mac's
-  built-in openssl makes. The real key is first used by the 0.1 release.
 - The app on Matthew's own phone.
 
 ### Next
 
-1. Start the 0.1 release with "Run workflow" on main. CI makes the tag, builds
-   the signed APK and attaches it to the Release.
-2. Matthew tries: install, open, read the whetstone, make a block, write a
-   line, read it back, then again in aeroplane mode.
-3. Before Piece 3: wearing a shell offline is built and matched against the
+1. Matthew installs `pocket-beach-v0.1.apk` from the Release and tries it:
+   - open it and read the whetstone;
+   - make a block, write a line, and read it back;
+   - then all of it again in aeroplane mode.
+2. Before Piece 3: wearing a shell offline is built and matched against the
    original (decisions 8–12).
 
 ### Running the core on a laptop
@@ -162,7 +167,7 @@ To put the file in as text again:
    (and `versionCode`, one higher) in `app/build.gradle.kts`, merged into main.
 2. **On GitHub, go to Actions, then pocket-beach, then "Run workflow".** Choose
    the branch `main`, type the version (`0.1`), and run it. A Claude session can
-   ask GitHub to do the same.
+   start it too.
 3. **CI runs every check** (the golden calls, Windows, the emulator). The
    release job then makes the tag `pocket-beach-v<version>` at the commit it
    built, signs the APK, checks the signature, and publishes it on the Releases
