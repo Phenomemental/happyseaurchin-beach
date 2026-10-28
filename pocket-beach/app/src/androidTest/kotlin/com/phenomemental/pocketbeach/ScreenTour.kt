@@ -232,6 +232,12 @@ class ScreenTour {
                 shot("$theme-34-ask-chosen")
             }
             app.asking.reset()
+            // Settings: whether each answer shows its time.
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("settings")
+                compose.waitFor("show-timings")
+                shot("$theme-35-settings")
+            }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
                 .putExtra(android.content.Intent.EXTRA_TEXT, """{"_":"Notes from a friend","1":"The ferry leaves at nine","2":{"_":"Bring","1":"a coat","2":"the map"}}""")

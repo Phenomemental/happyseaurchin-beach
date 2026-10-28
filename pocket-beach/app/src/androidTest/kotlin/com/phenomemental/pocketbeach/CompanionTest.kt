@@ -3,6 +3,7 @@ package com.phenomemental.pocketbeach
 import android.content.Intent
 import android.security.NetworkSecurityPolicy
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
@@ -320,6 +321,57 @@ class CompanionTest {
             assertEquals("one conversation for both asks, opened with the examples", 1, mind.histories.size)
             assertEquals(Talks.EXAMPLES, mind.histories.single())
         }
+    }
+
+    private fun asked(question: String) {
+        compose.waitFor("question")
+        compose.onNodeWithTag("question").performTextClearance()
+        compose.onNodeWithTag("question").performTextInput(question)
+        compose.tap("ask")
+    }
+
+    @Test
+    fun timingsShowUnderEveryAnswerWhenOnAndAreAlwaysLogged() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        app.pages.carryOut(app.pages.planNewBlock("garden"))
+        app.pages.carryOut(app.pages.planAdd("garden", "", "Autumn: plant the bulbs"))
+        mind.script += listOf(
+            "talk\nI'm the pocket companion.",
+            "read\nread garden",
+            "talk\nIt says: Autumn: plant the bulbs.",
+            "act\nadd garden: buy more compost",
+            "talk\nYou're welcome.",
+        )
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            // On (the default): talk, read and act each show the time and where she ran.
+            asked("What's your name?")
+            compose.waitFor("over", "She talked.")
+            compose.waitFor("took", "on the stand-in")
+            asked("What's in my garden block?")
+            compose.waitFor("over", "She read 1 block, then answered.")
+            compose.waitFor("took", "on the stand-in")
+            asked("Add to garden: buy more compost.")
+            compose.waitFor("writes")
+            compose.waitFor("took", "on the stand-in")
+            compose.tap("not-now")
+            compose.tap("just-not-now")
+            compose.waitFor("over", "Matthew said not now.")
+
+            // Off: nothing extra under any answer, the earlier ones too.
+            app.showTimings = false
+            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+            asked("Thanks.")
+            compose.waitFor("over", "She talked.")
+            assertTrue(compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            assertTrue(compose.onAllNodes(hasText("Took ", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        }
+        // The ask log keeps every answer's time, shown or not.
+        val log = app.pages.position(Region.POCKET, Asks.LOG)!!
+        assertEquals(4, log.lines.size)
+        for (entry in log.lines) assertTrue(app.pages.position(Region.POCKET, Asks.LOG, entry.address)!!.lines.any { it.text?.startsWith("Took ") == true })
+        app.showTimings = true
     }
 
     @Test

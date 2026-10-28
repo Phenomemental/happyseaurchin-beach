@@ -28,6 +28,7 @@ sealed interface Screen {
     data object Ask : Screen
     data object Received : Screen
     data object Bench : Screen
+    data object Settings : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -51,6 +52,7 @@ class Nav(initial: List<Screen>) {
             Screen.Ask -> "ask"
             Screen.Received -> "received"
             Screen.Bench -> "bench"
+            Screen.Settings -> "settings"
         }
 
         private fun decode(text: String): Screen? {
@@ -64,6 +66,7 @@ class Nav(initial: List<Screen>) {
                 "ask" -> Screen.Ask
                 "received" -> Screen.Received
                 "bench" -> Screen.Bench
+                "settings" -> Screen.Settings
                 else -> null
             }
         }
@@ -112,6 +115,7 @@ fun PocketScreens(app: PocketApp) {
             Screen.Ask -> AskScreen(model, nav)
             Screen.Received -> ReceivedScreen(model, nav)
             Screen.Bench -> BenchScreen(model, nav)
+            Screen.Settings -> SettingsScreen(model, nav)
         }
     }
     // A block shared in from another app is shown as soon as it arrives.
