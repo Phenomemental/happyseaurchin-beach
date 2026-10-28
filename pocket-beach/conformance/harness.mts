@@ -13,14 +13,20 @@
  * agent_id="pscale"): the beach is asked for whole blocks only, so the router
  * walks them itself, exactly as it does for a beach without ?pscale= reads.
  *
+ * With the hand cases come the bundle cases (bundles.mjs), after the random
+ * ones, and the unit goldens (units.mts): the bundle, clock and seat functions
+ * called directly.
+ *
  *   tsx harness.mts <upstream-dir> <out.json> [random-count] [random-seed] [with-hand|random-only]
  */
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { cases as bundleCases } from './bundles.mjs';
 import { cases as handCases } from './corpus.mjs';
 import { randomCases } from './random.mjs';
+import { stripRelations, unitGoldens } from './units.mts';
 
 const [, , upstreamDir, outFile, randomCount = '240', randomSeed = '20261028', handFlag = 'with-hand'] = process.argv;
 if (!upstreamDir || !outFile) {
@@ -94,6 +100,7 @@ const realFetch = globalThis.fetch;
 
 // ── the router ──
 const { handleBsp } = await import(pathToFileURL(join(routerDir, 'src/tools/bsp.ts')).href);
+const temporal = await import(pathToFileURL(join(routerDir, 'src/temporal.ts')).href);
 
 function stateOf() {
   const prefix = `pscale-beach-v2:${ORIGIN}:block:`;
@@ -121,44 +128,52 @@ async function run(caseDef: any, caseIndex: number) {
   const seeded: any[] = [];
   for (const s of caseDef.seed ?? []) {
     nowMs = base + (tick++) * 1000;
+    const content = typeof s.content === 'function' ? s.content(nowMs, temporal) : s.content;
     if (s.raw) {
-      writeFileSync(join(storeDir, encodeURIComponent(`pscale-beach-v2:${ORIGIN}:block:${s.block}`) + '.json'), JSON.stringify(s.content));
+      writeFileSync(join(storeDir, encodeURIComponent(`pscale-beach-v2:${ORIGIN}:block:${s.block}`) + '.json'), JSON.stringify(content));
     } else {
-      const r = await callBeach('POST', new URL(`${POCKET_URL}/.well-known/pscale-beach?block=${encodeURIComponent(s.block)}`), { content: s.content, confirm: true });
+      const r = await callBeach('POST', new URL(`${POCKET_URL}/.well-known/pscale-beach?block=${encodeURIComponent(s.block)}`), { content, confirm: true });
       if (r.status !== 200) throw new Error(`seed ${s.block} refused: ${r.text}`);
     }
-    seeded.push({ block: s.block, content: s.content, raw: !!s.raw, now: new RealDate(nowMs).toISOString() });
+    seeded.push({ block: s.block, content, raw: !!s.raw, now: new RealDate(nowMs).toISOString() });
   }
   const seedState = stateOf();
   let before = seedState.blocks;
   const calls: any[] = [];
-  for (const params of caseDef.calls) {
+  for (const callDef of caseDef.calls) {
     nowMs = base + (tick++) * 1000;
+    // A secret is the original's alone (bundles.mjs): the replay never sends one.
+    const { secret, ...params } = callDef;
     let text: string;
     try {
-      const res = await handleBsp(toWire(params));
+      const res = await handleBsp(toWire(secret === undefined ? params : { ...params, secret }));
       text = res.content.map((c: any) => c.text).join('\n');
     } catch (e: any) {
       text = `[threw] ${e?.message ?? String(e)}`;
     }
-    text = text.split(POCKET_URL).join(ORIGIN);
+    text = stripRelations(text.split(POCKET_URL).join(ORIGIN));
     // Only the blocks this call changed ride with it; the replay carries the rest.
     const after = stateOf();
     const changed: Record<string, string> = {};
     for (const [name, json] of Object.entries(after.blocks)) if (before[name] !== json) changed[name] = json;
     for (const name of Object.keys(before)) if (!(name in after.blocks)) throw new Error(`block ${name} vanished`);
     before = after.blocks;
-    calls.push({ now: new RealDate(nowMs).toISOString(), params, text, changed, touched: after.touched, born: after.born });
+    const record: any = { now: new RealDate(nowMs).toISOString(), params, text, changed, touched: after.touched, born: after.born };
+    if (secret !== undefined) record.secretOnOriginal = true;
+    calls.push(record);
   }
   return { name: caseDef.name, seed: seeded, seedState, calls };
 }
 
-const all = [...(handFlag === 'random-only' ? [] : handCases), ...randomCases(Number(randomCount), Number(randomSeed))];
+const withHand = handFlag !== 'random-only';
+const all = [...(withHand ? handCases : []), ...randomCases(Number(randomCount), Number(randomSeed)), ...(withHand ? bundleCases : [])];
 const out: any[] = [];
 for (let i = 0; i < all.length; i++) out.push(await run(all[i], i));
 if (storeDir) rmSync(storeDir, { recursive: true, force: true });
 
 const upstream = JSON.parse(readFileSync(new URL('./upstream.json', import.meta.url), 'utf8'));
-writeFileSync(outFile, JSON.stringify({ upstream, origin: ORIGIN, cases: out }, null, 1) + '\n');
+const doc: any = { upstream, origin: ORIGIN, cases: out };
+if (withHand) doc.units = await unitGoldens(routerDir, RealDate);
+writeFileSync(outFile, JSON.stringify(doc, null, 1) + '\n');
 const callCount = out.reduce((n, c) => n + c.calls.length, 0);
-process.stdout.write(`golden: ${out.length} cases, ${callCount} calls → ${outFile}\n`);
+process.stdout.write(`golden: ${out.length} cases, ${callCount} calls${withHand ? ', unit goldens' : ''} → ${outFile}\n`);

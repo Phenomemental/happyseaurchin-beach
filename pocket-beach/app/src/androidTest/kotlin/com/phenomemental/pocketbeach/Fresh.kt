@@ -20,9 +20,15 @@ object Fresh {
 
     /** Clear every block and the last-saved time, then open the app on the Shore. */
     fun open(): ActivityScenario<MainActivity> {
+        clear()
+        return ActivityScenario.launch(MainActivity::class.java)
+    }
+
+    fun clear() {
         File(app.filesDir, "regions").deleteRecursively()
         app.lastSavedMs = null
-        return ActivityScenario.launch(MainActivity::class.java)
+        app.asking.reset()
+        app.inbox = null
     }
 }
 

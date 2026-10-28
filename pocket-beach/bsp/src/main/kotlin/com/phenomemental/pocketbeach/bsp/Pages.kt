@@ -54,6 +54,8 @@ class Plan internal constructor(
     val refusal: String?,
     internal val expected: String?,
     internal val nowMs: Long,
+    /** What an add puts there when it is more than the line (an entry with fields beneath it), or the whole block a keep makes. */
+    internal val content: Js? = null,
 )
 
 /** What carrying out a plan did: bsp()'s own [reply], and a [problem] in plain words if it did not land as planned. */
@@ -155,7 +157,19 @@ class Pages(
     }
 
     /** Add a line beneath the one Matthew stands on ([address] empty: beneath the block's opening line). */
-    fun planAdd(name: String, address: String, text: String): Plan {
+    fun planAdd(name: String, address: String, text: String): Plan = planAddOf(name, address, text, str(text))
+
+    /**
+     * Add an entry beneath a block's opening line: a line ([entry]'s `_`) with
+     * fields beneath it, as a log keeps them. The beach stamps its arrival at
+     * field 3, as it does every entry appended.
+     */
+    fun planEntry(name: String, entry: JsObj): Plan {
+        val text = (entry["_"] as? JsStr)?.value ?: return refused(Kind.ADD, name, "", "", "An entry needs a line of its own.")
+        return planAddOf(name, "", text, entry)
+    }
+
+    private fun planAddOf(name: String, address: String, text: String, content: Js): Plan {
         val nowMs = clock()
         val before = beach.loadBlock(name) ?: return refused(Kind.ADD, name, address, text, "There's no block called $name.")
         if (text.isBlank()) return refused(Kind.ADD, name, address, text, "Write the line first.")
@@ -164,7 +178,7 @@ class Pages(
                 ?: return refused(Kind.ADD, name, address, text, "There's no line at $address.")
             if (node is JsObj && (1..9).all { node.has(it.toString()) }) return refused(Kind.ADD, name, address, text, FULL)
         }
-        val c = call(name, address.ifEmpty { null }, str(text), append = true)
+        val c = call(name, address.ifEmpty { null }, content, append = true)
         val (reply, after) = dryRun(name, c, nowMs)
         if (after == null || deepEqual(after, before)) return refused(Kind.ADD, name, address, text, plainRefusal(reply))
         val rise = floorDepth(after) - floorDepth(before)
@@ -177,26 +191,47 @@ class Pages(
             ?: return refused(Kind.ADD, name, address, text, DISTURBS)
         val path = landing.removeSuffix("#")
         val landsAt = fullWidthAddress(path.split('/').map { if (it == "_") '0' else it[0] }, floorDepth(after))
-        return Plan(Kind.ADD, name, address, text, c, landsAt, rise == 1, null, stringify(after), nowMs)
+        return Plan(Kind.ADD, name, address, text, c, landsAt, rise == 1, null, stringify(after), nowMs, content.takeIf { it is JsObj })
     }
 
     /** Make a new block, its opening line the one the beach gives a block it makes ("garden at pocket."). */
     fun planNewBlock(typed: String): Plan {
         val name = typed.trim()
         fun no(why: String) = refused(Kind.NEW_BLOCK, name, "", "", why)
-        when {
-            name.isEmpty() -> return no("Give the block a name.")
-            name.any { it.isISOControl() } -> return no("A name fits on one line.")
-            name.length > 120 -> return no("That name is too long: keep it under 120 letters.")
-            name.startsWith("sed:") || name.startsWith("grain:") -> return no("Names starting sed: or grain: belong to the beach, which the pocket can't reach in this version.")
-            storage.read(name) != null -> return no("There's already a block called $name.")
-        }
+        nameRefusal(name)?.let { return no(it) }
         val nowMs = clock()
         val opening = beach.defaultIdentity(name)
         val c = call(name, null, JsObj.of("_" to str(opening)))
         val after = dryRun(name, c, nowMs).second
         if (after == null || !deepEqual(after, JsObj.of("_" to str(opening)))) return no(DISTURBS)
         return Plan(Kind.NEW_BLOCK, name, "", opening, c, "", false, null, stringify(after), nowMs)
+    }
+
+    /**
+     * Keep a block that arrived from elsewhere (decision 19) as a new block of
+     * the pocket, exactly as it came: one whole-block write, refused if what
+     * it leaves isn't the block as received.
+     */
+    fun planKeep(typed: String, block: Js): Plan {
+        val name = typed.trim()
+        fun no(why: String) = refused(Kind.NEW_BLOCK, name, "", "", why)
+        nameRefusal(name)?.let { return no(it) }
+        if (block !is JsObj) return no("Only a block (a JSON object) can be kept.")
+        val nowMs = clock()
+        val c = call(name, null, block)
+        val (reply, after) = dryRun(name, c, nowMs)
+        if (after == null) return no(plainRefusal(reply))
+        if (!deepEqual(after, block)) return no("The pocket would store this block differently from how it came, so it wasn't kept.")
+        return Plan(Kind.NEW_BLOCK, name, "", collectUnderscore(block) ?: "", c, "", false, null, stringify(after), nowMs, block)
+    }
+
+    private fun nameRefusal(name: String): String? = when {
+        name.isEmpty() -> "Give the block a name."
+        name.any { it.isISOControl() } -> "A name fits on one line."
+        name.length > 120 -> "That name is too long: keep it under 120 letters."
+        name.startsWith("sed:") || name.startsWith("grain:") -> "Names starting sed: or grain: belong to the beach, which the pocket can't reach in this version."
+        storage.read(name) != null -> "There's already a block called $name."
+        else -> null
     }
 
     /**
@@ -207,8 +242,8 @@ class Pages(
         if (plan.call == null) return Done(false, "", null, false, plan.refusal)
         val fresh = when (plan.kind) {
             Kind.CHANGE -> planChange(plan.block, plan.address, plan.text)
-            Kind.ADD -> planAdd(plan.block, plan.address, plan.text)
-            Kind.NEW_BLOCK -> planNewBlock(plan.block)
+            Kind.ADD -> planAddOf(plan.block, plan.address, plan.text, plan.content ?: str(plan.text))
+            Kind.NEW_BLOCK -> plan.content?.let { planKeep(plan.block, it) } ?: planNewBlock(plan.block)
         }
         val call = fresh.call ?: return Done(false, "", null, false, fresh.refusal)
         if (fresh.landsAt != plan.landsAt || fresh.wraps != plan.wraps) {

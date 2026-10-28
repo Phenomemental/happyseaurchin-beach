@@ -1,12 +1,23 @@
 package com.phenomemental.pocketbeach
 
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.res.AssetManager
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.phenomemental.pocketbeach.bsp.FileStorage
 import com.phenomemental.pocketbeach.bsp.Pages
 import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.ShelfSource
+import com.phenomemental.pocketbeach.bsp.Wire
+import com.phenomemental.pocketbeach.model.Gemma
+import com.phenomemental.pocketbeach.model.Mind
+import com.phenomemental.pocketbeach.model.ModelStore
+import com.phenomemental.pocketbeach.net.HttpsWire
+import com.phenomemental.pocketbeach.ui.Asking
+import com.phenomemental.pocketbeach.ui.Received
 import java.io.FileNotFoundException
 
 /**
@@ -14,12 +25,34 @@ import java.io.FileNotFoundException
  * Android: the app hands it a storage for the blocks — files under its private
  * filesDir, as regions/pocket/<name>.json — and the teaching shelf read from
  * its own assets. The pages the screens show are read and written through it.
+ * The companion's model, and the one way out, are held here too.
  */
 class PocketApp : Application() {
-    private val storage by lazy { FileStorage(filesDir) }
-    private val shelf by lazy { Shelf(AssetShelfSource(assets)) }
+    val storage by lazy { FileStorage(filesDir) }
+    val shelf by lazy { Shelf(AssetShelfSource(assets)) }
     val pocket: PocketBsp by lazy { PocketBsp(storage, shelf) }
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
+    val models by lazy { ModelStore(this) }
+    val gemma by lazy { Gemma(models, cacheDir.path) }
+
+    /** What the Ask screen asks: Gemma. The device tests put a stand-in here, since no test can run the model. */
+    @Volatile private var standIn: Mind? = null
+    var mind: Mind
+        get() = standIn ?: gemma
+        set(value) { standIn = value }
+    val asking by lazy { Asking(this) }
+
+    /** A block another app has just shared in, waiting to be looked at. */
+    var inbox by mutableStateOf<Received?>(null)
+
+    /** What carries the one post. The device tests put a wire here that goes nowhere: no test posts to the beach. */
+    @Volatile var wire: Wire = HttpsWire
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        // Decision 13: when Android asks for memory back, the model goes first.
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) gemma.release()
+    }
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
 

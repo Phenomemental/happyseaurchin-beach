@@ -2,7 +2,8 @@
 // ones. They reach the paths a hand-made corpus misses: random shapes at
 // floors 1-3, hidden directories, numeric leaves, and random calls of every
 // kind against them, valid and not. Every generated line holds a space, so no
-// node can read as a bundle of references (bundle windows are not carried).
+// node can read as a bundle of references: bundles have cases of their own
+// (bundles.mjs).
 
 function rng(seed) {
   let a = seed >>> 0;

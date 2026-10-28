@@ -25,6 +25,8 @@ sealed interface Screen {
     data class Write(val kind: Kind, val block: String, val address: String) : Screen
     data object About : Screen
     data object Calls : Screen
+    data object Ask : Screen
+    data object Received : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -45,6 +47,8 @@ class Nav(initial: List<Screen>) {
             is Screen.Write -> listOf("write", s.kind.name, s.block, s.address).joinToString(SEP)
             Screen.About -> "about"
             Screen.Calls -> "calls"
+            Screen.Ask -> "ask"
+            Screen.Received -> "received"
         }
 
         private fun decode(text: String): Screen? {
@@ -55,6 +59,8 @@ class Nav(initial: List<Screen>) {
                 "write" -> Screen.Write(Kind.valueOf(p[1]), p[2], p[3])
                 "about" -> Screen.About
                 "calls" -> Screen.Calls
+                "ask" -> Screen.Ask
+                "received" -> Screen.Received
                 else -> null
             }
         }
@@ -77,6 +83,8 @@ class Model(val app: PocketApp) {
 
     fun changed() { version++ }
 
+    init { app.asking.changed = { changed() } }
+
     fun say(on: Screen, text: String) { slip = on to text }
 
     fun saved(ms: Long) {
@@ -97,8 +105,14 @@ fun PocketScreens(app: PocketApp) {
             is Screen.Block -> BlockScreen(model, nav, s)
             is Screen.Write -> WriteScreen(model, nav, s)
             Screen.About -> AboutScreen(model, nav)
-            Screen.Calls -> CallsScreen(app.pocket, nav)
+            Screen.Calls -> CallsScreen(model, nav)
+            Screen.Ask -> AskScreen(model, nav)
+            Screen.Received -> ReceivedScreen(model, nav)
         }
+    }
+    // A block shared in from another app is shown as soon as it arrives.
+    LaunchedEffect(app.inbox) {
+        if (app.inbox != null && nav.top != Screen.Received) nav.go(Screen.Received)
     }
     model.slip?.let { said ->
         LaunchedEffect(said) {

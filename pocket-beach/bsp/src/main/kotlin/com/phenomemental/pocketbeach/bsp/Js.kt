@@ -391,8 +391,8 @@ private class JsonReader(val s: String) {
 /** JSON.stringify(v) — null when v is undefined. */
 fun stringify(v: Js?): String? = v?.let { StringBuilder().also { b -> write(b, it, null, "") }.toString() }
 
-/** JSON.stringify(v, null, 2) */
-fun stringifyPretty(v: Js): String = StringBuilder().also { b -> write(b, v, "  ", "") }.toString()
+/** JSON.stringify(v, null, 2), or with another [gap]: JSON.stringify(v, null, 1) is a gap of one space. */
+fun stringifyPretty(v: Js, gap: String = "  "): String = StringBuilder().also { b -> write(b, v, gap, "") }.toString()
 
 private fun write(b: StringBuilder, v: Js, gap: String?, indent: String) {
     when (v) {

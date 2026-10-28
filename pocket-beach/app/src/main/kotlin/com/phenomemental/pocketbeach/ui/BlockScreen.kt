@@ -1,5 +1,7 @@
 package com.phenomemental.pocketbeach.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,6 +28,7 @@ import com.phenomemental.pocketbeach.bsp.Kind
 import com.phenomemental.pocketbeach.bsp.Line
 import com.phenomemental.pocketbeach.bsp.PositionView
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.stringify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -118,6 +122,27 @@ fun BlockScreen(model: Model, nav: Nav, screen: Screen.Block) {
                 group = g
                 LineRow(line, highlighted = model.landed == screen.name to line.address) { standAt(line.address) }
             }
+        }
+
+        if (screen.address.isEmpty()) {
+            val context = LocalContext.current
+            TextLink("Share this block", {
+                val text = when (screen.region) {
+                    Region.POCKET -> model.app.storage.read(screen.name)
+                    Region.TEACHING -> model.app.shelf.load(screen.name)?.let { stringify(it) }
+                } ?: return@TextLink
+                // Decision 19: out through Android's share menu, by Matthew's tap, to whichever app he picks.
+                val send = Intent(Intent.ACTION_SEND)
+                    .setType("text/plain")
+                    .putExtra(Intent.EXTRA_TEXT, text)
+                    .putExtra(Intent.EXTRA_SUBJECT, screen.name)
+                    .putExtra(Intent.EXTRA_TITLE, screen.name)
+                try {
+                    context.startActivity(Intent.createChooser(send, "Share ${screen.name}"))
+                } catch (_: ActivityNotFoundException) {
+                    model.say(screen, "There's no app on this phone to share it with.")
+                }
+            }, tag = "share")
         }
     }
 

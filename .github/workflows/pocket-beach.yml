@@ -83,13 +83,17 @@ jobs:
         run: ./gradlew :bsp:test
       - name: Kotlin replay of the random cases
         run: ./gradlew :bsp:test --tests '*GoldenTest' -Pgolden="$RUNNER_TEMP/random.json" --rerun-tasks
+      - name: The app's own tests (the one way out)
+        run: ./gradlew :app:testDebugUnitTest
       - name: Build the app
         run: ./gradlew :app:assembleDebug :app:assembleRelease
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: test-reports
-          path: pocket-beach/bsp/build/reports/tests/
+          path: |
+            pocket-beach/bsp/build/reports/tests/
+            pocket-beach/app/build/reports/tests/
 
   core-windows:
     runs-on: windows-latest

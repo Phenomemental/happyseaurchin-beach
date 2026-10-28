@@ -31,7 +31,11 @@ import com.phenomemental.pocketbeach.bsp.JsArr
 import com.phenomemental.pocketbeach.bsp.JsBool
 import com.phenomemental.pocketbeach.bsp.JsNum
 import com.phenomemental.pocketbeach.bsp.JsObj
-import com.phenomemental.pocketbeach.bsp.PocketBsp
+import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.PoolMessage
+import com.phenomemental.pocketbeach.bsp.PoolPost
+import com.phenomemental.pocketbeach.bsp.Posted
+import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.str
 import com.phenomemental.pocketbeach.bsp.stringify
 import kotlinx.coroutines.Dispatchers
@@ -75,9 +79,10 @@ private class Fields {
     }
 }
 
-/** "Try a call by hand": every bsp() parameter as a field, Run, and the raw reply. */
+/** "Try a call by hand": the hello world by hand, then every bsp() parameter as a field, Run, and the raw reply. */
 @Composable
-fun CallsScreen(pocket: PocketBsp, nav: Nav) {
+fun CallsScreen(model: Model, nav: Nav) {
+    val pocket = model.app.pocket
     val f = rememberSaveable(saver = androidx.compose.runtime.saveable.Saver<Fields, List<Any>>(
         save = { listOf(it.agentId, it.block, it.spindle, it.pscale, it.content, it.append, it.secret, it.newLock, it.gray, it.encSecret, it.members, it.face, it.tier) },
         restore = { v ->
@@ -95,6 +100,8 @@ fun CallsScreen(pocket: PocketBsp, nav: Nav) {
     val scope = rememberCoroutineScope()
 
     Page(onBack = { nav.back() }) {
+        HelloByHand(model)
+        HorizontalDivider()
         Text("A call by hand", style = Type.heading, color = LocalInk.current.ink)
         Text(
             "Each field is one bsp() parameter; an empty field is left out. agent_id \"pocket\" is your blocks on this phone, \"pscale\" the teaching blocks.",
@@ -180,5 +187,89 @@ private fun Toggle(label: String, value: Boolean, onChange: (Boolean) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Text(label, modifier = Modifier.weight(1f))
         Switch(checked = value, onCheckedChange = onChange, modifier = Modifier.testTag(label))
+    }
+}
+
+/**
+ * The hello world by hand (decision 17), so the chain can be shown without
+ * the companion: 1, make hello-world, the shell's opening line, the secret,
+ * a seal the app makes and the fingerprint, each a guarded write; 2, after
+ * its own confirmation, post the one message to pool:Phenomemental.
+ */
+@Composable
+private fun HelloByHand(model: Model) {
+    val ink = LocalInk.current
+    val scope = rememberCoroutineScope()
+    var secret by rememberSaveable { mutableStateOf("") }
+    var made by rememberSaveable { mutableStateOf("") }
+    var said by rememberSaveable { mutableStateOf("") }
+    var confirming by androidx.compose.runtime.remember { mutableStateOf<PoolMessage?>(null) }
+    var busy by rememberSaveable { mutableStateOf(false) }
+    val stored by androidx.compose.runtime.produceState<String?>(null, model.version) {
+        value = withContext(Dispatchers.IO) { model.app.storage.read(HelloWorld.BLOCK) }
+    }
+    val message = stored?.let(HelloWorld::messageFor)
+
+    Text("The hello world by hand", style = Type.heading, color = ink.ink)
+    Text(
+        "The same two steps the companion offers, without it. Step 1 makes the block ${HelloWorld.BLOCK}; step 2 posts one message to " +
+            "pool:${HelloWorld.POOL} on the beach, after you confirm it.",
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Field("Your secret", secret, tag = "hello-secret") { secret = it }
+    Button(
+        onClick = {
+            busy = true
+            scope.launch {
+                val outcome = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val opening = model.pages.position(Region.POCKET, HelloWorld.SHELL)?.text ?: HelloWorld.SHELL_OPENING
+                        HelloWorld.makeByHand(model.pages, model.app.storage, opening, secret)
+                    }
+                }
+                busy = false
+                model.changed()
+                outcome.onSuccess { m -> made = "Made ${HelloWorld.BLOCK}. Seal ${m.seal}, fingerprint ${m.fingerprint}."; said = "" }
+                    .onFailure { made = it.message ?: "It wasn't made." }
+            }
+        },
+        enabled = !busy && secret.isNotBlank(),
+        modifier = Modifier.fillMaxWidth().testTag("hello-make"),
+    ) { Text("1. Make ${HelloWorld.BLOCK}") }
+    if (made.isNotEmpty()) Text(made, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-made"))
+    stored?.let { SelectionContainer { Text(it, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-block")) } }
+    if (stored != null && message == null) {
+        Text("${HelloWorld.BLOCK} has no fingerprint that matches it, so there's nothing to post from it.", style = MaterialTheme.typography.bodySmall)
+    }
+    Button(
+        onClick = { confirming = runCatching { PoolPost.prepare(HelloWorld.POOL, message!!) }.getOrNull() },
+        enabled = !busy && message != null,
+        modifier = Modifier.fillMaxWidth().testTag("hello-post"),
+    ) { Text("2. Post it to pool:${HelloWorld.POOL}…") }
+    if (said.isNotEmpty()) Text(said, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-said"))
+
+    confirming?.let { m ->
+        PaperDialog(
+            title = "Post this to the beach?",
+            onDismiss = { confirming = null },
+            actions = {
+                Action("Not now", { confirming = null }, Modifier.weight(1f), tag = "hello-not-now")
+                Action("Post it", {
+                    confirming = null
+                    busy = true
+                    scope.launch {
+                        val posted = withContext(Dispatchers.IO) { PoolPost.send(m, model.app.wire) }
+                        busy = false
+                        said = when (posted) {
+                            is Posted.Landed -> "Posted. It landed at slot ${posted.slot} of pool:${posted.pool}."
+                            is Posted.Refused -> posted.why
+                        }
+                    }
+                }, Modifier.weight(1f), strong = true, tag = "hello-confirm")
+            },
+        ) {
+            Text(m.message, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hello-message"))
+            Text("To pool:${m.pool} at beach.happyseaurchin.com, under the name ${m.author}. It can't be taken back.", style = Type.small, color = ink.soft)
+        }
     }
 }

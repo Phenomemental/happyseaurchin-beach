@@ -88,6 +88,66 @@ class ScreenTour {
             compose.waitFor("thanks")
             shot("$theme-12-about")
         }
+        companion(theme)
+    }
+
+    /** Piece 3's screens, with a stand-in for the companion and a wire that goes nowhere. */
+    private fun companion(theme: String) {
+        val app = Fresh.app
+        val wire = NowhereWire()
+        try {
+            app.mind = app.gemma
+            Fresh.open().use {
+                compose.tap("ask-companion")
+                compose.waitUntil(15_000) {
+                    listOf("too-little-memory", "too-little-room", "get-model").any { compose.onAllNodes(hasTestTag(it), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+                }
+                shot("$theme-13-ask-model")
+            }
+            app.mind = StandIn()
+            app.wire = wire
+            Fresh.open().use {
+                compose.tap("ask-companion")
+                compose.waitFor("make-shell")
+                shot("$theme-14-ask-no-shell")
+                compose.tap("Make the companion's shell")
+                compose.waitFor("wearing", "Wearing pocket-companion")
+                compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
+                shot("$theme-15-ask-ready")
+                compose.tap("ask")
+                compose.waitFor("offered-post")
+                shot("$theme-16-ask-proposal")
+                compose.tap("not-now")
+                compose.waitFor("wrong-place")
+                shot("$theme-17-ask-not-now")
+                compose.tap("back-to-proposal")
+                compose.tap("yes")
+                compose.waitFor("post-message")
+                shot("$theme-18-ask-post")
+                compose.tap("post")
+                compose.waitFor("posted")
+                shot("$theme-19-ask-posted")
+                compose.tap("back")
+                compose.tap("about")
+                compose.tap("calls")
+                compose.waitFor("hello-post")
+                shot("$theme-20-calls-hello")
+                compose.tap("hello-post")
+                compose.waitFor("hello-message")
+                shot("$theme-21-calls-confirm")
+            }
+            Fresh.clear()
+            val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
+                .putExtra(android.content.Intent.EXTRA_TEXT, """{"_":"Notes from a friend","1":"The ferry leaves at nine","2":{"_":"Bring","1":"a coat","2":"the map"}}""")
+                .putExtra(android.content.Intent.EXTRA_SUBJECT, "friend")
+            androidx.test.core.app.ActivityScenario.launch<MainActivity>(send).use {
+                compose.waitFor("received-opening")
+                shot("$theme-22-received")
+            }
+        } finally {
+            app.wire = com.phenomemental.pocketbeach.net.HttpsWire
+            app.mind = app.gemma
+        }
     }
 
     @Test

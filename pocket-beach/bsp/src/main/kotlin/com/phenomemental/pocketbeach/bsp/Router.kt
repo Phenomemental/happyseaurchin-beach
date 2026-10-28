@@ -11,8 +11,12 @@ package com.phenomemental.pocketbeach.bsp
  *
  * Where upstream names a beach URL, the pocket's region is named "pocket".
  * Reads walk with the router's own walker, the path upstream takes for the
- * teaching blocks. Left out by decision (pocket-beach/STATUS.md): the clock
- * line, the reflection and orientation lines, and bundle windows.
+ * teaching blocks. A walk that lands on a bundle carries its window
+ * (Bundle.kt), and an append to a block that shell:<hand>'s manifest dials
+ * moves the manifest's reference with it, as upstream does for an append under
+ * a secret — here with none, the phone being the latch. Left out by decision
+ * (pocket-beach/STATUS.md): the clock line and the reflection; the orientation
+ * rider rides only for a shell put on (Shells.kt, Seat.kt).
  */
 
 class Call(
@@ -139,7 +143,7 @@ class Router(private val beach: Beach, private val shelf: Shelf) {
             return "\"pscale\" is a read-only sentinel. The bundled teaching blocks are server-fixed."
         }
         if (c.append) return appendBranch(agent, blockName, c.spindle, content, nowMs)
-        if (content == null) return readBranch(sentinel, agent, blockName, c.spindle, c.pscaleAttention)
+        if (content == null) return readBranch(sentinel, agent, blockName, c.spindle, c.pscaleAttention, nowMs)
         return writeBranch(agent, blockName, c.spindle, c.pscaleAttention, content, nowMs)
     }
 
@@ -180,21 +184,63 @@ class Router(private val beach: Beach, private val shelf: Shelf) {
                 } catch (_: Exception) {
                 }
             }
+            val landedAt = address ?: slot ?: ""
+            val followed = if (landedAt.isNotEmpty()) bundleFollowsAppend(blockName, landedAt, nowMs) else ""
             val readBack = readBackWalk(false, blockName, address ?: slot)
             val supernested = truthy(j["supernested"])
             if (address != null) {
                 val grew = if (supernested) "  ⤴ node supernested — the ladder continues within" else ""
-                "[append @ \"$agent/$blockName\" → $address (slot ${slot ?: "?"} beneath node ${node ?: appendSpindle})$grew$stampedNote]$bornNote$owed$span$readBack"
+                "[append @ \"$agent/$blockName\" → $address (slot ${slot ?: "?"} beneath node ${node ?: appendSpindle})$grew$stampedNote]$bornNote$owed$span$followed$readBack"
             } else {
                 val grew = if (supernested) "  ⤴ supernested → floor ${jsString(j["floor"])}" else ""
-                "[append @ \"$agent/$blockName\" → slot ${slot ?: "?"}$grew$stampedNote]$bornNote$owed$span$readBack"
+                "[append @ \"$agent/$blockName\" → slot ${slot ?: "?"}$grew$stampedNote]$bornNote$owed$span$followed$readBack"
             }
         } catch (e: Rejected) {
             "Append rejected: ${e.message}"
         }
     }
 
-    private fun readBranch(sentinel: Boolean, agent: String, blockName: String, spindle: String?, pscale: Int?): String {
+    /**
+     * The manifest follows a landing: when shell:<hand>'s manifest dials this
+     * block of the same hand at an address, the reference moves to what just
+     * landed. Upstream does this only for an append under a secret; the pocket
+     * keeps none.
+     */
+    private fun bundleFollowsAppend(block: String, landed: String, nowMs: Long): String {
+        val m = FOLLOWS.matchEntire(block) ?: return ""
+        if (landed.isEmpty()) return ""
+        val shellName = "shell:${m.groupValues[2]}"
+        val row = try { loadBlock(false, shellName) } catch (_: Exception) { return "" } ?: return ""
+        val manifest = jsGet(row.block, "3")
+        if (!truthy(manifest) || !isObject(manifest)) return ""
+        for (k in jsKeys(manifest)) {
+            if (!(k.length == 1 && k[0] in '1'..'9')) continue
+            val next = nextRef(jsGet(manifest, k), block, landed) ?: continue
+            return try {
+                val shell = deepCopy(row.block)
+                writeAt(shell, str("3.$k"), str(next))
+                saveBlock(shellName, shell, "3.$k", null, nowMs)
+                "\n  ⟲ the bundle follows: $shellName 3.$k now dials $next"
+            } catch (e: Exception) {
+                "\n  ⟲ the bundle did not follow ($shellName 3.$k): ${e.message ?: e.toString()}"
+            }
+        }
+        return ""
+    }
+
+    /** A walk that lands on a bundle node carries the bundle's window beneath it. */
+    private fun bundleWindow(sentinel: Boolean, agent: String, blockName: String, block: Js, spindle: String?, nowMs: Long): String? {
+        val node = try { readAt(block, spindle) } catch (_: Exception) { return null }
+        if (!looksLikeBundle(node)) return null
+        val load: (String) -> Js? =
+            if (sentinel) { name -> try { shelf.load(name) } catch (_: Exception) { null } }
+            else surfaceLoader(shelf) { name -> loadBlock(false, name)?.block }
+        val members = compileBundle(node, BundleContext(load, handleOfBlock(blockName), nowMs)) ?: return null
+        val at = jsTrim(spindle ?: "")
+        return renderBundle(members, "\"$agent/$blockName\" $at", nowMs)
+    }
+
+    private fun readBranch(sentinel: Boolean, agent: String, blockName: String, spindle: String?, pscale: Int?, nowMs: Long): String {
         if (blockName.isEmpty()) {
             return if (sentinel) formatSentinelIndex() else formatBeachIndex(wireLoad("") as JsObj)
         }
@@ -204,7 +250,11 @@ class Router(private val beach: Beach, private val shelf: Shelf) {
             val result = bspRead(row.block, if (wholeNamed) "" else (spindle ?: ""), pscale)
             val localText = formatRead(result)
             val probe = if (wholeNamed) null else probeInsteadOfWhole(row.block, spindle, pscale, localText)
-            probe ?: tooLarge(result, localText) ?: localText
+            var text = probe ?: tooLarge(result, localText) ?: localText
+            if (probe == null && result.shape == "path-walk") {
+                bundleWindow(sentinel, agent, blockName, row.block, spindle, nowMs)?.let { text = "$localText\n$it" }
+            }
+            text
         } catch (e: InvalidAddressError) {
             "Read rejected: ${e.message}"
         }
@@ -279,6 +329,19 @@ class Router(private val beach: Beach, private val shelf: Shelf) {
         }
         return lines.joinToString("\n")
     }
+}
+
+private val FOLLOWS = Regex("""^([a-z0-9-]+):([^:]+)$""", RegexOption.IGNORE_CASE)
+// JavaScript's `.`: anything but a line terminator.
+private val NEXT_REF = Regex("""^([^\n\r  ]*):(\d[\d.]*):(-?\d+)$""")
+
+/** The manifest ref that follows a landing: '<block>:<addr>:<attention>' moved to what just landed; null when the ref is another block's or already there. */
+fun nextRef(ref: Js?, block: String, landed: String): String? {
+    if (ref !is JsStr || landed.isEmpty()) return null
+    val pr = NEXT_REF.matchEntire(ref.value) ?: return null
+    if (pr.groupValues[1] != block) return null
+    val next = "$block:$landed:${pr.groupValues[3]}"
+    return if (next == ref.value) null else next
 }
 
 const val WINDOW_CHARS = 30000

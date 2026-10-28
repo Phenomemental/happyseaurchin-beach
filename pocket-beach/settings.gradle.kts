@@ -18,3 +18,5 @@ rootProject.name = "pocket-beach"
 //   gradlew :bsp:test -PcoreOnly
 include(":bsp")
 if (!providers.gradleProperty("coreOnly").isPresent) include(":app")
+// The companion's trial against the real model, on a laptop (see trial/build.gradle.kts).
+if (providers.gradleProperty("trial").isPresent) include(":trial")
