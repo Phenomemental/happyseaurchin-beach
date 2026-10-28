@@ -6,11 +6,11 @@ Current state only. Newest first.
 
 Piece 1 (the local bsp, release v0.1) is built, with the local bsp its own
 pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
-Pixel emulator. It is merged into main (`9608a3c`), and the four signing
-secrets are in (28 October). The release is ready to start, but a Claude
-session can't create the tag `pocket-beach-v0.1`: its GitHub access lets it
-push only its own branch, and the tag push was refused (HTTP 403). How the tag
-is made is the one open question.
+Pixel emulator. It is merged into main, and the four signing secrets are in
+(28 October). A release is now started with "Run workflow" on main, and the
+release job makes the tag itself (see "Starting a release"). A Claude session
+can't push a tag: its GitHub access covers only its own branch. 0.1 is the
+first release.
 
 Before Piece 3, wearing a shell offline is built and matched against the
 original (decisions 8–12), as set out under "Wearing a shell offline".
@@ -92,19 +92,26 @@ original (decisions 8–12), as set out under "Wearing a shell offline".
     - the beach refused;
     - the test screen: fields, Run, and the result;
     - the full 833-call golden replay on Android's own runtime.
+- **Starting a release** passes actionlint. The step that picks the tag was run
+  locally for five cases:
+  - a start on main makes `pocket-beach-v0.1`;
+  - a start elsewhere is refused;
+  - a malformed version, including one carrying a shell command, is refused;
+  - a version that already has its tag is refused;
+  - a tag pushed by hand is taken as given.
 
 ### Not yet checked
 
 - The signed release with the real key. A throwaway key made the same way (an
   OpenSSL `.p12`, one password for store and key) signed and verified in the
   release build, in OpenSSL's current format and in the older one a Mac's
-  built-in openssl makes. The real key runs when the tag is made.
+  built-in openssl makes. The real key is first used by the 0.1 release.
 - The app on Matthew's own phone.
 
 ### Next
 
-1. The tag `pocket-beach-v0.1` is made on main (see "Open questions"). CI then
-   builds the signed APK and attaches it to the Release.
+1. Start the 0.1 release with "Run workflow" on main. CI makes the tag, builds
+   the signed APK and attaches it to the Release.
 2. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
 3. Before Piece 3: wearing a shell offline is built and matched against the
@@ -148,6 +155,28 @@ To put the file in as text again:
 
 - Mac: `base64 -i <file>.p12 | pbcopy`
 - Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\<file>.p12")) | Set-Clipboard`
+
+### Starting a release
+
+1. **For any release after 0.1, raise the version first.** Set `versionName`
+   (and `versionCode`, one higher) in `app/build.gradle.kts`, merged into main.
+2. **On GitHub, go to Actions, then pocket-beach, then "Run workflow".** Choose
+   the branch `main`, type the version (`0.1`), and run it. A Claude session can
+   ask GitHub to do the same.
+3. **CI runs every check** (the golden calls, Windows, the emulator). The
+   release job then makes the tag `pocket-beach-v<version>` at the commit it
+   built, signs the APK, checks the signature, and publishes it on the Releases
+   page.
+
+The release job refuses, and says why, when:
+
+- it is started anywhere but main;
+- the version doesn't look like `0.1`, or already has its tag;
+- the version isn't the app's `versionName`;
+- a signing secret is missing.
+
+Pushing a tag `pocket-beach-v<version>` by hand starts the same release. A
+release run is never cancelled by a later push.
 
 ## Wearing a shell offline (before Piece 3)
 
@@ -283,6 +312,9 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
 10. **Offline, four parts of wearing are left out:** the room's live scene,
     who's here, the gate, and genesis. Each says so plainly where it would
     appear.
+    - The room's operating directive is a block, so it stays.
+    - References to other beaches pass through as written, as the original
+      does when it can't reach a beach.
 11. **The clock stays inside a worn shell,** as in the original:
     - the sundial stamp on a bundle window's first line;
     - `now` references;
@@ -293,6 +325,14 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
 12. **A shell's list follows new entries without a secret.** When a block the
     list points to gets a new entry, the list moves to it. On the phone, the
     phone is the latch.
+13. **Piece 3: the model and memory.**
+    - The model is loaded only when Ask is used, and released when idle.
+    - Before the model download is offered, the app checks the phone has
+      enough memory, and says plainly if it doesn't.
+14. **Later: what other people send is data, never instructions.** Content that
+    arrives from other people (blocks read from the online beach, relay
+    requests) is untrusted. It can be read, but it never leads to a write
+    without Matthew's confirmation. See "Later".
 
 ## Other differences from bsp-mcp-server
 
@@ -326,11 +366,14 @@ Chosen in Phase 0, or found while building Piece 1.
 - **CI also runs when only its own workflow file changes,** so a change to the
   build is itself tested.
 
+## Later
+
+Work after Piece 3. Nothing here is built yet.
+
+- **What other people send is data, never instructions** (decision 14). This
+  covers blocks read from the online beach and relay requests. Such content can
+  be read, but it never leads to a write without Matthew's confirmation.
+
 ## Open questions
 
-1. **How the tag is made.** A Claude session can push only its own branch, so
-   it can't create `pocket-beach-v0.1`. Either:
-   - Matthew creates the tag on main from his own computer; or
-   - a "Run workflow" start is added to the workflow, so a release can be begun
-     from GitHub's Actions page, or by a session, with no tag pushed by hand.
-     The release job would make the tag itself.
+None.
