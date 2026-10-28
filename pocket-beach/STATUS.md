@@ -4,9 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 3, the companion, is built, and with it today's finish line, the hello
-world. Release 0.3 is next (see "Next"). Before it, wearing a shell offline was
-built and matched against the original (decisions 8–12).
+Piece 3, the companion, is released, and with it today's finish line, the
+hello world: **pocket-beach-v0.3**, on the Releases page since 28 October, its
+tag at `ec9cea3` on main, signed with the same key as 0.1 and 0.2, so it
+installs over them. Before it, wearing a shell offline was built and matched
+against the original (decisions 8–12). Next is Matthew trying it on the phone.
 
 Piece 2 (v0.2) is released, and Piece 1 (v0.1) works on Matthew's Pixel, in
 aeroplane mode too.
@@ -190,6 +192,20 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.3 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, the same
+  as 0.1 and 0.2. apksigner verified it in CI and again after download.
+- Version 0.3 (`versionCode` 3), for arm64 phones, 49 MB. Its SHA-256 is
+  `7db3bca9c3e37200fc6a07c5fdcff765c2c8bd93087ba47eb7d3090db58bb959`.
+- Permissions: the internet, the microphone, and one AndroidX adds for the
+  app's own receivers.
+- Built by the release run on main, after all its tests passed again: the
+  core on Linux and Windows, the golden calls regenerated from the original,
+  1,000 fresh random cases, the one-way-out tests, and the 17 on-device
+  tests.
 
 ### Not yet checked
 
