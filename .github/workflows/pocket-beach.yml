@@ -1,8 +1,10 @@
 # Pocket beach — the Android app in pocket-beach/.
 #
-# Runs on a change under pocket-beach/ (or to this file), and on a version tag
-# pocket-beach-vX.Y, which also builds the signed APK and publishes it as the
-# GitHub Release of that name.
+# Runs on a change under pocket-beach/ (or to this file). A release is started
+# with "Run workflow" on main, giving the version (0.1): the release job then
+# makes the tag pocket-beach-v0.1 at the commit it built, and publishes the
+# signed APK as the GitHub Release of that name. Pushing such a tag by hand
+# starts the same release.
 #
 #   test      the conformance checks: the golden calls regenerated from the
 #             original bsp-mcp-server and pscale-beach at the pinned commits
@@ -17,7 +19,8 @@
 #   emulator  installs the app on a Pixel-class emulator, opens it, and runs
 #             the on-device tests (the whetstone from the shelf, a write read
 #             back from its own file, the test screen, the golden replay).
-#   release   tags only: the signed APK, attached to the Release.
+#   release   a started release or a version tag only: the signed APK,
+#             attached to the Release.
 
 name: pocket-beach
 
@@ -28,10 +31,17 @@ on:
     paths:
       - 'pocket-beach/**'
       - '.github/workflows/pocket-beach.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version to release, as the app names it: 0.1 makes pocket-beach-v0.1. Run on main.'
+        required: true
+        type: string
 
+# A newer push replaces a branch's run; a release is never cancelled.
 concurrency:
-  group: pocket-beach-${{ github.ref }}
-  cancel-in-progress: true
+  group: pocket-beach-${{ github.event_name == 'workflow_dispatch' && 'release' || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') }}
 
 defaults:
   run:
@@ -139,7 +149,7 @@ jobs:
           path: pocket-beach/app/build/reports/androidTests/
 
   release:
-    if: startsWith(github.ref, 'refs/tags/pocket-beach-v')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/pocket-beach-v')
     needs: [test, core-windows, emulator]
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -150,9 +160,29 @@ jobs:
       POCKET_KEYSTORE_PASSWORD: ${{ secrets.POCKET_KEYSTORE_PASSWORD }}
       POCKET_KEY_ALIAS: ${{ secrets.POCKET_KEY_ALIAS }}
       POCKET_KEY_PASSWORD: ${{ secrets.POCKET_KEY_PASSWORD }}
-      TAG: ${{ github.ref_name }}
+      VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v7
+      - name: Which release
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            if [ "$GITHUB_REF" != refs/heads/main ]; then
+              echo "::error::A release is started from main, not from $GITHUB_REF_NAME"
+              exit 1
+            fi
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::The version must look like 0.1, not \"$VERSION\""
+              exit 1
+            fi
+            tag="pocket-beach-v$VERSION"
+            if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+              echo "::error::$tag already exists. Every release needs a new version"
+              exit 1
+            fi
+          else
+            tag="$GITHUB_REF_NAME"
+          fi
+          echo "TAG=$tag" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -187,7 +217,9 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
+        # A started release makes its tag here, at the commit just built.
         run: |
           gh release create "$TAG" "$RUNNER_TEMP/$TAG.apk" \
+            --target "$GITHUB_SHA" \
             --title "$TAG" \
             --notes "Pocket beach ${TAG#pocket-beach-v}. Install $TAG.apk on the phone — see pocket-beach/STATUS.md for what to try."

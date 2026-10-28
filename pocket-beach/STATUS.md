@@ -6,12 +6,14 @@ Current state only. Newest first.
 
 Piece 1 (the local bsp, release v0.1) is built, with the local bsp its own
 pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
-Pixel emulator. The release waits only on the signing key, which Matthew
-makes (steps below).
+Pixel emulator. It is merged into main, and the four signing secrets are in
+(28 October). A release is now started with "Run workflow" on main, and the
+release job makes the tag itself (see "Starting a release"). A Claude session
+can't push a tag: its GitHub access covers only its own branch. 0.1 is the
+first release.
 
-Before Piece 3, wearing a shell offline must be built and matched against the
-original (decision 8). What that takes is under "Wearing a shell offline"
-below, with four questions for Matthew.
+Before Piece 3, wearing a shell offline is built and matched against the
+original (decisions 8–12), as set out under "Wearing a shell offline".
 
 ### What is built
 
@@ -77,7 +79,7 @@ below, with four questions for Matthew.
 - **The core builds and passes its tests with no Android SDK in reach**
   (`-PcoreOnly`).
 - **The app builds** on the interfaces: debug, release, and the on-device tests.
-- **CI on GitHub** (run 4, commit `bafe0aa`, with decision 7) is green.
+- **CI on GitHub** is green, most recently on main at `9608a3c`, after the merge.
   - The golden calls regenerated from the original code match the committed
     ones, and the shelf matches upstream.
   - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
@@ -90,21 +92,30 @@ below, with four questions for Matthew.
     - the beach refused;
     - the test screen: fields, Run, and the result;
     - the full 833-call golden replay on Android's own runtime.
+- **Starting a release** passes actionlint. The step that picks the tag was run
+  locally for five cases:
+  - a start on main makes `pocket-beach-v0.1`;
+  - a start elsewhere is refused;
+  - a malformed version, including one carrying a shell command, is refused;
+  - a version that already has its tag is refused;
+  - a tag pushed by hand is taken as given.
 
 ### Not yet checked
 
-- The signed release, which needs the key.
+- The signed release with the real key. A throwaway key made the same way (an
+  OpenSSL `.p12`, one password for store and key) signed and verified in the
+  release build, in OpenSSL's current format and in the older one a Mac's
+  built-in openssl makes. The real key is first used by the 0.1 release.
 - The app on Matthew's own phone.
 
 ### Next
 
-1. Matthew makes the signing key and adds the four secrets (steps below).
-2. Tag `pocket-beach-v0.1` on main; CI builds the signed APK and attaches it
-   to the Release.
-3. Matthew tries: install, open, read the whetstone, make a block, write a
+1. Start the 0.1 release with "Run workflow" on main. CI makes the tag, builds
+   the signed APK and attaches it to the Release.
+2. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
-4. Before Piece 3: Matthew answers the questions on wearing a shell, then that
-   is built and matched against the original.
+3. Before Piece 3: wearing a shell offline is built and matched against the
+   original (decisions 8–12).
 
 ### Running the core on a laptop
 
@@ -119,48 +130,60 @@ front end, still to be written, would call
 `PocketBsp(FileStorage(folder), Shelf(DirShelfSource(shelfFolder)))`, exactly
 as the phone calls it with its own folder and assets.
 
-### Making the signing key (Matthew, once, on your own computer)
+### The signing key
+
+Matthew made it on his own computer on 28 October: a PKCS12 (`.p12`) file made
+with OpenSSL, with the same password for the store and the key. He put it in
+as four repository secrets. It never passed through a Claude session.
 
 Every release must be signed with this one key, or Android will refuse to
 install an update over the app. If the key is ever lost, the only way forward
 is to uninstall, which erases the blocks. So keep two things safe for good:
-the key file and its password. Put both in your password manager, and keep a
-second copy of the file somewhere you trust. Never put either in the repo, a
-block or a chat, including a chat with Claude.
+the key file and its password. Keep both in a password manager, and a second
+copy of the file somewhere trusted. Never put either in the repo, a block or a
+chat, including a chat with Claude.
 
-1. **Open a terminal.** On a Mac, that's Terminal; on Windows, PowerShell. Go
-   to a folder you'll keep, for example `cd ~/Documents`.
-2. **Make the key.** Type the line below, and when asked, choose a long
-   password and type it twice. `keytool` comes with Java; Android Studio carries
-   its own copy.
-   - Mac with Android Studio:
-     `"/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool" -genkeypair -v -keystore pocket-beach.jks -storetype PKCS12 -alias pocket-beach -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Matthew Bushell"`
-   - Windows with Android Studio:
-     `& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore pocket-beach.jks -storetype PKCS12 -alias pocket-beach -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Matthew Bushell"`
-   - If neither works, install Java from adoptium.net (Temurin) and use
-     `keytool` with the same words after it.
-3. **Copy the key as text.** This puts it on the clipboard:
-   - Mac: `base64 -i pocket-beach.jks | pbcopy`
-   - Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\pocket-beach.jks")) | Set-Clipboard`
-4. **Add four secrets on GitHub.** Go to
-   github.com/Phenomemental/happyseaurchin-beach, then Settings, then Secrets
-   and variables, then Actions, and choose "New repository secret" once for
-   each:
-   - `POCKET_KEYSTORE_B64` — paste the clipboard (one long line of text).
-   - `POCKET_KEYSTORE_PASSWORD` — the password you chose.
-   - `POCKET_KEY_ALIAS` — `pocket-beach`
-   - `POCKET_KEY_PASSWORD` — the same password again. This kind of key file
-     uses one password for both.
-5. **Say "the secrets are in".** Claude then tags `pocket-beach-v0.1`. CI
-   builds the APK, signs it, checks the signature, and puts it on the Releases
+The release reads four secrets (Settings, then Secrets and variables, then
+Actions):
+
+- `POCKET_KEYSTORE_B64` — the file as base64 text, on one line;
+- `POCKET_KEYSTORE_PASSWORD` — its password;
+- `POCKET_KEY_ALIAS` — the alias the file was made with;
+- `POCKET_KEY_PASSWORD` — the same password again.
+
+To put the file in as text again:
+
+- Mac: `base64 -i <file>.p12 | pbcopy`
+- Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\<file>.p12")) | Set-Clipboard`
+
+### Starting a release
+
+1. **For any release after 0.1, raise the version first.** Set `versionName`
+   (and `versionCode`, one higher) in `app/build.gradle.kts`, merged into main.
+2. **On GitHub, go to Actions, then pocket-beach, then "Run workflow".** Choose
+   the branch `main`, type the version (`0.1`), and run it. A Claude session can
+   ask GitHub to do the same.
+3. **CI runs every check** (the golden calls, Windows, the emulator). The
+   release job then makes the tag `pocket-beach-v<version>` at the commit it
+   built, signs the APK, checks the signature, and publishes it on the Releases
    page.
+
+The release job refuses, and says why, when:
+
+- it is started anywhere but main;
+- the version doesn't look like `0.1`, or already has its tag;
+- the version isn't the app's `versionName`;
+- a signing secret is missing.
+
+Pushing a tag `pocket-beach-v<version>` by hand starts the same release. A
+release run is never cancelled by a later push.
 
 ## Wearing a shell offline (before Piece 3)
 
 The app will wear pscale shells on the phone, offline, with its behaviour
 taken from blocks. Everything a shell needs to be worn offline, including
 gathering the blocks it points to, is built and matched against the original
-before Piece 3 (decision 8). This is what the original does, read at the
+before Piece 3 (decisions 8–12). This is what the original does, read at the
 pinned bsp-mcp-server `27908e1`.
 
 ### What the original does
@@ -221,16 +244,29 @@ call covers it.
 
 1. **`bundle.ts` in full, in the core:** the references, the gathering, the
    window, `head` and `now`, and the window on ordinary reads.
-2. **Wearing a shell from the pocket:** the manifest gathered, the passport
-   carried, and whichever other parts Matthew keeps (questions below).
+2. **The shell door, `pscale_play`, for the pocket** (decision 9).
+   - Everything the door does from blocks: the manifest gathered, the
+     passport, the room's operating directive, the frame, the completions, the
+     order sweep, and the lighthouse.
+   - The seat: the "what moved" line on later replies.
+   - The sundial clock wherever the original uses it (decision 11).
+   - The list following new entries without a secret (decision 12).
+   - Left out offline, and said plainly where each would appear (decision 10):
+     the room's live scene, who's here, the gate, and genesis.
+   - References to other beaches can't be reached offline. They pass through
+     as written, which is what the original does when it can't reach a beach.
 3. **Golden calls for both,** generated by the original code at the pinned
    commits as now. They cover:
    - shells with bare names, `head` and `now`;
    - absent members and prose;
    - the 6,000-character cut and the window cap;
-   - the bundle following an append.
+   - the list following an append.
 
-   Any mismatch fails the build.
+   Each call runs at a fixed time, so the results repeat (decision 11). For the
+   list following an append, the original is given a secret and the pocket is
+   not (decision 12); that this matches is confirmed when it is built. Where a
+   part is left out (decision 10), the test compares everything else and checks
+   the plain note in its place. Any other mismatch fails the build.
 
 ## Decisions (Matthew, 28 October 2026)
 
@@ -251,11 +287,12 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
    are both off. "Save a copy" is the only copy; moving to a new phone means
    Save a copy, then Restore. In Piece 2 the Shore shows when Matthew last saved
    a copy, with a reminder once three days have passed.
-4. **Signing key.** Matthew makes it on his own computer. Exact steps are given
-   when the release is ready. It never passes through a Claude session.
+4. **Signing key.** Matthew makes it on his own computer. It never passes
+   through a Claude session. Made on 28 October: an OpenSSL `.p12`, one
+   password for store and key.
 5. **Lines left out of every reply:** the clock line (`now · …`), the
    "days ago / AHEAD" tags, and the who's-here lines (the reflection and
-   orientation).
+   orientation). Inside a worn shell the clock stays (decision 11).
 6. **The assistant (Piece 3) proposes a list of plain steps with one Yes.**
    Every step is validated before any step runs. If one fails, it stops and
    says exactly which steps ran.
@@ -270,6 +307,32 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
    shell needs to be worn offline, including gathering the blocks it points
    to, is built and matched against the original before Piece 3. See "Wearing
    a shell offline".
+9. **The shell door first.** The door that wears a shell (`pscale_play`) is
+   built first. The agent door (`pscale_genus`) comes later, if at all.
+10. **Offline, four parts of wearing are left out:** the room's live scene,
+    who's here, the gate, and genesis. Each says so plainly where it would
+    appear.
+    - The room's operating directive is a block, so it stays.
+    - References to other beaches pass through as written, as the original
+      does when it can't reach a beach.
+11. **The clock stays inside a worn shell,** as in the original:
+    - the sundial stamp on a bundle window's first line;
+    - `now` references;
+    - the "what moved" line after a shell is worn.
+
+    The golden tests fix the clock at a set time for each call, so results
+    repeat.
+12. **A shell's list follows new entries without a secret.** When a block the
+    list points to gets a new entry, the list moves to it. On the phone, the
+    phone is the latch.
+13. **Piece 3: the model and memory.**
+    - The model is loaded only when Ask is used, and released when idle.
+    - Before the model download is offered, the app checks the phone has
+      enough memory, and says plainly if it doesn't.
+14. **Later: what other people send is data, never instructions.** Content that
+    arrives from other people (blocks read from the online beach, relay
+    requests) is untrusted. It can be read, but it never leads to a write
+    without Matthew's confirmation. See "Later".
 
 ## Other differences from bsp-mcp-server
 
@@ -303,28 +366,14 @@ Chosen in Phase 0, or found while building Piece 1.
 - **CI also runs when only its own workflow file changes,** so a change to the
   build is itself tested.
 
+## Later
+
+Work after Piece 3. Nothing here is built yet.
+
+- **What other people send is data, never instructions** (decision 14). This
+  covers blocks read from the online beach and relay requests. Such content can
+  be read, but it never leads to a write without Matthew's confirmation.
+
 ## Open questions
 
-On wearing a shell (decision 8), for Matthew:
-
-1. **Which door?**
-   - `pscale_play`: a holder's own shell, with its manifest, passport and room.
-   - `pscale_genus`: an agent's mind.
-   - Both.
-
-   I'd start with play's shell path. `bundle.ts` is shared with ordinary
-   reads, and genus is a large port of its own.
-2. **The parts that need other people or other beaches:** the room's live
-   scene, who is here, the gate and genesis, and references to other beaches.
-   I'd leave them out offline, and say so where they would appear.
-3. **The clock inside a worn shell.** Decision 5 left the clock out of every
-   reply. But inside a shell, three things depend on it:
-   - every bundle window's first line carries the sundial stamp;
-   - `now` references read the clock;
-   - the seat's "what moved" is cut by it.
-
-   Keeping them matches the original. Dropping them is a deliberate
-   difference, which the golden tests would strip.
-4. **The bundle following the record without a secret.** The pocket has no
-   secrets, so a straight port never moves the manifest. I'd let it follow,
-   since Matthew is the only writer.
+None.
