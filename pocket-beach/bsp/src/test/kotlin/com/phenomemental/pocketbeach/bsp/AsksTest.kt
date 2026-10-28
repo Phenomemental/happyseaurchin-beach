@@ -132,7 +132,14 @@ class AsksTest {
         assertEquals(2, asked.exchanges.size)
         assertContains(asked.exchanges[1].first, "That can't go ahead: Step 1: There's no block called hello-world. A block is made with a make step before lines are added to it.")
         assertNull(asked.proposal!!.refusal)
-        assertEquals(2, asked.proposal!!.writes.size)
+        assertEquals(listOf(false, false, true, true), asked.proposal!!.writes.map { it.step.byApp }, "a write to hello-world gets the app's seal and fingerprint after it")
+
+        // Asked for the hello world with one already there, it's told how to do it again.
+        HelloWorld.makeByHand(pages, storage, opening, "first", seal)
+        val recipe = HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: ").replace("HIS SECRET", "second")
+        val redo = ArrayDeque(listOf(recipe, recipe))
+        val twice = Asks.ask("Do the hello world, secret: second", { redo.removeFirst() }, pages, storage, shelf, opening, seal) { now }
+        assertContains(twice.exchanges[1].first, "There's already a block called hello-world. To do the hello world again, change its Secret line instead")
 
         val stubborn = ArrayDeque(List(2) { """{"say":"x","steps":[{"do":"add","block":"nowhere","at":"","text":"a line"}]}""" })
         val refused = Asks.ask("Add a line to nowhere", { stubborn.removeFirst() }, pages, storage, shelf, opening, seal) { now }
@@ -240,6 +247,8 @@ class AsksTest {
         assertContains(text, "whetstone")
         assertContains(text, "{{fingerprint}}")
         assertContains(text, "The shell's lines, plainly:\ngarden: \"garden at pocket.\"")
+        assertNull(HelloWorld.again(pages))
+        assertFalse(text.contains("is already in the pocket"), "the hello world again is spoken of only when there is one")
     }
 
     // ── the hello world by hand ──
@@ -275,10 +284,106 @@ class AsksTest {
         // The shell's own answer, its secret written in, is a hello world that checks out.
         val answer = HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: ").replace("HIS SECRET", "purple walrus")
         val shown = Asks.propose(Asks.parse(answer), storage, shelf, opening, seal, now)
+        assertTrue(shown.writes.none { it.step.byApp }, "the shell's own answer leaves the app nothing to add")
         val carried = Asks.carryOut(shown, pages, storage, opening)
         assertNull(carried.problem)
         assertEquals(emptyList(), HelloWorld.check(storage.read(HelloWorld.BLOCK), opening, seal))
         assertEquals(HelloWorld.messageFor(storage.read(HelloWorld.BLOCK)), carried.post!!.message)
+        assertContains(carried.post!!.message, "Secret: purple walrus.")
+
+        // Asked again with the block there, the companion is told to change the secret instead; the app does the rest.
+        val told = HelloWorld.again(pages)!!
+        assertContains(Asks.instruction(HelloWorld.SHELL, "", Asks.plainWindow(pages, HelloWorld.SHELL), pages), told)
+        val step = told.substringAfter("changing its Secret line, ").substringBefore(", writing the secret").replace("HIS SECRET", "orange walrus")
+        assertEquals("""{"do": "change", "block": "hello-world", "at": "2", "text": "Secret: orange walrus"}""", step)
+        val again = """{"say": "Again.", "steps": [$step], "post": {"pool": "Phenomemental", "message": "Hello world"}}"""
+        val newSeal = "f".repeat(32)
+        val redo = Asks.propose(Asks.parse(again), storage, shelf, opening, newSeal, now)
+        assertNull(redo.refusal, redo.refusal)
+        assertEquals(listOf(false, true, true), redo.writes.map { it.step.byApp })
+        val done = Asks.carryOut(redo, pages, storage, opening)
+        assertNull(done.problem, done.problem)
+        assertEquals(emptyList(), HelloWorld.check(storage.read(HelloWorld.BLOCK), opening, newSeal))
+        assertContains(done.post!!.message, "Secret: orange walrus.")
+    }
+
+    @Test
+    fun anOldHelloWorldIsPostedWithTheSealAndFingerprintOfThisAsk() {
+        val old = HelloWorld.makeByHand(pages, storage, opening, "the old secret", "a".repeat(32))
+        now += 60_000
+        // As the companion answered on the phone: the secret line replaced, and a post copying the old seal and fingerprint.
+        val answer = Asks.parse("""{"say":"I'll change the secret and post it.",
+            "steps":[{"do":"change","block":"hello-world","at":"2","text":"Secret: the new secret"}],
+            "post":{"pool":"Phenomemental","message":"Hello world from the pocket. Shell: “$opening” Secret: the new secret. Seal: ${old.seal}. Fingerprint: ${old.fingerprint}. Block: pocket/hello-world."}}""")
+        val shown = Asks.propose(answer, storage, shelf, opening, seal, now)
+        assertNull(shown.refusal, shown.refusal)
+        assertEquals(listOf("2" to false, "3" to true, "4" to true), shown.writes.map { it.plan.landsAt to it.step.byApp })
+        assertEquals("Seal: $seal", shown.writes[1].text)
+        assertEquals("Fingerprint: {{fingerprint}}", shown.writes[2].shown)
+        val offered = shown.post!!.message
+        assertFalse(offered.contains(old.seal) || offered.contains(old.fingerprint), "the post shown never carries the earlier run's seal or fingerprint")
+        assertContains(offered, "Seal: $seal.")
+        assertEquals(HelloWorld.SHELL_OPENING, storage.read(HelloWorld.BLOCK)!!.let { collectUnderscore((parseJson(it) as JsObj)["1"]) }, "showing writes nothing")
+
+        now += 5000
+        val carried = Asks.carryOut(shown, pages, storage, opening)
+        assertNull(carried.problem, carried.problem)
+        val stored = storage.read(HelloWorld.BLOCK)!!
+        assertEquals(emptyList(), HelloWorld.check(stored, opening, seal), "the block as written holds this Ask's seal, and a fingerprint that matches it")
+        val print = collectUnderscore((parseJson(stored) as JsObj)["4"])!!.removePrefix("Fingerprint: ")
+        assertTrue(print != old.fingerprint)
+        assertEquals(HelloWorld.message(opening, "the new secret", seal, print), carried.post!!.message, "the post is the block's own, made once it was written")
+        assertContains(Asks.proposed(shown), "Fingerprint: {{fingerprint}}.", message = "the log keeps the fingerprint as the gap the write filled")
+    }
+
+    @Test
+    fun aHelloWorldPostAloneRefreshesTheBlockFirst() {
+        val old = HelloWorld.makeByHand(pages, storage, opening, "kept secret", "a".repeat(32))
+        now += 60_000
+        val shown = Asks.propose(Asks.parse("""{"say":"Posting it.","steps":[],"post":{"pool":"Phenomemental","message":"Hello world"}}"""), storage, shelf, opening, seal, now)
+        assertEquals(listOf("3", "4"), shown.writes.map { it.plan.landsAt })
+        assertTrue(shown.writes.all { it.step.byApp })
+        val carried = Asks.carryOut(shown, pages, storage, opening)
+        val stored = storage.read(HelloWorld.BLOCK)!!
+        assertEquals(emptyList(), HelloWorld.check(stored, opening, seal))
+        assertEquals(HelloWorld.messageFor(stored), carried.post!!.message)
+        assertContains(carried.post!!.message, "Secret: kept secret.")
+        assertFalse(carried.post!!.message.contains(old.fingerprint))
+
+        // With no hello-world at all there is nothing true to post.
+        storage.delete(HelloWorld.BLOCK)
+        val none = Asks.propose(Asks.parse("""{"say":"x","steps":[],"post":{"pool":"Phenomemental","message":"Hello world"}}"""), storage, shelf, opening, seal, now)
+        assertNull(none.post)
+        assertContains(none.postRefusal!!, "There's no hello-world block")
+    }
+
+    @Test
+    fun aFingerprintTheCompanionMakesUpIsReplaced() {
+        val answer = Asks.parse("""{"say":"x","steps":[
+            {"do":"make","block":"hello-world","at":"","text":""},
+            {"do":"add","block":"hello-world","at":"","text":"{{shell}}"},
+            {"do":"add","block":"hello-world","at":"","text":"Secret: s"},
+            {"do":"add","block":"hello-world","at":"","text":"Fingerprint: 1234abcd1234abcd"}],
+            "post":{"pool":"Phenomemental","message":"Hello world"}}""")
+        val shown = Asks.propose(answer, storage, shelf, opening, seal, now)
+        assertNull(shown.refusal, shown.refusal)
+        // No seal line, so the app adds one beneath the made-up fingerprint, then a fingerprint of its own last.
+        assertEquals(listOf("4" to "Seal: $seal", "5" to "Fingerprint: {{fingerprint}}"), shown.writes.filter { it.step.byApp }.map { it.plan.landsAt to it.shown })
+        val carried = Asks.carryOut(shown, pages, storage, opening)
+        assertEquals(emptyList(), HelloWorld.check(storage.read(HelloWorld.BLOCK), opening, seal))
+        assertEquals(HelloWorld.messageFor(storage.read(HelloWorld.BLOCK)), carried.post!!.message)
+    }
+
+    @Test
+    fun aFingerprintWrittenOverTheLastLineMatchesTheBlock() {
+        val made = HelloWorld.makeByHand(pages, storage, opening, "s", seal)
+        val without = parseJson(made.stored) as JsObj
+        without.remove("4")
+        assertEquals(HelloWorld.fingerprint(stringify(without)!!), HelloWorld.fingerprintWithout(made.stored, "4"))
+        assertEquals(HelloWorld.fingerprint(made.stored), HelloWorld.fingerprintWithout(made.stored, ""))
+        assertTrue(HelloWorld.isHelloPost("Hello world"))
+        assertTrue(HelloWorld.isHelloPost("Seal: {{seal}}"))
+        assertFalse(HelloWorld.isHelloPost("Good morning, pool."))
     }
 
     @Test

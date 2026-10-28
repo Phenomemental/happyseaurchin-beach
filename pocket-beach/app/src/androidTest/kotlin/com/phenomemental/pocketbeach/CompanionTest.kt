@@ -19,6 +19,7 @@ import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.bsp.WireReply
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
+import com.phenomemental.pocketbeach.model.Pace
 import java.io.File
 import com.phenomemental.pocketbeach.net.HttpsWire
 import org.junit.After
@@ -39,7 +40,11 @@ class NowhereWire : Wire {
     }
 }
 
-/** A stand-in for the companion, since no test can run the model: it answers the hello world as the shell describes it. */
+/**
+ * A stand-in for the companion, since no test can run the model: it answers
+ * the hello world as the shell describes it, or, with a hello-world already
+ * in the pocket, as its instruction then says.
+ */
 class StandIn : Mind {
     var instruction = ""
     override fun state(): ModelStore.State = ModelStore.State.Ready
@@ -49,6 +54,7 @@ class StandIn : Mind {
         this.instruction = instruction
         return object : Mind.Chat {
             override val talk = Talk { message -> answer(message) }
+            override val pace = Pace(processor, null, null)
             override fun stop() {}
             override fun close() {}
         }
@@ -56,10 +62,12 @@ class StandIn : Mind {
 
     fun answer(message: String): String {
         val secret = message.substringAfter("secret is ", "").trim().removeSuffix(".")
-        val steps = listOf("""{"do":"make","block":"hello-world","at":"","text":""}""") +
+        val again = instruction.substringAfter("answer with one step changing its Secret line, ", "").substringBefore(", writing the secret", "")
+        val steps = if (again.isNotEmpty()) listOf(again.replace("HIS SECRET", secret))
+        else listOf("""{"do":"make","block":"hello-world","at":"","text":""}""") +
             HelloWorld.SHELL_LINES.map { """{"do":"add","block":"hello-world","at":"","text":"${it.replace("HIS SECRET", secret)}"}""" }
-        return """{"say":"I'll make hello-world and offer the post.","steps":[${steps.joinToString(",")}],""" +
-            """"post":{"pool":"Phenomemental","message":"${HelloWorld.SHELL_POST.replace("HIS SECRET", secret)}"}}"""
+        return """{"say":"I'll write hello-world and offer the post.","steps":[${steps.joinToString(",")}],""" +
+            """"post":{"pool":"Phenomemental","message":"${HelloWorld.SHELL_POST}"}}"""
     }
 }
 
@@ -121,6 +129,31 @@ class CompanionTest {
             val entry = app.pages.position(Region.POCKET, Asks.LOG, log()!!.lines.first().address)!!
             assertEquals("Asked: Do the hello world. My secret is purple walrus.", entry.text)
             assertTrue(entry.lines[1].text!!.contains("it landed at entry 7 of pool:Phenomemental"))
+        }
+    }
+
+    @Test
+    fun anOldHelloWorldIsPostedWithTheSealAndFingerprintOfThisAsk() {
+        Fresh.clear()
+        val old = HelloWorld.makeByHand(app.pages, app.storage, HelloWorld.SHELL_OPENING, "an old secret")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            askTheCompanion()
+            assertTrue(mind.instruction.contains("hello-world is already in the pocket"))
+            assertEquals(3, compose.onAllNodes(hasTestTag("write"), useUnmergedTree = true).fetchSemanticsNodes().size)
+            assertEquals("the seal and the fingerprint are the app's own writes, shown", 2, compose.onAllNodes(hasTestTag("by-app"), useUnmergedTree = true).fetchSemanticsNodes().size)
+            compose.waitFor("took", "on the stand-in")
+            compose.tap("yes")
+            compose.waitFor("hello-checks", "checks out")
+            val stored = app.storage.read(HelloWorld.BLOCK)!!
+            val seal = sealOf()
+            assertTrue(seal != old.seal)
+            compose.waitFor("post-message", "Secret: purple walrus")
+            compose.tap("post")
+            compose.waitFor("posted", "Posted to your pool at entry 7")
+            val body = wire.sent.single().second
+            assertTrue("the post is the block's own, as written", body.contains(HelloWorld.messageFor(stored)!!))
+            assertTrue(body.contains(seal))
+            assertFalse("never the earlier run's seal or fingerprint", body.contains(old.seal) || body.contains(old.fingerprint))
         }
     }
 

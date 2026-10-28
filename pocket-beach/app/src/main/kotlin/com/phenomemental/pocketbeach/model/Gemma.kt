@@ -2,11 +2,15 @@ package com.phenomemental.pocketbeach.model
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.google.ai.edge.litertlm.Backend
 import com.google.ai.edge.litertlm.Contents
+import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
+import com.google.ai.edge.litertlm.ExperimentalApi
+import com.google.ai.edge.litertlm.ExperimentalFlags
 import com.google.ai.edge.litertlm.ResponseFormat
 import com.google.ai.edge.litertlm.SamplerConfig
 import com.google.ai.edge.litertlm.ThinkingConfig
@@ -20,7 +24,8 @@ import kotlinx.coroutines.withContext
  * The companion's mind: Gemma 4 E2B, run on this phone by LiteRT-LM. It is
  * loaded only when Matthew asks something, and let go after a few idle
  * minutes or whenever Android asks for memory back (decision 13). Its GPU is
- * tried first, the CPU if the GPU can't take it.
+ * tried first, the CPU if the GPU can't take it, and why the GPU couldn't is
+ * kept to be shown. Each Ask's [Pace] says where it ran and how fast.
  */
 class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind {
     companion object {
@@ -42,13 +47,20 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
     @Volatile override var processor: String? = null
         private set
 
+    /** Why the GPU couldn't run it, when it runs on the CPU. */
+    @Volatile private var whyNotGpu: String? = null
+
     override val loaded: Boolean get() = engine != null
 
     override fun state(): ModelStore.State = store.state()
 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
-        val e = engine ?: load().also { engine = it }
+        var loadMs: Long? = null
+        val e = engine ?: run {
+            val started = System.nanoTime()
+            load().also { engine = it; loadMs = (System.nanoTime() - started) / 1_000_000 }
+        }
         val conversation = e.createConversation(
             ConversationConfig(
                 systemInstruction = Contents.of(instruction),
@@ -59,13 +71,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
             ),
         )
         synchronized(this@Gemma) { open++ }
-        Chat(conversation)
+        Chat(conversation, Pace(processor, whyNotGpu, loadMs))
     }
 
-    inner class Chat(private val conversation: com.google.ai.edge.litertlm.Conversation) : Mind.Chat {
+    inner class Chat(private val conversation: Conversation, override val pace: Pace) : Mind.Chat {
         override val talk = Talk { message ->
             kotlinx.coroutines.runBlocking(thread) {
                 conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA)).toString()
+                    .also { counted(conversation)?.let(pace.turns::add) }
             }
         }
 
@@ -81,13 +94,40 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
         }
     }
 
+    /** The last exchange as the engine counted it: tokens read and written, and how fast; null when it didn't count. */
+    @OptIn(ExperimentalApi::class)
+    private fun counted(conversation: Conversation): Pace.Turn? = runCatching {
+        val b = conversation.getBenchmarkInfo()
+        Pace.Turn(b.lastPrefillTokenCount, b.lastPrefillTokensPerSecond, b.lastDecodeTokenCount, b.lastDecodeTokensPerSecond)
+    }.getOrNull()?.takeIf { it.read > 0 || it.wrote > 0 }
+
+    @OptIn(ExperimentalApi::class)
     private fun load(): Engine {
         val path = store.file.path
-        fun open(backend: Backend) = Engine(EngineConfig(modelPath = path, backend = backend, maxNumTokens = Asks.Tuning.MAX_TOKENS, cacheDir = cacheDir)).also { it.initialize() }
+        fun open(backend: Backend, counting: Boolean): Engine {
+            // The engine counts each exchange's tokens and speed only if told to as it is made.
+            ExperimentalFlags.enableBenchmark = counting
+            val e = Engine(EngineConfig(modelPath = path, backend = backend, maxNumTokens = Asks.Tuning.MAX_TOKENS, cacheDir = cacheDir))
+            try {
+                e.initialize()
+            } catch (t: Throwable) {
+                runCatching { e.close() }
+                throw t
+            } finally {
+                ExperimentalFlags.enableBenchmark = false
+            }
+            return e
+        }
         return try {
-            open(Backend.GPU()).also { processor = "GPU" }
-        } catch (_: Throwable) {
-            open(Backend.CPU()).also { processor = "CPU" }
+            open(Backend.GPU(), counting = true).also { processor = "GPU"; whyNotGpu = null }
+        } catch (t: Throwable) {
+            Log.w("Gemma", "The GPU couldn't load the model.", t)
+            // Counting is the one thing asked of the GPU beyond what 0.3.1 asked, so it is tried once more without it before the CPU.
+            runCatching { open(Backend.GPU(), counting = false) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
+                ?: open(Backend.CPU(), counting = true).also {
+                    processor = "CPU"
+                    whyNotGpu = t.message?.lineSequence()?.firstOrNull { line -> line.isNotBlank() }?.trim()?.take(240) ?: t::class.java.simpleName
+                }
         }
     }
 

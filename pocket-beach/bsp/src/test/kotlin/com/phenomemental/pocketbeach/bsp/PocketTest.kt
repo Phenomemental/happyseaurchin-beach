@@ -87,6 +87,12 @@ class PocketTest {
         assertEquals(listOf("log", "shell:matthew"), FileStorage(root).names().sorted())
         val stored = parseJson(File(dir, "log.json").readText()) as JsObj
         assertEquals(str("log at pocket."), stored["_"])
+
+        // Removing a block removes its one file, and nothing else.
+        FileStorage(root).delete("shell:matthew")
+        assertEquals(listOf("log.json"), dir.list()!!.sorted())
+        FileStorage(root).delete("never-was")
+        assertEquals(listOf("log"), FileStorage(root).names())
     }
 
     @Test

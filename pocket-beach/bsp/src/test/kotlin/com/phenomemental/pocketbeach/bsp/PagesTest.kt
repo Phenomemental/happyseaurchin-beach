@@ -25,6 +25,39 @@ class PagesTest {
     private fun root(name: String) = assertNotNull(pages.position(Region.POCKET, name))
 
     @Test
+    fun aBlockIsRenamedOrRemovedWhole() {
+        done(pages.planNewBlock("garden"))
+        done(pages.planAdd("garden", "", "autumn"))
+        done(pages.planNewBlock("notes"))
+        val stored = storage.read("garden")
+        val born = storage.stamps().born["garden"]
+        assertEquals("That's its name already.", pages.renameRefusal("garden", " garden "))
+        assertEquals("There's already a block called notes.", pages.renameRefusal("garden", "notes"))
+        assertEquals("Give the block a name.", pages.renameRefusal("garden", "  "))
+        assertEquals("There's no block called nowhere.", pages.renameRefusal("nowhere", "x"))
+        assertNotNull(pages.renameRefusal("garden", "sed:garden"))
+        assertFalse(pages.rename("garden", "notes").ok)
+        assertEquals(stored, storage.read("garden"), "a refused rename changes nothing")
+
+        now += 1000
+        assertTrue(pages.rename("garden", " allotment ").ok)
+        assertNull(storage.read("garden"))
+        assertEquals(stored, storage.read("allotment"), "the same block, line for line")
+        assertEquals(born, storage.stamps().born["allotment"])
+        assertEquals(isoString(now), storage.stamps().touched["allotment"])
+        assertFalse("garden" in storage.stamps().touched || "garden" in storage.stamps().born)
+        assertEquals(setOf("allotment", "notes"), pages.shore().mine.map { it.name }.toSet())
+        assertEquals("autumn", root("allotment").lines.single().text)
+
+        assertTrue(pages.remove("notes").ok)
+        assertFalse(pages.exists("notes"))
+        assertFalse("notes" in storage.stamps().born || "notes" in storage.stamps().touched)
+        assertEquals("There's no block called notes.", pages.remove("notes").problem)
+        assertEquals(listOf("allotment"), pages.shore().mine.map { it.name })
+        done(pages.planNewBlock("notes"))
+    }
+
+    @Test
     fun aBlockIsBuiltByTappingAlone() {
         assertTrue(pages.shore().mine.isEmpty())
         done(pages.planNewBlock("garden"))

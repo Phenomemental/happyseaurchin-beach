@@ -13,6 +13,7 @@ import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.model.Mind
+import com.phenomemental.pocketbeach.model.Pace
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,8 +30,8 @@ class Asking(private val app: PocketApp) {
     sealed interface Stage {
         data object Writing : Stage
         class Thinking(val since: Long) : Stage
-        /** The companion's answer, and what it proposes, waiting on Yes or Not now. */
-        class Shown(val asked: Asked, val took: Long) : Stage
+        /** The companion's answer, and what it proposes, waiting on Yes or Not now; [pace], where and how fast it answered. */
+        class Shown(val asked: Asked, val took: Long, val pace: Pace?) : Stage
         class Declining(val shown: Shown) : Stage
         class Carrying(val shown: Shown) : Stage
         /** The writes landed (or one didn't); the post, if one was offered, waits on its own Yes. */
@@ -62,11 +63,13 @@ class Asking(private val app: PocketApp) {
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch {
             val started = System.nanoTime()
+            var pace: Pace? = null
             val outcome = withContext(Dispatchers.IO) {
                 runCatching {
                     val instruction = Asks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages)
                     app.mind.chat(instruction).use { c ->
                         chat = c
+                        pace = c.pace
                         try {
                             Asks.ask(q, c.talk, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal()) { System.currentTimeMillis() }
                         } finally {
@@ -77,9 +80,9 @@ class Asking(private val app: PocketApp) {
             }
             val took = (System.nanoTime() - started) / 1_000_000
             outcome.onFailure { e ->
-                if (stage is Stage.Thinking) end(null, null, null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}.", took)
+                if (stage is Stage.Thinking) end(null, null, null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}.", took, pace)
             }.onSuccess { a ->
-                val shown = Stage.Shown(a, took)
+                val shown = Stage.Shown(a, took, pace)
                 when {
                     a.problem != null -> end(shown, null, null, "No answer could be read: ${a.problem}", took)
                     a.proposal?.asks != true -> end(shown, null, null, a.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.", took)
@@ -163,11 +166,13 @@ class Asking(private val app: PocketApp) {
             if (at.isEmpty()) "$block was written" else "$block was written at ${at.joinToString(", ")}"
         }.ifEmpty { "nothing was written" } + "."
 
-    private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?) {
+    private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?, pace: Pace? = shown?.pace) {
         stage = Stage.Over(shown, carried, posted, note)
         val exchanges = shown?.asked?.exchanges?.size ?: 0
-        val time = took?.let { "Took %.1f s to answer".format(it / 1000.0) + (app.mind.processor?.let { p -> ", on the $p" } ?: "") + ", in ${Words.count(exchanges, "exchange")}." }
-            ?: "Stopped."
+        val time = took?.let {
+            "Took %.1f s to answer".format(it / 1000.0) + (pace?.where?.takeIf(String::isNotEmpty)?.let { w -> ", $w" } ?: "") +
+                ", in ${Words.count(exchanges, "exchange")}." + (pace?.detail()?.let { d -> " $d" } ?: "")
+        } ?: "Stopped."
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
             changed()

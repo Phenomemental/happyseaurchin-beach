@@ -18,11 +18,18 @@ package com.phenomemental.pocketbeach.bsp
  * the Ask), {{fingerprint}} (of the block as it stands just before that line),
  * {{shell}} (the shell's opening line) and {{address}} (the pocket address of
  * the block the Ask made, or else of the block written to).
+ *
+ * The hello world's seal and fingerprint are the app's alone. An Ask that
+ * writes to `hello-world`, or offers its post, gets two writes of the app's
+ * own after the companion's, shown with them: the seal line made this Ask's
+ * seal, and the last line a fingerprint of the block as it then stands. Its
+ * post is the app's too, made from the block once the writes have landed
+ * ([HelloWorld.messageFor]), whatever message the companion wrote.
  */
 enum class Act { READ, MAKE, ADD, CHANGE }
 
-/** One step the companion proposes: what to do, to which block, at which line ("" the opening), with what line. */
-class Step(val act: Act, val block: String, val at: String, val text: String?)
+/** One step the companion proposes (or, [byApp], the app adds): what to do, to which block, at which line ("" the opening), with what line. */
+class Step(val act: Act, val block: String, val at: String, val text: String?, val byApp: Boolean = false)
 
 /** A message the companion offers to post. */
 class Offer(val pool: String, val message: String)
@@ -220,15 +227,22 @@ object Asks {
             }
             val proposal = propose(answer, storage, shelf, shellOpening, seal, nowMs())
             // A proposal that can't go ahead is told why, once, as an unreadable answer is: it answers again, and is shown again.
-            if (proposal.refusal != null && !retried) {
+            if (proposal.refusal != null && !retried && !proposal.refusal.startsWith(APP_WRITE)) {
                 retried = true
-                val hint = if (proposal.refusal.contains("There's no block called")) " A block is made with a make step before lines are added to it." else ""
+                val hint = when {
+                    proposal.refusal.contains("There's no block called") -> " A block is made with a make step before lines are added to it."
+                    proposal.refusal.contains("There's already a block called ${HelloWorld.BLOCK}") -> " To do the hello world again, change its Secret line instead; the app writes the seal, the fingerprint and the message."
+                    else -> ""
+                }
                 message = "That can't go ahead: ${proposal.refusal}$hint Answer again, in the same JSON shape."
                 continue
             }
             return Asked(exchanges, found, answer, proposal, null, unasked)
         }
     }
+
+    /** How a proposal's refusal begins when it is the app's own write that can't go ahead: not the companion's to answer again. */
+    private const val APP_WRITE = "The app's own write to"
 
     private val POSTING = Regex("""\bpost(s|ed|ing)?\b|\bpool\b|\bbeach\b|hello[\s-]*world""", RegexOption.IGNORE_CASE)
 
@@ -270,9 +284,17 @@ object Asks {
                 is Outcome.Landed -> {}
             }
         }
-        val (post, postRefusal) = run.post(answer.post)
+        val hello = isHello(answer)
+        if (hello) {
+            run.sealAndFingerprint()?.let { why -> return Proposal(answer, seal, run.done, "$APP_WRITE ${HelloWorld.BLOCK}: $why", null, null) }
+        }
+        val (post, postRefusal) = run.post(answer.post, hello)
         return Proposal(answer, seal, run.done, null, post, postRefusal)
     }
+
+    /** Whether an answer is the hello world's: it writes to `hello-world`, or offers a post that speaks of it. */
+    private fun isHello(answer: Answer): Boolean =
+        answer.writes.any { it.block == HelloWorld.BLOCK } || answer.post?.let { HelloWorld.isHelloPost(it.message) } == true
 
     /**
      * Carry out a proposal Matthew said yes to, on the pocket itself: each
@@ -291,7 +313,7 @@ object Asks {
                 is Outcome.Landed -> {}
             }
         }
-        val (post, postRefusal) = run.post(proposal.answer.post)
+        val (post, postRefusal) = run.post(proposal.answer.post, isHello(proposal.answer))
         return Carried(run.done, null, post, postRefusal, run.made)
     }
 
@@ -314,8 +336,9 @@ object Asks {
 
         fun step(step: Step, shown: Planned?): Outcome {
             val shownText = step.text?.let { fill(it, HelloWorld.address(made ?: step.block)) { null } ?: return Outcome.Stopped(unknownGap(it)) }
+            // The block as it stands just before the line: as it is, for a line added; without the line, for one changed.
             val print = if (step.text != null && GAP.findAll(step.text).any { it.groupValues[1].lowercase() == "fingerprint" }) {
-                storage.read(step.block)?.let(HelloWorld::fingerprint)
+                storage.read(step.block)?.let { if (step.act == Act.CHANGE) HelloWorld.fingerprintWithout(it, step.at) else HelloWorld.fingerprint(it) }
             } else null
             val text = shownText?.let { t -> if (print == null) t else GAP.replace(t) { m -> if (m.groupValues[1].lowercase() == "fingerprint") print else m.value } }
             val standing = if (step.act == Act.MAKE) null else pages.position(Region.POCKET, step.block, step.at)?.text
@@ -341,8 +364,44 @@ object Asks {
         /** The block a post's gaps speak of: the one made, or else the last written to. */
         val subject: String? get() = made ?: written
 
-        fun post(offer: Offer?): Pair<PoolMessage?, String?> {
+        /**
+         * The app's own writes to `hello-world`, after the companion's: its
+         * seal line made this Ask's seal (added if it has none), then, unless
+         * the last write to it already was, its last line a fingerprint of
+         * the block as it then stands. Null once they land; else why not.
+         */
+        fun sealAndFingerprint(): String? {
+            val block = HelloWorld.BLOCK
+            fun lines() = pages.position(Region.POCKET, block)?.lines.orEmpty()
+            if (!pages.exists(block)) return null
+            val sealLine = lines().lastOrNull { it.text?.startsWith("Seal: ") == true }
+            val sealStep = when {
+                sealLine == null -> Step(Act.ADD, block, "", "Seal: {{seal}}", byApp = true)
+                sealLine.text != "Seal: $seal" -> Step(Act.CHANGE, block, sealLine.address, "Seal: {{seal}}", byApp = true)
+                else -> null
+            }
+            sealStep?.let { (step(it, null) as? Outcome.Stopped)?.let { r -> return r.why } }
+            val fresh = done.lastOrNull { it.step.block == block }?.print != null && storage.read(block)?.let(HelloWorld::verify) == true
+            if (fresh) return null
+            val last = lines().lastOrNull()
+            val printStep = if (last?.text?.startsWith("Fingerprint: ") == true) Step(Act.CHANGE, block, last.address, "Fingerprint: {{fingerprint}}", byApp = true)
+            else Step(Act.ADD, block, "", "Fingerprint: {{fingerprint}}", byApp = true)
+            return (step(printStep, null) as? Outcome.Stopped)?.why
+        }
+
+        fun post(offer: Offer?, hello: Boolean): Pair<PoolMessage?, String?> {
             offer ?: return null to null
+            // The hello world's post is the block's own, made from it as it now stands, never the companion's words.
+            if (hello) {
+                val stored = storage.read(HelloWorld.BLOCK) ?: return null to "There's no ${HelloWorld.BLOCK} block in the pocket to post."
+                val message = HelloWorld.messageFor(stored)
+                    ?: return null to "${HelloWorld.BLOCK} doesn't hold a secret, a seal and, as its last line, a fingerprint that matches it, so there's no true message to post."
+                return try {
+                    PoolPost.prepare(offer.pool, message) to null
+                } catch (e: IllegalArgumentException) {
+                    null to (e.message ?: "The message can't be posted.")
+                }
+            }
             val message = fill(offer.message, address = subject?.let(HelloWorld::address)) {
                 subject?.let { b -> prints[b] ?: storage.read(b)?.let(HelloWorld::fingerprint) }
             } ?: return null to unknownGap(offer.message)
@@ -400,7 +459,7 @@ object Asks {
         val parts = buildList {
             if (calls.isNotEmpty()) add("Proposed: " + calls.joinToString("; "))
             p.refusal?.let { add("Couldn't go ahead: $it") }
-            p.post?.let { add("Offered to post to pool:${it.pool}: ${it.message}") }
+            p.post?.let { post -> add("Offered to post to pool:${post.pool}: " + p.writes.mapNotNull { it.print }.fold(post.message) { m, print -> m.replace(print, "{{fingerprint}}") }) }
             p.postRefusal?.let { add("Couldn't offer the post: $it") }
         }
         return parts.ifEmpty { listOf("Proposed nothing to write.") }.joinToString(" ")
@@ -457,6 +516,7 @@ object Asks {
         appendLine(plain.trim())
         appendLine()
         append(pocketLines(pages, shell))
+        HelloWorld.again(pages)?.let(::appendLine)
         appendLine()
         appendLine("The teaching blocks, read only: " + pages.shore().teaching.joinToString(", ") { it.name } + ".")
     }.trimEnd()

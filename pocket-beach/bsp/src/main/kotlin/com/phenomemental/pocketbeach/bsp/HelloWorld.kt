@@ -16,7 +16,9 @@ import java.security.SecureRandom
  *
  * The companion (Gemma wearing the shell) proposes both steps; this object is
  * also the by-hand path the test screen takes, so the chain can be shown
- * without the model.
+ * without the model. Either way the seal, the fingerprint and the message are
+ * the app's: the companion writes only the secret, and the post is made from
+ * the block as it stands once written ([messageFor]).
  */
 object HelloWorld {
     const val BLOCK = "hello-world"
@@ -30,8 +32,8 @@ object HelloWorld {
     /** The four lines of a hello world, as the shell gives them: the app fills the gaps, the companion writes in the secret. */
     val SHELL_LINES = listOf("{{shell}}", "Secret: $SECRET_SLOT", "Seal: {{seal}}", "Fingerprint: {{fingerprint}}")
 
-    /** The post a hello world offers, as the shell gives it: [message]'s form, with the app's gaps. */
-    const val SHELL_POST = "Hello world from the pocket. Shell: “{{shell}}” Secret: $SECRET_SLOT. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
+    /** The post a hello world offers, as the shell gives it: only its name, since the app makes the message from the block ([messageFor]). */
+    const val SHELL_POST = "Hello world"
 
     /**
      * How the companion does the hello world, as one line of its shell: the
@@ -62,6 +64,37 @@ object HelloWorld {
     /** The first 16 hex digits of the SHA-256 of a block's stored text. */
     fun fingerprint(stored: String): String =
         MessageDigest.getInstance("SHA-256").digest(stored.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }.take(16)
+
+    /**
+     * The fingerprint of a block as it stands without its line at [at] (a
+     * line at pscale 0): what a fingerprint written over that line, changing
+     * it, must be for [verify] to find it matches.
+     */
+    fun fingerprintWithout(stored: String, at: String): String {
+        val block = parseJson(stored) as? JsObj ?: return fingerprint(stored)
+        if (at.isEmpty() || !block.has(at)) return fingerprint(stored)
+        val before = deepCopy(block) as JsObj
+        before.remove(at)
+        return fingerprint(stringify(before)!!)
+    }
+
+    private val HELLO = Regex("""hello[\s-]*world|\{\{\s*(seal|fingerprint)\s*\}\}""", RegexOption.IGNORE_CASE)
+
+    /** Whether a post the companion offers is the hello world's: it speaks of the hello world, or carries the seal or fingerprint gaps. */
+    fun isHelloPost(message: String): Boolean = HELLO.containsMatchIn(message)
+
+    /**
+     * What the companion is told when a hello-world is already in the pocket,
+     * so it does the hello world again in one answer: the one step that
+     * changes the secret, at the line where it stands, and the same post.
+     * Null when there is no such block, or no secret line in it.
+     */
+    fun again(pages: Pages): String? {
+        val secret = pages.position(Region.POCKET, BLOCK)?.lines?.lastOrNull { it.text?.startsWith("Secret: ") == true } ?: return null
+        return "$BLOCK is already in the pocket. To do the hello world again, don't make it: answer with one step changing its Secret line, " +
+            "{\"do\": \"change\", \"block\": \"$BLOCK\", \"at\": \"${secret.address}\", \"text\": \"Secret: $SECRET_SLOT\"}, " +
+            "writing the secret he gives where it says $SECRET_SLOT, and the same post. The app writes the seal, the fingerprint and the message."
+    }
 
     /** A block's pocket address, as bsp() names it in its replies. */
     fun address(block: String) = "pocket/$block"
