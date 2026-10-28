@@ -733,7 +733,36 @@ post offline failing plainly, with nothing sent (0.3.2).
      now gives the phone's error number (10 or 8): send it back.
 2. With the Pixel's bench of 0.4: whether her first word stays held (it
    costs a little once per conversation), and what comes next.
-3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+3. **For the next build (0.4.1), from Matthew on 0.4's Ask:**
+   - **Keep what he says.** He told her "I'm going to make a million pound
+     by creating tech that changes the world… before the end of 2027". She
+     only chatted back, and only the ask log got a line.
+     - When he tells her something worth keeping (a goal, a plan, an idea,
+       something about his life), she should offer to keep it. It goes in
+       the block it belongs in if one fits, by its name or opening line.
+       Otherwise it goes in a new block named for it in a word or two, with
+       his words as its opening line. He sees it before Yes, as always.
+     - Chat like "good morning" or "thanks" stays chat.
+     - The rule that stops her now: 0.4 says act "only when Matthew asks
+       you to write", and "When unsure, talk".
+   - **The Million case.** He had made a block called Million (still empty,
+     its opening "Million at pocket."), then said that sentence. She could
+     see Million by name, and still only chatted.
+     - If she can't judge this reliably, the app does it: when his words
+       name one of his blocks, it shows "Keep this in Million?" under her
+       reply.
+     - Block names match whatever their capitals: speech writes "million",
+       and the block is "Million".
+   - **The bench:**
+     - asks of both kinds: things worth keeping, and chat;
+     - this exact case: an empty Million block, that sentence, and the
+       right answer is an add to Million;
+     - Gemma 4 E2B on the CPU as well as the GPU, the same asks, side by
+       side. On Tensor the Mali GPU is the weak part, and Google's own
+       LiteRT-LM table has the CPU nearly matching the GPU for E2B on new
+       phones. With the conversation kept, the CPU's slower reading of the
+       instruction should fall mostly on the first ask.
+4. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 
