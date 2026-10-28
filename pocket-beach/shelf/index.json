@@ -1,0 +1,114 @@
+[
+ {
+  "name": "sunstone",
+  "file": "sunstone.json"
+ },
+ {
+  "name": "lodestone",
+  "file": "lodestone.json"
+ },
+ {
+  "name": "strata",
+  "file": "strata.json"
+ },
+ {
+  "name": "whetstone",
+  "file": "whetstone.json"
+ },
+ {
+  "name": "agent-id",
+  "file": "agent-id.json"
+ },
+ {
+  "name": "evolution",
+  "file": "evolution.json"
+ },
+ {
+  "name": "manifest",
+  "file": "manifest.json"
+ },
+ {
+  "name": "progression",
+  "file": "progression.json"
+ },
+ {
+  "name": "welcome",
+  "file": "welcome.json"
+ },
+ {
+  "name": "block-conventions",
+  "file": "block-conventions.json"
+ },
+ {
+  "name": "open-commons",
+  "file": "open-commons.json"
+ },
+ {
+  "name": "gatekeeper",
+  "file": "gatekeeper.json"
+ },
+ {
+  "name": "soft-agent",
+  "file": "soft-agent.json"
+ },
+ {
+  "name": "grit",
+  "file": "grit.json"
+ },
+ {
+  "name": "parlour",
+  "file": "parlour.json"
+ },
+ {
+  "name": "sundial",
+  "file": "sundial.json"
+ },
+ {
+  "name": "sextant",
+  "file": "sextant.json"
+ },
+ {
+  "name": "char-creation",
+  "file": "char-creation.json"
+ },
+ {
+  "name": "payway",
+  "file": "payway.json"
+ },
+ {
+  "name": "protocol-paywall",
+  "file": "payway.json"
+ },
+ {
+  "name": "ecology-router",
+  "file": "ecology-router.json"
+ },
+ {
+  "name": "sand-rider",
+  "file": "sand-rider.json"
+ },
+ {
+  "name": "l3-relay",
+  "file": "l3-relay.json"
+ },
+ {
+  "name": "directory",
+  "file": "directory.json"
+ },
+ {
+  "name": "bsp-test",
+  "file": "bsp-test.json"
+ },
+ {
+  "name": "well-formed",
+  "file": "well-formed.json"
+ },
+ {
+  "name": "shell-genome",
+  "file": "shell-genome.json"
+ },
+ {
+  "name": "world-genome",
+  "file": "world-genome.json"
+ }
+]

@@ -1,0 +1,6 @@
+# The same bytes on every machine: the golden calls and the teaching shelf are
+# compared byte for byte, and a Windows checkout must not turn LF into CRLF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
