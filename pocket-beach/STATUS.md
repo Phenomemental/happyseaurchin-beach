@@ -4,9 +4,10 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 2, the empty beach, is built as version 0.2 and waits on its release
-(see "Next"). Piece 1 is released as **pocket-beach-v0.1** and works on
-Matthew's Pixel, in aeroplane mode too.
+Piece 2, the empty beach, is released: **pocket-beach-v0.2**, on the Releases
+page since 28 October, its tag at `9abf821` on main, signed with the same key
+as 0.1 so it installs over it. Piece 1 (v0.1) works on Matthew's Pixel, in
+aeroplane mode too.
 
 Before Piece 3, wearing a shell offline is built and matched against the
 original (decisions 8–12). Today's finish line is set out under "Today's
@@ -123,6 +124,14 @@ Android 12 or later.
   - the block's label no longer repeats its name;
   - no doubled full stop in the new-block dialog.
 
+### The 0.2 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, the same
+  as 0.1. apksigner verified it in CI and again after download.
+- Version 0.2 (`versionCode` 2). Permissions: the microphone, and one AndroidX
+  adds for the app's own receivers. No internet permission.
+
 ### Not yet checked
 
 - Piece 2 on Matthew's own phone.
@@ -131,7 +140,7 @@ Android 12 or later.
 
 ### Next
 
-1. Release v0.2 ("Run workflow" on main, version 0.2), then Matthew tries:
+1. Matthew installs `pocket-beach-v0.2.apk` over 0.1 and tries:
    - build a small block of his own from nothing, by tapping alone;
    - walk it;
    - add ten lines to its opening and see it wrap (decision 1);
