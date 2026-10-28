@@ -368,26 +368,34 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 
 ### Not yet checked
 
-- The companion on Matthew's phone: whether its GPU takes the model, and how
-  quickly it answers.
-- The model's download over real Wi-Fi.
-- A post to the live beach. No test posts there: the tests post over a wire
-  that goes nowhere.
+- Where the companion runs on Matthew's phone, GPU or CPU, and its own
+  figures for loading, reading and writing. 0.3.2 shows them under each
+  answer and keeps them in the Ask log.
 - Sharing with real apps, and speaking on a phone that recognises speech on
   the device.
 
+Checked on Matthew's Pixel since 0.3.1: the model's download over Wi-Fi
+(the companion then answered), and posts to the live beach (the hello world
+by hand, entries 168 and 169 of his pool).
+
 ### Next
 
-1. Matthew installs `pocket-beach-v0.3.apk` over 0.2. Then:
-   - **Ask** (on the Shore): make the companion's shell, then get the model
-     on Wi-Fi.
-   - **The hello world with the companion:** ask "Do the hello world. My
-     secret is …". Read what it proposes, then Yes. Read the post, then
-     Post it.
-   - **The hello world by hand** (About, Try a call by hand), if the
-     companion isn't reliable on the phone.
-   - Look at `ask-log`, and at the post on the beach.
-2. After that: the "Later" list, and what the Ask log shows.
+1. Matthew installs `pocket-beach-v0.3.2.apk` over 0.3.1. Then:
+   - **Ask** offers "Update the hello world line", since the shell's post
+     changed. Tap it.
+   - **The hello world again,** with the old `hello-world` still there: "Do
+     the hello world. My secret is …". The proposal should be the one change
+     to the secret line, then the app's own two writes in crimson, a new
+     seal and the fingerprint. Yes, then read the post: its seal is the one
+     just written, and its fingerprint the block's. Then Post it.
+   - **Read the time,** under the answer: "Took … on the GPU" (or CPU), and
+     the line beneath, with loading, reading and writing. On the CPU it
+     says why the GPU couldn't. These figures decide what comes next.
+   - **Rename or remove a block** on the Shore, beneath your blocks.
+2. With the phone's figures: whether speculative decoding is worth giving
+   up the answer's held form (see "Piece 3: how the companion is asked"),
+   or whether the GPU needs looking at.
+3. After that: the "Later" list, and what the Ask log shows.
 
 ### Running the core on a laptop
 
@@ -735,9 +743,13 @@ Found by running the hello world against the real model on a laptop
   multi-token prediction). On the laptop it wrote 17.4 tokens a second
   against 10.5, but only with the answer's form not held: held to the
   schema, the engine stopped with an error mid-answer ("compute_mask()
-  called after stop"). Unheld, the answer came wrapped in a code fence and
-  about 30% longer. Whether it is worth giving up the held form waits on
-  the phone's own figures.
+  called after stop"). Unheld, the answer sometimes came wrapped in a code
+  fence, and its length varied more (170 to 280 tokens, against about 240).
+  The hello world passed as often (7 of 8) in about 60% of the time, but ordinary asks went worse: "buy
+  more compost" was put under the autumn line rather than at the end, and
+  "under the autumn line…" twice put two lines in one step, so nothing could
+  be shown. Whether it is worth giving up the held form waits on the
+  phone's own figures.
 - **Reads end when they repeat.** Asked what a block holds, the model read it
   again each round. A round that asks only for reads it has been shown
   already is taken as its answer.
