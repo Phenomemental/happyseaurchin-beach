@@ -4,9 +4,8 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 (the local bsp, release v0.1) is built and its tests pass on this
-machine. CI on GitHub is the next check. The release waits on the signing key,
-which Matthew makes.
+Piece 1 (the local bsp, release v0.1) is built, and CI on GitHub is green.
+The release waits only on the signing key, which Matthew makes (steps below).
 
 ### What is built
 
@@ -49,21 +48,29 @@ which Matthew makes.
 - **JavaScript's rules** for numbers, escapes, key order, dates and whitespace
   pass, checked against Node 22.
 - **The app builds:** debug, release, and the on-device tests.
+- **CI on GitHub** (run 2, commit `52ce348`) is green.
+  - The golden calls regenerated from the original code match the committed
+    ones, and the shelf matches upstream.
+  - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
+  - On a Pixel emulator running Android 16, the app installed and opened, and
+    all 5 on-device tests passed:
+    - the whetstone from the shelf;
+    - a line written and read back from its own file;
+    - the beach refused;
+    - the test screen: fields, Run, and the result;
+    - the full 833-call golden replay on Android's own runtime.
 
 ### Not yet checked
 
-- CI on GitHub, including the emulator: install, open, the whetstone from the
-  shelf, a write read back from its own file, the test screen, and the full
-  golden replay on the device.
 - The signed release, which needs the key.
+- The app on Matthew's own phone.
 
 ### Next
 
-1. CI green on GitHub.
-2. Matthew makes the signing key and adds the four secrets (steps below).
-3. Tag `pocket-beach-v0.1`; CI builds the signed APK and attaches it to the
+1. Matthew makes the signing key and adds the four secrets (steps below).
+2. Tag `pocket-beach-v0.1`; CI builds the signed APK and attaches it to the
    Release.
-4. Matthew tries: install, open, read the whetstone, make a block, write a
+3. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
 
 ### Making the signing key (Matthew, once, on your own computer)
