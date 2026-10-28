@@ -4,14 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.3.2** is being made, from Matthew's first hello world with
-the companion on 0.3.1 (see "What 0.3.2 changes").
+**pocket-beach-v0.3.2** is released, from Matthew's first hello world with
+the companion on 0.3.1 (see "What 0.3.2 changes"). It has been on the
+Releases page since 28 October, its tag at `6ed8f7f` on main, signed with
+the same key as every release, so it installs over 0.3.1. Next is Matthew
+doing the hello world again and reading where the companion ran (see
+"Next").
 
-**pocket-beach-v0.3.1** is released, fixing what Matthew found on his Pixel
-in 0.3 (see "What 0.3.1 changes"). It has been on the Releases page since
-28 October, its tag at `c7a5155` on main, signed with the same key as every
-release, so it installs over 0.3. Next is Matthew getting the model and doing
-the hello world with the companion.
+**pocket-beach-v0.3.1** fixed the model's download and the hello world
+posting twice (see "What 0.3.1 changes"). Its tag is at `c7a5155` on main.
 
 Piece 3, the companion, was released in **pocket-beach-v0.3** on 28 October,
 and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
@@ -331,6 +332,22 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.3.2 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.2 (`versionCode` 5), for arm64 phones, 49 MB. Its SHA-256 is
+  `23a6457fad9384baa3455c3c0b68270f1b63e1286de2a25a249e97f2d60849e1`.
+- Read back from the downloaded APK: its network security config trusts
+  `beach.happyseaurchin.com`, `huggingface.co`, `us.aws.cdn.hf.co`,
+  `us.gcp.cdn.hf.co` and `cas-bridge.xethub.hf.co`, each without
+  subdomains, and nothing else; plain HTTP is refused everywhere. Its
+  permissions are those of 0.3.1.
+- Built by the release run on main after every test passed again there: the
+  core on Linux and Windows, the golden calls and 1,000 fresh random cases,
+  the one-way-out tests, and every on-device test.
 
 ### The 0.3.1 release
 
