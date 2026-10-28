@@ -4,9 +4,14 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.4.1** is being made: the companion keeps what Matthew
+**pocket-beach-v0.4.1** is released: the companion keeps what Matthew
 tells her that is worth keeping; block names match whatever their capitals;
 the bench runs 0.4 on the CPU beside the GPU (see "What 0.4.1 changes").
+Its tag is at `73ed17a` on main. Next is Matthew running its bench and
+telling her something worth keeping (see "Next").
+
+**pocket-beach-v0.4** is released, finished against the Pixel's bench of 0.3
+(see "What 0.4 changes"). Its tag is at `62511f7` on main.
 
 **pocket-beach-v0.3.5** is released: speaking a line no longer holds the
 phone's speech recogniser, which on Matthew's Pixel (0.3.2) failed with
@@ -17,11 +22,6 @@ gives the error's number and hides the keyboard first.
 
 **pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
 "What 0.3.4 changes"). Its tag is at `f3bf644` on main.
-
-**pocket-beach-v0.4** is released, finished against the Pixel's bench of 0.3
-(see "What 0.4 changes"). Its tag is at `62511f7` on main. Next is Matthew
-running its bench (0.3 against 0.4, held and free) and trying Ask (see
-"Next").
 
 **pocket-beach-v0.3.3** is released: a post the beach couldn't be reached
 for is kept, with "Post now" (see "What 0.3.3 changes"). Its tag is at
@@ -655,6 +655,19 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.4.1 release
+
+- Its tag is at `73ed17a` on main, published 28 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.4.1 (`versionCode` 10), for arm64 phones, 50 MB. Its SHA-256 is
+  `4eddf26bfc764f48af3d89d31a5fa85bd506d8eb9cf114bc26bc1903e94a57fc`.
+- Read back from the downloaded APK: the same five hosts, each without
+  subdomains, and nothing else; plain HTTP refused everywhere; the same
+  seven permissions.
+- Built by the release run on main after every test passed again there.
 
 ### The 0.4 release
 
