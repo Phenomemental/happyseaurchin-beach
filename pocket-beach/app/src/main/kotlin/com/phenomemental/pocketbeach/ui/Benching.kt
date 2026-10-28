@@ -38,7 +38,8 @@ class Benching(private val app: PocketApp) {
         class Loading(val since: Long) : Stage
         class Asking(val run: String, val ask: Bench.Ask) : Stage
         class Probing(val what: String) : Stage
-        class Saved(val name: String, val before: Int, val after: Int, val of: Int) : Stage
+        /** The run kept as [name]: how many of the twenty each way got right, in order. */
+        class Saved(val name: String, val right: List<Pair<String, Int>>, val of: Int) : Stage
         class Failed(val why: String) : Stage
     }
 
@@ -47,9 +48,13 @@ class Benching(private val app: PocketApp) {
     private var chat: Mind.Chat? = null
     private var talker: Mind.Talker? = null
 
+    /** How 0.4's first word was chosen on this run: held by the engine, or free and why. */
+    private var route = "not asked"
+
     companion object {
         const val BEFORE = "0.3 (one JSON plan, held)"
-        const val AFTER = "0.4 (route word, actions, streamed)"
+        const val HELD = "0.4, her first word held (route word, actions, streamed)"
+        const val FREE = "0.4, her first word free (route word, actions, streamed)"
     }
 
     var stage by mutableStateOf<Stage>(Stage.Ready)
@@ -81,14 +86,18 @@ class Benching(private val app: PocketApp) {
                     }
                 }
                 val before = results.toList()
-                // After: 0.4's, a route word then plain words, reads or actions, streamed, nothing held.
-                for (ask in Bench.ASKS) {
-                    stage = Stage.Asking(AFTER, ask)
-                    results += withContext(Dispatchers.IO) {
-                        Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage) } }
+                // After: 0.4's, a route word then plain words, reads or actions, streamed; her first word held by the engine, then free.
+                val after = listOf(HELD to true, FREE to false).map { (name, held) ->
+                    val from = results.size
+                    for (ask in Bench.ASKS) {
+                        stage = Stage.Asking(name, ask)
+                        results += withContext(Dispatchers.IO) {
+                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, held) } }
+                        }
                     }
+                    if (held) about += "0.4's first word, asked to be held: $route."
+                    Bench.Run(name, results.drop(from))
                 }
-                val after = results.drop(before.size)
                 stage = Stage.Probing("Keeping one conversation for three asks")
                 about += withContext(Dispatchers.IO) { kept(mind) }
                 (mind as? Gemma)?.let { gemma ->
@@ -97,10 +106,11 @@ class Benching(private val app: PocketApp) {
                 }
                 val now = System.currentTimeMillis()
                 val name = "bench-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
-                val block = Bench.block(listOf(Bench.Run(BEFORE, before), Bench.Run(AFTER, after)), about, now)
+                val runs = listOf(Bench.Run(BEFORE, before)) + after
+                val block = Bench.block(runs, about, now)
                 val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
                 changed()
-                stage = if (done.ok) Stage.Saved(name, before.count { it.right }, after.count { it.right }, Bench.ASKS.size) else Stage.Failed("The run wasn't kept: ${done.problem}")
+                stage = if (done.ok) Stage.Saved(name, runs.map { it.name to it.results.count { r -> r.right } }, Bench.ASKS.size) else Stage.Failed("The run wasn't kept: ${done.problem}")
             } catch (e: CancellationException) {
                 stage = Stage.Ready
                 throw e
@@ -146,13 +156,14 @@ class Benching(private val app: PocketApp) {
     }
 
     /** 0.4's companion: one conversation per ask (the bench's pocket is fresh each time), her reply streamed, timed to its first token and to her first words shown. */
-    private suspend fun talks(mind: Mind, ask: Bench.Ask, pages: com.phenomemental.pocketbeach.bsp.Pages, storage: com.phenomemental.pocketbeach.bsp.MemoryStorage): Bench.Did {
+    private suspend fun talks(mind: Mind, ask: Bench.Ask, pages: com.phenomemental.pocketbeach.bsp.Pages, storage: com.phenomemental.pocketbeach.bsp.MemoryStorage, held: Boolean): Bench.Did {
         val now = System.currentTimeMillis()
         val instruction = Talks.instruction(HelloWorld.SHELL, Shells(storage, app.shelf).wear(HelloWorld.SHELL, now).window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false)
         val started = System.nanoTime()
-        return mind.talker(instruction, Talks.opening(emptyList())).use { t ->
+        return mind.talker(instruction, Talks.opening(emptyList()), held).use { t ->
             talker = t
             try {
+                if (held) route = t.route
                 var shown: Long? = null
                 val answered = Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { System.currentTimeMillis() }) { words ->
                     if (shown == null && words.isNotBlank()) shown = (System.nanoTime() - started) / 1_000_000
@@ -193,7 +204,8 @@ class Benching(private val app: PocketApp) {
     }
 
     private fun companion(mind: Mind): String = when (mind) {
-        is Gemma -> "Gemma 4 E2B (revision 6e5c4f1e) on LiteRT-LM 0.18.0, a context of ${Asks.Tuning.MAX_TOKENS} tokens; 0.3's way of asking with speculative decoding off, 0.4's with it on"
+        is Gemma -> "Gemma 4 E2B (revision 6e5c4f1e) on LiteRT-LM 0.18.0, a context of ${Asks.Tuning.MAX_TOKENS} tokens, speculative decoding " +
+            (if (Gemma.SPECULATIVE) "on" else "off")
         else -> "a stand-in, as the device tests run it"
     }
 }

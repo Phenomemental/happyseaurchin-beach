@@ -189,14 +189,17 @@ private fun bench(engine: Engine, shelf: Shelf) {
 @OptIn(ExperimentalApi::class)
 private fun benchAfter(engine: Engine, shelf: Shelf) {
     val now = 1_793_178_000_000L
+    val rates = mutableListOf<Double>()
     val only = System.getProperty("pocket.only")?.split(",")?.map { it.trim().toInt() }?.toSet()
     val results = Bench.ASKS.filter { only == null || it.n in only }.map { ask ->
         Bench.one(ask, shelf, now, Talks.SHELL_RECIPE) { a, pages, storage ->
             val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
-            val turns = System.getProperty("pocket.examples") == "turns"
+            val turns = System.getProperty("pocket.examples") != "text"
+            val held = System.getProperty("pocket.held")?.let { if (it == "true") Talks.HELD else it }
             val system = Talks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = !turns)
             val config = ConversationConfig(
                 systemInstruction = Contents.of(system),
+                enableResponseFormat = held != null,
                 initialMessages = if (turns) Talks.EXAMPLES.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) } else emptyList(),
                 samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
                 maxOutputToken = Asks.Tuning.MAX_OUTPUT,
@@ -211,7 +214,8 @@ private fun benchAfter(engine: Engine, shelf: Shelf) {
                 val stream = Talks.Stream { message, piece ->
                     val whole = StringBuilder()
                     kotlinx.coroutines.runBlocking {
-                        conversation.sendMessageAsync(message).collect { m ->
+                        val flow = if (held != null) conversation.sendMessageAsync(message, responseFormat = ResponseFormat.regex(held)) else conversation.sendMessageAsync(message)
+                        flow.collect { m ->
                             if (first == null) first = (System.nanoTime() - start) / 1_000_000
                             whole.append(m.toString())
                             piece(m.toString())
@@ -220,6 +224,7 @@ private fun benchAfter(engine: Engine, shelf: Shelf) {
                     val b = conversation.getBenchmarkInfo()
                     read += b.lastPrefillTokenCount
                     wrote += b.lastDecodeTokenCount
+                    rates += b.lastDecodeTokensPerSecond
                     whole.toString()
                 }
                 val answered = Talks.ask(a.question, stream, pages, storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { now }) { words ->
@@ -232,6 +237,7 @@ private fun benchAfter(engine: Engine, shelf: Shelf) {
         }.also { println(Bench.line(it)) }
     }
     println(Bench.summary(results))
+    println("Writing at a median of %.1f tokens a second.".format(rates.sorted().let { if (it.isEmpty()) 0.0 else it[it.size / 2] }))
 }
 
 /**
@@ -245,8 +251,10 @@ private fun kept(engine: Engine, shelf: Shelf) {
     val (storage, pages) = Bench.fixture(shelf, now, Talks.SHELL_RECIPE)
     val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
     val system = Talks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false)
+    val held = System.getProperty("pocket.held")?.let { if (it == "true") Talks.HELD else it }
     val config = ConversationConfig(
         systemInstruction = Contents.of(system),
+        enableResponseFormat = held != null,
         initialMessages = Talks.opening(emptyList()).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
         samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
         maxOutputToken = Asks.Tuning.MAX_OUTPUT,
@@ -260,7 +268,8 @@ private fun kept(engine: Engine, shelf: Shelf) {
             val whole = StringBuilder()
             kotlinx.coroutines.runBlocking {
                 try {
-                    conversation.sendMessageAsync(message).collect { m ->
+                    val flow = if (held != null) conversation.sendMessageAsync(message, responseFormat = ResponseFormat.regex(held)) else conversation.sendMessageAsync(message)
+                    flow.collect { m ->
                         if (first == null) first = (System.nanoTime() - start) / 1_000_000
                         whole.append(m.toString())
                         if (stopAfter != null && ++pieces >= stopAfter) {

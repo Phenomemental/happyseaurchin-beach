@@ -48,14 +48,15 @@ fun BenchScreen(model: Model, nav: Nav) {
     ) {
         Text(
             "Twenty fixed asks, put to the companion one by one: six to talk, six to read, and eight to act, among them a line added beneath " +
-                "a plain line and a fresh hello world. They are put twice: to 0.3's way of asking (before) and to 0.4's (after). Each is asked of " +
+                "a plain line and a fresh hello world. They are put three times: to 0.3's way of asking (before), then to 0.4's, with her first word " +
+                "held by the engine and then free. Each is asked of " +
                 "a scratch copy of a small pocket (garden, notes and the companion's shell), so nothing of yours is written, and nothing is posted.",
             style = Type.body, color = ink.ink,
         )
         Text(
-            "Each ask is timed (to the first token, until anything shows, in all) and judged right or wrong. Then the bench tries the engine itself: " +
-                "what this phone's chip and the model file allow, a plain answer with speculative decoding off and on, and whether a one-word choice " +
-                "held by the engine survives it, and one conversation kept for three asks. It takes about fifteen minutes, and keeps the screen on.",
+            "Each ask is timed (to the first token, until anything shows, in all) and judged right or wrong. Then one conversation is kept " +
+                "for three asks, and the bench tries the engine itself: what this phone's chip and the model file allow, and a plain answer with " +
+                "speculative decoding off and on. It takes about fifteen minutes, and keeps the screen on.",
             style = Type.small, color = ink.soft,
         )
         Text("The run is kept as one new block, bench- and the date, which you can share from its page.", style = Type.small, color = ink.soft)
@@ -71,7 +72,10 @@ fun BenchScreen(model: Model, nav: Nav) {
             is Benching.Stage.Asking -> Text("${stage.run}, ask ${stage.ask.n} of ${Bench.ASKS.size}: ${stage.ask.question}", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("bench-stage"))
             is Benching.Stage.Probing -> Text("${stage.what}…", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("bench-stage"))
             is Benching.Stage.Saved -> {
-                Done("Before ${stage.before} of ${stage.of} right, after ${stage.after}. Kept as ${stage.name}.", detail = "Open it to read the run, or share it from its page.", tag = "bench-saved")
+                Done(
+                    stage.right.joinToString("; ") { (way, right) -> "${way.substringBefore(" (")}: $right of ${stage.of} right" } + ". Kept as ${stage.name}.",
+                    detail = "Open it to read the run, or share it from its page.", tag = "bench-saved",
+                )
                 TextLink("Open ${stage.name}", { nav.go(Screen.Block(Region.POCKET, stage.name, "")) }, tag = "open-bench-block")
             }
             is Benching.Stage.Failed -> Notice("The bench stopped: ${stage.why}", tag = "bench-failed")

@@ -12,21 +12,30 @@ import android.speech.SpeechRecognizer
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.phenomemental.pocketbeach.PocketApp
 import java.util.Locale
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** What a recogniser tells the one listening: ready, words so far, its words at the end, or its error. */
 interface Heard {
@@ -84,6 +93,9 @@ class Speech {
     companion object {
         /** How long the phone's speech is left alone after it says it is busy. */
         const val BUSY_MS = 5_000L
+
+        /** How long the keyboard is given to go before listening. */
+        const val KEYBOARD_MS = 400L
     }
 
     /** Makes the recogniser on a tap: the phone's own, on the device. The device tests put their own here. */
@@ -95,6 +107,10 @@ class Speech {
     private var held: Recogniser? = null
     private var owner: Any? = null
     private var busyUntil = 0L
+
+    /** The phone's error when it last said its speech was busy (10 or 8), for the message. */
+    var busyError = 0
+        private set
 
     /** Recognisers made and let go so far, for the device tests. */
     var made = 0
@@ -128,6 +144,7 @@ class Speech {
                 letGo()
                 if (error == SpeechRecognizer.ERROR_TOO_MANY_REQUESTS || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY) {
                     busyUntil = SystemClock.elapsedRealtime() + BUSY_MS
+                    busyError = error
                 }
                 heard.failed(error)
             }
@@ -152,6 +169,7 @@ class Speech {
  * the device is told so plainly. There is no fallback to the cloud. The
  * recogniser is the app's one ([Speech]).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Speak(onWords: (String) -> Unit) {
     val ink = LocalInk.current
@@ -161,8 +179,15 @@ fun Speak(onWords: (String) -> Unit) {
     var listening by remember { mutableStateOf(false) }
     var heard by remember { mutableStateOf("") }
     var note by remember { mutableStateOf<String?>(null) }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = LocalFocusManager.current
+    val keyboardUp = WindowInsets.isImeVisible
+    val scope = rememberCoroutineScope()
+    var waiting by remember { mutableStateOf<Job?>(null) }
 
     fun ended() {
+        waiting?.cancel()
+        waiting = null
         listening = false
         heard = ""
     }
@@ -181,7 +206,20 @@ fun Speak(onWords: (String) -> Unit) {
                 ended()
             }
         })
-        if (started) listening = true else note = BUSY
+        if (started) listening = true else note = busy(speech.busyError)
+    }
+
+    // With the keyboard up the phone's recogniser may be the keyboard's (Gboard's) to hold, so the keyboard goes first.
+    fun begin() {
+        if (!keyboardUp) return start()
+        keyboard?.hide()
+        focus.clearFocus()
+        listening = true
+        waiting = scope.launch {
+            delay(Speech.KEYBOARD_MS)
+            waiting = null
+            start()
+        }
     }
 
     // Stopped by a tap: the recogniser is let go at once, and what it had heard so far is the line.
@@ -193,7 +231,7 @@ fun Speak(onWords: (String) -> Unit) {
     }
 
     val askMicrophone = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) start() else note = "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings, then try again."
+        if (granted) begin() else note = "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings, then try again."
     }
 
     // Leaving the screen, or the app going to the background, lets the recogniser go.
@@ -218,11 +256,11 @@ fun Speak(onWords: (String) -> Unit) {
             {
                 when {
                     listening -> stop()
-                    speech.busy -> note = BUSY
+                    speech.busy -> note = busy(speech.busyError)
                     !speech.available(context) -> note = NO_SPEECH
                     context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ->
                         askMicrophone.launch(Manifest.permission.RECORD_AUDIO)
-                    else -> start()
+                    else -> begin()
                 }
             },
             tag = "speak",
@@ -234,7 +272,8 @@ fun Speak(onWords: (String) -> Unit) {
 
 const val NO_SPEECH = "This phone can't recognise speech on the device, so speaking is off. Pocket beach never sends your voice to a server."
 
-const val BUSY = "Speech is busy. Try again in a moment."
+/** The phone said its speech is busy; its error's number shows which way (10: too many requests; 8: its recogniser busy). */
+fun busy(error: Int): String = "Speech is busy" + (if (error != 0) " (the phone's error $error)" else "") + ". Try again in a moment."
 
 private fun onDeviceSpeech(context: Context): Boolean = try {
     SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
@@ -243,7 +282,7 @@ private fun onDeviceSpeech(context: Context): Boolean = try {
 }
 
 private fun speechTrouble(error: Int): String = when (error) {
-    SpeechRecognizer.ERROR_TOO_MANY_REQUESTS, SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> BUSY
+    SpeechRecognizer.ERROR_TOO_MANY_REQUESTS, SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> busy(error)
     SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED, SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE ->
         "The phone has no on-device speech model for ${Locale.getDefault().displayLanguage} yet. " +
             "It can be added in the phone's settings, under offline speech recognition."

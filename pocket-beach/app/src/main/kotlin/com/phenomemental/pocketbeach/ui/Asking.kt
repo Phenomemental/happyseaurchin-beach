@@ -204,6 +204,8 @@ class Asking(private val app: PocketApp) {
 
     fun stop() {
         talker?.stop()
+        // A conversation stopped part way can't be asked again: the next ask opens it afresh.
+        stale = true
         job?.cancel()
         end(null, null, null, "Stopped before the companion answered.", null)
     }

@@ -62,7 +62,7 @@ class StandIn : Mind {
     var instruction = ""
     /** The earlier exchanges each 0.4 conversation was opened with. */
     val histories = mutableListOf<List<Pair<String, String>>>()
-    override suspend fun talker(instruction: String, history: List<Pair<String, String>>): Mind.Talker {
+    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean): Mind.Talker {
         this.instruction = instruction
         histories += history
         return object : Mind.Talker {
@@ -277,15 +277,17 @@ class CompanionTest {
             assertFalse(app.pages.exists(HelloWorld.BLOCK))
             assertTrue("nothing posted", wire.sent.isEmpty())
             val results = app.benching.results
-            assertEquals("twenty asks before, twenty after", 40, results.size)
+            assertEquals("twenty asks before, twenty after with her first word held, twenty with it free", 60, results.size)
             assertTrue("the stand-in's hello world is right, before", results[19].right)
-            assertTrue("and after", results.last().right)
+            assertTrue("and after, held", results[39].right)
+            assertTrue("and free", results.last().right)
             val run = app.pages.position(Region.POCKET, made.single())!!
             assertTrue(run.text!!.startsWith("Bench, "))
-            assertEquals(3, run.lines.size)
+            assertEquals(4, run.lines.size)
             assertTrue(run.lines[0].text!!.startsWith("0.3 "))
-            assertTrue(run.lines[1].text!!.startsWith("0.4 "))
-            assertEquals("How it was run", run.lines[2].text)
+            assertTrue(run.lines[1].text!!.startsWith("0.4, her first word held"))
+            assertTrue(run.lines[2].text!!.startsWith("0.4, her first word free"))
+            assertEquals("How it was run", run.lines[3].text)
             compose.tap("open-bench-block")
             compose.waitFor("standing", "Bench, ")
         }

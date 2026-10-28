@@ -16,6 +16,12 @@ object Talks {
     enum class Route { TALK, READ, ACT }
 
     /**
+     * The form her every reply is held to by the engine, when it holds one:
+     * the route word on a line of its own, then anything at all.
+     */
+    const val HELD = "(talk|read|act)\n[\\s\\S]*"
+
+    /**
      * Her reply, read: how she answers, her plain words, and what followed
      * her route word (her reads, or her actions). She often says a few words
      * before acting or reading ("talk / I'll add it. / act / add …"), so the

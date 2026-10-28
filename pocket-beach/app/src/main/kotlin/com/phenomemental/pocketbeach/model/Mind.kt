@@ -27,9 +27,11 @@ interface Mind {
     /**
      * 0.4: one conversation, kept while Ask is open, its [instruction]
      * processed once; [history], the last exchanges (Matthew's words, hers),
-     * carried into it. Replies are streamed, nothing held.
+     * carried into it. Replies are streamed; if [held], each is held by the
+     * engine to begin with her route word
+     * ([com.phenomemental.pocketbeach.bsp.Talks.HELD]) where it allows.
      */
-    suspend fun talker(instruction: String, history: List<Pair<String, String>>): Talker
+    suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = true): Talker
 
     interface Talker : Closeable {
         val stream: com.phenomemental.pocketbeach.bsp.Talks.Stream
@@ -37,6 +39,10 @@ interface Mind {
         /** Where and how fast it is answering: each reply a turn, with its first token. */
         val pace: Pace
 
+        /** How her first word is chosen: held by the engine, or free and why. */
+        val route: String get() = "free"
+
+        /** Stop the reply under way; the conversation can't be asked again after, so it is let go. */
         fun stop()
     }
 

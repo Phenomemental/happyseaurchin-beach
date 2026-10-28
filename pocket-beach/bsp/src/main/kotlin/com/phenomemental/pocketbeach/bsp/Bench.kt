@@ -24,8 +24,9 @@ object Bench {
     /**
      * One fixed ask: what Matthew says, how it should be answered, and what
      * makes the answer right: words it must say (each group: any one of
-     * them), the writes it must plan, or, for the hello world, a block that
-     * checks out and its post offered.
+     * them) and words it must never say, the writes it must plan, or, for
+     * the hello world, a block that checks out and its post offered. A
+     * [plain] ask needs no reading: a read to answer it is wrong.
      */
     class Ask(
         val n: Int,
@@ -34,17 +35,26 @@ object Bench {
         val says: List<List<String>> = emptyList(),
         val writes: List<Want> = emptyList(),
         val hello: Boolean = false,
+        val never: List<String> = emptyList(),
+        val plain: Boolean = false,
     )
+
+    /**
+     * What no talk or read answer may say: each is a lookup of a block that
+     * was never asked for, as 0.3 answered "In one sentence, what is a
+     * block?" and "Thanks, that's all for now." on Matthew's Pixel.
+     */
+    val NEVER: List<String> = listOf("block named", "block called", "don't see any block", "do not see any block", "no block named", "no block called")
 
     const val SECRET = "purple walrus"
 
     val ASKS: List<Ask> = listOf(
-        Ask(1, Route.TALK, "What's your name?", says = listOf(listOf("companion", "pocket"))),
-        Ask(2, Route.TALK, "What can you do?"),
-        Ask(3, Route.TALK, "Good morning! How are you?"),
-        Ask(4, Route.TALK, "Can you help me plan my garden for spring?"),
-        Ask(5, Route.TALK, "In one sentence, what is a block?"),
-        Ask(6, Route.TALK, "Thanks, that's all for now."),
+        Ask(1, Route.TALK, "What's your name?", says = listOf(listOf("companion", "pocket")), plain = true),
+        Ask(2, Route.TALK, "What can you do?", says = listOf(listOf("read", "write", "add", "note", "block"))),
+        Ask(3, Route.TALK, "Good morning! How are you?", says = listOf(listOf("morning", "well", "good", "fine", "hello")), plain = true),
+        Ask(4, Route.TALK, "Can you help me plan my garden for spring?", says = listOf(listOf("garden", "spring", "plant"))),
+        Ask(5, Route.TALK, "In one sentence, what is a block?", says = listOf(listOf("line"))),
+        Ask(6, Route.TALK, "Thanks, that's all for now.", says = listOf(listOf("welcome", "glad", "pleasure", "anytime", "bye", "take care", "no problem", "happy to help")), never = listOf("hello-world"), plain = true),
         Ask(7, Route.READ, "What's in my garden block?", says = listOf(listOf("plant the bulbs", "bulbs"), listOf("prune the roses", "roses"))),
         Ask(8, Route.READ, "What does my notes block say?", says = listOf(listOf("stamps"))),
         Ask(9, Route.READ, "Read me the autumn line in garden.", says = listOf(listOf("plant the bulbs"))),
@@ -138,6 +148,8 @@ object Bench {
                 if (said.isEmpty()) add("It said nothing.")
                 if (said.startsWith("{") || said.startsWith("```")) add("It answered in code, not plain words.")
                 for (group in ask.says) if (group.none { said.contains(it, ignoreCase = true) }) add("It didn't say ${group.joinToString(" or ") { "\"$it\"" }}.")
+                (NEVER + ask.never).firstOrNull { said.contains(it, ignoreCase = true) }?.let { add("It said \"$it\", looking for a block nobody asked about.") }
+                if (ask.plain && did.route == Route.READ) add("It read a block to answer what needs no reading.")
             }
             Route.ACT -> {
                 p?.refusal?.let { add("Its plan can't go ahead: $it") }
