@@ -51,7 +51,7 @@ From Matthew's first hello world with the companion, on 0.3.1:
     read and how long, the tokens written, how long and how fast;
   - if the GPU can't take the model, its own error is shown ("The GPU
     couldn't run it: …"), and kept in the Ask log with the rest;
-  - what the companion reads is about 1,350 tokens (4,900 characters): the
+  - what the companion reads is about 1,350 tokens (4,700 characters): the
     instructions and two examples, the shell twice (worn, then plainly), the
     pocket's blocks and the teaching blocks' names. The hello world's answer
     is now about 240 tokens, from 270, or about 95 when only the secret
@@ -281,8 +281,19 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   hello world with the model file the phone downloads, the engine's desktop
   build of the same API, and the phone's own instruction and settings. It runs
   on the CPU, 20 to 60 s an answer; the phone's GPU should be much quicker.
+  - **With 0.3.2's instruction** (the post the app's, the shell's post only
+    "Hello world"), asked the same eight ways:
+    - on an empty pocket, 7 of 8 passed, six in one exchange. Each answer
+      was about 240 tokens, 25–40 s here;
+    - with a `hello-world` made before, as on Matthew's phone (`existing`),
+      7 of 8 passed, each in one exchange: the one change to its secret
+      line, about 95 tokens and 15–20 s here. The app's seal and fingerprint
+      followed, and every post was the block's own, with this Ask's seal;
+    - both misses were "secret: 42 is not the answer", written as
+      "Secret: 42", which shows before Yes. The block's seal and
+      fingerprint still checked out.
   - It asked in eight different ways (`gradlew :trial:run -Ptrial`).
-  - **With the instruction as built, 7 of the 8 passed.** In each,
+  - **With 0.3.1's instruction, 7 of the 8 passed.** In each,
     `hello-world` held the shell's opening line, the secret word for word,
     the app's seal and a matching fingerprint. The post carried all four
     and the block's address.
@@ -699,6 +710,34 @@ Found by running the hello world against the real model on a laptop
   read from running. A post is now kept only when Matthew's words speak of
   posting, a pool, the beach or the hello world. Any other is left out and
   logged. An empty post, or one to no pool, is none.
+- **The hello world's seal, fingerprint and message are the app's** (0.3.2).
+  Shown an old `hello-world` with its lines, the model copied its seal and
+  fingerprint into the post. So the app now writes the seal and the
+  fingerprint itself after the companion's writes, and makes the post from
+  the block once written. The shell's post is only `"Hello world"`, which
+  also spares the model about 70 tokens of writing.
+- **A hello world already there is said so,** with the one step that
+  changes its secret at its line's address, only when there is one. Put in
+  the shell as a second answer for that case, the model chose it on an
+  empty pocket too and copied "the Secret line's address" as it stood.
+- **What it reads and writes, and how fast** (the laptop's CPU, 4 cores,
+  0.3.2's instruction):
+  - it reads about 1,350 tokens (4,700 characters): the instructions and
+    two examples, about 580; the shell twice, worn and plainly, about 620;
+    the pocket's blocks and the teaching blocks' names, about 150;
+  - the hello world's answer is about 240 tokens; with `hello-world` already
+    there, about 95;
+  - reading ran at 100–250 tokens a second and writing at 6–11, so writing
+    is most of the time: 25–40 s an answer here;
+  - the phone's GPU should read many times faster and write several times
+    faster. Ask now shows the phone's own figures.
+- **Speculative decoding, not used yet.** The model file supports it (its
+  multi-token prediction). On the laptop it wrote 17.4 tokens a second
+  against 10.5, but only with the answer's form not held: held to the
+  schema, the engine stopped with an error mid-answer ("compute_mask()
+  called after stop"). Unheld, the answer came wrapped in a code fence and
+  about 30% longer. Whether it is worth giving up the held form waits on
+  the phone's own figures.
 - **Reads end when they repeat.** Asked what a block holds, the model read it
   again each round. A round that asks only for reads it has been shown
   already is taken as its answer.

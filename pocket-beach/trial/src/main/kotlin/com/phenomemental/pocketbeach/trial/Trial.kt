@@ -134,12 +134,12 @@ fun main(args: Array<String>) {
         if (problems.isEmpty()) passed++
     }
     println("\n$passed of $runs passed, in $exchanges exchanges.")
-    if (args.getOrNull(2) == "ordinary") ordinary(engine, shelf)
+    if ("ordinary" in flags) ordinary(engine, shelf, mtp)
     engine.close()
 }
 
 /** Ordinary asks of a small pocket, printed as answered and as planned, for reading by eye. */
-private fun ordinary(engine: Engine, shelf: Shelf) {
+private fun ordinary(engine: Engine, shelf: Shelf, mtp: Boolean) {
     val asks = listOf(
         "What's in my garden block?",
         "Add a line to garden: buy more compost.",
@@ -162,12 +162,12 @@ private fun ordinary(engine: Engine, shelf: Shelf) {
             samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 1),
             maxOutputToken = Asks.Tuning.MAX_OUTPUT,
             thinkingConfig = ThinkingConfig(enableThinking = false),
-            enableResponseFormat = true,
+            enableResponseFormat = !mtp,
         )
         println("\n── ordinary: $question")
         val start = System.nanoTime()
         engine.createConversation(config).use { conversation ->
-            val talk = Talk { message -> conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA)).toString() }
+            val talk = Talk { message -> (if (mtp) conversation.sendMessage(message) else conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA))).toString() }
             val asked = Asks.ask(question, talk, pages, storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal()) { now }
             for ((i, e) in asked.exchanges.withIndex()) println("answer ${i + 1}: " + e.second.replace(Regex("\\s*\\n\\s*"), " ").trim())
             asked.problem?.let { println("problem: $it") }
