@@ -104,6 +104,22 @@ class ScreenTour {
                 }
                 shot("$theme-13-ask-model")
             }
+            // A download kept part way, then one that failed, as the screen says them.
+            val part = java.io.File(app.getExternalFilesDir(null), "models/${com.phenomemental.pocketbeach.model.ModelStore.FILE}.part")
+            part.parentFile!!.mkdirs()
+            part.writeBytes(ByteArray(1 shl 20))
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("paused")
+                shot("$theme-13a-ask-paused")
+            }
+            app.getSharedPreferences("model", 0).edit().putString("failed", "Hugging Face sent the download on to eu.example.hf.co, a host the pocket doesn't trust, so it stopped there.").commit()
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("model-failed")
+                shot("$theme-13b-ask-failed")
+            }
+            Fresh.clear()
             app.mind = StandIn()
             app.wire = wire
             Fresh.open().use {
@@ -130,9 +146,10 @@ class ScreenTour {
                 compose.tap("back")
                 compose.tap("about")
                 compose.tap("calls")
-                compose.waitFor("hello-post")
+                // The companion's post is this same message, so it shows as posted, and goes again only on purpose.
+                compose.waitFor("hello-said")
                 shot("$theme-20-calls-hello")
-                compose.tap("hello-post")
+                compose.tap("hello-post-again")
                 compose.waitFor("hello-message")
                 shot("$theme-21-calls-confirm")
             }

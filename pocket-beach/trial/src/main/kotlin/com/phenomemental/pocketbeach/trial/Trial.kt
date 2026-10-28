@@ -84,7 +84,7 @@ fun main(args: Array<String>) {
             if (post == null) found += "no post offered (${carried.postRefusal ?: proposal.postRefusal ?: "none"})"
             else {
                 val print = carried.landed.lastOrNull { it.print != null }?.print ?: ""
-                found += HelloWorld.checkMessage(post.message, seal, print)
+                found += HelloWorld.checkMessage(post.message, HelloWorld.SHELL_OPENING, seal, print)
                 if (!post.message.contains(secret, ignoreCase = true)) found += "the message doesn't carry the secret"
                 println("post to pool:${post.pool}: ${post.message}")
             }

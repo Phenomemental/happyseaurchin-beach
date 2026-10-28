@@ -1,6 +1,7 @@
 package com.phenomemental.pocketbeach.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +18,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -194,31 +198,44 @@ private fun Toggle(label: String, value: Boolean, onChange: (Boolean) -> Unit) {
  * The hello world by hand (decision 17), so the chain can be shown without
  * the companion: 1, make hello-world, the shell's opening line, the secret,
  * a seal the app makes and the fingerprint, each a guarded write; 2, after
- * its own confirmation, post the one message to pool:Phenomemental.
+ * its own confirmation, post the one message to pool:Phenomemental. Each
+ * step says plainly when it is done, and a message once posted is not sent
+ * again unless Matthew asks for that on purpose.
  */
 @Composable
 private fun HelloByHand(model: Model) {
     val ink = LocalInk.current
     val scope = rememberCoroutineScope()
     var secret by rememberSaveable { mutableStateOf("") }
-    var made by rememberSaveable { mutableStateOf("") }
-    var said by rememberSaveable { mutableStateOf("") }
-    var confirming by androidx.compose.runtime.remember { mutableStateOf<PoolMessage?>(null) }
+    var made by rememberSaveable { mutableStateOf<String?>(null) }
+    var problem by rememberSaveable { mutableStateOf<String?>(null) }
+    var refused by rememberSaveable { mutableStateOf<String?>(null) }
+    var confirming by remember { mutableStateOf<PoolMessage?>(null) }
+    var again by remember { mutableStateOf(false) }
     var busy by rememberSaveable { mutableStateOf(false) }
-    val stored by androidx.compose.runtime.produceState<String?>(null, model.version) {
+    var posts by remember { mutableIntStateOf(0) }
+    val stored by produceState<String?>(null, model.version) {
         value = withContext(Dispatchers.IO) { model.app.storage.read(HelloWorld.BLOCK) }
     }
-    val message = stored?.let(HelloWorld::messageFor)
+    val message = stored?.let(HelloWorld::messageFor)?.let { runCatching { PoolPost.prepare(HelloWorld.POOL, it) }.getOrNull() }
+    val landed = remember(message?.message, posts) { message?.let(model.app.posts::landed) }
 
-    Text("The hello world by hand", style = Type.heading, color = ink.ink)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Label("Without the companion")
+        Text("The hello world by hand", style = Type.heading, color = ink.ink)
+        Stroke()
+    }
     Text(
-        "The same two steps the companion offers, without it. Step 1 makes the block ${HelloWorld.BLOCK}; step 2 posts one message to " +
-            "pool:${HelloWorld.POOL} on the beach, after you confirm it.",
-        style = MaterialTheme.typography.bodySmall,
+        "Step 1 makes the block ${HelloWorld.BLOCK}. Step 2 posts one message to pool:${HelloWorld.POOL} on the beach, after you confirm it.",
+        style = Type.body, color = ink.ink,
     )
-    Field("Your secret", secret, tag = "hello-secret") { secret = it }
-    Button(
-        onClick = {
+
+    // Step 1
+    Label("Step 1")
+    PaperField(secret, { secret = it; problem = null }, "Your secret", singleLine = true, tag = "hello-secret")
+    Action(
+        "Make ${HelloWorld.BLOCK}",
+        {
             busy = true
             scope.launch {
                 val outcome = withContext(Dispatchers.IO) {
@@ -229,45 +246,65 @@ private fun HelloByHand(model: Model) {
                 }
                 busy = false
                 model.changed()
-                outcome.onSuccess { m -> made = "Made ${HelloWorld.BLOCK}. Seal ${m.seal}, fingerprint ${m.fingerprint}."; said = "" }
-                    .onFailure { made = it.message ?: "It wasn't made." }
+                outcome.onSuccess { m -> made = "Seal ${m.seal}. Fingerprint ${m.fingerprint}."; problem = null }
+                    .onFailure { made = null; problem = it.message ?: "It wasn't made." }
             }
         },
-        enabled = !busy && secret.isNotBlank(),
-        modifier = Modifier.fillMaxWidth().testTag("hello-make"),
-    ) { Text("1. Make ${HelloWorld.BLOCK}") }
-    if (made.isNotEmpty()) Text(made, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-made"))
-    stored?.let { SelectionContainer { Text(it, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-block")) } }
-    if (stored != null && message == null) {
-        Text("${HelloWorld.BLOCK} has no fingerprint that matches it, so there's nothing to post from it.", style = MaterialTheme.typography.bodySmall)
+        Modifier.fillMaxWidth(),
+        enabled = !busy && secret.isNotBlank() && stored == null,
+        strong = stored == null,
+        tag = "hello-make",
+    )
+    when {
+        made != null -> Done("${HelloWorld.BLOCK} made.", detail = made, tag = "hello-made")
+        stored != null -> Done(
+            "${HelloWorld.BLOCK} is made.",
+            detail = if (message != null) "Its fingerprint matches it." else "But it has no fingerprint that matches it, so there's nothing to post from it.",
+            tag = "hello-made",
+        )
     }
-    Button(
-        onClick = { confirming = runCatching { PoolPost.prepare(HelloWorld.POOL, message!!) }.getOrNull() },
-        enabled = !busy && message != null,
-        modifier = Modifier.fillMaxWidth().testTag("hello-post"),
-    ) { Text("2. Post it to pool:${HelloWorld.POOL}…") }
-    if (said.isNotEmpty()) Text(said, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("hello-said"))
+    problem?.let { Notice(it, tag = "hello-problem") }
+
+    // Step 2
+    Label("Step 2", Modifier.padding(top = 12.dp))
+    if (message != null) {
+        Sheet { Text(message.message, style = Type.body, color = ink.ink, modifier = Modifier.padding(vertical = 8.dp).testTag("hello-preview")) }
+    } else {
+        Text("Make ${HelloWorld.BLOCK} first; its message shows here.", style = Type.aside, color = ink.soft)
+    }
+    Action(
+        if (landed != null) "Posted at entry $landed" else "Post it to pool:${HelloWorld.POOL}…",
+        { again = false; confirming = message },
+        Modifier.fillMaxWidth(),
+        enabled = !busy && message != null && landed == null,
+        strong = landed == null,
+        tag = "hello-post",
+    )
+    if (landed != null) {
+        Done("Posted to your pool at entry $landed.", detail = "pool:${HelloWorld.POOL} on beach.happyseaurchin.com", tag = "hello-said")
+        TextLink("Post again?", { again = true; confirming = message }, tag = "hello-post-again")
+    }
+    refused?.let { Notice(it, tag = "hello-refused") }
 
     confirming?.let { m ->
         PaperDialog(
-            title = "Post this to the beach?",
+            title = if (again) "Post this again?" else "Post this to the beach?",
             onDismiss = { confirming = null },
             actions = {
-                Action("Not now", { confirming = null }, Modifier.weight(1f), tag = "hello-not-now")
-                Action("Post it", {
+                Action("Not now", { confirming = null }, tag = "hello-not-now")
+                Action(if (again) "Post again" else "Post it", {
                     confirming = null
                     busy = true
                     scope.launch {
-                        val posted = withContext(Dispatchers.IO) { PoolPost.send(m, model.app.wire) }
+                        val posted = withContext(Dispatchers.IO) { model.app.post(m) }
                         busy = false
-                        said = when (posted) {
-                            is Posted.Landed -> "Posted. It landed at slot ${posted.slot} of pool:${posted.pool}."
-                            is Posted.Refused -> posted.why
-                        }
+                        posts++
+                        refused = (posted as? Posted.Refused)?.why
                     }
-                }, Modifier.weight(1f), strong = true, tag = "hello-confirm")
+                }, strong = true, tag = "hello-confirm")
             },
         ) {
+            if (again) Text("It was posted already, at entry $landed. Posting it again adds a second, identical entry.", style = Type.body, color = ink.crimson)
             Text(m.message, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hello-message"))
             Text("To pool:${m.pool} at beach.happyseaurchin.com, under the name ${m.author}. It can't be taken back.", style = Type.small, color = ink.soft)
         }

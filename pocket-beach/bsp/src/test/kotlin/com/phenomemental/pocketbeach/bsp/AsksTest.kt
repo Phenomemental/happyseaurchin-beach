@@ -33,7 +33,7 @@ class AsksTest {
            {"do": "add", "block": "hello-world", "at": "", "text": "Seal: {{seal}}"},
            {"do": "add", "block": "hello-world", "at": "", "text": "Fingerprint: {{fingerprint}}"}
          ],
-         "post": {"pool": "Phenomemental", "message": "Hello world from the pocket. Secret: purple walrus. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: {{address}}."}}
+         "post": {"pool": "Phenomemental", "message": "Hello world from the pocket. Shell: “{{shell}}” Secret: purple walrus. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: {{address}}."}}
         ```
     """.trimIndent()
 
@@ -90,8 +90,8 @@ class AsksTest {
         val print = collectUnderscore((parseJson(stored!!) as JsObj)["4"])!!.removePrefix("Fingerprint: ")
         assertEquals(print, carried.landed[4].print)
         assertEquals(shown.post!!.message.replace(shown.writes[4].print!!, print), post.message, "the post goes as it was shown, with the fingerprint the block holds")
-        assertEquals(emptyList(), HelloWorld.checkMessage(post.message, seal, print))
-        assertEquals("Hello world from the pocket. Secret: purple walrus. Seal: $seal. Fingerprint: $print. Block: pocket/hello-world.", post.message)
+        assertEquals(emptyList(), HelloWorld.checkMessage(post.message, opening, seal, print))
+        assertEquals("Hello world from the pocket. Shell: “$opening” Secret: purple walrus. Seal: $seal. Fingerprint: $print. Block: pocket/hello-world.", post.message)
     }
 
     @Test
@@ -258,7 +258,7 @@ class AsksTest {
         assertEquals(listOf("The last line isn't a fingerprint that matches the block."), HelloWorld.check(tampered, opening, seal))
         assertEquals(listOf("No line holds the seal the app made."), HelloWorld.check(made.stored, opening, "f".repeat(32)))
 
-        assertEquals(HelloWorld.message("purple walrus", seal, made.fingerprint), HelloWorld.messageFor(made.stored))
+        assertEquals(HelloWorld.message(opening, "purple walrus", seal, made.fingerprint), HelloWorld.messageFor(made.stored))
         assertNull(HelloWorld.messageFor(tampered))
 
         assertFailsWith<IllegalArgumentException> { HelloWorld.makeByHand(pages, storage, opening, "again", seal) }
@@ -299,7 +299,10 @@ class AsksTest {
         val seals = (1..50).map { HelloWorld.seal() }.toSet()
         assertEquals(50, seals.size)
         assertTrue(seals.all { Regex("^[0-9a-f]{32}$").matches(it) })
-        assertEquals("Hello world from the pocket. Secret: s. Seal: a. Fingerprint: b. Block: pocket/hello-world.", HelloWorld.message("s", "a", "b"))
+        assertEquals("Hello world from the pocket. Shell: “Pocket companion.” Secret: s. Seal: a. Fingerprint: b. Block: pocket/hello-world.", HelloWorld.message("Pocket companion.", "s", "a", "b"))
+        assertTrue(HelloWorld.recipeIsOlder("Hello world: when Matthew asks for the hello world, answer with exactly these steps (an older form)"))
+        assertFalse(HelloWorld.recipeIsOlder(HelloWorld.SHELL_RECIPE))
+        assertFalse(HelloWorld.recipeIsOlder("A line of Matthew's own"))
     }
 
     // ── the one post ──

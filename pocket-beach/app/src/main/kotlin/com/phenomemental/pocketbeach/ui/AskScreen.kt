@@ -1,7 +1,15 @@
 package com.phenomemental.pocketbeach.ui
 
 import android.content.ActivityNotFoundException
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,6 +37,7 @@ import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Proposal
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.model.FetchService
 import com.phenomemental.pocketbeach.model.ModelStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -46,22 +55,26 @@ fun AskScreen(model: Model, nav: Nav) {
     val shell by produceState<String?>(null, model.version) {
         value = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, HelloWorld.SHELL)?.text }
     }
+    val recipe by produceState<String?>(null, model.version) {
+        value = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, HelloWorld.SHELL, "1")?.text }
+    }
     var shellChecked by remember { mutableStateOf(false) }
     LaunchedEffect(shell, model.version) { shellChecked = true }
     val modelState by produceState<ModelStore.State?>(null) {
         while (true) {
             val s = withContext(Dispatchers.IO) { model.app.mind.state() }
             value = s
-            if (s is ModelStore.State.Fetched) value = withContext(Dispatchers.IO) { model.app.models.check() }
             delay(if (s is ModelStore.State.Fetching) 1000 else 3000)
         }
     }
     val stage = asking.stage
+    // A message posted already is not sent again unless Matthew asks for that on purpose.
+    val postedBefore = (stage as? Asking.Stage.Written)?.carried?.post?.let(model.app.posts::landed)
 
     Page(
         onBack = { nav.back() },
         top = { Text("Ask", style = Type.name, color = ink.ink, maxLines = 1) },
-        bottom = bottom(asking, stage, ready = modelState is ModelStore.State.Ready && shell != null),
+        bottom = bottom(asking, stage, ready = modelState is ModelStore.State.Ready && shell != null, postedBefore = postedBefore),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label("The companion")
@@ -85,6 +98,20 @@ fun AskScreen(model: Model, nav: Nav) {
                     }
                 },
                 tag = "make-shell",
+            )
+        }
+        if (HelloWorld.recipeIsOlder(recipe)) {
+            Notice(
+                "The companion's shell has the hello world line from 0.3. The new line puts the shell's opening line into the post, " +
+                    "so it can be read on the beach too. Updating it changes that one line of ${HelloWorld.SHELL}.",
+                link = "Update the hello world line" to {
+                    scope.launch {
+                        val done = withContext(Dispatchers.IO) { model.pages.carryOut(model.pages.planChange(HelloWorld.SHELL, "1", HelloWorld.SHELL_RECIPE)) }
+                        model.changed()
+                        model.say(Screen.Ask, if (done.ok) "Updated the hello world line of ${HelloWorld.SHELL}." else done.problem ?: "It wasn't updated.")
+                    }
+                },
+                tag = "update-shell",
             )
         }
 
@@ -119,11 +146,11 @@ fun AskScreen(model: Model, nav: Nav) {
             }
             is Asking.Stage.Written -> {
                 Written(model, stage.shown.asked.proposal!!.seal, stage.carried, asking.shellOpening())
-                stage.carried.post?.let { PostCard(it) }
+                stage.carried.post?.let { PostCard(it, postedBefore) }
             }
             is Asking.Stage.Posting -> {
                 Written(model, stage.written.shown.asked.proposal!!.seal, stage.written.carried, asking.shellOpening())
-                PostCard(stage.message)
+                PostCard(stage.message, null)
                 Text("Posting…", style = Type.aside, color = ink.soft)
             }
         }
@@ -131,7 +158,7 @@ fun AskScreen(model: Model, nav: Nav) {
 }
 
 /** The actions at the foot, by stage. */
-private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean): (@Composable androidx.compose.foundation.layout.RowScope.() -> Unit)? = when (stage) {
+private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBefore: String?): (@Composable androidx.compose.foundation.layout.RowScope.() -> Unit)? = when (stage) {
     Asking.Stage.Writing, is Asking.Stage.Over -> if (!ready) null else ({
         Action("Ask", { asking.ask() }, Modifier.weight(1f), enabled = asking.question.isNotBlank(), strong = true, tag = "ask")
     })
@@ -141,12 +168,12 @@ private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean): (@Compo
         Action("Yes, write it", { asking.yes() }, Modifier.weight(1f), strong = true, tag = "yes")
     })
     is Asking.Stage.Declining -> ({
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Action("Wrong place", { asking.because("wrong place") }, Modifier.weight(1f), tag = "wrong-place")
                 Action("Wrong block", { asking.because("wrong block") }, Modifier.weight(1f), tag = "wrong-block")
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Action("Misunderstood", { asking.because("misunderstood") }, Modifier.weight(1f), tag = "misunderstood")
                 Action("Just not now", { asking.because(null) }, Modifier.weight(1f), tag = "just-not-now")
             }
@@ -156,7 +183,8 @@ private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean): (@Compo
     is Asking.Stage.Carrying, is Asking.Stage.Posting -> null
     is Asking.Stage.Written -> if (stage.carried.post == null) null else ({
         Action("Not now", { asking.dontPost() }, Modifier.weight(1f), tag = "dont-post")
-        Action("Post it", { asking.post() }, Modifier.weight(1f), strong = true, tag = "post")
+        if (postedBefore == null) Action("Post it", { asking.post() }, Modifier.weight(1f), strong = true, tag = "post")
+        else Action("Post again?", { asking.post() }, Modifier.weight(1f), tag = "post-again")
     })
 }
 
@@ -253,10 +281,14 @@ private fun Written(model: Model, seal: String, carried: com.phenomemental.pocke
 }
 
 @Composable
-private fun PostCard(message: PoolMessage) {
+private fun PostCard(message: PoolMessage, postedBefore: String?) {
     val ink = LocalInk.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Label("Post to the beach?")
+        if (postedBefore != null) Text(
+            "This message was posted already, at entry $postedBefore. Posting it again adds a second, identical entry.",
+            style = Type.body, color = ink.crimson, modifier = Modifier.testTag("posted-before"),
+        )
         Sheet(Modifier.testTag("post-card")) {
             SelectionContainer { Text(message.message, style = Type.body, color = ink.ink, modifier = Modifier.testTag("post-message")) }
         }
@@ -281,7 +313,7 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
     }
     when (val p = over.posted) {
         is Posted.Landed -> {
-            Text("Posted. It landed at slot ${p.slot} of pool:${p.pool}.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("posted"))
+            Done("Posted to your pool at entry ${p.slot}.", detail = "pool:${p.pool} on beach.happyseaurchin.com", tag = "posted")
             TextLink("Open the beach", {
                 try {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BEACH_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -303,9 +335,19 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
 @Composable
 private fun ModelPart(model: Model, state: ModelStore.State?) {
     val ink = LocalInk.current
+    val context = LocalContext.current
     val models = model.app.models
     val scope = rememberCoroutineScope()
     fun act(block: () -> Unit) { scope.launch(Dispatchers.IO) { block() } }
+    // The download shows in a notification while Matthew is away; Android asks once whether it may.
+    val asked = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { FetchService.start(context) }
+    fun fetch() {
+        if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            asked.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            FetchService.start(context)
+        }
+    }
     val size = ModelStore.gb(ModelStore.SIZE)
     when (state) {
         null, ModelStore.State.Ready -> {}
@@ -315,7 +357,7 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
             tag = "too-little-memory",
         )
         is ModelStore.State.TooLittleRoom -> Notice(
-            "The companion's model needs $size of room and this phone has ${ModelStore.gb(state.free)} free. Free some room, then come back.",
+            "The companion's model needs ${ModelStore.gb(state.needs)} of room and this phone has ${ModelStore.gb(state.free)} free. Free some room, then come back.",
             tag = "too-little-room",
         )
         ModelStore.State.Absent -> {
@@ -324,17 +366,48 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
                     "over Wi-Fi only, checked byte for byte before it is used. After that it needs no connection.",
                 style = Type.body, color = ink.ink,
             )
-            Action("Get the model, $size over Wi-Fi", { act { models.fetch() } }, Modifier.fillMaxWidth(), tag = "get-model")
+            Action("Get the model, $size over Wi-Fi", { fetch() }, Modifier.fillMaxWidth(), tag = "get-model")
         }
-        is ModelStore.State.Fetching -> {
+        is ModelStore.State.Fetching -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Label("Fetching the model")
             Text(
-                if (state.waitingForWifi) "Waiting for Wi-Fi to fetch the model. ${ModelStore.gb(state.done)} of $size so far."
-                else "Fetching the model: ${ModelStore.gb(state.done)} of $size.",
+                "${ModelStore.gb(state.done)} of $size (${state.done * 100 / ModelStore.SIZE}%)" +
+                    if (state.bytesPerSecond > 0) ", at %.1f MB/s".format(state.bytesPerSecond / 1e6) else "",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("fetching"),
             )
+            Bar(state.done.toFloat() / ModelStore.SIZE)
+            state.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("fetch-note")) }
+            Text("It carries on while you're away from this screen, and shows in a notification.", style = Type.small, color = ink.soft)
             TextLink("Stop fetching", { act { models.stop() } }, tag = "stop-fetching")
         }
-        ModelStore.State.Fetched, ModelStore.State.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft)
-        is ModelStore.State.Failed -> Notice(state.why, link = "Try again" to { act { models.dismissFailure() } }, tag = "model-failed")
+        is ModelStore.State.Paused -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                "Paused at ${ModelStore.gb(state.done)} of $size. It carries on from there.",
+                style = Type.body, color = ink.ink, modifier = Modifier.testTag("paused"),
+            )
+            Bar(state.done.toFloat() / ModelStore.SIZE)
+            Action("Carry on", { fetch() }, Modifier.fillMaxWidth(), strong = true, tag = "carry-on")
+            TextLink("Discard what has come, and begin again", { act { models.discard() } }, tag = "discard")
+        }
+        ModelStore.State.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("checking"))
+        is ModelStore.State.Failed -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Notice(state.why, tag = "model-failed")
+            if (state.done > 0) Text("${ModelStore.gb(state.done)} of $size is kept, to carry on from.", style = Type.small, color = ink.soft)
+            Action(
+                if (state.done > 0) "Carry on from ${ModelStore.gb(state.done)}" else "Try again",
+                { act { models.dismissFailure() }; fetch() },
+                Modifier.fillMaxWidth(), strong = true, tag = "try-again",
+            )
+            if (state.done > 0) TextLink("Discard what has come, and begin again", { act { models.discard() } }, tag = "discard")
+        }
+    }
+}
+
+/** How far a download has come, as a ruled line filling with crimson. */
+@Composable
+private fun Bar(fraction: Float) {
+    val ink = LocalInk.current
+    Box(Modifier.fillMaxWidth().height(6.dp).background(ink.rule)) {
+        Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).height(6.dp).background(ink.crimson))
     }
 }

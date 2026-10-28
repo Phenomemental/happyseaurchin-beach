@@ -11,6 +11,9 @@ import com.phenomemental.pocketbeach.bsp.Pages
 import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.ShelfSource
+import com.phenomemental.pocketbeach.bsp.PoolMessage
+import com.phenomemental.pocketbeach.bsp.PoolPost
+import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.model.Gemma
 import com.phenomemental.pocketbeach.model.Mind
@@ -47,6 +50,13 @@ class PocketApp : Application() {
 
     /** What carries the one post. The device tests put a wire here that goes nowhere: no test posts to the beach. */
     @Volatile var wire: Wire = HttpsWire
+
+    /** What has been posted already, and where it landed. */
+    val posts by lazy { Posts(this) }
+
+    /** Send [message] once, as Matthew confirmed it, and keep where it landed. Blocking: call it off the main thread. */
+    fun post(message: PoolMessage): Posted =
+        PoolPost.send(message, wire).also { if (it is Posted.Landed) posts.record(message, it.slot) }
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
