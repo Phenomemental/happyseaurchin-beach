@@ -2,9 +2,18 @@
 <!--
   No INTERNET permission: nothing leaves the phone in this version.
   No backup: Android's cloud backup and device-to-device transfer are both off;
-  "Save a copy" (Piece 2) is the only copy of the blocks.
+  "Save a copy" is the only copy of the blocks.
+  RECORD_AUDIO is for speaking a line, recognised on the device only.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <application
         android:name=".PocketApp"
         android:label="Pocket beach"

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Paper before the first frame, so the app never opens on a default white or black. -->
     <style name="Theme.PocketBeach" parent="android:Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/pocket_window</item>
     </style>
     <color name="pocket_paper">#F6F1E7</color>
     <color name="pocket_crimson">#9B1B30</color>
+    <color name="pocket_window">#F4EEE3</color>
 </resources>

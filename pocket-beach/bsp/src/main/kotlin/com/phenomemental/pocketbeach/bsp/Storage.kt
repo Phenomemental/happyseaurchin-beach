@@ -27,6 +27,13 @@ interface BlockStorage {
     fun stamps(): Stamps
 
     fun setStamps(stamps: Stamps)
+
+    /**
+     * Replace every block and the stamps at once, as a restore does: afterwards
+     * the storage holds exactly [blocks] (name to stored JSON text) and
+     * [stamps], or, if anything stops it part way, exactly what it held before.
+     */
+    fun replaceAll(blocks: Map<String, String>, stamps: Stamps)
 }
 
 /** When each block was last written (touched) and first written (born): block name to ISO instant. */
@@ -40,12 +47,22 @@ data class Stamps(val touched: Map<String, String> = emptyMap(), val born: Map<S
  * A write goes to a temporary file in the same folder and is then renamed over
  * the old one. A block name becomes a file name every file system accepts, and
  * two names never share a file (see [fileNameOf]).
+ *
+ * A replace of everything (a restore) writes the new blocks into a folder of
+ * their own, then swaps the folders by renaming. Should the process stop part
+ * way, the next start finishes the swap if it had begun and abandons it if it
+ * had not, so the blocks are never a mix of the two.
  */
 class FileStorage(root: File) : BlockStorage {
-    private val dir = File(root, "regions/pocket")
-    private val metaFile = File(root, "regions/pocket.meta.json")
+    private val regions = File(root, "regions")
+    private val dir = File(regions, "pocket")
+    private val metaFile = File(regions, "pocket.meta.json")
+    private val incoming = File(regions, "pocket.incoming")
+    private val incomingMeta = File(regions, "pocket.meta.incoming.json")
+    private val outgoing = File(regions, "pocket.outgoing")
 
     init {
+        finishReplace()
         dir.mkdirs()
     }
 
@@ -69,9 +86,41 @@ class FileStorage(root: File) : BlockStorage {
         return Stamps(map("touched"), map("born"))
     }
 
-    override fun setStamps(stamps: Stamps) {
+    override fun setStamps(stamps: Stamps) = atomicWrite(metaFile, metaJson(stamps))
+
+    override fun replaceAll(blocks: Map<String, String>, stamps: Stamps) {
+        incoming.deleteRecursively()
+        incoming.mkdirs()
+        for ((name, json) in blocks) File(incoming, fileNameOf(name)).writeText(json, Charsets.UTF_8)
+        atomicWrite(incomingMeta, metaJson(stamps))
+        // The swap: once the old folder is moved aside, the new one is going in.
+        outgoing.deleteRecursively()
+        if (dir.exists()) move(dir, outgoing) else outgoing.mkdirs()
+        move(incoming, dir)
+        finishReplace()
+    }
+
+    /** Complete a replace that had begun its swap, or abandon one that had not (see [replaceAll]). */
+    private fun finishReplace() {
+        if (incoming.exists()) {
+            if (!dir.exists() && outgoing.exists()) {
+                move(incoming, dir)
+            } else {
+                incoming.deleteRecursively()
+                incomingMeta.delete()
+            }
+        }
+        if (incomingMeta.exists()) move(incomingMeta, metaFile)
+        outgoing.deleteRecursively()
+    }
+
+    private fun metaJson(stamps: Stamps): String {
         fun obj(m: Map<String, String>) = JsObj().also { o -> m.forEach { (k, v) -> o[k] = str(v) } }
-        atomicWrite(metaFile, stringify(JsObj.of("touched" to obj(stamps.touched), "born" to obj(stamps.born)))!!)
+        return stringify(JsObj.of("touched" to obj(stamps.touched), "born" to obj(stamps.born)))!!
+    }
+
+    private fun move(from: File, to: File) {
+        Files.move(from.toPath(), to.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
     }
 
     private fun atomicWrite(target: File, text: String) {
@@ -96,6 +145,12 @@ class MemoryStorage : BlockStorage {
     override fun names(): List<String> = blocks.keys.toList()
     override fun stamps(): Stamps = stamps
     override fun setStamps(stamps: Stamps) { this.stamps = stamps }
+
+    override fun replaceAll(blocks: Map<String, String>, stamps: Stamps) {
+        this.blocks.clear()
+        this.blocks.putAll(blocks)
+        this.stamps = stamps
+    }
 }
 
 private const val KEPT = "-_.!~'()"

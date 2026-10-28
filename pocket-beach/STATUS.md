@@ -4,118 +4,142 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 (the local bsp, release v0.1) is built, with the local bsp its own
-pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
-Pixel emulator. It is merged into main, and the four signing secrets are in
-(28 October). A release is now started with "Run workflow" on main, and the
-release job makes the tag itself (see "Starting a release"). A Claude session
-can't push a tag: its GitHub access covers only its own branch. 0.1 is the
-first release.
+Piece 2, the empty beach, is built as version 0.2 and waits on its release
+(see "Next"). Piece 1 is released as **pocket-beach-v0.1** and works on
+Matthew's Pixel, in aeroplane mode too.
 
 Before Piece 3, wearing a shell offline is built and matched against the
-original (decisions 8–12), as set out under "Wearing a shell offline".
+original (decisions 8–12). Today's finish line is set out under "Today's
+finish line".
 
 ### What is built
 
-- **The local bsp**, a Kotlin port of bsp-mcp-server and the beach duties, is
-  its own module, `bsp/`.
-  - It is plain Kotlin on the JVM: no Android APIs, no Context, no Android
-    library. It needs only a JDK, so the same tested core can run on a Windows
-    laptop.
-  - A front end hands it two things through interfaces: a `BlockStorage` for
-    the blocks and a `ShelfSource` for the teaching blocks. It gets text back
-    from `PocketBsp.call`.
-  - It covers the full surface for ordinary blocks: point, path-walk,
-    path-walk plus descent, disc, whole block, star (`*`), listing blocks
-    (block left out), writes of every shape, and append.
-  - Append takes the next free slot, and supernests when a block's root fills.
-    A position inside a block holds nine and refuses a tenth.
-- **The Android app** (`app/`) uses the core only through those interfaces. It
-  supplies a `FileStorage` on its private files and an `AssetShelfSource`
-  reading the shelf from its assets.
-- **The teaching shelf** (`shelf/`): the 27 blocks bsp-mcp-server bundles,
-  under 28 names, byte for byte, with its MIT licence. It is the read-only
-  `pscale` region.
-- **Storage.** The core ships two storages.
-  - `FileStorage` keeps blocks as files: `regions/pocket/<name>.json` under a
-    root folder (on the phone, its private files). Each write goes to a
-    temporary file and is renamed into place. When each block was touched and
-    born is kept beside them, in `regions/pocket.meta.json`.
-  - File names are safe on every system. "garden" is `garden.json`; capitals,
-    spaces and other marks are written `%XX`, so "Garden" is `%47arden.json`
-    and never shares a file with "garden" where case is ignored (Windows, a
-    Mac); and Windows' reserved names (con, nul, com1…) are escaped.
-  - `MemoryStorage` keeps blocks in memory, for tests and any front end that
-    keeps nothing.
-- **The test screen.** It has a field for each bsp parameter, a Run button, the
-  call sent, the raw result, and how long it took. Two shortcut buttons fill in
-  "The whetstone" and "My blocks".
-- **The app itself.**
-  - It has no internet permission: nothing can leave the phone.
-  - Android's cloud backup and device-to-device transfer are both off.
-  - App id `com.phenomemental.pocketbeach`. This can never change without
-    losing updates.
-  - Version 0.1, Android 12 or later, built against Android 17 (SDK 37).
+**Piece 2: the screens**, in Matthew's book look: warm paper, near-black ink,
+block text on a framed sheet, Cormorant Garamond (bundled, SIL Open Font
+License), one crimson accent, and a dark version of all of it.
+
+- **The Shore.**
+  - Matthew's blocks, the most recently changed first, each with its opening
+    line.
+  - Below them, the 27 teaching blocks, in the shelf's own order.
+  - "Make a new block" asks for a name only. The block opens with the line the
+    beach gives a new block ("garden at pocket."), which can then be changed.
+  - When a copy was last saved; three days after the last copy, if anything has
+    changed since, a reminder (decision 3).
+- **A block** opens on its disc at pscale 0: the opening line, then every line
+  at pscale 0, each with its address and how many lines stand beneath it.
+  - Tap a line to stand on it and see the lines beneath. The trail at the top
+    leads back up, and back steps up one level before it leaves the block.
+  - It says when a line holds all it can ("Every place beneath this line is
+    taken"), when the opening holds nine (the next line wraps it), and when the
+    block has wrapped. A wrapped block's lines are set in nines.
+  - It says when the beach's convention owes a summary ("A summary is owed at
+    10"), with a link to write it.
+  - An appended line's arrival stamp is shown as its date, not as a line.
+  - Teaching blocks read the same way, read only.
+- **Write**, from wherever Matthew stands: "Change this line" or "Add beneath".
+  - Before anything is saved, it shows where the line will land ("A new line at
+    1.3, beneath “autumn”", or that the block wraps first) and the exact bsp()
+    call.
+  - "Speak the line" puts spoken words into the line, recognised on the phone
+    only (decision 16).
+- **Save a copy** writes every block, with its stamps, as one JSON file wherever
+  Matthew chooses through Android's file picker. **Restore a copy** brings one
+  back after a plain warning, replacing every block at once.
+- **About**: what the app is, in two sentences; the type's and the shelf's
+  licences; "Try a call by hand" (Piece 1's test screen); and at the bottom
+  "Made by Matthew Bushell" and the thanks to David Pinto, linked to
+  https://beach.happyseaurchin.com.
+
+**In the core** (pure Kotlin, so a laptop front end gets the same):
+
+- `Pages` gives a front end its pages and its writes. Reads go through the same
+  walker bsp() reads with. Every write is a bsp() call, run first on a copy of
+  the block alone; it goes ahead only if that shows exactly one line changed,
+  or one new line arrived, and where. It is then run for real at the same
+  instant, and the result is compared with the dry run's.
+  - So a write that would move or change any other line is refused with a
+    plain reason, never made.
+  - One case needed it already: on a block wrapped twice, re-voicing the opening
+    line through spindle "0" reaches one step too deep and would overwrite the
+    first 81 lines, as it does upstream. The pages change it with a whole-block
+    write carrying the one changed line instead.
+- `Copies` makes and reads a copy file, and the reminder rule. A restored block
+  is stored byte for byte as it was saved.
+- `FileStorage` restores by writing the new blocks into a folder of their own
+  and swapping folders. A restore stopped part way is finished or abandoned on
+  the next start, never left half done.
+
+**Piece 1, unchanged beneath it:** the local bsp, the teaching shelf, storage,
+and the conformance tests below.
+
+- The local bsp, a Kotlin port of bsp-mcp-server and the beach duties, is its
+  own module, `bsp/`: plain Kotlin on the JVM, no Android in it (decision 7). A
+  front end hands it a `BlockStorage` and a `ShelfSource`.
+- It covers point, path-walk, path-walk plus descent, disc, whole block, star
+  (`*`), listing blocks, writes of every shape, and append with next free slot
+  and supernesting.
+- `FileStorage` keeps blocks as `regions/pocket/<name>.json` under the app's
+  private files, written whole through a temporary file. File names are safe
+  on every system ("Garden" is `%47arden.json`).
+
+**The app itself:** no internet permission; the microphone permission, for
+speaking a line only; Android's backup off; version 0.2 (`versionCode` 2),
+Android 12 or later.
 
 ### What was checked
 
-- **Golden calls** (`conformance/`). 833 calls in 256 cases ran through the
-  original bsp-mcp-server and pscale-beach at the pinned commits, with the clock
-  frozen. The Kotlin gives the identical reply and identical stored blocks for
-  every one.
-  - The calls are 23 hand-made cases and 233 random ones.
-  - Separately, 7,563 more random calls on three other seeds also matched.
-  - The test was shown to fail when an expected reply or block is altered.
-- **bsp-mcp-server's `smoke:unit`**, ported assertion for assertion, against
-  sunstone and whetstone: passes.
-- **The pocket's own rules** pass: the refusals, the files, the tenth line
-  wrapping the root, and names with spaces, colons and accents.
-- **JavaScript's rules** for numbers, escapes, key order, dates and whitespace
-  pass, checked against Node 22.
-- **The core is pure.** A test reads every compiled class of the core and finds
-  no Android API named: 0 of 57 classes, where 7 of the app's 8 name one.
-- **The golden replay passes on both storages,** in files and in memory: the
-  core answers identically whatever stands beneath it.
-- **The core builds and passes its tests with no Android SDK in reach**
-  (`-PcoreOnly`).
-- **The app builds** on the interfaces: debug, release, and the on-device tests.
-- **CI on GitHub** is green, most recently on main at `9608a3c`, after the merge.
-  - The golden calls regenerated from the original code match the committed
-    ones, and the shelf matches upstream.
-  - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
-  - On Windows, with no Android SDK, every core test passes, and the golden
-    replay matches all 833 calls in files and again in memory.
-  - On a Pixel emulator running Android 16, the app installed and opened, and
-    all 5 on-device tests passed:
-    - the whetstone from the shelf;
-    - a line written and read back from its own file;
-    - the beach refused;
-    - the test screen: fields, Run, and the result;
-    - the full 833-call golden replay on Android's own runtime.
-- **Starting a release** passes actionlint. The step that picks the tag was run
-  locally for five cases:
-  - a start on main makes `pocket-beach-v0.1`;
-  - a start elsewhere is refused;
-  - a malformed version, including one carrying a shell command, is refused;
-  - a version that already has its tag is refused;
-  - a tag pushed by hand is taken as given.
+- **The core's tests** (JVM, and again on Windows with no Android SDK): 43, all
+  passing.
+  - The pages: a block built by plans alone; ten lines at the opening wrapping
+    it; the twice-wrapped opening changed whole; a full line refusing more; a
+    plan that would now land elsewhere writing nothing; a write that would
+    disturb a hidden line refused; and every teaching block, with every line
+    one and two steps into it, opening.
+  - Copies: a restore byte for byte, including all 27 teaching blocks stored as
+    blocks; bad files refused in plain words; a restore stopped at each step
+    left whole one way or the other; the three-day rule.
+- **Golden calls:** all 833 still match the original, in files and in memory, on
+  Linux, Windows and the emulator. CI also regenerates them from the pinned
+  upstream and replays 1,000 fresh random cases.
+- **On a Pixel emulator (Android 16)** all 12 on-device tests pass (commit
+  `b0e0e73`). They check:
+  - a block made, changed, added to, walked and wrapped at ten lines, by taps
+    alone;
+  - a full line refusing more;
+  - speaking ending in words (heard, or a plain note), never at a server;
+  - a teaching block walked, with no write offered;
+  - a copy saved and restored through the same path the file picker uses;
+  - the test screen behind About, and Piece 1's checks.
+- **The screen tour** photographs every screen, light and dark, on the
+  emulator, and all 24 pictures were read by eye before release. The first
+  reading led to six changes, then checked again in the second:
+  - lining figures throughout, as Cormorant's old-style 1 made 1.1 read like
+    I.I;
+  - a drawn chevron for back;
+  - a passing message belongs to its own screen, on a ruled slip of paper;
+  - on Write, where the line lands stands above the field, clear of the
+    keyboard;
+  - the block's label no longer repeats its name;
+  - no doubled full stop in the new-block dialog.
 
 ### Not yet checked
 
-- The signed release with the real key. A throwaway key made the same way (an
-  OpenSSL `.p12`, one password for store and key) signed and verified in the
-  release build, in OpenSSL's current format and in the older one a Mac's
-  built-in openssl makes. The real key is first used by the 0.1 release.
-- The app on Matthew's own phone.
+- Piece 2 on Matthew's own phone.
+- Speaking a line on a phone that recognises speech on the device. The
+  emulator either has no on-device recogniser or hears nothing.
 
 ### Next
 
-1. Start the 0.1 release with "Run workflow" on main. CI makes the tag, builds
-   the signed APK and attaches it to the Release.
-2. Matthew tries: install, open, read the whetstone, make a block, write a
-   line, read it back, then again in aeroplane mode.
-3. Before Piece 3: wearing a shell offline is built and matched against the
+1. Release v0.2 ("Run workflow" on main, version 0.2), then Matthew tries:
+   - build a small block of his own from nothing, by tapping alone;
+   - walk it;
+   - add ten lines to its opening and see it wrap (decision 1);
+   - save a copy.
+2. Before Piece 3: wearing a shell offline is built and matched against the
    original (decisions 8–12).
+3. Piece 3, the assistant, with decisions 6, 13, 15, 16 and 19.
+4. Today's finish line, the hello-world test (decisions 17 and 18).
 
 ### Running the core on a laptop
 
@@ -162,7 +186,7 @@ To put the file in as text again:
    (and `versionCode`, one higher) in `app/build.gradle.kts`, merged into main.
 2. **On GitHub, go to Actions, then pocket-beach, then "Run workflow".** Choose
    the branch `main`, type the version (`0.1`), and run it. A Claude session can
-   ask GitHub to do the same.
+   start it too.
 3. **CI runs every check** (the golden calls, Windows, the emulator). The
    release job then makes the tag `pocket-beach-v<version>` at the commit it
    built, signs the APK, checks the signature, and publishes it on the Releases
@@ -234,7 +258,7 @@ pinned bsp-mcp-server `27908e1`.
   sundial stamp and its voicing, and a `now` reference walks the clock, so the
   port needs part of `temporal.ts`.
 
-### What it means for v0.1
+### What it means until it is built
 
 A read of a node shaped like a bundle comes back without its window, so it
 differs from the original. No teaching block is shaped like one, and no golden
@@ -333,6 +357,41 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     arrives from other people (blocks read from the online beach, relay
     requests) is untrusted. It can be read, but it never leads to a write
     without Matthew's confirmation. See "Later".
+15. **Piece 3: every Ask is logged.** Each Ask leaves an entry in a local log
+    block: what Matthew asked, the calls proposed, whether he confirmed, and the
+    time taken.
+    - "Not now" offers one tap for why: wrong place, wrong block, or
+      misunderstood.
+    - The log is an ordinary block, so it goes out with every saved copy, and
+      the assistant's shell can be refined from real use.
+16. **Speaking is built in.** A microphone on Ask (Piece 3) and on the Write
+    screen, so lines can be spoken straight into a block.
+    - Only Android's on-device speech recognition is used, never a server's.
+    - If the phone can't recognise speech on the device, the app says so
+      plainly and does not fall back to the cloud.
+    - The Write screen's microphone comes in Piece 2: it was simple, one
+      Android call that makes an on-device recogniser.
+17. **Today's finish line is a hello-world test across every node,** built
+    after Pieces 2 and 3. See "Today's finish line".
+18. **One narrow way out, early.** The app may append one message to a pool on
+    the online beach, only after Matthew taps to confirm, with nothing else
+    able to reach the network. It is a deliberate early piece of "Reach the
+    beach".
+    - It widens principle 5 by this one confirmed message: until now nothing
+      left the phone but the model download and links Matthew taps.
+    - Decision 2 stands for bsp(): a URL `agent_id` is still refused. The
+      message goes by its own action, never through bsp().
+    - Appending to `pool:Phenomemental` needs no key (see "Today's finish
+      line"). If a pool ever needs one, that key is kept in the Android
+      Keystore, never Matthew's passport key.
+19. **Piece 3: share a block out, receive a block in,** through Android's share
+    menu, so a block (the Ask log, say, or a coaching block) can move between
+    the pocket and other apps without the beach.
+    - Sharing out is Matthew's act, like saving a copy: the block goes only
+      where he sends it.
+    - A block received arrives as data (decision 14). Keeping it in the pocket
+      is a write he taps, and adopting it into a shell is a separate, explicit
+      choice of his.
 
 ## Other differences from bsp-mcp-server
 
@@ -352,7 +411,7 @@ Chosen in Phase 0, or found while building Piece 1.
     because "block" contains "lock".
   - A write that makes a new block reports "landed at" with a leading dot
     (`.1`).
-- **Bundle windows are left out of v0.1 only.** In bsp-mcp-server, reading a
+- **Bundle windows are left out until wearing a shell is built.** In bsp-mcp-server, reading a
   position whose lines are mostly references to other blocks that exist adds a
   window compiling those blocks. No teaching block triggers it. It is the
   shell's gathering mechanism, so it is built before Piece 3 (decision 8).
@@ -366,14 +425,99 @@ Chosen in Phase 0, or found while building Piece 1.
 - **CI also runs when only its own workflow file changes,** so a change to the
   build is itself tested.
 
+## Today's finish line: hello world (after Pieces 2 and 3)
+
+A test across every node (decision 17):
+
+1. **On the phone,** the assistant (Gemma wearing a shell) makes a block
+   `hello-world` in the pocket, holding:
+   - the shell's opening line;
+   - a fun secret Matthew gives it;
+   - a seal the app makes at random, which neither Matthew nor the model
+     chooses.
+
+   The app then computes a short fingerprint of the whole block.
+2. **With Matthew's confirmation,** the app posts one message to
+   `pool:Phenomemental` on https://beach.happyseaurchin.com, carrying the
+   secret, the seal, the fingerprint and the block's pocket address.
+
+If Gemma can't do step 1 reliably by the end of today, both steps are made to
+work by hand from the test screen, so the chain can still be shown.
+
+### Does appending to the pool need a key? No.
+
+- **The beach's code** (pscale-beach `4770a49`, `api/pscale-beach.js`): an
+  append at a block's root needs a key only when the root (`_`) is locked.
+  - The rule that ties a block to its handle's passport governs setting a
+    lock, not appending.
+  - With no lock, only the beach's caps apply (size, appends a minute), and
+    they are off unless the operator turns them on.
+- **The conventions** (block-conventions 4.9): `pool:<handle>` is the handle's
+  own room, where visitors' words land as entries under their own names.
+- **The pool itself**, read on 28 October, opens "open, no key needed to leave
+  something here". It holds 164 entries, left by weft, David, Dwayne and
+  Matthew's agents.
+- So the app sends no key. If the beach ever answers that a key is required,
+  the app says so plainly and stops.
+
+### How the message goes (to be built)
+
+- **One HTTPS POST** to `https://beach.happyseaurchin.com/.well-known/pscale-beach`:
+  `{block: "pool:Phenomemental", content: {_: <the message>, 1: <author>}, append: true}`.
+  This is the shape bsp-mcp-server's pool tool sends, and the beach adds the
+  arrival stamp.
+- **Only after a tap,** on a screen that shows the whole message first.
+- **Nothing else reaches the network:**
+  - one class holds the only network code, with the beach's address fixed in
+    it, and a test fails the build if any other class names a network API;
+  - the app's network security settings trust no certificate for any other
+    host and allow no unencrypted traffic. The model's download host in Piece
+    3 is the one other name they carry (principle 5).
+- **The seal:** 128 random bits from the phone's secure random source.
+- **The fingerprint:** the first 16 hex digits of the SHA-256 of the block's
+  stored text.
+
 ## Later
 
-Work after Piece 3. Nothing here is built yet.
+Work after Piece 3. Nothing here is built yet, except the first piece of
+"Reach the beach", which comes early for the finish line (decision 18).
 
 - **What other people send is data, never instructions** (decision 14). This
   covers blocks read from the online beach and relay requests. Such content can
   be read, but it never leads to a write without Matthew's confirmation.
+- **A "Reach the beach" switch, off by default.** When it is on, URL
+  `agent_id`s go through to the online beach over HTTPS.
+  - Sealed (gray) blocks are handled by porting the beach's client-side
+    encryption.
+  - The keys are kept in the Android Keystore, one per block, and never
+    Matthew's passport key.
+  - To settle when this starts:
+    - the app then needs the internet permission, which it has so far gone
+      without, so principles 1 and 5 change for that version;
+    - a key made inside the Keystore can never leave the phone, so a block
+      sealed with it opens only on this phone and is lost with it. The port
+      decides whether the Keystore holds each block's key itself, or guards a
+      key Matthew can also keep elsewhere.
+- **A relay through a sealed room on the online beach.** Claude or Matthew's
+  agents leave requests there.
+  - The app checks the room every few seconds while it is open, and about every
+    15 minutes in the background. Fifteen minutes is the shortest regular
+    interval Android allows.
+  - It answers through the local bsp, and clears each answer once it has been
+    read.
+  - Requests from others are reads only unless Matthew confirms (decision 14).
+  - It needs "Reach the beach" on.
+- **Gathering for Matthew's agents.** The app reads what each agent would read,
+  notes what is new, and leaves each a short note, so their wakes cost fewer
+  tokens.
+  - To settle when this starts: where the notes live, and whether leaving one
+    needs Matthew's tap each time (principle 6) or a standing permission for
+    that one kind of write.
 
 ## Open questions
 
-None.
+1. **Whose name the pool entry carries** at its position 1. I'd suggest
+   `Phenomemental`, since Matthew confirms each message, with the message
+   saying it came from the pocket.
+2. **Which shell the assistant wears** on the phone, and so whose opening line
+   goes into `hello-world`.
