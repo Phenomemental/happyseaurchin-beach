@@ -95,7 +95,50 @@ fun main(args: Array<String>) {
         if (problems.isEmpty()) passed++
     }
     println("\n$passed of $runs passed.")
+    if (args.getOrNull(2) == "ordinary") ordinary(engine, shelf)
     engine.close()
+}
+
+/** Ordinary asks of a small pocket, printed as answered and as planned, for reading by eye. */
+private fun ordinary(engine: Engine, shelf: Shelf) {
+    val asks = listOf(
+        "What's in my garden block?",
+        "Add a line to garden: buy more compost.",
+        "In garden, under the autumn line, note that the tulips came from Holland.",
+        "What does the whetstone say at line 2?",
+    )
+    for (question in asks) {
+        val now = 1_793_178_000_000L
+        val storage = MemoryStorage()
+        val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { now }) { now }
+        HelloWorld.makeShell(pages)
+        pages.carryOut(pages.planNewBlock("garden"))
+        pages.carryOut(pages.planChange("garden", "", "The garden, through the year"))
+        pages.carryOut(pages.planAdd("garden", "", "Autumn: plant the bulbs"))
+        pages.carryOut(pages.planAdd("garden", "", "Winter: prune the roses"))
+        val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
+        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages.shore().mine)
+        val config = ConversationConfig(
+            systemInstruction = Contents.of(system),
+            samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 1),
+            maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+            thinkingConfig = ThinkingConfig(enableThinking = false),
+            enableResponseFormat = true,
+        )
+        println("\n── ordinary: $question")
+        val start = System.nanoTime()
+        engine.createConversation(config).use { conversation ->
+            val talk = Talk { message -> conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA)).toString() }
+            val asked = Asks.ask(question, talk, pages, storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal()) { now }
+            for ((i, e) in asked.exchanges.withIndex()) println("answer ${i + 1}: " + e.second.replace(Regex("\\s*\\n\\s*"), " ").trim())
+            asked.problem?.let { println("problem: $it") }
+            asked.proposal?.let { p ->
+                p.writes.forEach { w -> println("would write: ${w.plan.block} at ${w.plan.landsAt}: ${w.shown}") }
+                p.refusal?.let { println("refused: $it") }
+            }
+        }
+        println("took ${secs(start)} s")
+    }
 }
 
 private fun secs(since: Long) = "%.1f".format((System.nanoTime() - since) / 1e9)
