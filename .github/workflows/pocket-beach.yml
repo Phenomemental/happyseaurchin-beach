@@ -34,7 +34,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'The version to release, as the app names it: 0.1 makes pocket-beach-v0.1. Run on main.'
+        description: 'The version to release, as the app names it: 0.3.1 makes pocket-beach-v0.3.1. Run on main.'
         required: true
         type: string
 
@@ -146,9 +146,6 @@ jobs:
           # more on its own so its pictures can be copied off the emulator.
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-            adb shell am instrument -w -e diagnose download -e class com.phenomemental.pocketbeach.DownloadDiagnosis com.phenomemental.pocketbeach.test/androidx.test.runner.AndroidJUnitRunner || true
-            adb logcat -d | grep -E "PocketDiag|DownloadManager|DownloadProvider|insane|JobScheduler" | tail -250 || true
             adb shell am start -W -n com.phenomemental.pocketbeach/.MainActivity
             ./gradlew :app:connectedDebugAndroidTest
             ./gradlew :app:installDebug :app:installDebugAndroidTest
@@ -187,8 +184,8 @@ jobs:
               echo "::error::A release is started from main, not from $GITHUB_REF_NAME"
               exit 1
             fi
-            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
-              echo "::error::The version must look like 0.1, not \"$VERSION\""
+            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+              echo "::error::The version must look like 0.1 or 0.3.1, not \"$VERSION\""
               exit 1
             fi
             tag="pocket-beach-v$VERSION"

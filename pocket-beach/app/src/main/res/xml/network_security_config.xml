@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The one way out (decision 18). No host is trusted but the beach, so the app
-  can open a TLS connection to beach.happyseaurchin.com and nowhere else, and
-  plain HTTP is refused everywhere. (The model's one download is made by
-  Android's download manager, outside the app, so this doesn't touch it.)
+  The ways out, each only after Matthew taps for it, and nothing else:
+  - the one message posted to his pool on the beach (decision 18);
+  - the model's one download: Hugging Face's address for the file, and the
+    content servers it redirects that download to (model/ModelStore.kt, HOSTS).
+  No other host is trusted, so the app can open a TLS connection to these
+  alone, and plain HTTP is refused everywhere.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false">
@@ -11,6 +13,15 @@
     </base-config>
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="false">beach.happyseaurchin.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">huggingface.co</domain>
+        <domain includeSubdomains="false">us.aws.cdn.hf.co</domain>
+        <domain includeSubdomains="false">us.gcp.cdn.hf.co</domain>
+        <domain includeSubdomains="false">cas-bridge.xethub.hf.co</domain>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

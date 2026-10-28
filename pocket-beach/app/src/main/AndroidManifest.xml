@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   INTERNET is for two things only, each after Matthew taps for it: the one
-  message posted to his pool on the beach (net/HttpsWire.kt, held by
-  network_security_config to beach.happyseaurchin.com alone), and the model's
-  one download, which Android's download manager makes over Wi-Fi.
+  message posted to his pool on the beach (net/HttpsWire.kt), and the model's
+  one download from Hugging Face (net/ModelFetch.kt). network_security_config
+  trusts the beach and the download's hosts, and no others.
+  The foreground service and notification permissions keep that download
+  going, and showing how far it has come, while Matthew is away from the screen.
   No backup: Android's cloud backup and device-to-device transfer are both off;
   "Save a copy" is the only copy of the blocks.
   RECORD_AUDIO is for speaking a line, recognised on the device only.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <queries>
@@ -50,5 +56,9 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".model.FetchService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 </manifest>

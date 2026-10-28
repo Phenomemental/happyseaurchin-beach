@@ -9,7 +9,6 @@ import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.PoolMessage
-import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.Shells
@@ -132,9 +131,9 @@ class Asking(private val app: PocketApp) {
         val message = w.carried.post ?: return
         stage = Stage.Posting(w, message)
         scope.launch {
-            val posted = withContext(Dispatchers.IO) { PoolPost.send(message, app.wire) }
+            val posted = withContext(Dispatchers.IO) { app.post(message) }
             val said = when (posted) {
-                is Posted.Landed -> "He said yes to the post: it landed at slot ${posted.slot} of pool:${posted.pool}."
+                is Posted.Landed -> "He said yes to the post: it landed at entry ${posted.slot} of pool:${posted.pool}."
                 is Posted.Refused -> "He said yes to the post, but it didn't go: ${posted.why}"
             }
             end(w.shown, w.carried, posted, "Matthew said yes; " + landed(w.carried) + " " + said, w.shown.took)

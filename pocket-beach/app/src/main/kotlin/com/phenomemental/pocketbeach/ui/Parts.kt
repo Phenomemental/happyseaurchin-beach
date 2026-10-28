@@ -85,7 +85,7 @@ fun Page(
         )
         if (bottom != null) {
             Rule()
-            Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically, content = bottom)
+            Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically, content = bottom)
         }
     }
 }
@@ -186,6 +186,33 @@ fun Notice(text: String, modifier: Modifier = Modifier, link: Pair<String, () ->
     }
 }
 
+/**
+ * Something done, said so it can't be missed: a crimson check mark and the
+ * words in the page's own type, with any detail beneath in a smaller hand.
+ */
+@Composable
+fun Done(text: String, modifier: Modifier = Modifier, detail: String? = null, tag: String = "done") {
+    val ink = LocalInk.current
+    Row(
+        modifier.fillMaxWidth().background(ink.sheet).border(1.dp, ink.crimson).padding(horizontal = 14.dp, vertical = 12.dp)
+            .semantics(mergeDescendants = true) {}.testTag(tag),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Canvas(Modifier.padding(top = 6.dp, end = 12.dp).size(width = 18.dp, height = 14.dp)) {
+            val tick = Path().apply {
+                moveTo(0f, size.height * 0.55f)
+                lineTo(size.width * 0.38f, size.height)
+                lineTo(size.width, 0f)
+            }
+            drawPath(tick, ink.crimson, style = Pen(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text, style = Type.heading.copy(fontSize = Type.body.fontSize, lineHeight = Type.body.lineHeight), color = ink.ink)
+            if (detail != null) Text(detail, style = Type.small, color = ink.soft)
+        }
+    }
+}
+
 /** A field to write a line in, framed like the sheet, in the block's own type. */
 @Composable
 fun PaperField(
@@ -230,7 +257,7 @@ fun PaperDialog(title: String, onDismiss: () -> Unit, actions: @Composable RowSc
             Text(title, style = Type.heading, color = ink.ink)
             Stroke()
             content()
-            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End), content = actions)
+            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.End), content = actions)
         }
     }
 }

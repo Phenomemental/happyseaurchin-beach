@@ -4,11 +4,46 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 3, the companion, is released, and with it today's finish line, the
-hello world: **pocket-beach-v0.3**, on the Releases page since 28 October, its
-tag at `ec9cea3` on main, signed with the same key as 0.1 and 0.2, so it
-installs over them. Before it, wearing a shell offline was built and matched
-against the original (decisions 8–12). Next is Matthew trying it on the phone.
+**0.3.1 is next**, fixing what Matthew found on his Pixel in 0.3 (see "What 0.3.1
+changes").
+
+Piece 3, the companion, was released in **pocket-beach-v0.3** on 28 October,
+and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
+main, signed with the same key as 0.1 and 0.2, so it installs over them.
+Before it, wearing a shell offline was built and matched against the original
+(decisions 8–12).
+
+### What 0.3.1 changes
+
+From Matthew's first runs on his Pixel:
+
+- **The model's download failed.** Android's download manager stopped with
+  error 1004, an HTTP data error, on Hugging Face's redirect to its content
+  servers.
+  - The app now fetches the model itself (`net/ModelFetch.kt`). It follows
+    the redirect one hop at a time, and only to the hosts the download
+    needs.
+  - An interrupted download carries on from where it stopped, with a range
+    request. A broken connection is tried again, up to six times, each wait
+    longer.
+  - Progress, speed, a pause and any failure's real reason show on screen
+    (see "The model").
+  - The byte-for-byte check against the SHA-256 is kept.
+- **The hello world by hand posted twice** (entries 168 and 169 of his pool),
+  because nothing visibly confirmed the first. Now:
+  - each step ends in a confirmation in the page's own type: "hello-world
+    made", then "Posted to your pool at entry N";
+  - once a message is posted, its button reads "Posted at entry N" and won't
+    send it again. "Post again?" asks once more, saying it would add a
+    second, identical entry. The app keeps what it has posted, so this holds
+    after leaving the screen, on Ask too;
+  - more space between buttons, at the foot of every page and in every
+    dialog.
+- **The post carries the shell's opening line**, so it can be read on the
+  beach: "Hello world from the pocket. Shell: “Pocket companion. …” Secret: ….
+  Seal: …. Fingerprint: …. Block: pocket/hello-world."
+  - A shell made in 0.3 has the older hello world line. Ask offers to update
+    that one line.
 
 Piece 2 (v0.2) is released, and Piece 1 (v0.1) works on Matthew's Pixel, in
 aeroplane mode too.
@@ -67,34 +102,60 @@ aeroplane mode too.
     8 GB reports a little less.
   - A phone with less is told so plainly, and pointed to the hello world by
     hand.
-  - With the memory and 3.1 GB free, Ask offers "Get the model, 2.6 GB over
-    Wi-Fi". Android's download manager fetches one pinned file over Wi-Fi
-    only: `litert-community/gemma-4-E2B-it-litert-lm`, revision `6e5c4f1e`.
-    The app checks it byte for byte against its SHA-256
-    (`18193810…7139a63c`) before it is ever loaded.
+  - With the memory and the room, Ask offers "Get the model, 2.6 GB over
+    Wi-Fi". The app fetches one pinned file itself:
+    `litert-community/gemma-4-E2B-it-litert-lm`, revision `6e5c4f1e`. It checks
+    it byte for byte against its SHA-256 (`18193810…7139a63c`) before it is
+    ever loaded.
+  - **The way it comes:** Hugging Face answers the file's address with a
+    redirect to its content servers. The app follows each hop itself, only
+    over HTTPS and only to `huggingface.co`, `us.aws.cdn.hf.co`,
+    `us.gcp.cdn.hf.co` or `cas-bridge.xethub.hf.co`.
+    - On 28 October it went to `us.aws.cdn.hf.co`. The other two are Hugging
+      Face's own hosts for files stored as this one is.
+    - Sent anywhere else, it stops and names the host.
+  - **Wi-Fi only:** before each pass, a metered connection such as mobile
+    data stops it with a plain reason.
+  - **It carries on while Matthew is away from the screen,** in a foreground
+    service with a notification showing how far it has come. Android asks
+    once whether the app may show notifications; the download runs either
+    way. Android allows such a service six hours a day, and if it calls time
+    the download stops, keeping what has come.
+  - **On screen:**
+    - while fetching: how far, as a figure, a bar and a speed, with any retry
+      said in crimson;
+    - "Paused at …", with "Carry on" and "Discard what has come";
+    - a failure in its real words: the HTTP status and what the server said,
+      the refused host, the broken connection, or the mismatched SHA-256.
+      Anything kept is carried on from.
   - It loads when Matthew asks, on the GPU, or on the CPU if the GPU can't
     take it. It is let go after three idle minutes, or as soon as Android
     asks for memory back.
 - **The one way out** (decision 18).
-  - `net/HttpsWire.kt` is the only code in the app that opens a connection.
-    It makes one POST of one message to a pool on the beach, only after
-    Matthew taps to confirm. It takes no address but the beach's pool
-    append, follows no redirect, and keeps no cookie or cache.
+  - `net/HttpsWire.kt` opens a connection for one thing: one POST of one
+    message to a pool on the beach, only after Matthew taps to confirm. It
+    takes no address but the beach's pool append, follows no redirect, and
+    keeps no cookie or cache.
+  - `net/ModelFetch.kt` is the only other code that opens one, for the
+    model's one download (see "The model").
   - The posts go only to `pool:Phenomemental`, under the name Phenomemental.
     No key is needed (see "Today's finish line"). If the beach ever asks for
     one, nothing is sent and it says so.
   - The network security config trusts no certificate for any host but
-    `beach.happyseaurchin.com`, and refuses plain HTTP everywhere.
-  - The model's download goes through Android's download manager, outside
-    the app's process, so the config names only the beach.
-  - A test fails the build if any other file names a network API, or hands
-    the download manager anything but the one pinned file.
+    `beach.happyseaurchin.com` and the download's four, each exactly, with
+    no subdomains. It refuses plain HTTP everywhere.
+  - A test fails the build if any other file names a network API, or if the
+    hosts the config trusts and the hosts the download follows ever differ.
 - **The hello world by hand**, on the test screen ("Try a call by hand"
   under About), so the chain can be shown without the companion:
-  - "1. Make hello-world": the shell's opening line, the secret, a seal the
-    app makes and the fingerprint, each a guarded write;
-  - "2. Post it to pool:Phenomemental…": shows the whole message, then posts
-    it only after its own "Post it".
+  - Step 1, "Make hello-world": the shell's opening line, the secret, a seal
+    the app makes and the fingerprint, each a guarded write. It ends in
+    "hello-world made".
+  - Step 2 shows the whole message. "Post it to pool:Phenomemental…" posts
+    it only after its own "Post it", and ends in "Posted to your pool at
+    entry N".
+  - Then the button reads "Posted at entry N". The same message goes again
+    only through "Post again?".
 - **Share a block out, receive one in** (decision 19).
   - "Share this block", at a block's opening, sends its JSON through
     Android's share menu, to whichever app Matthew picks.
@@ -125,10 +186,14 @@ See "Wearing a shell offline" for what is built and what is not.
 and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
 **Piece 1, unchanged:** the local bsp, the teaching shelf, storage.
 
-**The app itself:** version 0.3 (`versionCode` 3), Android 12 or later.
+**The app itself:** version 0.3.1 (`versionCode` 4), Android 12 or later.
 
-- Permissions: the internet, for the one confirmed post and the model's one
-  download; the microphone, for speaking.
+- Permissions:
+  - the internet, for the one confirmed post and the model's one download,
+    with the network state, so that download keeps to Wi-Fi;
+  - a foreground service and notifications, for that download while Matthew
+    is away from the screen;
+  - the microphone, for speaking.
 - Android's backup is off.
 - The release is built for arm64 phones only: 49 MB, most of it the engine.
 

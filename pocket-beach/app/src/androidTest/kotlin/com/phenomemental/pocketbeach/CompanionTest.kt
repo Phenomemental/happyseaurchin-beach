@@ -4,6 +4,8 @@ import android.content.Intent
 import android.security.NetworkSecurityPolicy
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
@@ -17,6 +19,7 @@ import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.bsp.WireReply
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
+import java.io.File
 import com.phenomemental.pocketbeach.net.HttpsWire
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -108,15 +111,16 @@ class CompanionTest {
             assertTrue("nothing goes until the post is confirmed", wire.sent.isEmpty())
             assertEquals(emptyList<String>(), HelloWorld.check(app.storage.read(HelloWorld.BLOCK), HelloWorld.SHELL_OPENING, sealOf()))
             compose.tap("post")
-            compose.waitFor("posted", "slot 7 of pool:Phenomemental")
+            compose.waitFor("posted", "Posted to your pool at entry 7")
             assertEquals(1, wire.sent.size)
             val (url, body) = wire.sent.single()
             assertEquals("${PoolPost.BEACH}/.well-known/pscale-beach?block=pool:Phenomemental", url)
             assertTrue(body.contains("Secret: purple walrus") && body.contains(sealOf()) && body.contains("pocket/hello-world") && body.contains("\"1\":\"Phenomemental\""))
+            assertTrue("the post carries the shell's opening line", body.contains(HelloWorld.SHELL_OPENING))
             compose.waitUntil(10_000) { log()?.lines?.isNotEmpty() == true }
             val entry = app.pages.position(Region.POCKET, Asks.LOG, log()!!.lines.first().address)!!
             assertEquals("Asked: Do the hello world. My secret is purple walrus.", entry.text)
-            assertTrue(entry.lines[1].text!!.contains("it landed at slot 7 of pool:Phenomemental"))
+            assertTrue(entry.lines[1].text!!.contains("it landed at entry 7 of pool:Phenomemental"))
         }
     }
 
@@ -143,15 +147,26 @@ class CompanionTest {
             compose.waitFor("hello-secret")
             compose.onNodeWithTag("hello-secret").performTextInput("otters hold hands")
             compose.tap("hello-make")
-            compose.waitFor("hello-made", "Made hello-world")
+            compose.waitFor("hello-made", "hello-world made")
             assertTrue(HelloWorld.verify(app.storage.read(HelloWorld.BLOCK)!!))
+            compose.waitFor("hello-preview", HelloWorld.SHELL_OPENING)
             compose.tap("hello-post")
             compose.waitFor("hello-message", "Secret: otters hold hands")
             assertTrue(wire.sent.isEmpty())
             compose.tap("hello-confirm")
-            compose.waitFor("hello-said", "slot 7")
+            compose.waitFor("hello-said", "Posted to your pool at entry 7")
             assertEquals(1, wire.sent.size)
             assertTrue(wire.sent.single().second.contains(HelloWorld.messageFor(app.storage.read(HelloWorld.BLOCK))!!))
+
+            // Once posted, the same message goes again only on purpose.
+            compose.onNodeWithTag("hello-post", useUnmergedTree = true).assertIsNotEnabled().assertTextContains("Posted at entry 7")
+            compose.tap("hello-post-again")
+            compose.waitFor("hello-message")
+            compose.tap("hello-not-now")
+            assertEquals(1, wire.sent.size)
+            compose.tap("hello-post-again")
+            compose.tap("hello-confirm")
+            compose.waitUntil(10_000) { wire.sent.size == 2 }
         }
     }
 
@@ -183,6 +198,32 @@ class CompanionTest {
             if (!enough) assertFalse("never offered without the memory", offered)
             // Nothing is fetched: no test taps "Get the model".
         }
+    }
+
+    @Test
+    fun aDownloadKeptPartWayIsShownAndCanBeDiscarded() {
+        app.mind = app.gemma
+        Fresh.clear()
+        val part = File(app.getExternalFilesDir(null), "models/${ModelStore.FILE}.part").apply { parentFile!!.mkdirs(); writeBytes(ByteArray(4096)) }
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            compose.waitFor("paused", "Paused at 0.0 GB of 2.6 GB")
+            // "Carry on" would start the real download, so no test taps it.
+            compose.tap("discard")
+            compose.waitUntil(10_000) { !part.exists() }
+        }
+    }
+
+    @Test
+    fun aFailureIsShownWithItsRealReason() {
+        app.mind = app.gemma
+        Fresh.clear()
+        app.getSharedPreferences("model", 0).edit().putString("failed", "us.aws.cdn.hf.co answered HTTP 403: Forbidden").commit()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            compose.waitFor("model-failed", "us.aws.cdn.hf.co answered HTTP 403: Forbidden")
+        }
+        Fresh.clear()
     }
 
     @Test

@@ -30,8 +30,8 @@ object HelloWorld {
     /** The four lines of a hello world, as the shell gives them: the app fills the gaps, the companion writes in the secret. */
     val SHELL_LINES = listOf("{{shell}}", "Secret: $SECRET_SLOT", "Seal: {{seal}}", "Fingerprint: {{fingerprint}}")
 
-    /** The post a hello world offers, as the shell gives it. */
-    const val SHELL_POST = "Hello world from the pocket. Secret: $SECRET_SLOT. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
+    /** The post a hello world offers, as the shell gives it: [message]'s form, with the app's gaps. */
+    const val SHELL_POST = "Hello world from the pocket. Shell: “{{shell}}” Secret: $SECRET_SLOT. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
 
     /**
      * How the companion does the hello world, as one line of its shell: the
@@ -66,8 +66,12 @@ object HelloWorld {
     /** A block's pocket address, as bsp() names it in its replies. */
     fun address(block: String) = "pocket/$block"
 
-    fun message(secret: String, seal: String, fingerprint: String, block: String = BLOCK): String =
-        "Hello world from the pocket. Secret: $secret. Seal: $seal. Fingerprint: $fingerprint. Block: ${address(block)}."
+    /** The post: the shell's opening line, so it can be read on the beach too, then the secret, the seal, the fingerprint and the block's address. */
+    fun message(shellOpening: String, secret: String, seal: String, fingerprint: String, block: String = BLOCK): String =
+        "Hello world from the pocket. Shell: “${shellOpening.trim()}” Secret: $secret. Seal: $seal. Fingerprint: $fingerprint. Block: ${address(block)}."
+
+    /** Whether a shell's hello world line is one the app wrote (this one or an earlier form), and not the present [SHELL_RECIPE]. */
+    fun recipeIsOlder(line: String?): Boolean = line != null && line.startsWith("Hello world: when Matthew asks for the hello world") && line != SHELL_RECIPE
 
     /**
      * Whether a block's fingerprint line matches it: the last line's
@@ -100,8 +104,9 @@ object HelloWorld {
         return problems
     }
 
-    /** What a hello-world message lacks: the secret, the seal, the fingerprint and the block's pocket address. */
-    fun checkMessage(message: String, seal: String, fingerprint: String, block: String = BLOCK): List<String> = buildList {
+    /** What a hello-world message lacks: the shell's opening line, the secret, the seal, the fingerprint and the block's pocket address. */
+    fun checkMessage(message: String, shellOpening: String, seal: String, fingerprint: String, block: String = BLOCK): List<String> = buildList {
+        if (!message.contains(shellOpening.trim())) add("The message doesn't carry the shell's opening line.")
         if (!Regex("Secret: \\S").containsMatchIn(message)) add("The message carries no secret.")
         if (!message.contains(seal)) add("The message doesn't carry the seal.")
         if (!message.contains(fingerprint)) add("The message doesn't carry the fingerprint.")
@@ -109,18 +114,23 @@ object HelloWorld {
     }
 
     /**
-     * The message a made hello-world carries, from its own lines: its secret,
-     * seal and fingerprint. Null unless the fingerprint matches the block.
+     * The message a made hello-world carries, from its own lines: the shell's
+     * opening line (its first line), its secret, seal and fingerprint. Null
+     * unless the fingerprint matches the block.
      */
     fun messageFor(stored: String?): String? {
         if (stored == null || !verify(stored)) return null
         val block = parseJson(stored) as JsObj
-        val lines = bspRead(block, null, 0).discEntries.orEmpty().mapNotNull { it.content?.trim() }
+        // The block's own lines, its opening line (on the root's underscore chain) left out.
+        val lines = bspRead(block, null, 0).discEntries.orEmpty()
+            .filter { e -> e.address.isNotEmpty() && !e.address.all { it == '0' || it == '.' } }
+            .mapNotNull { it.content?.trim() }
         fun after(prefix: String) = lines.lastOrNull { it.startsWith(prefix) }?.removePrefix(prefix)?.trim()?.takeIf { it.isNotEmpty() }
+        val shell = lines.firstOrNull { line -> listOf("Secret: ", "Seal: ", "Fingerprint: ").none { line.startsWith(it) } } ?: return null
         val secret = after("Secret: ") ?: return null
         val seal = after("Seal: ") ?: return null
         val print = after("Fingerprint: ") ?: return null
-        return message(secret.removeSuffix("."), seal, print)
+        return message(shell, secret.removeSuffix("."), seal, print)
     }
 
     class Made(val stored: String, val seal: String, val fingerprint: String)
