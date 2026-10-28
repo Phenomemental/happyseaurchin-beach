@@ -4,18 +4,20 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.3.4** is being made: the bench, the first step of 0.4 (see
-"What 0.3.4 changes" and "0.4: as fast and dependable as the phone allows").
+**pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
+"What 0.3.4 changes"). Next is Matthew running it on his Pixel and sharing
+the block it keeps (see "Next"): its figures judge everything in 0.4.
 
-**pocket-beach-v0.3.3** keeps a post the beach couldn't be reached for, with
-"Post now" (see "What 0.3.3 changes").
+**0.4 is being made,** on the laptop's bench until the Pixel's figures come
+(see "What 0.4 changes, so far").
 
-**pocket-beach-v0.3.2** is released, from Matthew's first hello world with
-the companion on 0.3.1 (see "What 0.3.2 changes"). It has been on the
-Releases page since 28 October, its tag at `6ed8f7f` on main, signed with
-the same key as every release, so it installs over 0.3.1. Next is Matthew
-doing the hello world again and reading where the companion ran (see
-"Next").
+**pocket-beach-v0.3.3** is released: a post the beach couldn't be reached
+for is kept, with "Post now" (see "What 0.3.3 changes"). Its tag is at
+`e27e439` on main.
+
+**pocket-beach-v0.3.2** used the block's own seal and fingerprint in the
+hello world's post, and showed where the companion ran (see "What 0.3.2
+changes"). Its tag is at `6ed8f7f` on main.
 
 **pocket-beach-v0.3.1** fixed the model's download and the hello world
 posting twice (see "What 0.3.1 changes"). Its tag is at `c7a5155` on main.
@@ -25,6 +27,96 @@ and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.4 changes, so far
+
+Not released. Built to Matthew's plan (see "0.4: as fast and dependable as
+the phone allows") and tried with the bench on the laptop's CPU. The Pixel's
+figures decide.
+
+- **Short actions** (`Acts`). An act is one action a line:
+  - `new <block>`, or `new <block>: <its opening line>`;
+  - `add <block>: <line>`;
+  - `add <block> under "<the words of a line>": <line>`;
+  - `change <block> "<the words of a line>": <the line rewritten>`, or
+    `change <block>: <its new opening line>`;
+  - `read <block>`;
+  - `post: <message>`.
+- **A line is named by quoting its words,** never its address. The app finds
+  it, trying in turn:
+  1. the exact words;
+  2. the same words, ignoring case and a stop at the end;
+  3. the one line that holds them.
+
+  A quote that two lines match is put to Matthew ("Which one?") before
+  anything is planned. A quote that no line matches is sent back to her,
+  once.
+- **The app does everything mechanical:**
+  - it opens up a plain line to add beneath it;
+  - it builds the bsp() calls on a copy and shows them before Yes, as 0.3
+    did;
+  - for the hello world, it writes the shell's line, the seal, the
+    fingerprint and the message;
+  - if she leaves the secret's slot and Matthew gave the secret in so many
+    words ("my secret is …"), it writes it in. He sees it before Yes.
+- **What she plainly meant, the app reads as meant:**
+  - a change split over two lines;
+  - a line restated just before the action that quotes it;
+  - a quote of a block's opening, meaning the block itself;
+  - the shell's opening written out where the shell's line goes.
+- **Three ways of answering, by her first word:** talk, read or act.
+  - Her reply is read whole. She often says a few words before acting;
+    those are what she says with the act.
+  - An act needs actions after it, and a read needs read lines (or the
+    blocks she named). Anything else is talk: when unsure, talk.
+  - A read of a block that isn't there is still answered: she is told so,
+    and answers in plain words.
+  - The first word is not held by the engine. Holding even a one-word
+    choice doesn't mix with speculative decoding in this release (see "What
+    the engine allows"). The bench tries it on the Pixel's GPU.
+- **Talk streams as she writes,** with speculative decoding on, and so does
+  her answer after a read. Under each answer: "Took … s, first words after
+  … s".
+- **One conversation, kept while Ask is open.**
+  - The model loads as Ask opens. Her instruction and the shell are read
+    once; each later ask adds only its own words.
+  - When writes land, it is opened afresh (her instruction shows the
+    pocket), carrying the last six exchanges.
+  - She is told how her last act ended (yes, or not now).
+  - The earlier exchanges show above the ask.
+- **Her instruction** lists each block with its opening (named as its
+  title, not a line), how many lines it has, and its lines by their words,
+  with no addresses. Three example exchanges are given as the
+  conversation's first turns, and a read is written into the instruction.
+- **The shell's hello world line,** in actions: `act / new hello-world /
+  add hello-world: Secret: HIS SECRET / post: Hello world`. Ask offers to
+  update an older line.
+- **The bench** puts the twenty asks first to 0.3's way (before), then to
+  0.4's (after). Then it asks three questions of one kept conversation,
+  then runs the engine's probes. All of it is kept as one block.
+
+**On the laptop's CPU.** A laptop's CPU is far slower than a Pixel's GPU, so
+only the comparison counts:
+
+| | Right | First words, median | Whole answer, median |
+|---|---|---|---|
+| 0.3 (the first 13 asks) | 12 of 13 | 35.2 s (shown only when whole) | 35.2 s |
+| 0.4, examples written in | 18 of 20 | 4.8 s | 5.6 s |
+| 0.4, examples as first turns (built) | 20 of 20 | 5.3 s | 6.0 s |
+
+Most of 0.4's first-word time is her reading the instruction (about 1,075
+tokens). In one kept conversation, every ask after the first had its first
+token in 0.7 s, and its whole answer in 0.7 to 1.7 s.
+
+**Not built, and why:**
+- **The first word held by the engine:** it fails with speculative decoding
+  on (above). Built instead as her free first word, which the laptop bench
+  routed right 20 of 20. The Pixel's probe says whether the GPU differs.
+- **The NPU:** Gemma 4 E2B has NPU builds only for Tensor G5 and G6, as
+  separate 3.1 and 3.3 GB files. The bench names the Pixel's chip.
+- **FunctionGemma:** Google's base model is gated behind a licence an account
+  must accept, and comes as weights to fine-tune and convert. The
+  ready-made builds are tuned for other tasks.
 
 ### What 0.3.4 changes
 
@@ -402,6 +494,34 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.3.4 release
+
+- Its tag is at `f3bf644` on main, published 28 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.4 (`versionCode` 7), for arm64 phones, 50 MB. Its SHA-256 is
+  `71e7fe736beb913aae14749ea3b9473ba153c877a755f7f697b8ead0cc21f416`.
+- Read back from the downloaded APK:
+  - its network security config trusts the same five hosts, each without
+    subdomains, and nothing else; plain HTTP is refused everywhere;
+  - its permissions are 0.3.3's.
+- Built by the release run on main after every test passed again there,
+  the bench's device test among them.
+
+### The 0.3.3 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.3 (`versionCode` 6), for arm64 phones, 49 MB. Its SHA-256 is
+  `3b896b5da7adf7024a8bd7f7545b0024d445decd22bd8e5de79c7c098425de66`.
+- Read back from the downloaded APK: its network security config trusts
+  the same five hosts as 0.3.2, each without subdomains, and nothing else.
+- Built by the release run on main after every test passed again there.
+- Checked on Matthew's Pixel before it: offline, the writes succeeded, the
+  post failed plainly, and nothing was sent.
+
 ### The 0.3.2 release
 
 - Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
@@ -454,34 +574,34 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 
 ### Not yet checked
 
-- Where the companion runs on Matthew's phone, GPU or CPU, and its own
-  figures for loading, reading and writing. 0.3.2 shows them under each
-  answer and keeps them in the Ask log.
+- The bench on Matthew's Pixel: the companion's figures there, and what the
+  engine allows on its GPU (and its NPU, if it has one).
+- "Post now" on the phone, back online after a post that couldn't go.
 - Sharing with real apps, and speaking on a phone that recognises speech on
   the device.
 
-Checked on Matthew's Pixel since 0.3.1: the model's download over Wi-Fi
-(the companion then answered), and posts to the live beach (the hello world
-by hand, entries 168 and 169 of his pool).
+Checked on Matthew's Pixel: the model's download over Wi-Fi; posts to the
+live beach (the hello world by hand, entries 168 and 169 of his pool); a
+post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.3.2.apk` over 0.3.1. Then:
-   - **Ask** offers "Update the hello world line", since the shell's post
-     changed. Tap it.
-   - **The hello world again,** with the old `hello-world` still there: "Do
-     the hello world. My secret is …". The proposal should be the one change
-     to the secret line, then the app's own two writes in crimson, a new
-     seal and the fingerprint. Yes, then read the post: its seal is the one
-     just written, and its fingerprint the block's. Then Post it.
-   - **Read the time,** under the answer: "Took … on the GPU" (or CPU), and
-     the line beneath, with loading, reading and writing. On the CPU it
-     says why the GPU couldn't. These figures decide what comes next.
-   - **Rename or remove a block** on the Shore, beneath your blocks.
-2. With the phone's figures: whether speculative decoding is worth giving
-   up the answer's held form (see "Piece 3: how the companion is asked"),
-   or whether the GPU needs looking at.
-3. After that: the "Later" list, and what the Ask log shows.
+1. Matthew installs `pocket-beach-v0.3.4.apk` over the version he has. It
+   carries 0.3.3's kept post too. Then:
+   - **Ask, then "Run the bench"** (beneath the ask). Keep the app open; it
+     keeps the screen on, and takes about ten minutes. Nothing of his is
+     written but the one block it keeps, and nothing is posted.
+   - **Share the block it keeps,** `bench-` and the date: open it from the
+     bench, then "Share this block", and send it back.
+   - If he likes: **Post now.** With the phone offline, do the hello world
+     and post it: it is kept under "Waiting to be posted" on the Shore.
+     Back online, nothing goes until he taps "Post now".
+2. With the Pixel's bench: 0.4 is finished against its figures and
+   released, with its own bench of 0.3 and 0.4 side by side.
+3. Matthew's decisions, from the bench: the NPU (only if his Pixel has a
+   Tensor G5 or G6, a 3.1 or 3.3 GB download), and FunctionGemma (a licence
+   to accept, then a fine-tune; adopted only if both faster and more
+   accurate).
 
 ### Running the core on a laptop
 
