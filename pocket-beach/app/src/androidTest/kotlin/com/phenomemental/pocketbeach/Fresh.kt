@@ -26,8 +26,14 @@ object Fresh {
     }
 }
 
+/** Tap what carries [tag], scrolling it into view first when it stands on a scrolling page (the foot of a page and a dialog don't scroll). */
 fun ComposeTestRule.tap(tag: String) {
-    onNodeWithTag(tag, useUnmergedTree = true).performScrollTo().performClick()
+    val node = onNodeWithTag(tag, useUnmergedTree = true)
+    try {
+        node.performScrollTo()
+    } catch (_: AssertionError) {
+    }
+    node.performClick()
 }
 
 fun ComposeTestRule.waitFor(tag: String, text: String? = null, timeoutMs: Long = 10_000) {

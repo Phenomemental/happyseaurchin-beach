@@ -1,6 +1,8 @@
 package com.phenomemental.pocketbeach
 
 import android.Manifest
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.performClick
@@ -76,9 +78,13 @@ class TappingTest {
             compose.tap("add")
             compose.waitFor("speak")
             compose.tap("speak")
-            // On a phone with on-device recognition this listens and, hearing nothing, says so;
-            // on one without, it says speaking is off. Either way it ends in words, not silence.
-            compose.waitFor("speech-note", timeoutMs = 30_000)
+            // On a phone with on-device recognition this listens, and either writes what it heard
+            // into the line or says it heard nothing; on one without, it says speaking is off.
+            // Either way it ends in words, never in silence and never at a server.
+            compose.waitUntil(30_000) {
+                compose.onAllNodes(hasTestTag("speech-note")).fetchSemanticsNodes().isNotEmpty() ||
+                    compose.onNodeWithTag("line-text").fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text?.isNotEmpty() == true
+            }
         }
     }
 
