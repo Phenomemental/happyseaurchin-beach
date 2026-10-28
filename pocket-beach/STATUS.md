@@ -4,10 +4,10 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 (the local bsp, release v0.1) is built, with the local bsp now its
-own pure Kotlin module (decision 7). This change's CI run is next; the
-previous commit's CI was green. The release waits only on the signing key,
-which Matthew makes (steps below).
+Piece 1 (the local bsp, release v0.1) is built, with the local bsp its own
+pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
+Pixel emulator. The release waits only on the signing key, which Matthew
+makes (steps below).
 
 ### What is built
 
@@ -73,10 +73,12 @@ which Matthew makes (steps below).
 - **The core builds and passes its tests with no Android SDK in reach**
   (`-PcoreOnly`).
 - **The app builds** on the interfaces: debug, release, and the on-device tests.
-- **CI on GitHub** (run 2, commit `52ce348`, before decision 7) is green.
+- **CI on GitHub** (run 4, commit `bafe0aa`, with decision 7) is green.
   - The golden calls regenerated from the original code match the committed
     ones, and the shelf matches upstream.
   - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
+  - On Windows, with no Android SDK, every core test passes, and the golden
+    replay matches all 833 calls in files and again in memory.
   - On a Pixel emulator running Android 16, the app installed and opened, and
     all 5 on-device tests passed:
     - the whetstone from the shelf;
@@ -87,8 +89,6 @@ which Matthew makes (steps below).
 
 ### Not yet checked
 
-- CI for decision 7, including the new job that runs the core's tests on
-  Windows.
 - The signed release, which needs the key.
 - The app on Matthew's own phone.
 

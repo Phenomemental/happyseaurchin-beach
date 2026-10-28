@@ -676,7 +676,7 @@ private fun walkLines(entries: List<PathWalkEntry>, fl: Int?, walked: List<Char>
             return@forEachIndexed
         }
         flush()
-        val content = if (empty) "(no content)" else e.content!!
+        val content = if (empty) "(no content)" else e.content
         val text = if (last || content.length <= WHOLE_RUNG) content else truncate(content, 150)
         out.add("${indent}d${e.depth} p${e.pscale} ${label(e)}: $text${stampSuffix(e.stamp)}")
     }
