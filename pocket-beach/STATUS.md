@@ -8,15 +8,16 @@ Current state only. Newest first.
 phone's speech recogniser, which on Matthew's Pixel (0.3.2) failed with
 "error 10" and stopped Gboard's voice typing while the app ran (see "What
 0.3.5 changes"). Its tag is at `ad69a9c` on main. On his Pixel, in Ask
-with the keyboard open, "Speak the line" still said speech was busy; that
-is for the next build (see "Next", 2). His bench block is coming: its
-figures judge everything in 0.4.
+with the keyboard open, "Speak the line" still said speech was busy; 0.4
+gives the error's number and hides the keyboard first.
 
 **pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
 "What 0.3.4 changes"). Its tag is at `f3bf644` on main.
 
-**pocket-beach-v0.4** is being made, finished against the Pixel's bench of
-0.3 (see "What 0.4 changes").
+**pocket-beach-v0.4** is released, finished against the Pixel's bench of 0.3
+(see "What 0.4 changes"). Its tag is at `62511f7` on main. Next is Matthew
+running its bench (0.3 against 0.4, held and free) and trying Ask (see
+"Next").
 
 **pocket-beach-v0.3.3** is released: a post the beach couldn't be reached
 for is kept, with "Post now" (see "What 0.3.3 changes"). Its tag is at
@@ -587,6 +588,24 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.4 release
+
+- Its tag is at `62511f7` on main, published 28 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.4 (`versionCode` 9), for arm64 phones, 50 MB. Its SHA-256 is
+  `e4310992c5c4a65b6dbb2c638b38b130b9baf29ac76ee6231dea5225d3196516`.
+- Read back from the downloaded APK: the same five hosts, each without
+  subdomains, and nothing else; plain HTTP refused everywhere; the same
+  seven permissions.
+- Built by the release run on main after every test passed again there.
+- The first release run failed twice, on a different tap each time: Ask
+  just after typing, and "Post again?" just after a dialog closed. The
+  page resizes as the keyboard comes or goes, so a tap aimed while it moved
+  could miss. The device tests' taps now wait for what they tap to stop
+  moving; nothing in the app changed. The second release run passed.
 
 ### The 0.3.5 release
 
