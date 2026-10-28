@@ -60,8 +60,8 @@ fun ShoreScreen(model: Model, nav: Nav) {
             }
             outcome.onSuccess { n ->
                 model.saved(now)
-                model.slip = "Saved a copy of ${Words.count(n, "block")}."
-            }.onFailure { model.slip = "The copy wasn't saved: ${it.message ?: "the file couldn't be written"}." }
+                model.say(Screen.Shore, "Saved a copy of ${Words.count(n, "block")}.")
+            }.onFailure { model.say(Screen.Shore, "The copy wasn't saved: ${it.message ?: "the file couldn't be written"}.") }
         }
     }
     val openCopy = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -70,7 +70,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
             val outcome = withContext(Dispatchers.IO) {
                 runCatching { Copies.read(context.contentResolver.openInputStream(uri)!!.use { it.readBytes().toString(Charsets.UTF_8) }) }
             }
-            outcome.onSuccess { restoring = it }.onFailure { model.slip = it.message ?: "That file couldn't be read." }
+            outcome.onSuccess { restoring = it }.onFailure { model.say(Screen.Shore, it.message ?: "That file couldn't be read.") }
         }
     }
 
@@ -133,8 +133,8 @@ fun ShoreScreen(model: Model, nav: Nav) {
                 outcome.onSuccess {
                     parseIsoMs(copy.saved)?.let { saved -> if (saved > (model.lastSavedMs ?: 0)) model.saved(saved) }
                     model.changed()
-                    model.slip = "Restored ${Words.count(copy.blocks.size, "block")} from the copy saved ${Words.at(copy.saved)}."
-                }.onFailure { model.slip = "Nothing was restored: ${it.message ?: "the blocks couldn't be written"}." }
+                    model.say(Screen.Shore, "Restored ${Words.count(copy.blocks.size, "block")} from the copy saved ${Words.at(copy.saved)}.")
+                }.onFailure { model.say(Screen.Shore, "Nothing was restored: ${it.message ?: "the blocks couldn't be written"}.") }
             }
         }
     }
@@ -205,7 +205,7 @@ private fun NewBlockDialog(model: Model, onDone: (String?) -> Unit) {
         when {
             problem != null -> Text(problem!!, style = Type.small, color = ink.crimson)
             p?.refusal != null -> Text(p.refusal!!, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("refusal"))
-            p != null -> Text("It will open with the line ${Words.quoted(p.text)}.", style = Type.small, color = ink.soft)
+            p != null -> Text("Its opening line will be ${Words.quoted(p.text)}", style = Type.small, color = ink.soft)
         }
     }
 }

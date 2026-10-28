@@ -73,17 +73,20 @@ val Cormorant = FontFamily(
     cormorant(400, italic = true), cormorant(500, italic = true), cormorant(600, italic = true),
 )
 
+/** Lining figures: Cormorant's default old-style 1 reads as a small capital I, and an address must read as a number. */
+private const val LINING = "lnum"
+
 /** The type: generous sizes for reading at arm's length, the small labels set wide in capitals. */
 object Type {
-    val title = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.SemiBold, fontSize = 36.sp, lineHeight = 40.sp)
-    val heading = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Medium, fontSize = 27.sp, lineHeight = 34.sp)
-    val body = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Normal, fontSize = 21.sp, lineHeight = 30.sp)
-    val name = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, lineHeight = 28.sp)
-    val aside = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Normal, fontStyle = FontStyle.Italic, fontSize = 19.sp, lineHeight = 26.sp)
-    val small = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Medium, fontSize = 17.sp, lineHeight = 23.sp)
-    val label = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 18.sp, letterSpacing = 0.16.em)
-    val address = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 30.sp)
-    val action = TextStyle(fontFamily = Cormorant, fontWeight = FontWeight.Bold, fontSize = 19.sp, lineHeight = 22.sp, letterSpacing = 0.01.em)
+    val title = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.SemiBold, fontSize = 36.sp, lineHeight = 40.sp)
+    val heading = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Medium, fontSize = 27.sp, lineHeight = 34.sp)
+    val body = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Normal, fontSize = 21.sp, lineHeight = 30.sp)
+    val name = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, lineHeight = 28.sp)
+    val aside = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Normal, fontStyle = FontStyle.Italic, fontSize = 19.sp, lineHeight = 26.sp)
+    val small = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Medium, fontSize = 17.sp, lineHeight = 23.sp)
+    val label = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 18.sp, letterSpacing = 0.16.em)
+    val address = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 30.sp)
+    val action = TextStyle(fontFamily = Cormorant, fontFeatureSettings = LINING, fontWeight = FontWeight.Bold, fontSize = 19.sp, lineHeight = 22.sp, letterSpacing = 0.01.em)
     val call = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp)
 }
 

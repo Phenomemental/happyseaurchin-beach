@@ -1,6 +1,7 @@
 package com.phenomemental.pocketbeach.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,7 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke as Pen
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -91,7 +96,16 @@ private fun BackMark(onBack: () -> Unit) {
     Box(
         Modifier.size(48.dp).clickable(role = Role.Button, onClickLabel = "Back", onClick = onBack).testTag("back"),
         contentAlignment = Alignment.Center,
-    ) { Text("‹", style = Type.title, color = ink.crimson) }
+    ) {
+        Canvas(Modifier.size(width = 11.dp, height = 20.dp)) {
+            val chevron = Path().apply {
+                moveTo(size.width, 0f)
+                lineTo(0f, size.height / 2)
+                lineTo(size.width, size.height)
+            }
+            drawPath(chevron, ink.crimson, style = Pen(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+    }
 }
 
 /** The framed sheet a block's lines are set on: a hairline frame inside a ruled one, like a plate in a book. */
@@ -221,14 +235,14 @@ fun PaperDialog(title: String, onDismiss: () -> Unit, actions: @Composable RowSc
     }
 }
 
-/** A passing message, set in the page beneath its trail so it never covers anything to tap. */
+/** A passing message, a ruled slip of paper set in the page beneath its trail, so it never covers anything to tap. */
 @Composable
 fun Slip(text: String, onDismiss: () -> Unit) {
     val ink = LocalInk.current
     Box(
         Modifier.padding(horizontal = 18.dp, vertical = 6.dp).fillMaxWidth()
-            .background(ink.ink).clickable(onClick = onDismiss).padding(horizontal = 16.dp, vertical = 12.dp).testTag("slip"),
+            .background(ink.sheet).border(1.dp, ink.rule).clickable(onClick = onDismiss).padding(horizontal = 16.dp, vertical = 10.dp).testTag("slip"),
     ) {
-        Text(text, style = Type.small, color = ink.paper, maxLines = 4, overflow = TextOverflow.Ellipsis)
+        Text(text, style = Type.aside, color = ink.ink, maxLines = 4, overflow = TextOverflow.Ellipsis)
     }
 }

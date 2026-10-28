@@ -81,11 +81,15 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
                         }
                         model.changed()
                         model.landed = screen.block to (result.landsAt ?: "")
-                        model.slip = when {
-                            chosen.kind == Kind.CHANGE -> "Saved."
-                            result.wraps -> "Added at ${result.landsAt}. The block wrapped: the lines at its opening now stand one step beneath the opening line."
-                            else -> "Added at ${result.landsAt}."
-                        }
+                        val returnTo = nav.stack.getOrNull(nav.stack.size - 2) ?: Screen.Shore
+                        model.say(
+                            returnTo,
+                            when {
+                                chosen.kind == Kind.CHANGE -> "Saved."
+                                result.wraps -> "Added at ${result.landsAt}. The block wrapped: the lines at its opening now stand one step beneath the opening line."
+                                else -> "Added at ${result.landsAt}."
+                            },
+                        )
                         nav.back()
                     }
                 },
@@ -115,6 +119,19 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
             )
             Stroke()
         }
+        // Where the line lands stands above the field, so the keyboard never hides it.
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Label("Where it lands")
+            val refusal = p?.refusal?.takeIf { screen.kind == Kind.ADD || (!unchanged && typed.isNotBlank()) }
+            when {
+                p == null -> Text(" ", style = Type.small)
+                refusal != null -> Text(refusal, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("refusal"))
+                else -> Text(
+                    Words.landing(screen.kind, screen.block, screen.address, p.landsAt, p.wraps, current),
+                    style = Type.small, color = ink.ink, modifier = Modifier.testTag("landing"),
+                )
+            }
+        }
         if (screen.kind == Kind.CHANGE && current != null) {
             Text("Now it reads ${Words.quoted(current, 200)}", style = Type.aside, color = ink.soft)
         }
@@ -124,17 +141,6 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
             focus = true, tag = "line-text",
         )
         Speak { words -> text = if (typed.isBlank()) words else typed.trimEnd() + " " + words; done = null }
-
-        Label("Where it lands")
-        val refusal = p?.refusal?.takeIf { screen.kind == Kind.ADD || (!unchanged && typed.isNotBlank()) }
-        when {
-            p == null -> Text(" ", style = Type.small)
-            refusal != null -> Text(refusal, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("refusal"))
-            else -> Text(
-                Words.landing(screen.kind, screen.block, screen.address, p.landsAt, p.wraps, current),
-                style = Type.small, color = ink.ink, modifier = Modifier.testTag("landing"),
-            )
-        }
         if (ready) {
             Label("The call")
             SelectionContainer { Text(Words.call(p), style = Type.call, color = ink.soft, modifier = Modifier.testTag("call")) }

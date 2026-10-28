@@ -45,7 +45,7 @@ fun AboutScreen(model: Model, nav: Nav) {
                     try {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BEACH_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                     } catch (_: ActivityNotFoundException) {
-                        model.slip = "There's no browser on this phone to open $BEACH_URL."
+                        model.say(Screen.About, "There's no browser on this phone to open $BEACH_URL.")
                     }
                 },
                 style = Type.body,

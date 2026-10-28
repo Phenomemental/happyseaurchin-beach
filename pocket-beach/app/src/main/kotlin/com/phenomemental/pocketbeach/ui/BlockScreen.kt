@@ -58,8 +58,8 @@ fun BlockScreen(model: Model, nav: Nav, screen: Screen.Block) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label(
                 when {
-                    screen.address.isEmpty() && mine -> "${screen.name} · your block"
-                    screen.address.isEmpty() -> "${screen.name} · teaching block, read only"
+                    screen.address.isEmpty() && mine -> "Your block"
+                    screen.address.isEmpty() -> "Teaching block, read only"
                     else -> listOfNotNull("at ${v.address}", Words.at(v.stamp)?.let { "added $it" }).joinToString(" · ")
                 },
             )

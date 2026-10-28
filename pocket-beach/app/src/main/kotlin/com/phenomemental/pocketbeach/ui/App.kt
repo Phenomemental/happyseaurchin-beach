@@ -70,11 +70,14 @@ class Nav(initial: List<Screen>) {
 class Model(val app: PocketApp) {
     val pages get() = app.pages
     var version by mutableIntStateOf(0)
-    var slip by mutableStateOf<String?>(null)
+    /** A passing message, and the screen it belongs to: it shows there only. */
+    var slip by mutableStateOf<Pair<Screen, String>?>(null)
     var landed by mutableStateOf<Pair<String, String>?>(null)
     var lastSavedMs by mutableStateOf(app.lastSavedMs)
 
     fun changed() { version++ }
+
+    fun say(on: Screen, text: String) { slip = on to text }
 
     fun saved(ms: Long) {
         app.lastSavedMs = ms
@@ -87,7 +90,7 @@ fun PocketScreens(app: PocketApp) {
     val nav = rememberSaveable(saver = Nav.saver) { Nav(listOf(Screen.Shore)) }
     val model = remember { Model(app) }
     BackHandler(enabled = nav.stack.size > 1) { nav.back() }
-    val slip = model.slip?.let { text -> SlipNote(text) { model.slip = null } }
+    val slip = model.slip?.takeIf { it.first == nav.top }?.let { SlipNote(it.second) { model.slip = null } }
     CompositionLocalProvider(LocalSlip provides slip) {
         when (val s = nav.top) {
             Screen.Shore -> ShoreScreen(model, nav)
@@ -97,10 +100,10 @@ fun PocketScreens(app: PocketApp) {
             Screen.Calls -> CallsScreen(app.pocket, nav)
         }
     }
-    model.slip?.let { text ->
-        LaunchedEffect(text) {
+    model.slip?.let { said ->
+        LaunchedEffect(said) {
             delay(6000)
-            if (model.slip == text) model.slip = null
+            if (model.slip == said) model.slip = null
         }
     }
 }
