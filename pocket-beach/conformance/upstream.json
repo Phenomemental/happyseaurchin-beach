@@ -1,0 +1,10 @@
+{
+  "bsp-mcp-server": {
+    "repo": "https://github.com/pscale-commons/bsp-mcp-server",
+    "commit": "27908e1c880fd56b697e88d59917f10c858d6aba"
+  },
+  "pscale-beach": {
+    "repo": "https://github.com/pscale-commons/pscale-beach",
+    "commit": "4770a497d85ee102d353d7cd3807c7121ffd3a7a"
+  }
+}

@@ -108,8 +108,9 @@ whole beach.
 
 ### The sentinel-bundled teaching blocks
 
-- `src/sentinels.ts` is the one registry. It has 27 entries: 26 blocks plus
-  `protocol-paywall`, an alias of `payway`. About 696 KB of JSON in
+- `src/sentinels.ts` is the one registry. It has 28 entries: 27 blocks plus
+  `protocol-paywall`, an alias of `payway`. (Corrected in Piece 1: this line
+  first said 27 entries and 26 blocks.) About 696 KB of JSON in
   `src/*.json`, all read-only. `bsp(agent_id="pscale")` with no block lists the
   names.
 - The live tool description lists only nine of them. The registry is the source
