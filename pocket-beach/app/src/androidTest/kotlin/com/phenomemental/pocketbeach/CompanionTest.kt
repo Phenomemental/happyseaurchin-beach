@@ -415,8 +415,11 @@ class CompanionTest {
             compose.tap("hello-post-again")
             compose.waitFor("hello-message")
             compose.tap("hello-not-now")
+            // The dialog is gone before the link beneath it is tapped again.
+            compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("hello-confirm"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
             assertEquals(1, wire.sent.size)
             compose.tap("hello-post-again")
+            compose.waitFor("hello-message")
             compose.tap("hello-confirm")
             compose.waitUntil(10_000) { wire.sent.size == 2 }
         }

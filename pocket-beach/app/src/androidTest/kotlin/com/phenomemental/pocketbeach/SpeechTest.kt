@@ -83,6 +83,17 @@ class SpeechTest {
         assertEquals(app.speech.holding, held == 1)
     }
 
+    /**
+     * Tap Speak and wait until the recogniser it makes is listening: with the
+     * keyboard up, the app hides it first and listens a moment later.
+     */
+    private fun listen() {
+        val before = made.size
+        compose.tap("speak")
+        compose.waitUntil(5_000) { made.size == before + 1 }
+        compose.waitFor("speak", "Listening")
+    }
+
     private fun lineText(): String =
         compose.onNodeWithTag("line-text").fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
 
@@ -96,8 +107,7 @@ class SpeechTest {
     fun aTapToStopLetsItGoAndKeepsWhatItHeard() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(1, made.size)
             assertTrue(app.speech.holding)
             main { made[0].heard!!.partial("plant the bulbs") }
@@ -114,8 +124,7 @@ class SpeechTest {
     fun theEndOfListeningLetsItGo() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             main { made[0].heard!!.done("prune the roses") }
             compose.waitFor("speak", "Speak the line")
             assertTrue(made[0].destroyed)
@@ -123,8 +132,7 @@ class SpeechTest {
             assertEquals("prune the roses", lineText())
 
             // Again: a new recogniser, the last one long gone.
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(2, made.size)
             oneAtMost()
             main { made[1].heard!!.failed(SpeechRecognizer.ERROR_NO_MATCH) }
@@ -138,8 +146,7 @@ class SpeechTest {
     fun busySpeechIsSaidPlainlyAndNothingIsTriedAgainUntilItsTime() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             main { made[0].heard!!.failed(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS) }
             // Which error, by its number, so Matthew's test says which.
             compose.waitFor("speech-note", busy(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS))
@@ -155,8 +162,7 @@ class SpeechTest {
 
             // After the wait, a tap listens again.
             Thread.sleep(Speech.BUSY_MS)
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             assertEquals(2, made.size)
             oneAtMost()
         }
@@ -185,8 +191,7 @@ class SpeechTest {
     fun leavingTheScreenLetsItGo() {
         Fresh.open().use {
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             compose.tap("back")
             compose.waitUntil(10_000) { made[0].destroyed }
             assertFalse(app.speech.holding)
@@ -197,8 +202,7 @@ class SpeechTest {
     fun theAppInTheBackgroundLetsItGo() {
         Fresh.open().use { scenario ->
             openALine()
-            compose.tap("speak")
-            compose.waitFor("speak", "Listening")
+            listen()
             // As when Matthew goes to another app, where Gboard's voice typing must work.
             scenario.moveToState(Lifecycle.State.CREATED)
             compose.waitUntil(10_000) { made[0].destroyed }
