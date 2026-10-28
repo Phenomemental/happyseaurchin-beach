@@ -40,14 +40,33 @@ object Fresh {
     }
 }
 
-/** Tap what carries [tag], scrolling it into view first when it stands on a scrolling page (the foot of a page and a dialog don't scroll). */
+/**
+ * Tap what carries [tag], scrolling it into view first when it stands on a
+ * scrolling page (the foot of a page and a dialog don't scroll). The page
+ * resizes as the keyboard comes or goes, so the tap waits until what it
+ * taps has stopped moving, and lands on it.
+ */
 fun ComposeTestRule.tap(tag: String) {
     waitUntil(10_000) { onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     val node = onNodeWithTag(tag, useUnmergedTree = true)
-    try {
+    fun scroll() = try {
         node.performScrollTo()
     } catch (_: AssertionError) {
     }
+    scroll()
+    var last: androidx.compose.ui.geometry.Rect? = null
+    var still = 0
+    val until = System.currentTimeMillis() + 5_000
+    while (still < 3 && System.currentTimeMillis() < until) {
+        Thread.sleep(100)
+        waitForIdle()
+        val now = node.fetchSemanticsNode().boundsInRoot
+        if (now == last) still++ else {
+            still = 0
+            last = now
+        }
+    }
+    scroll()
     node.performClick()
 }
 
