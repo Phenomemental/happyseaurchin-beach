@@ -4,8 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
-**0.3.1 is next**, fixing what Matthew found on his Pixel in 0.3 (see "What 0.3.1
-changes").
+**pocket-beach-v0.3.1** is released, fixing what Matthew found on his Pixel
+in 0.3 (see "What 0.3.1 changes"). It has been on the Releases page since
+28 October, its tag at `c7a5155` on main, signed with the same key as every
+release, so it installs over 0.3. Next is Matthew getting the model and doing
+the hello world with the companion.
 
 Piece 3, the companion, was released in **pocket-beach-v0.3** on 28 October,
 and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
@@ -257,6 +260,26 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.3.1 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.1 (`versionCode` 4), for arm64 phones, 49 MB. Its SHA-256 is
+  `070cb2c5e94ff3a57f3aee5ba23d33d6faaa8dc6cc0039d4a6d11b16cce776d1`.
+- Read back from the downloaded APK:
+  - its network security config trusts `beach.happyseaurchin.com`,
+    `huggingface.co`, `us.aws.cdn.hf.co`, `us.gcp.cdn.hf.co` and
+    `cas-bridge.xethub.hf.co`, and nothing else;
+  - the download's service is declared as data sync.
+- Checked before it:
+  - the real download: across a stop at 300 MB and a resume, the whole file
+    matched its SHA-256;
+  - the laptop trial with the new post form: 7 of 8 hello worlds checked
+    out. The miss was "secret: 42 is not the answer", refused, with nothing
+    written;
+  - all 19 on-device tests and the screen tour.
 
 ### The 0.3 release
 
