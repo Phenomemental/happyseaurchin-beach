@@ -4,20 +4,48 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.3.2** is being made, from Matthew's first hello world with
-the companion on 0.3.1 (see "What 0.3.2 changes").
+**pocket-beach-v0.3.3** is being made: a post the beach couldn't be reached
+for is kept, with "Post now" (see "What 0.3.3 changes").
 
-**pocket-beach-v0.3.1** is released, fixing what Matthew found on his Pixel
-in 0.3 (see "What 0.3.1 changes"). It has been on the Releases page since
-28 October, its tag at `c7a5155` on main, signed with the same key as every
-release, so it installs over 0.3. Next is Matthew getting the model and doing
-the hello world with the companion.
+**pocket-beach-v0.3.2** is released, from Matthew's first hello world with
+the companion on 0.3.1 (see "What 0.3.2 changes"). It has been on the
+Releases page since 28 October, its tag at `6ed8f7f` on main, signed with
+the same key as every release, so it installs over 0.3.1. Next is Matthew
+doing the hello world again and reading where the companion ran (see
+"Next").
+
+**pocket-beach-v0.3.1** fixed the model's download and the hello world
+posting twice (see "What 0.3.1 changes"). Its tag is at `c7a5155` on main.
 
 Piece 3, the companion, was released in **pocket-beach-v0.3** on 28 October,
 and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.3.3 changes
+
+Matthew's offline test of 0.3.2 passed: the writes landed, and the post
+failed plainly and sent nothing. Now such a post is kept:
+
+- **When the beach can't be reached,** the message he said yes to is kept on
+  the phone, with when it failed and why. It shows under "Waiting to be
+  posted" on the Shore, at the end of the Ask, and on the test screen.
+- **"Post now"** can be tapped only while the phone has a connection that
+  reaches the internet, as Android says. Offline it reads "Waiting for a
+  connection". Coming back online sends nothing: a kept post goes only on
+  his tap, and once it lands it is no longer kept, and it ends in "Posted to
+  your pool at entry N".
+- **"Discard"** drops a kept post after asking. The writes it came with stay.
+- **If the message went but no answer came back,** it is kept too, saying it
+  may be on the beach already, so he can look at the pool before posting it
+  again.
+- **A post the beach answered and refused** (a key needed, too many for the
+  moment) is not kept, as before. If a kept post is refused on "Post now",
+  it stays kept with the beach's answer.
+- The Ask log says when a post was kept.
+- The connection is read in `net/HttpsWire.kt`, beside the one post. It
+  remains one of the only two files that name a network API.
 
 ### What 0.3.2 changes
 
@@ -196,7 +224,8 @@ aeroplane mode too.
   - `net/HttpsWire.kt` opens a connection for one thing: one POST of one
     message to a pool on the beach, only after Matthew taps to confirm. It
     takes no address but the beach's pool append, follows no redirect, and
-    keeps no cookie or cache.
+    keeps no cookie or cache. It also reads whether the phone is connected,
+    only so a kept post's "Post now" waits for a connection.
   - `net/ModelFetch.kt` is the only other code that opens one, for the
     model's one download (see "The model").
   - The posts go only to `pool:Phenomemental`, under the name Phenomemental.
@@ -249,7 +278,7 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 `Pages.remove`).
 **Piece 1, unchanged:** the local bsp, the teaching shelf, storage.
 
-**The app itself:** version 0.3.2 (`versionCode` 5), Android 12 or later.
+**The app itself:** version 0.3.3 (`versionCode` 6), Android 12 or later.
 
 - Permissions:
   - the internet, for the one confirmed post and the model's one download,
@@ -332,6 +361,22 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.3.2 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.2 (`versionCode` 5), for arm64 phones, 49 MB. Its SHA-256 is
+  `23a6457fad9384baa3455c3c0b68270f1b63e1286de2a25a249e97f2d60849e1`.
+- Read back from the downloaded APK: its network security config trusts
+  `beach.happyseaurchin.com`, `huggingface.co`, `us.aws.cdn.hf.co`,
+  `us.gcp.cdn.hf.co` and `cas-bridge.xethub.hf.co`, each without
+  subdomains, and nothing else; plain HTTP is refused everywhere. Its
+  permissions are those of 0.3.1.
+- Built by the release run on main after every test passed again there: the
+  core on Linux and Windows, the golden calls and 1,000 fresh random cases,
+  the one-way-out tests, and every on-device test.
+
 ### The 0.3.1 release
 
 - Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
@@ -368,26 +413,34 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 
 ### Not yet checked
 
-- The companion on Matthew's phone: whether its GPU takes the model, and how
-  quickly it answers.
-- The model's download over real Wi-Fi.
-- A post to the live beach. No test posts there: the tests post over a wire
-  that goes nowhere.
+- Where the companion runs on Matthew's phone, GPU or CPU, and its own
+  figures for loading, reading and writing. 0.3.2 shows them under each
+  answer and keeps them in the Ask log.
 - Sharing with real apps, and speaking on a phone that recognises speech on
   the device.
 
+Checked on Matthew's Pixel since 0.3.1: the model's download over Wi-Fi
+(the companion then answered), and posts to the live beach (the hello world
+by hand, entries 168 and 169 of his pool).
+
 ### Next
 
-1. Matthew installs `pocket-beach-v0.3.apk` over 0.2. Then:
-   - **Ask** (on the Shore): make the companion's shell, then get the model
-     on Wi-Fi.
-   - **The hello world with the companion:** ask "Do the hello world. My
-     secret is …". Read what it proposes, then Yes. Read the post, then
-     Post it.
-   - **The hello world by hand** (About, Try a call by hand), if the
-     companion isn't reliable on the phone.
-   - Look at `ask-log`, and at the post on the beach.
-2. After that: the "Later" list, and what the Ask log shows.
+1. Matthew installs `pocket-beach-v0.3.2.apk` over 0.3.1. Then:
+   - **Ask** offers "Update the hello world line", since the shell's post
+     changed. Tap it.
+   - **The hello world again,** with the old `hello-world` still there: "Do
+     the hello world. My secret is …". The proposal should be the one change
+     to the secret line, then the app's own two writes in crimson, a new
+     seal and the fingerprint. Yes, then read the post: its seal is the one
+     just written, and its fingerprint the block's. Then Post it.
+   - **Read the time,** under the answer: "Took … on the GPU" (or CPU), and
+     the line beneath, with loading, reading and writing. On the CPU it
+     says why the GPU couldn't. These figures decide what comes next.
+   - **Rename or remove a block** on the Shore, beneath your blocks.
+2. With the phone's figures: whether speculative decoding is worth giving
+   up the answer's held form (see "Piece 3: how the companion is asked"),
+   or whether the GPU needs looking at.
+3. After that: the "Later" list, and what the Ask log shows.
 
 ### Running the core on a laptop
 
@@ -735,9 +788,13 @@ Found by running the hello world against the real model on a laptop
   multi-token prediction). On the laptop it wrote 17.4 tokens a second
   against 10.5, but only with the answer's form not held: held to the
   schema, the engine stopped with an error mid-answer ("compute_mask()
-  called after stop"). Unheld, the answer came wrapped in a code fence and
-  about 30% longer. Whether it is worth giving up the held form waits on
-  the phone's own figures.
+  called after stop"). Unheld, the answer sometimes came wrapped in a code
+  fence, and its length varied more (170 to 280 tokens, against about 240).
+  The hello world passed as often (7 of 8) in about 60% of the time, but ordinary asks went worse: "buy
+  more compost" was put under the autumn line rather than at the end, and
+  "under the autumn line…" twice put two lines in one step, so nothing could
+  be shown. Whether it is worth giving up the held form waits on the
+  phone's own figures.
 - **Reads end when they repeat.** Asked what a block holds, the model read it
   again each round. A round that asks only for reads it has been shown
   already is taken as its answer.

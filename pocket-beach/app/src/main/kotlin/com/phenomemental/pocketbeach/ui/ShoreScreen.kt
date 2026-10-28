@@ -88,6 +88,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
         CopyLine(model.lastSavedMs, Copies.reminderDue(model.lastSavedMs, stamps, System.currentTimeMillis()), Copies.changedSince(model.lastSavedMs, stamps)) {
             saveTo.launch("pocket-beach-copy-${LocalDate.now()}.json")
         }
+        Waiting(model)
         TextLink("Ask the companion", { nav.go(Screen.Ask) }, style = Type.body, tag = "ask-companion")
 
         val loaded = shore ?: return@Page

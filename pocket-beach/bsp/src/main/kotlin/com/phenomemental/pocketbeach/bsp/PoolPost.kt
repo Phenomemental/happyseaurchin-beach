@@ -15,9 +15,16 @@ package com.phenomemental.pocketbeach.bsp
  * it is open. If it ever answers that a key is needed, nothing is retried.
  */
 fun interface Wire {
-    /** POST [body] (JSON) to [url], returning the status and the text the beach answered. Failing to connect throws. */
+    /**
+     * POST [body] (JSON) to [url], returning the status and the text the beach
+     * answered. Failing to connect throws; once the whole message has gone,
+     * failing to hear back throws [NoAnswer], since it may have landed.
+     */
     fun post(url: String, body: String): WireReply
 }
+
+/** What a wire throws when the message went whole but no answer came back: it may have landed. */
+class NoAnswer(message: String, cause: Throwable? = null) : java.io.IOException(message, cause)
 
 class WireReply(val status: Int, val text: String)
 
@@ -28,8 +35,15 @@ sealed class Posted {
     /** The beach took it, at [slot] of the pool. */
     class Landed(val pool: String, val slot: String) : Posted()
 
-    /** Nothing landed, and why, in plain words. */
+    /** The beach answered, and nothing landed: why, in plain words. */
     class Refused(val why: String) : Posted()
+
+    /**
+     * The beach couldn't be reached, so nothing landed; or, [mayHaveLanded],
+     * the message went but no answer came back. Either way the front end
+     * keeps it, to be posted again only when Matthew taps for it.
+     */
+    class Unreached(val why: String, val mayHaveLanded: Boolean = false) : Posted()
 }
 
 object PoolPost {
@@ -55,8 +69,10 @@ object PoolPost {
     fun send(m: PoolMessage, wire: Wire): Posted {
         val reply = try {
             wire.post(m.url, m.body)
+        } catch (e: NoAnswer) {
+            return Posted.Unreached("The message went, but no answer came back from the beach (${e.message ?: e::class.simpleName}), so it may have landed.", mayHaveLanded = true)
         } catch (e: Exception) {
-            return Posted.Refused("The beach couldn't be reached, so nothing was posted (${e.message ?: e::class.simpleName}).")
+            return Posted.Unreached("The beach couldn't be reached, so nothing was posted (${e.message ?: e::class.simpleName}).")
         }
         val answer = try { parseJson(reply.text) as? JsObj } catch (_: JsonSyntaxError) { null }
         val error = (answer?.get("error") as? JsStr)?.value

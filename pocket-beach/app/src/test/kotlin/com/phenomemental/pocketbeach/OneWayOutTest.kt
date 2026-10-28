@@ -8,9 +8,10 @@ import java.io.File
 
 /**
  * Decision 18 and the model's download: two narrow ways out and nothing else.
- * Only net/HttpsWire.kt (the one post) and net/ModelFetch.kt (the model's one
- * download) name a network API; nothing hands Android's download manager
- * anything; and the network security config trusts the beach and the
+ * Only net/HttpsWire.kt (the one post, and whether the phone is connected, so
+ * a kept post's "Post now" waits for a connection) and net/ModelFetch.kt (the
+ * model's one download) name a network API; nothing hands Android's download
+ * manager anything; and the network security config trusts the beach and the
  * download's hosts, and no others.
  */
 class OneWayOutTest {

@@ -175,6 +175,20 @@ class ScreenTour {
                 shot("$theme-26-remove")
                 compose.tap("Keep it")
             }
+            // A post the beach couldn't be reached for, kept on the Shore: offline, then back online.
+            val kept = com.phenomemental.pocketbeach.bsp.PoolPost.prepare(
+                com.phenomemental.pocketbeach.bsp.HelloWorld.POOL,
+                com.phenomemental.pocketbeach.bsp.HelloWorld.messageFor(app.storage.read(com.phenomemental.pocketbeach.bsp.HelloWorld.BLOCK)) ?: "Hello world from the pocket.",
+            )
+            app.unsent.keep(kept, "The beach couldn't be reached, so nothing was posted (Unable to resolve host \"beach.happyseaurchin.com\").", false, System.currentTimeMillis())
+            app.connectedForTests = false
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.waitFor("waiting-why", "Waiting for a connection")
+                shot("$theme-27-shore-waiting-offline")
+                app.connectedForTests = true
+                compose.waitFor("waiting-why", "only when you tap Post now")
+                shot("$theme-28-shore-waiting-online")
+            }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
                 .putExtra(android.content.Intent.EXTRA_TEXT, """{"_":"Notes from a friend","1":"The ferry leaves at nine","2":{"_":"Bring","1":"a coat","2":"the map"}}""")
@@ -186,6 +200,8 @@ class ScreenTour {
         } finally {
             app.wire = com.phenomemental.pocketbeach.net.HttpsWire
             app.mind = app.gemma
+            app.connectedForTests = null
+            app.unsent.clear()
         }
     }
 

@@ -138,6 +138,7 @@ class Asking(private val app: PocketApp) {
             val said = when (posted) {
                 is Posted.Landed -> "He said yes to the post: it landed at entry ${posted.slot} of pool:${posted.pool}."
                 is Posted.Refused -> "He said yes to the post, but it didn't go: ${posted.why}"
+                is Posted.Unreached -> "He said yes to the post, but it didn't go: ${posted.why} It is kept, to be posted only when he taps Post now."
             }
             end(w.shown, w.carried, posted, "Matthew said yes; " + landed(w.carried) + " " + said, w.shown.took)
         }

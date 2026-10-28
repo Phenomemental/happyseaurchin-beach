@@ -30,6 +30,8 @@ object Fresh {
         app.asking.reset()
         app.inbox = null
         app.getSharedPreferences("posts", 0).edit().clear().commit()
+        app.unsent.clear()
+        app.connectedForTests = null
         // A download kept part way, or a failure recorded, but never the model itself.
         File(app.getExternalFilesDir(null), "models/${com.phenomemental.pocketbeach.model.ModelStore.FILE}.part").delete()
         app.getSharedPreferences("model", 0).edit().remove("failed").commit()

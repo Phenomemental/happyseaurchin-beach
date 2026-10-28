@@ -285,6 +285,7 @@ private fun HelloByHand(model: Model) {
         TextLink("Post again?", { again = true; confirming = message }, tag = "hello-post-again")
     }
     refused?.let { Notice(it, tag = "hello-refused") }
+    Waiting(model, onPosted = { posts++; refused = null })
 
     confirming?.let { m ->
         PaperDialog(
@@ -299,7 +300,11 @@ private fun HelloByHand(model: Model) {
                         val posted = withContext(Dispatchers.IO) { model.app.post(m) }
                         busy = false
                         posts++
-                        refused = (posted as? Posted.Refused)?.why
+                        refused = when (posted) {
+                            is Posted.Refused -> posted.why
+                            is Posted.Unreached -> "${posted.why} It's kept below, and on the Shore, to post when you tap Post now."
+                            is Posted.Landed -> null
+                        }
                     }
                 }, strong = true, tag = "hello-confirm")
             },

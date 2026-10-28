@@ -31,6 +31,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/** A wire whose beach can't be reached, as on a phone with no connection: each try is counted, and nothing goes. */
+class UnreachableWire : Wire {
+    var tries = 0
+    override fun post(url: String, body: String): WireReply {
+        tries++
+        throw java.net.UnknownHostException("Unable to resolve host \"beach.happyseaurchin.com\": No address associated with hostname")
+    }
+}
+
 /** A wire that goes nowhere: it keeps what would have been sent and answers as the beach does. No test posts to the beach. */
 class NowhereWire : Wire {
     val sent = mutableListOf<Pair<String, String>>()
@@ -90,6 +99,7 @@ class CompanionTest {
     fun backAsTheyWere() {
         app.wire = HttpsWire
         app.mind = app.gemma
+        app.connectedForTests = null
     }
 
     private fun askTheCompanion() {
@@ -154,6 +164,65 @@ class CompanionTest {
             assertTrue("the post is the block's own, as written", body.contains(HelloWorld.messageFor(stored)!!))
             assertTrue(body.contains(seal))
             assertFalse("never the earlier run's seal or fingerprint", body.contains(old.seal) || body.contains(old.fingerprint))
+        }
+    }
+
+    @Test
+    fun aPostTheBeachCouldntReceiveIsKeptAndGoesOnlyOnATap() {
+        val away = UnreachableWire()
+        app.wire = away
+        Fresh.open().use {
+            askTheCompanion()
+            compose.tap("yes")
+            compose.waitFor("post-message", "Secret: purple walrus")
+            compose.tap("post")
+            compose.waitFor("not-posted", "couldn't be reached")
+            compose.waitFor("waiting")
+            assertEquals(1, away.tries)
+            val kept = app.unsent.all.single()
+            assertTrue(kept.message.message.contains("Secret: purple walrus"))
+            assertFalse(kept.mayHaveLanded)
+
+            // Offline, Post now waits; back online, still nothing goes until the tap.
+            app.connectedForTests = false
+            compose.waitFor("waiting-why", "Waiting for a connection")
+            compose.onNodeWithTag("post-now").assertIsNotEnabled()
+            app.wire = wire
+            app.connectedForTests = true
+            compose.waitFor("waiting-why", "only when you tap Post now")
+            compose.waitForIdle()
+            Thread.sleep(1500)
+            assertTrue("coming back online sends nothing", wire.sent.isEmpty())
+
+            compose.tap("back")
+            compose.waitFor("waiting")
+            compose.tap("post-now")
+            compose.waitFor("posted-later", "Posted to your pool at entry 7")
+            assertEquals(1, wire.sent.size)
+            assertTrue(wire.sent.single().second.contains(HelloWorld.messageFor(app.storage.read(HelloWorld.BLOCK))!!))
+            assertTrue("no longer kept", app.unsent.all.isEmpty())
+            assertEquals("7", app.posts.landed(kept.message))
+            compose.waitUntil(10_000) { log()?.lines?.isNotEmpty() == true }
+            val entry = app.pages.position(Region.POCKET, Asks.LOG, log()!!.lines.first().address)!!
+            assertTrue(entry.lines[1].text!!.contains("kept, to be posted only when he taps Post now"))
+        }
+    }
+
+    @Test
+    fun aPostThatMayHaveLandedSaysSoAndCanBeDiscarded() {
+        Fresh.clear()
+        val message = PoolPost.prepare(HelloWorld.POOL, "A message whose answer never came.")
+        app.wire = Wire { _, _ -> throw com.phenomemental.pocketbeach.bsp.NoAnswer("Read timed out") }
+        app.post(message)
+        assertTrue(app.unsent.all.single().mayHaveLanded)
+        app.wire = wire
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("waiting")
+            compose.waitFor("may-have-landed", "may be on the beach already")
+            compose.tap("discard-waiting")
+            compose.tap("discard-confirm")
+            compose.waitUntil(10_000) { app.unsent.all.isEmpty() }
+            assertTrue(wire.sent.isEmpty())
         }
     }
 
