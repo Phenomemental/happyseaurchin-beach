@@ -34,6 +34,9 @@ aeroplane mode too.
     or just not now (decision 15).
   - A post the companion offers comes after the writes, shown whole, on a card
     of its own: "Post it" or "Not now".
+  - A post is offered only when Matthew's own words speak of posting, a
+    pool, the beach or the hello world. Any other the companion offers is
+    left out, and the log says so.
 - **The app's gaps.** Some things must be the app's, never the model's. The
   companion writes gaps and the app fills them as it writes:
   - `{{seal}}`: 128 random bits from the phone's secure random source, new
@@ -129,7 +132,7 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
 
 ### What was checked
 
-- **The core's tests:** 68, all passing, on the JVM and again on Windows with
+- **The core's tests:** 70, all passing, on the JVM and again on Windows with
   no Android SDK.
   - Asks: answers read leniently and checked strictly; the hello world shown
     first, then written as shown; nothing written when the pocket moved since
@@ -153,13 +156,40 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
     `hello-world` held the shell's opening line, the secret word for word,
     the app's seal and a matching fingerprint. The post carried all four
     and the block's address.
-  - **The miss:** "hello world my secret is bananas are berries" wasn't taken
-    for the hello world. It proposed a line for a block that doesn't exist,
-    so the app refused it, and nothing was written.
+  - One of the seven, "hello world my secret is bananas are berries", needed
+    one round of being told why: its first answer added to `hello-world`
+    before making it.
+  - **The miss:** "please do hello-world, secret: 42 is not the answer". It
+    left `HIS SECRET` unfilled. Told why, it answered with a single change,
+    as if the first proposal had been written. The app refused it, so
+    nothing was written. Asked as "Do the hello world. My secret is: …", it
+    passes.
+  - Ordinary asks of a small pocket:
+    - "Add a line to garden" landed where it should.
+    - "What's in my garden block?" was read and answered.
+    - "Under the autumn line…" found the right line, but repeated the line
+      it was put beneath. That is shown before Yes, for "Not now: wrong
+      place".
   - Earlier forms of the instruction scored 0 to 3 of 4; see "Piece 3: how
     the companion is asked".
-- **On a Pixel emulator (Android 16)**, the on-device tests, and the screen
-  tour, light and dark: DEVICE_RESULT
+- **On a Pixel emulator (Android 16):** all 17 on-device tests pass. The
+  six new ones:
+  - The hello world with a stand-in for the companion (no test can run the
+    model). The proposal is shown and nothing is written before Yes. The
+    block checks out, and nothing is sent before Post it. Then exactly one
+    request goes, to a wire that goes nowhere, and the log keeps the slot.
+  - "Not now" writes nothing and logs why.
+  - The hello world by hand, on the test screen.
+  - A block shared in, shown as data and kept only on a tap.
+  - The model is never offered without the memory. The emulator has 2.6
+    GB, and it was told so plainly.
+  - Plain HTTP refused everywhere.
+- **The screen tour** now photographs Piece 3 too (Ask at each stage, the
+  hello world by hand, Received), light and dark. Reading them by eye led
+  to three changes:
+  - more room between the rows of a proposal;
+  - after a post, "Posted" first;
+  - the shell's notice reworded.
 
 ### Not yet checked
 
@@ -497,11 +527,29 @@ Found by running the hello world against the real model on a laptop
   model filled the `{{address}}` gap itself, with the bare name.
 - **The likeliest word each time** (top-k 1), a context of 4,096 tokens, and
   answers of at most 1,024. Thinking is off.
-- **Leniency stops where meaning starts.** The app takes the JSON from
-  around any words the model adds. It takes `pocket/name` as `name`, and an
-  `at` that names the block itself as the opening. An answer that can't be
-  read is sent back once, with why. Anything else is shown, or refused,
-  as it is.
+- **The pocket's blocks are shown with their lines,** each at pscale 0 with
+  its address, and the teaching blocks are named. Shown only the opening
+  lines, it placed "under the autumn line" by guess.
+- **A post only when asked.** On ordinary asks the model offered a post with
+  nearly every answer ("Done. Have a great day!"), and an unasked post kept a
+  read from running. A post is now kept only when Matthew's words speak of
+  posting, a pool, the beach or the hello world. Any other is left out and
+  logged. An empty post, or one to no pool, is none.
+- **Reads end when they repeat.** Asked what a block holds, the model read it
+  again each round. A round that asks only for reads it has been shown
+  already is taken as its answer.
+- **Leniency stops where meaning starts.**
+  - The app takes the JSON from around any words the model adds. It takes
+    `pocket/name` as `name`, and an `at` that names the block itself as the
+    opening.
+  - Once in an Ask, the companion is told why and answers again, and the
+    answer to that is the one shown. This happens when an answer:
+    - can't be read;
+    - puts two lines in one step;
+    - leaves `HIS SECRET` unfilled;
+    - proposes something that can't go ahead (a line for a block it hasn't
+      made, say).
+  - Anything else is shown, or refused, as it is.
 
 ## Other differences from bsp-mcp-server
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,8 +74,8 @@ fun AskScreen(model: Model, nav: Nav) {
         }
         if (shell == null && shellChecked) {
             Notice(
-                "Its shell, ${HelloWorld.SHELL}, isn't in the pocket yet. Making it writes one new block: its opening line, " +
-                    "${Words.quoted(HelloWorld.SHELL_OPENING, 200)}, and beneath it the line that says how to do the hello world.",
+                "Its shell, ${HelloWorld.SHELL}, isn't in the pocket yet. Making it writes one new block, which opens " +
+                    "${Words.quoted(HelloWorld.SHELL_OPENING, 60)} and holds the line that says how to do the hello world.",
                 link = "Make the companion's shell" to {
                     scope.launch {
                         val made = withContext(Dispatchers.IO) { runCatching { HelloWorld.makeShell(model.pages) } }
@@ -212,7 +213,7 @@ private fun Writes(p: Proposal) {
 @Composable
 private fun WriteRow(w: Planned) {
     val ink = LocalInk.current
-    Column(Modifier.fillMaxWidth().testTag("write"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("write"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing), style = Type.small, color = ink.ink)
         w.shown?.let { Text(Words.quoted(it.replace("{{fingerprint}}", PRINT_SHOWN), 400), style = Type.body, color = ink.ink) }
         SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft) }
@@ -232,7 +233,7 @@ private fun Written(model: Model, seal: String, carried: com.phenomemental.pocke
             if (i > 0) Rule()
             Text(
                 (if (w.plan.landsAt.isNullOrEmpty()) w.plan.block else "${w.plan.block} at ${w.plan.landsAt}") + ": " + Words.quoted(w.text ?: w.plan.text, 200),
-                style = Type.small, color = ink.ink,
+                style = Type.small, color = ink.ink, modifier = Modifier.padding(vertical = 6.dp),
             )
         }
         if (carried.landed.isEmpty()) Text("Nothing.", style = Type.aside, color = ink.soft)
@@ -278,7 +279,6 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
         if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.aside, color = ink.ink, modifier = Modifier.testTag("say"))
         if (over.carried == null) shown.asked.proposal?.let { if (it.refusal != null) Writes(it) }
     }
-    over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
     when (val p = over.posted) {
         is Posted.Landed -> {
             Text("Posted. It landed at slot ${p.slot} of pool:${p.pool}.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("posted"))
@@ -293,6 +293,7 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
         is Posted.Refused -> Notice(p.why, tag = "not-posted")
         null -> {}
     }
+    over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
     Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
     Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
     Rule()

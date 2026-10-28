@@ -24,11 +24,14 @@ object HelloWorld {
     const val SHELL = "pocket-companion"
     const val SHELL_OPENING = "Pocket companion. I live on this phone, read freely, and write only when Matthew says yes."
 
+    /** Where the shell's hello world has the companion write Matthew's secret; an answer that leaves it is sent back. */
+    const val SECRET_SLOT = "HIS SECRET"
+
     /** The four lines of a hello world, as the shell gives them: the app fills the gaps, the companion writes in the secret. */
-    val SHELL_LINES = listOf("{{shell}}", "Secret: HIS SECRET", "Seal: {{seal}}", "Fingerprint: {{fingerprint}}")
+    val SHELL_LINES = listOf("{{shell}}", "Secret: $SECRET_SLOT", "Seal: {{seal}}", "Fingerprint: {{fingerprint}}")
 
     /** The post a hello world offers, as the shell gives it. */
-    const val SHELL_POST = "Hello world from the pocket. Secret: HIS SECRET. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
+    const val SHELL_POST = "Hello world from the pocket. Secret: $SECRET_SLOT. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world."
 
     /**
      * How the companion does the hello world, as one line of its shell: the

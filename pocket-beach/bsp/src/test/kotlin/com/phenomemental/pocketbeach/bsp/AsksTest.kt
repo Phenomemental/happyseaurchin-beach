@@ -60,6 +60,9 @@ class AsksTest {
             """{"say":"x","steps":[{"do":"add","text":"a line"}]}""",
             """{"say":"x","steps":"make garden"}""",
             """{"say":"","steps":[]}""",
+            """{"say":"x","steps":[{"do":"add","block":"garden","at":"","text":"one\ntwo"}]}""",
+            """{"say":"x","steps":[{"do":"add","block":"hello-world","at":"","text":"Secret: HIS SECRET"}]}""",
+            """{"say":"x","steps":[],"post":{"pool":"Phenomemental","message":"Secret: HIS SECRET."}}""",
         )) assertFailsWith<Asks.Unreadable>(bad) { Asks.parse(bad) }
     }
 
@@ -117,6 +120,24 @@ class AsksTest {
         val carried = Asks.carryOut(shown, pages, storage, opening)
         assertEquals(1, carried.landed.size, "the first still lands where shown")
         assertContains(carried.problem!!, "The writes before it landed")
+    }
+
+    @Test
+    fun whatCantGoAheadIsSentBackOnceThenShown() {
+        val replies = ArrayDeque(listOf(
+            """{"say":"x","steps":[{"do":"add","block":"hello-world","at":"","text":"a line"}]}""",
+            """{"say":"x","steps":[{"do":"make","block":"hello-world","at":"","text":""},{"do":"add","block":"hello-world","at":"","text":"a line"}]}""",
+        ))
+        val asked = Asks.ask("Make hello-world with a line", { replies.removeFirst() }, pages, storage, shelf, opening, seal) { now }
+        assertEquals(2, asked.exchanges.size)
+        assertContains(asked.exchanges[1].first, "That can't go ahead: Step 1: There's no block called hello-world. A block is made with a make step before lines are added to it.")
+        assertNull(asked.proposal!!.refusal)
+        assertEquals(2, asked.proposal!!.writes.size)
+
+        val stubborn = ArrayDeque(List(2) { """{"say":"x","steps":[{"do":"add","block":"nowhere","at":"","text":"a line"}]}""" })
+        val refused = Asks.ask("Add a line to nowhere", { stubborn.removeFirst() }, pages, storage, shelf, opening, seal) { now }
+        assertEquals(2, refused.exchanges.size, "sent back once, not again")
+        assertContains(refused.proposal!!.refusal!!, "There's no block called nowhere")
     }
 
     @Test
@@ -193,6 +214,12 @@ class AsksTest {
         assertNull(asked.answer!!.post)
         assertFalse(asked.proposal!!.asks)
         assertContains(Asks.proposed(asked.proposal, asked.unasked), "that wasn't asked for, so it was left out")
+
+        // Reads it has already been shown end the asking, rather than going round again.
+        val again = ArrayDeque(List(3) { """{"say":"It holds its opening line.","steps":[{"do":"read","block":"garden","at":"","text":""}]}""" })
+        val read = Asks.ask("What's in garden?", { again.removeFirst() }, pages, storage, shelf, opening, seal) { now }
+        assertEquals(2, read.exchanges.size)
+        assertEquals("It holds its opening line.", read.answer!!.say)
 
         assertTrue(Asks.asksForPost("Do the hello world. My secret is x."))
         assertTrue(Asks.asksForPost("please post this to my pool"))

@@ -138,7 +138,10 @@ fun ReceivedScreen(model: Model, nav: Nav) {
             if (lines.isEmpty()) Text("No lines beneath it.", style = Type.aside, color = ink.soft, modifier = Modifier.padding(vertical = 8.dp))
             lines.forEachIndexed { i, l ->
                 if (i > 0) Rule()
-                Text("${l.address}  ${l.content ?: "(empty)"}", style = Type.small, color = ink.ink, modifier = Modifier.padding(vertical = 6.dp))
+                Text(
+                    "${l.address}  ${l.content ?: "(empty)"}" + (l.beneath?.takeIf { it > 0 }?.let { " · ${Words.count(it, "line")} beneath" } ?: ""),
+                    style = Type.small, color = ink.ink, modifier = Modifier.padding(vertical = 6.dp),
+                )
             }
         }
         Label("Keep it as")
