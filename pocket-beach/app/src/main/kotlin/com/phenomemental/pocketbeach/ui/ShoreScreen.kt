@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +44,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
     val scope = rememberCoroutineScope()
     val shore by produceState<ShoreView?>(null, model.version) { value = withContext(Dispatchers.IO) { model.pages.shore() } }
     val stamps by produceState(Stamps(), model.version) { value = withContext(Dispatchers.IO) { model.pages.stamps() } }
-    var naming by remember { mutableStateOf(false) }
+    var naming by rememberSaveable { mutableStateOf(false) }
     var restoring by remember { mutableStateOf<Copies.Copy?>(null) }
 
     val saveTo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -82,14 +83,14 @@ fun ShoreScreen(model: Model, nav: Nav) {
             saveTo.launch("pocket-beach-copy-${LocalDate.now()}.json")
         }
 
+        val loaded = shore ?: return@Page
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Label("Your blocks", Modifier.weight(1f))
             TextLink("Make a new block", { naming = true }, tag = "new-block")
         }
-        val mine = shore?.mine
+        val mine = loaded.mine
         Sheet {
             when {
-                mine == null -> Text(" ", style = Type.body)
                 mine.isEmpty() -> Text(
                     "Nothing here yet. Make a new block to begin: it asks only for a name.",
                     style = Type.aside, color = ink.soft, modifier = Modifier.padding(vertical = 10.dp),
@@ -103,7 +104,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
 
         Label("Teaching blocks", Modifier.padding(top = 6.dp))
         Sheet {
-            shore?.teaching?.forEachIndexed { i, b ->
+            loaded.teaching.forEachIndexed { i, b ->
                 if (i > 0) Rule()
                 BlockRow(b) { nav.go(Screen.Block(Region.TEACHING, b.name, "")) }
             }
@@ -175,7 +176,7 @@ private fun BlockRow(b: BlockSummary, onOpen: () -> Unit) {
 private fun NewBlockDialog(model: Model, onDone: (String?) -> Unit) {
     val ink = LocalInk.current
     val scope = rememberCoroutineScope()
-    var name by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
     var plan by remember { mutableStateOf<Plan?>(null) }
     var problem by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(name) {

@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -50,6 +51,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
+/** The passing message the page shows under its trail, and how to put it away. */
+class SlipNote(val text: String, val dismiss: () -> Unit)
+
+val LocalSlip = staticCompositionLocalOf<SlipNote?> { null }
+
 /** A page of the app: paper to the edges, the back mark and the trail at the top, actions at the foot above the keyboard. */
 @Composable
 fun Page(
@@ -66,6 +72,7 @@ fun Page(
                 if (top != null) Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically, content = top)
             }
         }
+        LocalSlip.current?.let { Slip(it.text, it.dismiss) }
         Column(
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -214,12 +221,12 @@ fun PaperDialog(title: String, onDismiss: () -> Unit, actions: @Composable RowSc
     }
 }
 
-/** A passing message at the top of the page. */
+/** A passing message, set in the page beneath its trail so it never covers anything to tap. */
 @Composable
 fun Slip(text: String, onDismiss: () -> Unit) {
     val ink = LocalInk.current
     Box(
-        Modifier.windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = 18.dp, vertical = 8.dp).fillMaxWidth()
+        Modifier.padding(horizontal = 18.dp, vertical = 6.dp).fillMaxWidth()
             .background(ink.ink).clickable(onClick = onDismiss).padding(horizontal = 16.dp, vertical = 12.dp).testTag("slip"),
     ) {
         Text(text, style = Type.small, color = ink.paper, maxLines = 4, overflow = TextOverflow.Ellipsis)

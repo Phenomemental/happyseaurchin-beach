@@ -1,9 +1,8 @@
 package com.phenomemental.pocketbeach.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -13,8 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import com.phenomemental.pocketbeach.PocketApp
 import com.phenomemental.pocketbeach.bsp.Kind
 import com.phenomemental.pocketbeach.bsp.Region
@@ -90,7 +87,8 @@ fun PocketScreens(app: PocketApp) {
     val nav = rememberSaveable(saver = Nav.saver) { Nav(listOf(Screen.Shore)) }
     val model = remember { Model(app) }
     BackHandler(enabled = nav.stack.size > 1) { nav.back() }
-    Box(Modifier.fillMaxSize()) {
+    val slip = model.slip?.let { text -> SlipNote(text) { model.slip = null } }
+    CompositionLocalProvider(LocalSlip provides slip) {
         when (val s = nav.top) {
             Screen.Shore -> ShoreScreen(model, nav)
             is Screen.Block -> BlockScreen(model, nav, s)
@@ -98,12 +96,11 @@ fun PocketScreens(app: PocketApp) {
             Screen.About -> AboutScreen(model, nav)
             Screen.Calls -> CallsScreen(app.pocket, nav)
         }
-        model.slip?.let { text ->
-            Box(Modifier.align(Alignment.TopCenter)) { Slip(text) { model.slip = null } }
-            LaunchedEffect(text) {
-                delay(6000)
-                if (model.slip == text) model.slip = null
-            }
+    }
+    model.slip?.let { text ->
+        LaunchedEffect(text) {
+            delay(6000)
+            if (model.slip == text) model.slip = null
         }
     }
 }

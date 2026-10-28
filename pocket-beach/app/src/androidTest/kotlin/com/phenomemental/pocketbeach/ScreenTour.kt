@@ -26,7 +26,7 @@ class ScreenTour {
 
     private fun night(on: Boolean) {
         instrumentation.uiAutomation.executeShellCommand("cmd uimode night ${if (on) "yes" else "no"}").close()
-        Thread.sleep(1500)
+        Thread.sleep(3000)
     }
 
     private fun shot(name: String) {
@@ -39,6 +39,7 @@ class ScreenTour {
 
     private fun tour(theme: String) {
         Fresh.open().use {
+            compose.waitFor("block:sunstone")
             shot("$theme-01-shore-empty")
             compose.tap("new-block")
             compose.waitFor("block-name")
