@@ -9,6 +9,10 @@ pure Kotlin module (decision 7). CI is green on Linux, on Windows and on a
 Pixel emulator. The release waits only on the signing key, which Matthew
 makes (steps below).
 
+Before Piece 3, wearing a shell offline must be built and matched against the
+original (decision 8). What that takes is under "Wearing a shell offline"
+below, with four questions for Matthew.
+
 ### What is built
 
 - **The local bsp**, a Kotlin port of bsp-mcp-server and the beach duties, is
@@ -95,10 +99,12 @@ makes (steps below).
 ### Next
 
 1. Matthew makes the signing key and adds the four secrets (steps below).
-2. Tag `pocket-beach-v0.1`; CI builds the signed APK and attaches it to the
-   Release.
+2. Tag `pocket-beach-v0.1` on main; CI builds the signed APK and attaches it
+   to the Release.
 3. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
+4. Before Piece 3: Matthew answers the questions on wearing a shell, then that
+   is built and matched against the original.
 
 ### Running the core on a laptop
 
@@ -149,6 +155,83 @@ block or a chat, including a chat with Claude.
    builds the APK, signs it, checks the signature, and puts it on the Releases
    page.
 
+## Wearing a shell offline (before Piece 3)
+
+The app will wear pscale shells on the phone, offline, with its behaviour
+taken from blocks. Everything a shell needs to be worn offline, including
+gathering the blocks it points to, is built and matched against the original
+before Piece 3 (decision 8). This is what the original does, read at the
+pinned bsp-mcp-server `27908e1`.
+
+### What the original does
+
+- **The left-out bundle window is the shell's gathering mechanism.** It is one
+  set of functions, in `src/bundle.ts`. A plain bsp read of a bundle uses it,
+  and so does the door that wears a shell (`pscale_play`) when it gathers the
+  shell's manifest. Upstream states it outright: the door compiles the
+  manifest "through the same functions a bare bsp() read of the node uses — so
+  the door and the read cannot diverge."
+- **What a bundle is.** A node whose digit children are mostly references:
+  - `name`, `name:address`, or `name:address:attention`;
+  - `name:head`, the newest entry of an accumulator;
+  - `name:now`, the clock's current beat.
+
+  It counts as a bundle only if at least one reference names a block that
+  exists. An entry with an arrival stamp is never a bundle.
+- **How it gathers.**
+  - In a shell, a bare name tries `<name>:<handle>` first, then `<name>`.
+    In `shell:matthew`, `history` means `history:matthew`.
+  - The teaching shelf is looked in before the region.
+  - A whole block over 6,000 characters arrives as its disc at pscale 0.
+  - The window holds at most 30,000 characters. Members that don't fit are
+    named, never dropped.
+  - Prose rides through as written. A missing block is marked absent.
+- **Where a shell keeps its bundle:** position 3 of `shell:<handle>` by
+  convention, or else the first position that reads as a bundle.
+- **The bundle follows the record.** When a handle appends to one of its own
+  blocks that its manifest dials, the manifest's slot moves to the new entry.
+  Upstream does this only when a secret is passed.
+- **Wearing is more than the bundle.** Besides the manifest, the door:
+  - carries the passport whole, or, for a shell with no manifest, whichever
+    of six standard blocks exist;
+  - engages the room pool: its operating directive and the live scene;
+  - compiles `frame:<room>` and sweeps `order:<handle>`, through a second
+    gatherer, `src/compile.ts`, built on the agent kernel's own gathering;
+  - adds completions beside the window, where the bundle lacks one of four
+    things (relation, identity, situation, stance);
+  - lists who is here and the beach's lighthouse;
+  - seats the session: from then on, every reply carries what moved, since it
+    was last told, in the blocks the bundle dials (`src/orientation.ts`).
+- **A third door, `pscale_genus`,** wears a genus-one agent's mind: the shell
+  grown to eighteen blocks (shell-genome 6). It has its own reader,
+  `src/genus.ts`, a port of the Python kernel held to byte parity with it.
+- **The beach takes no part.** pscale-beach does no bundling; it is all in
+  bsp-mcp-server.
+- **The clock is inside it.** Every bundle window's first line carries the
+  sundial stamp and its voicing, and a `now` reference walks the clock, so the
+  port needs part of `temporal.ts`.
+
+### What it means for v0.1
+
+A read of a node shaped like a bundle comes back without its window, so it
+differs from the original. No teaching block is shaped like one, and no golden
+call covers it.
+
+### What is built before Piece 3
+
+1. **`bundle.ts` in full, in the core:** the references, the gathering, the
+   window, `head` and `now`, and the window on ordinary reads.
+2. **Wearing a shell from the pocket:** the manifest gathered, the passport
+   carried, and whichever other parts Matthew keeps (questions below).
+3. **Golden calls for both,** generated by the original code at the pinned
+   commits as now. They cover:
+   - shells with bare names, `head` and `now`;
+   - absent members and prose;
+   - the 6,000-character cut and the window cap;
+   - the bundle following an append.
+
+   Any mismatch fails the build.
+
 ## Decisions (Matthew, 28 October 2026)
 
 These answer the concerns in `FINDINGS.md` §6 and bind every piece.
@@ -182,6 +265,11 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
    Android app uses it through that interface.
    - Kept by a test that fails if any core class names an Android API.
    - Kept by a CI job that runs the core's tests on Windows.
+8. **A shell can be worn offline before Piece 3.** The app will wear pscale
+   shells locally, offline, with its behaviour taken from blocks. Everything a
+   shell needs to be worn offline, including gathering the blocks it points
+   to, is built and matched against the original before Piece 3. See "Wearing
+   a shell offline".
 
 ## Other differences from bsp-mcp-server
 
@@ -201,10 +289,10 @@ Chosen in Phase 0, or found while building Piece 1.
     because "block" contains "lock".
   - A write that makes a new block reports "landed at" with a leading dot
     (`.1`).
-- **Bundle windows are left out.** In bsp-mcp-server, reading a position whose
-  lines are mostly references to other blocks that exist adds a window
-  compiling those blocks. No teaching block triggers it; one of Matthew's blocks
-  would have to be written that way.
+- **Bundle windows are left out of v0.1 only.** In bsp-mcp-server, reading a
+  position whose lines are mostly references to other blocks that exist adds a
+  window compiling those blocks. No teaching block triggers it. It is the
+  shell's gathering mechanism, so it is built before Piece 3 (decision 8).
 - **Floor-10 blocks** (the clock's form) get no clock framing beneath a write,
   part of decision 5.
 - **A block named `presence`** is swept of stale entries as the beach sweeps
@@ -217,4 +305,26 @@ Chosen in Phase 0, or found while building Piece 1.
 
 ## Open questions
 
-None.
+On wearing a shell (decision 8), for Matthew:
+
+1. **Which door?**
+   - `pscale_play`: a holder's own shell, with its manifest, passport and room.
+   - `pscale_genus`: an agent's mind.
+   - Both.
+
+   I'd start with play's shell path. `bundle.ts` is shared with ordinary
+   reads, and genus is a large port of its own.
+2. **The parts that need other people or other beaches:** the room's live
+   scene, who is here, the gate and genesis, and references to other beaches.
+   I'd leave them out offline, and say so where they would appear.
+3. **The clock inside a worn shell.** Decision 5 left the clock out of every
+   reply. But inside a shell, three things depend on it:
+   - every bundle window's first line carries the sundial stamp;
+   - `now` references read the clock;
+   - the seat's "what moved" is cut by it.
+
+   Keeping them matches the original. Dropping them is a deliberate
+   difference, which the golden tests would strip.
+4. **The bundle following the record without a secret.** The pocket has no
+   secrets, so a straight port never moves the manifest. I'd let it follow,
+   since Matthew is the only writer.
