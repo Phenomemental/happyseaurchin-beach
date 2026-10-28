@@ -21,6 +21,7 @@ import com.phenomemental.pocketbeach.model.ModelStore
 import com.phenomemental.pocketbeach.net.Connection
 import com.phenomemental.pocketbeach.net.HttpsWire
 import com.phenomemental.pocketbeach.ui.Asking
+import com.phenomemental.pocketbeach.ui.Benching
 import com.phenomemental.pocketbeach.ui.Received
 import java.io.FileNotFoundException
 
@@ -37,7 +38,7 @@ class PocketApp : Application() {
     val pocket: PocketBsp by lazy { PocketBsp(storage, shelf) }
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
     val models by lazy { ModelStore(this) }
-    val gemma by lazy { Gemma(models, cacheDir.path) }
+    val gemma by lazy { Gemma(models, cacheDir.path, applicationInfo.nativeLibraryDir) }
 
     /** What the Ask screen asks: Gemma. The device tests put a stand-in here, since no test can run the model. */
     @Volatile private var standIn: Mind? = null
@@ -45,6 +46,7 @@ class PocketApp : Application() {
         get() = standIn ?: gemma
         set(value) { standIn = value }
     val asking by lazy { Asking(this) }
+    val benching by lazy { Benching(this) }
 
     /** A block another app has just shared in, waiting to be looked at. */
     var inbox by mutableStateOf<Received?>(null)

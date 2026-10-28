@@ -21,6 +21,9 @@ interface Mind {
     /** A conversation, its standing [instruction] given; close it when the Ask is over. */
     suspend fun chat(instruction: String): Chat
 
+    /** Load it now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
+    suspend fun warm(): Long? = null
+
     interface Chat : Closeable {
         /** The core's way of speaking to it; blocking, so called off the main thread. */
         val talk: Talk

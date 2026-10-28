@@ -13,6 +13,7 @@ import com.google.ai.edge.litertlm.ResponseFormat
 import com.google.ai.edge.litertlm.SamplerConfig
 import com.google.ai.edge.litertlm.ThinkingConfig
 import com.phenomemental.pocketbeach.bsp.Asks
+import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.DirShelfSource
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.MemoryStorage
@@ -45,7 +46,7 @@ fun main(args: Array<String>) {
     val runs = args.getOrNull(1)?.toInt() ?: 4
     val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "shelf")))
     Engine.setNativeMinLogSeverity(LogSeverity.ERROR)
-    val cache = Files.createTempDirectory("litertlm").toString()
+    val cache = (System.getProperty("pocket.cache") ?: Files.createTempDirectory("litertlm").toString())
     if (args.getOrNull(2) == "timing") {
         ModelInfo.from(model).use { info ->
             println("model: ${info.modelType}; context ${info.maxContextTokens()}; " + ((info as? ModelInfo.Llm)?.let { "speculative decoding: ${it.hasSpeculativeDecodingSupport()}" } ?: ""))
@@ -57,8 +58,9 @@ fun main(args: Array<String>) {
         val loadStart = System.nanoTime()
         engine.initialize()
         println("Loaded in ${secs(loadStart)} s.")
-        if (args.getOrNull(3) != "mtp") timing(engine, shelf, formatted = true)
-        timing(engine, shelf, formatted = false)
+        // "mtp" times the answer free (speculative decoding with the form held failed in 0.18.0); "mtp held" tries it held.
+        if (args.getOrNull(3) != "mtp" || args.getOrNull(4) == "held") timing(engine, shelf, formatted = true)
+        if (args.getOrNull(4) != "held") timing(engine, shelf, formatted = false)
         engine.close()
         return
     }
@@ -71,6 +73,11 @@ fun main(args: Array<String>) {
     val engine = Engine(EngineConfig(modelPath = model, backend = Backend.CPU(), maxNumTokens = Asks.Tuning.MAX_TOKENS, cacheDir = cache))
     engine.initialize()
     println("Loaded in ${secs(loadStart)} s." + (if (mtp) " Speculative decoding, the form not held." else "") + (if ("existing" in flags) " Each run begins with a hello-world made before." else ""))
+    if ("bench" in flags) {
+        bench(engine, shelf)
+        engine.close()
+        return
+    }
     var passed = 0
     var exchanges = 0
     for (run in 1..runs) {
@@ -136,6 +143,44 @@ fun main(args: Array<String>) {
     println("\n$passed of $runs passed, in $exchanges exchanges.")
     if ("ordinary" in flags) ordinary(engine, shelf, mtp)
     engine.close()
+}
+
+/** The bench's twenty asks, put to today's companion (one JSON plan an answer), each on a fresh scratch pocket. */
+@OptIn(ExperimentalApi::class)
+private fun bench(engine: Engine, shelf: Shelf) {
+    val now = 1_793_178_000_000L
+    val results = Bench.ASKS.map { ask ->
+        Bench.one(ask, shelf, now) { a, pages, storage ->
+            val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
+            val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages)
+            val config = ConversationConfig(
+                systemInstruction = Contents.of(system),
+                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
+                maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+                thinkingConfig = ThinkingConfig(enableThinking = false),
+                enableResponseFormat = true,
+            )
+            val start = System.nanoTime()
+            engine.createConversation(config).use { conversation ->
+                var first: Long? = null
+                var read = 0
+                var wrote = 0
+                val talk = Talk { message ->
+                    val sent = System.nanoTime()
+                    val reply = conversation.sendMessage(message, responseFormat = ResponseFormat.json(Asks.SCHEMA)).toString()
+                    val b = conversation.getBenchmarkInfo()
+                    if (first == null) first = (sent - start) / 1_000_000 + (b.timeToFirstTokenInSecond * 1000).toLong()
+                    read += b.lastPrefillTokenCount
+                    wrote += b.lastDecodeTokenCount
+                    reply
+                }
+                val asked = Asks.ask(a.question, talk, pages, storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal()) { now }
+                val total = (System.nanoTime() - start) / 1_000_000
+                Bench.didOfPlan(asked, Bench.Timing(first, total, total, asked.exchanges.size, read, wrote))
+            }
+        }.also { println(Bench.line(it)) }
+    }
+    println(collectUnderscore(Bench.block(results, emptyList(), now)))
 }
 
 /** Ordinary asks of a small pocket, printed as answered and as planned, for reading by eye. */

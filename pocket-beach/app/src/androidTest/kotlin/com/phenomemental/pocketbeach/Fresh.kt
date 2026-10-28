@@ -28,6 +28,7 @@ object Fresh {
         File(app.filesDir, "regions").deleteRecursively()
         app.lastSavedMs = null
         app.asking.reset()
+        app.benching.reset()
         app.inbox = null
         app.getSharedPreferences("posts", 0).edit().clear().commit()
         app.unsent.clear()

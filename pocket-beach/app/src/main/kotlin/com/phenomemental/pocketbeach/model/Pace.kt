@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * and how fast, as the engine counts them.
  */
 class Pace(val processor: String?, val whyNotGpu: String?, val loadMs: Long?) {
-    class Turn(val read: Int, val readPerSecond: Double, val wrote: Int, val writePerSecond: Double)
+    class Turn(val read: Int, val readPerSecond: Double, val wrote: Int, val writePerSecond: Double, val firstTokenSeconds: Double? = null)
 
     val turns: MutableList<Turn> = CopyOnWriteArrayList()
 

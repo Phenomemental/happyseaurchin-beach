@@ -1,0 +1,97 @@
+package com.phenomemental.pocketbeach.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.bsp.Bench
+import com.phenomemental.pocketbeach.bsp.Region
+import kotlinx.coroutines.delay
+
+/** The bench: what it does, the run as it goes, and the block it is kept in. */
+@Composable
+fun BenchScreen(model: Model, nav: Nav) {
+    val ink = LocalInk.current
+    val benching = model.app.benching
+    benching.changed = { model.changed() }
+    val stage = benching.stage
+    val view = LocalView.current
+    // The screen stays on while the bench runs.
+    DisposableEffect(benching.running) {
+        view.keepScreenOn = benching.running
+        onDispose { view.keepScreenOn = false }
+    }
+    val asking = model.app.asking.stage
+    val busy = asking is Asking.Stage.Thinking || asking is Asking.Stage.Carrying
+
+    Page(
+        onBack = { nav.back() },
+        top = { Text("The bench", style = Type.name, color = ink.ink, maxLines = 1) },
+        bottom = {
+            when {
+                benching.running -> Action("Stop", { benching.stop() }, Modifier.fillMaxWidth(), tag = "stop-bench")
+                else -> Action("Run the bench", { benching.start() }, Modifier.fillMaxWidth(), enabled = !busy, strong = true, tag = "run-bench")
+            }
+        },
+    ) {
+        Text(
+            "Twenty fixed asks, put to the companion one by one: six to talk, six to read, and eight to act, among them a line added beneath " +
+                "a plain line and a fresh hello world. Each is asked of a scratch copy of a small pocket (garden, notes and the companion's shell), " +
+                "so nothing of yours is written, and nothing is posted.",
+            style = Type.body, color = ink.ink,
+        )
+        Text(
+            "Each ask is timed (to the first token, until anything shows, in all) and judged right or wrong. Then the bench tries the engine itself: " +
+                "what this phone's chip and the model file allow, a plain answer with speculative decoding off and on, and whether a one-word choice " +
+                "held by the engine survives it. It takes about ten minutes, and keeps the screen on.",
+            style = Type.small, color = ink.soft,
+        )
+        Text("The run is kept as one new block, bench- and the date, which you can share from its page.", style = Type.small, color = ink.soft)
+        if (busy && !benching.running) Notice("An Ask is under way. The bench can run once it's over.", tag = "bench-busy")
+
+        when (stage) {
+            Benching.Stage.Ready -> {}
+            is Benching.Stage.Loading -> {
+                var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+                LaunchedEffect(stage) { while (true) { delay(1000); now = System.currentTimeMillis() } }
+                Text("Loading the companion… ${((now - stage.since) / 1000).coerceAtLeast(0)} s", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("bench-stage"))
+            }
+            is Benching.Stage.Asking -> Text("Ask ${stage.ask.n} of ${Bench.ASKS.size}: ${stage.ask.question}", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("bench-stage"))
+            is Benching.Stage.Probing -> Text("${stage.what}…", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("bench-stage"))
+            is Benching.Stage.Saved -> {
+                Done("${stage.right} of ${stage.of} right. Kept as ${stage.name}.", detail = "Open it to read the run, or share it from its page.", tag = "bench-saved")
+                TextLink("Open ${stage.name}", { nav.go(Screen.Block(Region.POCKET, stage.name, "")) }, tag = "open-bench-block")
+            }
+            is Benching.Stage.Failed -> Notice("The bench stopped: ${stage.why}", tag = "bench-failed")
+        }
+
+        if (benching.results.isNotEmpty()) {
+            Label("So far")
+            Sheet(Modifier.testTag("bench-results")) {
+                benching.results.forEachIndexed { i, r ->
+                    if (i > 0) Rule()
+                    Column(Modifier.padding(vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text((if (r.right) "✓ " else "✗ ") + "${r.ask.n}. ${r.ask.question}", style = Type.small, color = if (r.right) ink.ink else ink.crimson)
+                        Text(
+                            "${Bench.secs(r.did.timing.totalMs)} s" + (r.did.timing.firstTokenMs?.let { ", first token ${Bench.secs(it)} s" } ?: "") +
+                                (if (r.problems.isNotEmpty()) ". " + r.problems.first() else ""),
+                            style = Type.small, color = ink.soft,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

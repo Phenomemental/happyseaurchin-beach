@@ -21,14 +21,18 @@ kotlin {
 
 dependencies {
     implementation(project(":bsp"))
-    implementation("com.google.ai.edge.litertlm:litertlm-jvm:0.18.0")
+    // -PlitertlmVersion=… tries another release of the engine on the laptop first.
+    implementation("com.google.ai.edge.litertlm:litertlm-jvm:${findProperty("litertlmVersion") ?: "0.18.0"}")
 }
 
 application {
-    mainClass.set("com.phenomemental.pocketbeach.trial.TrialKt")
+    // -PmainClass=… runs another of the trial's programs (Engines: what the engine allows).
+    mainClass.set(findProperty("mainClass")?.toString() ?: "com.phenomemental.pocketbeach.trial.TrialKt")
 }
 
 tasks.named<JavaExec>("run") {
     systemProperty("pocket.shelf", rootProject.file("shelf").path)
+    // One cache for the engine's prepared weights (about 0.8 GB), reused run to run.
+    findProperty("engineCache")?.let { systemProperty("pocket.cache", it.toString()) }
     workingDir = rootProject.projectDir
 }
