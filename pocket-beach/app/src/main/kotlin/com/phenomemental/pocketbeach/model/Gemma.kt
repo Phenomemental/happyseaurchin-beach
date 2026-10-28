@@ -34,6 +34,10 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
 
     @Volatile private var engine: Engine? = null
 
+    /** Conversations open now; the model is let go only when none is. */
+    private var open = 0
+    private var letGoWhenDone = false
+
     /** Which of the phone's processors runs it, once loaded: "GPU" or "CPU". */
     @Volatile override var processor: String? = null
         private set
@@ -45,17 +49,17 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
         val e = engine ?: load().also { engine = it }
-        Chat(
-            e.createConversation(
-                ConversationConfig(
-                    systemInstruction = Contents.of(instruction),
-                    samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-                    maxOutputToken = Asks.Tuning.MAX_OUTPUT,
-                    thinkingConfig = ThinkingConfig(enableThinking = false),
-                    enableResponseFormat = true,
-                ),
+        val conversation = e.createConversation(
+            ConversationConfig(
+                systemInstruction = Contents.of(instruction),
+                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
+                maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+                thinkingConfig = ThinkingConfig(enableThinking = false),
+                enableResponseFormat = true,
             ),
         )
+        synchronized(this@Gemma) { open++ }
+        Chat(conversation)
     }
 
     inner class Chat(private val conversation: com.google.ai.edge.litertlm.Conversation) : Mind.Chat {
@@ -69,7 +73,11 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
-            main.postDelayed(letGo, IDLE_MS)
+            val now = synchronized(this@Gemma) {
+                open--
+                letGoWhenDone && open == 0
+            }
+            if (now) release() else main.postDelayed(letGo, IDLE_MS)
         }
     }
 
@@ -83,9 +91,16 @@ class Gemma(private val store: ModelStore, private val cacheDir: String) : Mind 
         }
     }
 
-    /** Let the model go, freeing its memory; it loads again on the next Ask. */
+    /** Let the model go, freeing its memory, once no conversation is open; it loads again on the next Ask. */
     fun release() {
         main.removeCallbacks(letGo)
+        synchronized(this) {
+            if (open > 0) {
+                letGoWhenDone = true
+                return
+            }
+            letGoWhenDone = false
+        }
         val e = engine ?: return
         engine = null
         processor = null
