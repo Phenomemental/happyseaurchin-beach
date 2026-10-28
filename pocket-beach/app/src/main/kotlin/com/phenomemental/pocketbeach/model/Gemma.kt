@@ -9,7 +9,6 @@ import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
-import com.google.ai.edge.litertlm.Message
 import com.google.ai.edge.litertlm.ExperimentalApi
 import com.google.ai.edge.litertlm.ExperimentalFlags
 import com.google.ai.edge.litertlm.Modality
@@ -43,9 +42,6 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     @Volatile private var engine: Engine? = null
 
-    /** Whether the engine loaded now decodes speculatively: 0.4's talker wants it; 0.3's held plan can't run with it. */
-    @Volatile private var speculativeNow = false
-
     /** Conversations open now; the model is let go only when none is. */
     private var open = 0
     private var letGoWhenDone = false
@@ -63,78 +59,18 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     override suspend fun warm(): Long? = withContext(thread) {
         if (engine != null) return@withContext null
-        engineFor(speculative = false).second
-    }
-
-    /** The engine, loaded as [speculative] asks, reloading it if it was loaded the other way; how long loading took, if it had to. */
-    private fun engineFor(speculative: Boolean): Pair<Engine, Long?> {
-        engine?.let { e -> if (speculativeNow == speculative) return e to null else { runCatching { e.close() }; engine = null } }
         val started = System.nanoTime()
-        val e = load(speculative)
-        engine = e
-        speculativeNow = speculative
-        return e to (System.nanoTime() - started) / 1_000_000
+        engine = load()
+        (System.nanoTime() - started) / 1_000_000
     }
-
-    override suspend fun talker(instruction: String, history: List<Pair<String, String>>): Mind.Talker = withContext(thread) {
-        main.removeCallbacks(letGo)
-        val (e, loadMs) = engineFor(speculative = speculativeInFile())
-        val conversation = e.createConversation(
-            ConversationConfig(
-                systemInstruction = Contents.of(instruction),
-                initialMessages = history.flatMap { (asked, said) ->
-                    listOf(Message.user(asked), Message.model(said))
-                },
-                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-                maxOutputToken = Asks.Tuning.MAX_OUTPUT,
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-            ),
-        )
-        synchronized(this@Gemma) { open++ }
-        Talker(conversation, Pace(processor, whyNotGpu, loadMs))
-    }
-
-    /** 0.4's conversation: each reply streamed, timed from the message to its first piece. */
-    inner class Talker(private val conversation: Conversation, override val pace: Pace) : Mind.Talker {
-        override val stream = com.phenomemental.pocketbeach.bsp.Talks.Stream { message, piece ->
-            kotlinx.coroutines.runBlocking(thread) {
-                val started = System.nanoTime()
-                var first: Double? = null
-                val whole = StringBuilder()
-                conversation.sendMessageAsync(message).collect { m ->
-                    if (first == null) first = (System.nanoTime() - started) / 1e9
-                    val text = m.toString()
-                    whole.append(text)
-                    piece(text)
-                }
-                counted(conversation)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
-                whole.toString()
-            }
-        }
-
-        override fun stop() { runCatching { conversation.cancelProcess() } }
-
-        override fun close() {
-            kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
-            val now = synchronized(this@Gemma) {
-                open--
-                letGoWhenDone && open == 0
-            }
-            if (now) release() else main.postDelayed(letGo, IDLE_MS)
-        }
-    }
-
-    /** Whether the model file decodes speculatively (its multi-token prediction), asked once. */
-    private var speculativeKnown: Boolean? = null
-
-    private fun speculativeInFile(): Boolean = speculativeKnown ?: runCatching {
-        ModelInfo.from(store.file.path).use { (it as? ModelInfo.Llm)?.hasSpeculativeDecodingSupport() == true }
-    }.getOrDefault(false).also { speculativeKnown = it }
 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
-        // 0.3's plan is held to its form, which speculative decoding breaks.
-        val (e, loadMs) = engineFor(speculative = false)
+        var loadMs: Long? = null
+        val e = engine ?: run {
+            val started = System.nanoTime()
+            load().also { engine = it; loadMs = (System.nanoTime() - started) / 1_000_000 }
+        }
         val conversation = e.createConversation(
             ConversationConfig(
                 systemInstruction = Contents.of(instruction),
@@ -196,14 +132,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         return e
     }
 
-    private fun load(speculative: Boolean = false): Engine {
+    private fun load(): Engine {
         return try {
-            open(Backend.GPU(), counting = true, speculative = speculative).also { processor = "GPU"; whyNotGpu = null }
+            open(Backend.GPU(), counting = true).also { processor = "GPU"; whyNotGpu = null }
         } catch (t: Throwable) {
             Log.w("Gemma", "The GPU couldn't load the model.", t)
             // Counting is the one thing asked of the GPU beyond what 0.3.1 asked, so it is tried once more without it before the CPU.
-            runCatching { open(Backend.GPU(), counting = false, speculative = speculative) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
-                ?: open(Backend.CPU(), counting = true, speculative = speculative).also {
+            runCatching { open(Backend.GPU(), counting = false) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
+                ?: open(Backend.CPU(), counting = true).also {
                     processor = "CPU"
                     whyNotGpu = t.message?.lineSequence()?.firstOrNull { line -> line.isNotBlank() }?.trim()?.take(240) ?: t::class.java.simpleName
                 }

@@ -24,22 +24,6 @@ interface Mind {
     /** Load it now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
     suspend fun warm(): Long? = null
 
-    /**
-     * 0.4: one conversation, kept while Ask is open, its [instruction]
-     * processed once; [history], the last exchanges (Matthew's words, hers),
-     * carried into it. Replies are streamed, nothing held.
-     */
-    suspend fun talker(instruction: String, history: List<Pair<String, String>>): Talker
-
-    interface Talker : Closeable {
-        val stream: com.phenomemental.pocketbeach.bsp.Talks.Stream
-
-        /** Where and how fast it is answering: each reply a turn, with its first token. */
-        val pace: Pace
-
-        fun stop()
-    }
-
     interface Chat : Closeable {
         /** The core's way of speaking to it; blocking, so called off the main thread. */
         val talk: Talk

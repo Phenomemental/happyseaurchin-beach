@@ -48,14 +48,14 @@ class BenchTest {
             20 to "{\"say\": \"Here.\", " + HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: {").replace("HIS SECRET", Bench.SECRET),
         )
         for ((n, json) in answers) {
-            val r = Bench.one(Bench.ASKS[n - 1], shelf, now, answer = plan { json })
+            val r = Bench.one(Bench.ASKS[n - 1], shelf, now, plan { json })
             assertTrue(r.right, "ask $n: ${r.problems}")
         }
     }
 
     @Test
     fun wrongAnswersSayWhy() {
-        fun problems(n: Int, json: String) = Bench.one(Bench.ASKS[n - 1], shelf, now, answer = plan { json }).problems.joinToString(" ")
+        fun problems(n: Int, json: String) = Bench.one(Bench.ASKS[n - 1], shelf, now, plan { json }).problems.joinToString(" ")
         assertContains(problems(1, """{"say": "", "steps": []}"""), "It said nothing.")
         assertContains(problems(1, """{"say": "Hello.", "steps": []}"""), "didn't say")
         assertContains(problems(4, """{"say": "Sure.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "spring plan"}]}"""), "for an ask that needs none")
@@ -68,16 +68,14 @@ class BenchTest {
 
     @Test
     fun theRunIsOneBlockWithNineLinesOrFewerAtEachLevel() {
-        val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, answer = plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
-        val block = Bench.block(listOf(Bench.Run("0.3", results), Bench.Run("0.4", results)), listOf("The phone: a laptop", "The engine: none"), now)
+        val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
+        val block = Bench.block(results, listOf("The phone: a laptop", "The engine: none"), now)
         val opening = collectUnderscore(block)!!
-        assertContains(opening, "0.3: 6 of 20 right.")
-        assertContains(opening, "0.4: 6 of 20 right.")
-        val before = block["1"] as JsObj
-        assertContains(collectUnderscore(before)!!, "0.3: 6 of 20 right.")
-        assertEquals("Talk: 6 of 6 right.", collectUnderscore(before["1"]))
-        assertTrue((before["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
-        assertEquals("How it was run", collectUnderscore(block["3"]))
+        assertContains(opening, "of 20 right")
+        val talk = block["1"] as JsObj
+        assertEquals("Talk: 6 of 6 right.", collectUnderscore(talk))
+        assertTrue((block["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
+        assertEquals("How it was run", collectUnderscore(block["4"]))
         assertTrue(Bench.line(results[0]).startsWith("✓ 1. What's your name? (first token 0.1 s, shown 2.0 s, total 2.0 s, 1 exchange, read 1300, wrote 60 tokens)."))
         assertTrue(Bench.line(results[12]).startsWith("✗ 13."))
         assertContains(Bench.line(results[12]), "Taken as talk.")

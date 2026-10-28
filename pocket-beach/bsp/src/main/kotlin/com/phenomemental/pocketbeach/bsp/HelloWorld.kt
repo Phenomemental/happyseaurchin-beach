@@ -46,13 +46,13 @@ object HelloWorld {
         SHELL_LINES.joinToString(", ") { "{\"do\": \"add\", \"block\": \"$BLOCK\", \"at\": \"\", \"text\": \"$it\"}" } + "], " +
         "\"post\": {\"pool\": \"$POOL\", \"message\": \"$SHELL_POST\"}}"
 
-    /** The companion's shell as it is first made: its opening line, and how to do the hello world ([recipe]: 0.3's JSON answer, or 0.4's actions, [Talks.SHELL_RECIPE]). */
-    fun shellBlock(recipe: String = SHELL_RECIPE): JsObj = JsObj.of("_" to str(SHELL_OPENING), "1" to str(recipe))
+    /** The companion's shell as it is first made: its opening line, and how to do the hello world. */
+    fun shellBlock(): JsObj = JsObj.of("_" to str(SHELL_OPENING), "1" to str(SHELL_RECIPE))
 
     /** Make the companion's shell, by Matthew's tap: [shellBlock], as one guarded write. */
-    fun makeShell(pages: Pages, recipe: String = SHELL_RECIPE) {
+    fun makeShell(pages: Pages) {
         require(!pages.exists(SHELL)) { "There's already a block called $SHELL." }
-        val plan = pages.planKeep(SHELL, shellBlock(recipe))
+        val plan = pages.planKeep(SHELL, shellBlock())
         plan.refusal?.let { throw IllegalStateException(it) }
         val done = pages.carryOut(plan)
         check(done.ok) { done.problem ?: "The shell was not made." }
@@ -103,8 +103,8 @@ object HelloWorld {
     fun message(shellOpening: String, secret: String, seal: String, fingerprint: String, block: String = BLOCK): String =
         "Hello world from the pocket. Shell: “${shellOpening.trim()}” Secret: $secret. Seal: $seal. Fingerprint: $fingerprint. Block: ${address(block)}."
 
-    /** Whether a shell's hello world line is one the app wrote (this one or an earlier form), and not [current]. */
-    fun recipeIsOlder(line: String?, current: String = SHELL_RECIPE): Boolean = line != null && line.startsWith("Hello world: when Matthew asks for the hello world") && line != current
+    /** Whether a shell's hello world line is one the app wrote (this one or an earlier form), and not the present [SHELL_RECIPE]. */
+    fun recipeIsOlder(line: String?): Boolean = line != null && line.startsWith("Hello world: when Matthew asks for the hello world") && line != SHELL_RECIPE
 
     /**
      * Whether a block's fingerprint line matches it: the last line's
