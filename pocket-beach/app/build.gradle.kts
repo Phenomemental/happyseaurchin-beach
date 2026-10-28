@@ -15,8 +15,8 @@ android {
         applicationId = "com.phenomemental.pocketbeach"
         minSdk = 31
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.2"
+        versionCode = 3
+        versionName = "0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -53,6 +53,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        // As Google's gallery app packs LiteRT-LM.
+        jniLibs { pickFirsts.add("**/liblitertlm_jni.so") }
+    }
 }
 
 dependencies {
@@ -61,6 +66,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.activity:activity-compose:1.13.0")
+    // The companion's engine: LiteRT-LM, the version Google's gallery app pins.
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.0")
+
+    testImplementation("junit:junit:4.13.2")
 
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

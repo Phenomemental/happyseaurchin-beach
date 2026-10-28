@@ -204,8 +204,40 @@ class AsksTest {
         assertEquals(listOf("The last line isn't a fingerprint that matches the block."), HelloWorld.check(tampered, opening, seal))
         assertEquals(listOf("No line holds the seal the app made."), HelloWorld.check(made.stored, opening, "f".repeat(32)))
 
+        assertEquals(HelloWorld.message("purple walrus", seal, made.fingerprint), HelloWorld.messageFor(made.stored))
+        assertNull(HelloWorld.messageFor(tampered))
+
         assertFailsWith<IllegalArgumentException> { HelloWorld.makeByHand(pages, storage, opening, "again", seal) }
         assertFailsWith<IllegalArgumentException> { HelloWorld.makeByHand(Pages(MemoryStorage(), shelf, bsp), storage, opening, " ", seal) }
+    }
+
+    @Test
+    fun theCompanionsShellIsMadeByATap() {
+        HelloWorld.makeShell(pages)
+        val shell = pages.position(Region.POCKET, HelloWorld.SHELL)!!
+        assertEquals(HelloWorld.SHELL_OPENING, shell.text)
+        assertEquals(listOf(HelloWorld.SHELL_RECIPE), shell.lines.map { it.text })
+        assertFailsWith<IllegalArgumentException> { HelloWorld.makeShell(pages) }
+        // The recipe's own answer, its secret written in, is a hello world that checks out.
+        val answer = HelloWorld.SHELL_RECIPE.substringAfter("changing nothing else: ").replace("HIS SECRET", "purple walrus")
+        val shown = Asks.propose(Asks.parse(answer), storage, shelf, opening, seal, now)
+        val carried = Asks.carryOut(shown, pages, storage, opening)
+        assertNull(carried.problem)
+        assertEquals(emptyList(), HelloWorld.check(storage.read(HelloWorld.BLOCK), opening, seal))
+        assertEquals(HelloWorld.messageFor(storage.read(HelloWorld.BLOCK)), carried.post!!.message)
+    }
+
+    @Test
+    fun aBlockFromElsewhereIsKeptOnlyAsItCame() {
+        val received = parseJson("""{"_":"Notes from a friend","1":"one","2":{"_":"two","1":"two point one"}}""")
+        val plan = pages.planKeep("friend", received)
+        assertNull(plan.refusal, plan.refusal)
+        assertFalse(pages.exists("friend"), "planning keeps nothing")
+        assertTrue(pages.carryOut(plan).ok)
+        assertTrue(deepEqual(received, parseJson(storage.read("friend")!!)))
+        assertEquals("There's already a block called friend.", pages.planKeep("friend", received).refusal)
+        assertEquals("Only a block (a JSON object) can be kept.", pages.planKeep("list", parseJson("[1,2]")).refusal)
+        assertNotNull(pages.planKeep("sed:x", received).refusal)
     }
 
     @Test

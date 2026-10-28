@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The one way out (decision 18). No host is trusted but the beach, so the app
+  can open a TLS connection to beach.happyseaurchin.com and nowhere else, and
+  plain HTTP is refused everywhere. (The model's one download is made by
+  Android's download manager, outside the app, so this doesn't touch it.)
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors />
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">beach.happyseaurchin.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

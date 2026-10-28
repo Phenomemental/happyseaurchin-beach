@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  No INTERNET permission: nothing leaves the phone in this version.
+  INTERNET is for two things only, each after Matthew taps for it: the one
+  message posted to his pool on the beach (net/HttpsWire.kt, held by
+  network_security_config to beach.happyseaurchin.com alone), and the model's
+  one download, which Android's download manager makes over Wi-Fi.
   No backup: Android's cloud backup and device-to-device transfer are both off;
   "Save a copy" is the only copy of the blocks.
   RECORD_AUDIO is for speaking a line, recognised on the device only.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <queries>
@@ -21,7 +25,11 @@
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:supportsRtl="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.PocketBeach">
+        <!-- The companion's model runs on the phone's GPU where it can; these are asked for, not required. -->
+        <uses-native-library android:name="libvndksupport.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,6 +37,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Receive a block in (decision 19): it arrives as data, to be kept only if Matthew says so. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
     </application>

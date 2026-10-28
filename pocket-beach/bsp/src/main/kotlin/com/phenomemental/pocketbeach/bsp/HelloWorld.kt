@@ -25,10 +25,30 @@ object HelloWorld {
     const val SHELL_OPENING = "Pocket companion. I live on this phone, read freely, and write only when Matthew says yes."
 
     /** The shell's line that tells the companion how to do the hello world, written into the shell when Matthew makes it. */
-    const val SHELL_RECIPE = "Hello world: when Matthew asks for the hello world and gives his secret, make the block hello-world, " +
-        "then add four lines beneath its opening line, in order: {{shell}}, then \"Secret: \" and his secret, then " +
-        "\"Seal: {{seal}}\", then \"Fingerprint: {{fingerprint}}\". Then offer to post to the pool Phenomemental the message " +
-        "\"Hello world from the pocket. Secret: <his secret>. Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: {{address}}.\""
+    const val SHELL_RECIPE = "Hello world: when Matthew asks for the hello world, answer with exactly these steps and this post, " +
+        "writing the secret he gives where it says HIS SECRET and changing nothing else: " +
+        "{\"steps\": [{\"do\": \"make\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"\"}, " +
+        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"{{shell}}\"}, " +
+        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Secret: HIS SECRET\"}, " +
+        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Seal: {{seal}}\"}, " +
+        "{\"do\": \"add\", \"block\": \"hello-world\", \"at\": \"\", \"text\": \"Fingerprint: {{fingerprint}}\"}], " +
+        "\"post\": {\"pool\": \"Phenomemental\", \"message\": \"Hello world from the pocket. Secret: HIS SECRET. " +
+        "Seal: {{seal}}. Fingerprint: {{fingerprint}}. Block: pocket/hello-world.\"}}"
+
+    /**
+     * Make the companion's shell, by Matthew's tap: the block
+     * [SHELL] with [SHELL_OPENING] as its opening line and [SHELL_RECIPE]
+     * beneath it. Each a guarded write.
+     */
+    fun makeShell(pages: Pages) {
+        require(!pages.exists(SHELL)) { "There's already a block called $SHELL." }
+        for (plan in listOf({ pages.planNewBlock(SHELL) }, { pages.planChange(SHELL, "", SHELL_OPENING) }, { pages.planAdd(SHELL, "", SHELL_RECIPE) })) {
+            val p = plan()
+            p.refusal?.let { throw IllegalStateException(it) }
+            val done = pages.carryOut(p)
+            check(done.ok) { done.problem ?: "A write did not land." }
+        }
+    }
 
     /** 128 random bits from the phone's secure random source, as 32 hex digits. */
     fun seal(random: SecureRandom = SecureRandom()): String = ByteArray(16).also(random::nextBytes).joinToString("") { "%02x".format(it) }
@@ -80,6 +100,21 @@ object HelloWorld {
         if (!message.contains(seal)) add("The message doesn't carry the seal.")
         if (!message.contains(fingerprint)) add("The message doesn't carry the fingerprint.")
         if (!message.contains(address(block))) add("The message doesn't carry the block's address, ${address(block)}.")
+    }
+
+    /**
+     * The message a made hello-world carries, from its own lines: its secret,
+     * seal and fingerprint. Null unless the fingerprint matches the block.
+     */
+    fun messageFor(stored: String?): String? {
+        if (stored == null || !verify(stored)) return null
+        val block = parseJson(stored) as JsObj
+        val lines = bspRead(block, null, 0).discEntries.orEmpty().mapNotNull { it.content?.trim() }
+        fun after(prefix: String) = lines.lastOrNull { it.startsWith(prefix) }?.removePrefix(prefix)?.trim()?.takeIf { it.isNotEmpty() }
+        val secret = after("Secret: ") ?: return null
+        val seal = after("Seal: ") ?: return null
+        val print = after("Fingerprint: ") ?: return null
+        return message(secret.removeSuffix("."), seal, print)
     }
 
     class Made(val stored: String, val seal: String, val fingerprint: String)
