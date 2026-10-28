@@ -24,8 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.BlockSummary
 import com.phenomemental.pocketbeach.bsp.Copies
+import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Plan
 import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.ShoreView
@@ -45,6 +47,10 @@ fun ShoreScreen(model: Model, nav: Nav) {
     val shore by produceState<ShoreView?>(null, model.version) { value = withContext(Dispatchers.IO) { model.pages.shore() } }
     val stamps by produceState(Stamps(), model.version) { value = withContext(Dispatchers.IO) { model.pages.stamps() } }
     var naming by rememberSaveable { mutableStateOf(false) }
+    // Renaming and removing: the rows show the two, rather than opening their block.
+    var tidying by rememberSaveable { mutableStateOf(false) }
+    var renaming by rememberSaveable { mutableStateOf<String?>(null) }
+    var removing by rememberSaveable { mutableStateOf<String?>(null) }
     var restoring by remember { mutableStateOf<Copies.Copy?>(null) }
 
     val saveTo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -98,10 +104,16 @@ fun ShoreScreen(model: Model, nav: Nav) {
                 )
                 else -> mine.forEachIndexed { i, b ->
                     if (i > 0) Rule()
-                    BlockRow(b) { nav.go(Screen.Block(Region.POCKET, b.name, "")) }
+                    if (tidying) TidyRow(b, rename = { renaming = b.name }, remove = { removing = b.name })
+                    else BlockRow(b) { nav.go(Screen.Block(Region.POCKET, b.name, "")) }
                 }
             }
         }
+        if (mine.isNotEmpty()) TextLink(
+            if (tidying) "Done renaming and removing" else "Rename or remove a block",
+            { tidying = !tidying },
+            tag = "tidy",
+        )
 
         Label("Teaching blocks", Modifier.padding(top = 6.dp))
         Sheet {
@@ -125,6 +137,27 @@ fun ShoreScreen(model: Model, nav: Nav) {
             nav.go(Screen.Block(Region.POCKET, name, ""))
         }
     })
+
+    renaming?.let { name ->
+        RenameDialog(model, name, onDone = { to ->
+            renaming = null
+            if (to != null) {
+                model.changed()
+                model.say(Screen.Shore, "Renamed $name to $to.")
+            }
+        })
+    }
+
+    removing?.let { name ->
+        RemoveDialog(name, model.lastSavedMs, onCancel = { removing = null }) {
+            removing = null
+            scope.launch {
+                val done = withContext(Dispatchers.IO) { model.pages.remove(name) }
+                model.changed()
+                model.say(Screen.Shore, if (done.ok) "Removed $name." else "$name wasn't removed: ${done.problem}")
+            }
+        }
+    }
 
     restoring?.let { copy ->
         RestoreDialog(copy, mine = shore?.mine?.size ?: 0, onCancel = { restoring = null }) {
@@ -170,6 +203,77 @@ private fun BlockRow(b: BlockSummary, onOpen: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(onClick = onOpen).padding(vertical = 12.dp).testTag("block:${b.name}")) {
         Text(b.name, style = Type.name, color = ink.ink)
         b.opening?.let { Text(it, style = Type.aside, color = ink.soft, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+    }
+}
+
+/** A block's row while renaming and removing: its name, and the two. */
+@Composable
+private fun TidyRow(b: BlockSummary, rename: () -> Unit, remove: () -> Unit) {
+    val ink = LocalInk.current
+    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("tidy:${b.name}"), verticalAlignment = Alignment.CenterVertically) {
+        Text(b.name, style = Type.name, color = ink.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.padding(start = 16.dp)) {
+            TextLink("Rename", rename, tag = "rename:${b.name}")
+            TextLink("Remove", remove, tag = "remove:${b.name}")
+        }
+    }
+}
+
+/** What a block's name means to the app, for the two blocks it finds by name. */
+private fun knownBy(name: String): String? = when (name) {
+    HelloWorld.SHELL -> "The companion wears this block by its name. Renamed or removed, it's no longer the companion's shell, and Ask offers to make a new one."
+    Asks.LOG -> "The companion's Ask log is kept in this block by its name. Renamed or removed, the next Ask starts a new log."
+    else -> null
+}
+
+@Composable
+private fun RenameDialog(model: Model, name: String, onDone: (String?) -> Unit) {
+    val ink = LocalInk.current
+    val scope = rememberCoroutineScope()
+    var typed by rememberSaveable { mutableStateOf(name) }
+    var refusal by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(typed) {
+        delay(150)
+        refusal = withContext(Dispatchers.IO) { model.pages.renameRefusal(name, typed) }
+    }
+    PaperDialog(
+        "Rename $name",
+        onDismiss = { onDone(null) },
+        actions = {
+            Action("Not now", { onDone(null) })
+            Action("Rename it", {
+                scope.launch {
+                    val done = withContext(Dispatchers.IO) { model.pages.rename(name, typed) }
+                    if (done.ok) onDone(typed.trim()) else refusal = done.problem
+                }
+            }, enabled = refusal == null && typed.trim() != name && typed.isNotBlank(), strong = true, tag = "rename-block")
+        },
+    ) {
+        Text("Only the name changes. Every line stays as it is, its opening line too, which you can change.", style = Type.small, color = ink.soft)
+        PaperField(typed, { typed = it }, "a new name", singleLine = true, focus = true, tag = "rename-name")
+        refusal?.takeIf { typed.trim() != name }?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("refusal")) }
+        knownBy(name)?.let { Text(it, style = Type.small, color = ink.crimson) }
+    }
+}
+
+@Composable
+private fun RemoveDialog(name: String, lastSavedMs: Long?, onCancel: () -> Unit, onRemove: () -> Unit) {
+    val ink = LocalInk.current
+    PaperDialog(
+        "Remove $name?",
+        onDismiss = onCancel,
+        actions = {
+            Action("Keep it", onCancel)
+            Action("Remove it", onRemove, strong = true, tag = "remove-block")
+        },
+    ) {
+        Text("It leaves this phone, every line of it.", style = Type.body, color = ink.ink)
+        Text(
+            if (lastSavedMs == null) "No copy has been saved, so once it's removed it can't be brought back."
+            else "Only a copy saved before now can bring it back (the last was saved ${Words.at(lastSavedMs)}), and restoring a copy replaces every block.",
+            style = Type.small, color = ink.crimson,
+        )
+        knownBy(name)?.let { Text(it, style = Type.small, color = ink.crimson) }
     }
 }
 

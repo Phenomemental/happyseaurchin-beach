@@ -217,10 +217,14 @@ private fun Proposed(question: String, shown: Asking.Stage.Shown) {
         }
     }
     p.postRefusal?.let { Notice("It offered a post the pocket can't send: $it", tag = "post-refusal") }
-    Text(
-        "Took %.1f s".format(shown.took / 1000.0) + ". Nothing is written until you say yes.",
-        style = Type.small, color = ink.soft,
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            "Took %.1f s".format(shown.took / 1000.0) + (shown.pace?.where?.takeIf(String::isNotEmpty)?.let { " $it" } ?: "") +
+                ", in ${Words.count(shown.asked.exchanges.size, "exchange")}. Nothing is written until you say yes.",
+            style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
+        )
+        shown.pace?.detail()?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("pace")) }
+    }
 }
 
 @Composable
@@ -243,9 +247,17 @@ private fun WriteRow(w: Planned) {
     val ink = LocalInk.current
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("write"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing), style = Type.small, color = ink.ink)
+        if (w.step.byApp) Text(byApp(w), style = Type.small, color = ink.crimson, modifier = Modifier.testTag("by-app"))
         w.shown?.let { Text(Words.quoted(it.replace("{{fingerprint}}", PRINT_SHOWN), 400), style = Type.body, color = ink.ink) }
         SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft) }
     }
+}
+
+/** Why the app adds a write of its own to the companion's. */
+private fun byApp(w: Planned): String = when {
+    w.step.text?.startsWith("Seal: ") == true -> "The app's own write: a new seal, made for this Ask."
+    w.step.text?.startsWith("Fingerprint: ") == true -> "The app's own write: the block's fingerprint, made as this line is written, after every other."
+    else -> "The app's own write."
 }
 
 private fun masked(message: String, writes: List<Planned>): String =
@@ -267,7 +279,7 @@ private fun Written(model: Model, seal: String, carried: com.phenomemental.pocke
         if (carried.landed.isEmpty()) Text("Nothing.", style = Type.aside, color = ink.soft)
     }
     carried.problem?.let { Notice(it, tag = "problem") }
-    if (carried.made == HelloWorld.BLOCK) {
+    if (carried.landed.any { it.step.block == HelloWorld.BLOCK }) {
         val problems by produceState<List<String>?>(null, carried) {
             value = withContext(Dispatchers.IO) { HelloWorld.check(model.app.storage.read(HelloWorld.BLOCK), shellOpening, seal) }
         }

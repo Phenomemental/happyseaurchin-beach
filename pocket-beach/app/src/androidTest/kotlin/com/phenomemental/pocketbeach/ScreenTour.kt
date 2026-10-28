@@ -153,6 +153,28 @@ class ScreenTour {
                 compose.waitFor("hello-message")
                 shot("$theme-21-calls-confirm")
             }
+            // The hello world again, with the block there: the app's own seal and fingerprint shown with the companion's step.
+            app.asking.reset()
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextInput("Do the hello world again. My secret is otters hold hands.")
+                compose.tap("ask")
+                compose.waitFor("by-app")
+                shot("$theme-23-ask-again")
+                compose.tap("back")
+                compose.tap("tidy")
+                compose.waitFor("tidy:hello-world")
+                shot("$theme-24-shore-tidy")
+                compose.tap("rename:hello-world")
+                compose.waitFor("rename-name")
+                shot("$theme-25-rename")
+                compose.tap("Not now")
+                compose.tap("remove:pocket-companion")
+                compose.waitFor("remove-block")
+                shot("$theme-26-remove")
+                compose.tap("Keep it")
+            }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
                 .putExtra(android.content.Intent.EXTRA_TEXT, """{"_":"Notes from a friend","1":"The ferry leaves at nine","2":{"_":"Bring","1":"a coat","2":"the map"}}""")

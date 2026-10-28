@@ -4,14 +4,67 @@ Current state only. Newest first.
 
 ## Now
 
-**0.3.1 is next**, fixing what Matthew found on his Pixel in 0.3 (see "What 0.3.1
-changes").
+**pocket-beach-v0.3.2** is being made, from Matthew's first hello world with
+the companion on 0.3.1 (see "What 0.3.2 changes").
+
+**pocket-beach-v0.3.1** is released, fixing what Matthew found on his Pixel
+in 0.3 (see "What 0.3.1 changes"). It has been on the Releases page since
+28 October, its tag at `c7a5155` on main, signed with the same key as every
+release, so it installs over 0.3. Next is Matthew getting the model and doing
+the hello world with the companion.
 
 Piece 3, the companion, was released in **pocket-beach-v0.3** on 28 October,
 and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.3.2 changes
+
+From Matthew's first hello world with the companion, on 0.3.1:
+
+- **The post kept an earlier run's seal and fingerprint.** With an old
+  `hello-world` in the pocket, the companion proposed changing its secret
+  line, and copied the old seal and fingerprint from the block's lines into
+  the post. Now the hello world's seal, fingerprint and message are the
+  app's alone:
+  - an Ask that writes to `hello-world`, or offers its post, gets two writes
+    of the app's own after the companion's, shown with them in crimson
+    before Yes: the seal line made this Ask's new seal, then the last line a
+    fingerprint of the block as it stands after every other write, computed
+    as that line is written;
+  - the post is made from the block once the writes have landed
+    (`HelloWorld.messageFor`), whatever message the companion wrote. If the
+    block's last line isn't a fingerprint that matches it, there is no post,
+    and Ask says why;
+  - the shell's hello world now offers only `"message": "Hello world"`, since
+    the app writes the message. A shell made before offers to update that
+    line;
+  - with a `hello-world` already in the pocket, the companion is told so,
+    and the one step that changes its secret line, at the line's address.
+    It then answers in one exchange, not two.
+- **The answer took 56.2 s.** It isn't known yet whether that was on the GPU
+  or the CPU: 0.3.1 fell back to the CPU without saying why. Now:
+  - beside the time, Ask says where it ran: "Took 12.3 s on the GPU, in 1
+    exchange";
+  - beneath it, from the engine's own count: loading the model, the tokens
+    read and how long, the tokens written, how long and how fast;
+  - if the GPU can't take the model, its own error is shown ("The GPU
+    couldn't run it: …"), and kept in the Ask log with the rest;
+  - what the companion reads is about 1,350 tokens (4,700 characters): the
+    instructions and two examples, the shell twice (worn, then plainly), the
+    pocket's blocks and the teaching blocks' names. The hello world's answer
+    is now about 240 tokens, from 270, or about 95 when only the secret
+    changes. See "Piece 3: how the companion is asked" for the laptop's
+    figures.
+- **A block can be renamed or removed from the Shore.** "Rename or remove a
+  block", beneath your blocks, puts Rename and Remove on each row.
+  - Rename keeps every line, the opening line too, and refuses a name that's
+    taken or can't be a block's, as Make a new block does.
+  - Remove asks first, and says that only a copy saved before can bring the
+    block back.
+  - For the companion's shell and the Ask log, both say what renaming or
+    removing them does.
 
 ### What 0.3.1 changes
 
@@ -71,6 +124,9 @@ aeroplane mode too.
     or just not now (decision 15).
   - A post the companion offers comes after the writes, shown whole, on a card
     of its own: "Post it" or "Not now".
+  - Under the answer: how long it took, on which processor (GPU or CPU), in
+    how many exchanges; then loading, reading and writing as the engine
+    counts them, and, on the CPU, why not the GPU.
   - A post is offered only when Matthew's own words speak of posting, a
     pool, the beach or the hello world. Any other the companion offers is
     left out, and the log says so.
@@ -87,6 +143,11 @@ aeroplane mode too.
   its line is written, since every line the beach appends carries its arrival
   stamp. So Ask shows it as "its fingerprint, made as it is written", and the
   post card shows the real one.
+- **The hello world's seal, fingerprint and message are the app's.** After
+  the companion's writes to `hello-world`, the app adds its own, shown with
+  them: the seal line made this Ask's seal, then the last line a fingerprint
+  of the block as it then stands. Its post is made from the block once
+  written.
 - **The Ask log** (decision 15) is the block `ask-log`. Every Ask leaves one
   entry:
   - the entry's line: what was asked;
@@ -129,8 +190,8 @@ aeroplane mode too.
       the refused host, the broken connection, or the mismatched SHA-256.
       Anything kept is carried on from.
   - It loads when Matthew asks, on the GPU, or on the CPU if the GPU can't
-    take it. It is let go after three idle minutes, or as soon as Android
-    asks for memory back.
+    take it, keeping the GPU's error to show. It is let go after three idle
+    minutes, or as soon as Android asks for memory back.
 - **The one way out** (decision 18).
   - `net/HttpsWire.kt` opens a connection for one thing: one POST of one
     message to a pool on the beach, only after Matthew taps to confirm. It
@@ -182,11 +243,13 @@ See "Wearing a shell offline" for what is built and what is not.
   hands it.
 - `HelloWorld`: the shell, and the hello world made and checked.
 
-**Piece 2, unchanged:** the Shore, a block, Write, Save a copy, Restore a copy,
-and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
+**Piece 2:** the Shore, a block, Write, Save a copy, Restore a copy, and
+About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
+0.3.2, a block can be renamed or removed from the Shore (`Pages.rename`,
+`Pages.remove`).
 **Piece 1, unchanged:** the local bsp, the teaching shelf, storage.
 
-**The app itself:** version 0.3.1 (`versionCode` 4), Android 12 or later.
+**The app itself:** version 0.3.2 (`versionCode` 5), Android 12 or later.
 
 - Permissions:
   - the internet, for the one confirmed post and the model's one download,
@@ -218,8 +281,19 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
   hello world with the model file the phone downloads, the engine's desktop
   build of the same API, and the phone's own instruction and settings. It runs
   on the CPU, 20 to 60 s an answer; the phone's GPU should be much quicker.
+  - **With 0.3.2's instruction** (the post the app's, the shell's post only
+    "Hello world"), asked the same eight ways:
+    - on an empty pocket, 7 of 8 passed, six in one exchange. Each answer
+      was about 240 tokens, 25–40 s here;
+    - with a `hello-world` made before, as on Matthew's phone (`existing`),
+      7 of 8 passed, each in one exchange: the one change to its secret
+      line, about 95 tokens and 15–20 s here. The app's seal and fingerprint
+      followed, and every post was the block's own, with this Ask's seal;
+    - both misses were "secret: 42 is not the answer", written as
+      "Secret: 42", which shows before Yes. The block's seal and
+      fingerprint still checked out.
   - It asked in eight different ways (`gradlew :trial:run -Ptrial`).
-  - **With the instruction as built, 7 of the 8 passed.** In each,
+  - **With 0.3.1's instruction, 7 of the 8 passed.** In each,
     `hello-world` held the shell's opening line, the secret word for word,
     the app's seal and a matching fingerprint. The post carried all four
     and the block's address.
@@ -257,6 +331,26 @@ and About, in Matthew's book look, with `Pages` and `Copies` beneath them.
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.3.1 release
+
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.3.1 (`versionCode` 4), for arm64 phones, 49 MB. Its SHA-256 is
+  `070cb2c5e94ff3a57f3aee5ba23d33d6faaa8dc6cc0039d4a6d11b16cce776d1`.
+- Read back from the downloaded APK:
+  - its network security config trusts `beach.happyseaurchin.com`,
+    `huggingface.co`, `us.aws.cdn.hf.co`, `us.gcp.cdn.hf.co` and
+    `cas-bridge.xethub.hf.co`, and nothing else;
+  - the download's service is declared as data sync.
+- Checked before it:
+  - the real download: across a stop at 300 MB and a resume, the whole file
+    matched its SHA-256;
+  - the laptop trial with the new post form: 7 of 8 hello worlds checked
+    out. The miss was "secret: 42 is not the answer", refused, with nothing
+    written;
+  - all 19 on-device tests and the screen tour.
 
 ### The 0.3 release
 
@@ -616,6 +710,34 @@ Found by running the hello world against the real model on a laptop
   read from running. A post is now kept only when Matthew's words speak of
   posting, a pool, the beach or the hello world. Any other is left out and
   logged. An empty post, or one to no pool, is none.
+- **The hello world's seal, fingerprint and message are the app's** (0.3.2).
+  Shown an old `hello-world` with its lines, the model copied its seal and
+  fingerprint into the post. So the app now writes the seal and the
+  fingerprint itself after the companion's writes, and makes the post from
+  the block once written. The shell's post is only `"Hello world"`, which
+  also spares the model about 70 tokens of writing.
+- **A hello world already there is said so,** with the one step that
+  changes its secret at its line's address, only when there is one. Put in
+  the shell as a second answer for that case, the model chose it on an
+  empty pocket too and copied "the Secret line's address" as it stood.
+- **What it reads and writes, and how fast** (the laptop's CPU, 4 cores,
+  0.3.2's instruction):
+  - it reads about 1,350 tokens (4,700 characters): the instructions and
+    two examples, about 580; the shell twice, worn and plainly, about 620;
+    the pocket's blocks and the teaching blocks' names, about 150;
+  - the hello world's answer is about 240 tokens; with `hello-world` already
+    there, about 95;
+  - reading ran at 100–250 tokens a second and writing at 6–11, so writing
+    is most of the time: 25–40 s an answer here;
+  - the phone's GPU should read many times faster and write several times
+    faster. Ask now shows the phone's own figures.
+- **Speculative decoding, not used yet.** The model file supports it (its
+  multi-token prediction). On the laptop it wrote 17.4 tokens a second
+  against 10.5, but only with the answer's form not held: held to the
+  schema, the engine stopped with an error mid-answer ("compute_mask()
+  called after stop"). Unheld, the answer came wrapped in a code fence and
+  about 30% longer. Whether it is worth giving up the held form waits on
+  the phone's own figures.
 - **Reads end when they repeat.** Asked what a block holds, the model read it
   again each round. A round that asks only for reads it has been shown
   already is taken as its answer.
@@ -683,11 +805,12 @@ A test across every node (decision 17), built in 0.3:
    `pool:Phenomemental` on https://beach.happyseaurchin.com, under the name
    Phenomemental:
 
-   "Hello world from the pocket. Secret: …. Seal: …. Fingerprint: …. Block:
-   pocket/hello-world."
+   "Hello world from the pocket. Shell: “…” Secret: …. Seal: …. Fingerprint:
+   …. Block: pocket/hello-world."
 
-   It carries the secret, the seal, the fingerprint and the block's pocket
-   address.
+   It carries the shell's opening line, the secret, the seal, the fingerprint
+   and the block's pocket address. The app makes it from the block as it
+   stands once written, never from the companion's words.
 
 Ask checks the result: whether `hello-world` holds the shell's opening line,
 a secret, the seal the app made, and a fingerprint that matches. Both steps
@@ -721,9 +844,8 @@ without the companion.
   - one class holds the only network code, with the beach's address fixed in
     it, and a test fails the build if any other class names a network API;
   - the app's network security settings trust no certificate for any other
-    host and allow no unencrypted traffic. The model's one download is made
-    by Android's download manager, outside the app's process, so the beach is
-    the only name they carry (principle 5).
+    host but the four the model's one download needs, and allow no
+    unencrypted traffic (principle 5).
 - **The seal:** 128 random bits from the phone's secure random source.
 - **The fingerprint:** the first 16 hex digits of the SHA-256 of the block's
   stored text.

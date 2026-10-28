@@ -25,6 +25,9 @@ interface Mind {
         /** The core's way of speaking to it; blocking, so called off the main thread. */
         val talk: Talk
 
+        /** How its answers are being made: where, and how fast. */
+        val pace: Pace
+
         fun stop()
     }
 }

@@ -21,6 +21,9 @@ interface BlockStorage {
     /** Store a block's JSON text, replacing what stood, whole or not at all. */
     fun write(name: String, json: String)
 
+    /** Remove a block; nothing happens if there is none. */
+    fun delete(name: String)
+
     /** The names of the blocks present, in any order. */
     fun names(): List<String>
 
@@ -71,6 +74,10 @@ class FileStorage(root: File) : BlockStorage {
     override fun read(name: String): String? = fileOf(name).takeIf { it.isFile }?.readText(Charsets.UTF_8)
 
     override fun write(name: String, json: String) = atomicWrite(fileOf(name), json)
+
+    override fun delete(name: String) {
+        fileOf(name).delete()
+    }
 
     override fun names(): List<String> = (dir.listFiles() ?: emptyArray())
         .filter { it.isFile && it.name.endsWith(".json") }
@@ -142,6 +149,7 @@ class MemoryStorage : BlockStorage {
 
     override fun read(name: String): String? = blocks[name]
     override fun write(name: String, json: String) { blocks[name] = json }
+    override fun delete(name: String) { blocks.remove(name) }
     override fun names(): List<String> = blocks.keys.toList()
     override fun stamps(): Stamps = stamps
     override fun setStamps(stamps: Stamps) { this.stamps = stamps }

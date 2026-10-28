@@ -225,6 +225,42 @@ class Pages(
         return Plan(Kind.NEW_BLOCK, name, "", collectUnderscore(block) ?: "", c, "", false, null, stringify(after), nowMs, block)
     }
 
+    // ── naming and removing ──
+
+    /** Why the pocket block [name] can't be renamed [typed], or null if it can. */
+    fun renameRefusal(name: String, typed: String): String? {
+        if (storage.read(name) == null) return "There's no block called $name."
+        val to = typed.trim()
+        if (to == name) return "That's its name already."
+        return nameRefusal(to)
+    }
+
+    /**
+     * Rename a pocket block: the same block, line for line, under a new name,
+     * born when it was born and touched now. It is written under the new name
+     * before the old is removed, so a stop part way leaves two, never none.
+     */
+    fun rename(name: String, typed: String): Done = synchronized(bsp) {
+        renameRefusal(name, typed)?.let { return Done(false, "", null, false, it) }
+        val to = typed.trim()
+        storage.write(to, storage.read(name)!!)
+        val s = storage.stamps()
+        val touched = s.touched - name + (to to isoString(clock()))
+        val born = s.born - name + listOfNotNull(s.born[name]?.let { to to it })
+        storage.setStamps(Stamps(touched, born))
+        storage.delete(name)
+        Done(true, "", null, false, null)
+    }
+
+    /** Remove a pocket block from this phone. Only a copy saved before holds it after. */
+    fun remove(name: String): Done = synchronized(bsp) {
+        if (storage.read(name) == null) return Done(false, "", null, false, "There's no block called $name.")
+        storage.delete(name)
+        val s = storage.stamps()
+        storage.setStamps(Stamps(s.touched - name, s.born - name))
+        Done(true, "", null, false, null)
+    }
+
     private fun nameRefusal(name: String): String? = when {
         name.isEmpty() -> "Give the block a name."
         name.any { it.isISOControl() } -> "A name fits on one line."
