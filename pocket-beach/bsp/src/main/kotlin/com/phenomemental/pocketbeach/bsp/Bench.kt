@@ -1,0 +1,244 @@
+package com.phenomemental.pocketbeach.bsp
+
+import java.util.Locale
+
+/**
+ * The bench: twenty fixed asks, each put to the companion on a fresh scratch
+ * copy of a small pocket ([fixture]), so nothing of Matthew's is ever written
+ * or posted. Each is judged mechanically ([judge]) and timed, and the whole
+ * run is kept as one block ([block]) he can share, so every change to the
+ * companion is judged by what it does on his phone.
+ *
+ * The asks are of three kinds: talk (plain words, nothing read or written),
+ * read (an answer from what a block says, nothing written) and act (writes
+ * planned for his yes). An act is right only if exactly the writes it needs
+ * are planned, landing where they should; the hello world must also check
+ * out once carried out on the scratch copy.
+ */
+object Bench {
+    enum class Route { TALK, READ, ACT }
+
+    /** A write an act must plan: to [block], of [kind], landing at [at], its line holding [holds] (ignoring case). */
+    class Want(val block: String, val kind: Kind, val at: String, val holds: String? = null)
+
+    /**
+     * One fixed ask: what Matthew says, how it should be answered, and what
+     * makes the answer right: words it must say (each group: any one of
+     * them), the writes it must plan, or, for the hello world, a block that
+     * checks out and its post offered.
+     */
+    class Ask(
+        val n: Int,
+        val route: Route,
+        val question: String,
+        val says: List<List<String>> = emptyList(),
+        val writes: List<Want> = emptyList(),
+        val hello: Boolean = false,
+    )
+
+    const val SECRET = "purple walrus"
+
+    val ASKS: List<Ask> = listOf(
+        Ask(1, Route.TALK, "What's your name?", says = listOf(listOf("companion", "pocket"))),
+        Ask(2, Route.TALK, "What can you do?"),
+        Ask(3, Route.TALK, "Good morning! How are you?"),
+        Ask(4, Route.TALK, "Can you help me plan my garden for spring?"),
+        Ask(5, Route.TALK, "In one sentence, what is a block?"),
+        Ask(6, Route.TALK, "Thanks, that's all for now."),
+        Ask(7, Route.READ, "What's in my garden block?", says = listOf(listOf("plant the bulbs", "bulbs"), listOf("prune the roses", "roses"))),
+        Ask(8, Route.READ, "What does my notes block say?", says = listOf(listOf("stamps"))),
+        Ask(9, Route.READ, "Read me the autumn line in garden.", says = listOf(listOf("plant the bulbs"))),
+        Ask(10, Route.READ, "How many lines does my garden block have?", says = listOf(listOf("two", "2"))),
+        Ask(11, Route.READ, "What's the opening line of my garden block?", says = listOf(listOf("through the year"))),
+        Ask(12, Route.READ, "Is there anything about roses in my garden block?", says = listOf(listOf("prune"))),
+        Ask(13, Route.ACT, "Add a line to garden: buy more compost.", writes = listOf(Want("garden", Kind.ADD, "3", "buy more compost"))),
+        Ask(14, Route.ACT, "In garden, under the autumn line, note that the tulips came from Holland.", writes = listOf(Want("garden", Kind.ADD, "1.1", "tulips came from Holland"))),
+        Ask(15, Route.ACT, "Under the winter line in garden, add: mulch the beds.", writes = listOf(Want("garden", Kind.ADD, "2.1", "mulch the beds"))),
+        Ask(16, Route.ACT, "Change the winter line in garden to: Winter: prune the roses and the apple tree.", writes = listOf(Want("garden", Kind.CHANGE, "2", "prune the roses and the apple tree"))),
+        Ask(17, Route.ACT, "Make a new block called recipes.", writes = listOf(Want("recipes", Kind.NEW_BLOCK, ""))),
+        Ask(18, Route.ACT, "Note in notes: call the plumber.", writes = listOf(Want("notes", Kind.ADD, "2", "call the plumber"))),
+        Ask(19, Route.ACT, "Add two lines to garden: water the roses, and cut the hedge.", writes = listOf(Want("garden", Kind.ADD, "3", "water the roses"), Want("garden", Kind.ADD, "4", "cut the hedge"))),
+        Ask(20, Route.ACT, "Do the hello world. My secret is $SECRET.", hello = true),
+    )
+
+    /**
+     * The small pocket every ask starts from: the companion's shell, `garden`
+     * (its opening line and two plain lines) and `notes` (one line). No
+     * `hello-world`, so the hello world is made fresh.
+     */
+    fun fixture(shelf: Shelf, nowMs: Long): Pair<MemoryStorage, Pages> {
+        val storage = MemoryStorage()
+        val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { nowMs }) { nowMs }
+        HelloWorld.makeShell(pages)
+        fun go(plan: Plan) = check(pages.carryOut(plan).ok) { "The bench's pocket couldn't be made: ${plan.refusal}" }
+        go(pages.planNewBlock("garden"))
+        go(pages.planChange("garden", "", "The garden, through the year"))
+        go(pages.planAdd("garden", "", "Autumn: plant the bulbs"))
+        go(pages.planAdd("garden", "", "Winter: prune the roses"))
+        go(pages.planNewBlock("notes"))
+        go(pages.planChange("notes", "", "Notes"))
+        go(pages.planAdd("notes", "", "Buy stamps"))
+        return storage to pages
+    }
+
+    /** How long an ask took: to the engine's first token, until anything showed, and in all; how many exchanges and tokens. */
+    class Timing(
+        val firstTokenMs: Long?,
+        val firstShownMs: Long?,
+        val totalMs: Long,
+        val exchanges: Int,
+        val read: Int?,
+        val wrote: Int?,
+    )
+
+    /** What the companion did with an ask, as the bench sees it. */
+    class Did(
+        val route: Route,
+        val said: String,
+        val proposal: Proposal?,
+        val problem: String?,
+        val timing: Timing,
+    )
+
+    /** What today's companion (one JSON plan an answer) did, read from its [Asked]. */
+    fun didOfPlan(asked: Asked, timing: Timing): Did {
+        val route = when {
+            asked.proposal?.writes?.isNotEmpty() == true -> Route.ACT
+            asked.found.isNotEmpty() -> Route.READ
+            else -> Route.TALK
+        }
+        return Did(route, asked.answer?.say.orEmpty(), asked.proposal, asked.problem, timing)
+    }
+
+    /**
+     * What makes [did] wrong for [ask], in plain words; empty when it is right.
+     * For the hello world, [carry] carries the proposal out on the scratch
+     * copy and returns the block as stored and the post's message.
+     */
+    fun judge(ask: Ask, did: Did, carry: (Proposal) -> Pair<String?, String?>): List<String> = buildList {
+        did.problem?.let { add("No answer could be read: $it") }
+        val p = did.proposal
+        val writes = p?.writes.orEmpty()
+        when (ask.route) {
+            Route.TALK, Route.READ -> {
+                if (writes.isNotEmpty()) add("It planned ${writes.size} write${if (writes.size == 1) "" else "s"} for an ask that needs none.")
+                if (p?.post != null) add("It offered a post.")
+                val said = did.said.trim()
+                if (said.isEmpty()) add("It said nothing.")
+                if (said.startsWith("{") || said.startsWith("```")) add("It answered in code, not plain words.")
+                for (group in ask.says) if (group.none { said.contains(it, ignoreCase = true) }) add("It didn't say ${group.joinToString(" or ") { "\"$it\"" }}.")
+            }
+            Route.ACT -> {
+                p?.refusal?.let { add("Its plan can't go ahead: $it") }
+                if (ask.hello) {
+                    if (p == null || p.writes.isEmpty() && p.refusal == null) {
+                        add("It planned nothing.")
+                    } else if (p.refusal == null) {
+                        val (stored, message) = carry(p)
+                        HelloWorld.check(stored, HelloWorld.SHELL_OPENING, p.seal).forEach(::add)
+                        if (stored != null && !stored.contains("Secret: $SECRET", ignoreCase = true)) add("The secret isn't \"$SECRET\", word for word.")
+                        when {
+                            p.post == null -> add("It offered no post${p.postRefusal?.let { ": $it" }.orEmpty()}.")
+                            message != HelloWorld.messageFor(stored) -> add("The post isn't the block's own message.")
+                        }
+                    }
+                } else {
+                    val planned = writes.filter { !it.step.byApp }
+                    if (planned.isEmpty() && p?.refusal == null) add("It planned no write.")
+                    for (want in ask.writes) {
+                        val hit = planned.firstOrNull { w ->
+                            w.plan.block == want.block && w.plan.kind == want.kind && (w.plan.landsAt ?: "") == want.at &&
+                                (want.holds == null || (w.text ?: w.plan.text).contains(want.holds, ignoreCase = true))
+                        }
+                        if (hit == null) add("It didn't plan ${describe(want)}.")
+                    }
+                    val extra = planned.size - ask.writes.size
+                    if (extra > 0 && ask.writes.isNotEmpty()) add("It planned $extra write${if (extra == 1) "" else "s"} more than needed.")
+                    if (p?.post != null) add("It offered a post.")
+                }
+            }
+        }
+    }
+
+    private fun describe(w: Want): String = when (w.kind) {
+        Kind.NEW_BLOCK -> "making ${w.block}"
+        Kind.ADD -> "a line${w.holds?.let { " \"$it\"" }.orEmpty()} in ${w.block} at ${w.at}"
+        Kind.CHANGE -> "the line at ${w.at} in ${w.block} changed${w.holds?.let { " to hold \"$it\"" }.orEmpty()}"
+    }
+
+    /** One ask's result. */
+    class Result(val ask: Ask, val did: Did, val problems: List<String>) {
+        val right: Boolean get() = problems.isEmpty()
+    }
+
+    /**
+     * Put one ask to the companion on a fresh scratch pocket and judge it.
+     * [answer] is the companion as the front end runs it, given the ask and
+     * the scratch pocket.
+     */
+    fun one(ask: Ask, shelf: Shelf, nowMs: Long, answer: (Ask, Pages, MemoryStorage) -> Did): Result {
+        val (storage, pages) = fixture(shelf, nowMs)
+        val did = try {
+            answer(ask, pages, storage)
+        } catch (e: Exception) {
+            Did(Route.TALK, "", null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}", Timing(null, null, 0, 0, null, null))
+        }
+        val problems = judge(ask, did) { proposal ->
+            val carried = Asks.carryOut(proposal, pages, storage, HelloWorld.SHELL_OPENING)
+            storage.read(HelloWorld.BLOCK) to carried.post?.message
+        }
+        return Result(ask, did, problems)
+    }
+
+    /** The run as one block: a summary for its opening line, then talk, read and act, each ask a line, and how it was run. */
+    fun block(results: List<Result>, about: List<String>, whenMs: Long): JsObj {
+        val right = results.count { it.right }
+        val shown = results.mapNotNull { it.did.timing.firstShownMs }
+        val totals = results.map { it.did.timing.totalMs }
+        val opening = "Bench, ${isoString(whenMs)}: $right of ${results.size} right." +
+            (if (shown.isNotEmpty()) " Something showed after a median of ${secs(median(shown))} s;" else "") +
+            " answers took a median of ${secs(median(totals))} s."
+        val out = JsObj.of("_" to str(opening))
+        var key = 1
+        for (route in Route.values()) {
+            val these = results.filter { it.ask.route == route }
+            if (these.isEmpty()) continue
+            val group = JsObj.of("_" to str("${name(route)}: ${these.count { it.right }} of ${these.size} right."))
+            these.forEachIndexed { i, r -> group["${i + 1}"] = str(line(r)) }
+            out["${key++}"] = group
+        }
+        if (about.isNotEmpty()) {
+            val group = JsObj.of("_" to str("How it was run"))
+            about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
+            out["${key}"] = group
+        }
+        return out
+    }
+
+    /** One ask's line: right or wrong, the ask, its times, what it said, and why it was wrong. */
+    fun line(r: Result): String {
+        val t = r.did.timing
+        val times = listOfNotNull(
+            t.firstTokenMs?.let { "first token ${secs(it)} s" },
+            t.firstShownMs?.let { "shown ${secs(it)} s" },
+            "total ${secs(t.totalMs)} s",
+            "${t.exchanges} exchange${if (t.exchanges == 1) "" else "s"}",
+            if (t.read != null && t.wrote != null) "read ${t.read}, wrote ${t.wrote} tokens" else null,
+        ).joinToString(", ")
+        val said = r.did.said.trim().replace(Regex("\\s+"), " ").let { if (it.length > 160) it.take(159) + "…" else it }
+        val chose = if (r.did.route != r.ask.route) " Taken as ${name(r.did.route).lowercase()}." else ""
+        return (if (r.right) "✓ " else "✗ ") + "${r.ask.n}. ${r.ask.question} ($times).$chose" +
+            (if (said.isNotEmpty()) " Said: “$said”" else "") +
+            (if (r.problems.isNotEmpty()) " Wrong: " + r.problems.joinToString(" ") else "")
+    }
+
+    fun name(route: Route) = when (route) {
+        Route.TALK -> "Talk"
+        Route.READ -> "Read"
+        Route.ACT -> "Act"
+    }
+
+    fun median(xs: List<Long>): Long = if (xs.isEmpty()) 0 else xs.sorted()[xs.size / 2]
+
+    fun secs(ms: Long): String = String.format(Locale.UK, "%.1f", ms / 1000.0)
+}

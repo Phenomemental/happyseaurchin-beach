@@ -102,8 +102,8 @@ fun AskScreen(model: Model, nav: Nav) {
         }
         if (HelloWorld.recipeIsOlder(recipe)) {
             Notice(
-                "The companion's shell has the hello world line from 0.3. The new line puts the shell's opening line into the post, " +
-                    "so it can be read on the beach too. Updating it changes that one line of ${HelloWorld.SHELL}.",
+                "The companion's shell has an older hello world line. In the new one the companion writes only your secret, " +
+                    "and the app writes the seal, the fingerprint and the post. Updating it changes that one line of ${HelloWorld.SHELL}.",
                 link = "Update the hello world line" to {
                     scope.launch {
                         val done = withContext(Dispatchers.IO) { model.pages.carryOut(model.pages.planChange(HelloWorld.SHELL, "1", HelloWorld.SHELL_RECIPE)) }
@@ -123,6 +123,7 @@ fun AskScreen(model: Model, nav: Nav) {
                 Label("Your ask")
                 PaperField(asking.question, { asking.question = it }, "Ask the companion something, or for the hello world with your secret", tag = "question")
                 Speak { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
+                TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
             }
             is Asking.Stage.Thinking -> {
                 Asked(asking.question)

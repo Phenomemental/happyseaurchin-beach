@@ -189,6 +189,21 @@ class ScreenTour {
                 compose.waitFor("waiting-why", "only when you tap Post now")
                 shot("$theme-28-shore-waiting-online")
             }
+            app.connectedForTests = null
+            app.unsent.clear()
+            // The bench, run with the stand-in, and the block it keeps.
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.tap("open-bench")
+                compose.waitFor("run-bench")
+                shot("$theme-29-bench")
+                compose.tap("run-bench")
+                compose.waitFor("bench-saved", timeoutMs = 120_000)
+                shot("$theme-30-bench-saved")
+                compose.tap("open-bench-block")
+                compose.waitFor("standing", "Bench, ")
+                shot("$theme-31-bench-block")
+            }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")
                 .putExtra(android.content.Intent.EXTRA_TEXT, """{"_":"Notes from a friend","1":"The ferry leaves at nine","2":{"_":"Bring","1":"a coat","2":"the map"}}""")

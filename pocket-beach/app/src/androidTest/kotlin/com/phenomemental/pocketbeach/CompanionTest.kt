@@ -227,6 +227,34 @@ class CompanionTest {
     }
 
     @Test
+    fun theBenchRunsOnAScratchPocketAndKeepsOneBlock() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages)
+        app.pages.carryOut(app.pages.planNewBlock("mine"))
+        val before = app.storage.names().toSet()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            compose.tap("open-bench")
+            compose.tap("run-bench")
+            compose.waitFor("bench-saved", "Kept as bench-", timeoutMs = 120_000)
+            val made = app.storage.names().toSet() - before
+            assertEquals("one new block, the run", 1, made.size)
+            assertTrue(made.single().startsWith("bench-"))
+            assertEquals("nothing else of the pocket changed", before, app.storage.names().toSet() - made)
+            assertFalse(app.pages.exists(HelloWorld.BLOCK))
+            assertTrue("nothing posted", wire.sent.isEmpty())
+            val results = app.benching.results
+            assertEquals(20, results.size)
+            assertTrue("the stand-in's hello world is right", results.last().right)
+            val run = app.pages.position(Region.POCKET, made.single())!!
+            assertTrue(run.text!!.startsWith("Bench, "))
+            assertEquals(listOf("Talk: ", "Read: ", "Act: ", "How it was run"), run.lines.map { it.text!!.substringBefore(":").let { t -> if (t == "How it was run") t else "$t: " } })
+            compose.tap("open-bench-block")
+            compose.waitFor("standing", "Bench, ")
+        }
+    }
+
+    @Test
     fun notNowWritesNothingAndLogsWhy() {
         Fresh.open().use {
             askTheCompanion()

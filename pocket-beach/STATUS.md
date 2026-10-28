@@ -4,8 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.3.3** is being made: a post the beach couldn't be reached
-for is kept, with "Post now" (see "What 0.3.3 changes").
+**pocket-beach-v0.3.4** is being made: the bench, the first step of 0.4 (see
+"What 0.3.4 changes" and "0.4: as fast and dependable as the phone allows").
+
+**pocket-beach-v0.3.3** keeps a post the beach couldn't be reached for, with
+"Post now" (see "What 0.3.3 changes").
 
 **pocket-beach-v0.3.2** is released, from Matthew's first hello world with
 the companion on 0.3.1 (see "What 0.3.2 changes"). It has been on the
@@ -22,6 +25,44 @@ and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.3.4 changes
+
+**The bench** ("Run the bench", on Ask), the first step of 0.4: every change
+to the companion is judged by what it does on Matthew's Pixel.
+
+- **Twenty fixed asks** (`Bench.ASKS`): six to talk ("What's your name?"),
+  six to read ("What's in my garden block?") and eight to act. Among the acts
+  are a line added beneath a plain line, two lines at once, a change, a new
+  block and a fresh hello world.
+- **Each on a scratch copy of a small pocket:** the companion's shell,
+  `garden` (an opening line and two plain lines) and `notes` (one line). It
+  is made fresh for every ask, so nothing of Matthew's is written, and
+  nothing is posted.
+- **Each is judged mechanically:**
+  - talk and read must plan no write and offer no post, and say plain words
+    (read: the words the block holds);
+  - an act must plan exactly the writes it needs, landing where they should;
+  - the hello world must check out once carried out on the scratch copy,
+    with its post the block's own.
+- **Each is timed:** to the engine's first token, until anything showed, and
+  in all, with the exchanges and the tokens read and written. Today's
+  companion shows nothing until its whole plan is written, so its "shown"
+  is its total.
+- **Then it tries the engine itself, on the phone:**
+  - what the model file runs on, and the phone's chip;
+  - a plain paragraph, streamed, with speculative decoding off and then on:
+    the first word, the tokens written per second, the total;
+  - whether a one-word choice held by the engine survives speculative
+    decoding;
+  - the NPU, where the file has a build for it.
+- **The run is kept as one new block,** `bench-` and the date and time:
+  - its opening line is the score and the medians;
+  - then a line each for talk, read and act, with every ask beneath;
+  - then how it was run.
+
+  It is written by Matthew's tap on "Run the bench", and can be shared from
+  its page.
 
 ### What 0.3.3 changes
 
@@ -278,7 +319,7 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 `Pages.remove`).
 **Piece 1, unchanged:** the local bsp, the teaching shelf, storage.
 
-**The app itself:** version 0.3.3 (`versionCode` 6), Android 12 or later.
+**The app itself:** version 0.3.4 (`versionCode` 7), Android 12 or later.
 
 - Permissions:
   - the internet, for the one confirmed post and the model's one download,
@@ -730,6 +771,52 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.4: as fast and dependable as the phone allows
+
+Matthew's plan (28 October). The principle: Gemma states intent in as few
+tokens as possible; code does everything mechanical. Every change is judged
+by the bench on his Pixel, before and after.
+
+1. **The bench first** (0.3.4).
+2. **A compact action language:** short actions (new block, change, add
+   beneath, read, post) that name lines by quoting their text, never by
+   address. The app resolves a quote to its line, opens up a plain line
+   itself, and builds the bsp() calls, all shown before Yes. A quote that
+   matches more than one line is put to Matthew.
+3. **Routing:** a one-word first choice (talk, read, act) held by the engine;
+   when unsure, talk.
+4. **Talk and read stream** token by token, with speculative decoding on and
+   nothing held.
+5. **The model stays loaded while Ask is open,** the shell and instructions
+   processed once, and the last six exchanges kept.
+6. **The NPU against the GPU** on the bench; the faster is used, and shown.
+7. **FunctionGemma for the act route,** adopted only if both faster and more
+   accurate.
+
+The shell's hello world line moves to the action language.
+
+**What the engine allows** (LiteRT-LM 0.18.0 and 0.18.1, tried on the
+laptop):
+
+- **Holding an answer to a form, and speculative decoding, don't mix.**
+  - Held to a JSON schema or a regex with speculative decoding on, the
+    engine stops mid-answer ("compute_mask() called after stop").
+  - Once any speculative session has run, even a held one-word choice fails
+    that way. The conversation is then dead for every later turn.
+  - The bench tries this on the phone's GPU too.
+- **A held form stays held** for the whole conversation. A later turn asked
+  without it is still held to it.
+- **One conversation kept open** processes its instruction once; each later
+  turn adds only its own words. No release lets a processed instruction be
+  copied for a fresh conversation.
+- **The NPU:** builds of Gemma 4 E2B exist only for Google Tensor G5 and G6,
+  as separate files of 3.1 and 3.3 GB. There is also a GPU-only build,
+  2.0 GB against 2.6.
+- **FunctionGemma:** Google's base model is gated on Hugging Face (its
+  licence must be accepted by an account), and comes only as weights to
+  convert. The ready-made `.litertlm` builds are fine-tuned for other tasks
+  (phone actions, a garden game).
 
 ## Piece 3: how the companion is asked
 
