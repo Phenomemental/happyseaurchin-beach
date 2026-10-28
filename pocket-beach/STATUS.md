@@ -4,6 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.3.5** is being made: speaking a line no longer holds the
+phone's speech recogniser, which on Matthew's Pixel (0.3.2) failed with
+"error 10" and stopped Gboard's voice typing while the app ran (see "What
+0.3.5 changes").
+
 **pocket-beach-v0.3.4** is released: the bench, the first step of 0.4 (see
 "What 0.3.4 changes"). Next is Matthew running it on his Pixel and sharing
 the block it keeps (see "Next"): its figures judge everything in 0.4.
@@ -117,6 +122,42 @@ token in 0.7 s, and its whole answer in 0.7 to 1.7 s.
 - **FunctionGemma:** Google's base model is gated behind a licence an account
   must accept, and comes as weights to fine-tune and convert. The
   ready-made builds are tuned for other tasks.
+
+### What 0.3.5 changes
+
+**Speaking a line lets go of the phone's speech recogniser** as soon as it
+is done with it. Matthew's Pixel, on 0.3.2: "Speak the line" failed with
+"the recogniser's error 10" (too many requests), and while the app ran,
+Gboard's voice typing stopped working too.
+
+- **Why:**
+  - each "Speak the line" made its own recogniser;
+  - a tap to stop only asked it to stop listening, and it was let go only
+    if the phone answered;
+  - nothing let it go when the app went to the background.
+
+  So a recogniser could stay bound to the phone's speech service, the one
+  Gboard's voice typing uses.
+- **Now** (`Speech`):
+  - the app holds one recogniser at most, and starting one lets any other
+    go first;
+  - it is destroyed when listening ends, when Matthew taps to stop (what it
+    had heard so far is the line), on any error, when the screen is left,
+    and when the app goes to the background;
+  - nothing is ever tried again by itself.
+- **Error 10 (or the recogniser busy):** it says "Speech is busy. Try again
+  in a moment." For five seconds a tap makes no recogniser, and says the
+  same.
+- **Still on-device only:** the recogniser is the phone's own on-device one,
+  and there is no fallback to a server.
+- **Device tests** with a stand-in recogniser (the emulator recognises no
+  speech): one at a time; let go on a tap, at the end, on an error, on
+  leaving the screen and in the background; busy said plainly, and nothing
+  made until its time.
+- **Not checkable here:** whether Gboard's voice typing works beside the
+  app. No emulator has Gboard's on-device speech, so that is for Matthew's
+  Pixel (see "Next").
+- Version 0.3.5 (`versionCode` 8).
 
 ### What 0.3.4 changes
 
@@ -577,6 +618,8 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
 - The bench on Matthew's Pixel: the companion's figures there, and what the
   engine allows on its GPU (and its NPU, if it has one).
 - "Post now" on the phone, back online after a post that couldn't go.
+- Speaking a line on the phone since 0.3.5, and Gboard's voice typing
+  beside it.
 - Sharing with real apps, and speaking on a phone that recognises speech on
   the device.
 
@@ -586,8 +629,13 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.3.4.apk` over the version he has. It
-   carries 0.3.3's kept post too. Then:
+1. Matthew installs `pocket-beach-v0.3.5.apk` over the version he has. It
+   carries 0.3.3's kept post and 0.3.4's bench too. Then:
+   - **Speech beside Gboard.** With the app open, use Gboard's voice typing
+     in a line of the app (the microphone on the keyboard): it should work.
+     Then use "Speak the line" once or twice, stop one part way, and leave
+     the screen; Gboard's voice typing should still work, in the app and in
+     another app.
    - **Ask, then "Run the bench"** (beneath the ask). Keep the app open; it
      keeps the screen on, and takes about ten minutes. Nothing of his is
      written but the one block it keeps, and nothing is posted.

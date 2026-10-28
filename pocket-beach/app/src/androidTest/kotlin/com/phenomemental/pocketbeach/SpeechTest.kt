@@ -1,0 +1,185 @@
+package com.phenomemental.pocketbeach
+
+import android.Manifest
+import android.content.Context
+import android.speech.SpeechRecognizer
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.Lifecycle
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
+import com.phenomemental.pocketbeach.ui.BUSY
+import com.phenomemental.pocketbeach.ui.Heard
+import com.phenomemental.pocketbeach.ui.Recogniser
+import com.phenomemental.pocketbeach.ui.Speech
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/** A recogniser that hears what the test says it heard, and remembers being let go. */
+class StandInRecogniser : Recogniser {
+    var heard: Heard? = null
+    var destroyed = false
+    override fun listen(heard: Heard) {
+        this.heard = heard
+        heard.ready()
+    }
+    override fun destroy() { destroyed = true }
+}
+
+/**
+ * Speaking a line holds the phone's speech recogniser only while it listens
+ * (Matthew's Pixel, 0.3.2: error 10, and Gboard's voice typing stopped while
+ * the app ran). With a stand-in recogniser, since the emulator recognises no
+ * speech: one at a time, let go on a tap, at the end, on an error, on leaving
+ * the screen and in the background; never tried again by itself.
+ */
+@RunWith(AndroidJUnit4::class)
+class SpeechTest {
+    @get:Rule
+    val compose = createEmptyComposeRule()
+
+    @get:Rule
+    val microphone: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+
+    private val app get() = Fresh.app
+    private val made = mutableListOf<StandInRecogniser>()
+    private lateinit var make: (Context) -> Recogniser
+    private lateinit var available: (Context) -> Boolean
+
+    @Before
+    fun standIn() {
+        make = app.speech.make
+        available = app.speech.available
+        app.speech.make = { StandInRecogniser().also { made += it } }
+        app.speech.available = { true }
+    }
+
+    @After
+    fun asItWas() {
+        app.speech.letGo()
+        app.speech.make = make
+        app.speech.available = available
+    }
+
+    private fun main(block: () -> Unit) = InstrumentationRegistry.getInstrumentation().runOnMainSync(block)
+
+    /** Never more than one recogniser held, and every one let go but the one listening. */
+    private fun oneAtMost() {
+        val held = made.count { !it.destroyed }
+        assertTrue("one recogniser at most, $held held", held <= 1)
+        assertEquals(app.speech.holding, held == 1)
+    }
+
+    private fun lineText(): String =
+        compose.onNodeWithTag("line-text").fetchSemanticsNode().config.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+
+    private fun openALine() {
+        compose.makeBlock("spoken")
+        compose.tap("add")
+        compose.waitFor("speak")
+    }
+
+    @Test
+    fun aTapToStopLetsItGoAndKeepsWhatItHeard() {
+        Fresh.open().use {
+            openALine()
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            assertEquals(1, made.size)
+            assertTrue(app.speech.holding)
+            main { made[0].heard!!.partial("plant the bulbs") }
+            compose.waitFor("speech-heard", "plant the bulbs")
+            compose.tap("speak")
+            compose.waitFor("speak", "Speak the line")
+            assertTrue("let go at once", made[0].destroyed)
+            oneAtMost()
+            assertEquals("plant the bulbs", lineText())
+        }
+    }
+
+    @Test
+    fun theEndOfListeningLetsItGo() {
+        Fresh.open().use {
+            openALine()
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            main { made[0].heard!!.done("prune the roses") }
+            compose.waitFor("speak", "Speak the line")
+            assertTrue(made[0].destroyed)
+            oneAtMost()
+            assertEquals("prune the roses", lineText())
+
+            // Again: a new recogniser, the last one long gone.
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            assertEquals(2, made.size)
+            oneAtMost()
+            main { made[1].heard!!.failed(SpeechRecognizer.ERROR_NO_MATCH) }
+            compose.waitFor("speech-note", "Nothing was heard")
+            assertTrue("an error lets it go", made[1].destroyed)
+            oneAtMost()
+        }
+    }
+
+    @Test
+    fun busySpeechIsSaidPlainlyAndNothingIsTriedAgainUntilItsTime() {
+        Fresh.open().use {
+            openALine()
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            main { made[0].heard!!.failed(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS) }
+            compose.waitFor("speech-note", BUSY)
+            assertTrue(made[0].destroyed)
+            oneAtMost()
+
+            // A tap while it's busy makes nothing, and nothing is tried by itself.
+            compose.tap("speak")
+            compose.waitFor("speech-note", BUSY)
+            Thread.sleep(1_500)
+            assertEquals("no recogniser made while speech is busy", 1, made.size)
+
+            // After the wait, a tap listens again.
+            Thread.sleep(Speech.BUSY_MS)
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            assertEquals(2, made.size)
+            oneAtMost()
+        }
+    }
+
+    @Test
+    fun leavingTheScreenLetsItGo() {
+        Fresh.open().use {
+            openALine()
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            compose.tap("back")
+            compose.waitUntil(10_000) { made[0].destroyed }
+            assertFalse(app.speech.holding)
+        }
+    }
+
+    @Test
+    fun theAppInTheBackgroundLetsItGo() {
+        Fresh.open().use { scenario ->
+            openALine()
+            compose.tap("speak")
+            compose.waitFor("speak", "Listening")
+            // As when Matthew goes to another app, where Gboard's voice typing must work.
+            scenario.moveToState(Lifecycle.State.CREATED)
+            compose.waitUntil(10_000) { made[0].destroyed }
+            assertFalse(app.speech.holding)
+            scenario.moveToState(Lifecycle.State.RESUMED)
+            compose.waitFor("speak", "Speak the line")
+        }
+    }
+}

@@ -48,6 +48,9 @@ class PocketApp : Application() {
     val asking by lazy { Asking(this) }
     val benching by lazy { Benching(this) }
 
+    /** The one speech recogniser the app may hold, made on a tap and let go as soon as listening ends. */
+    val speech by lazy { com.phenomemental.pocketbeach.ui.Speech() }
+
     /** A block another app has just shared in, waiting to be looked at. */
     var inbox by mutableStateOf<Received?>(null)
 
