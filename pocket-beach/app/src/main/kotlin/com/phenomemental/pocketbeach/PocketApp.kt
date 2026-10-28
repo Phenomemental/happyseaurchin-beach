@@ -101,20 +101,6 @@ class PocketApp : Application() {
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
 
-    private val timings by lazy { mutableStateOf(prefs.getBoolean("showTimings", true)) }
-
-    /**
-     * Whether each answer shows how long it took and on which of the phone's
-     * processors (Settings; on by default for now). The ask log keeps the
-     * times either way.
-     */
-    var showTimings: Boolean
-        get() = timings.value
-        set(on) {
-            timings.value = on
-            prefs.edit().putBoolean("showTimings", on).apply()
-        }
-
     /** When the last copy was saved, kept on the phone beside the blocks (never in a copy). */
     var lastSavedMs: Long?
         get() = prefs.getLong("lastSavedMs", -1L).takeIf { it >= 0 }

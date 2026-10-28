@@ -66,10 +66,10 @@ object Bench {
      * (its opening line and two plain lines) and `notes` (one line). No
      * `hello-world`, so the hello world is made fresh.
      */
-    fun fixture(shelf: Shelf, nowMs: Long, recipe: String = HelloWorld.SHELL_RECIPE): Pair<MemoryStorage, Pages> {
+    fun fixture(shelf: Shelf, nowMs: Long): Pair<MemoryStorage, Pages> {
         val storage = MemoryStorage()
         val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { nowMs }) { nowMs }
-        HelloWorld.makeShell(pages, recipe)
+        HelloWorld.makeShell(pages)
         fun go(plan: Plan) = check(pages.carryOut(plan).ok) { "The bench's pocket couldn't be made: ${plan.refusal}" }
         go(pages.planNewBlock("garden"))
         go(pages.planChange("garden", "", "The garden, through the year"))
@@ -108,17 +108,6 @@ object Bench {
             else -> Route.TALK
         }
         return Did(route, asked.answer?.say.orEmpty(), asked.proposal, asked.problem, timing)
-    }
-
-    /** What 0.4's companion (a route word, then plain words, reads or actions) did, read from its [Talks.Answered]. */
-    fun didOfTalks(answered: Talks.Answered, timing: Timing): Did {
-        val route = when (answered.route) {
-            Talks.Route.TALK -> Route.TALK
-            Talks.Route.READ -> Route.READ
-            Talks.Route.ACT -> Route.ACT
-        }
-        val problem = answered.problem ?: answered.planned?.choose?.let { "It asked which line “${it.quote}” in ${it.block} meant (${it.lines.size} match)." }
-        return Did(route, answered.said, answered.planned?.proposal, problem, timing)
     }
 
     /**
@@ -187,8 +176,8 @@ object Bench {
      * [answer] is the companion as the front end runs it, given the ask and
      * the scratch pocket.
      */
-    fun one(ask: Ask, shelf: Shelf, nowMs: Long, recipe: String = HelloWorld.SHELL_RECIPE, answer: (Ask, Pages, MemoryStorage) -> Did): Result {
-        val (storage, pages) = fixture(shelf, nowMs, recipe)
+    fun one(ask: Ask, shelf: Shelf, nowMs: Long, answer: (Ask, Pages, MemoryStorage) -> Did): Result {
+        val (storage, pages) = fixture(shelf, nowMs)
         val did = try {
             answer(ask, pages, storage)
         } catch (e: Exception) {
@@ -201,45 +190,27 @@ object Bench {
         return Result(ask, did, problems)
     }
 
-    /** One companion's run: what it is called, and its results. */
-    class Run(val name: String, val results: List<Result>)
-
-    /** A run's score and medians, in a sentence. */
-    fun summary(results: List<Result>): String {
+    /** The run as one block: a summary for its opening line, then talk, read and act, each ask a line, and how it was run. */
+    fun block(results: List<Result>, about: List<String>, whenMs: Long): JsObj {
+        val right = results.count { it.right }
         val shown = results.mapNotNull { it.did.timing.firstShownMs }
         val totals = results.map { it.did.timing.totalMs }
-        return "${results.count { it.right }} of ${results.size} right." +
+        val opening = "Bench, ${isoString(whenMs)}: $right of ${results.size} right." +
             (if (shown.isNotEmpty()) " Something showed after a median of ${secs(median(shown))} s;" else "") +
             " answers took a median of ${secs(median(totals))} s."
-    }
-
-    /**
-     * The bench as one block: a summary for its opening line, then each
-     * companion's run (its summary, then talk, read and act, each ask a
-     * line), then how it was run.
-     */
-    fun block(runs: List<Run>, about: List<String>, whenMs: Long): JsObj {
-        val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }
         val out = JsObj.of("_" to str(opening))
         var key = 1
-        for (run in runs) out["${key++}"] = runBlock(run)
-        if (about.isNotEmpty()) {
-            val group = JsObj.of("_" to str("How it was run"))
-            about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
-            out["${key}"] = group
-        }
-        return out
-    }
-
-    private fun runBlock(run: Run): JsObj {
-        val out = JsObj.of("_" to str("${run.name}: " + summary(run.results)))
-        var key = 1
         for (route in Route.values()) {
-            val these = run.results.filter { it.ask.route == route }
+            val these = results.filter { it.ask.route == route }
             if (these.isEmpty()) continue
             val group = JsObj.of("_" to str("${name(route)}: ${these.count { it.right }} of ${these.size} right."))
             these.forEachIndexed { i, r -> group["${i + 1}"] = str(line(r)) }
             out["${key++}"] = group
+        }
+        if (about.isNotEmpty()) {
+            val group = JsObj.of("_" to str("How it was run"))
+            about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
+            out["${key}"] = group
         }
         return out
     }

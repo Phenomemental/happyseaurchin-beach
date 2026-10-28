@@ -3,7 +3,6 @@ package com.phenomemental.pocketbeach.trial
 import com.google.ai.edge.litertlm.Backend
 import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.ConversationConfig
-import com.google.ai.edge.litertlm.Message
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.ExperimentalApi
@@ -23,7 +22,6 @@ import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talk
-import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.bsp.collectUnderscore
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.parseJson
@@ -76,7 +74,7 @@ fun main(args: Array<String>) {
     engine.initialize()
     println("Loaded in ${secs(loadStart)} s." + (if (mtp) " Speculative decoding, the form not held." else "") + (if ("existing" in flags) " Each run begins with a hello-world made before." else ""))
     if ("bench" in flags) {
-        if ("kept" in flags) kept(engine, shelf) else if ("after" in flags) benchAfter(engine, shelf) else bench(engine, shelf)
+        bench(engine, shelf)
         engine.close()
         return
     }
@@ -182,107 +180,7 @@ private fun bench(engine: Engine, shelf: Shelf) {
             }
         }.also { println(Bench.line(it)) }
     }
-    println(Bench.summary(results))
-}
-
-/** The bench's twenty asks, put to 0.4's companion: a route word, then plain words, reads or actions, streamed, nothing held. */
-@OptIn(ExperimentalApi::class)
-private fun benchAfter(engine: Engine, shelf: Shelf) {
-    val now = 1_793_178_000_000L
-    val only = System.getProperty("pocket.only")?.split(",")?.map { it.trim().toInt() }?.toSet()
-    val results = Bench.ASKS.filter { only == null || it.n in only }.map { ask ->
-        Bench.one(ask, shelf, now, Talks.SHELL_RECIPE) { a, pages, storage ->
-            val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
-            val turns = System.getProperty("pocket.examples") == "turns"
-            val system = Talks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = !turns)
-            val config = ConversationConfig(
-                systemInstruction = Contents.of(system),
-                initialMessages = if (turns) Talks.EXAMPLES.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) } else emptyList(),
-                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-                maxOutputToken = Asks.Tuning.MAX_OUTPUT,
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-            )
-            val start = System.nanoTime()
-            engine.createConversation(config).use { conversation ->
-                var first: Long? = null
-                var shown: Long? = null
-                var read = 0
-                var wrote = 0
-                val stream = Talks.Stream { message, piece ->
-                    val whole = StringBuilder()
-                    kotlinx.coroutines.runBlocking {
-                        conversation.sendMessageAsync(message).collect { m ->
-                            if (first == null) first = (System.nanoTime() - start) / 1_000_000
-                            whole.append(m.toString())
-                            piece(m.toString())
-                        }
-                    }
-                    val b = conversation.getBenchmarkInfo()
-                    read += b.lastPrefillTokenCount
-                    wrote += b.lastDecodeTokenCount
-                    whole.toString()
-                }
-                val answered = Talks.ask(a.question, stream, pages, storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { now }) { words ->
-                    if (shown == null && words.isNotBlank()) shown = (System.nanoTime() - start) / 1_000_000
-                }
-                val total = (System.nanoTime() - start) / 1_000_000
-                answered.exchanges.forEach { (_, reply) -> println("    | " + reply.replace("\n", " / ").take(240)) }
-                Bench.didOfTalks(answered, Bench.Timing(first, shown ?: total, total, answered.exchanges.size, read, wrote))
-            }
-        }.also { println(Bench.line(it)) }
-    }
-    println(Bench.summary(results))
-}
-
-/**
- * One conversation kept for several asks, as Ask keeps it: how soon each
- * first token comes once the instruction has been read, and whether a reply
- * stopped part way leaves the conversation fit for the next ask.
- */
-@OptIn(ExperimentalApi::class)
-private fun kept(engine: Engine, shelf: Shelf) {
-    val now = 1_793_178_000_000L
-    val (storage, pages) = Bench.fixture(shelf, now, Talks.SHELL_RECIPE)
-    val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
-    val system = Talks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false)
-    val config = ConversationConfig(
-        systemInstruction = Contents.of(system),
-        initialMessages = Talks.opening(emptyList()).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
-        samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-        maxOutputToken = Asks.Tuning.MAX_OUTPUT,
-        thinkingConfig = ThinkingConfig(enableThinking = false),
-    )
-    engine.createConversation(config).use { conversation ->
-        fun ask(message: String, stopAfter: Int? = null): String {
-            val start = System.nanoTime()
-            var first: Long? = null
-            var pieces = 0
-            val whole = StringBuilder()
-            kotlinx.coroutines.runBlocking {
-                try {
-                    conversation.sendMessageAsync(message).collect { m ->
-                        if (first == null) first = (System.nanoTime() - start) / 1_000_000
-                        whole.append(m.toString())
-                        if (stopAfter != null && ++pieces >= stopAfter) {
-                            conversation.cancelProcess()
-                        }
-                    }
-                } catch (e: Exception) {
-                    println("    (stopped: ${e::class.simpleName} ${e.message?.take(120)})")
-                }
-            }
-            val b = conversation.getBenchmarkInfo()
-            println("  first token ${first?.let { "%.1f".format(it / 1000.0) }} s, total ${secs(start)} s, read ${b.lastPrefillTokenCount}, wrote ${b.lastDecodeTokenCount}: " + whole.toString().replace("\n", " / ").take(160))
-            return whole.toString()
-        }
-        for (q in listOf("What's your name?", "What's in my garden block?", "Add a line to garden: buy more compost.", "Thanks.", "Make a new block called recipes.")) {
-            println("Matthew asks: $q")
-            ask("Matthew asks: $q")
-        }
-        println("Stopped after three pieces, then asked again:")
-        ask("Matthew asks: Tell me about the sea at night, at length.", stopAfter = 3)
-        ask("Matthew asks: What's your name?")
-    }
+    println(collectUnderscore(Bench.block(results, emptyList(), now)))
 }
 
 /** Ordinary asks of a small pocket, printed as answered and as planned, for reading by eye. */
