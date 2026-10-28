@@ -47,16 +47,16 @@ fun BenchScreen(model: Model, nav: Nav) {
         },
     ) {
         Text(
-            "Twenty fixed asks, put to the companion one by one: six to talk, six to read, and eight to act, among them a line added beneath " +
-                "a plain line and a fresh hello world. They are put three times: to 0.3's way of asking (before), then to 0.4's, with her first word " +
-                "held by the engine and then free. Each is asked of " +
-                "a scratch copy of a small pocket (garden, notes and the companion's shell), so nothing of yours is written, and nothing is posted.",
+            "Twenty-three fixed asks, put to the companion one by one: seven to talk, six to read, eight to act (among them a line added beneath " +
+                "a plain line and a fresh hello world) and two things worth keeping. They are put four times: to 0.3's way of asking (before), then " +
+                "to 0.4's, with her first word held by the engine and then free, and then held on the CPU alone. Each is asked of " +
+                "a scratch copy of a small pocket (garden, notes, an empty Million and the companion's shell), so nothing of yours is written, and nothing is posted.",
             style = Type.body, color = ink.ink,
         )
         Text(
             "Each ask is timed (to the first token, until anything shows, in all) and judged right or wrong. Then one conversation is kept " +
                 "for three asks, and the bench tries the engine itself: what this phone's chip and the model file allow, and a plain answer with " +
-                "speculative decoding off and on. It takes about fifteen minutes, and keeps the screen on.",
+                "speculative decoding off and on. It takes about half an hour, and keeps the screen on.",
             style = Type.small, color = ink.soft,
         )
         Text("The run is kept as one new block, bench- and the date, which you can share from its page.", style = Type.small, color = ink.soft)

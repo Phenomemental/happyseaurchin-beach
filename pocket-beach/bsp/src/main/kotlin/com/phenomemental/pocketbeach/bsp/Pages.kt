@@ -232,7 +232,7 @@ class Pages(
         if (storage.read(name) == null) return "There's no block called $name."
         val to = typed.trim()
         if (to == name) return "That's its name already."
-        return nameRefusal(to)
+        return nameRefusal(to, besides = name)
     }
 
     /**
@@ -243,12 +243,23 @@ class Pages(
     fun rename(name: String, typed: String): Done = synchronized(bsp) {
         renameRefusal(name, typed)?.let { return Done(false, "", null, false, it) }
         val to = typed.trim()
-        storage.write(to, storage.read(name)!!)
+        val block = storage.read(name)!!
+        if (to.equals(name, ignoreCase = true)) {
+            // Only its capitals change. Where a disk doesn't tell capitals apart, the new name is the old one's file,
+            // so the old goes first; it is kept under a passing name meanwhile, so a stop part way leaves it, never none.
+            val passing = "$to (being renamed)"
+            storage.write(passing, block)
+            storage.delete(name)
+            storage.write(to, block)
+            storage.delete(passing)
+        } else {
+            storage.write(to, block)
+        }
         val s = storage.stamps()
         val touched = s.touched - name + (to to isoString(clock()))
         val born = s.born - name + listOfNotNull(s.born[name]?.let { to to it })
         storage.setStamps(Stamps(touched, born))
-        storage.delete(name)
+        if (!to.equals(name, ignoreCase = true)) storage.delete(name)
         Done(true, "", null, false, null)
     }
 
@@ -261,13 +272,25 @@ class Pages(
         Done(true, "", null, false, null)
     }
 
-    private fun nameRefusal(name: String): String? = when {
+    /**
+     * Why [name] can't be a new block's name, or null. A name differing from
+     * another block's only in its capitals is that block's ("million" is
+     * Million), so it can't be a second one; [besides] is the block being
+     * renamed, which may change its own capitals.
+     */
+    private fun nameRefusal(name: String, besides: String? = null): String? = when {
         name.isEmpty() -> "Give the block a name."
         name.any { it.isISOControl() } -> "A name fits on one line."
         name.length > 120 -> "That name is too long: keep it under 120 letters."
         name.startsWith("sed:") || name.startsWith("grain:") -> "Names starting sed: or grain: belong to the beach, which the pocket can't reach in this version."
         storage.read(name) != null -> "There's already a block called $name."
-        else -> null
+        else -> storage.names().firstOrNull { it != besides && it.equals(name, ignoreCase = true) }?.let { "There's already a block called $it." }
+    }
+
+    /** The pocket's block [typed] means: its own name if there is one so called, else the one block whose name differs only in its capitals. */
+    fun named(typed: String): String {
+        if (storage.read(typed) != null) return typed
+        return storage.names().filter { it.equals(typed, ignoreCase = true) }.singleOrNull() ?: typed
     }
 
     /**

@@ -21,9 +21,9 @@ class BenchTest {
 
     @Test
     fun twentyAsksOfThreeKinds() {
-        assertEquals(20, Bench.ASKS.size)
-        assertEquals((1..20).toList(), Bench.ASKS.map { it.n })
-        assertEquals(mapOf(Bench.Route.TALK to 6, Bench.Route.READ to 6, Bench.Route.ACT to 8), Bench.ASKS.groupingBy { it.route }.eachCount())
+        assertEquals(23, Bench.ASKS.size)
+        assertEquals((1..23).toList(), Bench.ASKS.map { it.n })
+        assertEquals(mapOf(Bench.Route.TALK to 7, Bench.Route.READ to 6, Bench.Route.ACT to 8, Bench.Route.KEEP to 2), Bench.ASKS.groupingBy { it.route }.eachCount())
         assertTrue(Bench.ASKS.any { it.hello }, "a fresh hello world")
         assertTrue(Bench.ASKS.any { a -> a.writes.any { it.at.contains('.') } }, "a line added beneath a plain line")
     }
@@ -31,7 +31,9 @@ class BenchTest {
     @Test
     fun theScratchPocketIsSmallAndKnown() {
         val (storage, pages) = Bench.fixture(shelf, now)
-        assertEquals(setOf(HelloWorld.SHELL, "garden", "notes"), storage.names().toSet())
+        assertEquals(setOf(HelloWorld.SHELL, "garden", "notes", "Million"), storage.names().toSet())
+        assertEquals("Million at pocket.", pages.position(Region.POCKET, "Million")!!.text)
+        assertTrue(pages.position(Region.POCKET, "Million")!!.lines.isEmpty(), "as Matthew made it, empty")
         assertEquals(listOf("Autumn: plant the bulbs", "Winter: prune the roses"), pages.position(Region.POCKET, "garden")!!.lines.map { it.text })
         assertEquals("The garden, through the year", pages.position(Region.POCKET, "garden")!!.text)
     }
@@ -42,6 +44,9 @@ class BenchTest {
             1 to """{"say": "I'm the pocket companion.", "steps": []}""",
             5 to """{"say": "A block is a page of lines, each line in its own place.", "steps": []}""",
             6 to """{"say": "You're welcome. Bye for now!", "steps": []}""",
+            21 to """{"say": "Keeping it.", "steps": [{"do": "add", "block": "Million", "at": "", "text": "I'm going to make a million pound by creating tech that changes the world, before the end of 2027."}]}""",
+            22 to """{"say": "A new block.", "steps": [{"do": "make", "block": "sailing", "at": "", "text": "My plan is to learn to sail next summer."}]}""",
+            23 to """{"say": "Good night!", "steps": []}""",
             7 to """{"say": "garden holds: Autumn: plant the bulbs, and Winter: prune the roses.", "steps": []}""",
             13 to """{"say": "Adding it.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "buy more compost"}]}""",
             14 to """{"say": "Under autumn.", "steps": [{"do": "add", "block": "garden", "at": "1", "text": "tulips came from Holland"}]}""",
@@ -78,11 +83,12 @@ class BenchTest {
         val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, answer = plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
         val block = Bench.block(listOf(Bench.Run("0.3", results), Bench.Run("0.4", results)), listOf("The phone: a laptop", "The engine: none"), now)
         val opening = collectUnderscore(block)!!
-        assertContains(opening, "0.3: 1 of 20 right.")
-        assertContains(opening, "0.4: 1 of 20 right.")
+        assertContains(opening, "0.3: 1 of 23 right.")
+        assertContains(opening, "0.4: 1 of 23 right.")
         val before = block["1"] as JsObj
-        assertContains(collectUnderscore(before)!!, "0.3: 1 of 20 right.")
-        assertEquals("Talk: 1 of 6 right.", collectUnderscore(before["1"]))
+        assertContains(collectUnderscore(before)!!, "0.3: 1 of 23 right.")
+        assertEquals("Talk: 1 of 7 right.", collectUnderscore(before["1"]))
+        assertEquals("Keep: 0 of 2 right.", collectUnderscore(before["4"]))
         assertTrue((before["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
         assertEquals("How it was run", collectUnderscore(block["3"]))
         assertTrue(Bench.line(results[0]).startsWith("✓ 1. What's your name? (first token 0.1 s, shown 2.0 s, total 2.0 s, 1 exchange, read 1300, wrote 60 tokens)."))

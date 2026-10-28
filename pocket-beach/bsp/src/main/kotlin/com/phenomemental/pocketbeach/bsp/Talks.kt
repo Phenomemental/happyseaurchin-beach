@@ -103,14 +103,21 @@ object Talks {
      * answer after it, she took it for something she had read.
      */
     val EXAMPLES: List<Pair<String, String>> = listOf(
-        "Matthew asks: What's your name?" to "talk\nI'm the pocket companion.",
-        "Matthew asks: Add to shopping: oat milk." to "act\nadd shopping: oat milk",
-        "Matthew asks: Under the dairy line in shopping, note: semi-skimmed." to "act\nadd shopping under \"Dairy: milk and cheese\": semi-skimmed",
+        "${SAYS}What's your name?" to "talk\nI'm the pocket companion.",
+        "${SAYS}Add to shopping: oat milk." to "act\nadd shopping: oat milk",
+        "${SAYS}Under the dairy line in shopping, note: semi-skimmed." to "act\nadd shopping under \"Dairy: milk and cheese\": semi-skimmed",
+        // Something told, worth keeping: in the block it names, or in a new one named for it, his words its opening.
+        "${SAYS}The shopping is on Saturdays from now on." to "act\nadd shopping: The shopping is on Saturdays from now on.",
+        "${SAYS}I want to run a marathon next spring." to "act\nnew running: I want to run a marathon next spring.",
+        "${SAYS}Thanks!" to "talk\nYou're welcome.",
     )
+
+    /** How each of Matthew's messages is put to her: what he says, an ask or not. */
+    const val SAYS = "Matthew says: "
     /** The turns a conversation is opened with: the examples, then the exchanges carried over from the last. */
     fun opening(context: List<Pair<String, String>>): List<Pair<String, String>> = EXAMPLES + context
 
-    private val READ_EXAMPLE = "Matthew asks: What does the whetstone say?" to "read\nread whetstone"
+    private val READ_EXAMPLE = "${SAYS}What does the whetstone say?" to "read\nread whetstone"
 
     /**
      * Her standing instruction: how to answer, the shell she wears, and the
@@ -121,12 +128,13 @@ object Talks {
         appendLine("You are the companion in Pocket beach, an app on Matthew's phone that keeps blocks of lines. You wear the shell $shell, shown below; let it guide you.")
         appendLine()
         appendLine("Answer in one of three ways. The first line of your answer is the way, one word, with nothing before it:")
-        appendLine("talk: for anything you can answer from what you see here, the pocket's blocks and their lines among it. Then your answer, briefly, in plain words.")
+        appendLine("talk: for greetings, thanks, questions, and anything you can answer from what you see here, the pocket's blocks and their lines among it. Then your answer, briefly, in plain words.")
         appendLine("read: only for a block whose lines you can't see here. Then read <block>, a line for each block, and nothing else. You'll be shown what they hold, then answer.")
-        appendLine("act: only when Matthew asks you to write: add, note, change, make or post. Then the actions, one a line, and nothing else; the app shows them to Matthew. The actions:")
+        appendLine("act: when Matthew asks you to write (add, note, change, make or post), and when he tells you something worth keeping: a goal, a plan, an idea, something about his life. Then the actions, one a line, and nothing else; the app shows them to Matthew. The actions:")
         appendLine(Acts.GRAMMAR)
         appendLine("Name a line by quoting its words, never by a number. A line goes at the end of its block unless Matthew says which line it goes under. Nothing is written until Matthew says yes.")
-        appendLine("When unsure, talk.")
+        appendLine("To keep what he tells you: if a block fits it, by the block's name or its opening line, add his words to it (add <block>: his words). If none fits, make a new block named for it in a word or two, his words its opening line (new <name>: his words).")
+        appendLine("Greetings, thanks and questions are talk, never act.")
         appendLine()
         if (examplesInText) {
             appendLine("For example (shopping is an example, not in the pocket):")
@@ -135,6 +143,7 @@ object Talks {
                 appendLine(said)
             }
         } else {
+            appendLine("The first exchanges are examples, about a block called shopping that isn't in the pocket.")
             appendLine("For example, to read a teaching block:")
             appendLine(READ_EXAMPLE.first)
             appendLine(READ_EXAMPLE.second)
@@ -187,7 +196,8 @@ object Talks {
      */
     fun reads(rest: String, question: String, pages: Pages): List<Acts.Action.Read> {
         fun known(name: String) = pages.exists(name) || pages.position(Region.TEACHING, name) != null
-        val parsed = rest.lines().mapNotNull { runCatching { Acts.parse(it).single() as? Acts.Action.Read }.getOrNull() }.distinct()
+        val parsed = rest.lines().mapNotNull { runCatching { Acts.parse(it).single() as? Acts.Action.Read }.getOrNull() }
+            .map { it.copy(block = pages.named(it.block)) }.distinct()
         parsed.filter { known(it.block) }.takeIf { it.isNotEmpty() }?.let { return it }
         val words = Regex("""[\p{L}\p{N}_-]+""").findAll("$rest $question".lowercase()).map { it.value }.toSet()
         val shore = pages.shore()
@@ -195,6 +205,32 @@ object Talks {
         // Else what she named, which the read then says isn't there.
         return named.ifEmpty { parsed }
     }
+
+    /**
+     * The block Matthew's words name when they are something told, not
+     * asked (no question, no ask to write, no greeting): for the app to offer
+     * "Keep this in …?" under her reply when she only talked. Names match
+     * whatever their capitals; the shell, the log and the hello world are
+     * never offered. Null when none, or more than one, is named.
+     */
+    fun keepIn(question: String, pages: Pages): String? {
+        val said = question.trim()
+        if (said.isEmpty() || said.endsWith("?")) return null
+        val lower = said.lowercase()
+        val first = Regex("""[\p{L}']+""").find(lower)?.value ?: return null
+        if (first in NOT_TOLD) return null
+        return pages.shore().mine.map { it.name }
+            .filter { it != Asks.LOG && it != HelloWorld.SHELL && it != HelloWorld.BLOCK }
+            .filter { Regex("""(?<![\p{L}\p{N}])${Regex.escape(it.lowercase())}(?![\p{L}\p{N}])""").containsMatchIn(lower) }
+            .singleOrNull()
+    }
+
+    /** First words that make what Matthew says an ask (a question, an ask to write or read) or chat, not something told to keep. */
+    private val NOT_TOLD = setOf(
+        "what", "what's", "how", "why", "when", "where", "who", "which", "can", "could", "would", "will", "do", "does", "did", "is", "are",
+        "should", "may", "tell", "show", "read", "add", "note", "change", "make", "post", "put", "write", "remove", "delete", "rename",
+        "thanks", "thank", "hello", "hi", "hey", "good", "bye", "goodbye", "morning", "night",
+    )
 
     /** The secret Matthew gives in [question] in so many words ("my secret is …", "secret: …"), if he does. */
     fun secretIn(question: String): String? =
@@ -261,7 +297,7 @@ object Talks {
             exchanges += message to reply
             return reply(reply)
         }
-        var her = say((before?.let { "($it)\n" } ?: "") + "Matthew asks: ${question.trim()}")
+        var her = say((before?.let { "($it)\n" } ?: "") + SAYS + question.trim())
         var sentBack = false
         while (true) {
             when (her.route) {

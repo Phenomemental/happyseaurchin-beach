@@ -4,6 +4,10 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.4.1** is being made: the companion keeps what Matthew
+tells her that is worth keeping; block names match whatever their capitals;
+the bench runs 0.4 on the CPU beside the GPU (see "What 0.4.1 changes").
+
 **pocket-beach-v0.3.5** is released: speaking a line no longer holds the
 phone's speech recogniser, which on Matthew's Pixel (0.3.2) failed with
 "error 10" and stopped Gboard's voice typing while the app ran (see "What
@@ -35,6 +39,69 @@ and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.4.1 changes
+
+From Matthew on 0.4's Ask. He said "I'm going to make a million pound by
+creating tech that changes the world… before the end of 2027", with an
+empty block called Million in his pocket. She only chatted back, and only
+the ask log got a line.
+
+- **She keeps what's worth keeping.** Her instruction now says to act not
+  only when he asks her to write, but also when he tells her something
+  worth keeping: a goal, a plan, an idea, something about his life.
+  - If a block fits it, by the block's name or its opening line, his words
+    go there (`add <block>: …`).
+  - If none fits, they go in a new block named for it in a word or two,
+    with his words as its opening line (`new <name>: …`).
+  - Greetings, thanks and questions stay talk. 0.4's "When unsure, talk"
+    is gone, since it was what stopped her.
+  - Two more example turns show both kinds, and a thanks shows talk.
+  - Each of his messages reaches her as "Matthew says: …", not "Matthew
+    asks: …", so something told isn't read as a question.
+  - As ever, he sees the writes before Yes.
+- **The app offers it when she doesn't.** When she only talks, and what he
+  said names one of his blocks (not a question, an ask to write, or a
+  greeting), the app shows "Keep this in Million?" under her reply. A tap
+  plans his words, exactly as he said them, as a new line of that block,
+  for Yes.
+- **Block names match whatever their capitals.** Speech writes "million",
+  and the block is Million.
+  - An action that names million is for Million.
+  - A new block whose name differs from one of his only in its capitals is
+    refused ("There's already a block called Million.").
+  - When she writes `new million: …` with Million there, which she did on
+    the laptop, his words go in Million.
+  - A rename may change a block's own capitals. On a disk that doesn't
+    tell capitals apart, the block passes through a passing name, so
+    nothing is lost.
+- **The bench:**
+  - It has 23 asks now:
+    - the Million case: an empty Million block, that sentence, and the
+      right answer is an add to Million;
+    - a plan that fits no block ("My plan is to learn to sail next
+      summer.", which should go in a new block, with his words as its
+      opening);
+    - one more chat ("Good night, talk tomorrow.").
+  - Keep is judged as a kind of its own, beside talk, read and act.
+  - Where she only talked, each ask's line says what the app would offer
+    ("Keep this in Million?").
+  - **0.4 on the CPU beside the GPU:** after 0.3's run and 0.4's two on
+    the GPU, the same asks are put to 0.4 on the CPU alone, with her first
+    word held. Then one conversation is kept for three asks on each, since
+    the CPU's slower reading of the instruction should fall mostly on the
+    first ask. Google's own LiteRT-LM table has the CPU nearly matching the
+    GPU for E2B on new phones, and on Tensor the Mali GPU is the weak part.
+  - It takes about half an hour now.
+- Version 0.4.1 (`versionCode` 10).
+
+**On the laptop's CPU** (her first word held): 21 of 23 with her new
+instruction, then right on the Million case once `new million` with Million
+there kept his words in it. A rerun of the keep and chat asks (3, 6, 13, 21,
+22, 23) got 6 of 6. The plan that fits no block went in a new block,
+`sailing`, though she wrote "I want to learn to sail next summer.", not his
+words word for word. Her instruction is about 230 tokens longer (about
+1,300), which the kept conversation reads once.
 
 ### What 0.4 changes
 
@@ -716,11 +783,16 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.4.apk` over 0.3.5. Then:
-   - **Ask, then "Run the bench".** It puts the twenty asks to 0.3's way,
-     then to 0.4's with her first word held, then free; then three asks of
-     one kept conversation, then the engine's probes. Keep the app open, as
-     before. Share the `bench-` block it keeps.
+1. Matthew installs `pocket-beach-v0.4.1.apk` over 0.4. Then:
+   - **Ask, then "Run the bench".** It puts the 23 asks to 0.3's way, then
+     to 0.4's with her first word held, then free, then held on the CPU
+     alone; then one conversation kept for three asks on the GPU and on the
+     CPU, then the engine's probes. About half an hour; keep the app open.
+     Share the `bench-` block it keeps.
+   - **Tell her something worth keeping:** "I'm going to make a million
+     pound…" with Million there. She should offer an add to Million; if she
+     only talks, the app offers "Keep this in Million?". And something
+     that fits no block: she should offer a new one.
    - **Ask her things, one after another,** in one visit to Ask: a question,
      a read ("What's in my garden block?"), an act ("Under the autumn line
      in garden, note …"). Talk should begin to show at once and stream; an
@@ -733,7 +805,8 @@ post offline failing plainly, with nothing sent (0.3.2).
      now gives the phone's error number (10 or 8): send it back.
 2. With the Pixel's bench of 0.4: whether her first word stays held (it
    costs a little once per conversation), and what comes next.
-3. **For the next build (0.4.1), from Matthew on 0.4's Ask:**
+3. **Built in 0.4.1** (see "What 0.4.1 changes"), from Matthew on 0.4's
+   Ask:
    - **Keep what he says.** He told her "I'm going to make a million pound
      by creating tech that changes the world… before the end of 2027". She
      only chatted back, and only the ask log got a line.

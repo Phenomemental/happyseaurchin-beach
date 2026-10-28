@@ -396,6 +396,10 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
         null -> {}
     }
     over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
+    // She only talked, and his words named one of his blocks: the app offers to keep them there, for Yes as ever.
+    model.app.asking.keepIn?.let { block ->
+        TextLink("Keep this in $block?", { model.app.asking.keep() }, tag = "keep-in")
+    }
     Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
     // Every answer's time and chip, talk, read or act, when Settings shows timings.
     if (model.app.showTimings) model.app.asking.history.lastOrNull()?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }

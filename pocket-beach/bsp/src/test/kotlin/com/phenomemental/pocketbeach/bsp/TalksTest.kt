@@ -44,6 +44,18 @@ class TalksTest {
     }
 
     @Test
+    fun whatHeTellsThatNamesABlockIsOfferedForKeeping() {
+        val (_, pages) = Bench.fixture(shelf, 1_793_178_000_000L)
+        assertEquals("Million", Talks.keepIn("I'm going to make a million pound by creating tech that changes the world, before the end of 2027.", pages), "whatever the capitals")
+        assertEquals("garden", Talks.keepIn("The garden gate needs a new latch.", pages))
+        assertNull(Talks.keepIn("What's in my garden block?", pages), "a question")
+        assertNull(Talks.keepIn("Add to garden: compost.", pages), "an ask to write, hers to plan")
+        assertNull(Talks.keepIn("Good morning! The garden looks lovely.", pages), "a greeting")
+        assertNull(Talks.keepIn("I'm going sailing.", pages), "no block named")
+        assertNull(Talks.keepIn("My notes on the garden are a mess.", pages), "two blocks named: not the app's to choose")
+    }
+
+    @Test
     fun theSecretIsWhatHeSaysItIs() {
         assertEquals("purple walrus", Talks.secretIn("Do the hello world. My secret is purple walrus."))
         assertEquals("otters hold hands", Talks.secretIn("Do the hello world again. My secret is otters hold hands."))
@@ -69,9 +81,11 @@ class TalksTest {
         assertContains(text, "- garden, opening \"The garden, through the year\", 2 lines:\n  \"Autumn: plant the bulbs\"\n  \"Winter: prune the roses\"")
         assertFalse(Regex("""\n  1: """).containsMatchIn(text), "no addresses")
         assertContains(text, "add <block> under \"<the words of a line>\": <line>")
-        assertContains(text, "When unsure, talk.")
+        assertContains(text, "Greetings, thanks and questions are talk, never act.")
         assertFalse(text.contains("is already in the pocket"))
-        assertContains(text, "Matthew asks: What's your name?\ntalk\nI'm the pocket companion.")
+        assertContains(text, "Matthew says: What's your name?\ntalk\nI'm the pocket companion.")
+        assertContains(text, "when he tells you something worth keeping")
+        assertContains(text, "- Million, opening \"Million at pocket.\", 0 lines")
         val turns = Talks.instruction(HelloWorld.SHELL, "pocket-companion", "", pages, examplesInText = false)
         assertFalse(turns.contains("What's your name?"), "given as turns instead")
         assertTrue(turns.contains("read\nread whetstone"), "but a read is always written in")
@@ -166,7 +180,7 @@ class TalksAskTest {
         val s = Talks.Stream { message, _ -> heard += message; "talk\nNoted." }
         val (storage, pages) = Bench.fixture(shelf, now)
         Talks.ask("And now?", s, pages, storage, shelf, HelloWorld.SHELL_OPENING, "0".repeat(32), { now }, before = "Matthew said not now: wrong block.")
-        assertEquals("(Matthew said not now: wrong block.)\nMatthew asks: And now?", heard.single())
+        assertEquals("(Matthew said not now: wrong block.)\nMatthew says: And now?", heard.single())
     }
 
     @Test

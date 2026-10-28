@@ -51,6 +51,18 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     @Volatile private var engine: Engine? = null
 
+    /** The one processor the bench has asked for ("CPU"), or null: the GPU, else the CPU. */
+    @Volatile private var onlyOn: String? = null
+
+    override suspend fun only(processor: String?) = withContext(thread) {
+        check(synchronized(this@Gemma) { open == 0 }) { "An Ask is open; the engine changes processor only when none is." }
+        main.removeCallbacks(letGo)
+        engine?.let { runCatching { it.close() } }
+        engine = null
+        this@Gemma.processor = null
+        onlyOn = processor
+    }
+
     /** Why holding her first word failed on this phone, once it has; her replies are then free for the rest of the app's run. */
     @Volatile private var whyNotHeld: String? = null
 
@@ -230,6 +242,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     }
 
     private fun load(speculative: Boolean = false): Engine {
+        if (onlyOn == "CPU") return open(Backend.CPU(), counting = true, speculative = speculative).also { processor = "CPU"; whyNotGpu = null }
         return try {
             open(Backend.GPU(), counting = true, speculative = speculative).also { processor = "GPU"; whyNotGpu = null }
         } catch (t: Throwable) {

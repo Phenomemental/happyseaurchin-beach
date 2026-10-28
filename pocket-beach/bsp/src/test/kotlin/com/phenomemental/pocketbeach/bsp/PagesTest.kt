@@ -24,6 +24,25 @@ class PagesTest {
 
     private fun root(name: String) = assertNotNull(pages.position(Region.POCKET, name))
 
+    /** On a disk, as the phone keeps blocks, and as a Windows laptop would, where a name's capitals may share one file. */
+    @Test
+    fun aRenameOfCapitalsOnlyKeepsTheBlockOnDisk() {
+        val dir = kotlin.io.path.createTempDirectory("pocket").toFile()
+        try {
+            val disk = FileStorage(dir)
+            val onDisk = Pages(disk, shelf, PocketBsp(disk, shelf) { now }) { now }
+            assertTrue(onDisk.carryOut(onDisk.planNewBlock("million")).ok)
+            assertTrue(onDisk.carryOut(onDisk.planAdd("million", "", "a million pound by 2027")).ok)
+            val before = disk.read("million")
+            assertTrue(onDisk.rename("million", "Million").ok)
+            assertEquals(listOf("Million"), disk.names())
+            assertEquals(before, disk.read("Million"))
+            assertEquals("a million pound by 2027", onDisk.position(Region.POCKET, "Million")!!.lines.single().text)
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
     @Test
     fun aBlockIsRenamedOrRemovedWhole() {
         done(pages.planNewBlock("garden"))
@@ -55,6 +74,15 @@ class PagesTest {
         assertEquals("There's no block called notes.", pages.remove("notes").problem)
         assertEquals(listOf("allotment"), pages.shore().mine.map { it.name })
         done(pages.planNewBlock("notes"))
+
+        // A name differing only in its capitals is the same block's: no second one, but a block may change its own.
+        assertEquals("There's already a block called notes.", pages.planNewBlock("Notes").refusal)
+        assertEquals("There's already a block called allotment.", pages.renameRefusal("notes", "Allotment"))
+        assertEquals("notes", pages.named("NOTES"))
+        assertEquals("nowhere", pages.named("nowhere"))
+        now += 1000
+        assertTrue(pages.rename("notes", "Notes").ok)
+        assertEquals("Notes", pages.named("notes"))
     }
 
     @Test
