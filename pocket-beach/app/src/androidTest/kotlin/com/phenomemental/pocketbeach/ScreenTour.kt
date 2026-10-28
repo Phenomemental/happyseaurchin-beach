@@ -214,6 +214,7 @@ class ScreenTour {
             (app.mind as StandIn).script += listOf(
                 "talk\nI'm the pocket companion. I read your blocks freely, and write only when you say yes.",
                 "act\nadd orchard under \"in the\": net the trees against the birds",
+                "talk\nThat sounds like a good plan.",
             )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
@@ -230,6 +231,15 @@ class ScreenTour {
                 compose.tap("choose:1")
                 compose.waitFor("writes")
                 shot("$theme-34-ask-chosen")
+                // Something told that names a block, which she only talks about: the app offers to keep it there.
+                compose.tap("not-now")
+                compose.tap("just-not-now")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextClearance()
+                compose.onNodeWithTag("question").performTextInput("The orchard needs netting before June.")
+                compose.tap("ask")
+                compose.waitFor("keep-in", "Keep this in orchard?")
+                shot("$theme-36-ask-keep")
             }
             app.asking.reset()
             // Settings: whether each answer shows its time.

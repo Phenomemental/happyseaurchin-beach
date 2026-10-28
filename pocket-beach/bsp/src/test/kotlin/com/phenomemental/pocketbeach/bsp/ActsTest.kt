@@ -106,6 +106,11 @@ class ActsTest {
         // A line restated before the action that quotes it is let be.
         assertEquals(listOf("garden ADD 2.1: mulch the beds"), writes("add garden: Winter: prune the roses\nadd garden under \"Winter: prune the roses\": mulch the beds"))
         assertEquals(listOf("garden ADD 3: Winter: prune the roses"), writes("add garden: Winter: prune the roses"), "but asked for alone, it is added")
+        // A block named in other capitals is that block: speech writes "million", and the block is Million.
+        assertEquals(listOf("Million ADD 1: a million pound by 2027"), writes("add million: a million pound by 2027"))
+        assertContains(plan("new million").problem!!, "There's already a block called Million.")
+        // As she answered on the laptop: a new block, with his words, of the name he already has. His words go in it.
+        assertEquals(listOf("Million ADD 1: I'm going to make a million pound"), writes("new million: I'm going to make a million pound"))
         // Under the block's opening is in the block itself.
         assertEquals(listOf("notes ADD 2: call the plumber"), writes("add notes under \"Notes\": call the plumber"))
         assertEquals(listOf("recipes NEW_BLOCK : null"), writes("new recipes"))

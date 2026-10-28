@@ -190,7 +190,7 @@ object Acts {
 
         // A line she adds that the block already holds, only to quote it in a later action, is said, not meant: let be.
         val restated = actions.withIndex().filter { (i, a) ->
-            a is Action.Add && a.under == null && lines(pages, a.block).any { it.text != null && plain(it.text) == plain(a.text) } &&
+            a is Action.Add && a.under == null && lines(pages, pages.named(a.block)).any { it.text != null && plain(it.text) == plain(a.text) } &&
                 actions.drop(i + 1).any { b -> (b as? Action.Add)?.under?.let { plain(it) == plain(a.text) } == true || (b as? Action.Change)?.line?.let { plain(it) == plain(a.text) } == true }
         }.map { it.index }.toSet()
 
@@ -198,8 +198,19 @@ object Acts {
         val makesHello = actions.any { it is Action.New && it.block == HelloWorld.BLOCK }
         var shellLine = false
 
-        for ((i, action) in actions.withIndex()) {
+        for ((i, typed) in actions.withIndex()) {
             if (i in restated) continue
+            // A block named in other capitals is that block: speech writes "million", and the block is Million.
+            // A new block, with words, of a name already in the pocket is those words kept in it.
+            val action = when (typed) {
+                is Action.New -> pages.named(typed.block).let { named ->
+                    if (typed.opening != null && pages.exists(named)) Action.Add(named, null, typed.opening) else typed
+                }
+                is Action.Add -> typed.copy(block = pages.named(typed.block))
+                is Action.Change -> typed.copy(block = pages.named(typed.block))
+                is Action.Read -> typed.copy(block = pages.named(typed.block))
+                else -> typed
+            }
             val step = when (action) {
                 is Action.New -> Step(Act.MAKE, action.block, "", action.opening)
                 is Action.Add -> {

@@ -285,12 +285,12 @@ private fun kept(engine: Engine, shelf: Shelf) {
             return whole.toString()
         }
         for (q in listOf("What's your name?", "What's in my garden block?", "Add a line to garden: buy more compost.", "Thanks.", "Make a new block called recipes.")) {
-            println("Matthew asks: $q")
-            ask("Matthew asks: $q")
+            println(Talks.SAYS + q)
+            ask(Talks.SAYS + q)
         }
         println("Stopped after three pieces, then asked again:")
-        ask("Matthew asks: Tell me about the sea at night, at length.", stopAfter = 3)
-        ask("Matthew asks: What's your name?")
+        ask(Talks.SAYS + "Tell me about the sea at night, at length.", stopAfter = 3)
+        ask(Talks.SAYS + "What's your name?")
     }
 }
 

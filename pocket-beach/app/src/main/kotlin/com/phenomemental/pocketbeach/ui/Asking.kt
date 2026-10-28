@@ -67,6 +67,10 @@ class Asking(private val app: PocketApp) {
     var live by mutableStateOf("")
         private set
 
+    /** The block Matthew's words named when she only talked: the app offers to keep them there ("Keep this in Million?"). */
+    var keepIn by mutableStateOf<String?>(null)
+        private set
+
     /** An exchange of this Ask screen's conversation, as the page shows it. */
     class Exchange(val question: String, val said: String, val note: String, val time: String)
 
@@ -127,6 +131,7 @@ class Asking(private val app: PocketApp) {
         if (q.isEmpty() || benchRunning || stage !is Stage.Writing && stage !is Stage.Over) return
         asked = q
         live = ""
+        keepIn = null
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch {
             val started = System.nanoTime()
@@ -161,12 +166,37 @@ class Asking(private val app: PocketApp) {
         val shown = Stage.Shown(asAsked(a), took, pace, firstShown)
         val planned = a.planned
         when {
-            a.route == Talks.Route.TALK -> end(shown, null, null, "She talked.", took)
+            a.route == Talks.Route.TALK -> {
+                // What he told her names one of his blocks, and she only talked: the app offers to keep it there.
+                keepIn = Talks.keepIn(asked, app.pages)
+                end(shown, null, null, "She talked.", took)
+            }
             a.route == Talks.Route.READ -> end(shown, null, null, "She read ${a.found.size} block${if (a.found.size == 1) "" else "s"}, then answered.", took)
             a.problem != null -> end(shown, null, null, "Her act couldn't go ahead: ${a.problem}", took)
             planned?.choose != null -> stage = Stage.Choosing(a, chosen, took, pace)
             planned?.proposal?.asks != true -> end(shown, null, null, planned?.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.", took)
             else -> stage = shown
+        }
+    }
+
+    /** Matthew tapped "Keep this in …?": his words, as he said them, planned as a line added to that block, for Yes. */
+    fun keep() {
+        val block = keepIn ?: return
+        val over = stage as? Stage.Over ?: return
+        keepIn = null
+        scope.launch {
+            val actions = listOf(Acts.Action.Add(block, null, asked))
+            val planned = withContext(Dispatchers.IO) {
+                Acts.propose("", actions, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), System.currentTimeMillis())
+            }
+            // Shown as her talk was timed: the offer is the app's, made in no time.
+            val a = Talks.Answered(Talks.Route.ACT, "", emptyList(), planned, planned.problem, over.shown?.asked?.exchanges.orEmpty(), actions)
+            val shown = Stage.Shown(asAsked(a), over.shown?.took ?: 0, over.shown?.pace, over.shown?.firstShown)
+            when {
+                planned.problem != null -> end(shown, null, null, "It couldn't be kept in $block: ${planned.problem}", shown.took)
+                planned.proposal?.asks != true -> end(shown, null, null, planned.proposal?.refusal?.let { "It couldn't be kept in $block: $it" } ?: "Nothing to say yes to.", shown.took)
+                else -> stage = shown
+            }
         }
     }
 
@@ -192,7 +222,7 @@ class Asking(private val app: PocketApp) {
     /** Her last reply, kept as context for the next conversation; only the last six. */
     private fun remember(a: Talks.Answered) {
         val (message, reply) = a.exchanges.lastOrNull() ?: return
-        context.addLast("Matthew asks: $asked" to reply.ifBlank { message })
+        context.addLast(Talks.SAYS + asked to reply.ifBlank { message })
         while (context.size > 6) context.removeFirst()
     }
 
@@ -268,6 +298,7 @@ class Asking(private val app: PocketApp) {
         job?.cancel()
         question = ""
         live = ""
+        keepIn = null
         stage = Stage.Writing
         history.clear()
         context.clear()

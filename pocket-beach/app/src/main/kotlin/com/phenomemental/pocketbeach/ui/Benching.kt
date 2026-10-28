@@ -21,6 +21,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -55,6 +56,7 @@ class Benching(private val app: PocketApp) {
         const val BEFORE = "0.3 (one JSON plan, held)"
         const val HELD = "0.4, her first word held (route word, actions, streamed)"
         const val FREE = "0.4, her first word free (route word, actions, streamed)"
+        const val CPU = "0.4 on the CPU, her first word held (route word, actions, streamed)"
     }
 
     var stage by mutableStateOf<Stage>(Stage.Ready)
@@ -99,14 +101,34 @@ class Benching(private val app: PocketApp) {
                     Bench.Run(name, results.drop(from))
                 }
                 stage = Stage.Probing("Keeping one conversation for three asks")
-                about += withContext(Dispatchers.IO) { kept(mind) }
+                val keptGpu = withContext(Dispatchers.IO) { kept(mind) }
+                // Then on the CPU alone, beside the GPU: the same asks, and one conversation kept, where its slower reading falls on the first ask.
+                stage = Stage.Probing("Loading the model on the CPU")
+                val cpu = try {
+                    withContext(Dispatchers.IO) { mind.only("CPU") }
+                    val cpuLoad = withContext(Dispatchers.IO) { mind.warm() }
+                    about[2] = about[2] + " On the CPU alone: loaded " + (cpuLoad?.let { "in ${Bench.secs(it)} s" } ?: "already") + (mind.processor?.let { ", on the $it" } ?: "") + "."
+                    val from = results.size
+                    for (ask in Bench.ASKS) {
+                        stage = Stage.Asking(CPU, ask)
+                        results += withContext(Dispatchers.IO) {
+                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, true) } }
+                        }
+                    }
+                    stage = Stage.Probing("Keeping one conversation for three asks, on the CPU")
+                    val keptCpu = withContext(Dispatchers.IO) { kept(mind) }
+                    about += "One conversation kept for three asks, her first words after: on the GPU $keptGpu; on the CPU $keptCpu."
+                    Bench.Run(CPU, results.drop(from))
+                } finally {
+                    withContext(Dispatchers.IO + NonCancellable) { runCatching { mind.only(null) } }
+                }
                 (mind as? Gemma)?.let { gemma ->
                     stage = Stage.Probing("Letting the model go, to try the engine")
                     about += withContext(Dispatchers.IO) { gemma.probes { what -> scope.launch { stage = Stage.Probing(what) } } }
                 }
                 val now = System.currentTimeMillis()
                 val name = "bench-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
-                val runs = listOf(Bench.Run(BEFORE, before)) + after
+                val runs = listOf(Bench.Run(BEFORE, before)) + after + cpu
                 val block = Bench.block(runs, about, now)
                 val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
                 changed()
@@ -171,7 +193,11 @@ class Benching(private val app: PocketApp) {
                 val total = (System.nanoTime() - started) / 1_000_000
                 val turns = t.pace.turns
                 val first = turns.firstOrNull()?.firstTokenSeconds?.let { (it * 1000).toLong() }
-                Bench.didOfTalks(answered, Bench.Timing(first, shown ?: total, total, answered.exchanges.size, turns.sumOf { it.read }.takeIf { turns.isNotEmpty() }, turns.sumOf { it.wrote }.takeIf { turns.isNotEmpty() }))
+                Bench.didOfTalks(
+                    answered,
+                    Bench.Timing(first, shown ?: total, total, answered.exchanges.size, turns.sumOf { it.read }.takeIf { turns.isNotEmpty() }, turns.sumOf { it.wrote }.takeIf { turns.isNotEmpty() }),
+                    offered = if (answered.route == Talks.Route.TALK) Talks.keepIn(ask.question, pages) else null,
+                )
             } finally {
                 talker = null
             }
@@ -192,9 +218,9 @@ class Benching(private val app: PocketApp) {
                     }
                     Bench.secs(first ?: ((System.nanoTime() - started) / 1_000_000)) + " s"
                 }
-                "One conversation kept for three asks: her first words after ${times.joinToString(", then ")}."
+                times.joinToString(", then ")
             }
-        }.getOrElse { "One conversation kept for three asks: it failed (${it.message})." }
+        }.getOrElse { "(it failed: ${it.message})" }
     }
 
     private fun phone(): String {

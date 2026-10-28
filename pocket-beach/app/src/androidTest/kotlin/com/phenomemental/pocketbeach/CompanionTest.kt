@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.phenomemental.pocketbeach.bsp.Asks
+import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Region
@@ -277,17 +278,18 @@ class CompanionTest {
             assertFalse(app.pages.exists(HelloWorld.BLOCK))
             assertTrue("nothing posted", wire.sent.isEmpty())
             val results = app.benching.results
-            assertEquals("twenty asks before, twenty after with her first word held, twenty with it free", 60, results.size)
-            assertTrue("the stand-in's hello world is right, before", results[19].right)
-            assertTrue("and after, held", results[39].right)
-            assertTrue("and free", results.last().right)
+            val n = Bench.ASKS.size
+            assertEquals("the asks before, after with her first word held, with it free, and held on the CPU", 4 * n, results.size)
+            val hello = Bench.ASKS.indexOfFirst { it.hello }
+            for (run in 0 until 4) assertTrue("the stand-in's hello world is right in run ${run + 1}", results[run * n + hello].right)
             val run = app.pages.position(Region.POCKET, made.single())!!
             assertTrue(run.text!!.startsWith("Bench, "))
-            assertEquals(4, run.lines.size)
+            assertEquals(5, run.lines.size)
             assertTrue(run.lines[0].text!!.startsWith("0.3 "))
             assertTrue(run.lines[1].text!!.startsWith("0.4, her first word held"))
             assertTrue(run.lines[2].text!!.startsWith("0.4, her first word free"))
-            assertEquals("How it was run", run.lines[3].text)
+            assertTrue(run.lines[3].text!!.startsWith("0.4 on the CPU"))
+            assertEquals("How it was run", run.lines[4].text)
             compose.tap("open-bench-block")
             compose.waitFor("standing", "Bench, ")
         }
@@ -374,6 +376,33 @@ class CompanionTest {
         assertEquals(4, log.lines.size)
         for (entry in log.lines) assertTrue(app.pages.position(Region.POCKET, Asks.LOG, entry.address)!!.lines.any { it.text?.startsWith("Took ") == true })
         app.showTimings = true
+    }
+
+    @Test
+    fun whatHeTellsIsOfferedForKeepingInTheBlockItNames() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        app.pages.carryOut(app.pages.planNewBlock("Million"))
+        val goal = "I'm going to make a million pound by creating tech that changes the world, before the end of 2027."
+        // She only chats; the app offers to keep it in Million. Then she keeps a line herself, naming the block in small letters.
+        mind.script += listOf("talk\nThat's a big goal, Matthew!", "act\nadd million: by selling the first app in 2026")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked(goal)
+            compose.waitFor("over", "She talked.")
+            compose.waitFor("keep-in", "Keep this in Million?")
+            compose.tap("keep-in")
+            compose.waitFor("writes")
+            assertTrue("nothing written before yes", app.pages.position(Region.POCKET, "Million")!!.lines.isEmpty())
+            compose.tap("yes")
+            compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "Million")?.lines?.firstOrNull()?.text == goal }
+
+            asked("Add to it: by selling the first app in 2026.")
+            compose.waitFor("writes")
+            compose.tap("yes")
+            compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "Million")?.lines?.getOrNull(1)?.text == "by selling the first app in 2026" }
+            assertFalse("never a second block in other capitals", app.pages.exists("million"))
+        }
     }
 
     @Test

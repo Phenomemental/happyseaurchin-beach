@@ -3,23 +3,31 @@ package com.phenomemental.pocketbeach.bsp
 import java.util.Locale
 
 /**
- * The bench: twenty fixed asks, each put to the companion on a fresh scratch
+ * The bench: twenty-three fixed asks, each put to the companion on a fresh scratch
  * copy of a small pocket ([fixture]), so nothing of Matthew's is ever written
  * or posted. Each is judged mechanically ([judge]) and timed, and the whole
  * run is kept as one block ([block]) he can share, so every change to the
  * companion is judged by what it does on his phone.
  *
- * The asks are of three kinds: talk (plain words, nothing read or written),
- * read (an answer from what a block says, nothing written) and act (writes
- * planned for his yes). An act is right only if exactly the writes it needs
- * are planned, landing where they should; the hello world must also check
- * out once carried out on the scratch copy.
+ * The asks are of four kinds: talk (plain words, nothing read or written),
+ * read (an answer from what a block says, nothing written), act (writes
+ * planned for his yes) and keep (something he tells her that is worth
+ * keeping, offered as writes for his yes, in the block it fits or a new
+ * one). An act or a keep is right only if exactly the writes it needs are
+ * planned, landing where they should; the hello world must also check out
+ * once carried out on the scratch copy.
  */
 object Bench {
-    enum class Route { TALK, READ, ACT }
+    enum class Route { TALK, READ, ACT, KEEP }
 
-    /** A write an act must plan: to [block], of [kind], landing at [at], its line holding [holds] (ignoring case). */
+    /**
+     * A write an act must plan: to [block] ([ANY]: a new block of any name),
+     * of [kind], landing at [at], its line holding [holds] (ignoring case).
+     */
     class Want(val block: String, val kind: Kind, val at: String, val holds: String? = null)
+
+    /** A [Want]'s block when the block is new and hers to name. */
+    const val ANY = "*"
 
     /**
      * One fixed ask: what Matthew says, how it should be answered, and what
@@ -69,6 +77,10 @@ object Bench {
         Ask(18, Route.ACT, "Note in notes: call the plumber.", writes = listOf(Want("notes", Kind.ADD, "2", "call the plumber"))),
         Ask(19, Route.ACT, "Add two lines to garden: water the roses, and cut the hedge.", writes = listOf(Want("garden", Kind.ADD, "3", "water the roses"), Want("garden", Kind.ADD, "4", "cut the hedge"))),
         Ask(20, Route.ACT, "Do the hello world. My secret is $SECRET.", hello = true),
+        // From Matthew's Ask on 0.4: an empty block called Million was there, and she only chatted.
+        Ask(21, Route.KEEP, "I'm going to make a million pound by creating tech that changes the world, before the end of 2027.", writes = listOf(Want("Million", Kind.ADD, "1", "million pound"))),
+        Ask(22, Route.KEEP, "My plan is to learn to sail next summer.", writes = listOf(Want(ANY, Kind.NEW_BLOCK, ""), Want(ANY, Kind.CHANGE, "", "learn to sail"))),
+        Ask(23, Route.TALK, "Good night, talk tomorrow.", says = listOf(listOf("night", "tomorrow", "sleep", "rest", "bye", "dream")), plain = true),
     )
 
     /**
@@ -88,6 +100,8 @@ object Bench {
         go(pages.planNewBlock("notes"))
         go(pages.planChange("notes", "", "Notes"))
         go(pages.planAdd("notes", "", "Buy stamps"))
+        // As Matthew made it: named with a capital, its opening the app's own, no lines yet.
+        go(pages.planNewBlock("Million"))
         return storage to pages
     }
 
@@ -108,6 +122,8 @@ object Bench {
         val proposal: Proposal?,
         val problem: String?,
         val timing: Timing,
+        /** The block the app would offer to keep his words in ("Keep this in Million?"), when she only talked. */
+        val offered: String? = null,
     )
 
     /** What today's companion (one JSON plan an answer) did, read from its [Asked]. */
@@ -121,14 +137,14 @@ object Bench {
     }
 
     /** What 0.4's companion (a route word, then plain words, reads or actions) did, read from its [Talks.Answered]. */
-    fun didOfTalks(answered: Talks.Answered, timing: Timing): Did {
+    fun didOfTalks(answered: Talks.Answered, timing: Timing, offered: String? = null): Did {
         val route = when (answered.route) {
             Talks.Route.TALK -> Route.TALK
             Talks.Route.READ -> Route.READ
             Talks.Route.ACT -> Route.ACT
         }
         val problem = answered.problem ?: answered.planned?.choose?.let { "It asked which line “${it.quote}” in ${it.block} meant (${it.lines.size} match)." }
-        return Did(route, answered.said, answered.planned?.proposal, problem, timing)
+        return Did(route, answered.said, answered.planned?.proposal, problem, timing, offered)
     }
 
     /**
@@ -151,7 +167,7 @@ object Bench {
                 (NEVER + ask.never).firstOrNull { said.contains(it, ignoreCase = true) }?.let { add("It said \"$it\", looking for a block nobody asked about.") }
                 if (ask.plain && did.route == Route.READ) add("It read a block to answer what needs no reading.")
             }
-            Route.ACT -> {
+            Route.ACT, Route.KEEP -> {
                 p?.refusal?.let { add("Its plan can't go ahead: $it") }
                 if (ask.hello) {
                     if (p == null || p.writes.isEmpty() && p.refusal == null) {
@@ -170,7 +186,7 @@ object Bench {
                     if (planned.isEmpty() && p?.refusal == null) add("It planned no write.")
                     for (want in ask.writes) {
                         val hit = planned.firstOrNull { w ->
-                            w.plan.block == want.block && w.plan.kind == want.kind && (w.plan.landsAt ?: "") == want.at &&
+                            (want.block == ANY || w.plan.block == want.block) && w.plan.kind == want.kind && (w.plan.landsAt ?: "") == want.at &&
                                 (want.holds == null || (w.text ?: w.plan.text).contains(want.holds, ignoreCase = true))
                         }
                         if (hit == null) add("It didn't plan ${describe(want)}.")
@@ -183,10 +199,14 @@ object Bench {
         }
     }
 
-    private fun describe(w: Want): String = when (w.kind) {
-        Kind.NEW_BLOCK -> "making ${w.block}"
-        Kind.ADD -> "a line${w.holds?.let { " \"$it\"" }.orEmpty()} in ${w.block} at ${w.at}"
-        Kind.CHANGE -> "the line at ${w.at} in ${w.block} changed${w.holds?.let { " to hold \"$it\"" }.orEmpty()}"
+    private fun describe(w: Want): String {
+        val block = if (w.block == ANY) "a new block" else w.block
+        return when (w.kind) {
+            Kind.NEW_BLOCK -> "making $block"
+            Kind.ADD -> "a line${w.holds?.let { " \"$it\"" }.orEmpty()} in $block at ${w.at}"
+            Kind.CHANGE -> if (w.at.isEmpty()) "$block's opening line holding \"${w.holds}\""
+                else "the line at ${w.at} in $block changed${w.holds?.let { " to hold \"$it\"" }.orEmpty()}"
+        }
     }
 
     /** One ask's result. */
@@ -267,16 +287,20 @@ object Bench {
             if (t.read != null && t.wrote != null) "read ${t.read}, wrote ${t.wrote} tokens" else null,
         ).joinToString(", ")
         val said = r.did.said.trim().replace(Regex("\\s+"), " ").let { if (it.length > 160) it.take(159) + "…" else it }
-        val chose = if (r.did.route != r.ask.route) " Taken as ${name(r.did.route).lowercase()}." else ""
+        // A keep is answered as an act; anything else is taken as other than asked.
+        val asked = if (r.ask.route == Route.KEEP) Route.ACT else r.ask.route
+        val chose = if (r.did.route != asked) " Taken as ${name(r.did.route).lowercase()}." else ""
+        val offer = r.did.offered?.let { " The app would offer: “Keep this in $it?”" }.orEmpty()
         return (if (r.right) "✓ " else "✗ ") + "${r.ask.n}. ${r.ask.question} ($times).$chose" +
             (if (said.isNotEmpty()) " Said: “$said”" else "") +
-            (if (r.problems.isNotEmpty()) " Wrong: " + r.problems.joinToString(" ") else "")
+            (if (r.problems.isNotEmpty()) " Wrong: " + r.problems.joinToString(" ") else "") + offer
     }
 
     fun name(route: Route) = when (route) {
         Route.TALK -> "Talk"
         Route.READ -> "Read"
         Route.ACT -> "Act"
+        Route.KEEP -> "Keep"
     }
 
     fun median(xs: List<Long>): Long = if (xs.isEmpty()) 0 else xs.sorted()[xs.size / 2]

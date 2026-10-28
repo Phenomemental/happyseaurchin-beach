@@ -24,6 +24,9 @@ interface Mind {
     /** Load it now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
     suspend fun warm(): Long? = null
 
+    /** Run it on [processor] alone ("CPU"), or as ever (null: the GPU, else the CPU); it is let go, to load that way next. For the bench. */
+    suspend fun only(processor: String?) {}
+
     /**
      * 0.4: one conversation, kept while Ask is open, its [instruction]
      * processed once; [history], the last exchanges (Matthew's words, hers),
