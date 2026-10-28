@@ -54,7 +54,7 @@ fun main(args: Array<String>) {
         val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { now }) { now }
         HelloWorld.makeShell(pages)
         val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
-        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages.shore().mine)
+        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages)
         val seal = HelloWorld.seal()
         val config = ConversationConfig(
             systemInstruction = Contents.of(system),
@@ -117,7 +117,7 @@ private fun ordinary(engine: Engine, shelf: Shelf) {
         pages.carryOut(pages.planAdd("garden", "", "Autumn: plant the bulbs"))
         pages.carryOut(pages.planAdd("garden", "", "Winter: prune the roses"))
         val worn = Shells(storage, shelf).wear(HelloWorld.SHELL, now)
-        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages.shore().mine)
+        val system = Asks.instruction(HelloWorld.SHELL, worn.window, Asks.plainWindow(pages, HelloWorld.SHELL), pages)
         val config = ConversationConfig(
             systemInstruction = Contents.of(system),
             samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 1),

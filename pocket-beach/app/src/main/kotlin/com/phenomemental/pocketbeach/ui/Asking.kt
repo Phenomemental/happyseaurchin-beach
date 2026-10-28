@@ -65,7 +65,7 @@ class Asking(private val app: PocketApp) {
             val started = System.nanoTime()
             val outcome = withContext(Dispatchers.IO) {
                 runCatching {
-                    val instruction = Asks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages.shore().mine)
+                    val instruction = Asks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages)
                     app.mind.chat(instruction).use { c ->
                         chat = c
                         try {
@@ -170,7 +170,7 @@ class Asking(private val app: PocketApp) {
         val time = took?.let { "Took %.1f s to answer".format(it / 1000.0) + (app.mind.processor?.let { p -> ", on the $p" } ?: "") + ", in ${Words.count(exchanges, "exchange")}." }
             ?: "Stopped."
         scope.launch {
-            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal), note, time)) } }
+            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
             changed()
         }
     }

@@ -46,6 +46,8 @@ class AsksTest {
         assertEquals("Phenomemental", a.post!!.pool)
 
         assertNull(Asks.parse("""{"say":"Nothing to do.","steps":[],"post":{"pool":"","message":""}}""").post)
+        assertNull(Asks.parse("""{"say":"Nothing to do.","steps":[],"post":{"pool":"None","message":""}}""").post)
+        assertNull(Asks.parse("""{"say":"Nothing to do.","steps":[],"post":{"pool":"Phenomemental"}}""").post)
         assertEquals(Act.READ, Asks.parse("""{"say":"Looking.","steps":[{"do":"Read","block":"pocket/garden","at":1}]}""").steps[0].act)
         assertEquals("garden", Asks.parse("""{"say":"x","steps":[{"do":"read","block":"pocket/garden"}]}""").steps[0].block)
         assertEquals("1", Asks.parse("""{"say":"x","steps":[{"do":"read","block":"garden","at":1}]}""").steps[0].at)
@@ -57,7 +59,6 @@ class AsksTest {
             """{"say":"x","steps":[{"do":"add","block":"garden"}]}""",
             """{"say":"x","steps":[{"do":"add","text":"a line"}]}""",
             """{"say":"x","steps":"make garden"}""",
-            """{"say":"x","steps":[],"post":{"pool":"Phenomemental"}}""",
             """{"say":"","steps":[]}""",
         )) assertFailsWith<Asks.Unreadable>(bad) { Asks.parse(bad) }
     }
@@ -179,12 +180,37 @@ class AsksTest {
     }
 
     @Test
+    fun aPostIsOfferedOnlyWhenMatthewAsksForOne() {
+        pages.carryOut(pages.planNewBlock("garden"))
+        val replies = ArrayDeque(listOf(
+            """{"say":"Reading.","steps":[{"do":"read","block":"garden","at":"","text":""}],"post":{"pool":"Phenomemental","message":"Done!"}}""",
+            """{"say":"It holds only its opening line.","steps":[]}""",
+        ))
+        val asked = Asks.ask("What's in my garden block?", { replies.removeFirst() }, pages, storage, shelf, opening, seal) { now }
+        assertEquals(2, asked.exchanges.size, "with the unasked post left out, the read runs and it answers again")
+        assertContains(asked.found.single(), "pocket/garden")
+        assertEquals("Done!", asked.unasked!!.message)
+        assertNull(asked.answer!!.post)
+        assertFalse(asked.proposal!!.asks)
+        assertContains(Asks.proposed(asked.proposal, asked.unasked), "that wasn't asked for, so it was left out")
+
+        assertTrue(Asks.asksForPost("Do the hello world. My secret is x."))
+        assertTrue(Asks.asksForPost("please post this to my pool"))
+        assertTrue(Asks.asksForPost("hello-world please"))
+        assertFalse(Asks.asksForPost("Add a line to garden: buy more compost."))
+        assertFalse(Asks.asksForPost("What's the composition of my notes?"))
+    }
+
+    @Test
     fun theInstructionCarriesTheShellAndThePocket() {
         pages.carryOut(pages.planNewBlock("garden"))
-        val text = Asks.instruction(HelloWorld.SHELL, "pocket-companion: \"$opening\"", Asks.plainWindow(pages, "garden"), pages.shore().mine)
+        pages.carryOut(pages.planAdd("garden", "", "autumn"))
+        val text = Asks.instruction(HelloWorld.SHELL, "pocket-companion: \"$opening\"", Asks.plainWindow(pages, "garden"), pages)
         assertContains(text, "You wear the shell pocket-companion")
         assertContains(text, opening)
-        assertContains(text, "- garden: \"garden at pocket.\"")
+        assertContains(text, "- garden, its opening line: \"garden at pocket.\"\n  1: \"autumn\"")
+        assertContains(text, "The teaching blocks, read only: ")
+        assertContains(text, "whetstone")
         assertContains(text, "{{fingerprint}}")
         assertContains(text, "The shell's lines, plainly:\ngarden: \"garden at pocket.\"")
     }
