@@ -60,12 +60,47 @@ which Matthew makes.
 ### Next
 
 1. CI green on GitHub.
-2. Matthew makes the signing key and adds the four secrets (steps will be
-   here).
+2. Matthew makes the signing key and adds the four secrets (steps below).
 3. Tag `pocket-beach-v0.1`; CI builds the signed APK and attaches it to the
    Release.
 4. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
+
+### Making the signing key (Matthew, once, on your own computer)
+
+Every release must be signed with this one key, or Android will refuse to
+install an update over the app. If the key is ever lost, the only way forward
+is to uninstall, which erases the blocks. So keep two things safe for good:
+the key file and its password. Put both in your password manager, and keep a
+second copy of the file somewhere you trust. Never put either in the repo, a
+block or a chat, including a chat with Claude.
+
+1. **Open a terminal.** On a Mac, that's Terminal; on Windows, PowerShell. Go
+   to a folder you'll keep, for example `cd ~/Documents`.
+2. **Make the key.** Type the line below, and when asked, choose a long
+   password and type it twice. `keytool` comes with Java; Android Studio carries
+   its own copy.
+   - Mac with Android Studio:
+     `"/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool" -genkeypair -v -keystore pocket-beach.jks -storetype PKCS12 -alias pocket-beach -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Matthew Bushell"`
+   - Windows with Android Studio:
+     `& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v -keystore pocket-beach.jks -storetype PKCS12 -alias pocket-beach -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Matthew Bushell"`
+   - If neither works, install Java from adoptium.net (Temurin) and use
+     `keytool` with the same words after it.
+3. **Copy the key as text.** This puts it on the clipboard:
+   - Mac: `base64 -i pocket-beach.jks | pbcopy`
+   - Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("$PWD\pocket-beach.jks")) | Set-Clipboard`
+4. **Add four secrets on GitHub.** Go to
+   github.com/Phenomemental/happyseaurchin-beach, then Settings, then Secrets
+   and variables, then Actions, and choose "New repository secret" once for
+   each:
+   - `POCKET_KEYSTORE_B64` — paste the clipboard (one long line of text).
+   - `POCKET_KEYSTORE_PASSWORD` — the password you chose.
+   - `POCKET_KEY_ALIAS` — `pocket-beach`
+   - `POCKET_KEY_PASSWORD` — the same password again. This kind of key file
+     uses one password for both.
+5. **Say "the secrets are in".** Claude then tags `pocket-beach-v0.1`. CI
+   builds the APK, signs it, checks the signature, and puts it on the Releases
+   page.
 
 ## Decisions (Matthew, 28 October 2026)
 
