@@ -179,15 +179,6 @@ class Beach(private val storage: BlockStorage, val origin: String = "pocket") {
 
     // ── floor.js ──
 
-    fun hasFloor(block: Js?): Boolean {
-        var node = block
-        while (truthy(node) && isObject(node) && jsIn(node, "_")) {
-            node = jsGet(node, "_")
-            if (node is JsStr) return true
-        }
-        return false
-    }
-
     fun defaultIdentity(name: String): String {
         val base = name.split(':')[0]
         val at = " at $origin."
@@ -307,7 +298,7 @@ class Beach(private val storage: BlockStorage, val origin: String = "pocket") {
         return s
     }
 
-    private fun nextZeroFreeSlot(block: Js, floor: Int): String? {
+    internal fun nextZeroFreeSlot(block: Js, floor: Int): String? {
         val total = pow9(floor)
         for (i in 0 until total) {
             val p = zeroFreePath(i, floor)
@@ -368,35 +359,6 @@ class Beach(private val storage: BlockStorage, val origin: String = "pocket") {
         return out
     }
 
-    /** The shape gate: only `_` and single digits 1-9 as keys, and no JSON passed as a string. */
-    fun validateShape(content: Js?, path: String = ""): String? {
-        if (content == null || content == JsNull) return null
-        if (content is JsStr) {
-            val trimmed = jsTrim(content.value)
-            if (trimmed.length > 1 && (trimmed[0] == '{' || trimmed[0] == '[')) {
-                try {
-                    val parsed = parseJson(trimmed)
-                    if (isObject(parsed)) {
-                        return "invalid value at \"${path.ifEmpty { "<root>" }}\" — JSON-stringified ${if (parsed is JsArr) "array" else "object"}; write the structure directly, not as a string"
-                    }
-                } catch (_: JsonSyntaxError) {
-                }
-            }
-            return null
-        }
-        if (content is JsArr) {
-            content.items.forEachIndexed { i, x -> validateShape(x, "$path[$i]")?.let { return it } }
-            return null
-        }
-        if (content !is JsObj) return null
-        for (key in content.keys()) {
-            if (key != "_" && !(key.length == 1 && key[0] in '1'..'9')) {
-                return "invalid key \"${if (path.isNotEmpty()) "$path." else ""}$key\" — pscale spine accepts only \"_\" and single digits 1-9 at each level (compound supernest slots like 11 or 234 are stored hierarchically as nested single-digit keys, not literal keys)"
-            }
-            validateShape(content[key], if (path.isNotEmpty()) "$path.$key" else key)?.let { return it }
-        }
-        return null
-    }
 
     /** The beach's writeAt: as the walker's, and a scalar at a node voices it rather than replacing it. */
     private fun beachWriteAt(block: Js, address: String, value: Js) {
@@ -419,4 +381,44 @@ class Beach(private val storage: BlockStorage, val origin: String = "pocket") {
         }
         jsSet(node, lastKey, value)
     }
+}
+
+/** Whether a block's underscore chain ends in a string: it has a floor. */
+fun hasFloor(block: Js?): Boolean {
+    var node = block
+    while (truthy(node) && isObject(node) && jsIn(node, "_")) {
+        node = jsGet(node, "_")
+        if (node is JsStr) return true
+    }
+    return false
+}
+
+/** The shape gate: only `_` and single digits 1-9 as keys, and no JSON passed as a string. */
+fun validateShape(content: Js?, path: String = ""): String? {
+    if (content == null || content == JsNull) return null
+    if (content is JsStr) {
+        val trimmed = jsTrim(content.value)
+        if (trimmed.length > 1 && (trimmed[0] == '{' || trimmed[0] == '[')) {
+            try {
+                val parsed = parseJson(trimmed)
+                if (isObject(parsed)) {
+                    return "invalid value at \"${path.ifEmpty { "<root>" }}\" — JSON-stringified ${if (parsed is JsArr) "array" else "object"}; write the structure directly, not as a string"
+                }
+            } catch (_: JsonSyntaxError) {
+            }
+        }
+        return null
+    }
+    if (content is JsArr) {
+        content.items.forEachIndexed { i, x -> validateShape(x, "$path[$i]")?.let { return it } }
+        return null
+    }
+    if (content !is JsObj) return null
+    for (key in content.keys()) {
+        if (key != "_" && !(key.length == 1 && key[0] in '1'..'9')) {
+            return "invalid key \"${if (path.isNotEmpty()) "$path." else ""}$key\" — pscale spine accepts only \"_\" and single digits 1-9 at each level (compound supernest slots like 11 or 234 are stored hierarchically as nested single-digit keys, not literal keys)"
+        }
+        validateShape(content[key], if (path.isNotEmpty()) "$path.$key" else key)?.let { return it }
+    }
+    return null
 }

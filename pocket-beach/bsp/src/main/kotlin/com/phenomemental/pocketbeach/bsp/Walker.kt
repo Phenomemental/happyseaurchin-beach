@@ -332,7 +332,7 @@ fun fullWidthAddress(digits: List<Char>, floor: Int): String {
 
 private fun digitChildren(node: Js?): List<String> = if (!truthy(node) || !isObject(node)) emptyList() else digitKeys(node)
 
-private fun ringBeneath(node: Js?): List<String> {
+internal fun ringBeneath(node: Js?): List<String> {
     val kids = digitChildren(node)
     return if (entryStamp(node) != null) kids.filter { it != "3" } else kids
 }
@@ -384,7 +384,7 @@ fun readBackSpindle(block: Js, landed: String?, content: Js?): String? {
 
 private val LEADING_ISO = Regex("""^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?""")
 
-private fun entryStamp(node: Js?): String? {
+internal fun entryStamp(node: Js?): String? {
     val v = if (truthy(node) && isObject(node)) jsGet(node, "3") else null
     if (v !is JsStr) return null
     return LEADING_ISO.find(v.value)?.value

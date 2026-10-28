@@ -27,6 +27,9 @@ class Shelf(private val source: ShelfSource) {
 
     fun names(): List<String> = files.keys.sorted()
 
+    /** The names to show, in the shelf's own order, each block once: a second name for the same file is left out. */
+    fun shelved(): List<String> = files.entries.distinctBy { it.value }.map { it.key }
+
     fun load(name: String): Js? = synchronized(cache) {
         cache[name] ?: files[name]?.let(source::read)?.let(::parseJson)?.also { cache[name] = it }
     }

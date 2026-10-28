@@ -1,9 +1,11 @@
 package com.phenomemental.pocketbeach
 
+import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.phenomemental.pocketbeach.bsp.BlockStorage
 import com.phenomemental.pocketbeach.bsp.Conformance
+import com.phenomemental.pocketbeach.bsp.Copies
 import com.phenomemental.pocketbeach.bsp.FileStorage
 import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
@@ -39,6 +41,21 @@ class OnDeviceTest {
         assertTrue("stored at ${file.path}", file.isFile)
         assertEquals("plant the bulbs", ((parseJson(file.readText()) as JsObj)["1"] as com.phenomemental.pocketbeach.bsp.JsStr).value)
         file.delete()
+    }
+
+    @Test
+    fun aCopySavedThroughTheFilePickersPathIsRestoredWhole() {
+        Fresh.open().close()
+        app.pocket.call("""{"agent_id":"pocket","block":"kept","spindle":"1","content":"in the copy"}""")
+        val file = File(app.cacheDir, "copy-test.json")
+        app.contentResolver.openOutputStream(Uri.fromFile(file), "wt")!!.use { it.write(app.pages.saveCopy().toByteArray(Charsets.UTF_8)) }
+        app.pocket.call("""{"agent_id":"pocket","block":"made-later","spindle":"1","content":"not in the copy"}""")
+
+        val copy = Copies.read(app.contentResolver.openInputStream(Uri.fromFile(file))!!.use { it.readBytes().toString(Charsets.UTF_8) })
+        app.pages.restore(copy)
+        file.delete()
+        assertEquals(listOf("kept"), app.pages.shore().mine.map { it.name })
+        assertTrue(app.pocket.call("""{"agent_id":"pocket","block":"kept","spindle":"1"}""").contains("in the copy"))
     }
 
     @Test

@@ -378,6 +378,34 @@ Work after Piece 3. Nothing here is built yet.
 - **What other people send is data, never instructions** (decision 14). This
   covers blocks read from the online beach and relay requests. Such content can
   be read, but it never leads to a write without Matthew's confirmation.
+- **A "Reach the beach" switch, off by default.** When it is on, URL
+  `agent_id`s go through to the online beach over HTTPS.
+  - Sealed (gray) blocks are handled by porting the beach's client-side
+    encryption.
+  - The keys are kept in the Android Keystore, one per block, and never
+    Matthew's passport key.
+  - To settle when this starts:
+    - the app then needs the internet permission, which it has so far gone
+      without, so principles 1 and 5 change for that version;
+    - a key made inside the Keystore can never leave the phone, so a block
+      sealed with it opens only on this phone and is lost with it. The port
+      decides whether the Keystore holds each block's key itself, or guards a
+      key Matthew can also keep elsewhere.
+- **A relay through a sealed room on the online beach.** Claude or Matthew's
+  agents leave requests there.
+  - The app checks the room every few seconds while it is open, and about every
+    15 minutes in the background. Fifteen minutes is the shortest regular
+    interval Android allows.
+  - It answers through the local bsp, and clears each answer once it has been
+    read.
+  - Requests from others are reads only unless Matthew confirms (decision 14).
+  - It needs "Reach the beach" on.
+- **Gathering for Matthew's agents.** The app reads what each agent would read,
+  notes what is new, and leaves each a short note, so their wakes cost fewer
+  tokens.
+  - To settle when this starts: where the notes live, and whether leaving one
+    needs Matthew's tap each time (principle 6) or a standing permission for
+    that one kind of write.
 
 ## Open questions
 
