@@ -19,12 +19,12 @@ private fun ok(vararg pairs: Pair<String, Js>) = BeachAnswer(200, JsObj.of("ok" 
 
 private fun refuse(status: Int, error: String, code: String) = BeachAnswer(status, JsObj.of("error" to str(error), "code" to str(code)))
 
-class Beach(private val store: BlockStore, val origin: String = "pocket") {
+class Beach(private val storage: BlockStorage, val origin: String = "pocket") {
 
     // ── storage, as the beach's loadBlock / saveBlock ──
 
     /** The stored block, parsed afresh each time; a stored null reads as absent, as the beach's store returns it. */
-    fun loadBlock(name: String): Js? = store.read(name)?.let(::parseJson)?.takeUnless { it == JsNull }
+    fun loadBlock(name: String): Js? = storage.read(name)?.let(::parseJson)?.takeUnless { it == JsNull }
 
     private fun saveBlock(name: String, block: Js, born: Boolean, nowMs: Long) {
         var b = block
@@ -32,25 +32,29 @@ class Beach(private val store: BlockStore, val origin: String = "pocket") {
             val healed = repairFloor(name, b)
             if (healed != null) b = healed
         }
-        store.write(name, stringify(b)!!)
-        store.stamp(name, isoString(nowMs), born)
+        storage.write(name, stringify(b)!!)
+        val iso = isoString(nowMs)
+        val s = storage.stamps()
+        storage.setStamps(Stamps(s.touched + (name to iso), if (born) s.born + (name to iso) else s.born))
     }
 
     // ── GET ──
 
     /** The derived index — GET with no ?block=. */
     fun index(): JsObj {
-        val blocks = store.names()
+        val blocks = storage.names().distinct().sorted()
         val present = blocks.toSet()
-        fun listed(t: JsObj): JsObj? {
+        fun listed(t: Map<String, String>): JsObj? {
             val kept = JsObj()
-            for (k in t.keys()) if (k in present) kept[k] = t[k]
+            for ((k, v) in t) if (k in present) kept[k] = str(v)
             return if (kept.size > 0) kept else null
         }
-        val touched = listed(store.touched())
-        val born = listed(store.born())
+        val stamps = storage.stamps()
+        val touched = listed(stamps.touched)
+        val born = listed(stamps.born)
+        // The weight the beach lists is the stored JSON's size in bytes.
         val bytes = if (blocks.isEmpty()) null else JsObj().also { o ->
-            for (n in blocks) { val v = store.bytes(n); if (v > 0) o[n] = JsNum(v.toDouble()) }
+            for (n in blocks) { val v = storage.read(n)?.toByteArray(Charsets.UTF_8)?.size ?: 0; if (v > 0) o[n] = JsNum(v.toDouble()) }
         }.takeIf { it.size > 0 }
         val text = "URL surface at $origin. Named sibling blocks listed below; address each via ?block=<name>" +
             (if (bytes != null) "; bytes maps each block to its stored size — pick an aperture before the read" else "") +

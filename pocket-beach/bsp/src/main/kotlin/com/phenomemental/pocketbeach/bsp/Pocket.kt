@@ -3,17 +3,20 @@ package com.phenomemental.pocketbeach.bsp
 import java.io.File
 
 /**
- * The pocket's bsp(): the one entry point the app calls.
+ * The pocket's bsp(): the one entry point a front end calls.
  *
  * Two regions answer. "pocket" (or no agent_id at all) is Matthew's own
  * blocks on this phone; "pscale" is the teaching shelf, read-only. Anything
  * else would need the beach, which this version cannot reach. Locks and
  * encryption are refused rather than ignored: the phone is the latch.
  *
- * Calls run one at a time, so an append's slot can never be taken twice.
+ * The core is plain Kotlin on the JVM with no Android in it: a front end
+ * hands it a [BlockStorage] for the blocks and a [Shelf] for the teaching
+ * blocks, and gets text back. Calls run one at a time, so an append's slot can
+ * never be taken twice.
  */
-class PocketBsp(root: File, shelf: Shelf, private val clock: () -> Long = System::currentTimeMillis) {
-    private val router = Router(Beach(BlockStore(root)), shelf)
+class PocketBsp(storage: BlockStorage, shelf: Shelf, private val clock: () -> Long = System::currentTimeMillis) {
+    private val router = Router(Beach(storage), shelf)
 
     fun call(json: String): String {
         val params = try {
@@ -91,8 +94,8 @@ class PocketBsp(root: File, shelf: Shelf, private val clock: () -> Long = System
         const val BEACH_OUT_OF_REACH = "The pocket can't reach the beach in this version."
         val LATCH_PARAMS = listOf("secret", "new_lock", "gray", "enc_secret", "members")
 
-        /** A pocket whose shelf is read from a folder holding index.json and the blocks. */
-        fun withShelfDir(root: File, shelfDir: File, clock: () -> Long = System::currentTimeMillis): PocketBsp =
-            PocketBsp(root, Shelf(File(shelfDir, "index.json").readText()) { f -> File(shelfDir, f).takeIf { it.isFile }?.readText() }, clock)
+        /** A pocket kept in files under [root], its shelf read from a folder — as on a laptop. */
+        fun inFolders(root: File, shelfDir: File, clock: () -> Long = System::currentTimeMillis): PocketBsp =
+            PocketBsp(FileStorage(root), Shelf(DirShelfSource(shelfDir)), clock)
     }
 }

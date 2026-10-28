@@ -2,8 +2,11 @@ package com.phenomemental.pocketbeach
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.phenomemental.pocketbeach.bsp.BlockStorage
 import com.phenomemental.pocketbeach.bsp.Conformance
+import com.phenomemental.pocketbeach.bsp.FileStorage
 import com.phenomemental.pocketbeach.bsp.PocketBsp
+import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.parseJson
 import com.phenomemental.pocketbeach.bsp.JsObj
 import java.io.File
@@ -48,9 +51,12 @@ class OnDeviceTest {
         val testAssets = InstrumentationRegistry.getInstrumentation().context.assets
         val golden = testAssets.open("golden.json").bufferedReader(Charsets.UTF_8).use { it.readText() }
         val scratch = File(app.cacheDir, "golden")
-        val report = Conformance.replay(golden, PocketApp.shelfFrom(app.assets)) {
-            File(scratch, System.nanoTime().toString()).also { it.mkdirs() }
-        }
+        val roots = HashMap<BlockStorage, File>()
+        val report = Conformance.replay(
+            golden, Shelf(AssetShelfSource(app.assets)),
+            newStorage = { File(scratch, System.nanoTime().toString()).let { root -> FileStorage(root).also { roots[it] = root } } },
+            release = { roots.remove(it)?.deleteRecursively() },
+        )
         scratch.deleteRecursively()
         assertTrue("${report.failures.size} of ${report.calls} calls differ:\n" + report.failures.take(5).joinToString("\n\n"), report.failures.isEmpty())
         assertTrue(report.calls >= 60)

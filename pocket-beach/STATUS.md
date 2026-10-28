@@ -4,24 +4,43 @@ Current state only. Newest first.
 
 ## Now
 
-Piece 1 (the local bsp, release v0.1) is built, and CI on GitHub is green.
-The release waits only on the signing key, which Matthew makes (steps below).
+Piece 1 (the local bsp, release v0.1) is built, with the local bsp now its
+own pure Kotlin module (decision 7). This change's CI run is next; the
+previous commit's CI was green. The release waits only on the signing key,
+which Matthew makes (steps below).
 
 ### What is built
 
-- **The local bsp**, a Kotlin port of bsp-mcp-server and the beach duties
-  (`bsp/src/main/kotlin/`).
+- **The local bsp**, a Kotlin port of bsp-mcp-server and the beach duties, is
+  its own module, `bsp/`.
+  - It is plain Kotlin on the JVM: no Android APIs, no Context, no Android
+    library. It needs only a JDK, so the same tested core can run on a Windows
+    laptop.
+  - A front end hands it two things through interfaces: a `BlockStorage` for
+    the blocks and a `ShelfSource` for the teaching blocks. It gets text back
+    from `PocketBsp.call`.
   - It covers the full surface for ordinary blocks: point, path-walk,
     path-walk plus descent, disc, whole block, star (`*`), listing blocks
     (block left out), writes of every shape, and append.
   - Append takes the next free slot, and supernests when a block's root fills.
     A position inside a block holds nine and refuses a tenth.
+- **The Android app** (`app/`) uses the core only through those interfaces. It
+  supplies a `FileStorage` on its private files and an `AssetShelfSource`
+  reading the shelf from its assets.
 - **The teaching shelf** (`shelf/`): the 27 blocks bsp-mcp-server bundles,
   under 28 names, byte for byte, with its MIT licence. It is the read-only
   `pscale` region.
-- **Storage.** Blocks are stored as `filesDir/regions/pocket/<name>.json`. Each
-  write goes to a temporary file and is renamed into place. When each block
-  was touched and born is kept beside them, in `regions/pocket.meta.json`.
+- **Storage.** The core ships two storages.
+  - `FileStorage` keeps blocks as files: `regions/pocket/<name>.json` under a
+    root folder (on the phone, its private files). Each write goes to a
+    temporary file and is renamed into place. When each block was touched and
+    born is kept beside them, in `regions/pocket.meta.json`.
+  - File names are safe on every system. "garden" is `garden.json`; capitals,
+    spaces and other marks are written `%XX`, so "Garden" is `%47arden.json`
+    and never shares a file with "garden" where case is ignored (Windows, a
+    Mac); and Windows' reserved names (con, nul, com1…) are escaped.
+  - `MemoryStorage` keeps blocks in memory, for tests and any front end that
+    keeps nothing.
 - **The test screen.** It has a field for each bsp parameter, a Run button, the
   call sent, the raw result, and how long it took. Two shortcut buttons fill in
   "The whetstone" and "My blocks".
@@ -47,8 +66,14 @@ The release waits only on the signing key, which Matthew makes (steps below).
   wrapping the root, and names with spaces, colons and accents.
 - **JavaScript's rules** for numbers, escapes, key order, dates and whitespace
   pass, checked against Node 22.
-- **The app builds:** debug, release, and the on-device tests.
-- **CI on GitHub** (run 2, commit `52ce348`) is green.
+- **The core is pure.** A test reads every compiled class of the core and finds
+  no Android API named: 0 of 57 classes, where 7 of the app's 8 name one.
+- **The golden replay passes on both storages,** in files and in memory: the
+  core answers identically whatever stands beneath it.
+- **The core builds and passes its tests with no Android SDK in reach**
+  (`-PcoreOnly`).
+- **The app builds** on the interfaces: debug, release, and the on-device tests.
+- **CI on GitHub** (run 2, commit `52ce348`, before decision 7) is green.
   - The golden calls regenerated from the original code match the committed
     ones, and the shelf matches upstream.
   - The Kotlin replays pass, for the corpus and for 1,000 fresh random cases.
@@ -62,6 +87,8 @@ The release waits only on the signing key, which Matthew makes (steps below).
 
 ### Not yet checked
 
+- CI for decision 7, including the new job that runs the core's tests on
+  Windows.
 - The signed release, which needs the key.
 - The app on Matthew's own phone.
 
@@ -72,6 +99,19 @@ The release waits only on the signing key, which Matthew makes (steps below).
    Release.
 3. Matthew tries: install, open, read the whetstone, make a block, write a
    line, read it back, then again in aeroplane mode.
+
+### Running the core on a laptop
+
+The core builds and tests with a JDK alone, version 17 or later, on Windows,
+Mac or Linux. From the `pocket-beach` folder:
+
+- Windows: `gradlew.bat :bsp:test -PcoreOnly`
+- Mac or Linux: `./gradlew :bsp:test -PcoreOnly`
+
+`-PcoreOnly` leaves out the Android app, so no Android SDK is needed. A laptop
+front end, still to be written, would call
+`PocketBsp(FileStorage(folder), Shelf(DirShelfSource(shelfFolder)))`, exactly
+as the phone calls it with its own folder and assets.
 
 ### Making the signing key (Matthew, once, on your own computer)
 
@@ -136,6 +176,12 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
 6. **The assistant (Piece 3) proposes a list of plain steps with one Yes.**
    Every step is validated before any step runs. If one fails, it stops and
    says exactly which steps ran.
+7. **The local bsp is its own pure Kotlin module.** It has no Android
+   dependencies: no Android APIs, no Context. Storage goes through an
+   interface, so the same tested core can later run on a Windows laptop. The
+   Android app uses it through that interface.
+   - Kept by a test that fails if any core class names an Android API.
+   - Kept by a CI job that runs the core's tests on Windows.
 
 ## Other differences from bsp-mcp-server
 

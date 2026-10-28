@@ -1,7 +1,5 @@
 package com.phenomemental.pocketbeach.bsp
 
-import java.io.File
-
 /**
  * The golden replay, shared by the JVM test and the on-device test.
  *
@@ -14,25 +12,25 @@ import java.io.File
 object Conformance {
     class Report(val cases: Int, val calls: Int, val failures: List<String>)
 
-    fun replay(golden: String, shelf: Shelf, newRoot: () -> File): Report {
+    /** Replay every case, each on a fresh storage from [newStorage]; [release] is handed each one when its case is done. */
+    fun replay(golden: String, shelf: Shelf, newStorage: () -> BlockStorage, release: (BlockStorage) -> Unit = {}): Report {
         val doc = parseJson(golden) as JsObj
         val cases = (doc["cases"] as JsArr).items.map { it as JsObj }
         val failures = mutableListOf<String>()
         var calls = 0
         for (case in cases) {
-            val root = newRoot()
+            val storage = newStorage()
             try {
-                calls += replayCase(case, root, shelf, failures)
+                calls += replayCase(case, storage, shelf, failures)
             } finally {
-                root.deleteRecursively()
+                release(storage)
             }
         }
         return Report(cases.size, calls, failures)
     }
 
-    private fun replayCase(case: JsObj, root: File, shelf: Shelf, failures: MutableList<String>): Int {
+    private fun replayCase(case: JsObj, store: BlockStorage, shelf: Shelf, failures: MutableList<String>): Int {
         val name = jsString(case["name"])
-        val store = BlockStore(root)
         val seedState = case["seedState"] as JsObj
         val expected = LinkedHashMap<String, String>()
         val seeded = seedState["blocks"] as JsObj
@@ -41,11 +39,8 @@ object Conformance {
             store.write(k, json)
             expected[k] = json
         }
-        val touched = seedState["touched"] as JsObj
-        val born = seedState["born"] as JsObj
-        for (k in touched.keys()) store.stamp(k, jsString(touched[k]), false)
-        for (k in born.keys()) store.stampBorn(k, jsString(born[k]))
-        val pocket = PocketBsp(root, shelf)
+        store.setStamps(Stamps(stringMap(seedState["touched"] as JsObj), stringMap(seedState["born"] as JsObj)))
+        val pocket = PocketBsp(store, shelf)
 
         val calls = (case["calls"] as JsArr).items.map { it as JsObj }
         calls.forEachIndexed { i, call ->
@@ -57,19 +52,20 @@ object Conformance {
             if (text != want) failures += "$where\n  reply differs ${firstDifference(want, text)}"
             val changed = call["changed"] as JsObj
             for (k in changed.keys()) expected[k] = jsString(changed[k])
-            val names = store.names()
+            val names = store.names().sorted()
             if (names.toSet() != expected.keys) failures += "$where\n  blocks stored: $names, expected ${expected.keys.sorted()}"
             for ((k, json) in expected) {
                 val got = store.read(k)
                 if (got != json) failures += "$where\n  block \"$k\" differs ${firstDifference(json, got ?: "<absent>")}"
             }
-            if (!sameMap(store.touched(), call["touched"] as JsObj)) failures += "$where\n  touched ${stringify(store.touched())} vs ${stringify(call["touched"])}"
-            if (!sameMap(store.born(), call["born"] as JsObj)) failures += "$where\n  born ${stringify(store.born())} vs ${stringify(call["born"])}"
+            val stamps = store.stamps()
+            if (stamps.touched != stringMap(call["touched"] as JsObj)) failures += "$where\n  touched ${stamps.touched} vs ${stringify(call["touched"])}"
+            if (stamps.born != stringMap(call["born"] as JsObj)) failures += "$where\n  born ${stamps.born} vs ${stringify(call["born"])}"
         }
         return calls.size
     }
 
-    private fun sameMap(a: JsObj, b: JsObj): Boolean = a.keys().toSet() == b.keys().toSet() && a.keys().all { a[it] == b[it] }
+    private fun stringMap(o: JsObj): Map<String, String> = o.keys().associateWith { jsString(o[it]) }
 
     private fun firstDifference(want: String, got: String): String {
         var i = 0
