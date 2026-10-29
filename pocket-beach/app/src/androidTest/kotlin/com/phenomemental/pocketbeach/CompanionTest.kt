@@ -653,7 +653,8 @@ class CompanionTest {
         assertTrue("his correction lands as his words", now.contains("Felt rotten about the morning"))
         assertFalse(now.contains("mourning"))
         val t = app.asking.transcript()
-        for (part in listOf("Answered by: Talk (", "; Write (", "Answered by: Sort (", "Proposed:", "[x] ", "(corrected by him; heard", "His answer: Yes", "How it ended: Matthew said yes to his day")) {
+        assertEquals("his day continues the exchange it sorts: his words once", 1, Regex("Matthew: Right, so the car").findAll(t).count())
+        for (part in listOf("Answered by: Talk (", "; Write (", "; Sort (", "Proposed:", "[x] ", "(corrected by him; heard", "His answer: Yes", "How it ended: Matthew said yes to his day")) {
             assertTrue("$part in\n$t", t.contains(part))
         }
     }

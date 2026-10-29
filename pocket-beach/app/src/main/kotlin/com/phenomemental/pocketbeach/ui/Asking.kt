@@ -155,6 +155,9 @@ class Asking(private val app: PocketApp) {
     /** What he has just said: her instruction reads her the blocks it names. */
     private var talkSaid = ""
 
+    /** The exchange a day sorted on his tap continues: taken back from [history], to be kept whole with the day. */
+    private var dayFrom: Exchange? = null
+
     /** The exchanges so far, oldest first. */
     val history = mutableStateListOf<Exchange>()
 
@@ -284,6 +287,7 @@ class Asking(private val app: PocketApp) {
         keepIn = null
         checking = false
         sortable = false
+        dayFrom = null
         answeredBy.clear()
         jobMs.clear()
         answeredBy += MindJob.TALK
@@ -506,10 +510,9 @@ class Asking(private val app: PocketApp) {
             is Stage.Shown -> s.also { end(it, null, null, "Matthew sorted it as his day instead.", it.took) }
             else -> null
         } ?: return
+        // The day continues the exchange just ended, its jobs and times kept: his words and hers are shown once.
+        dayFrom = history.removeLastOrNull()
         sortable = false
-        answeredBy.clear()
-        jobMs.clear()
-        lastCopied = emptyList()
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch { day(asked, talked, System.nanoTime()) }
     }
@@ -733,9 +736,11 @@ class Asking(private val app: PocketApp) {
             at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(),
             outcome = if (proposed) note else null,
             jobs = answeredBy.joinToString("; ") { j -> "${j.title}" + (jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.settings(j)) },
-            proposal = proposal ?: written,
+            // A day sorted on his tap: the Write job's proposal he left for it comes first.
+            proposal = listOfNotNull(dayFrom?.proposal?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: written).joinToString("\n").ifEmpty { null },
             copied = lastCopied,
         )
+        dayFrom = null
         if (proposed) told = note
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }

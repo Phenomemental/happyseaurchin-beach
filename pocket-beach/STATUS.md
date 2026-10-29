@@ -1428,6 +1428,11 @@ nothing dropped.
   so.
 - **His message of 29 October is one run of words** (no sentences), so it
   offers no link.
+- **The day continues the exchange it sorts.** His words and her reply are
+  shown once, above the day. In the saved conversation it is one exchange,
+  answered by Talk, Write and Sort, each with its time. Any Write proposal he
+  left for it comes first. The screen tour's first run of 0.6.1 showed his
+  telling twice, once as the exchange before and again above the day.
 
 ### His sentences, names, and a word put right
 

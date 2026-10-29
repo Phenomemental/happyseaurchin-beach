@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -279,6 +280,7 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput(com.phenomemental.pocketbeach.bsp.Telling.WRITTEN)
                 compose.tap("ask")
                 compose.waitFor("sort-as-day")
+                compose.onNodeWithTag("sort-as-day").performScrollTo()
                 shot("$theme-38b-ask-sort-as-day")
                 compose.tap("sort-as-day")
                 compose.waitFor("day-yes", timeoutMs = 30_000)
