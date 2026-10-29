@@ -250,10 +250,15 @@ object Telling {
     }
 
     /** What she is told for the pieces: the block as it stands, today's date and all he said; then each piece is one short choice. */
-    fun piecesInstruction(state: JsObj, date: String, said: String): String =
-        "You sort what Matthew said about his day into this block, one piece at a time.\n\nThe block:\n${stringifyPretty(state, " ")}\n\n" +
-            "Today is $date. What Matthew said:\n${said.trim()}\n\n" +
-            "Each message gives one piece of what he said and the places to choose from. Answer only with addresses."
+    fun piecesInstruction(state: JsObj, today: java.time.LocalDate, said: String): String {
+        val cards = cards(state)
+        return "You sort what Matthew said about his day into this block, one piece at a time.\n\nThe block:\n${stringifyPretty(state, " ")}\n\n" +
+            "Today is ${date(today)}. What Matthew said:\n${said.trim()}\n\n" +
+            "Each message is one piece of what he said. Answer only with addresses: first one or two places in the day, of 1.1 what " +
+            "happened, 1.2 what I felt, 1.3 what I made of it, 1.4 what matters to me, 1.5 what I chose, 1.6 what's ahead; then, only " +
+            "if it is something he says he'll do, one shelf, of " + shelves(today).joinToString(", ") +
+            (if (cards.isEmpty()) "" else "; or, if it is about a card already on the hand, that card, of " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) + "."
+    }
 
     /** The hand's shelves, each with the day it runs to, from [today]: the pocket's reckoning, not hers. */
     fun shelves(today: java.time.LocalDate): List<String> {
@@ -273,11 +278,11 @@ object Telling {
     /** The day the bench is fixed at, so the key holds. */
     val BENCH_DAY: java.time.LocalDate = java.time.LocalDate.of(2026, 10, 29)
 
-    /** One piece, with its choices: one or two places in the day; a shelf too if it is something he'll do, or the card it is about. */
-    fun pieceAsk(piece: String, today: java.time.LocalDate, cards: Map<String, String>): String =
-        "\u201c$piece\u201d\nIn the day, one or two of: 1.1 what happened, 1.2 what I felt, 1.3 what I made of it, 1.4 what matters to me, " +
-            "1.5 what I chose, 1.6 what's ahead.\nThen, only if it is something he says he'll do, one of: " + shelves(today).joinToString(", ") +
-            (if (cards.isEmpty()) "" else "; or, if it is about a card already on the hand, that card: " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) + "."
+    /** One piece, as she is given it; its choices are in what she was told. */
+    fun pieceAsk(piece: String): String = "\u201c$piece\u201d"
+
+    /** The longest answer to a piece: its addresses, a line. */
+    const val PIECE_TOKENS = 16
 
     /**
      * The form her answer to a piece is held to: it begins with a place in
@@ -294,9 +299,11 @@ object Telling {
         if (place in DAY || place in HAND) place to card.takeIf { top == "2" && it.isNotEmpty() } else null
     }.distinct().toList()
 
-    /** After the pieces, the rungs, asked once. */
-    const val RUNGS_ASK = "Now the rungs above: one line each, in his own voice (I …), as what he intends, drawn only from what he said. " +
-        "Answer with four lines, 3.1: for this week, 3.2: this month, 3.3: this season, 3.4: this year."
+    /** The rungs, asked on their own after the pieces: the block, today and what he said, and four lines in his voice. */
+    fun rungsAsk(state: JsObj, today: java.time.LocalDate, said: String): String =
+        "Today is ${date(today)}.\n\nThe block:\n${stringifyPretty(state, " ")}\n\nWhat Matthew said:\n${said.trim()}\n\n" +
+            "Write the rungs above: one line each, in his own voice (I …), as what he intends, drawn only from what he said. " +
+            "Answer with four lines, 3.1: for this week, 3.2: this month, 3.3: this season, 3.4: this year."
 
     /**
      * Her lines from the pieces and their places. Pieces she put on the same

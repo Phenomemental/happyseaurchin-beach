@@ -202,10 +202,13 @@ class TellingTest {
             listOf("2.1 tomorrow (Friday 30 October)", "2.2 this week (by Thursday 5 November)", "2.3 this month (by Saturday 28 November)", "2.4 this season (by Friday 29 January)", "2.5 this year or beyond"),
             Telling.shelves(Telling.BENCH_DAY),
         )
-        val asked = Telling.pieceAsk("Dentist on Thursday", Telling.BENCH_DAY, mapOf("2.1.1" to "I've decided I'm ringing the garage tomorrow"))
-        assertTrue(asked.startsWith("\u201cDentist on Thursday\u201d\nIn the day, one or two of: 1.1 what happened"))
-        assertContains(asked, "2.2 this week (by Thursday 5 November)")
-        assertContains(asked, "that card: 2.1.1 \u201cI've decided I'm ringing the garage tomorrow\u201d.")
+        assertEquals("\u201cDentist on Thursday\u201d", Telling.pieceAsk("Dentist on Thursday"))
+        val told = Telling.piecesInstruction(Telling.land(Telling.shape(), listOf(Telling.Placed("2.1", null, "I've decided I'm ringing the garage tomorrow"))), Telling.BENCH_DAY, Telling.SECOND)
+        assertContains(told, "Today is Thursday 29 October 2026. What Matthew said:\nRang the garage first thing, they're coming Monday.")
+        assertContains(told, "1.1 what happened, 1.2 what I felt")
+        assertContains(told, "2.2 this week (by Thursday 5 November)")
+        assertContains(told, "that card, of 2.1.1 \u201cI've decided I'm ringing the garage tomorrow\u201d.")
+        assertFalse(Telling.piecesInstruction(Telling.shape(), Telling.BENCH_DAY, Telling.WRITTEN).contains("that card"))
         assertTrue(Regex(Telling.PIECE_FORM).matches("1.5, 1.6, 2.1"))
         assertTrue(Regex(Telling.PIECE_FORM).matches("1.1, 2.1.1"))
         assertFalse(Regex(Telling.PIECE_FORM).matches("2.1"))

@@ -85,23 +85,24 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
             else SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed)
             fun label(state: JsObj, telling: String, log: StringBuilder): Pair<List<Telling.Placed>, String> {
                 val config = ConversationConfig(
-                    systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.date(Telling.BENCH_DAY), telling)),
+                    systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.BENCH_DAY, telling)),
                     samplerConfig = sampler,
-                    maxOutputToken = 96,
+                    maxOutputToken = Telling.PIECE_TOKENS,
                     enableResponseFormat = true,
                     thinkingConfig = ThinkingConfig(enableThinking = false),
                 )
-                val cards = Telling.cards(state)
                 val start = System.nanoTime()
                 return engine.createConversation(config).use { c ->
                     val firsts = mutableListOf<String>()
                     val labelled = Telling.cut(telling).map { piece ->
-                        val r = send(c, Telling.pieceAsk(piece, Telling.BENCH_DAY, cards), Telling.PIECE_FORM)
+                        val r = send(c, Telling.pieceAsk(piece), Telling.PIECE_FORM)
                         firsts += r.timing.substringBefore(",").removePrefix("first token ")
                         log.append("\u201c$piece\u201d -> ${r.text.trim()}\n")
                         piece to Telling.places(r.text)
                     }
-                    val rungs = send(c, Telling.RUNGS_ASK)
+                    val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = ThinkingConfig(enableThinking = false))).use { r ->
+                        send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling))
+                    }
                     log.append("rungs -> ${rungs.text.trim()}\n")
                     Telling.fromPieces(telling, labelled, rungs.text) to "${labelled.size} pieces, ${"%.1f".format((System.nanoTime() - start) / 1e9)} s in all, first tokens ${firsts.take(3).joinToString(", ")}, …"
                 }
