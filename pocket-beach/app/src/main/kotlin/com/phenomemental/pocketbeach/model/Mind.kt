@@ -34,8 +34,8 @@ interface Mind {
      * engine to begin with her route word
      * ([com.phenomemental.pocketbeach.bsp.Talks.HELD]) where it allows. Ask's
      * is free: on Matthew's Pixel (the bench of 0.4.1) held and free gave the
-     * same answers, and holding cost about 2.8 s each time a conversation
-     * opened.
+     * same answers, and free was never slower (holding cost about 2.8 s an
+     * ask when each had a conversation of its own).
      */
     suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = false): Talker
 

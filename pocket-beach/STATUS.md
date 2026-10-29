@@ -62,22 +62,30 @@ From Matthew's bench of 0.4.1 on his Pixel 9 Pro XL (Tensor G4, Android 17),
 What it says:
 
 - **Held and free gave the same answers**, word for word, on every ask.
-  Holding cost about 2.8 s between the first token and her first words,
-  on every ask, on the GPU and the CPU alike (each ask had a conversation
-  of its own; on the laptop it fell once a conversation). In Ask it would
-  fall at least on the first ask, and on the first after each Yes, when
-  the conversation is opened afresh. So her first word is free in Ask now.
+  With each ask in a conversation of its own, holding cost about 2.8 s
+  between the first token and her first words, on the GPU and the CPU
+  alike. In the one conversation kept for three asks, held, it cost
+  nothing that showed (below). Free is never slower and answered the
+  same, so her first word is free in Ask now; the next bench times the
+  kept conversation free, beside these held figures.
 - **The GPU reads much faster; the CPU writes about as fast.** The first
   token came after 1.6 s on the GPU and 7.5 s on the CPU: that is the
   reading of her instruction, about 1,300 tokens. After it, her words came
-  about as fast on either. Ask stays on the GPU. The block as Matthew
-  shared it stops partway into "How it was run", before the line on one
-  conversation kept for three asks on each, which says how much of the
-  CPU's slower reading falls on the first ask alone. It came through cut
-  at the same place twice, at about 19,000 characters, on its way from
-  the share menu: a block is written with its opening last, so "How it
-  was run", the last part, and the opening's summary of every run were
-  what was lost.
+  about as fast on either.
+- **In one conversation kept for three asks** (held), her first words
+  came after 1.9 s, then 0.5 s, then 0.6 s on the GPU, and after 8.5 s,
+  then 1.0 s, then 1.0 s on the CPU. The CPU's slower reading falls on the
+  first ask, as Matthew expected, and the asks after it are still about
+  twice as quick on the GPU. Ask stays on the GPU.
+- **The engine's probes:** speculative decoding off wrote 15.4 tokens a
+  second, on 13.1, so it stays off. The model loaded in about 3 s on the
+  GPU and on the CPU. No build of the model for the Tensor G4's NPU (only
+  for the G5 and G6).
+- **The share came through cut short.** Shared and copied from the menu,
+  the block stopped at the same place twice, at about 19,000 characters,
+  partway into "How it was run". A block is written with its opening
+  last, so "How it was run", its last part, and the opening's summary of
+  every run were what was lost. Matthew sent screenshots of the rest.
 - **The one miss on the GPU was the judge's.** For "Is there anything
   about roses in my garden block?" she said "Yes, the garden block has a
   line about winter pruning roses." The judge wanted "prune"; "pruning"
@@ -90,6 +98,10 @@ What 0.4.2 changes:
 - The bench's run on the CPU is free, as Ask is.
 - The bench's block puts "How it was run" first, so a share cut short
   loses only the end of the last run.
+- **Save this block as a file**, under "Share this block": the block
+  whole, as a `.json` file where Matthew picks (Downloads, Drive), to keep
+  or attach. Only the one block, unlike the Shore's copy of the whole
+  pocket.
 - Opening Ask opens her conversation once. Now and then it opened it and
   shut it again at once: the screen let its wait for the model go on
   another thread, in either order with the opening. The first ask then read
@@ -867,11 +879,8 @@ post offline failing plainly, with nothing sent (0.3.2).
      go, and listening start. If it still says speech is busy, the message
      gives the phone's error number (10 or 8): send it back.
    - **The bench, if he likes** (about half an hour): its `bench-` block,
-     shared as before; "How it was run" now comes first.
-2. **From 0.4.1's bench, now:** a screenshot of its "How it was run" (open
-   the `bench-` block, tap "How it was run"), for the conversation kept on
-   the GPU and on the CPU, and the engine's probes.
-3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+     with "Save this block as a file", and the file attached.
+2. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 

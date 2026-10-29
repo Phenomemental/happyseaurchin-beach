@@ -3,6 +3,8 @@ package com.phenomemental.pocketbeach.ui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +34,7 @@ import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.stringify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Where a position's back step leads: the line above it, or the block's opening. */
@@ -126,11 +130,27 @@ fun BlockScreen(model: Model, nav: Nav, screen: Screen.Block) {
 
         if (screen.address.isEmpty()) {
             val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+            fun whole(): String? = when (screen.region) {
+                Region.POCKET -> model.app.storage.read(screen.name)
+                Region.TEACHING -> model.app.shelf.load(screen.name)?.let { stringify(it) }
+            }
+            // The whole block as a file, where Matthew picks, to keep or attach: a share copied from the menu came through cut short (0.4.1's bench).
+            val saveTo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+                if (uri == null) return@rememberLauncherForActivityResult
+                scope.launch {
+                    val outcome = withContext(Dispatchers.IO) {
+                        runCatching {
+                            val text = whole() ?: error("it isn't there any more")
+                            context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+                        }
+                    }
+                    outcome.onSuccess { model.say(screen, "Saved ${screen.name} as a file, whole.") }
+                        .onFailure { model.say(screen, "${screen.name} wasn't saved: ${it.message ?: "the file couldn't be written"}.") }
+                }
+            }
             TextLink("Share this block", {
-                val text = when (screen.region) {
-                    Region.POCKET -> model.app.storage.read(screen.name)
-                    Region.TEACHING -> model.app.shelf.load(screen.name)?.let { stringify(it) }
-                } ?: return@TextLink
+                val text = whole() ?: return@TextLink
                 // Decision 19: out through Android's share menu, by Matthew's tap, to whichever app he picks.
                 val send = Intent(Intent.ACTION_SEND)
                     .setType("text/plain")
@@ -143,6 +163,7 @@ fun BlockScreen(model: Model, nav: Nav, screen: Screen.Block) {
                     model.say(screen, "There's no app on this phone to share it with.")
                 }
             }, tag = "share")
+            TextLink("Save this block as a file", { saveTo.launch("${screen.name}.json") }, tag = "save-file")
         }
     }
 
