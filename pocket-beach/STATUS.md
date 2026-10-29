@@ -895,9 +895,19 @@ post offline failing plainly, with nothing sent (0.3.2).
      gives the phone's error number (10 or 8): send it back.
    - **The bench, if he likes** (about half an hour): its `bench-` block,
      with "Save this block as a file", and the file attached.
-2. **0.5's item 7, one telling, three landings** (see "0.5"): the test on
-   the laptop first, the pocket beside plain Gemma, five runs of each
-   telling. The spoken telling, his `marathon` block, is still to come.
+2. **0.5's item 7: what next, his to choose** (see "Item 7 on the
+   laptop"). The pocket's copying holds; E2B's sorting does not. The ways
+   on:
+   - **The pocket reckons "when"** from the time words a piece carries
+     (tomorrow, a weekday, a date, a season, "one day"), as plain code,
+     and "what's ahead" follows from it. She judges only the day's other
+     places, and whether a piece is something he'll do.
+   - **A bigger Gemma:** E4B on the laptop first, then whether it runs on
+     his Pixel, and how fast.
+   - **His hand corrects it:** the landing shows as one proposal, any line
+     untickable, with a way to move a line to another place.
+   - The spoken telling, his `marathon` block, is still to come: it is
+     needed for the runs either way.
 3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
@@ -1311,6 +1321,51 @@ there is no second garage card.
 If the one-pass fill drops pieces or misses the doubles, the phone cuts the
 telling into pieces, copying and never changing a word, and she labels each
 piece with its places, one short choice at a time.
+
+### Item 7 on the laptop (29 October)
+
+Built in the pocket's core (`Telling`, with tests): the block, what she is
+given, reading her answer, the pocket's check (invented, dropped), the
+hand's cards updated not doubled, the key and the marks. The laptop trial
+(`trial … telling`) runs each shape on the written telling, then the second
+telling after it lands. Each shape is run once as the phone asks (the
+likeliest word each time), then five times with Gemma's own sampling.
+Gemma 4 E2B is run on the laptop's CPU, with the same model file as the
+phone. The spoken telling (his `marathon` block) has not reached this
+session yet.
+
+There are 11 marks:
+- nothing invented;
+- nothing dropped;
+- the day by the key (17 pieces);
+- the hand by the key (5 cards);
+- the three doubles;
+- the first person;
+- for the second telling: one garage card, done, Monday kept.
+
+| Shape | Marks, six runs | What happened |
+|---|---|---|
+| One pass: the block, the date, what he said | 1 to 4 of 11 | Nothing invented, but barely sorted. Greedy, she numbered his sentences in the order he said them; sampled, she filled one line a place, as near-JSON. The day 0 to 5 of 17, the hand 0 to 3 of 5, 1 to 11 sentences dropped. |
+| Plain Gemma: his names, then the paragraph | 0 to 4 of 11 | She sorts the meaning roughly right, but in her own words and as "you": 10 to 13 lines refused as not his, every run. |
+| A piece at a time, in one conversation | 4 to 5 of 11 | Better in the day (10 to 11 of 17), but she drifts, repeating her earlier answers ("1.1, 1.3, 1.3, 1.3"). |
+| Each piece alone, a conversation of its own | 3 to 5 of 11 | Nothing invented and nothing dropped in all six. The day 10 to 11 of 17 (one run 4); the hand 0 to 1 of 5; Sam's double in three runs; the garage and the twelfth never. About 30 s for 25 pieces on the laptop's CPU. |
+| Others, one run each | 3 to 5 of 11 | Each piece answered in words (3), all the pieces numbered at once (4), and her plain answer anchored back to his words (3 to 5). |
+
+What it says:
+- **Copying holds.** When the phone cuts the telling into pieces, nothing
+  is invented and nothing dropped, every run. Plain Gemma never copies.
+- **The sorting doesn't, with Gemma 4 E2B.** Whatever the shape, she
+  rarely picks what matters to him, what he chose or what's ahead. She
+  almost never puts a forward piece on its right shelf:
+  - "Dentist on Thursday" should go on this week;
+  - "the twelfth" on this month;
+  - "before the frost" on this season;
+  - "one day" on this year or beyond.
+- **The second telling** seldom lands on the garage card.
+- **The claim isn't met.** "From the block alone" does not hold for E2B on
+  this telling. The structure carries the copying, but not the judgement.
+
+The choices this leaves are Matthew's (see "Next").
 
 ## 0.4: as fast and dependable as the phone allows
 
