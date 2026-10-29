@@ -253,13 +253,19 @@ object Bench {
      * how it was run comes first: shared from Matthew's Pixel, 0.4.1's bench
      * came through cut off at about 19,000 characters, twice, losing it.
      */
-    fun block(runs: List<Run>, about: List<String>, whenMs: Long): JsObj {
-        val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }
+    fun block(runs: List<Run>, about: List<String>, whenMs: Long, models: List<String> = emptyList()): JsObj {
+        val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }.ifEmpty { "each model on this phone." }
         val out = JsObj.of("_" to str(opening))
         var key = 1
         if (about.isNotEmpty()) {
             val group = JsObj.of("_" to str("How it was run"))
             about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
+            out["${key++}"] = group
+        }
+        // 0.6: each model on the phone, its speed and the telling test, early, so a share cut short keeps it.
+        if (models.isNotEmpty()) {
+            val group = JsObj.of("_" to str("Each model on this phone: its speed, and the telling test"))
+            models.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
             out["${key++}"] = group
         }
         for (run in runs) out["${key++}"] = runBlock(run)

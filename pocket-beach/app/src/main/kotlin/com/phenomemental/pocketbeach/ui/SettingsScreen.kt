@@ -1,5 +1,10 @@
 package com.phenomemental.pocketbeach.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.phenomemental.pocketbeach.model.FetchService
+import com.phenomemental.pocketbeach.model.ModelStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -20,6 +35,7 @@ import java.util.Locale
  * The app's settings: for each of the companion's jobs, Edge's settings for
  * a model (0.5's Stage 1): the model, the processor, the context, then how
  * her replies are drawn: temperature, top-k, top-p and the longest reply.
+ * 0.6: Gemma 4 E4B is fetched here, and is then a choice for each job.
  */
 @Composable
 fun SettingsScreen(model: Model, nav: Nav) {
@@ -32,7 +48,17 @@ fun SettingsScreen(model: Model, nav: Nav) {
                 "A change is used from the next thing you say in Ask.",
             style = Type.small, color = ink.soft,
         )
-        for (job in Job.values()) JobPart(job, app.settings(job)) { app.set(job, it) }
+        val e4b by produceState<ModelStore.State?>(null) {
+            while (true) {
+                val st = withContext(Dispatchers.IO) { app.e4b.state() }
+                value = st
+                delay(if (st is ModelStore.State.Fetching) 1000 else 3000)
+            }
+        }
+        // The models a job can be set to: those on this phone.
+        val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelStore.State.Ready }
+        BiggerModel(app, e4b)
+        for (job in Job.values()) JobPart(job, app.settings(job), ready) { app.set(job, it) }
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
@@ -40,17 +66,19 @@ fun SettingsScreen(model: Model, nav: Nav) {
 }
 
 @Composable
-private fun JobPart(job: Job, s: JobSettings, set: (JobSettings) -> Unit) {
+private fun JobPart(job: Job, s: JobSettings, models: List<String>, set: (JobSettings) -> Unit) {
     val ink = LocalInk.current
     val tag = "job-${job.name.lowercase()}"
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
         Text(job.title, style = Type.heading, color = ink.ink)
         Text(job.about, style = Type.small, color = ink.soft)
+        val choices = (models + s.model).distinct().sortedBy { JobSettings.MODELS.indexOf(it) }
         Setting(
-            "Model", s.model, tag = "$tag-model", hint = "The one on this phone. Gemma 4 E4B comes with Stage 5.",
-            less = step(JobSettings.MODELS, s.model, -1)?.let { m -> { set(s.copy(model = m)) } },
-            more = step(JobSettings.MODELS, s.model, 1)?.let { m -> { set(s.copy(model = m)) } },
+            "Model", s.model, tag = "$tag-model",
+            hint = if (choices.size == 1) "The one on this phone. Get Gemma 4 E4B above to choose it." else "E2B, the quicker; E4B, the bigger.",
+            less = step(choices, s.model, -1)?.let { m -> { set(s.copy(model = m)) } },
+            more = step(choices, s.model, 1)?.let { m -> { set(s.copy(model = m)) } },
         )
         Setting(
             "Processor", if (s.processor == "GPU") "GPU, else the CPU" else "CPU", tag = "$tag-processor",
@@ -83,8 +111,81 @@ private fun JobPart(job: Job, s: JobSettings, set: (JobSettings) -> Unit) {
             more = step(JobSettings.REPLIES, s.longestReply, 1)?.let { r -> { set(s.copy(longestReply = r)) } },
         )
         val first = JobSettings.of(job)
-        if (s != first) TextLink(if (job == Job.TALK) "Back to Edge's settings" else "Back to 0.4's settings", { set(first) }, tag = "$tag-reset")
-        else Text(if (job == Job.TALK) "Edge's settings for Gemma 4 E2B." else "0.4's settings: the same words propose the same lines.", style = Type.small, color = ink.soft)
+        val firstName = when (job) {
+            Job.TALK -> "Edge's settings"
+            Job.WRITE -> "0.4's settings"
+            Job.SORT -> "the laptop's settings"
+        }
+        if (s != first) TextLink("Back to $firstName", { set(first) }, tag = "$tag-reset")
+        else Text(
+            when (job) {
+                Job.TALK -> "Edge's settings for Gemma 4 E2B."
+                Job.WRITE -> "0.4's settings: the same words propose the same lines."
+                Job.SORT -> "The laptop's settings for Stage 4: the likeliest word, a word or two a piece."
+            },
+            style = Type.small, color = ink.soft,
+        )
+    }
+}
+
+/** Gemma 4 E4B: offered when the phone has the memory, fetched on a tap, checked byte for byte, then a choice for each job. */
+@Composable
+private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: ModelStore.State?) {
+    val ink = LocalInk.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val size = ModelStore.gb(ModelStore.E4B.size)
+    fun act(block: () -> Unit) { scope.launch(Dispatchers.IO) { block() } }
+    val asked = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { FetchService.start(context, ModelStore.E4B) }
+    fun fetch() {
+        if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            asked.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            FetchService.start(context, ModelStore.E4B)
+        }
+    }
+    Column(Modifier.fillMaxWidth().testTag("e4b"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Text("Gemma 4 E4B", style = Type.heading, color = ink.ink)
+        when (state) {
+            null -> {}
+            ModelStore.State.Ready -> Text("On this phone, checked: a choice for each job below.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-ready"))
+            is ModelStore.State.TooLittleMemory -> Text(
+                "This phone has ${ModelStore.gb(state.has)} of memory, and E4B needs a phone with 12 GB, so it isn't offered here.",
+                style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-too-little-memory"),
+            )
+            is ModelStore.State.TooLittleRoom -> Text(
+                "E4B needs ${ModelStore.gb(state.needs)} of room and this phone has ${ModelStore.gb(state.free)} free.",
+                style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-too-little-room"),
+            )
+            ModelStore.State.Absent -> {
+                Text(
+                    "The bigger Gemma: slower, and on the laptop it sorted your day a little better. One download of $size from Hugging Face, " +
+                        "over Wi-Fi only, checked byte for byte before it is used. Gemma 4 E2B stays as it is.",
+                    style = Type.small, color = ink.soft,
+                )
+                Action("Get Gemma 4 E4B, $size over Wi-Fi", { fetch() }, Modifier.fillMaxWidth(), tag = "get-e4b")
+            }
+            is ModelStore.State.Fetching -> {
+                Text(
+                    "${ModelStore.gb(state.done)} of $size (${state.done * 100 / ModelStore.E4B.size}%)" +
+                        if (state.bytesPerSecond > 0) ", at %.1f MB/s".format(state.bytesPerSecond / 1e6) else "",
+                    style = Type.body, color = ink.ink, modifier = Modifier.testTag("e4b-fetching"),
+                )
+                state.note?.let { Text(it, style = Type.small, color = ink.crimson) }
+                TextLink("Stop fetching", { act { app.e4b.stop() } }, tag = "e4b-stop")
+            }
+            is ModelStore.State.Paused -> {
+                Text("Paused at ${ModelStore.gb(state.done)} of $size. It carries on from there.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("e4b-paused"))
+                Action("Carry on", { fetch() }, Modifier.fillMaxWidth(), tag = "e4b-carry-on")
+                TextLink("Discard what has come", { act { app.e4b.discard() } }, tag = "e4b-discard")
+            }
+            ModelStore.State.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft)
+            is ModelStore.State.Failed -> {
+                Notice(state.why, tag = "e4b-failed")
+                Action(if (state.done > 0) "Carry on from ${ModelStore.gb(state.done)}" else "Try again", { act { app.e4b.dismissFailure() }; fetch() }, Modifier.fillMaxWidth(), tag = "e4b-try-again")
+            }
+        }
     }
 }
 

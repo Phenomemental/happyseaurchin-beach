@@ -12,8 +12,14 @@ import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talks
+import com.phenomemental.pocketbeach.bsp.JsObj
+import com.phenomemental.pocketbeach.bsp.Telling
+import com.phenomemental.pocketbeach.bsp.Whens
 import com.phenomemental.pocketbeach.model.Gemma
+import com.phenomemental.pocketbeach.model.Job as MindJob
+import com.phenomemental.pocketbeach.model.JobSettings
 import com.phenomemental.pocketbeach.model.Mind
+import com.phenomemental.pocketbeach.model.ModelStore
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -126,10 +132,11 @@ class Benching(private val app: PocketApp) {
                     stage = Stage.Probing("Letting the model go, to try the engine")
                     about += withContext(Dispatchers.IO) { gemma.probes { what -> scope.launch { stage = Stage.Probing(what) } } }
                 }
+                val models = withContext(Dispatchers.IO) { models(mind) }
                 val now = System.currentTimeMillis()
                 val name = "bench-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
                 val runs = listOf(Bench.Run(BEFORE, before)) + after + cpu
-                val block = Bench.block(runs, about, now)
+                val block = Bench.block(runs, about, now, models)
                 val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
                 changed()
                 stage = if (done.ok) Stage.Saved(name, runs.map { it.name to it.results.count { r -> r.right } }, Bench.ASKS.size) else Stage.Failed("The run wasn't kept: ${done.problem}")
@@ -141,6 +148,98 @@ class Benching(private val app: PocketApp) {
             }
         }
     }
+
+    /**
+     * 0.6, the quicker run: only each model on this phone, its speed and the
+     * telling test, kept as a block of its own (bench-models- and the date).
+     */
+    fun startModels() {
+        if (running) return
+        results.clear()
+        stage = Stage.Loading(System.currentTimeMillis())
+        job = scope.launch {
+            try {
+                val mind = app.mind
+                withContext(Dispatchers.IO) { app.asking.letGo() }
+                val about = listOf(phone(), "The companion: ${companion(mind)}.", "The Sort job's settings, each model in turn: " + settingsLine(app.settings(MindJob.SORT)) + ".")
+                val models = withContext(Dispatchers.IO) { models(mind) }
+                val name = "bench-models-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
+                val block = Bench.block(emptyList(), about, System.currentTimeMillis(), models)
+                val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
+                changed()
+                stage = if (done.ok) Stage.Saved(name, emptyList(), 0) else Stage.Failed("The run wasn't kept: ${done.problem}")
+            } catch (e: CancellationException) {
+                stage = Stage.Ready
+                throw e
+            } catch (e: Exception) {
+                stage = Stage.Failed(e.message ?: e::class.java.simpleName)
+            }
+        }
+    }
+
+    /**
+     * Each model on this phone, with the Sort job's settings but its own
+     * model: how long it takes to load, a plain answer timed, and the telling
+     * test, written then spoken, each followed by the second telling, sorted a
+     * piece at a time as Ask sorts a day, on a scratch hand, with its marks.
+     */
+    private suspend fun models(mind: Mind): List<String> = buildList {
+        for (spec in ModelStore.SPECS) {
+            if (mind.state(spec.name) !is ModelStore.State.Ready) {
+                add("${spec.name}: not on this phone" + if (spec == ModelStore.E4B) " (get it in Settings)." else ".")
+                continue
+            }
+            val s = app.settings(MindJob.SORT).copy(model = spec.name)
+            stage = Stage.Probing("${spec.name}: loading")
+            val load = runCatching { mind.warm(s) }
+            stage = Stage.Probing("${spec.name}: a plain answer")
+            val plain = runCatching {
+                mind.ask("You are a companion on a phone. Answer in plain words.", "Tell me about the sea at night, in one plain paragraph of about 120 words.", s.copy(longestReply = 300))
+            }
+            add(
+                "${spec.name}" + (plain.getOrNull()?.processor?.let { ", on the $it" } ?: "") + ": " +
+                    load.fold({ ms -> "loaded " + (ms?.let { "in ${Bench.secs(it)} s" } ?: "already") }, { "it wouldn't load (${it.message})" }) + "; " +
+                    plain.fold({ a -> "a plain answer, " + (a.turn?.let { t -> "first token ${t.firstTokenSeconds?.let { "%.1f".format(Locale.UK, it) } ?: "?"} s, ${t.wrote} tokens at ${"%.1f".format(Locale.UK, t.writePerSecond)} a second, " } ?: "") + "${Bench.secs(a.ms)} s in all." }, { "a plain answer failed (${it.message})." }),
+            )
+            if (load.isFailure) continue
+            for ((told, said) in listOf("written" to Telling.WRITTEN, "spoken" to Telling.SPOKEN)) {
+                stage = Stage.Probing("${spec.name}: the telling test, $told")
+                add(runCatching { tellingTest(mind, s, said) }.getOrElse { "the telling test failed (${it.message})" }.let { "${spec.name}, the telling test, $told: $it" })
+            }
+        }
+    }
+
+    /** The telling test once: sorted, landed on a scratch hand, the second telling after it, and the marks. */
+    private suspend fun tellingTest(mind: Mind, s: JobSettings, said: String): String {
+        val firsts = mutableListOf<Double>()
+        suspend fun sort(state: JsObj, telling: String): Pair<List<Telling.Placed>, String> {
+            val started = System.nanoTime()
+            val instruction = Telling.sortInstruction(Telling.BENCH_DAY)
+            fun ask(system: String?, message: String, settings: JobSettings) = runBlocking { mind.ask(system, message, settings) }.also { a -> a.turn?.firstTokenSeconds?.let(firsts::add) }.text
+            val (placed, steps) = Telling.sorted(
+                telling, Telling.BENCH_DAY, Whens.first(), state,
+                judge = { piece -> ask(instruction, Telling.aloneAsk(piece, telling), s) },
+                about = { piece, card -> Telling.yes(ask(null, Telling.cardAsk(piece, telling, card), s)) },
+            )
+            val sorting = (System.nanoTime() - started) / 1_000_000
+            val rungStarted = System.nanoTime()
+            val rungs = Telling.placed(ask(null, Telling.rungsAsk(state, Telling.BENCH_DAY, telling), s.copy(longestReply = maxOf(256, s.longestReply)))).filter { it.place in Telling.RUNGS }
+            return (placed + rungs) to "${steps.size} pieces in ${Bench.secs(sorting)} s, the rungs in ${Bench.secs((System.nanoTime() - rungStarted) / 1_000_000)} s"
+        }
+        val (placed, timing) = sort(Telling.shape(), said)
+        val state = Telling.land(Telling.shape(), Telling.check(said, placed).kept)
+        val (placed2, timing2) = sort(state, Telling.SECOND)
+        val after = Telling.land(state, Telling.check(Telling.SECOND, placed2).kept)
+        val marks = Telling.marks(said, placed) + Telling.secondMarks(after)
+        val median = firsts.sorted().getOrNull(firsts.size / 2)
+        return "${marks.count { it.met }} of ${marks.size} marks; $timing" + (median?.let { ", first tokens a median of ${"%.1f".format(Locale.UK, it)} s" } ?: "") +
+            "; the second telling $timing2." + marks.filter { !it.met }.takeIf { it.isNotEmpty() }?.let { missed -> " Missed: " + missed.joinToString("; ") { "${it.name} (${it.note.take(140)})" } + "." }.orEmpty()
+    }
+
+    private fun settingsLine(s: JobSettings): String =
+        "${if (s.processor == "GPU") "the GPU, else the CPU" else "the CPU"}, a context of ${s.context} tokens, " +
+            (if (s.greedy) "the likeliest word each time" else "temperature %.2f, top-k %d, top-p %.2f".format(Locale.UK, s.temperature, s.topK, s.topP)) +
+            ", replies of up to ${s.longestReply} tokens"
 
     /** Forget the last run, as the device tests begin. */
     fun reset() {

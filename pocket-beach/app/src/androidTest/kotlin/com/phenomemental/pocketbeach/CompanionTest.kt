@@ -16,6 +16,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.JsObj
+import com.phenomemental.pocketbeach.bsp.Landing
+import com.phenomemental.pocketbeach.bsp.Telling
+import com.phenomemental.pocketbeach.bsp.Whens
+import com.phenomemental.pocketbeach.bsp.parseJson
 import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.Talk
@@ -111,6 +116,23 @@ class StandIn : Mind {
 
     /** The Talk job's replies to give first, in order, before its plain one. */
     val talkScript = ArrayDeque<String>()
+
+    /** 0.6: what the Sort job was asked, a piece at a time, and the instruction each piece came with. */
+    val sortAsks = mutableListOf<Pair<String?, String>>()
+
+    /** Her word for each piece of his day; "happened" for a piece not here. A card is about a piece when [about] says so. */
+    val sortWords = mutableMapOf<String, String>()
+    var about: (String) -> Boolean = { false }
+
+    override suspend fun ask(instruction: String?, message: String, settings: JobSettings): Mind.Answer {
+        sortAsks += instruction to message
+        val text = when {
+            message.startsWith("A card on Matthew's hand says") -> if (about(message)) "yes" else "no"
+            message.contains("Write the rungs above") -> "3.1: I ring the garage tomorrow.\n3.4: I keep the kids seeing me calm."
+            else -> sortWords[message.substringAfter("The piece: \u201c").substringBeforeLast("\u201d")] ?: "happened"
+        }
+        return Mind.Answer(text, 0, null, processor, null, null)
+    }
 
     fun talk(message: String): String {
         script.removeFirstOrNull()?.let { return it }
@@ -315,15 +337,39 @@ class CompanionTest {
             for (run in 0 until 4) assertTrue("the stand-in's hello world is right in run ${run + 1}", results[run * n + hello].right)
             val run = app.pages.position(Region.POCKET, made.single())!!
             assertTrue(run.text!!.startsWith("Bench, "))
-            assertEquals(5, run.lines.size)
+            assertEquals(6, run.lines.size)
             assertEquals("How it was run, first, so a cut-off share keeps it", "How it was run", run.lines[0].text)
-            assertTrue(run.lines[1].text!!.startsWith("0.3 "))
-            assertTrue(run.lines[2].text!!.startsWith("0.4, her first word held"))
-            assertTrue(run.lines[3].text!!.startsWith("0.4, her first word free"))
-            assertTrue(run.lines[4].text!!.startsWith("0.4 on the CPU"))
+            assertEquals("then each model, early too", "Each model on this phone: its speed, and the telling test", run.lines[1].text)
+            assertTrue(run.lines[2].text!!.startsWith("0.3 "))
+            assertTrue(run.lines[3].text!!.startsWith("0.4, her first word held"))
+            assertTrue(run.lines[4].text!!.startsWith("0.4, her first word free"))
+            assertTrue(run.lines[5].text!!.startsWith("0.4 on the CPU"))
             compose.tap("open-bench-block")
             compose.waitFor("standing", "Bench, ")
         }
+    }
+
+    /** 0.6: the quicker run, each model on the phone, its speed and the telling test, kept as a block of its own. */
+    @Test
+    fun eachModelIsTimedOnTheTellingTest() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages)
+        val before = app.storage.names().toSet()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            compose.tap("open-bench")
+            compose.tap("run-models")
+            compose.waitFor("bench-saved", "Kept as bench-models-", timeoutMs = 60_000)
+        }
+        val made = (app.storage.names().toSet() - before).single()
+        val models = app.pages.position(Region.POCKET, made, "2")!!
+        assertEquals("Each model on this phone: its speed, and the telling test", models.text)
+        val lines = models.lines.mapNotNull { it.text }
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the telling test, written: ") && it.contains(" of 11 marks") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the telling test, spoken: ") })
+        assertTrue("each piece asked on its own", mind.sortAsks.size > Telling.cut(Telling.WRITTEN).size)
+        assertTrue("nothing posted", wire.sent.isEmpty())
+        assertFalse("nothing of his written but the run", app.pages.exists(Landing.NOW) || app.pages.exists(Landing.TELLING))
     }
 
     @Test
@@ -471,6 +517,62 @@ class CompanionTest {
         assertTrue(t, t.contains("Matthew: I want to run a marathon next spring."))
         assertTrue(t, t.contains("Talk: Gemma 4 E2B"))
         assertTrue(t, t.contains("temperature 1.00, top-k 64, top-p 0.95"))
+    }
+
+    /**
+     * 0.6, Stage 4: his day, told in Ask, is sorted a piece at a time after
+     * her reply and shown as one proposal; a line unticked is left out, a line
+     * moved lands where he put it and is kept as an example she is shown the
+     * next time she sorts.
+     */
+    @Test
+    fun hisDayIsSortedAfterHerReplyAndHisMovesAreKeptForNextTime() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf("That sounds like a hard morning, Matthew.", "Good: Monday, then.")
+        mind.sortWords += mapOf("Felt rotten about the morning" to "felt", "The thing I keep coming back to is the kids seeing me calm" to "matters")
+        mind.about = { it.contains("Rang the garage") }
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked(Telling.WRITTEN)
+            compose.waitFor("say", "That sounds like a hard morning")
+            compose.waitFor("day-yes", timeoutMs = 30_000)
+            assertEquals("a day told isn't the Write job's", 0, mind.writeMessages)
+            assertEquals("each piece asked on its own, then the rungs", Telling.cut(Telling.WRITTEN).size + 1, mind.sortAsks.size)
+            assertFalse("nothing written before yes", app.pages.exists(Landing.NOW))
+            val day = app.asking.stage as Asking.Stage.Day
+            val car = day.lines.indexOfFirst { it.words == "the car wouldn't start again this morning" }
+            val sam = day.lines.indexOfFirst { it.words == "that I'm always the one apologising" }
+            compose.tap("day-tick:$car")
+            compose.tap("day-move:$sam")
+            compose.tap("day-to:1.3")
+            compose.waitUntil(5_000) { (app.asking.stage as? Asking.Stage.Day)?.lines?.get(sam)?.place == "1.3" }
+            compose.tap("day-yes")
+            compose.waitUntil(10_000) { app.pages.exists(Landing.NOW) }
+            compose.waitFor("over", "kept as an example for her next time")
+        }
+        val day = Landing.dayAddress(System.currentTimeMillis())
+        assertEquals(Telling.WRITTEN, app.pages.position(Region.POCKET, Landing.NOW, day)?.text)
+        val now = app.storage.read(Landing.NOW)!!
+        assertFalse("an unticked line isn't written", now.contains("\"the car wouldn't start again this morning\""))
+        assertEquals(listOf("that I'm always the one apologising" to "thought"), Landing.examples(parseJson(app.storage.read(Landing.EXAMPLES)!!)))
+        assertTrue("his time words, to change", app.pages.exists(Whens.BLOCK))
+        val hand = Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj)
+        assertTrue(hand.values.toString(), hand.values.any { it.contains("ringing the garage tomorrow") })
+
+        // The second telling: news of the garage card, and her instruction carries his move.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            val before = mind.sortAsks.size
+            asked(Telling.SECOND)
+            compose.waitFor("day-yes", timeoutMs = 30_000)
+            assertTrue(mind.sortAsks.drop(before).first().first!!.contains("Matthew placed these himself:\n\u201cthat I'm always the one apologising\u201d: thought"))
+            compose.tap("day-yes")
+            compose.waitUntil(10_000) { Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj).values.any { it.contains("coming Monday") } }
+        }
+        val hand2 = Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj)
+        assertEquals("the card updated, not doubled", 1, hand2.values.count { it.contains("garage") })
+        assertEquals(Telling.WRITTEN + "\n\n" + Telling.SECOND, app.pages.position(Region.POCKET, Landing.NOW, day)?.text)
     }
 
     /** 0.5's Stage 1: a job's settings, changed in Settings, are what its next conversation is opened with. */
