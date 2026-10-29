@@ -73,7 +73,7 @@ object Talking {
         val lower = said.lowercase()
         fun names(name: String) = Regex("""(?<![\p{L}\p{N}])${Regex.escape(name.lowercase())}(?![\p{L}\p{N}])""").containsMatchIn(lower)
         val shore = pages.shore()
-        val mine = shore.mine.map { it.name }.filter { it != Asks.LOG && it != HelloWorld.SHELL && names(it) }.filter { name ->
+        val mine = shore.mine.map { it.name }.filter { it != Asks.LOG && it != HelloWorld.SHELL && names(it) && pages.floorOf(it) < TEMPORAL_FLOOR }.filter { name ->
             val lines = pages.position(Region.POCKET, name)?.lines.orEmpty()
             lines.size > 9 || lines.any { it.beneath > 0 }
         }

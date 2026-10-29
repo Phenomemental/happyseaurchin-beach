@@ -172,7 +172,8 @@ object Talks {
         }
         appendLine("The blocks in the pocket: each block's name, its opening line (its title, not one of its lines), and its lines:")
         for (b in mine) {
-            if (b.name == shell || b.name == Asks.LOG) {
+            // The shell, shown already; the log; and a clock, his days kept by the date: named only.
+            if (b.name == shell || b.name == Asks.LOG || pages.floorOf(b.name) >= TEMPORAL_FLOOR) {
                 appendLine("- ${b.name}, opening ${quote(b.opening)}")
                 continue
             }

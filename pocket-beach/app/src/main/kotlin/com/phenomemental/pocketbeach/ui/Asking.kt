@@ -95,6 +95,9 @@ class Asking(private val app: PocketApp) {
     @Volatile private var together = true
     private val talking = Mutex()
 
+    /** Whether a job's conversation is in use now: for the device tests to say, when a wait times out. */
+    val lockedForTests: Boolean get() = talking.isLocked
+
     /** Her reply is in, and the Write job is seeing whether his words ask for a write. */
     var checking by mutableStateOf(false)
         private set

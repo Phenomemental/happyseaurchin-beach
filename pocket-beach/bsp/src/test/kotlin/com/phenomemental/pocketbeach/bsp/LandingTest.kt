@@ -130,6 +130,26 @@ class LandingTest {
         assertEquals(Pages.CHANGED, done.first { !it.ok }.problem)
     }
 
+    /** A clock opens at once on its page, and her instructions name it without reading its days (0.6's first CI: it never opened). */
+    @Test
+    fun hisClockOpensAtOnceAndHerInstructionsNameIt() {
+        val (storage, pages) = pocket()
+        HelloWorld.makeShell(pages, Talks.SHELL_RECIPE)
+        land(storage, pages, Landing.sorting(Telling.WRITTEN, right).lines)
+        val done = java.util.concurrent.CompletableFuture.supplyAsync {
+            listOf(
+                pages.position(Region.POCKET, Landing.NOW)?.text.orEmpty(),
+                Talking.instruction(HelloWorld.SHELL, pages),
+                Talks.instruction(HelloWorld.SHELL, "", Asks.plainWindow(pages, HelloWorld.SHELL), pages),
+                Talking.turn("How was my day, now?", java.time.ZonedDateTime.now(), HelloWorld.SHELL, pages),
+            )
+        }.get(10, java.util.concurrent.TimeUnit.SECONDS)
+        assertEquals(Landing.NOW_OPENING, done[0])
+        assertContains(done[1], "- now, opening \"${Landing.NOW_OPENING}\"")
+        assertFalse(done[1].contains("the car wouldn't start"), "the clock's days aren't read into her instruction")
+        assertFalse(done[3].contains("What the app read for you"), "nor into a turn that names it")
+    }
+
     @Test
     fun aDayToldIsSortedAndAnAskIsNot() {
         val cards = mapOf("2.1.1" to "I'm ringing the garage tomorrow")
