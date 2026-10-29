@@ -246,4 +246,60 @@ class TellingTest {
         assertContains(told, "this week (by Thursday 5 November)")
         assertContains(told, "card 1 \u201cI've decided I'm ringing the garage tomorrow\u201d")
     }
+
+    @Test
+    fun whenAPieceFallsIsReckonedFromItsTimeWords() {
+        val today = Telling.BENCH_DAY
+        fun at(piece: String) = Whens.of(piece, today)?.shelf
+        assertEquals("2.1", at("I've decided I'm ringing the garage tomorrow"))
+        assertEquals("2.2", at("Dentist on Thursday"))
+        assertEquals("2.3", at("Jo's birthday is on the twelfth"))
+        assertEquals("2.4", at("Before the frost comes I want the garden shut down properly for once"))
+        assertEquals("2.5", at("One day I want a job where mornings aren't a fight"))
+        assertEquals("2.2", at("they're coming Monday"))
+        // Past and vague: no when.
+        for (p in listOf("the car wouldn't start again this morning", "I've been putting that car off for weeks", "I need to think about that at some point", "Rang the garage first thing")) {
+            assertEquals(null, Whens.of(p, today), p)
+        }
+        // The twelfth of November is two weeks off: this month, by the date.
+        assertEquals("the twelfth", Whens.of("Jo's birthday is on the twelfth", today)!!.by)
+        // His own time words: "at some point" put on this year or beyond.
+        val mine = Whens.first().also { (it["5"] as JsObj)["9"] = str("at some point") }
+        assertEquals("2.5", Whens.of("I need to think about that at some point", today, mine)?.shelf)
+    }
+
+    @Test
+    fun theTellingSortedInSmallStepsMeetsTheKeyWhenSheJudgesRight() {
+        // Her word for each piece as the key has it; the whens and the hand are the pocket's.
+        val words = mapOf(
+            "the car wouldn't start again this morning" to "happened", "which meant the bus" to "happened", "which meant I was twenty minutes late" to "happened",
+            "walked into that meeting with everyone already looking at me" to "happened", "I've been putting that car off for weeks" to "thought", "I know it" to "thought",
+            "same as the tax" to "thought", "same as the garden" to "thought", "Jo's birthday is on the twelfth" to "ahead", "I need to think about that at some point" to "ahead",
+            "The meeting went on forever" to "happened", "Sam said something that stuck with me" to "happened", "that I'm always the one apologising" to "thought",
+            "Felt rotten about the morning" to "felt", "that hot-faced thing" to "felt", "Walked home the long way by the water" to "happened", "felt lighter by the end of it" to "felt",
+            "Dentist on Thursday" to "ahead", "I keep forgetting" to "thought", "I've decided I'm ringing the garage tomorrow" to "chose", "not fiddling with it myself again" to "chose",
+            "Before the frost comes I want the garden shut down properly for once" to "ahead", "The thing I keep coming back to is the kids seeing me calm" to "matters", "not this" to "matters",
+            "One day I want a job where mornings aren't a fight" to "matters",
+        )
+        val (placed, _) = Telling.sorted(Telling.WRITTEN, Telling.BENCH_DAY, Whens.first(), Telling.shape(), { words.getValue(it) }, { _, _ -> false })
+        val all = placed + Telling.placed("3.1: I ring the garage tomorrow.")
+        for (m in Telling.marks(Telling.WRITTEN, all)) assertTrue(m.met, "${m.name}: ${m.note}")
+        // The second telling: "garage" is on a card, she says the piece is about it, and the card takes his sentence whole.
+        val state = Telling.land(Telling.shape(), Telling.check(Telling.WRITTEN, all).kept)
+        val (second, steps) = Telling.sorted(Telling.SECOND, Telling.BENCH_DAY, Whens.first(), state, { "happened" }, { piece, _ -> piece.contains("garage") })
+        assertEquals("2.1.1", steps.first().card)
+        val after = Telling.land(state, Telling.check(Telling.SECOND, second).kept)
+        for (m in Telling.secondMarks(after)) assertTrue(m.met, "${m.name}: ${m.note}")
+        assertEquals("Rang the garage first thing, they're coming Monday", Telling.cards(after)["2.1.1"])
+    }
+
+    @Test
+    fun spokenWordsAreCutAtTheirCapitals() {
+        val pieces = Telling.cut(Telling.SPOKEN)
+        assertTrue(pieces.all { Telling.foundIn(it, Telling.SPOKEN) }, "every piece his words")
+        assertTrue("Dentist on Thursday I keep forgetting" in pieces, pieces.joinToString(" | "))
+        assertTrue("Jo's birthday is on the twelfth" in pieces, pieces.joinToString(" | "))
+        assertTrue("Sam said something that stuck with me that I'm always the the one apologising" in pieces, pieces.joinToString(" | "))
+        assertEquals(Telling.cut(Telling.WRITTEN), Telling.cut(Telling.WRITTEN.replace("  ", " ")))
+    }
 }

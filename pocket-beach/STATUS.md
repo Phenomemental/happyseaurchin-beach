@@ -4,6 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
+**0.5** is built on `ccr-4c84d736-pvgv13`, with Stage 1's settings and
+Stage 2, let her talk (see "0.5: the plan on the beach"). Pictures of the
+new Ask go to Matthew before it is released. On the laptop, Stage 4 (when
+by code) and E4B beside E2B are run and recorded.
+
 **pocket-beach-v0.4.2** is released, from the Pixel's bench of 0.4.1: her
 first word free in Ask, opening Ask opens her conversation once, and a
 block can be saved as a file, whole (see "What 0.4.2 changes"). Its tag is
@@ -879,36 +884,35 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.4.2.apk` over 0.4.1. Then:
-   - **Ask her things, one after another,** in one visit to Ask: a question,
-     a read ("What's in my garden block?"), an act ("Under the autumn line
-     in garden, note …"). Her words should begin to show within about 2 s
-     and stream; an act shows its writes for Yes.
-   - **Tell her something worth keeping:** "I'm going to make a million
-     pound…" with Million there. She should offer an add to Million; if she
-     only talks, the app offers "Keep this in Million?". And something
-     that fits no block: she should offer a new one.
-   - **Show timings** (Settings, from the Shore): under every answer, the
-     time and GPU or CPU; off, nothing.
-   - **Speaking a line with the keyboard up,** in Ask: the keyboard should
-     go, and listening start. If it still says speech is busy, the message
-     gives the phone's error number (10 or 8): send it back.
-   - **The bench, if he likes** (about half an hour): its `bench-` block,
-     with "Save this block as a file", and the file attached.
-2. **0.5's item 7: what next, his to choose** (see "Item 7 on the
-   laptop"). The pocket's copying holds; E2B's sorting does not. The ways
-   on:
-   - **The pocket reckons "when"** from the time words a piece carries
-     (tomorrow, a weekday, a date, a season, "one day"), as plain code,
-     and "what's ahead" follows from it. She judges only the day's other
-     places, and whether a piece is something he'll do.
-   - **A bigger Gemma:** E4B on the laptop first, then whether it runs on
-     his Pixel, and how fast.
-   - **His hand corrects it:** the landing shows as one proposal, any line
-     untickable, with a way to move a line to another place.
-   - The spoken telling, his `marathon` block, is still to come: it is
-     needed for the runs either way.
-3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+1. **Pictures of the new Ask go to Matthew** (from CI's screen tour), and
+   0.5 is released when he has seen them.
+2. **Matthew installs 0.5 over 0.4.2. Then:**
+   - **Talk to her, one thing after another,** in one visit to Ask:
+     - a greeting;
+     - a question;
+     - something told ("I'm going to make a million pound…");
+     - an ask to write ("Add to shopping: oat milk").
+     She should reply to every one in her own words, and what she proposes
+     to write should show beneath her reply, for Yes. Her first words
+     should come within about 2 s; the proposal comes after.
+   - **The Details switch:** her shell, how each ask ended, and the times;
+     off, only the conversation.
+   - **Settings, Talk:** turn the temperature down or up and talk again.
+     "Back to Edge's settings" puts it back.
+   - **Save the conversation as a file,** and send it back with what he
+     makes of her talk beside Edge's.
+   - If she says the Write job couldn't answer, or the two jobs seem
+     slow, the phone may not keep two conversations side by side: the
+     file says so.
+3. **On the laptop and in the app, next** (his choice of 29 October, all
+   three together):
+   - Stage 4 in the app: the telling's landing as one proposal, any line
+     unticked or moved before Yes, each move kept as a worked example she
+     is shown next time.
+   - Stage 5: E4B on his Pixel, for speed.
+   - Stage 1's bench: the telling test, written and spoken, and ten
+     everyday things to say to her.
+4. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 
@@ -1201,10 +1205,165 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
-## 0.5
+## 0.5: the plan on the beach
 
-Matthew's plan for 0.5 is not all in STATUS yet: only its item 7, below
-(29 October). Items 1 to 6 are to be added when he gives them.
+Since 29 October the plan lives on the beach, under the pocket beach
+proposal: `spine:pocket-beach` at 1.11117, "A companion worth talking to".
+Matthew keeps the spine, and it is never written from here. It has six
+stages, and each stage's 9 says how far it has got. Here is how far each
+has got in the pocket, and a line goes to `pool:pocket-beach` whenever a
+stage moves. The items of 0.5 he hadn't sent are replaced by these stages;
+item 7 is now Stage 1's telling test (below).
+
+| Stage | Where it stands |
+|---|---|
+| 1. The measure and the controls | Each job's settings are built (in 0.5). The telling test is built in the core and run on the laptop; on the bench, with ten everyday things to say to her, it is not yet. |
+| 2. Let her talk | Built (in 0.5). |
+| 3. Knowledge when it's needed | A first step is in 0.5: a block his words name that she can't see whole is read for her into the turn. Her instruction still lists every block's lines, and there is no primer yet. |
+| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app, not yet. |
+| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). Each job's settings are in Settings, but not yet a block he can change. On his Pixel, not yet. |
+| 6. Fine-tuning, only if needed | Not started. |
+
+### Stage 1, the controls: each job's settings (0.5)
+
+- **Two jobs for now:**
+  - **Talk:** her reply to every message.
+  - **Write:** what she proposes after it, for Yes.
+- **Each job has Edge's settings, in Settings:**
+  - model;
+  - processor ("GPU, else the CPU", or the CPU alone);
+  - context;
+  - temperature, top-k and top-p;
+  - longest reply.
+- **The first settings:**
+  - **Talk:** Edge's for Gemma 4 E2B: temperature 1.0, top-k 64, top-p 0.95.
+  - **Write:** 0.4's: the likeliest word each time, so the same words
+    propose the same lines.
+  - **Both:** a context of 4,096 tokens and replies of up to 1,024.
+  - Each job has a link back to its first settings.
+  - The seed is left at 0, as Edge leaves it.
+- **The settings are kept on the phone.** A change is used from the next
+  thing he says in Ask: the job's conversation is opened afresh.
+- **Engines are shared where they can be.** Jobs that agree on the model,
+  the processor and the context share one engine. A job set apart loads an
+  engine of its own beside it, and both stay in memory while Ask is open.
+- **One model so far.** The only model on the phone is Gemma 4 E2B; E4B
+  comes with Stage 5. The other jobs in the plan (sort, find, when) get
+  settings when they are built.
+- **The bench is unchanged.** It still runs 0.4's settings, so its results
+  stay comparable. "Run the bench" is now in Settings too.
+
+### Stage 2, let her talk (0.5)
+
+- **A short instruction.** Who she is, that she writes nothing herself
+  (the app sets out the lines beneath her reply, for his yes), and the
+  pocket's blocks. It has no route word, no rulebook and no examples, and
+  is about 1,500 characters against 0.4's 3,900.
+- **Every turn carries the date, the time and her shell:** its opening and
+  its lines. The hello world line is left out of this; it belongs to the
+  Write job. Then comes how his last proposal ended, then his words.
+- **She replies to every message,** drawn as the Talk job's settings say,
+  her words streaming in.
+- **Then the Write job, only when his words may ask for a write.** It runs
+  for words like add, note, keep, remember or the hello world, and for
+  something told. A question, a greeting or thanks is only talk.
+  - The Write job is asked 0.4's way, with 0.4's instruction, in a
+    conversation of its own.
+  - What it proposes is shown beneath her words, for Yes.
+  - It is told what was said in the turns it sat out.
+  - "Keep this in …?" stays, for something told that names a block and
+    got no proposal.
+- **Blocks read for her.** When his words name a teaching block, or a
+  block of his with more than nine lines or lines beneath, the app reads it
+  into the turn: two blocks at most, 1,500 characters each. She is not
+  asked to read, and not asked twice.
+- **Two conversations, kept side by side** while Ask is open. If the phone
+  can't keep both, each is opened in turn from then on, carrying its last
+  six exchanges. Whether the Pixel's GPU keeps both is not yet known.
+- **Ask shows the conversation.** His words sit on the right, hers beneath
+  them, and a line for what came of each proposal.
+- **The Details switch** (at the top of Ask, off at first) shows the
+  workings:
+  - the shell she wears;
+  - how each ask ended, and its time and processor;
+  - "Run the bench".
+  It takes the place of Settings' "Show timings". The ask log keeps every
+  time either way.
+- **"Save the conversation as a file"** writes it as plain text, through
+  the phone's own picker. Each exchange has its time, his words, hers, and
+  how it ended and how long it took. The settings each job ran on come
+  first.
+- **Tests.**
+  - Core: 4 new, 119 in all, every one passing.
+  - On the device:
+    - The stand-in for the companion now answers as either job.
+    - There are new tests for her talking to every message and the
+      conversation saved, and for a job's settings kept and used from the
+      next ask.
+    - The tests of 0.4's asking now run through the two jobs.
+- **The screen tour** shows the new Ask with Details off and on, and the
+  new Settings (pictures 32 to 38, and 35a).
+
+### Stage 4 on the laptop: when by code (29 October)
+
+Built in the core (`Whens`, `Telling.sorted`, with tests), from
+`spine:pocket-beach` 1.111174.
+
+- **Code cuts the telling** into pieces, copying every word. The spoken
+  telling, as his phone heard it, is cut at the capitals it was heard with,
+  and before "I've" where it begins a sentence.
+- **Code reckons when each forward piece falls,** from the time words it
+  carries, read from a block of time words he can change (`time-words`, a
+  shelf each, kept as `Whens.FIRST` until the app writes it). Days of the
+  week, dates and months are counted from today. A piece with a when goes
+  on its shelf of the hand, and is also what's ahead.
+- **She judges only the day's other places,** a piece at a time, in a
+  conversation of its own, answering a word or two (two if it belongs in
+  two).
+- **A piece that shares words with a card on the hand is put to her,**
+  yes or no. A sentence about a card updates it whole.
+
+Each telling is run once as the phone asks, then five times sampled, on the
+laptop's CPU with the phone's model file:
+
+| | Written telling | Spoken telling |
+|---|---|---|
+| Gemma 4 E2B | 8 of 11 (7 in two runs) | 8 of 11, every run |
+| Gemma 4 E4B | 8 of 11 (7 in one run) | 9 of 11 (8 in one run) |
+
+- **Every run:**
+  - nothing invented;
+  - nothing dropped;
+  - the hand by the key (5 of 5);
+  - one garage card;
+  - Monday kept;
+  - the garage card chosen and ahead, and the twelfth.
+- **Still missed:**
+  - **The day by the key, every run.**
+    - E2B gets 12 or 13 of 17. It misses the bus and late in what
+      happened, Sam's line, and the kids seeing me calm in what matters.
+    - E4B gets 13 to 15. It misses Sam's line in happened; in what he
+      thought, Sam's line about apologising, and in six runs putting
+      things off; and the kids.
+  - **Sam's double** (in happened, and made of it), every run.
+  - **The second telling's garage card as done.**
+    - E2B: never.
+    - E4B: every spoken run, no written one.
+  - **The first person:** two runs of each model gave no rung lines.
+- **Speed, on the laptop's CPU.** E4B takes about 2.3 times as long:
+  - first tokens: a median of 1.4 s against 0.6 s;
+  - the written telling's 25 pieces: 37 s against 16 s;
+  - the rungs: 12 s against 6 s.
+
+  The phone's GPU is another matter, and is Stage 5's next step.
+- **The marks fixed for Stage 1** ask for:
+  - nothing invented, nothing dropped, the three doubles and the first
+    person;
+  - 12 of the 14 placements;
+  - on five runs of five.
+
+  Neither model meets them yet: Sam's double and the day's placements fall
+  short.
 
 ### Item 7: one telling, three landings (a pocket test)
 

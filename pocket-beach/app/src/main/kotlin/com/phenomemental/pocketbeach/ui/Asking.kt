@@ -15,7 +15,10 @@ import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Region
 import com.phenomemental.pocketbeach.bsp.Shells
+import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.bsp.Talks
+import com.phenomemental.pocketbeach.model.Job as MindJob
+import com.phenomemental.pocketbeach.model.JobSettings
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.Pace
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.time.ZonedDateTime
 
 /**
  * One Ask at a time, from Matthew's words to the entry it leaves in the log.
@@ -37,6 +41,13 @@ import kotlinx.coroutines.withContext
  * afresh only when the pocket has changed, and carrying the last six
  * exchanges. Her answer begins with talk, read or act ([Talks]); talk
  * streams into the page as she writes it, and an act is planned for Yes.
+ *
+ * 0.5, let her talk: two jobs, a conversation each, kept side by side. She
+ * talks first ([Talking], drawn as the Talk job's settings say), her words
+ * streaming in; then, if his words may ask for a write, the Write job is
+ * asked the 0.4 way, and what it proposes is shown beneath her words for
+ * Yes. Should the phone not keep the two side by side, each is opened in
+ * turn, carrying its last six exchanges.
  */
 class Asking(private val app: PocketApp) {
     sealed interface Stage {
@@ -58,10 +69,20 @@ class Asking(private val app: PocketApp) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var job: Job? = null
 
-    /** The one conversation kept while Ask is open, and whether the pocket has changed since its instruction was made. */
-    private var talker: Mind.Talker? = null
-    private var stale = true
+    /** A job's conversation, kept while Ask is open, and the settings it was opened with. */
+    private class Kept(val talker: Mind.Talker, val settings: JobSettings)
+
+    /** Each job's conversation; the jobs whose pocket has changed since their instruction was made. */
+    private val kept = java.util.concurrent.ConcurrentHashMap<MindJob, Kept>()
+    private val stale: MutableSet<MindJob> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+
+    /** Whether the two conversations can be kept side by side on this phone; once they can't, each is opened in turn. */
+    @Volatile private var together = true
     private val talking = Mutex()
+
+    /** Her reply is in, and the Write job is seeing whether his words ask for a write. */
+    var checking by mutableStateOf(false)
+        private set
 
     /** Her words so far, as they stream in. */
     var live by mutableStateOf("")
@@ -71,14 +92,22 @@ class Asking(private val app: PocketApp) {
     var keepIn by mutableStateOf<String?>(null)
         private set
 
-    /** An exchange of this Ask screen's conversation, as the page shows it. */
-    class Exchange(val question: String, val said: String, val note: String, val time: String)
+    /**
+     * An exchange of this Ask screen's conversation, as the page shows it:
+     * his words, her reply, how it ended and how long it took, when he said
+     * it ([at]), and what came of a proposal ([outcome], null when there
+     * was none).
+     */
+    class Exchange(val question: String, val said: String, val note: String, val time: String, val at: Long = System.currentTimeMillis(), val outcome: String? = null)
 
     /** The exchanges so far, oldest first. */
     val history = mutableStateListOf<Exchange>()
 
-    /** The last six exchanges as she said them, carried into a conversation opened afresh. */
-    private val context = ArrayDeque<Pair<String, String>>()
+    /** Each job's last six exchanges as they went, carried into its conversation opened afresh. */
+    private val context = MindJob.values().associateWith { ArrayDeque<Pair<String, String>>() }
+
+    /** Her talk since the Write job was last asked: told it the next time it is, since it doesn't see turns it sat out. */
+    private val unseen = mutableListOf<Pair<String, String>>()
 
     /** How her last act ended (yes, not now), told her with the next ask, since she can't see it otherwise. */
     private var told: String? = null
@@ -90,6 +119,7 @@ class Asking(private val app: PocketApp) {
     var stage by mutableStateOf<Stage>(Stage.Writing)
         private set
     private var asked: String = ""
+    private var askedAt = 0L
 
     /** The shell's opening line as it stands in the pocket. */
     fun shellOpening(): String = app.pages.position(Region.POCKET, HelloWorld.SHELL)?.text ?: HelloWorld.SHELL_OPENING
@@ -100,20 +130,29 @@ class Asking(private val app: PocketApp) {
     /** How many times Ask has been opened: a close asked for before the latest opening lets nothing go. */
     @Volatile private var openings = 0
 
-    /** Ask is open: load the model and open the conversation now, while Matthew writes. */
+    /** Ask is open: load the model and open the conversations now, while Matthew writes. */
     fun opened() {
         openings++
         if (benchRunning) return
-        scope.launch(Dispatchers.IO) { runCatching { talking.withLock { talker() } } }
+        scope.launch(Dispatchers.IO) {
+            runCatching {
+                talking.withLock {
+                    talker(MindJob.TALK)
+                    if (together) talker(MindJob.WRITE)
+                }
+            }
+        }
     }
 
-    /** Let the conversation go now, before the bench loads the model its own ways. */
+    /** Let the conversations go now, before the bench loads the model its own ways. */
     suspend fun letGo() {
-        talking.withLock {
-            talker?.close()
-            talker = null
-            stale = true
-        }
+        talking.withLock { closeAll() }
+    }
+
+    /** Close both jobs' conversations. Called holding [talking], or as Ask is reset. */
+    private fun closeAll() {
+        kept.values.forEach { runCatching { it.talker.close() } }
+        kept.clear()
     }
 
     /**
@@ -129,67 +168,132 @@ class Asking(private val app: PocketApp) {
         scope.launch(Dispatchers.IO) {
             talking.withLock {
                 if (openings != at) return@withLock
-                talker?.close()
-                talker = null
+                closeAll()
             }
         }
     }
 
-    /** The conversation, opened afresh if the pocket has changed since it was. Called holding [talking]. */
-    private suspend fun talker(): Mind.Talker {
-        talker?.let { t -> if (!stale) return t else t.close() }
-        talker = null
-        val instruction = Talks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages, examplesInText = false)
-        return app.mind.talker(instruction, Talks.opening(context.toList())).also { talker = it; stale = false }
+    /**
+     * [job]'s conversation, opened afresh if the pocket or the job's settings
+     * have changed since it was. Should the phone not open it beside the
+     * other's, the other is let go, and from then on each is opened in turn.
+     * Called holding [talking].
+     */
+    private suspend fun talker(job: MindJob): Mind.Talker {
+        val settings = app.settings(job)
+        kept[job]?.let { k ->
+            if (job !in stale && k.settings == settings) return k.talker
+            runCatching { k.talker.close() }
+            kept.remove(job)
+        }
+        if (!together) kept.keys.filter { it != job }.forEach { other -> kept.remove(other)?.let { runCatching { it.talker.close() } } }
+        val open = suspend {
+            when (job) {
+                MindJob.TALK -> app.mind.talker(Talking.instruction(HelloWorld.SHELL, app.pages), context.getValue(job).toList(), settings = settings)
+                MindJob.WRITE -> app.mind.talker(
+                    Talks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages, examplesInText = false),
+                    Talks.opening(context.getValue(job).toList()), settings = settings,
+                )
+            }
+        }
+        val t = try {
+            open()
+        } catch (e: Throwable) {
+            if (e is kotlinx.coroutines.CancellationException || kept.isEmpty()) throw e
+            android.util.Log.w("Asking", "The two conversations couldn't be kept side by side; each is opened in turn from now on.", e)
+            together = false
+            closeAll()
+            open()
+        }
+        kept[job] = Kept(t, settings)
+        stale.remove(job)
+        return t
     }
 
     fun ask() {
         val q = question.trim()
         if (q.isEmpty() || benchRunning || stage !is Stage.Writing && stage !is Stage.Over) return
         asked = q
+        askedAt = System.currentTimeMillis()
         live = ""
         keepIn = null
+        checking = false
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch {
             val started = System.nanoTime()
             var pace: Pace? = null
             var firstShown: Long? = null
-            val outcome = withContext(Dispatchers.IO) {
+            val note = told.also { told = null }
+            // Her reply, streamed as she writes it.
+            val talked = withContext(Dispatchers.IO) {
                 runCatching {
                     talking.withLock {
-                        val t = talker()
+                        val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
                         val first = history.isEmpty() && t.pace.turns.isEmpty()
-                        val note = told.also { told = null }
-                        val a = Talks.ask(q, t.stream, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), { System.currentTimeMillis() }, before = note) { words ->
+                        val message = Talking.turn(q, ZonedDateTime.now(), HelloWorld.SHELL, app.pages, note)
+                        val words = StringBuilder()
+                        val reply = t.stream.say(message) { piece ->
+                            words.append(piece)
                             if (firstShown == null && words.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
-                            live = words
+                            live = words.toString().trim()
                         }
                         pace = Pace(t.pace.processor, t.pace.whyNotGpu, if (first) t.pace.loadMs else null).also { p -> p.turns.addAll(t.pace.turns.drop(before)) }
-                        a
+                        message to reply.trim()
                     }
                 }
             }
+            val (message, said) = talked.getOrElse { e ->
+                if (stage is Stage.Thinking) end(null, null, null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}.", (System.nanoTime() - started) / 1_000_000, pace)
+                return@launch
+            }
+            live = said
+            remember(MindJob.TALK, Talking.kept(q), said)
+            // Then, if his words may ask for a write, what the Write job proposes.
+            val written = if (!Talking.mayWrite(q)) null else {
+                checking = true
+                withContext(Dispatchers.IO) {
+                    runCatching {
+                        talking.withLock {
+                            val w = talker(MindJob.WRITE)
+                            val before = w.pace.turns.size
+                            val sinceLast = unseen.takeLast(3).joinToString(" ") { (his, hers) -> "Matthew said: ${Words.quoted(his, 200)}; the companion said: ${Words.quoted(hers, 200)}." }
+                            val a = Talks.ask(
+                                q, w.stream, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), { System.currentTimeMillis() },
+                                before = listOfNotNull(sinceLast.takeIf(String::isNotEmpty)?.let { "Since you were last asked: $it" }, note).joinToString(" ").ifEmpty { null },
+                                answerReads = false,
+                            )
+                            pace?.turns?.addAll(w.pace.turns.drop(before))
+                            a
+                        }
+                    }
+                }.also { checking = false }
+            }
+            unseen += q to said
+            if (written != null) unseen.clear()
             val took = (System.nanoTime() - started) / 1_000_000
-            outcome.onFailure { e ->
-                if (stage is Stage.Thinking) end(null, null, null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}.", took, pace)
-            }.onSuccess { a -> answered(a, emptyMap(), took, pace, firstShown) }
+            val talk = Talks.Answered(Talks.Route.TALK, said, emptyList(), null, null, listOf(message to said))
+            val a = written?.getOrNull()?.let { w ->
+                remember(MindJob.WRITE, Talks.SAYS + asked, w.exchanges.lastOrNull()?.second.orEmpty())
+                if (w.route == Talks.Route.ACT) Talks.Answered(w.route, said, w.found, w.planned, w.problem, talk.exchanges + w.exchanges, w.actions) else null
+            } ?: talk
+            answered(a, emptyMap(), took, pace, firstShown, writeFailed = written?.exceptionOrNull())
         }
     }
 
-    /** Her answer: talk and read end the Ask with her words; an act is shown for Yes, or a quote is put to Matthew first. */
-    private fun answered(a: Talks.Answered, chosen: Map<Int, String>, took: Long, pace: Pace?, firstShown: Long?) {
-        remember(a)
+    /** Her answer: talk ends the Ask with her words; a proposal is shown for Yes, or a quote is put to Matthew first. */
+    private fun answered(a: Talks.Answered, chosen: Map<Int, String>, took: Long, pace: Pace?, firstShown: Long?, writeFailed: Throwable? = null) {
         val shown = Stage.Shown(asAsked(a), took, pace, firstShown)
         val planned = a.planned
         when {
+            writeFailed != null -> end(shown, null, null, "She talked. The Write job couldn't answer: ${writeFailed.message ?: writeFailed::class.simpleName}.", took)
             a.route == Talks.Route.TALK -> {
-                // What he told her names one of his blocks, and she only talked: the app offers to keep it there.
+                // What he told her names one of his blocks, and nothing was proposed: the app offers to keep it there.
                 keepIn = Talks.keepIn(asked, app.pages)
                 end(shown, null, null, "She talked.", took)
             }
             a.route == Talks.Route.READ -> end(shown, null, null, "She read ${a.found.size} block${if (a.found.size == 1) "" else "s"}, then answered.", took)
-            a.problem != null -> end(shown, null, null, "Her act couldn't go ahead: ${a.problem}", took)
+            a.problem != null -> end(shown, null, null, "Her proposal couldn't go ahead: ${a.problem}", took)
             planned?.choose != null -> stage = Stage.Choosing(a, chosen, took, pace)
             planned?.proposal?.asks != true -> end(shown, null, null, planned?.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.", took)
             else -> stage = shown
@@ -236,11 +340,12 @@ class Asking(private val app: PocketApp) {
         end(Stage.Shown(asAsked(c.answered), c.took, c.pace), null, null, "Matthew said not now to which line she meant.", c.took)
     }
 
-    /** Her last reply, kept as context for the next conversation; only the last six. */
-    private fun remember(a: Talks.Answered) {
-        val (message, reply) = a.exchanges.lastOrNull() ?: return
-        context.addLast(Talks.SAYS + asked to reply.ifBlank { message })
-        while (context.size > 6) context.removeFirst()
+    /** A job's exchange, kept as context for its next conversation; only the last six. */
+    private fun remember(job: MindJob, message: String, reply: String) {
+        if (reply.isBlank()) return
+        val c = context.getValue(job)
+        c.addLast(message to reply)
+        while (c.size > 6) c.removeFirst()
     }
 
     /** 0.4's answer in the shape the proposal's pages show: her words, what she read, the writes and the post. */
@@ -250,11 +355,13 @@ class Asking(private val app: PocketApp) {
     }
 
     fun stop() {
-        talker?.stop()
+        kept.values.forEach { it.talker.stop() }
         // A conversation stopped part way can't be asked again: the next ask opens it afresh.
-        stale = true
+        stale += MindJob.values()
+        val writing = checking
+        checking = false
         job?.cancel()
-        end(null, null, null, "Stopped before the companion answered.", null)
+        end(null, null, null, if (writing) "Stopped while the Write job was seeing whether there was anything to write." else "Stopped before the companion answered.", null)
     }
 
     fun notNow() {
@@ -278,8 +385,8 @@ class Asking(private val app: PocketApp) {
         stage = Stage.Carrying(s)
         scope.launch {
             val carried = withContext(Dispatchers.IO) { Asks.carryOut(proposal, app.pages, app.storage, shellOpening()) }
-            // Her instruction shows the pocket as it stood; the next ask opens the conversation afresh.
-            if (carried.landed.isNotEmpty()) stale = true
+            // Her instructions show the pocket as it stood; the next ask opens the conversations afresh.
+            if (carried.landed.isNotEmpty()) stale += MindJob.values()
             changed()
             val written = Stage.Written(s, carried)
             when {
@@ -316,14 +423,47 @@ class Asking(private val app: PocketApp) {
         question = ""
         live = ""
         keepIn = null
+        checking = false
         stage = Stage.Writing
         history.clear()
-        context.clear()
+        context.values.forEach { it.clear() }
+        unseen.clear()
         told = null
-        stale = true
-        talker?.let { t -> scope.launch(Dispatchers.IO) { runCatching { t.close() } } }
-        talker = null
+        together = true
+        val all = kept.values.map { it.talker }
+        kept.clear()
+        stale += MindJob.values()
+        scope.launch(Dispatchers.IO) { all.forEach { runCatching { it.close() } } }
     }
+
+    /**
+     * The conversation so far as a file of plain text, to keep or send: each
+     * exchange, when he said it, her reply, and how it ended and how long it
+     * took; first, the settings her jobs ran on.
+     */
+    fun transcript(): String = buildString {
+        val day = java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", java.util.Locale.UK)
+        val time = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.UK)
+        fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
+        appendLine("Pocket beach: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
+        appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
+        for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.settings(j)))
+        for (e in history) {
+            appendLine()
+            appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
+            if (e.said.isNotBlank()) appendLine("Companion: ${e.said}")
+            appendLine("  (${e.note} ${e.time})")
+        }
+    }
+
+    /** The name the conversation's file is offered under. */
+    fun fileName(): String =
+        "ask-" + java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", java.util.Locale.UK).format(java.time.LocalDateTime.now()) + ".txt"
+
+    private fun settingsLine(s: JobSettings): String =
+        "${s.model}, ${if (s.processor == "GPU") "the GPU, else the CPU" else "the CPU"}, a context of ${s.context} tokens, " +
+            (if (s.greedy) "the likeliest word each time" else "temperature %.2f, top-k %d, top-p %.2f".format(java.util.Locale.UK, s.temperature, s.topK, s.topP)) +
+            ", replies of up to ${s.longestReply} tokens."
 
     /** Begin again, the last Ask's words kept to change or clear. */
     fun again() {
@@ -344,8 +484,9 @@ class Asking(private val app: PocketApp) {
                 (shown?.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
                 ", in ${Words.count(exchanges, "exchange")}." + (pace?.detail()?.let { d -> " $d" } ?: "")
         } ?: "Stopped."
-        history += Exchange(asked, shown?.asked?.answer?.say.orEmpty(), note, time)
-        if (shown?.asked?.proposal != null || shown?.asked?.unasked != null) told = note
+        val proposed = shown?.asked?.proposal != null || shown?.asked?.unasked != null
+        history += Exchange(asked, shown?.asked?.answer?.say.orEmpty(), note, time, at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(), outcome = if (proposed) note else null)
+        if (proposed) told = note
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
             changed()

@@ -166,7 +166,8 @@ object Telling {
     }
 
     /** What he said, a sentence at a time. */
-    fun sentences(said: String): List<String> = said.trim().split(Regex("(?<=[.!?])\\s+")).map { it.trim() }.filter { plain(it).isNotEmpty() }
+    fun sentences(said: String): List<String> = spokenCut(said).trim().split(Regex("(?<=[.!?])\\s+")).map { it.trim() }
+        .filter { plain(it).isNotEmpty() && plain(it).split(' ').any { w -> w !in JOINERS } }
 
     /** What the pocket found before anything lands: the lines kept, those refused as invented, and the sentences dropped. */
     class Checked(val kept: List<Placed>, val invented: List<Placed>, val dropped: List<String>)
@@ -234,7 +235,7 @@ object Telling {
      * left at a piece's start ("and", "so", "anyway", "right") goes; no word
      * is changed or added.
      */
-    fun cut(said: String): List<String> = said.split(Regex("[.,;:!?]+")).flatMap { segment ->
+    fun cut(said: String): List<String> = spokenCut(said).split(Regex("[.,;:!?]+")).flatMap { segment ->
         val parts = mutableListOf<String>()
         var rest = segment.trim()
         while (true) {
@@ -249,12 +250,44 @@ object Telling {
 
     private fun words(s: String) = plain(s).split(' ').count { it.isNotEmpty() }
 
+    private val AFTER = setOf("on", "at", "in", "to", "with", "for", "by", "from", "of", "the", "a", "an", "and", "or", "my", "his", "her", "dear")
+    private val I_FORMS = setOf("i", "i'm", "i've", "i'll", "i'd")
+
+    /**
+     * Speech as the phone hears it comes without stops, its sentences begun
+     * with a capital. Unpunctuated, a stop is put before each capital that
+     * begins one: not "I" and its forms, nor a name after "on", "the" and
+     * their like. Written words, which have their stops, pass as they are.
+     */
+    private fun spokenCut(said: String): String {
+        val words = said.trim().split(Regex("\\s+"))
+        if (words.size < 30 || Regex("[.!?]").findAll(said).count() * 30 >= words.size) return said
+        val out = StringBuilder()
+        for ((i, w) in words.withIndex()) {
+            val first = w.firstOrNull()
+            val before = words.getOrNull(i - 1)?.lowercase()?.trim(',', ';')
+            val lower = w.lowercase().trim(',', '.')
+            // "I've" begins a sentence in speech ("… looking at me I've been …") unless a joiner comes first ("and I've").
+            val begins = first != null && first.isUpperCase() && (lower !in I_FORMS || lower == "i've" && before !in JOINERS && before !in setOf("that", "which", "decided", "think", "know", "because"))
+            if (i > 0 && begins && before !in AFTER) out.append(". ")
+            else if (i > 0) out.append(' ')
+            out.append(w)
+        }
+        return out.toString()
+    }
+
     private fun unjoined(piece: String): String {
         var p = piece.trim()
         while (true) {
             val first = p.substringBefore(' ')
-            if (first.lowercase() !in JOINERS || first.length == p.length) return p
+            if (first.lowercase() !in JOINERS || first.length == p.length) break
             p = p.substring(first.length).trim()
+        }
+        // A joiner left at the end, where speech had no comma before the next sentence: "… went on forever but".
+        while (true) {
+            val last = p.substringAfterLast(' ')
+            if (last.lowercase() !in JOINERS || last.length == p.length) return p
+            p = p.substring(0, p.length - last.length).trim()
         }
     }
 
@@ -375,6 +408,85 @@ object Telling {
             if (line.place in RUNGS) out += line
         }
         return out
+    }
+
+    // ── Stage 4: when by code; she judges the day's other places, a piece at a time ──
+
+    /** The words she answers a piece with, and the day's places they stand for. */
+    val DAY_WORDS: List<Pair<String, String>> = listOf(
+        "happened" to "1.1", "felt" to "1.2", "thought" to "1.3", "matters" to "1.4", "chose" to "1.5", "ahead" to "1.6",
+    )
+
+    /** What she is told for each piece: the day's six places, each a word. When it falls is the pocket's to reckon. */
+    fun sortInstruction(today: java.time.LocalDate): String =
+        "You sort one piece of what Matthew said about his day. Today is ${date(today)}. Answer with one word: " +
+            "happened (what could be seen or checked, before any meaning), felt (what he felt, in his body and in him), " +
+            "thought (his conclusions, judgements and the stories he tells), matters (how he wants to be), " +
+            "chose (a choice he has made) or ahead (what's coming, planned or expected). If it belongs in two, give both."
+
+    /** Her words for a piece, as places of the day: the first two of the six words in her answer, in her order. */
+    fun dayWords(answer: String): List<String> {
+        val said = " " + plain(answer.trim().lineSequence().firstOrNull().orEmpty()) + " "
+        return DAY_WORDS.mapNotNull { (w, place) -> said.indexOf(" $w ").takeIf { it >= 0 }?.let { it to place } }.sortedBy { it.first }.map { it.second }.take(2)
+    }
+
+    fun dayWord(answer: String): String? = dayWords(answer).firstOrNull()
+
+    /** The cards a piece may be about: those sharing a word of substance with it. */
+    fun cardsNear(piece: String, cards: Map<String, String>): Map<String, String> = cards.filter { (_, words) -> (content(piece) intersect content(words)).isNotEmpty() }
+
+    /** Asked of a piece that shares words with a card on his hand: one short choice, yes or no. */
+    fun cardAsk(piece: String, said: String, card: String): String =
+        "A card on Matthew's hand says: \u201c$card\u201d\nToday he said: \u201c${sentenceOf(piece, said)}\u201d\n" +
+            "Is \u201c$piece\u201d about the same thing as the card, even if it is done now? Answer yes or no."
+
+    fun yes(answer: String): Boolean = plain(answer).startsWith("yes")
+
+    /** One piece, sorted: its places, and when it falls if it carries a when. */
+    data class Sorted(val piece: String, val places: List<String>, val whenBy: String?, val card: String?)
+
+    /**
+     * The telling sorted in small steps: code cuts it into pieces of his
+     * words and reckons when each falls from the time words in [words]; a
+     * piece with a when goes on its shelf and is also what's ahead. [judge]
+     * is her one word for a piece's place in the day. A piece sharing words
+     * with a card on the hand is put to her, [about], one card at a time;
+     * a sentence about a card updates it, whole, and makes no new card.
+     */
+    fun sorted(
+        said: String,
+        today: java.time.LocalDate,
+        words: JsObj,
+        state: JsObj,
+        judge: (piece: String) -> String,
+        about: (piece: String, card: String) -> Boolean,
+    ): Pair<List<Placed>, List<Sorted>> {
+        val cards = cards(state)
+        val out = mutableListOf<Placed>()
+        val steps = mutableListOf<Sorted>()
+        val updates = mutableMapOf<String, String>()
+        val sentenceOfCard = mutableMapOf<String, String>()
+        val pieces = cut(said)
+        for (piece in pieces) {
+            val places = mutableListOf<String>()
+            places += dayWords(judge(piece))
+            val w = Whens.of(piece, today, words)
+            if (w != null && "1.6" !in places) places += "1.6"
+            val card = cardsNear(piece, cards).entries.firstOrNull { (_, words) -> about(piece, words) }?.key
+            if (card != null) sentenceOfCard.putIfAbsent(sentenceOf(piece, said), card)
+            for (p in places) out += Placed(p, null, piece)
+            steps += Sorted(piece, places + listOfNotNull(w?.shelf), w?.by, card)
+        }
+        for (step in steps) {
+            val sentence = sentenceOf(step.piece, said)
+            val card = sentenceOfCard[sentence]
+            when {
+                card != null -> updates[card] = sentence.trim().trimEnd('.', '!', '?')
+                step.whenBy != null -> out += Placed(step.places.last(), null, step.piece)
+            }
+        }
+        for ((address, words) in updates) out += Placed(address.substringBeforeLast('.'), address.substringAfterLast('.'), words)
+        return out to steps
     }
 
     /** All the pieces at once, numbered, each answered on a line of its own: "7: 1.6, 2.2". */
@@ -521,7 +633,7 @@ object Telling {
             "1.2" to listOf(Item("rotten", "rotten"), Item("hot-faced", "hot faced"), Item("lighter after the walk", "lighter")),
             "1.3" to listOf(
                 Item("putting things off", "putting that car off", "same as the tax", "same as the garden"),
-                Item("Sam's line about apologising", "always the one apologising"),
+                Item("Sam's line about apologising", "always the one apologising", "one apologising"),
             ),
             "1.4" to listOf(Item("the kids seeing me calm", "kids seeing me calm")),
             "1.5" to listOf(Item("ringing the garage, not fixing it myself", "ringing the garage", "not fiddling with it myself")),
@@ -554,7 +666,7 @@ object Telling {
         val (dayRight, dayMissed) = keyed(Key.DAY)
         val (handRight, handMissed) = keyed(Key.HAND)
         val garage = Item("garage", "garage")
-        val sam = Item("Sam's line", "sam said", "always the one apologising")
+        val sam = Item("Sam's line", "sam said", "always the one apologising", "one apologising")
         val jo = Item("Jo's birthday", "jo's birthday", "twelfth")
         val joShelves = HAND.filter { s -> at(s).any(jo::inside) }
         val rungs = kept.filter { it.place in RUNGS }
@@ -599,4 +711,13 @@ object Telling {
         "where mornings aren't a fight."
 
     const val SECOND = "Rang the garage first thing, they're coming Monday."
+
+    /** His telling as his phone heard it, its slips kept (spine:pocket-beach 1.1111713, 29 October). */
+    const val SPOKEN = "Right, so the car wouldn't start again this morning which meant the bus meant I was twenty minutes late and walked " +
+        "into that meeting with everyone already looking at me I've been putting that car off for weeks and I know same as the tax the " +
+        "same as the garden Anyway Jo's birthday is on the twelfth so I need to think about that at some point The meeting went on on " +
+        "forever but Sam said something that stuck with me that I'm always the the one apologising Felt rotten about the morning that " +
+        "hot-faced thing Walked home the long way by the water and felt lighter by end of it Dentist on Thursday I keep forgetting I've " +
+        "decided I'm ringing the garage tomorrow not fiddling with myself again Before the frost I want the garden shut down properly " +
+        "for once The thing I keep coming back to is the kids seeing me calm not this One day I want a job where mornings aren't a fight"
 }

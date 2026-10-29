@@ -83,9 +83,14 @@ fun main(args: Array<String>) {
     }
     // 0.5's item 7: one telling, three landings, the pocket beside plain Gemma. A spoken telling rides as -Dpocket.spoken=<file of text>.
     if ("telling" in flags) {
-        val spoken = System.getProperty("pocket.spoken")?.let { File(it).readText() }
-        val list = listOf("written" to com.phenomemental.pocketbeach.bsp.Telling.WRITTEN) + listOfNotNull(spoken?.let { "spoken" to it })
+        val list = listOf("written" to com.phenomemental.pocketbeach.bsp.Telling.WRITTEN, "spoken" to com.phenomemental.pocketbeach.bsp.Telling.SPOKEN)
+            .filter { (n, _) -> System.getProperty("pocket.tellings")?.split(",")?.contains(n) ?: true }
         val out = File(System.getProperty("pocket.out") ?: "tellings")
+        if ("stage4" in flags) {
+            stage4(engine, File(model).name.substringBefore("-it").removePrefix("gemma-4-"), list, out, runs)
+            engine.close()
+            return
+        }
         val mode = listOf("words", "alone", "all", "kept").firstOrNull { it in flags } ?: "alone"
         if ("pieces" in flags) pieces(engine, list, out, runs, mode) else tellings(engine, list, out, runs)
         engine.close()

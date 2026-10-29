@@ -16,6 +16,8 @@ import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.model.Gemma
+import com.phenomemental.pocketbeach.model.Job
+import com.phenomemental.pocketbeach.model.JobSettings
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
 import com.phenomemental.pocketbeach.net.Connection
@@ -101,18 +103,24 @@ class PocketApp : Application() {
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
 
-    private val timings by lazy { mutableStateOf(prefs.getBoolean("showTimings", true)) }
+    private val jobs by lazy { mutableStateOf(Job.values().associateWith { JobSettings.read(prefs, it) }) }
 
-    /**
-     * Whether each answer shows how long it took and on which of the phone's
-     * processors (Settings; on by default for now). The ask log keeps the
-     * times either way.
-     */
-    var showTimings: Boolean
-        get() = timings.value
+    /** Each job's settings (Settings): Edge's for talking, 0.4's for writing, until he changes them. */
+    fun settings(job: Job): JobSettings = jobs.value.getValue(job)
+
+    fun set(job: Job, s: JobSettings) {
+        jobs.value = jobs.value + (job to s)
+        JobSettings.write(prefs, job, s)
+    }
+
+    private val details by lazy { mutableStateOf(prefs.getBoolean("showDetails", false)) }
+
+    /** Whether Ask shows its workings under the conversation: her shell, the times, what each ask came to (Ask's Details switch). */
+    var showDetails: Boolean
+        get() = details.value
         set(on) {
-            timings.value = on
-            prefs.edit().putBoolean("showTimings", on).apply()
+            details.value = on
+            prefs.edit().putBoolean("showDetails", on).apply()
         }
 
     /** When the last copy was saved, kept on the phone beside the blocks (never in a copy). */

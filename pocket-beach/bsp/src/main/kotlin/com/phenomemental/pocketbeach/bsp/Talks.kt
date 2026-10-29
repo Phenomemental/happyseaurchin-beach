@@ -164,7 +164,7 @@ object Talks {
     }.trimEnd()
 
     /** The pocket's blocks, each with its lines at pscale 0 by their words; the shell, shown already, and the log, named only. */
-    private fun pocket(pages: Pages, shell: String): String = buildString {
+    internal fun pocket(pages: Pages, shell: String): String = buildString {
         val mine = pages.shore().mine
         if (mine.isEmpty()) {
             appendLine("The pocket holds no blocks yet.")
@@ -267,7 +267,9 @@ object Talks {
      * Ask her [question]. [shown] is told what of her words can be shown as
      * they come. An act whose actions can't be read, or can't go ahead, is
      * sent back once; a read is followed by what it found, and her answer to
-     * that. [before] is told her first: how her last act ended.
+     * that. [before] is told her first: how her last act ended. With
+     * [answerReads] false, as when her talk is a job of its own (0.5), a read
+     * ends the ask: what she would read is not followed by a second answer.
      */
     fun ask(
         question: String,
@@ -279,6 +281,7 @@ object Talks {
         seal: String,
         nowMs: () -> Long,
         before: String? = null,
+        answerReads: Boolean = true,
         shown: (String) -> Unit = {},
     ): Answered {
         val exchanges = mutableListOf<Pair<String, String>>()
@@ -303,6 +306,7 @@ object Talks {
             when (her.route) {
                 Route.TALK -> return Answered(Route.TALK, her.words, emptyList(), null, null, exchanges)
                 Route.READ -> {
+                    if (!answerReads) return Answered(Route.READ, her.words, emptyList(), null, null, exchanges)
                     val reads = reads(her.rest, question, pages)
                     // A read of nothing she can name is still answered: she is told so, and answers in plain words.
                     val found = reads.map { r ->
