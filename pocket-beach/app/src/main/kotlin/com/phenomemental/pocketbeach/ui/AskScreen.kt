@@ -15,8 +15,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -37,6 +42,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.Landing
+import com.phenomemental.pocketbeach.bsp.Telling
 import com.phenomemental.pocketbeach.bsp.Planned
 import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.Posted
@@ -184,6 +191,7 @@ fun AskScreen(model: Model, nav: Nav) {
                 val secs = ((now - stage.since) / 1000).coerceAtLeast(0)
                 Text(
                     when {
+                        asking.sorting != null -> asking.sorting!!.let { (done, of) -> "Placing your day, a piece at a time: $done of $of…" } + if (details) " ${secs} s" else ""
                         asking.checking -> "Seeing whether there's anything to write…" + if (details) " ${secs} s" else ""
                         asking.live.isNotBlank() -> if (details) "${secs} s" else ""
                         !model.app.mind.loaded(model.app.settings(com.phenomemental.pocketbeach.model.Job.TALK)) -> "Loading the companion…" + if (details) " ${secs} s" else ""
@@ -193,6 +201,11 @@ fun AskScreen(model: Model, nav: Nav) {
                 )
             }
             is Asking.Stage.Choosing -> Choosing(asking, stage)
+            is Asking.Stage.Day -> DayProposed(asking, stage, details)
+            is Asking.Stage.DayWriting -> {
+                DayProposed(asking, stage.day, details, moving = false)
+                Text("Writing your day…", style = Type.aside, color = ink.soft)
+            }
             is Asking.Stage.Shown -> Proposed(asking.question, stage, details)
             is Asking.Stage.Declining -> {
                 Proposed(asking.question, stage.shown, details)
@@ -240,7 +253,11 @@ private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBe
             TextLink("Back to the proposal", { asking.back() }, tag = "back-to-proposal")
         }
     })
-    is Asking.Stage.Carrying, is Asking.Stage.Posting -> null
+    is Asking.Stage.Day -> ({
+        Action("Not now", { asking.notNowToDay() }, Modifier.weight(1f), tag = "day-not-now")
+        Action("Yes, keep my day", { asking.yesToDay() }, Modifier.weight(1f), strong = true, tag = "day-yes")
+    })
+    is Asking.Stage.Carrying, is Asking.Stage.Posting, is Asking.Stage.DayWriting -> null
     is Asking.Stage.Written -> if (stage.carried.post == null) null else ({
         Action("Not now", { asking.dontPost() }, Modifier.weight(1f), tag = "dont-post")
         if (postedBefore == null) Action("Post it", { asking.post() }, Modifier.weight(1f), strong = true, tag = "post")
@@ -288,6 +305,87 @@ private fun Choosing(asking: Asking, stage: Asking.Stage.Choosing) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         choice.lines.forEach { line ->
             Action(Words.quoted(line.text ?: "", 80), { asking.choose(line.address) }, Modifier.fillMaxWidth(), tag = "choose:${line.address}")
+        }
+    }
+}
+
+/** His day, sorted: every line in his words, where it lands, to untick or move before Yes. */
+@Composable
+private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, moving: Boolean = true) {
+    val ink = LocalInk.current
+    His(asking.question)
+    d.shown.asked.answer?.say?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say")) }
+    Label("Your day, sorted")
+    Text(
+        "Every line is your words. Untick a line to leave it out, or move it to another place: each move is kept, " +
+            "to show her next time how you'd place it.",
+        style = Type.small, color = ink.soft,
+    )
+    var choosing by remember { mutableStateOf<Int?>(null) }
+    val groups = listOf(
+        "Today, on your clock" to Telling.DAY,
+        "Your hand" to Telling.HAND,
+        "The rungs above" to Telling.RUNGS,
+    )
+    for ((title, places) in groups) {
+        val here = d.lines.withIndex().filter { it.value.place in places }
+        if (here.isEmpty()) continue
+        Sheet(Modifier.testTag("day-group")) {
+            Label(title, Modifier.padding(top = 8.dp))
+            for (place in places) {
+                val at = here.filter { it.value.place == place }
+                if (at.isEmpty()) continue
+                Text(Landing.name(place), style = Type.name, color = ink.ink, modifier = Modifier.padding(top = 8.dp))
+                for ((i, line) in at) DayLine(i, line, moving && place !in Telling.RUNGS, moving, { asking.tick(i) }, { choosing = i })
+            }
+        }
+    }
+    val unplaced = d.lines.withIndex().filter { it.value.place == null }
+    if (unplaced.isNotEmpty()) {
+        Label("Not placed")
+        Text("Sentences of yours she put nowhere. Place one, and it lands there.", style = Type.small, color = ink.soft)
+        for ((i, line) in unplaced) DayLine(i, line, moving, moving, {}, { choosing = i })
+    }
+    if (d.sorting.invented.isNotEmpty() && details) {
+        Text("Left out, as not your words: " + d.sorting.invented.joinToString("; ") { Words.quoted(it.words, 80) }, style = Type.small, color = ink.soft, modifier = Modifier.testTag("day-invented"))
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (details) Text(
+            "Took %.1f s, %d pieces placed".format(d.shown.took / 1000.0, d.pieces) + (d.shown.pace?.where?.takeIf(String::isNotEmpty)?.let { ", $it" } ?: "") + ".",
+            style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
+        )
+        Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
+    }
+    choosing?.let { i ->
+        PaperDialog("Where does it go?", onDismiss = { choosing = null }, actions = { TextLink("Not now", { choosing = null }, tag = "day-move-not-now") }) {
+            Text(Words.quoted(d.lines[i].words, 200), style = Type.body, color = ink.ink)
+            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                for (place in Landing.PLACES) {
+                    TextLink(
+                        (if (place in Telling.DAY) "Today: " else "Hand: ") + Landing.name(place),
+                        { asking.move(i, place); choosing = null }, style = Type.body, tag = "day-to:$place",
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** One line of the day: ticked or not, his words, and, if he moved it, from where. */
+@Composable
+private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Boolean, tick: () -> Unit, move: () -> Unit) {
+    val ink = LocalInk.current
+    Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
+        if (line.place != null) Checkbox(
+            checked = line.ticked, onCheckedChange = { tick() }, enabled = tickable,
+            colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft),
+            modifier = Modifier.testTag("day-tick:$i"),
+        )
+        Column(Modifier.weight(1f).padding(top = if (line.place == null) 0.dp else 10.dp, start = if (line.place == null) 0.dp else 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(line.words, style = Type.body, color = if (line.ticked || line.place == null) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
+            if (line.card != null) Text("Updates the card already on this shelf.", style = Type.small, color = ink.soft)
+            if (line.moved) Text("You moved it here" + (line.from?.takeIf { it.isNotEmpty() }?.let { " from ${Landing.name(it)}" } ?: "") + ".", style = Type.small, color = ink.crimson)
+            if (movable) TextLink(if (line.place == null) "Place it" else "Move", move, tag = "day-move:$i")
         }
     }
 }
@@ -447,6 +545,10 @@ private fun Over(model: Model, over: Asking.Stage.Over, details: Boolean) {
     // She only talked, and his words named one of his blocks: the app offers to keep them there, for Yes as ever.
     model.app.asking.keepIn?.let { block ->
         TextLink("Keep this in $block?", { model.app.asking.keep() }, tag = "keep-in")
+    }
+    // What he said wasn't read as his day, and nothing was proposed: he can have it sorted as one.
+    if (over.shown != null && over.carried == null && over.shown.asked.proposal == null && model.app.asking.history.lastOrNull()?.outcome == null) {
+        TextLink("Sort this into your day", { model.app.asking.sortAsDay() }, tag = "sort-as-day")
     }
     // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
     val last = model.app.asking.history.lastOrNull()

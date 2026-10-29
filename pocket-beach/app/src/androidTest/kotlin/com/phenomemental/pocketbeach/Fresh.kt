@@ -24,6 +24,16 @@ object Fresh {
         return ActivityScenario.launch(MainActivity::class.java)
     }
 
+    /** Ask's stage and the bench's, in a line, for a wait that times out. */
+    fun state(): String {
+        val a = app.asking
+        val stage = a.stage
+        val note = (stage as? com.phenomemental.pocketbeach.ui.Asking.Stage.Over)?.note?.let { ": $it" }.orEmpty()
+        val bench = app.benching.stage.let { b -> b::class.simpleName + ((b as? com.phenomemental.pocketbeach.ui.Benching.Stage.Failed)?.why?.let { ": $it" }.orEmpty()) }
+        return "Ask: ${stage::class.simpleName}$note; checking ${a.checking}, sorting ${a.sorting}, its lock ${if (a.lockedForTests) "held" else "free"}; " +
+            "the last exchange: ${a.history.lastOrNull()?.let { "${it.question.take(60)} / ${it.note}" }}. The bench: $bench."
+    }
+
     fun clear() {
         File(app.filesDir, "regions").deleteRecursively()
         app.lastSavedMs = null
@@ -74,7 +84,12 @@ fun ComposeTestRule.tap(tag: String) {
 
 fun ComposeTestRule.waitFor(tag: String, text: String? = null, timeoutMs: Long = 10_000) {
     val matcher = if (text == null) hasTestTag(tag) else hasTestTag(tag) and hasText(text, substring = true)
-    waitUntil(timeoutMs) { onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty() }
+    try {
+        waitUntil(timeoutMs) { onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty() }
+    } catch (e: androidx.compose.ui.test.ComposeTimeoutException) {
+        // What the app was doing, so a wait that never ends says why.
+        throw AssertionError("No \"$tag\"${text?.let { " saying \"$it\"" }.orEmpty()} after $timeoutMs ms. ${Fresh.state()}", e)
+    }
 }
 
 /** Make a block by tapping "Make a new block" and typing its name. */

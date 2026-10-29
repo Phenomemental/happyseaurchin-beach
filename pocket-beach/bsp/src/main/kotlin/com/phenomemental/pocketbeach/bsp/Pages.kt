@@ -35,7 +35,7 @@ class PositionView(
     val owed: List<Owed>,
 )
 
-enum class Kind { CHANGE, ADD, NEW_BLOCK }
+enum class Kind { CHANGE, ADD, NEW_BLOCK, WHOLE }
 
 /**
  * A write as it will happen: the bsp() [call] that runs, and where its line
@@ -56,6 +56,8 @@ class Plan internal constructor(
     internal val nowMs: Long,
     /** What an add puts there when it is more than the line (an entry with fields beneath it), or the whole block a keep makes. */
     internal val content: Js? = null,
+    /** For a whole-block write, the block as it stood when planned: it is written only while it still stands so. */
+    internal val before: String? = null,
 )
 
 /** What carrying out a plan did: bsp()'s own [reply], and a [problem] in plain words if it did not land as planned. */
@@ -93,6 +95,9 @@ class Pages(
 
     fun exists(name: String): Boolean = beach.loadBlock(name) != null
 
+    /** The floor of the pocket block [name] (10 for a clock), or 0 when there is none. */
+    fun floorOf(name: String): Int = beach.loadBlock(name)?.let(::floorDepth) ?: 0
+
     /** The position at [address] in a block, or null when the block or the position isn't there. */
     fun position(region: Region, name: String, address: String = ""): PositionView? {
         val block = load(region, name) ?: return null
@@ -105,7 +110,9 @@ class Pages(
                 region, name, "", floor, collectUnderscore(block), null, emptyList(), lines,
                 full = beach.nextZeroFreeSlot(block, floor) == null,
                 wrapped = maxOf(0, floor - 1),
-                owed = beach.owedSummaries(block).map { Owed(it.first, it.second) },
+                // Counting the summaries owed walks every path to the floor's last rung: 9^9 of them on a
+                // clock's floor-10 form, which never ends. A pocket accumulator is far below floor 7.
+                owed = if (floor > OWED_FLOOR) emptyList() else beach.owedSummaries(block).map { Owed(it.first, it.second) },
             )
         }
         val digits = try { parseSpindle(address, floor).digits } catch (_: InvalidAddressError) { return null }
@@ -225,6 +232,25 @@ class Pages(
         return Plan(Kind.NEW_BLOCK, name, "", collectUnderscore(block) ?: "", c, "", false, null, stringify(after), nowMs, block)
     }
 
+    /**
+     * Write [block] whole in place of the pocket block [typed], as a sorted
+     * day lands (0.6): one whole-block write, refused if what it leaves isn't
+     * [block]. A block not yet in the pocket is made. It is carried out only
+     * while the block still stands as it did when this was planned.
+     */
+    fun planWhole(typed: String, block: JsObj): Plan {
+        val name = typed.trim()
+        val before = beach.loadBlock(name) ?: return planKeep(name, block)
+        fun no(why: String) = refused(Kind.WHOLE, name, "", "", why)
+        val nowMs = clock()
+        val c = call(name, null, block)
+        val (reply, after) = dryRun(name, c, nowMs)
+        if (after == null) return no(plainRefusal(reply))
+        if (!deepEqual(after, block)) return no("The pocket would store $name differently from how it was set out, so it wasn't written.")
+        if (deepEqual(after, before)) return no("$name holds that already.")
+        return Plan(Kind.WHOLE, name, "", collectUnderscore(block) ?: "", c, "", false, null, stringify(after), nowMs, block, stringify(before))
+    }
+
     // ── naming and removing ──
 
     /** Why the pocket block [name] can't be renamed [typed], or null if it can. */
@@ -303,10 +329,12 @@ class Pages(
             Kind.CHANGE -> planChange(plan.block, plan.address, plan.text)
             Kind.ADD -> planAddOf(plan.block, plan.address, plan.text, plan.content ?: str(plan.text))
             Kind.NEW_BLOCK -> plan.content?.let { planKeep(plan.block, it) } ?: planNewBlock(plan.block)
+            Kind.WHOLE -> if (beach.loadBlock(plan.block)?.let(::stringify) != plan.before) refused(Kind.WHOLE, plan.block, "", "", CHANGED)
+                else planWhole(plan.block, plan.content as JsObj)
         }
         val call = fresh.call ?: return Done(false, "", null, false, fresh.refusal)
         if (fresh.landsAt != plan.landsAt || fresh.wraps != plan.wraps) {
-            return Done(false, "", null, false, "The block changed while this was open, so nothing was saved. Look again, then save.")
+            return Done(false, "", null, false, CHANGED)
         }
         val reply = bsp.call(call, fresh.nowMs)
         val after = beach.loadBlock(plan.block)
@@ -368,6 +396,10 @@ class Pages(
     companion object {
         const val FULL = "Nothing more fits beneath this line: it holds nine. Only a block's opening line wraps past nine."
         const val DISTURBS = "This write would move or change other lines, so it wasn't made."
+        const val CHANGED = "The block changed while this was open, so nothing was saved. Look again, then save."
+
+        /** The highest floor whose owed summaries are counted when a block opens (9^5 paths at most). */
+        const val OWED_FLOOR = 6
 
         private fun onRootChain(address: String) = address.isNotEmpty() && address.all { it == '0' || it == '.' }
 

@@ -15,8 +15,14 @@ import java.security.MessageDigest
  * the screen), then checked byte for byte against its SHA-256 before it is
  * ever loaded. Decision 13: the download is offered only when the phone has
  * the memory to run it, and when it hasn't, that is said plainly.
+ *
+ * 0.6: a store for each model ([Spec]): Gemma 4 E2B, and Gemma 4 E4B, the
+ * bigger, fetched only when Matthew asks for it in Settings, the same way.
  */
-class ModelStore(private val context: Context) {
+class ModelStore(private val context: Context, val spec: Spec = E2B) {
+    /** A model the phone can hold: its name, its one pinned file and its checksum, and the memory a phone needs for it. */
+    class Spec(val name: String, val url: String, val file: String, val size: Long, val sha256: String, val memoryNeeded: Long, val prefs: String)
+
     companion object {
         const val URL = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/6e5c4f1e395deb959c494953478fa5cec4b8008f/gemma-4-E2B-it.litertlm?download=true"
         const val FILE = "gemma-4-E2B-it.litertlm"
@@ -39,6 +45,24 @@ class ModelStore(private val context: Context) {
         const val SPARE = 500_000_000L
 
         fun gb(bytes: Long) = "%.1f GB".format(bytes / 1e9)
+
+        val E2B = Spec("Gemma 4 E2B", URL, FILE, SIZE, SHA256, MEMORY_NEEDED, "model")
+
+        /**
+         * Gemma 4 E4B, pinned to the revision the laptop ran on 29 October.
+         * Hugging Face sends it on to us.aws.cdn.hf.co, as it does E2B, so it
+         * needs no other host. Edge's allowlist asks 12 GB of a phone for its
+         * E4B (Gemma 3n's; Gemma 4's isn't in the list read); a phone sold
+         * with 12 GB tells apps a little less.
+         */
+        val E4B = Spec(
+            "Gemma 4 E4B",
+            "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/e6a3892a8c22cf87ff99583996149cf3cb32452b/gemma-4-E4B-it.litertlm?download=true",
+            "gemma-4-E4B-it.litertlm", 3_659_530_240L, "0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0",
+            11_000_000_000L, "model-e4b",
+        )
+
+        val SPECS = listOf(E2B, E4B)
     }
 
     sealed interface State {
@@ -56,9 +80,9 @@ class ModelStore(private val context: Context) {
     }
 
     private val dir get() = File(context.getExternalFilesDir(null) ?: context.filesDir, "models")
-    val file: File get() = File(dir, FILE)
-    private val part get() = File(dir, "$FILE.part")
-    private val prefs = context.getSharedPreferences("model", Context.MODE_PRIVATE)
+    val file: File get() = File(dir, spec.file)
+    private val part get() = File(dir, "${spec.file}.part")
+    private val prefs = context.getSharedPreferences(spec.prefs, Context.MODE_PRIVATE)
 
     @Volatile private var checking = false
     @Volatile private var progress: ModelFetch.Progress? = null
@@ -78,16 +102,16 @@ class ModelStore(private val context: Context) {
     fun memory(): Long = ActivityManager.MemoryInfo().also { context.getSystemService(ActivityManager::class.java).getMemoryInfo(it) }.totalMem
 
     fun state(): State {
-        if (prefs.getBoolean("checked", false) && file.length() == SIZE) return State.Ready
+        if (prefs.getBoolean("checked", false) && file.length() == spec.size) return State.Ready
         if (checking) return State.Checking
         progress?.let { return State.Fetching(it.done, it.bytesPerSecond, it.note) }
         val have = part.length()
         prefs.getString("failed", null)?.let { return State.Failed(it, have) }
         if (have > 0) return State.Paused(have)
         val has = memory()
-        if (has < MEMORY_NEEDED) return State.TooLittleMemory(has)
+        if (has < spec.memoryNeeded) return State.TooLittleMemory(has)
         val free = StatFs(dir.apply { mkdirs() }.path).availableBytes
-        val needs = SIZE - have + SPARE
+        val needs = spec.size - have + SPARE
         if (free < needs) return State.TooLittleRoom(free, needs)
         return State.Absent
     }
@@ -102,11 +126,11 @@ class ModelStore(private val context: Context) {
         stopping = false
         prefs.edit().remove("failed").apply()
         dir.mkdirs()
-        val start = ModelFetch.Progress(part.length(), SIZE, 0, "Connecting to Hugging Face…")
+        val start = ModelFetch.Progress(part.length(), spec.size, 0, "Connecting to Hugging Face…")
         progress = start
         report(start)
         try {
-            val outcome = ModelFetch(URL, HOSTS, SIZE, connection = Unmetered(context)).run(part, { p -> progress = p; report(p) }, { stopping })
+            val outcome = ModelFetch(spec.url, HOSTS, spec.size, connection = Unmetered(context)).run(part, { p -> progress = p; report(p) }, { stopping })
             when (outcome) {
                 ModelFetch.Outcome.Complete -> {
                     progress = null
@@ -138,7 +162,7 @@ class ModelStore(private val context: Context) {
     fun check(): State {
         checking = true
         try {
-            if (part.length() != SIZE) return fail("The download came to ${gb(part.length())}, not ${gb(SIZE)}.")
+            if (part.length() != spec.size) return fail("The download came to ${gb(part.length())}, not ${gb(spec.size)}.")
             val digest = MessageDigest.getInstance("SHA-256")
             part.inputStream().buffered(1 shl 20).use { input ->
                 val buffer = ByteArray(1 shl 20)
@@ -149,9 +173,9 @@ class ModelStore(private val context: Context) {
                 }
             }
             val sha = digest.digest().joinToString("") { "%02x".format(it) }
-            if (sha != SHA256) {
+            if (sha != spec.sha256) {
                 part.delete()
-                return fail("The download didn't match the model's SHA-256 (it came to ${sha.take(12)}…, not ${SHA256.take(12)}…), so it was set aside. Get it again.")
+                return fail("The download didn't match the model's SHA-256 (it came to ${sha.take(12)}…, not ${spec.sha256.take(12)}…), so it was set aside. Get it again.")
             }
             if (!part.renameTo(file)) return fail("The model couldn't be put in place.")
             prefs.edit().putBoolean("checked", true).apply()

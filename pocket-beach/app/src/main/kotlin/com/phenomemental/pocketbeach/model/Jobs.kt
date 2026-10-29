@@ -12,6 +12,7 @@ import android.content.SharedPreferences
 enum class Job(val title: String, val about: String) {
     TALK("Talk", "Her reply to every message in Ask."),
     WRITE("Write", "After her reply, the lines she proposes to write, for your Yes."),
+    SORT("Sort", "Your day, told in Ask: each piece of it placed in the day, one at a time, after her reply."),
 }
 
 /** A job's settings, as Edge shows them for a model. */
@@ -34,10 +35,11 @@ data class JobSettings(
 
     companion object {
         const val GEMMA_E2B = "Gemma 4 E2B"
-        val MODELS = listOf(GEMMA_E2B)
+        const val GEMMA_E4B = "Gemma 4 E4B"
+        val MODELS = listOf(GEMMA_E2B, GEMMA_E4B)
         val PROCESSORS = listOf("GPU", "CPU")
         val CONTEXTS = listOf(2048, 4096, 8192, 16384, 32768)
-        val REPLIES = listOf(64, 256, 512, 1024, 2048, 4096)
+        val REPLIES = listOf(16, 64, 256, 512, 1024, 2048, 4096)
         const val TEMPERATURE_MAX = 2.0
         const val TOP_K_MAX = 128
 
@@ -46,6 +48,8 @@ data class JobSettings(
             Job.TALK -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 1.0, topK = 64, topP = 0.95, longestReply = 1024)
             // 0.4's: the likeliest word each time, so the same words propose the same lines.
             Job.WRITE -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 1024)
+            // As the laptop ran Stage 4: the likeliest word, a word or two a piece (the rungs, asked once after, may run to 256).
+            Job.SORT -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 16)
         }
 
         /** [job]'s settings as kept in [prefs], each one its default where none is kept. */

@@ -40,7 +40,14 @@ class PocketApp : Application() {
     val pocket: PocketBsp by lazy { PocketBsp(storage, shelf) }
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
     val models by lazy { ModelStore(this) }
-    val gemma by lazy { Gemma(models, cacheDir.path, applicationInfo.nativeLibraryDir) }
+
+    /** Gemma 4 E4B, the bigger: fetched only when Matthew asks for it in Settings. */
+    val e4b by lazy { ModelStore(this, ModelStore.E4B) }
+
+    /** The store of the model named [name] (Gemma 4 E2B or E4B). */
+    fun store(name: String): ModelStore = if (name == ModelStore.E4B.name) e4b else models
+
+    val gemma by lazy { Gemma({ name -> store(name) }, cacheDir.path, applicationInfo.nativeLibraryDir) }
 
     /** What the Ask screen asks: Gemma. The device tests put a stand-in here, since no test can run the model. */
     @Volatile private var standIn: Mind? = null

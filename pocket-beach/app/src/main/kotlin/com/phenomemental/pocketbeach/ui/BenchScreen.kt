@@ -60,6 +60,12 @@ fun BenchScreen(model: Model, nav: Nav) {
             style = Type.small, color = ink.soft,
         )
         Text("The run is kept as one new block, bench- and the date, which you can share from its page.", style = Type.small, color = ink.soft)
+        Text(
+            "Or, quicker: each model on this phone (Gemma 4 E2B, and E4B once it's here), loaded, a plain answer timed, and your day, " +
+                "the telling test written and spoken, sorted a piece at a time as Ask sorts it, with its marks. A few minutes a model.",
+            style = Type.small, color = ink.soft,
+        )
+        if (!benching.running) TextLink("Time each model on your day", { benching.startModels() }, tag = "run-models")
         if (busy && !benching.running) Notice("An Ask is under way. The bench can run once it's over.", tag = "bench-busy")
 
         when (stage) {
@@ -73,7 +79,8 @@ fun BenchScreen(model: Model, nav: Nav) {
             is Benching.Stage.Probing -> Text("${stage.what}…", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("bench-stage"))
             is Benching.Stage.Saved -> {
                 Done(
-                    stage.right.joinToString("; ") { (way, right) -> "${way.substringBefore(" (")}: $right of ${stage.of} right" } + ". Kept as ${stage.name}.",
+                    if (stage.right.isEmpty()) "Kept as ${stage.name}."
+                    else stage.right.joinToString("; ") { (way, right) -> "${way.substringBefore(" (")}: $right of ${stage.of} right" } + ". Kept as ${stage.name}.",
                     detail = "Open it to read the run, or share it from its page.", tag = "bench-saved",
                 )
                 TextLink("Open ${stage.name}", { nav.go(Screen.Block(Region.POCKET, stage.name, "")) }, tag = "open-bench-block")

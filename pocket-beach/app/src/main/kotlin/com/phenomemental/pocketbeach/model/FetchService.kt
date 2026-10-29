@@ -28,17 +28,22 @@ class FetchService : Service() {
         private const val NOTE = 1
         private val running = AtomicBoolean(false)
 
-        fun start(context: Context) {
-            context.startForegroundService(Intent(context, FetchService::class.java))
+        private const val MODEL = "model"
+
+        /** Fetch [spec] (Gemma 4 E2B unless said); one model's download at a time. */
+        fun start(context: Context, spec: ModelStore.Spec = ModelStore.E2B) {
+            context.startForegroundService(Intent(context, FetchService::class.java).putExtra(MODEL, spec.name))
         }
     }
 
     private var lastNote = 0L
+    private var spec = ModelStore.E2B
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val models = (application as PocketApp).models
+        val models = (application as PocketApp).store(intent?.getStringExtra(MODEL) ?: ModelStore.E2B.name)
+        spec = models.spec
         getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(CHANNEL, "The companion's model", NotificationManager.IMPORTANCE_LOW),
         )
@@ -58,7 +63,7 @@ class FetchService : Service() {
     }
 
     override fun onTimeout(startId: Int, fgsType: Int) {
-        (application as PocketApp).models.stop()
+        (application as PocketApp).store(spec.name).stop()
     }
 
     private fun show(p: ModelFetch.Progress) {
@@ -72,14 +77,14 @@ class FetchService : Service() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val builder = Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle("Fetching the companion's model")
+            .setContentTitle("Fetching ${spec.name}, the companion's model")
             .setContentIntent(open)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
         if (p == null) return builder.setContentText("Starting…").setProgress(0, 0, true).build()
-        val percent = (p.done * 100 / ModelStore.SIZE).toInt()
+        val percent = (p.done * 100 / spec.size).toInt()
         return builder
-            .setContentText(p.note ?: "${ModelStore.gb(p.done)} of ${ModelStore.gb(ModelStore.SIZE)}")
+            .setContentText(p.note ?: "${ModelStore.gb(p.done)} of ${ModelStore.gb(spec.size)}")
             .setProgress(100, percent, false)
             .build()
     }

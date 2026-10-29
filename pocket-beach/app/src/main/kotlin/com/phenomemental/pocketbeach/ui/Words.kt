@@ -49,6 +49,7 @@ object Words {
     /** Where a write lands, in a sentence. */
     fun landing(kind: Kind, block: String, address: String, landsAt: String?, wraps: Boolean, standing: String?): String = when (kind) {
         Kind.NEW_BLOCK -> "A new block called $block."
+        Kind.WHOLE -> "$block, written whole with the lines shown."
         Kind.CHANGE ->
             if (address.isEmpty()) "The opening line of $block becomes what you write here. Everything beneath it stays as it is."
             else "The line at $address becomes what you write here. The lines beneath it stay as they are."
@@ -64,7 +65,8 @@ object Words {
         val c = plan.call ?: return ""
         val parts = c.keys().map { k ->
             val v = c[k]
-            val shown = if (k == "content" && v is JsObj && plan.kind == Kind.CHANGE) "{the whole block, its opening line changed}" else stringify(v) ?: ""
+            val shown = if (k == "content" && v is JsObj && plan.kind == Kind.CHANGE) "{the whole block, its opening line changed}"
+                else if (k == "content" && v is JsObj && plan.kind == Kind.WHOLE) "{the whole block, as shown}" else stringify(v) ?: ""
             "$k: $shown"
         }
         return "bsp(" + parts.joinToString(", ") + ")"

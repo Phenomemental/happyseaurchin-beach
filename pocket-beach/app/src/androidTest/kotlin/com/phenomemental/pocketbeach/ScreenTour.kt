@@ -264,7 +264,36 @@ class ScreenTour {
                 shot("$theme-38-ask-details-proposal")
             }
             app.asking.reset()
-            // Settings: each job's settings, as Edge shows them.
+            // 0.6, his day told: her reply, then the day sorted as one proposal; a line moved, and the move kept.
+            app.showDetails = false
+            standIn.talkScript.clear()
+            standIn.talkScript += "That sounds like a hard morning, and a lighter walk home. I've set your day out below."
+            standIn.sortWords += mapOf(
+                "Felt rotten about the morning" to "felt", "that hot-faced thing" to "felt", "felt lighter by the end of it" to "felt",
+                "I've been putting that car off for weeks" to "thought", "that I'm always the one apologising" to "thought",
+                "The thing I keep coming back to is the kids seeing me calm" to "matters", "I've decided I'm ringing the garage tomorrow" to "chose",
+            )
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextInput(com.phenomemental.pocketbeach.bsp.Telling.WRITTEN)
+                compose.tap("ask")
+                compose.waitFor("day-yes", timeoutMs = 30_000)
+                shot("$theme-39-ask-day")
+                val day = app.asking.stage as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
+                val sam = day.lines.indexOfFirst { it.words == "Sam said something that stuck with me" }
+                compose.tap("day-move:$sam")
+                compose.waitFor("day-to:1.3")
+                shot("$theme-40-ask-day-move")
+                compose.tap("day-to:1.3")
+                compose.waitFor("day-move:$sam")
+                shot("$theme-41-ask-day-moved")
+                compose.tap("day-yes")
+                compose.waitFor("over", "kept as an example")
+                shot("$theme-42-ask-day-kept")
+            }
+            app.asking.reset()
+            // Settings: each job's settings, as Edge shows them, and the bigger model to fetch.
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("settings")
                 compose.waitFor("job-talk")
@@ -273,6 +302,8 @@ class ScreenTour {
                 compose.waitFor("job-write-reset")
                 shot("$theme-35a-settings-write")
                 compose.tap("job-write-reset")
+                compose.tap("job-sort-reply")
+                shot("$theme-35b-settings-sort")
             }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")

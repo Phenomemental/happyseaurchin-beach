@@ -12,6 +12,15 @@ interface Mind {
     /** Whether it can be asked yet: the model's state on this phone. */
     fun state(): ModelStore.State
 
+    /** The state of the model named [model] on this phone (Gemma 4 E2B or E4B). */
+    fun state(model: String): ModelStore.State = state()
+
+    /** One reply to one message: her words, how long they took, and the engine's count, where it ran. */
+    class Answer(val text: String, val ms: Long, val turn: Pace.Turn?, val processor: String?, val whyNotGpu: String?, val loadMs: Long?)
+
+    /** One message in a conversation of its own, opened and closed for it: as the Sort job asks a piece at a time (0.6). */
+    suspend fun ask(instruction: String?, message: String, settings: JobSettings): Answer
+
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 

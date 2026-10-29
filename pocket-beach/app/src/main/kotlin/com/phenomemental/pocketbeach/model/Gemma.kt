@@ -36,7 +36,10 @@ import kotlinx.coroutines.withContext
  * jobs that agree on the model, the processor and the context share one, and
  * a job set apart has its own, loaded beside it.
  */
-class Gemma(private val store: ModelStore, private val cacheDir: String, private val nativeLibraryDir: String) : Mind {
+class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: String, private val nativeLibraryDir: String) : Mind {
+    /** Gemma 4 E2B's store: the model Ask needs, and the bench's. */
+    private val store: ModelStore get() = stores(ModelStore.E2B.name)
+
     companion object {
         const val IDLE_MS = 3 * 60_000L
 
@@ -95,6 +98,8 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     override fun loaded(settings: JobSettings): Boolean = engines.containsKey(key(settings))
 
     override fun state(): ModelStore.State = store.state()
+
+    override fun state(model: String): ModelStore.State = stores(model).state()
 
     override suspend fun warm(settings: JobSettings): Long? = withContext(thread) {
         engineNow(key(settings)).second
@@ -206,6 +211,34 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         if (now) release() else main.postDelayed(letGo, IDLE_MS)
     }
 
+    /**
+     * One message in a conversation of its own, opened and closed for it, as
+     * the Sort job asks a piece at a time (0.6): her whole reply, how long it
+     * took, and the engine's count.
+     */
+    @OptIn(ExperimentalApi::class)
+    override suspend fun ask(instruction: String?, message: String, settings: JobSettings): Mind.Answer = withContext(thread) {
+        main.removeCallbacks(letGo)
+        val (l, loadMs) = engineNow(key(settings))
+        synchronized(this@Gemma) { open++ }
+        try {
+            l.engine.createConversation(
+                ConversationConfig(
+                    systemInstruction = instruction?.let { Contents.of(it) },
+                    samplerConfig = sampler(settings),
+                    maxOutputToken = settings.longestReply,
+                    thinkingConfig = ThinkingConfig(enableThinking = false),
+                ),
+            ).use { c ->
+                val started = System.nanoTime()
+                val text = c.sendMessage(message).toString()
+                Mind.Answer(text, (System.nanoTime() - started) / 1_000_000, counted(c), l.processor, l.whyNotGpu, loadMs)
+            }
+        } finally {
+            done()
+        }
+    }
+
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
         val settings = JobSettings.of(Job.WRITE)
@@ -248,12 +281,12 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     /** An engine on [backend] holding [context] tokens, counting each exchange if [counting], with speculative decoding asked for or not ([speculative] null: the engine's default). */
     @OptIn(ExperimentalApi::class)
-    private fun open(backend: Backend, counting: Boolean, speculative: Boolean? = null, context: Int = Asks.Tuning.MAX_TOKENS): Engine {
+    private fun open(backend: Backend, counting: Boolean, speculative: Boolean? = null, context: Int = Asks.Tuning.MAX_TOKENS, model: String = ModelStore.E2B.name): Engine {
         // Both are read only as the engine is made.
         ExperimentalFlags.enableBenchmark = counting
         @Suppress("DEPRECATION")
         ExperimentalFlags.enableSpeculativeDecoding = speculative
-        val e = Engine(EngineConfig(modelPath = store.file.path, backend = backend, maxNumTokens = context, cacheDir = cacheDir))
+        val e = Engine(EngineConfig(modelPath = stores(model).file.path, backend = backend, maxNumTokens = context, cacheDir = cacheDir))
         try {
             e.initialize()
         } catch (t: Throwable) {
@@ -269,14 +302,15 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     /** The engine [key] asks for: on the CPU if it asks for the CPU; else on the GPU, falling back to the CPU, and why. */
     private fun load(key: EngineKey, speculative: Boolean = false): Loaded {
-        if (key.processor == "CPU") return Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context), "CPU", null)
+        check(stores(key.model).state() is ModelStore.State.Ready) { "${key.model} isn't on this phone yet: get it in Settings." }
+        if (key.processor == "CPU") return Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context, model = key.model), "CPU", null)
         return try {
-            Loaded(open(Backend.GPU(), counting = true, speculative = speculative, context = key.context), "GPU", null)
+            Loaded(open(Backend.GPU(), counting = true, speculative = speculative, context = key.context, model = key.model), "GPU", null)
         } catch (t: Throwable) {
             Log.w("Gemma", "The GPU couldn't load the model.", t)
             // Counting is the one thing asked of the GPU beyond what 0.3.1 asked, so it is tried once more without it before the CPU.
-            runCatching { open(Backend.GPU(), counting = false, speculative = speculative, context = key.context) }.getOrNull()?.let { Loaded(it, "GPU", null) }
-                ?: Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context), "CPU", firstLine(t))
+            runCatching { open(Backend.GPU(), counting = false, speculative = speculative, context = key.context, model = key.model) }.getOrNull()?.let { Loaded(it, "GPU", null) }
+                ?: Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context, model = key.model), "CPU", firstLine(t))
         }
     }
 
