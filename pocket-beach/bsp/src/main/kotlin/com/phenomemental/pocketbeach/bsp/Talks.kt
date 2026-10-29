@@ -52,8 +52,14 @@ object Talks {
         parts.firstOrNull { it.first == Route.ACT && it.second.isNotBlank() }?.let { return Reply(Route.ACT, words, it.second.toString().trim()) }
         if (reads.isNotEmpty()) return Reply(Route.READ, words, reads.joinToString("\n"))
         parts.firstOrNull { it.first == Route.READ && it.second.isNotBlank() }?.let { return Reply(Route.READ, words, it.second.toString().trim()) }
+        // 0.6.1: no way word, and nothing but actions that write (E2B wrote "add pocket-companion: Matthew calls me Gemma" and stopped): an act all the same.
+        if (parts.size == 1 && writesOnly(text)) return Reply(Route.ACT, "", text.trim())
         return Reply(Route.TALK, words, words)
     }
+
+    /** Whether [text] is one or more actions that write, and nothing else. */
+    private fun writesOnly(text: String): Boolean =
+        runCatching { Acts.parse(text) }.getOrNull()?.let { acts -> acts.none { it is Acts.Action.Read || it is Acts.Action.Post } } == true
 
     /** The route [reply] comes to, and what follows it: her actions or reads, or for talk her words. */
     fun route(reply: String): Pair<Route, String> = reply(reply).let { it.route to it.rest }
@@ -109,6 +115,8 @@ object Talks {
         // Something told, worth keeping: in the block it names, or in a new one named for it, his words its opening.
         "${SAYS}The shopping is on Saturdays from now on." to "act\nadd shopping: The shopping is on Saturdays from now on.",
         "${SAYS}I want to run a marathon next spring." to "act\nnew running: I want to run a marathon next spring.",
+        // 0.6.1: a name he gives her is a line on her shell (E2B wrote it without the way word, or without "add").
+        "${SAYS}I'd like to call you Robin." to "act\nadd ${HelloWorld.SHELL}: Matthew calls me Robin.",
         "${SAYS}Thanks!" to "talk\nYou're welcome.",
     )
 
@@ -134,6 +142,7 @@ object Talks {
         appendLine(Acts.GRAMMAR)
         appendLine("Name a line by quoting its words, never by a number. A line goes at the end of its block unless Matthew says which line it goes under. Nothing is written until Matthew says yes.")
         appendLine("To keep what he tells you: if a block fits it, by the block's name or its opening line, add his words to it (add <block>: his words). If none fits, make a new block named for it in a word or two, his words its opening line (new <name>: his words).")
+        appendLine("When he gives you a name, it is a new line for your shell, and only that: add $shell: Matthew calls me <the name>. Never change your shell's opening line.")
         appendLine("Greetings, thanks and questions are talk, never act.")
         appendLine()
         if (examplesInText) {
@@ -143,7 +152,7 @@ object Talks {
                 appendLine(said)
             }
         } else {
-            appendLine("The first exchanges are examples, about a block called shopping that isn't in the pocket.")
+            appendLine("The first exchanges are examples, about a block called shopping that isn't in the pocket, and a name (Robin) he hasn't given you.")
             appendLine("For example, to read a teaching block:")
             appendLine(READ_EXAMPLE.first)
             appendLine(READ_EXAMPLE.second)

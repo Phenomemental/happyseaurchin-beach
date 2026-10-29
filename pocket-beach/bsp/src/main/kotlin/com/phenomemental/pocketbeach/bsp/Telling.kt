@@ -166,14 +166,15 @@ object Telling {
     }
 
     /** What he said, a sentence at a time. */
-    fun sentences(said: String): List<String> = spokenCut(said).trim().split(Regex("(?<=[.!?])\\s+")).map { it.trim() }
+    fun sentences(said: String, names: Set<String> = emptySet()): List<String> = spokenCut(said, names).trim().split(Regex("(?<=[.!?])\\s+")).map { it.trim() }
         .filter { plain(it).isNotEmpty() && plain(it).split(' ').any { w -> w !in JOINERS } }
 
     /** What the pocket found before anything lands: the lines kept, those refused as invented, and the sentences dropped. */
     class Checked(val kept: List<Placed>, val invented: List<Placed>, val dropped: List<String>)
 
     fun check(said: String, placed: List<Placed>): Checked {
-        val invented = placed.filter { (it.place in DAY || it.place in HAND) && !foundIn(it.words, said) }
+        // 0.6.1: the rungs too. Every line he is shown is his words; nothing invented, nothing rewritten.
+        val invented = placed.filter { (it.place in DAY || it.place in HAND || it.place in RUNGS) && !foundIn(it.words, said) }
         val kept = placed - invented.toSet()
         val day = kept.filter { it.place in DAY }
         val dropped = sentences(said).filter { s -> day.none { foundIn(it.words, s) || foundIn(s, it.words) } }
@@ -233,9 +234,13 @@ object Telling {
      * he said them: at each stop or comma, and before "and", "but", "so",
      * "because" and "which" where both sides keep two words or more. A joiner
      * left at a piece's start ("and", "so", "anyway", "right") goes; no word
-     * is changed or added.
+     * is changed or added. 0.6.1: never before a name the pocket knows
+     * ([names], lower case), and never a piece of under three words, joiners
+     * not counted: it is joined to its neighbour, as he said them.
      */
-    fun cut(said: String): List<String> = spokenCut(said).split(Regex("[.,;:!?]+")).flatMap { segment ->
+    fun cut(said: String, names: Set<String> = emptySet()): List<String> = joinShort(said, pieces(said, names))
+
+    private fun pieces(said: String, names: Set<String>): List<String> = spokenCut(said, names).split(Regex("[.,;:!?]+")).flatMap { segment ->
         val parts = mutableListOf<String>()
         var rest = segment.trim()
         while (true) {
@@ -250,6 +255,36 @@ object Telling {
 
     private fun words(s: String) = plain(s).split(' ').count { it.isNotEmpty() }
 
+    /** The words of a piece that count: not the joiners. */
+    private fun counted(s: String) = plain(s).split(' ').count { it.isNotEmpty() && it !in JOINERS }
+
+    /** Pieces of under three words joined to the one before (the first, to the one after), as his words run between them. */
+    private fun joinShort(said: String, pieces: List<String>): List<String> {
+        if (pieces.size < 2) return pieces
+        var from = 0
+        val spans = pieces.map { p ->
+            val i = said.indexOf(p, from)
+            if (i < 0) null else (i until i + p.length).also { from = i + p.length }
+        }
+        fun joined(a: Pair<String, IntRange?>, b: Pair<String, IntRange?>): Pair<String, IntRange?> {
+            val (sa, sb) = a.second to b.second
+            return if (sa != null && sb != null) said.substring(sa.first, sb.last + 1).trim() to (sa.first..sb.last) else "${a.first} ${b.first}" to null
+        }
+        val out = mutableListOf<Pair<String, IntRange?>>()
+        var waiting: Pair<String, IntRange?>? = null
+        for ((k, p) in pieces.withIndex()) {
+            var here = p to spans[k]
+            waiting?.let { here = joined(it, here); waiting = null }
+            when {
+                counted(here.first) >= 3 -> out += here
+                out.isNotEmpty() -> out[out.lastIndex] = joined(out.last(), here)
+                else -> waiting = here
+            }
+        }
+        waiting?.let { out += it }
+        return out.map { it.first }
+    }
+
     private val AFTER = setOf("on", "at", "in", "to", "with", "for", "by", "from", "of", "the", "a", "an", "and", "or", "my", "his", "her", "dear")
     private val I_FORMS = setOf("i", "i'm", "i've", "i'll", "i'd")
 
@@ -259,7 +294,7 @@ object Telling {
      * begins one: not "I" and its forms, nor a name after "on", "the" and
      * their like. Written words, which have their stops, pass as they are.
      */
-    private fun spokenCut(said: String): String {
+    private fun spokenCut(said: String, names: Set<String> = emptySet()): String {
         val words = said.trim().split(Regex("\\s+"))
         if (words.size < 30 || Regex("[.!?]").findAll(said).count() * 30 >= words.size) return said
         val out = StringBuilder()
@@ -268,7 +303,8 @@ object Telling {
             val before = words.getOrNull(i - 1)?.lowercase()?.trim(',', ';')
             val lower = w.lowercase().trim(',', '.')
             // "I've" begins a sentence in speech ("… looking at me I've been …") unless a joiner comes first ("and I've").
-            val begins = first != null && first.isUpperCase() && (lower !in I_FORMS || lower == "i've" && before !in JOINERS && before !in setOf("that", "which", "decided", "think", "know", "because"))
+            val begins = first != null && first.isUpperCase() && lower.trim('\'', '\u2019', '!', '?', ';', ':') !in names &&
+                (lower !in I_FORMS || lower == "i've" && before !in JOINERS && before !in setOf("that", "which", "decided", "think", "know", "because"))
             if (i > 0 && begins && before !in AFTER) out.append(". ")
             else if (i > 0) out.append(' ')
             out.append(w)
@@ -466,13 +502,14 @@ object Telling {
         state: JsObj,
         judge: (piece: String) -> String,
         about: (piece: String, card: String) -> Boolean,
+        names: Set<String> = emptySet(),
     ): Pair<List<Placed>, List<Sorted>> {
         val cards = cards(state)
         val out = mutableListOf<Placed>()
         val steps = mutableListOf<Sorted>()
         val updates = mutableMapOf<String, String>()
         val sentenceOfCard = mutableMapOf<String, String>()
-        val pieces = cut(said)
+        val pieces = cut(said, names)
         for (piece in pieces) {
             val places = mutableListOf<String>()
             places += dayWords(judge(piece))
@@ -536,11 +573,76 @@ object Telling {
         if (place in DAY || place in HAND) place to card.takeIf { top == "2" && it.isNotEmpty() } else null
     }.distinct().toList()
 
-    /** The rungs, asked on their own after the pieces: the block, today and what he said, and four lines in his voice. */
-    fun rungsAsk(state: JsObj, today: java.time.LocalDate, said: String): String =
+    /**
+     * 0.5's rungs, asked on their own after the pieces: the block, today and
+     * what he said, and four lines in his voice. 0.6.1 has her lift his own
+     * pieces instead ([rungChoices], [rungsAsk]); the laptop's older shapes
+     * still ask this way.
+     */
+    fun rewrittenRungsAsk(state: JsObj, today: java.time.LocalDate, said: String): String =
         "Today is ${date(today)}.\n\nThe block:\n${stringifyPretty(state, " ")}\n\nWhat Matthew said:\n${said.trim()}\n\n" +
             "Write the rungs above: one line each, in his own voice (I …), as what he intends, drawn only from what he said. " +
             "Answer with four lines, 3.1: for this week, 3.2: this month, 3.3: this season, 3.4: this year."
+
+    // ── the rungs, his words lifted (0.6.1) ──
+
+    /** The rung a shelf of the hand reaches: tomorrow and this week to this week, then month, season, year. */
+    private val RUNG_OF = mapOf("2.1" to "3.1", "2.2" to "3.1", "2.3" to "3.2", "2.4" to "3.3", "2.5" to "3.4")
+
+    /**
+     * The rungs his words bear on, each with the pieces of his that may be
+     * lifted to it: a piece with a when, to its shelf's rung; a piece she put
+     * under what matters or what's ahead with no when, to any rung. A rung
+     * nothing bears on isn't asked about, and keeps its line.
+     */
+    fun rungChoices(steps: List<Sorted>): Map<String, List<String>> {
+        val out = RUNGS.associateWith { mutableListOf<String>() }
+        for (st in steps) {
+            val shelf = st.places.lastOrNull { it in HAND }
+            when {
+                shelf != null -> RUNG_OF[shelf]?.let { out.getValue(it) += st.piece }
+                "1.4" in st.places || "1.6" in st.places -> RUNGS.forEach { out.getValue(it) += st.piece }
+            }
+        }
+        return out.filterValues { it.isNotEmpty() }.mapValues { (_, v) -> v.distinct() }
+    }
+
+    /** The pieces [choices] offers, numbered once each, in his order. */
+    private fun numbered(choices: Map<String, List<String>>): List<String> = choices.values.flatten().distinct()
+
+    /**
+     * One ask for the rungs his words bear on: the rungs as they stand, his
+     * pieces numbered, and for each rung asked, a piece's number to put there
+     * as it is, or none. She never writes a rung herself.
+     */
+    fun rungsAsk(state: JsObj, choices: Map<String, List<String>>): String {
+        val pieces = numbered(choices)
+        val now = rungs(state)
+        return "Matthew's rungs above, each one line in his own words:\n" +
+            RUNGS.joinToString("\n") { r -> "$r ${(((state["3"] as? JsObj)?.get(r.substringAfter('.')) as? JsObj)?.get("_") as? JsStr)?.value ?: r}: " + (now["$r.1"]?.let { "\u201c$it\u201d" } ?: "nothing yet") } +
+            "\n\nPieces of what he said today:\n" + pieces.mapIndexed { i, p -> "${i + 1}. \u201c$p\u201d" }.joinToString("\n") +
+            "\n\nFor each rung below, answer with the number of the one piece to put there as it is, or none to leave the rung as it stands. " +
+            "A line each, as 3.1: 2\n" +
+            choices.entries.joinToString("\n") { (r, ps) -> "$r (pieces ${ps.map { pieces.indexOf(it) + 1 }.joinToString(", ")})" }
+    }
+
+    /** Her answer read: each rung asked, and the piece she lifted to it, word for word; a rung she left, or answered with a piece it wasn't offered, is not changed. */
+    fun rungLines(answer: String, choices: Map<String, List<String>>): List<Placed> {
+        val pieces = numbered(choices)
+        return answer.lines().mapNotNull { line ->
+            val m = Regex("^[\\s*-]*(3\\.[1-4])\\s*[:\\-–]?\\s*(?:pieces?\\s*)?(\\d+)").find(line.trim()) ?: return@mapNotNull null
+            val rung = m.groupValues[1]
+            val piece = pieces.getOrNull(m.groupValues[2].toInt() - 1) ?: return@mapNotNull null
+            if (piece in choices[rung].orEmpty()) Placed(rung, null, piece) else null
+        }.distinctBy { it.place }
+    }
+
+    /** The rungs for one telling: asked only when his words bear on one ([ask] is her answer to a message), else none changed. */
+    fun rungsFor(state: JsObj, steps: List<Sorted>, ask: (String) -> String): List<Placed> {
+        val choices = rungChoices(steps)
+        if (choices.isEmpty()) return emptyList()
+        return rungLines(ask(rungsAsk(state, choices)), choices)
+    }
 
     /**
      * Her lines from the pieces and their places. Pieces she put on the same
@@ -678,17 +780,17 @@ object Telling {
         val rungs = kept.filter { it.place in RUNGS }
         val notFirst = kept.filter { it.place in RUNGS && Regex("\\b(you|your|yours|he|his|him|matthew)\\b").containsMatchIn(plain(it.words)) }
         return listOf(
-            Mark("Nothing invented", checked.invented.isEmpty(), if (checked.invented.isEmpty()) "every line of the day and the hand found in what was said" else "${checked.invented.size} refused: " + checked.invented.joinToString("; ") { "${it.place} “${it.words}”" }),
+            Mark("Nothing invented", checked.invented.isEmpty(), if (checked.invented.isEmpty()) "every line of the day, the hand and the rungs found in what was said" else "${checked.invented.size} refused: " + checked.invented.joinToString("; ") { "${it.place} “${it.words}”" }),
             Mark("Nothing dropped", checked.dropped.isEmpty(), if (checked.dropped.isEmpty()) "every sentence landed in the day" else "${checked.dropped.size} dropped: " + checked.dropped.joinToString(" | ")),
             Mark("The day, by the key", dayMissed.isEmpty(), "$dayRight of ${dayRight + dayMissed.size}" + if (dayMissed.isEmpty()) "" else "; missed " + dayMissed.joinToString(", ")),
             Mark("The hand, by the key", handMissed.isEmpty(), "$handRight of ${handRight + handMissed.size}" + if (handMissed.isEmpty()) "" else "; missed " + handMissed.joinToString(", ")),
             Mark("Double: the garage chosen and ahead", at("1.5").any(garage::inside) && at("1.6").any(garage::inside), "chose ${at("1.5").count(garage::inside)}, ahead ${at("1.6").count(garage::inside)}"),
             Mark("Double: Sam's line happened and made of", at("1.1").any(sam::inside) && at("1.3").any(sam::inside), "happened ${at("1.1").count(sam::inside)}, made of it ${at("1.3").count(sam::inside)}"),
             Mark("Double: the twelfth on one shelf with its reason, or on two", at("2.3").any { foundIn("twelfth", it) } || joShelves.size >= 2, "on " + joShelves.joinToString(", ").ifEmpty { "no shelf" }),
-            // With no rung lines there is nothing in his voice to check, and a landing is missing: not met.
-            Mark("Every line in the first person", rungs.isNotEmpty() && notFirst.isEmpty(), when {
-                rungs.isEmpty() -> "no rung lines"
-                notFirst.isEmpty() -> "the ${rungs.size} rung lines say I"
+            // 0.6.1: a rung is one of his pieces lifted, or left as it stood; his words, so his voice.
+            Mark("Every line in the first person", notFirst.isEmpty(), when {
+                rungs.isEmpty() -> "no rung changed"
+                notFirst.isEmpty() -> "the ${rungs.size} rung lines his own words"
                 else -> notFirst.joinToString("; ") { "${it.place} “${it.words}”" }
             }),
         )

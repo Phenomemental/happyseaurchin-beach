@@ -4,10 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
-**0.6** is being built on `ccr-4c84d736-pvgv13`: Stage 4 in Ask, his
-corrections before Yes kept as the examples she is shown next time; and
-Gemma 4 E4B as a choice for each job, with the bench timing each model on
-his Pixel (see "0.6: his day, sorted").
+**pocket-beach-v0.6** is released: Stage 4 in Ask, his corrections before
+Yes kept as the examples she is shown next time; and Gemma 4 E4B as a
+choice for each job, with the bench timing each model on his Pixel (see
+"0.6: his day, sorted"). Its tag is at `742b981` on main. Next is Matthew
+trying it (see "Next").
 
 **pocket-beach-v0.5** is released: Stage 1's settings and Stage 2, let her
 talk (see "0.5: the plan on the beach"). Matthew saw the pictures of the new
@@ -734,6 +735,21 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.6 release
+
+- Its tag is at `742b981` on main, published 29 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.6 (`versionCode` 13), for arm64 phones, 50 MB. Its SHA-256 is
+  `58e83c09d72076cf2000a231fdf6240ad64172bd9c5b5706b691fc5da6ed6ea7`.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else (E4B
+    comes through them);
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there.
+
 ### The 0.5 release
 
 - Its tag is at `c234904` on main, published 29 October.
@@ -903,37 +919,38 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. **Pictures of the new Ask go to Matthew** (from CI's screen tour), and
-   0.5 is released when he has seen them.
-2. **Matthew installs 0.5 over 0.4.2. Then:**
-   - **Talk to her, one thing after another,** in one visit to Ask:
-     - a greeting;
-     - a question;
-     - something told ("I'm going to make a million pound…");
-     - an ask to write ("Add to shopping: oat milk").
-     She should reply to every one in her own words, and what she proposes
-     to write should show beneath her reply, for Yes. Her first words
-     should come within about 2 s; the proposal comes after.
-   - **The Details switch:** her shell, how each ask ended, and the times;
-     off, only the conversation.
-   - **Settings, Talk:** turn the temperature down or up and talk again.
-     "Back to Edge's settings" puts it back.
-   - **Save the conversation as a file,** and send it back with what he
-     makes of her talk beside Edge's.
-   - If she says the Write job couldn't answer, or the two jobs seem
-     slow, the phone may not keep two conversations side by side: the
-     file says so.
-3. **On the laptop and in the app, next** (his choice of 29 October, all
-   three together):
-   - Stage 4 in the app: the telling's landing as one proposal, any line
-     unticked or moved before Yes, each move kept as a worked example she
-     is shown next time.
-   - Stage 5: E4B on his Pixel, for speed.
-   - Stage 1's bench: the telling test, written and spoken, and ten
-     everyday things to say to her.
+1. **Matthew installs `pocket-beach-v0.6.1.apk` over 0.6.** It keeps his
+   blocks. Then, in Ask, with Details on:
+   - **Say his message of 29 October again**, or anything. She should
+     answer him: no date, no shell line, no playing his words back.
+   - **Say "I'd like to call you Gemma".** She should take the name, and
+     the Write job propose "Matthew calls me Gemma." as a line on her
+     shell, for Yes. Once it is on her shell, she carries it.
+   - **Tell her your day.**
+     - Under her reply, "Sort as my day". Nothing is sorted until you tap
+       it.
+     - Tap a line of the proposal to put a misheard word right.
+     - Every rung left alone unless she lifted one of your own pieces to
+       it.
+   - **"Save this conversation"** and send the file: it carries
+     everything, each job's model, settings and times, and the proposal
+     whole.
+   - **On the bench, "Time each model on your day"**, and send back its
+     `bench-models-` block. It now has his message each way and the Talk
+     job's two fixed asks, for each model: the device's half of the echo
+     test.
+2. **From what his Pixel says:**
+   - which model for which job (Stage 5, his to decide);
+   - whether the sort needs more than his examples (Stage 6 only if
+     needed).
+3. **Not yet built:**
+   - Stage 1's ten everyday things to say to her, on the bench;
+   - Stage 3's primer, and her instruction as an index only (0.6.1's Talk
+     instruction is a step that way: of the pocket, only what his words
+     name);
+   - Stage 5's settings kept in a block he can change.
 4. **Later:** the speech service and Gboard, if hiding the keyboard isn't
-   enough (no source documents the two competing; the error number will
-   say which way it is turned down).
+   enough.
 
 ### Running the core on a laptop
 
@@ -1224,6 +1241,256 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
+## 0.6.1: she answers him, and every line he is shown is his words
+
+His first test of 0.6 on his Pixel (Thursday 29 October, 17:37, Ask,
+Details on). He said, unpunctuated ("torque" is the phone mishearing
+"talk"): "Hey I'm quite happy to call you Gemma I like Gemma and one of the
+main things that I'm trying to produce is a tool that I can just waffle on
+to torque and speak and highly complex verbal slop really".
+
+- **She played her turn back.** Her reply was the shell line and the date
+  line from the turn, reworded, then his words whole, then one stock
+  question.
+- **The sort ran by itself.** It cut his words before each "Gemma" into
+  scraps.
+- **She wrote the rungs.** They were her rewrites "in his own voice", and
+  none of them his words.
+
+The rule above all: every line he is shown is his words, nothing invented,
+nothing dropped.
+
+### What made her echo (the laptop, 29 October)
+
+- **The method.** His message went to the Talk job at its first settings:
+  temperature 1.0, top-k 64, top-p 0.95. First it went alone, as Edge sends
+  it. Then the pieces of 0.6's turn were added back, one at a time.
+- **Each way was asked six times.** One draw used the app's seed, 0. Seed
+  1 drew exactly as seed 0 did, so the other five were seeds 2 to 6.
+- **How each reply was marked:**
+  - "copies" means a line of her turn played back: her shell's line, or six
+    words of it in a row; the date and time; "Matthew:" and his words; or
+    eight words of his in a row;
+  - "answers" means she takes the name Gemma as hers ("I am Gemma", "call
+    me Gemma"), or speaks to the tool. "Hello, Gemma" doesn't count.
+- The trial is `trial … echo`, in `trial/…/Echo.kt`.
+
+| Each way, of 6 | E2B copies | E2B answers | E4B copies | E4B answers |
+|---|---|---|---|---|
+| A. his message alone, as Edge | 0 | 6 | 0 | 5 |
+| B. + 0.6's instruction | 3 | 1 | 3 | 1 |
+| C. + the date and shell in his turn (0.6, his first message) | 6 | 0 | 5 | 1 |
+| D. + two exchanges before, kept (0.6) | 6 | 0 | 1 | 5 |
+| E. the date and shell moved to the end of her instruction | 6 | 0 | 4 | 2 |
+| F. E, with two exchanges before | 0 | 4 | 6 | 0 |
+| G. 0.6's instruction without its line on the date and shell | 0 | 3 | 1 | 3 |
+| H. 0.6.1 | 1 | 4 | 0 | 6 |
+| I. 0.6.1, with two exchanges before | 0 | 5 | 0 | 6 |
+
+- **What made her echo was the date, time and shell header.** With 0.6's
+  instruction alone (B), she invents one ("Today, 2024-04-25 14:30,
+  shell."). That instruction's line "Each of his messages comes with the
+  date, the time and your shell" asks for it.
+  - Given the header in his turn (C, D), she opens with it, nearly every
+    time.
+  - Moved to the end of her instruction (E), the likely fix tried first,
+    she played it back every time. So taking the date and shell out of
+    his turn is not enough by itself.
+  - What ends her instruction, just before his words, is what she says
+    back.
+- **And she didn't answer him because of the pocket set out.** Without the
+  header line (G) she copies nothing but answers only half the time: "What
+  would you like to add to your blocks today?"
+  - On E2B, eight draws of each wording found the pocket's blocks were what
+    pulled her there.
+  - Her instruction without them answered him 7 of 8 and 6 of 8.
+  - With every block set out it was 5 of 8 and 3 of 8. With only their
+    names in a line, 6 and 4. With names and openings, 5 and 5.
+- **The fix, 0.6.1:**
+  - his turn is his words alone;
+  - the date, the time and her shell are a plain sentence near the top of
+    her instruction ("It is Thursday 29 October 2026, 17:37. You wear the
+    shell pocket-companion; it says "…". Let it guide you.");
+  - then "Speak to what he has just said, first, in your own words,
+    plainly. If he gives you a name, take it as yours.";
+  - of the pocket, only the blocks his words name, read for her;
+  - the pocket set out only when his words ask about his blocks or the
+    pocket.
+  - Her conversation is opened afresh for each message, so the time is
+    always now. The earlier exchanges are his words and hers.
+- **Two wordings that didn't help.** Telling her the shell's words are
+  "for you and not to say to him" made E2B fail all 16 draws. "Let it guide
+  you, in your own words" did no better than as it stands.
+
+**Her reply to his message, at the app's seed:**
+
+- E2B, as 0.6 asked it (C): "Thursday 29 October 2026, 17:37, Shell:
+  pocket-companion. / Hey Matthew, that's great to hear. What does this
+  tool you're trying to produce involve?"
+- E2B, 0.6.1: "Hello Matthew. I am Gemma. You like that name. I live on
+  your phone and I am here to help you with your blocks."
+- E4B, as 0.6 asked it (C): "Hello, Matthew. It's nice that you like Gemma. /
+  You're working on a tool to handle a lot of complex verbal flow, right?"
+  That draw happened not to copy; the other five did. Seed 2, for one:
+  "Hello Matthew. / It's Thursday 29 October 2026, 17:37. / Your shell:
+  Pocket companion. I live on this phone, read freely, and write only when
+  Matthew says yes. / You said you're happy to call me Gemma, and you're
+  working on a tool for complex verbal slop. Is that what you wanted to tell
+  me?"
+- E4B, 0.6.1: "Hello Gemma. It sounds like you're in a good headspace and
+  you're focused on building a tool that allows for very long, complex
+  conversations." (She calls him Gemma, but speaks to the tool.)
+- These are the laptop's draws, on its CPU. The Pixel's GPU draws its own,
+  even at the same seed: the bench gives the phone's.
+
+### The guard
+
+- **No line of hers that plays her turn back is shown,** as she streams
+  or after. The same marks as above decide it.
+- **Nor is it given her again:** the exchange she remembers is his words
+  and what was shown of hers.
+- **The saved conversation keeps it,** under "Left out of her reply, as
+  her turn played back".
+- **Speaking to him by name is not a copy.** A line that begins
+  "Matthew, …" is her talking to him.
+- **A greeting returned is not a copy.** When he says fewer than eight
+  words, only a line that is his words and nothing else counts. So "Good
+  morning, Matthew. What's on your mind?" to his "Good morning" is shown.
+  CI's first run of 0.6.1 caught the guard hiding it.
+- **Her conversation is opened afresh for each message.** Opening Ask now
+  loads her model, and opens the Write job's conversation as before (0.4.2).
+  Hers waits for his first message, so its instruction carries the time
+  then. Her instruction is short now (no blocks set out unless his words ask),
+  so opening it costs little.
+
+### The bench: two fixed asks for the Talk job
+
+- **21, his message of 29 October.** Right only if she answers him (takes
+  the name Gemma, or speaks to the tool) and plays none of her turn back.
+- **22, "I'd like to call you Gemma".** Right only if she takes the name,
+  and the Write job proposes it as a line on her shell, for his yes.
+- **The Write job is told so:** "When he gives you a name, it is a line
+  for your shell, and only that". Its first exchanges now have one example,
+  "I'd like to call you Robin" giving "add pocket-companion: Matthew calls
+  me Robin."
+- **A reply of nothing but write actions is an act.** E2B once wrote "add
+  pocket-companion: Matthew calls me Gemma" with no way word before it.
+- **Her shell's opening is never changed for a name.** E4B first proposed
+  "change pocket-companion: Matthew calls me Gemma.", which would have put
+  the name in place of her shell's opening line. Two things changed:
+  - the Write job is told "Never change your shell's opening line";
+  - the bench marks such a change wrong.
+  E4B then proposed the line.
+- **Seen, not changed:** to his message of 29 October, E4B's Write job also
+  proposed a new block, `tool`, with his words lightly reworded ("I'm
+  trying to produce a tool that…"). It is shown for his Yes or Not now.
+- **In the bench's block each model is now an entry of its own,** its
+  lines beneath it. A place keeps nine lines, and with the Talk job's
+  lines added, E2B's alone filled them, so E4B's were cut off. CI's first
+  run of 0.6.1 found it.
+- **On the phone, "Time each model on your day" now runs, for each model
+  and with the Talk job's settings:**
+  - his message each way: alone, with 0.6's instruction, as 0.6 asked it,
+    and as 0.6.1 asks it;
+  - then 21 and 22, each with the Write job's proposal.
+  - That is the device's half of the echo test, for his Pixel.
+
+| Fixed ask, app's seed | E2B | E4B |
+|---|---|---|
+| 21, his message | right: "Hello Matthew. I am Gemma. You like that name. I live on your phone and I am here to help you with your blocks." | right: "Hello Gemma. It sounds like you're in a good headspace and you're focused on building a tool that allows for very long, complex conversations." |
+| 22, "I'd like to call you Gemma" | wrong: Ask shows "Understood. I will be Gemma.", and the Write job proposes "Matthew calls me Gemma." on her shell; but she also said "I live on your phone, read freely, and write only when you say yes.", her shell played back (the guard hides it) | right: "I'm Gemma.", and the Write job proposes "Matthew calls me Gemma." as a line on her shell |
+
+### Every line his words: the rungs too
+
+- **The rungs are checked like the day and the hand.** `Telling.check`
+  now holds a rung line to the same his-words check. Before, it skipped
+  them.
+- **She may lift one of his pieces to a rung, as it is, or leave the
+  rung.** She never rewrites one.
+  - She is asked about a rung only when his words bear on it. His time
+    words bear on one, through his time-words block: "tomorrow" or "this
+    week" on this week, and on through this year. So does a piece she
+    placed under what matters or what's ahead.
+  - The ask numbers his pieces. She answers "3.1: 2" or "none".
+  - A rung with nothing new keeps its line.
+- **With his message of 29 October, no rung changes,** and she isn't asked
+  (a core test).
+- **A core test:** any line a proposal shows that isn't found in what he
+  said fails, unless he corrected it himself.
+
+### The sort runs only when he asks
+
+- **No sort by itself.** When his words could be a day (three sentences
+  or more and forty words or more, or news of a card), one quiet link sits
+  under her reply: "Sort as my day". Otherwise there is no link.
+- **The Write job runs as for any message.** If it proposes something and
+  he taps "Sort as my day", that proposal is left as not taken, and logged
+  so.
+- **His message of 29 October is one run of words** (no sentences), so it
+  offers no link.
+- **The day continues the exchange it sorts.** His words and her reply are
+  shown once, above the day. In the saved conversation it is one exchange,
+  answered by Talk, Write and Sort, each with its time. Any Write proposal he
+  left for it comes first. The screen tour's first run of 0.6.1 showed his
+  telling twice, once as the exchange before and again above the day.
+
+### His sentences, names, and a word put right
+
+- **Punctuated speech where the phone can:** Android 13 on, asked for
+  with `EXTRA_ENABLE_FORMATTING`, so cuts follow his own sentences.
+- **The spoken cut stays as the fallback, with two rules:**
+  - it never stops before a name the pocket knows: her name (Gemma, and
+    any her shell gives her), his blocks' names, and the names in his
+    blocks (a capital where no sentence begins);
+  - it never leaves a piece under three words, not counting and, but,
+    so, anyway, right or well. A short piece is joined to the one before
+    it, or to the one after if it is first.
+  - His message now cuts into three pieces: "Hey I'm quite happy to call
+    you Gemma I like Gemma" / "one of the main things … waffle on to
+    torque and speak" / "highly complex verbal slop really".
+- **A tap on a line of the proposal puts a misheard word right** ("torque"
+  to "talk"), before Yes.
+  - The line shows "You put it right; the phone heard …".
+  - His correction counts as his words: the day's line and the telling
+    whole land with it.
+
+### Every test reaches Claude as one file
+
+"Save this conversation" now carries, for each exchange:
+
+- his words and her reply;
+- the lines of hers left out as her turn played back;
+- which model and settings answered each job, Talk, Write and Sort, and
+  how long each took;
+- the times;
+- the proposal whole: every line with its place, ticked or not, moved or
+  not, corrected or not (and what the phone heard); the rungs; what was
+  left out as not his words; and his answer, Yes or Not now.
+
+### Tests
+
+- **Core:** 135 in all, every one passing. The new ones are in
+  `HisWordsTest`:
+  - her turn never played back;
+  - the time and shell in her instruction, his turn his words alone;
+  - the cut, his message never cut before a name;
+  - the names the pocket knows;
+  - no rung changed by his message;
+  - a rung lifted or left;
+  - every line shown is his words or his correction;
+  - his correction landing;
+  - the bench's marks;
+  - actions alone read as an act.
+- **On the emulator:**
+  - her turn played back never shown;
+  - his day sorted only on "Sort as my day";
+  - a misheard word put right, landing, and the saved conversation
+    carrying the proposal whole;
+  - her turn his words alone;
+  - the models bench with the Talk job's asks.
+- **The screen tour** adds the quiet link (38b) and the dialog to put a
+  word right (41b).
+
 ## 0.6: his day, sorted
 
 His message of 29 October: "Next build, as your STATUS says: Stage 4 in the
@@ -1298,6 +1565,30 @@ E4B as a choice for each job, with its speed on my Pixel."
 - The run is kept as `bench-models-` and the date. The full bench runs the
   same, kept second in its block, after "How it was run".
 
+### Found on the way
+
+- **A clock hung the app.** CI's first run of 0.6 timed out on four tests.
+  After his first Yes, her instruction lists the pocket's blocks, the clock
+  among them, and opening a block counted the summaries it owes by walking
+  every path to its floor: 9^9 (387 million) on the clock's floor-10 form.
+  Every ask after waited on it, and so did the bench.
+  - Owed summaries are now counted only up to floor 6; a pocket
+    accumulator is far below it.
+  - A clock is named in her instructions without its days read in, and is
+    never read into a turn.
+  - A core test opens a landed clock, and builds her instructions and a
+    turn, within ten seconds.
+- **A wait that times out in the device tests now says why:** Ask's stage,
+  how its last exchange ended, whether its conversations are in use, and
+  the bench's stage.
+- **Tests.**
+  - Core: 125, every one passing.
+  - On the emulator: all passing. Among the new ones:
+    - his day sorted after her reply, one line unticked and one moved,
+      then the second telling with his move in her instruction;
+    - each model timed on the telling test;
+    - each job's settings.
+
 ## 0.5: the plan on the beach
 
 Since 29 October the plan lives on the beach, under the pocket beach
@@ -1310,11 +1601,11 @@ item 7 is now Stage 1's telling test (below).
 
 | Stage | Where it stands |
 |---|---|
-| 1. The measure and the controls | Each job's settings: released in 0.5. The telling test: run on the laptop; on the bench, timed for each model, in 0.6. Ten everyday things to say to her on the bench: not yet. |
+| 1. The measure and the controls | Each job's settings: released in 0.5. The telling test: run on the laptop; on the bench, timed for each model, released in 0.6. Ten everyday things to say to her on the bench: not yet. |
 | 2. Let her talk | Released in 0.5. |
 | 3. Knowledge when it's needed | A first step is in 0.5: a block his words name that she can't see whole is read for her into the turn. Her instruction still lists every block's lines, and there is no primer yet. |
-| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app: built in 0.6, with his corrections kept as her examples. |
-| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). In the app: E4B a choice for each job, and its speed on his Pixel on the bench, in 0.6. Each job's settings are in Settings, not yet a block he can change. |
+| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app: released in 0.6, with his corrections kept as her examples. |
+| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). In the app: E4B a choice for each job, and the bench to time it on his Pixel, released in 0.6; his Pixel's numbers not yet. Each job's settings are in Settings, not yet a block he can change. |
 | 6. Fine-tuning, only if needed | Not started. |
 
 ### Stage 1, the controls: each job's settings (0.5)

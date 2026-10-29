@@ -128,7 +128,8 @@ class StandIn : Mind {
         sortAsks += instruction to message
         val text = when {
             message.startsWith("A card on Matthew's hand says") -> if (about(message)) "yes" else "no"
-            message.contains("Write the rungs above") -> "3.1: I ring the garage tomorrow.\n3.4: I keep the kids seeing me calm."
+            // 0.6.1: a rung takes one of his pieces, by its number, or none.
+            message.startsWith("Matthew's rungs above") -> "3.1: 1\n3.4: none"
             else -> sortWords[message.substringAfter("The piece: \u201c").substringBeforeLast("\u201d")] ?: "happened"
         }
         return Mind.Answer(text, 0, null, processor, null, null)
@@ -339,7 +340,7 @@ class CompanionTest {
             assertTrue(run.text!!.startsWith("Bench, "))
             assertEquals(6, run.lines.size)
             assertEquals("How it was run, first, so a cut-off share keeps it", "How it was run", run.lines[0].text)
-            assertEquals("then each model, early too", "Each model on this phone: its speed, and the telling test", run.lines[1].text)
+            assertEquals("then each model, early too", "Each model on this phone: its speed, the Talk job, and the telling test", run.lines[1].text)
             assertTrue(run.lines[2].text!!.startsWith("0.3 "))
             assertTrue(run.lines[3].text!!.startsWith("0.4, her first word held"))
             assertTrue(run.lines[4].text!!.startsWith("0.4, her first word free"))
@@ -363,10 +364,15 @@ class CompanionTest {
         }
         val made = (app.storage.names().toSet() - before).single()
         val models = app.pages.position(Region.POCKET, made, "2")!!
-        assertEquals("Each model on this phone: its speed, and the telling test", models.text)
-        val lines = models.lines.mapNotNull { it.text }
+        assertEquals("Each model on this phone: its speed, the Talk job, and the telling test", models.text)
+        assertEquals("each model an entry of its own", listOf("Gemma 4 E2B", "Gemma 4 E4B"), models.lines.map { it.text })
+        val lines = models.lines.flatMap { m -> app.pages.position(Region.POCKET, made, m.address)!!.lines.mapNotNull { it.text } }
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the telling test, written: ") && it.contains(" of 11 marks") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the telling test, spoken: ") })
+        // 0.6.1: his message of 29 October each way, and the Talk job's two fixed asks.
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job, 0.6, the date and her shell in his turn: ") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 21. ") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 22. ") && it.contains("The Write job proposed") })
         assertTrue("each piece asked on its own", mind.sortAsks.size > Telling.cut(Telling.WRITTEN).size)
         assertTrue("nothing posted", wire.sent.isEmpty())
         assertFalse("nothing of his written but the run", app.pages.exists(Landing.NOW) || app.pages.exists(Landing.TELLING))
@@ -405,7 +411,8 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "garden", "2.1")?.text == "mulch the beds" }
             assertEquals("one Write conversation for both asks, opened with the examples", 1, mind.histories.size)
             assertEquals(Talks.EXAMPLES, mind.histories.single())
-            assertEquals("one Talk conversation, opened with nothing before", listOf(emptyList<Pair<String, String>>()), mind.talkHistories)
+            // 0.6.1: hers is opened afresh for each message, with the exchanges before: his words and hers.
+            assertEquals("a Talk conversation a message, each opened with the exchanges before", listOf(emptyList(), listOf("What's your name?" to "I'm the pocket companion.")), mind.talkHistories)
         }
     }
 
@@ -413,6 +420,7 @@ class CompanionTest {
      * Ask closes and opens as the model and the shell come ready, and the two
      * run on other threads in either order (CI, twice): the close must never
      * shut the conversation just opened, to be read again at the first ask.
+     * 0.6.1: that is the Write job's; hers is opened at each message.
      */
     @Test
     fun askOpenedAsItClosesKeepsTheConversationForTheFirstAsk() {
@@ -425,12 +433,13 @@ class CompanionTest {
                 val before = mind.talkHistories.size
                 val writes = mind.histories.size
                 main { asking.reset(); asking.closed(); asking.opened() }
-                compose.waitUntil(5_000) { mind.talkHistories.size == before + 1 && mind.histories.size == writes + 1 }
+                compose.waitUntil(5_000) { mind.histories.size == writes + 1 }
                 Thread.sleep(300)
+                assertEquals("hers isn't opened until he speaks (round ${it + 1})", before, mind.talkHistories.size)
                 main { asking.question = "Add to garden: compost."; asking.ask() }
                 compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over || asking.stage is Asking.Stage.Shown }
-                assertEquals("one Talk conversation, opened once and kept for the first ask (round ${it + 1})", before + 1, mind.talkHistories.size)
-                assertEquals("one Write conversation, beside it (round ${it + 1})", writes + 1, mind.histories.size)
+                assertEquals("one Talk conversation, for his message (round ${it + 1})", before + 1, mind.talkHistories.size)
+                assertEquals("one Write conversation, opened as Ask opened and kept for the first ask (round ${it + 1})", writes + 1, mind.histories.size)
             }
         }
     }
@@ -458,7 +467,8 @@ class CompanionTest {
             asked("What does the whetstone say?")
             compose.waitFor("over", "She talked.")
             compose.waitFor("took", "on the stand-in")
-            assertTrue("a teaching block his words name is read for her, in the turn", mind.talkMessages.last().contains("What the app read for you"))
+            assertTrue("a teaching block his words name is read for her, in her instruction", mind.talkInstruction.contains("What the app read for you"))
+            assertEquals("his turn is his words alone", "What does the whetstone say?", mind.talkMessages.last())
             asked("Add to garden: buy more compost.")
             compose.waitFor("writes")
             compose.waitFor("took", "on the stand-in")
@@ -485,7 +495,7 @@ class CompanionTest {
         app.showDetails = true
     }
 
-    /** 0.5's Stage 2: every message gets a reply, each turn with the date, the time and her shell; the conversation saved whole. */
+    /** 0.5's Stage 2: every message gets a reply; 0.6.1: his turn is his words alone, the date, the time and her shell in her instruction; the conversation saved whole. */
     @Test
     fun sheTalksToEveryMessageAndTheConversationCanBeSaved() {
         Fresh.clear()
@@ -496,10 +506,9 @@ class CompanionTest {
             compose.tap("ask-companion")
             asked("Good morning")
             compose.waitFor("say", "Good morning, Matthew.")
-            val first = mind.talkMessages.single()
-            assertTrue(first, first.startsWith("It is "))
-            assertTrue(first, first.contains("Your shell, ${HelloWorld.SHELL}: \"${HelloWorld.SHELL_OPENING}\""))
-            assertTrue(first, first.endsWith("Matthew: Good morning"))
+            assertEquals("his turn is his words alone", "Good morning", mind.talkMessages.single())
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("It is "))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("You wear the shell ${HelloWorld.SHELL}; it says \"${HelloWorld.SHELL_OPENING}\""))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
             assertEquals("a greeting asks no write", 0, mind.writeMessages)
             asked("I want to run a marathon next spring.")
@@ -515,18 +524,18 @@ class CompanionTest {
         assertTrue(t, t.contains("Matthew: Good morning"))
         assertTrue(t, t.contains("Companion: Good morning, Matthew. What's on your mind?"))
         assertTrue(t, t.contains("Matthew: I want to run a marathon next spring."))
-        assertTrue(t, t.contains("Talk: Gemma 4 E2B"))
+        assertTrue(t, Regex("""Talk \(\d+\.\d s\): Gemma 4 E2B""").containsMatchIn(t))
         assertTrue(t, t.contains("temperature 1.00, top-k 64, top-p 0.95"))
     }
 
     /**
-     * 0.6, Stage 4: his day, told in Ask, is sorted a piece at a time after
-     * her reply and shown as one proposal; a line unticked is left out, a line
-     * moved lands where he put it and is kept as an example she is shown the
-     * next time she sorts.
+     * 0.6, Stage 4: his day, told in Ask, is sorted a piece at a time and
+     * shown as one proposal; a line unticked is left out, a line moved lands
+     * where he put it and is kept as an example she is shown the next time
+     * she sorts. 0.6.1: only when he taps "Sort as my day" under her reply.
      */
     @Test
-    fun hisDayIsSortedAfterHerReplyAndHisMovesAreKeptForNextTime() {
+    fun hisDayIsSortedWhenHeAsksAndHisMovesAreKeptForNextTime() {
         Fresh.clear()
         HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         mind.talkScript += listOf("That sounds like a hard morning, Matthew.", "Good: Monday, then.")
@@ -536,9 +545,12 @@ class CompanionTest {
             compose.tap("ask-companion")
             asked(Telling.WRITTEN)
             compose.waitFor("say", "That sounds like a hard morning")
+            compose.waitFor("sort-as-day")
+            assertEquals("nothing sorted until he asks", 0, mind.sortAsks.size)
+            assertEquals("the Write job ran, as for any message", 1, mind.writeMessages)
+            compose.tap("sort-as-day")
             compose.waitFor("day-yes", timeoutMs = 30_000)
-            assertEquals("a day told isn't the Write job's", 0, mind.writeMessages)
-            assertEquals("each piece asked on its own, then the rungs", Telling.cut(Telling.WRITTEN).size + 1, mind.sortAsks.size)
+            assertEquals("each piece asked on its own, then the rungs", Telling.cut(Telling.WRITTEN, Landing.names(app.pages)).size + 1, mind.sortAsks.size)
             assertFalse("nothing written before yes", app.pages.exists(Landing.NOW))
             val day = app.asking.stage as Asking.Stage.Day
             val car = day.lines.indexOfFirst { it.words == "the car wouldn't start again this morning" }
@@ -565,6 +577,7 @@ class CompanionTest {
             compose.tap("ask-companion")
             val before = mind.sortAsks.size
             asked(Telling.SECOND)
+            compose.tap("sort-as-day")
             compose.waitFor("day-yes", timeoutMs = 30_000)
             assertTrue(mind.sortAsks.drop(before).first().first!!.contains("Matthew placed these himself:\n\u201cthat I'm always the one apologising\u201d: thought"))
             compose.tap("day-yes")
@@ -573,6 +586,77 @@ class CompanionTest {
         val hand2 = Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj)
         assertEquals("the card updated, not doubled", 1, hand2.values.count { it.contains("garage") })
         assertEquals(Telling.WRITTEN + "\n\n" + Telling.SECOND, app.pages.position(Region.POCKET, Landing.NOW, day)?.text)
+    }
+
+    /**
+     * 0.6.1, from his first test of 0.6 (29 October): her turn played back is
+     * never shown, nor given her again; his message, one run of his words,
+     * isn't offered as a day.
+     */
+    @Test
+    fun herTurnPlayedBackIsNeverShown() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf(
+            "Shell: \"${HelloWorld.SHELL_OPENING}\"\nIt's Thursday, October 29, 2026, 17:37.\nMatthew: ${Bench.GEMMA_ASK}\nWhat would you like to keep in your blocks?",
+            "Gemma it is.",
+        )
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked(Bench.GEMMA_ASK)
+            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over || app.asking.stage is Asking.Stage.Shown }
+            compose.waitFor("say", "What would you like to keep in your blocks?")
+            for (copy in listOf("Shell:", "It's Thursday", "Matthew: Hey")) {
+                assertTrue(copy, compose.onAllNodes(hasText(copy, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            }
+            assertTrue("one run of his words is no day", compose.onAllNodes(hasTestTag("sort-as-day"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            if (app.asking.stage is Asking.Stage.Shown) compose.tap("not-now").also { compose.tap("just-not-now") }
+            asked("Gemma it is, then.")
+            compose.waitFor("say", "Gemma it is.")
+            assertEquals("her turn played back isn't given her again", "What would you like to keep in your blocks?", mind.talkHistories.last().single().second)
+        }
+        val t = app.asking.transcript()
+        assertTrue(t, t.contains("Left out of her reply, as her turn played back: "))
+        assertTrue(t, t.contains("Companion: What would you like to keep in your blocks?"))
+    }
+
+    /**
+     * 0.6.1: he taps a line of his day to put right a word the phone
+     * misheard; his correction lands as his words, and the saved
+     * conversation carries the proposal whole.
+     */
+    @Test
+    fun heCorrectsAMisheardWordAndTheConversationCarriesTheProposalWhole() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        val told = Telling.WRITTEN.replace("Felt rotten about the morning", "Felt rotten about the mourning")
+        mind.talkScript += listOf("That sounds like a hard morning, Matthew.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked(told)
+            compose.tap("sort-as-day")
+            compose.waitFor("day-yes", timeoutMs = 30_000)
+            val day = app.asking.stage as Asking.Stage.Day
+            val i = day.lines.indexOfFirst { it.words.contains("mourning") }
+            assertTrue(day.lines.joinToString("\n") { it.words }, i >= 0)
+            compose.tap("day-words:$i")
+            compose.waitFor("day-correct-field")
+            compose.onNodeWithTag("day-correct-field").performTextClearance()
+            compose.onNodeWithTag("day-correct-field").performTextInput(day.lines[i].words.replace("mourning", "morning"))
+            compose.tap("day-correct-keep")
+            compose.waitUntil(5_000) { (app.asking.stage as? Asking.Stage.Day)?.lines?.get(i)?.corrected == true }
+            compose.waitFor("day-words:$i", "about the morning")
+            compose.tap("day-yes")
+            compose.waitUntil(10_000) { app.pages.exists(Landing.NOW) }
+        }
+        val now = app.storage.read(Landing.NOW)!!
+        assertTrue("his correction lands as his words", now.contains("Felt rotten about the morning"))
+        assertFalse(now.contains("mourning"))
+        val t = app.asking.transcript()
+        assertEquals("his day continues the exchange it sorts: his words once", 1, Regex("Matthew: Right, so the car").findAll(t).count())
+        for (part in listOf("Answered by: Talk (", "; Write (", "; Sort (", "Proposed:", "[x] ", "(corrected by him; heard", "His answer: Yes", "How it ended: Matthew said yes to his day")) {
+            assertTrue("$part in\n$t", t.contains(part))
+        }
     }
 
     /** 0.5's Stage 1: a job's settings, changed in Settings, are what its next conversation is opened with. */

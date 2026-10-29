@@ -55,11 +55,14 @@ import java.time.ZonedDateTime
  * Yes. Should the phone not keep the two side by side, each is opened in
  * turn, carrying its last six exchanges.
  *
- * 0.6, Stage 4: when his words are a day told ([Landing.isTelling]), after
- * her reply the Sort job places it a piece at a time, each piece in a
- * conversation of its own, and the day, the hand and the rungs are shown as
- * one proposal ([Stage.Day]): any line unticked or moved before Yes, each
- * move kept as a worked example she is shown next time.
+ * 0.6, Stage 4: his day, sorted by the Sort job a piece at a time, each
+ * piece in a conversation of its own, and the day, the hand and the rungs
+ * shown as one proposal ([Stage.Day]): any line unticked, moved or a misheard
+ * word corrected before Yes, each move kept as a worked example she is shown
+ * next time. 0.6.1: only when he asks ("Sort as my day", offered when his
+ * words could be a day); her conversation is opened afresh for each message,
+ * the date, the time and her shell in her instruction and his turn his words
+ * alone; and a line of her reply that plays her turn back is never shown.
  */
 class Asking(private val app: PocketApp) {
     sealed interface Stage {
@@ -120,7 +123,40 @@ class Asking(private val app: PocketApp) {
      * it ([at]), and what came of a proposal ([outcome], null when there
      * was none).
      */
-    class Exchange(val question: String, val said: String, val note: String, val time: String, val at: Long = System.currentTimeMillis(), val outcome: String? = null)
+    class Exchange(
+        val question: String,
+        val said: String,
+        val note: String,
+        val time: String,
+        val at: Long = System.currentTimeMillis(),
+        val outcome: String? = null,
+        /** 0.6.1, for the saved conversation: which model and settings answered each job. */
+        val jobs: String = "",
+        /** The proposal whole, as he saw it; null when there was none. */
+        val proposal: String? = null,
+        /** The lines of her reply left out, as her turn played back. */
+        val copied: List<String> = emptyList(),
+    )
+
+    /** His words could be a day ([Landing.isTelling]): "Sort as my day" is offered under her reply. */
+    var sortable by mutableStateOf(false)
+        private set
+
+    /** The jobs that answered this ask, for the saved conversation. */
+    private val answeredBy = linkedSetOf<MindJob>()
+    /** How long each job took on the last thing he said. */
+    private val jobMs = java.util.concurrent.ConcurrentHashMap<MindJob, Long>()
+
+    /** The lines of her last reply left out, as her turn played back. */
+    private var lastCopied: List<String> = emptyList()
+
+    /** How his last proposal ended, for her instruction as her conversation is opened for his next message. */
+    private var talkNote: String? = null
+    /** What he has just said: her instruction reads her the blocks it names. */
+    private var talkSaid = ""
+
+    /** The exchange a day sorted on his tap continues: taken back from [history], to be kept whole with the day. */
+    private var dayFrom: Exchange? = null
 
     /** The exchanges so far, oldest first. */
     val history = mutableStateListOf<Exchange>()
@@ -152,14 +188,19 @@ class Asking(private val app: PocketApp) {
     /** How many times Ask has been opened: a close asked for before the latest opening lets nothing go. */
     @Volatile private var openings = 0
 
-    /** Ask is open: load the model and open the conversations now, while Matthew writes. */
+    /**
+     * Ask is open: load the model, and open the Write job's conversation, now,
+     * while Matthew writes. 0.6.1: hers is opened afresh for each message,
+     * its instruction carrying the time then and the blocks his words name,
+     * so only her model is loaded here.
+     */
     fun opened() {
         openings++
         if (benchRunning) return
         scope.launch(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
-                    talker(MindJob.TALK)
+                    app.mind.warm(app.settings(MindJob.TALK))
                     if (together) talker(MindJob.WRITE)
                 }
             }
@@ -212,7 +253,11 @@ class Asking(private val app: PocketApp) {
         val open = suspend {
             when (job) {
                 MindJob.SORT -> error("The Sort job asks a piece at a time, in conversations of its own.")
-                MindJob.TALK -> app.mind.talker(Talking.instruction(HelloWorld.SHELL, app.pages), context.getValue(job).toList(), settings = settings)
+                // 0.6.1: the date, the time and her shell in her instruction, opened afresh for each message; the earlier exchanges his words and hers.
+                MindJob.TALK -> app.mind.talker(
+                    Talking.instruction(HelloWorld.SHELL, app.pages, ZonedDateTime.now(), talkSaid) + (talkNote?.let { "\n\nHow his last proposal ended: $it" }.orEmpty()),
+                    context.getValue(job).toList(), settings = settings,
+                )
                 MindJob.WRITE -> app.mind.talker(
                     Talks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages, examplesInText = false),
                     Talks.opening(context.getValue(job).toList()), settings = settings,
@@ -241,6 +286,12 @@ class Asking(private val app: PocketApp) {
         live = ""
         keepIn = null
         checking = false
+        sortable = false
+        dayFrom = null
+        answeredBy.clear()
+        jobMs.clear()
+        answeredBy += MindJob.TALK
+        lastCopied = emptyList()
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch {
             val started = System.nanoTime()
@@ -251,18 +302,28 @@ class Asking(private val app: PocketApp) {
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
                     talking.withLock {
+                        // Her conversation is opened afresh for each message, so her instruction's time is now, and how his last proposal ended.
+                        stale += MindJob.TALK
+                        talkNote = note
+                        talkSaid = q
                         val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
-                        val first = history.isEmpty() && t.pace.turns.isEmpty()
-                        val message = Talking.turn(q, ZonedDateTime.now(), HelloWorld.SHELL, app.pages, note)
+                        val first = history.isEmpty()
+                        // His turn is his words alone.
+                        val message = Talking.said(q)
+                        val opening = shellOpening()
                         val words = StringBuilder()
                         val reply = t.stream.say(message) { piece ->
                             words.append(piece)
-                            if (firstShown == null && words.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
-                            live = words.toString().trim()
+                            // Never shown: a line of hers that plays her turn back.
+                            val shown = Talking.unechoed(words.toString(), q, opening)
+                            if (firstShown == null && shown.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
+                            live = shown
                         }
                         pace = Pace(t.pace.processor, t.pace.whyNotGpu, if (first) t.pace.loadMs else null).also { p -> p.turns.addAll(t.pace.turns.drop(before)) }
-                        message to reply.trim()
+                        lastCopied = Talking.copied(reply, q, opening)
+                        jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
+                        message to Talking.unechoed(reply, q, opening)
                     }
                 }
             }
@@ -271,19 +332,17 @@ class Asking(private val app: PocketApp) {
                 return@launch
             }
             live = said
-            remember(MindJob.TALK, Talking.kept(q), said)
-            // A day told: the Sort job places it, a piece at a time, and the landing is one proposal.
-            if (withContext(Dispatchers.IO) { Landing.isTelling(q, Telling.cards(handNow())) }) {
-                val talk = Talks.Answered(Talks.Route.TALK, said, emptyList(), null, null, listOf(message to said))
-                day(q, Stage.Shown(asAsked(talk), 0, pace, firstShown), started)
-                return@launch
-            }
+            // What she said, never her turn played back, is what she is given again: his words and hers.
+            remember(MindJob.TALK, Talking.said(q), said.ifBlank { "…" })
+            // 0.6.1: his words could be a day: "Sort as my day" is offered under her reply. Nothing is sorted unless he asks.
+            sortable = withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
             // Then, if his words may ask for a write, what the Write job proposes.
             val written = if (!Talking.mayWrite(q)) null else {
                 checking = true
                 withContext(Dispatchers.IO) {
                     runCatching {
                         talking.withLock {
+                            val writeStarted = System.nanoTime()
                             val w = talker(MindJob.WRITE)
                             val before = w.pace.turns.size
                             val sinceLast = unseen.takeLast(3).joinToString(" ") { (his, hers) -> "Matthew said: ${Words.quoted(his, 200)}; the companion said: ${Words.quoted(hers, 200)}." }
@@ -293,6 +352,8 @@ class Asking(private val app: PocketApp) {
                                 answerReads = false,
                             )
                             pace?.turns?.addAll(w.pace.turns.drop(before))
+                            answeredBy += MindJob.WRITE
+                            jobMs[MindJob.WRITE] = (System.nanoTime() - writeStarted) / 1_000_000
                             a
                         }
                     }
@@ -322,7 +383,9 @@ class Asking(private val app: PocketApp) {
      * shown as one proposal.
      */
     private suspend fun day(said: String, talked: Stage.Shown, started: Long) {
-        sorting = 0 to Telling.cut(said).size
+        answeredBy += MindJob.SORT
+        val names = withContext(Dispatchers.IO) { runCatching { Landing.names(app.pages) }.getOrDefault(setOf("gemma")) }
+        sorting = 0 to Telling.cut(said, names).size
         val outcome = withContext(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
@@ -352,15 +415,17 @@ class Asking(private val app: PocketApp) {
                         said, today, words, state,
                         judge = { piece -> ask(instruction, Telling.aloneAsk(piece, said), settings).also { sorting = ++placed to (sorting?.second ?: placed) } },
                         about = { piece, card -> Telling.yes(ask(null, Telling.cardAsk(piece, said, card), settings)) },
+                        names = names,
                     )
-                    val rungs = Telling.placed(ask(null, Telling.rungsAsk(state, today, said), settings.copy(longestReply = maxOf(256, settings.longestReply))))
-                        .filter { it.place in Telling.RUNGS }
+                    // A rung his words bear on may be given one of his pieces, or left; none is asked about otherwise.
+                    val rungs = Telling.rungsFor(state, steps) { a -> ask(null, a, settings.copy(longestReply = maxOf(64, settings.longestReply))) }
                     Triple(Landing.sorting(said, pieces + rungs), steps.size, pace)
                 }
             }
         }
         sorting = null
         val took = (System.nanoTime() - started) / 1_000_000
+        jobMs[MindJob.SORT] = took
         outcome.onFailure { e ->
             if (stage is Stage.Thinking) end(Stage.Shown(talked.asked, took, talked.pace, talked.firstShown), null, null, "She talked. Your day couldn't be sorted: ${e.message ?: e::class.simpleName}.", took)
         }.onSuccess { (sorted, pieces, pace) ->
@@ -375,6 +440,13 @@ class Asking(private val app: PocketApp) {
         val l = d.lines.getOrNull(i) ?: return
         if (l.place == null) return
         stage = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.copy(ticked = !l.ticked) }, d.pieces)
+    }
+
+    /** He corrects a word the phone misheard in the [i]th line ("torque" to "talk"): his correction is his words. */
+    fun correct(i: Int, words: String) {
+        val d = stage as? Stage.Day ?: return
+        val l = d.lines.getOrNull(i) ?: return
+        stage = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.correctedTo(words) }, d.pieces)
     }
 
     /** Move the [i]th line of the day to [place], ticked: kept as a worked example once he says yes. */
@@ -416,24 +488,31 @@ class Asking(private val app: PocketApp) {
                 },
                 onFailure = { "Matthew said yes to his day, but it couldn't be written: ${it.message ?: it::class.simpleName}." },
             )
-            end(d.shown, null, null, note, d.shown.took, proposed = true)
+            end(d.shown, null, null, note, d.shown.took, proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Yes")
         }
     }
 
     /** Matthew said not now to his day: nothing is written. */
     fun notNowToDay() {
         val d = stage as? Stage.Day ?: return
-        end(d.shown, null, null, "Matthew said not now to his day.", d.shown.took, proposed = true)
+        end(d.shown, null, null, "Matthew said not now to his day.", d.shown.took, proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Not now")
     }
 
     /**
-     * Sort the last thing he said as his day, though it didn't read as one:
-     * on his tap, after the Ask is over.
+     * 0.6.1: sort the last thing he said as his day, on his tap of "Sort as
+     * my day" under her reply, and only then. A Write proposal still waiting
+     * is left as not taken, and logged so.
      */
     fun sortAsDay() {
-        val over = stage as? Stage.Over ?: return
-        val talked = over.shown ?: return
-        if (benchRunning) return
+        if (benchRunning || !sortable) return
+        val talked = when (val s = stage) {
+            is Stage.Over -> s.shown
+            is Stage.Shown -> s.also { end(it, null, null, "Matthew sorted it as his day instead.", it.took) }
+            else -> null
+        } ?: return
+        // The day continues the exchange just ended, its jobs and times kept: his words and hers are shown once.
+        dayFrom = history.removeLastOrNull()
+        sortable = false
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch { day(asked, talked, System.nanoTime()) }
     }
@@ -610,8 +689,12 @@ class Asking(private val app: PocketApp) {
         for (e in history) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
-            if (e.said.isNotBlank()) appendLine("Companion: ${e.said}")
-            appendLine("  (${e.note} ${e.time})")
+            appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
+            if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
+            appendLine("  Times: ${e.time}")
+            e.proposal?.let { appendLine("  Proposed:"); appendLine(it.prependIndent("  ")) }
+            appendLine("  How it ended: ${e.note}")
         }
     }
 
@@ -635,7 +718,7 @@ class Asking(private val app: PocketApp) {
             if (at.isEmpty()) "$block was written" else "$block was written at ${at.joinToString(", ")}"
         }.ifEmpty { "nothing was written" } + "."
 
-    private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?, pace: Pace? = shown?.pace, proposed: Boolean = false) {
+    private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?, pace: Pace? = shown?.pace, proposed: Boolean = false, proposal: String? = null) {
         stage = Stage.Over(shown, carried, posted, note)
         val exchanges = shown?.asked?.exchanges?.size ?: 0
         val time = took?.let {
@@ -644,7 +727,20 @@ class Asking(private val app: PocketApp) {
                 ", in ${Words.count(exchanges, "exchange")}." + (pace?.detail()?.let { d -> " $d" } ?: "")
         } ?: "Stopped."
         val proposed = proposed || shown?.asked?.proposal != null || shown?.asked?.unasked != null
-        history += Exchange(asked, shown?.asked?.answer?.say.orEmpty(), note, time, at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(), outcome = if (proposed) note else null)
+        val written = shown?.asked?.proposal?.let { p ->
+            p.writes.joinToString("\n") { w -> "  " + Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing) + (w.shown ?: w.plan.text).takeIf { it.isNotBlank() }?.let { " \u201c$it\u201d" }.orEmpty() } +
+                (p.post?.let { "\n  Then a post to pool:${it.pool}" }.orEmpty()) + (p.refusal?.let { "\n  It couldn't go ahead: $it" }.orEmpty())
+        }
+        history += Exchange(
+            asked, shown?.asked?.answer?.say.orEmpty(), note, time,
+            at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(),
+            outcome = if (proposed) note else null,
+            jobs = answeredBy.joinToString("; ") { j -> "${j.title}" + (jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.settings(j)) },
+            // A day sorted on his tap: the Write job's proposal he left for it comes first.
+            proposal = listOfNotNull(dayFrom?.proposal?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: written).joinToString("\n").ifEmpty { null },
+            copied = lastCopied,
+        )
+        dayFrom = null
         if (proposed) told = note
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }

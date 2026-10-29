@@ -49,8 +49,14 @@ object Landing {
      * whether it is ticked, and where she had put it when he moved it ([from]:
      * "" for a sentence she placed nowhere).
      */
-    data class Line(val place: String?, val card: String?, val words: String, val ticked: Boolean = true, val from: String? = null) {
+    data class Line(val place: String?, val card: String?, val words: String, val ticked: Boolean = true, val from: String? = null, val heard: String? = null) {
         val moved: Boolean get() = from != null && from != place
+
+        /** He corrected a word the phone misheard: [heard] is what it heard, [words] his now. */
+        val corrected: Boolean get() = heard != null && heard != words
+
+        /** His correction of a misheard word ("torque" to "talk"): it counts as his words. */
+        fun correctedTo(to: String): Line = to.trim().let { t -> if (t.isEmpty()) this else copy(words = t, heard = heard ?: words) }
 
         /** He moves it to [to]: kept as a worked example, unless it goes back where she put it. A card it updated is no longer that card's on another shelf. */
         fun movedTo(to: String): Line {
@@ -62,12 +68,62 @@ object Landing {
     /** The sorted telling as he is shown it: every line kept, and his sentences that landed nowhere, to place himself. */
     class Sorting(val said: String, val lines: List<Line>, val invented: List<Telling.Placed>)
 
+    /**
+     * The names the pocket knows, in lower case, so the phone never cuts his
+     * speech before one: her name (Gemma, and any name her shell gives
+     * her), the names of his blocks, and the words his blocks' lines give a
+     * capital where no sentence begins.
+     */
+    fun names(pages: Pages): Set<String> {
+        val out = mutableSetOf("gemma")
+        val shore = pages.shore().mine
+        for (b in shore) {
+            if (b.name == Asks.LOG || b.name.startsWith("bench-")) continue
+            out += b.name.lowercase()
+            if (pages.floorOf(b.name) >= TEMPORAL_FLOOR) continue
+            val texts = listOfNotNull(b.opening) + pages.position(Region.POCKET, b.name)?.lines.orEmpty().mapNotNull { it.text }
+            for (t in texts) {
+                val words = t.split(Regex("\\s+"))
+                for ((i, w) in words.withIndex()) {
+                    if (i == 0 || words[i - 1].endsWith('.') || words[i - 1].endsWith('?') || words[i - 1].endsWith('!') || words[i - 1].endsWith(':')) continue
+                    val bare = w.trim(',', '.', ';', ':', '!', '?', '"', '\u201c', '\u201d', '(', ')').removeSuffix("'s").removeSuffix("\u2019s")
+                    if (bare.length >= 2 && bare.first().isUpperCase() && bare.lowercase() !in setOf("i", "i'm", "i've", "i'll", "i'd")) out += bare.lowercase()
+                }
+            }
+        }
+        return out
+    }
+
     fun sorting(said: String, placed: List<Telling.Placed>): Sorting {
         val checked = Telling.check(said, placed)
         val lines = checked.kept.distinctBy { Triple(it.place, it.card, Telling.plain(it.words)) }.map { Line(it.place, it.card, it.words) } +
             checked.dropped.map { Line(null, null, it, ticked = false) }
         return Sorting(said, lines, checked.invented)
     }
+
+    /**
+     * The proposal whole, as the saved conversation keeps it (0.6.1): every
+     * line with its place, ticked or not, moved or not, corrected or not, the
+     * rungs, his sentences she placed nowhere, and what was left out as not
+     * his words.
+     */
+    fun describe(lines: List<Line>, invented: List<Telling.Placed>): String = buildString {
+        fun group(place: String?) = when (place) {
+            null -> "Not placed"
+            in Telling.DAY -> "Today, ${name(place)}"
+            in Telling.HAND -> "The hand, ${name(place)}"
+            else -> "The rung above, ${name(place)}"
+        }
+        for (l in lines.sortedBy { (PLACES + Telling.RUNGS).indexOf(it.place).let { i -> if (i < 0) 99 else i } }) {
+            append(if (l.ticked && l.place != null) "  [x] " else "  [ ] ")
+            append(group(l.place)).append(": \u201c").append(l.words).append("\u201d")
+            if (l.card != null) append(" (updates the card at ${l.place}.${l.card})")
+            if (l.moved) append(" (moved by him from ${l.from?.takeIf { it.isNotEmpty() }?.let(::group) ?: "not placed"})")
+            if (l.corrected) append(" (corrected by him; heard \u201c${l.heard}\u201d)")
+            appendLine()
+        }
+        if (invented.isNotEmpty()) appendLine("  Left out, as not his words: " + invented.joinToString("; ") { "${it.place} \u201c${it.words}\u201d" })
+    }.trimEnd()
 
     // ── what is written ──
 
@@ -161,7 +217,9 @@ object Landing {
     fun landed(lines: List<Line>, said: String, nowMs: Long, read: (String) -> Js?): Landed {
         val kept = lines.filter { it.ticked && it.place != null }
         val six = Telling.DAY.associateWith { place -> kept.filter { it.place == place }.map { it.words } }
-        val (now, over) = withDay(read(NOW), dayAddress(nowMs), said, six)
+        // His corrections of misheard words are his words, in the telling as the day's line too.
+        val told = lines.filter { it.corrected }.fold(said) { t, l -> l.heard?.let { h -> t.replaceFirst(h, l.words) } ?: t }
+        val (now, over) = withDay(read(NOW), dayAddress(nowMs), told, six)
         val state = (read(TELLING) as? JsObj) ?: Telling.shape()
         val hand = Telling.land(state, kept.filter { it.place in Telling.HAND || it.place in Telling.RUNGS }.map { Telling.Placed(it.place!!, it.card, it.words) })
         val examples = lines.mapNotNull(::example)
@@ -186,13 +244,13 @@ object Landing {
      * hand (a sentence sharing words with one). An ask to write is the Write
      * job's, never a telling.
      */
-    fun isTelling(said: String, cards: Map<String, String>): Boolean {
+    fun isTelling(said: String, cards: Map<String, String>, names: Set<String> = emptySet()): Boolean {
         val trimmed = said.trim()
         if (trimmed.isEmpty() || trimmed.endsWith("?")) return false
         val words = Telling.plain(trimmed).split(' ').filter { it.isNotEmpty() }
         if (words.firstOrNull() in ASKS) return false
-        if (Telling.sentences(trimmed).size >= 3 && words.size >= 40) return true
-        return Telling.cut(trimmed).any { Telling.cardsNear(it, cards).isNotEmpty() }
+        if (Telling.sentences(trimmed, names).size >= 3 && words.size >= 40) return true
+        return Telling.cut(trimmed, names).any { Telling.cardsNear(it, cards).isNotEmpty() }
     }
 
     private val ASKS = setOf("add", "note", "change", "make", "post", "put", "write", "keep", "remember", "save", "remove", "delete", "rename", "read", "show", "tell", "do")

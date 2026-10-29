@@ -96,6 +96,20 @@ fun main(args: Array<String>) {
         engine.close()
         return
     }
+    // 0.6.1: what makes her play her turn back, on his message of 29 October.
+    if ("echo" in flags) {
+        // Seed 0 is the app's; seed 1 drew as seed 0 did on every way tried, so the others run from 2.
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        if ("shell" in flags) {
+            shellLab(engine, label, shelf, listOf(0) + (2..runs).toList())
+            engine.close()
+            return
+        }
+        if (System.getProperty("echo.ways") != "") echo(engine, label, shelf, listOf(0) + (2..runs).toList())
+        talkAsks(engine, label, shelf)
+        engine.close()
+        return
+    }
     if ("bench" in flags) {
         if ("kept" in flags) kept(engine, shelf) else if ("after" in flags) benchAfter(engine, shelf) else bench(engine, shelf)
         engine.close()
@@ -392,4 +406,4 @@ private fun timing(engine: Engine, shelf: Shelf, formatted: Boolean) {
     println("took ${secs(start)} s")
 }
 
-private fun secs(since: Long) = "%.1f".format((System.nanoTime() - since) / 1e9)
+internal fun secs(since: Long) = "%.1f".format((System.nanoTime() - since) / 1e9)
