@@ -75,37 +75,49 @@ internal fun tellings(engine: Engine, tellings: List<Pair<String, String>>, out:
  * block with the hand landed.
  */
 @OptIn(ExperimentalApi::class)
-internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: File, runs: Int = 5) {
+internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: File, runs: Int = 5, mode: String = "alone") {
     out.mkdirs()
+    val off = ThinkingConfig(enableThinking = false)
     val ways = listOf("as the phone asks" to null) + (1..runs).map { "sampled, seed $it" to it }
     for ((name, said) in tellings) {
-        println("\n== $name, a piece at a time ==")
+        println("\n== $name, a piece at a time ($mode) ==")
         for ((way, seed) in ways) {
             val sampler = if (seed == null) SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0)
             else SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed)
             fun label(state: JsObj, telling: String, log: StringBuilder): Pair<List<Telling.Placed>, String> {
-                val config = ConversationConfig(
-                    systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.BENCH_DAY, telling)),
-                    samplerConfig = sampler,
-                    maxOutputToken = Telling.PIECE_TOKENS,
-                    enableResponseFormat = true,
-                    thinkingConfig = ThinkingConfig(enableThinking = false),
-                )
+                val pieces = Telling.cut(telling)
                 val start = System.nanoTime()
-                return engine.createConversation(config).use { c ->
-                    val firsts = mutableListOf<String>()
-                    val labelled = Telling.cut(telling).map { piece ->
-                        val r = send(c, Telling.pieceAsk(piece), Telling.PIECE_FORM)
-                        firsts += r.timing.substringBefore(",").removePrefix("first token ")
-                        log.append("\u201c$piece\u201d -> ${r.text.trim()}\n")
-                        piece to Telling.places(r.text)
-                    }
-                    val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = ThinkingConfig(enableThinking = false))).use { r ->
-                        send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling))
-                    }
-                    log.append("rungs -> ${rungs.text.trim()}\n")
-                    Telling.fromPieces(telling, labelled, rungs.text) to "${labelled.size} pieces, ${"%.1f".format((System.nanoTime() - start) / 1e9)} s in all, first tokens ${firsts.take(3).joinToString(", ")}, …"
+                val firsts = mutableListOf<String>()
+                fun note(piece: String, r: Reply) {
+                    firsts += r.timing.substringBefore(",").removePrefix("first token ")
+                    log.append("\u201c$piece\u201d -> ${r.text.trim().lineSequence().first()}\n")
                 }
+                val labelled = when (mode) {
+                    "alone" -> pieces.map { piece ->
+                        val config = ConversationConfig(systemInstruction = Contents.of(Telling.aloneInstruction(Telling.BENCH_DAY, Telling.cards(state))), samplerConfig = sampler, maxOutputToken = Telling.PIECE_TOKENS, thinkingConfig = off)
+                        engine.createConversation(config).use { c -> send(c, Telling.aloneAsk(piece, telling)).also { note(piece, it) } }.let { piece to Telling.places(it.text) }
+                    }
+                    "words" -> pieces.map { piece ->
+                        val cards = Telling.cards(state)
+                        val config = ConversationConfig(systemInstruction = Contents.of(Telling.wordsInstruction(Telling.BENCH_DAY, cards)), samplerConfig = sampler, maxOutputToken = Telling.PIECE_TOKENS, thinkingConfig = off)
+                        engine.createConversation(config).use { c -> send(c, Telling.aloneAsk(piece, telling)).also { note(piece, it) } }.let { piece to Telling.fromWords(it.text, cards) }
+                    }
+                    "all" -> engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 512, thinkingConfig = off)).use { c ->
+                        val r = send(c, Telling.allAsk(state, Telling.BENCH_DAY, telling, pieces))
+                        firsts += r.timing.substringBefore(",").removePrefix("first token ")
+                        log.append(r.text.trim() + "\n")
+                        Telling.fromAll(r.text, pieces)
+                    }
+                    else -> {
+                        val config = ConversationConfig(systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.BENCH_DAY, telling)), samplerConfig = sampler, maxOutputToken = Telling.PIECE_TOKENS, enableResponseFormat = true, thinkingConfig = off)
+                        engine.createConversation(config).use { c -> pieces.map { piece -> send(c, Telling.pieceAsk(piece), Telling.PIECE_FORM).also { note(piece, it) }.let { piece to Telling.places(it.text) } } }
+                    }
+                }
+                val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = off)).use { r ->
+                    send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling))
+                }
+                log.append("rungs -> ${rungs.text.trim()}\n")
+                return Telling.fromPieces(telling, labelled, rungs.text) to "${pieces.size} pieces, ${"%.1f".format((System.nanoTime() - start) / 1e9)} s in all with the rungs, first tokens ${firsts.take(3).joinToString(", ")}, …"
             }
             val log = StringBuilder()
             val (placed, timing) = label(Telling.shape(), said, log)
@@ -113,7 +125,7 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
             log.append("-- second --\n")
             val (placed2, timing2) = label(state, Telling.SECOND, log)
             val after = Telling.land(state, Telling.check(Telling.SECOND, placed2).kept)
-            File(out, "${name.replace(' ', '-')}-pieces-${seed ?: 0}.txt").writeText(log.toString())
+            File(out, "${name.replace(' ', '-')}-pieces-$mode-${seed ?: 0}.txt").writeText(log.toString())
             val all = Telling.marks(said, placed) + Telling.secondMarks(after)
             println("$way: ${all.count { it.met }} of ${all.size} marks; ${placed.size} lines; $timing; then $timing2")
             for (m in all) println("  ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(400)}")
@@ -142,6 +154,16 @@ internal fun remark(tellings: List<Pair<String, String>>, dir: File) {
             val all = Telling.marks(said, placed) + Telling.secondMarks(after)
             println("${if (seed == 0) "as the phone asks" else "sampled, seed $seed"}: ${all.count { it.met }} of ${all.size} marks; ${placed.size} lines")
             for (m in all) println("  ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(300)}")
+            if (!pocket) {
+                // Her plain answer anchored to his words: she sorts, the pocket keeps only his.
+                val anchored = Telling.anchored(placed, said)
+                val state = Telling.land(Telling.shape(), Telling.check(said, anchored).kept)
+                val second2 = Telling.anchored(Telling.fromPlain(second).filter { it.place in Telling.HAND }, Telling.SECOND)
+                val after2 = Telling.land(state, Telling.check(Telling.SECOND, second2).kept)
+                val marks2 = Telling.marks(said, anchored) + Telling.secondMarks(after2)
+                println("  anchored to his words: ${marks2.count { it.met }} of ${marks2.size} marks; ${anchored.size} lines")
+                for (m in marks2) println("    ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(300)}")
+            }
         }
     }
 }

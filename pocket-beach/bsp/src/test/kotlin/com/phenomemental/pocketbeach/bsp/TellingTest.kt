@@ -216,4 +216,34 @@ class TellingTest {
         assertEquals(listOf(Telling.Placed("1.2", null, "Felt rotten about the morning")), Telling.placed("1.2: What I felt: in my body and in me: Felt rotten about the morning"))
         assertEquals(listOf(Telling.Placed("3.1", null, "I ring the garage.")), Telling.placed("3.1: This week: This week: I ring the garage."))
     }
+
+    @Test
+    fun aPieceAloneOrAllThePiecesAtOnce() {
+        val told = Telling.aloneInstruction(Telling.BENCH_DAY, emptyMap())
+        assertContains(told, "1.1 What happened: what could be seen or checked, before any meaning; 1.2 What I felt")
+        assertContains(told, "2.1 tomorrow (Friday 30 October)")
+        assertEquals("He said: \u201cDentist on Thursday, I keep forgetting.\u201d\nThe piece: \u201cDentist on Thursday\u201d", Telling.aloneAsk("Dentist on Thursday", Telling.WRITTEN))
+        val pieces = Telling.cut(Telling.WRITTEN)
+        assertContains(Telling.allAsk(Telling.shape(), Telling.BENCH_DAY, Telling.WRITTEN, pieces), "18. \u201cDentist on Thursday\u201d")
+        val labelled = Telling.fromAll("Here:\n1: 1.1\n18: 1.6, 2.2\n**20:** 1.5, 1.6, 2.1", pieces)
+        assertEquals(listOf("1.1" to null), labelled[0].second)
+        assertEquals("Dentist on Thursday", labelled[17].first)
+        assertEquals(listOf("1.6" to null, "2.2" to null), labelled[17].second)
+        assertEquals(emptyList(), labelled[1].second)
+        // A rung under a bold heading, his words beneath.
+        assertEquals(listOf(Telling.Placed("3.1", null, "I will ring the garage tomorrow.")), Telling.placed("**3.1: This week**\nI will ring the garage tomorrow."))
+    }
+
+    @Test
+    fun herWordsForAPieceAreItsPlaces() {
+        assertEquals(listOf("1.2" to null), Telling.fromWords("felt", emptyMap()))
+        assertEquals(listOf("1.5" to null, "1.6" to null, "2.1" to null), Telling.fromWords("Chose, ahead, tomorrow.", emptyMap()))
+        assertEquals(listOf("1.6" to null, "2.5" to null), Telling.fromWords("ahead, this year or beyond", emptyMap()))
+        assertEquals(listOf("1.3" to null), Telling.fromWords("made of it", emptyMap()))
+        val cards = mapOf("2.1.1" to "I've decided I'm ringing the garage tomorrow")
+        assertEquals(listOf("1.1" to null, "2.1" to "1"), Telling.fromWords("happened, card 1", cards))
+        val told = Telling.wordsInstruction(Telling.BENCH_DAY, cards)
+        assertContains(told, "this week (by Thursday 5 November)")
+        assertContains(told, "card 1 \u201cI've decided I'm ringing the garage tomorrow\u201d")
+    }
 }

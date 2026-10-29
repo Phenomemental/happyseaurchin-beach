@@ -82,10 +82,19 @@ object Telling {
         return if (words == p.words) p else p.copy(words = words)
     }
 
-    private fun lines(answer: String): List<Placed> = answer.lines().mapNotNull { line ->
-        val m = LINE.matchEntire(line.trim()) ?: return@mapNotNull null
-        val (top, at, card, rest) = m.destructured
-        at(top, at, card, bare(rest))
+    private fun lines(answer: String): List<Placed> {
+        val all = answer.lines().map { it.trim() }
+        return all.indices.mapNotNull { i ->
+            val m = LINE.matchEntire(all[i]) ?: return@mapNotNull null
+            val (top, at, card, rest) = m.destructured
+            var words = bare(rest)
+            // A heading with the place's own name, his words on the line beneath: "**3.1: This week**", then "I will …".
+            if (words.isEmpty() || echo(words)) {
+                val next = all.drop(i + 1).firstOrNull { it.isNotEmpty() }
+                if (next != null && LINE.matchEntire(next) == null) words = bare(next.removePrefix("- ").removePrefix("* "))
+            }
+            at(top, at, card, words)
+        }
     }
 
     private fun at(top: String, at: String, card: String, words: String): Placed? {
@@ -277,6 +286,116 @@ object Telling {
 
     /** The day the bench is fixed at, so the key holds. */
     val BENCH_DAY: java.time.LocalDate = java.time.LocalDate.of(2026, 10, 29)
+
+    /** The day's six places and their meanings, in the block's own words: "1.1 What happened: what could be seen or checked, …". */
+    fun dayPlaces(): String = DAY.joinToString("; ") { place -> "$place " + ((shape()["1"] as JsObj)[place.substringAfter('.')] as JsStr).value }
+
+    /** The sentence of what he said that a piece comes from. */
+    fun sentenceOf(piece: String, said: String): String = sentences(said).firstOrNull { foundIn(piece, it) } ?: said.trim()
+
+    /**
+     * Each piece on its own, in a conversation of its own, so no answer leans
+     * on the last: the six places and the shelves, the sentence it comes from,
+     * and the piece. Short, so it is read quickly afresh.
+     */
+    fun aloneInstruction(today: java.time.LocalDate, cards: Map<String, String>): String =
+        "You place one piece of what Matthew said about his day. Today is ${date(today)}.\n" +
+            "The day's places: ${dayPlaces()}.\n" +
+            "The hand's shelves, for something he says he'll do: " + shelves(today).joinToString(", ") +
+            (if (cards.isEmpty()) "" else ". Cards already on the hand: " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) + ".\n" +
+            "Answer only with addresses: one or two places in the day; then, only if the piece is something he says he'll do, its shelf" +
+            (if (cards.isEmpty()) "." else ", or the card it is about.")
+
+    fun aloneAsk(piece: String, said: String): String = "He said: \u201c${sentenceOf(piece, said)}\u201d\nThe piece: \u201c$piece\u201d"
+
+    /** The words she may answer a piece with, and the places they stand for: the day's six, then the hand's five shelves. */
+    val WORDS: List<Pair<String, String>> = listOf(
+        "happened" to "1.1", "felt" to "1.2", "made of it" to "1.3", "matters" to "1.4", "chose" to "1.5", "ahead" to "1.6",
+        "tomorrow" to "2.1", "this week" to "2.2", "this month" to "2.3", "this season" to "2.4", "this year or beyond" to "2.5",
+    )
+
+    /**
+     * A piece alone, answered in words, not addresses: the pocket maps each
+     * word to its place. On the laptop she leaned to the first numbers in a
+     * list; a word carries its meaning.
+     */
+    fun wordsInstruction(today: java.time.LocalDate, cards: Map<String, String>): String {
+        val shelf = shelves(today).map { it.substringAfter(' ') }
+        return "You place one piece of what Matthew said about his day. Today is ${date(today)}.\n" +
+            "Answer with one or two words for the day: happened (what could be seen or checked, before any meaning), felt (in his " +
+            "body and in him), made of it (his conclusions, judgements and the stories he tells), matters (how he wants to be), " +
+            "chose (a choice he has made), ahead (what's coming, planned or expected).\n" +
+            "Then, only if it is something he says he'll do, when: " + shelf.joinToString(", ") +
+            (if (cards.isEmpty()) "." else "; or, if it is about a card already on the hand, card and its number: " +
+                cards.entries.mapIndexed { i, (_, words) -> "card ${i + 1} \u201c$words\u201d" }.joinToString(", ") + ".") +
+            "\nFor example: felt; or: chose, ahead, this week"
+    }
+
+    /** Her words for a piece, as places: the day's, a shelf, or the card she names. */
+    fun fromWords(answer: String, cards: Map<String, String>): List<Pair<String, String?>> {
+        val said = plain(answer.trim().lineSequence().firstOrNull().orEmpty())
+        val out = mutableListOf<Pair<String, String?>>()
+        // The longest names first, so "this year or beyond" is not read as "this year".
+        for ((word, place) in WORDS.sortedByDescending { it.first.length }) {
+            if (Regex("(^| )${Regex.escape(plain(word))}( |$)").containsMatchIn(said) && out.none { it.first == place }) out += place to null
+        }
+        if (said.contains("this year") && out.none { it.first == "2.5" }) out += "2.5" to null
+        Regex("card (\\d)").findAll(said).forEach { m -> cards.keys.elementAtOrNull(m.groupValues[1].toInt() - 1)?.let { out += it.substringBeforeLast('.') to it.substringAfterLast('.') } }
+        val order = WORDS.map { it.second }
+        return out.sortedBy { order.indexOf(it.first).let { i -> if (i < 0) 99 else i } }
+    }
+
+    private val SMALL = setOf(
+        "a", "an", "the", "and", "or", "but", "so", "to", "of", "in", "on", "at", "for", "with", "by", "from", "up", "it", "its", "it's",
+        "i", "i'm", "i've", "me", "my", "you", "your", "he", "his", "him", "was", "is", "are", "be", "been", "that", "this", "which",
+        "about", "again", "not", "no", "as", "same", "some", "thing", "one", "into", "all", "had", "have", "has", "will", "would",
+    )
+
+    private fun content(s: String) = plain(s).split(' ').filter { it.isNotEmpty() && it !in SMALL }.map { it.removeSuffix("s").removeSuffix("'") }.toSet()
+
+    /**
+     * Her lines in her own words, anchored to his: each piece of what he said
+     * goes where she put a line sharing most of its words (half or more of
+     * the piece's own words, and two at least). Only his words land; she
+     * sorts.
+     */
+    fun anchored(free: List<Placed>, said: String): List<Placed> {
+        val pieces = cut(said)
+        val out = mutableListOf<Placed>()
+        for (line in free) {
+            val words = content(line.words)
+            for (piece in pieces) {
+                val own = content(piece)
+                val shared = (own intersect words).size
+                if (own.isNotEmpty() && shared >= 2 && shared * 2 >= own.size || own.size == 1 && shared == 1) {
+                    val p = Placed(line.place, line.card, piece)
+                    if (p !in out) out += p
+                }
+            }
+            if (line.place in RUNGS) out += line
+        }
+        return out
+    }
+
+    /** All the pieces at once, numbered, each answered on a line of its own: "7: 1.6, 2.2". */
+    fun allAsk(state: JsObj, today: java.time.LocalDate, said: String, pieces: List<String>): String {
+        val cards = cards(state)
+        return "Today is ${date(today)}.\n\nThe block:\n${stringifyPretty(state, " ")}\n\nWhat Matthew said:\n${said.trim()}\n\n" +
+            "His words, cut into pieces:\n" + pieces.mapIndexed { i, p -> "${i + 1}. \u201c$p\u201d" }.joinToString("\n") + "\n\n" +
+            "For each piece write one line: its number, a colon, then the addresses of its places: one or two places in the day " +
+            "(1.1 to 1.6); then, only if it is something he says he'll do, its shelf, of " + shelves(today).joinToString(", ") +
+            (if (cards.isEmpty()) "" else "; or, if it is about a card already on the hand, that card, of " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) +
+            ". For example: 1: 1.1"
+    }
+
+    /** Her lines for all the pieces: each piece and its places, by its number. */
+    fun fromAll(answer: String, pieces: List<String>): List<Pair<String, List<Pair<String, String?>>>> {
+        val byNumber = answer.lines().mapNotNull { line ->
+            val m = Regex("^[\\s*-]*(\\d+)[.):]\\s*(.*)$").find(line.trim()) ?: return@mapNotNull null
+            m.groupValues[1].toInt() to places(m.groupValues[2])
+        }.toMap()
+        return pieces.mapIndexed { i, p -> p to (byNumber[i + 1] ?: emptyList()) }
+    }
 
     /** One piece, as she is given it; its choices are in what she was told. */
     fun pieceAsk(piece: String): String = "\u201c$piece\u201d"

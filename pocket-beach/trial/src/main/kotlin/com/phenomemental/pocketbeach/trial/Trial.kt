@@ -86,7 +86,8 @@ fun main(args: Array<String>) {
         val spoken = System.getProperty("pocket.spoken")?.let { File(it).readText() }
         val list = listOf("written" to com.phenomemental.pocketbeach.bsp.Telling.WRITTEN) + listOfNotNull(spoken?.let { "spoken" to it })
         val out = File(System.getProperty("pocket.out") ?: "tellings")
-        if ("pieces" in flags) pieces(engine, list, out, runs) else tellings(engine, list, out, runs)
+        val mode = listOf("words", "alone", "all", "kept").firstOrNull { it in flags } ?: "alone"
+        if ("pieces" in flags) pieces(engine, list, out, runs, mode) else tellings(engine, list, out, runs)
         engine.close()
         return
     }
