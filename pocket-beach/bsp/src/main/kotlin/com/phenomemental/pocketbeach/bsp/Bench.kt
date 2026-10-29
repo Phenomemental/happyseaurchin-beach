@@ -246,20 +246,22 @@ object Bench {
     }
 
     /**
-     * The bench as one block: a summary for its opening line, then each
-     * companion's run (its summary, then talk, read and act, each ask a
-     * line), then how it was run.
+     * The bench as one block: a summary for its opening line, then how it
+     * was run, then each companion's run (its summary, then talk, read and
+     * act, each ask a line). A block is written with its opening last, so
+     * how it was run comes first: shared from Matthew's Pixel, 0.4.1's bench
+     * came through cut off at about 19,000 characters, twice, losing it.
      */
     fun block(runs: List<Run>, about: List<String>, whenMs: Long): JsObj {
         val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }
         val out = JsObj.of("_" to str(opening))
         var key = 1
-        for (run in runs) out["${key++}"] = runBlock(run)
         if (about.isNotEmpty()) {
             val group = JsObj.of("_" to str("How it was run"))
             about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
-            out["${key}"] = group
+            out["${key++}"] = group
         }
+        for (run in runs) out["${key++}"] = runBlock(run)
         return out
     }
 

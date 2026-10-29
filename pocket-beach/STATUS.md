@@ -73,7 +73,11 @@ What it says:
   about as fast on either. Ask stays on the GPU. The block as Matthew
   shared it stops partway into "How it was run", before the line on one
   conversation kept for three asks on each, which says how much of the
-  CPU's slower reading falls on the first ask alone.
+  CPU's slower reading falls on the first ask alone. It came through cut
+  at the same place twice, at about 19,000 characters, on its way from
+  the share menu: a block is written with its opening last, so "How it
+  was run", the last part, and the opening's summary of every run were
+  what was lost.
 - **The one miss on the GPU was the judge's.** For "Is there anything
   about roses in my garden block?" she said "Yes, the garden block has a
   line about winter pruning roses." The judge wanted "prune"; "pruning"
@@ -84,6 +88,8 @@ What 0.4.2 changes:
 - Her first word is free in Ask, and in the bench's conversation kept for
   three asks. The bench still asks with it held once, to compare.
 - The bench's run on the CPU is free, as Ask is.
+- The bench's block puts "How it was run" first, so a share cut short
+  loses only the end of the last run.
 - Opening Ask opens her conversation once. Now and then it opened it and
   shut it again at once: the screen let its wait for the model go on
   another thread, in either order with the opening. The first ask then read
@@ -860,10 +866,12 @@ post offline failing plainly, with nothing sent (0.3.2).
    - **Speaking a line with the keyboard up,** in Ask: the keyboard should
      go, and listening start. If it still says speech is busy, the message
      gives the phone's error number (10 or 8): send it back.
-   - **The bench, if he likes** (about half an hour): the whole `bench-`
-     block, "How it was run" too. The last one as shared stopped partway
-     into it, before the conversation kept on the GPU and on the CPU.
-2. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+   - **The bench, if he likes** (about half an hour): its `bench-` block,
+     shared as before; "How it was run" now comes first.
+2. **From 0.4.1's bench, now:** a screenshot of its "How it was run" (open
+   the `bench-` block, tap "How it was run"), for the conversation kept on
+   the GPU and on the CPU, and the engine's probes.
+3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 

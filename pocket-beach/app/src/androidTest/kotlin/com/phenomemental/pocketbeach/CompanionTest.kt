@@ -287,11 +287,11 @@ class CompanionTest {
             val run = app.pages.position(Region.POCKET, made.single())!!
             assertTrue(run.text!!.startsWith("Bench, "))
             assertEquals(5, run.lines.size)
-            assertTrue(run.lines[0].text!!.startsWith("0.3 "))
-            assertTrue(run.lines[1].text!!.startsWith("0.4, her first word held"))
-            assertTrue(run.lines[2].text!!.startsWith("0.4, her first word free"))
-            assertTrue(run.lines[3].text!!.startsWith("0.4 on the CPU"))
-            assertEquals("How it was run", run.lines[4].text)
+            assertEquals("How it was run, first, so a cut-off share keeps it", "How it was run", run.lines[0].text)
+            assertTrue(run.lines[1].text!!.startsWith("0.3 "))
+            assertTrue(run.lines[2].text!!.startsWith("0.4, her first word held"))
+            assertTrue(run.lines[3].text!!.startsWith("0.4, her first word free"))
+            assertTrue(run.lines[4].text!!.startsWith("0.4 on the CPU"))
             compose.tap("open-bench-block")
             compose.waitFor("standing", "Bench, ")
         }
