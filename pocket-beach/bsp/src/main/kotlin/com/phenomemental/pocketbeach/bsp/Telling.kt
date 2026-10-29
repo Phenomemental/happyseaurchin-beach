@@ -417,12 +417,18 @@ object Telling {
         "happened" to "1.1", "felt" to "1.2", "thought" to "1.3", "matters" to "1.4", "chose" to "1.5", "ahead" to "1.6",
     )
 
-    /** What she is told for each piece: the day's six places, each a word. When it falls is the pocket's to reckon. */
-    fun sortInstruction(today: java.time.LocalDate): String =
+    /**
+     * What she is told for each piece: the day's six places, each a word.
+     * When it falls is the pocket's to reckon. [examples] are pieces he
+     * placed himself before (0.6: each move kept as a worked example), each
+     * with the word for the place he chose.
+     */
+    fun sortInstruction(today: java.time.LocalDate, examples: List<Pair<String, String>> = emptyList()): String =
         "You sort one piece of what Matthew said about his day. Today is ${date(today)}. Answer with one word: " +
             "happened (what could be seen or checked, before any meaning), felt (what he felt, in his body and in him), " +
             "thought (his conclusions, judgements and the stories he tells), matters (how he wants to be), " +
-            "chose (a choice he has made) or ahead (what's coming, planned or expected). If it belongs in two, give both."
+            "chose (a choice he has made) or ahead (what's coming, planned or expected). If it belongs in two, give both." +
+            if (examples.isEmpty()) "" else "\nMatthew placed these himself:\n" + examples.joinToString("\n") { (piece, word) -> "\u201c$piece\u201d: $word" }
 
     /** Her words for a piece, as places of the day: the first two of the six words in her answer, in her order. */
     fun dayWords(answer: String): List<String> {

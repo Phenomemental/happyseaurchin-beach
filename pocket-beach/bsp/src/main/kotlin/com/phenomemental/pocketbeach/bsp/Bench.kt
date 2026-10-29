@@ -206,6 +206,7 @@ object Bench {
             Kind.ADD -> "a line${w.holds?.let { " \"$it\"" }.orEmpty()} in $block at ${w.at}"
             Kind.CHANGE -> if (w.at.isEmpty()) "$block's opening line holding \"${w.holds}\""
                 else "the line at ${w.at} in $block changed${w.holds?.let { " to hold \"$it\"" }.orEmpty()}"
+            Kind.WHOLE -> "$block written whole"
         }
     }
 
