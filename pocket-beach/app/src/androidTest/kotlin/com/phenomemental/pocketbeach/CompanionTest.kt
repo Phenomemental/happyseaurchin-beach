@@ -340,7 +340,7 @@ class CompanionTest {
             assertTrue(run.text!!.startsWith("Bench, "))
             assertEquals(6, run.lines.size)
             assertEquals("How it was run, first, so a cut-off share keeps it", "How it was run", run.lines[0].text)
-            assertEquals("then each model, early too", "Each model on this phone: its speed, and the telling test", run.lines[1].text)
+            assertEquals("then each model, early too", "Each model on this phone: its speed, the Talk job, and the telling test", run.lines[1].text)
             assertTrue(run.lines[2].text!!.startsWith("0.3 "))
             assertTrue(run.lines[3].text!!.startsWith("0.4, her first word held"))
             assertTrue(run.lines[4].text!!.startsWith("0.4, her first word free"))
@@ -364,8 +364,9 @@ class CompanionTest {
         }
         val made = (app.storage.names().toSet() - before).single()
         val models = app.pages.position(Region.POCKET, made, "2")!!
-        assertEquals("Each model on this phone: its speed, and the telling test", models.text)
-        val lines = models.lines.mapNotNull { it.text }
+        assertEquals("Each model on this phone: its speed, the Talk job, and the telling test", models.text)
+        assertEquals("each model an entry of its own", listOf("Gemma 4 E2B", "Gemma 4 E4B"), models.lines.map { it.text })
+        val lines = models.lines.flatMap { m -> app.pages.position(Region.POCKET, made, m.address)!!.lines.mapNotNull { it.text } }
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the telling test, written: ") && it.contains(" of 11 marks") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the telling test, spoken: ") })
         // 0.6.1: his message of 29 October each way, and the Talk job's two fixed asks.
@@ -410,7 +411,8 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "garden", "2.1")?.text == "mulch the beds" }
             assertEquals("one Write conversation for both asks, opened with the examples", 1, mind.histories.size)
             assertEquals(Talks.EXAMPLES, mind.histories.single())
-            assertEquals("one Talk conversation, opened with nothing before", listOf(emptyList<Pair<String, String>>()), mind.talkHistories)
+            // 0.6.1: hers is opened afresh for each message, with the exchanges before: his words and hers.
+            assertEquals("a Talk conversation a message, each opened with the exchanges before", listOf(emptyList(), listOf("What's your name?" to "I'm the pocket companion.")), mind.talkHistories)
         }
     }
 
@@ -418,6 +420,7 @@ class CompanionTest {
      * Ask closes and opens as the model and the shell come ready, and the two
      * run on other threads in either order (CI, twice): the close must never
      * shut the conversation just opened, to be read again at the first ask.
+     * 0.6.1: that is the Write job's; hers is opened at each message.
      */
     @Test
     fun askOpenedAsItClosesKeepsTheConversationForTheFirstAsk() {
@@ -430,12 +433,13 @@ class CompanionTest {
                 val before = mind.talkHistories.size
                 val writes = mind.histories.size
                 main { asking.reset(); asking.closed(); asking.opened() }
-                compose.waitUntil(5_000) { mind.talkHistories.size == before + 1 && mind.histories.size == writes + 1 }
+                compose.waitUntil(5_000) { mind.histories.size == writes + 1 }
                 Thread.sleep(300)
+                assertEquals("hers isn't opened until he speaks (round ${it + 1})", before, mind.talkHistories.size)
                 main { asking.question = "Add to garden: compost."; asking.ask() }
                 compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over || asking.stage is Asking.Stage.Shown }
-                assertEquals("one Talk conversation, opened once and kept for the first ask (round ${it + 1})", before + 1, mind.talkHistories.size)
-                assertEquals("one Write conversation, beside it (round ${it + 1})", writes + 1, mind.histories.size)
+                assertEquals("one Talk conversation, for his message (round ${it + 1})", before + 1, mind.talkHistories.size)
+                assertEquals("one Write conversation, opened as Ask opened and kept for the first ask (round ${it + 1})", writes + 1, mind.histories.size)
             }
         }
     }

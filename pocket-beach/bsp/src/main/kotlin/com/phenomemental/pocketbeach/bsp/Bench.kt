@@ -247,7 +247,8 @@ object Bench {
         ask.onShell?.let { word ->
             val onShell = proposal?.writes.orEmpty().filter { !it.step.byApp && it.plan.block == HelloWorld.SHELL }
             if (proposal?.refusal != null) add("The Write job's plan can't go ahead: ${proposal.refusal}")
-            else if (onShell.none { (it.text ?: it.plan.text).contains(word, ignoreCase = true) }) add("The Write job didn't propose \"$word\" as a line on her shell.")
+            else if (onShell.any { it.plan.kind == Kind.CHANGE && it.plan.address.isEmpty() }) add("The Write job would change her shell's opening, not add a line.")
+            else if (onShell.none { it.plan.kind == Kind.ADD && (it.text ?: it.plan.text).contains(word, ignoreCase = true) }) add("The Write job didn't propose \"$word\" as a line on her shell.")
         }
     }
 
@@ -255,9 +256,9 @@ object Bench {
     fun talkLine(ask: TalkAsk, reply: String, proposal: Proposal?, ms: Long): String {
         val problems = judgeTalk(ask, reply, proposal)
         val shown = Talking.unechoed(reply, ask.question, HelloWorld.SHELL_OPENING).replace("\n", " / ")
-        val wrote = proposal?.writes.orEmpty().filter { !it.step.byApp }.joinToString("; ") { "${it.plan.block}: ${(it.text ?: it.plan.text).take(100)}" }
+        val wrote = proposal?.writes.orEmpty().filter { !it.step.byApp }.joinToString("; ") { "${if (it.plan.kind == Kind.CHANGE && it.plan.address.isEmpty()) "${it.plan.block}'s opening changed to" else "${it.plan.block}:"} ${(it.text ?: it.plan.text).take(100)}" }
         return "${ask.n}. ${if (problems.isEmpty()) "right" else "WRONG"} in ${secs(ms)} s: “${ask.question.take(60)}${if (ask.question.length > 60) "…" else ""}” " +
-            "She said: “${shown.take(300)}”" + (if (ask.onShell != null) " The Write job proposed: ${wrote.ifEmpty { "nothing" }}." else "") +
+            "She said: “${shown.take(300)}”" + (if (ask.onShell != null) " The Write job proposed: ${wrote.ifEmpty { "nothing" }.trimEnd('.')}." else "") +
             problems.takeIf { it.isNotEmpty() }?.joinToString(" ", prefix = " ").orEmpty()
     }
 
@@ -304,7 +305,7 @@ object Bench {
      * how it was run comes first: shared from Matthew's Pixel, 0.4.1's bench
      * came through cut off at about 19,000 characters, twice, losing it.
      */
-    fun block(runs: List<Run>, about: List<String>, whenMs: Long, models: List<String> = emptyList()): JsObj {
+    fun block(runs: List<Run>, about: List<String>, whenMs: Long, models: List<Pair<String, List<String>>> = emptyList()): JsObj {
         val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }.ifEmpty { "each model on this phone." }
         val out = JsObj.of("_" to str(opening))
         var key = 1
@@ -314,9 +315,12 @@ object Bench {
             out["${key++}"] = group
         }
         // 0.6: each model on the phone, its speed and the telling test, early, so a share cut short keeps it.
+        // 0.6.1: each model an entry of its own, its lines beneath (nine at most), so the second model's aren't cut off.
         if (models.isNotEmpty()) {
-            val group = JsObj.of("_" to str("Each model on this phone: its speed, and the telling test"))
-            models.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
+            val group = JsObj.of("_" to str("Each model on this phone: its speed, the Talk job, and the telling test"))
+            models.take(9).forEachIndexed { i, (model, lines) ->
+                group["${i + 1}"] = JsObj.of("_" to str(model)).also { m -> lines.take(9).forEachIndexed { j, l -> m["${j + 1}"] = str(l) } }
+            }
             out["${key++}"] = group
         }
         for (run in runs) out["${key++}"] = runBlock(run)

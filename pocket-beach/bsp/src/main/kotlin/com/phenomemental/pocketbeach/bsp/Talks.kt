@@ -142,7 +142,7 @@ object Talks {
         appendLine(Acts.GRAMMAR)
         appendLine("Name a line by quoting its words, never by a number. A line goes at the end of its block unless Matthew says which line it goes under. Nothing is written until Matthew says yes.")
         appendLine("To keep what he tells you: if a block fits it, by the block's name or its opening line, add his words to it (add <block>: his words). If none fits, make a new block named for it in a word or two, his words its opening line (new <name>: his words).")
-        appendLine("When he gives you a name, it is a line for your shell, and only that: add $shell: Matthew calls me <the name>.")
+        appendLine("When he gives you a name, it is a new line for your shell, and only that: add $shell: Matthew calls me <the name>. Never change your shell's opening line.")
         appendLine("Greetings, thanks and questions are talk, never act.")
         appendLine()
         if (examplesInText) {

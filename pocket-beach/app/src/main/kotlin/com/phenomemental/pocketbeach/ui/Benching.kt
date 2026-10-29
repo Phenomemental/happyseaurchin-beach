@@ -184,12 +184,17 @@ class Benching(private val app: PocketApp) {
      * model: how long it takes to load, a plain answer timed, and the telling
      * test, written then spoken, each followed by the second telling, sorted a
      * piece at a time as Ask sorts a day, on a scratch hand, with its marks.
+     * 0.6.1: and the Talk job (see [talkAsks]). Each model's lines are kept
+     * beneath its name.
      */
-    private suspend fun models(mind: Mind): List<String> = buildList {
-        for (spec in ModelStore.SPECS) {
+    private suspend fun models(mind: Mind): List<Pair<String, List<String>>> = ModelStore.SPECS.map { spec -> spec.name to model(mind, spec) }
+
+    /** One model's lines: nine at most, a place keeps nine. */
+    private suspend fun model(mind: Mind, spec: ModelStore.Spec): List<String> = buildList {
+        run {
             if (mind.state(spec.name) !is ModelStore.State.Ready) {
                 add("${spec.name}: not on this phone" + if (spec == ModelStore.E4B) " (get it in Settings)." else ".")
-                continue
+                return@run
             }
             val s = app.settings(MindJob.SORT).copy(model = spec.name)
             stage = Stage.Probing("${spec.name}: loading")
@@ -203,7 +208,7 @@ class Benching(private val app: PocketApp) {
                     load.fold({ ms -> "loaded " + (ms?.let { "in ${Bench.secs(it)} s" } ?: "already") }, { "it wouldn't load (${it.message})" }) + "; " +
                     plain.fold({ a -> "a plain answer, " + (a.turn?.let { t -> "first token ${t.firstTokenSeconds?.let { "%.1f".format(Locale.UK, it) } ?: "?"} s, ${t.wrote} tokens at ${"%.1f".format(Locale.UK, t.writePerSecond)} a second, " } ?: "") + "${Bench.secs(a.ms)} s in all." }, { "a plain answer failed (${it.message})." }),
             )
-            if (load.isFailure) continue
+            if (load.isFailure) return@run
             stage = Stage.Probing("${spec.name}: the Talk job, his message of 29 October")
             addAll(runCatching { talkAsks(mind, spec.name) }.getOrElse { listOf("${spec.name}, the Talk job: it failed (${it.message}).") })
             for ((told, said) in listOf("written" to Telling.WRITTEN, "spoken" to Telling.SPOKEN)) {

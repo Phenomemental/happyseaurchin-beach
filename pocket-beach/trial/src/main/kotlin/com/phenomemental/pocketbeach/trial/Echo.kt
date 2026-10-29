@@ -144,3 +144,41 @@ internal fun talkAsks(engine: Engine, label: String, shelf: Shelf) {
     }
 }
 
+
+/**
+ * 0.6.1: how her shell is worded in her instruction, against her playing
+ * it back ("I live on your phone, read freely…"): the Talk job's two fixed
+ * asks with [seeds], marked as the bench marks them.
+ */
+@OptIn(ExperimentalApi::class)
+internal fun shellLab(engine: Engine, label: String, shelf: Shelf, seeds: List<Int>) {
+    val now = ZonedDateTime.of(2026, 10, 29, 17, 37, 0, 0, ZoneId.of("Europe/London"))
+    val (_, pages) = Bench.fixture(shelf, now.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
+    val opening = HelloWorld.SHELL_OPENING
+    val worded = "You wear the shell ${HelloWorld.SHELL}; it says \"$opening\". Let it guide you."
+    val ways = listOf(
+        "S0. as 0.6.1 has it" to worded,
+        "S1. its words are for her, not to say" to "You wear the shell ${HelloWorld.SHELL}; its words, for you and not to say to him: \"$opening\"",
+        "S2. let it guide you, in your own words" to "You wear the shell ${HelloWorld.SHELL}; it says \"$opening\". Let it guide you, in your own words.",
+    )
+    println("\n== $label: her shell, worded a few ways ==")
+    for ((way, line) in ways) {
+        for (ask in Bench.TALK_ASKS) {
+            val system = Talking.instruction(HelloWorld.SHELL, pages, now, ask.question).also { check(worded in it) }.replace(worded, line)
+            var right = 0
+            for (seed in seeds) {
+                val reply = engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of(system),
+                        samplerConfig = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed), maxOutputToken = 300,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
+                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.orSays), reply, null)
+                if (problems.isEmpty()) right++
+                println("  ${ask.n} seed $seed: ${if (problems.isEmpty()) "right" else "WRONG"}: " + reply.replace("\n", " / ").take(260))
+            }
+            println("=> $way, ask ${ask.n}: right in $right of ${seeds.size}")
+        }
+    }
+}

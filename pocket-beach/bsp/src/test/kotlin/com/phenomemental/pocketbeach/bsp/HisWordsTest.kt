@@ -39,6 +39,8 @@ class HisWordsTest {
         assertTrue(Talking.copied("It is Thursday 29 October 2026, 17:37.", ask, HelloWorld.SHELL_OPENING).isNotEmpty())
         assertTrue(Talking.copied("I live on your phone, read freely, and write only when you say yes.", ask, HelloWorld.SHELL_OPENING).isNotEmpty(), "her shell in other words is still her shell")
         assertEquals(emptyList(), Talking.copied("Matthew, you want to call me Gemma? Okay, I am Gemma.", ask, HelloWorld.SHELL_OPENING), "speaking to him by name is no copy")
+        assertEquals(emptyList(), Talking.copied("Good morning, Matthew. What's on your mind?", "Good morning", HelloWorld.SHELL_OPENING), "a greeting returned is no copy")
+        assertEquals(listOf("Good morning."), Talking.copied("Good morning.\nHow are you?", "Good morning", HelloWorld.SHELL_OPENING), "his few words alone on a line are")
     }
 
     @Test
@@ -56,6 +58,7 @@ class HisWordsTest {
         val named = Talking.instruction(HelloWorld.SHELL, pages, now, "What's in my garden block?")
         assertContains(named, "What the app read for you, of the blocks his words name:")
         assertContains(named, "garden")
+        assertContains(Talking.instruction(HelloWorld.SHELL, pages, now, "What blocks do I have?"), "The blocks in the pocket", message = "asked about his blocks, she is shown them")
     }
 
     /** The bench's two fixed asks for the Talk job, judged on her reply and the Write job's proposal. */
@@ -73,6 +76,8 @@ class HisWordsTest {
         assertTrue(pages.exists(HelloWorld.SHELL))
         assertEquals(emptyList(), Bench.judgeTalk(named, "Gemma it is.", proposal))
         assertTrue(Bench.judgeTalk(named, "Gemma it is.", null).any { it.contains("on her shell") })
+        val opening = Acts.propose("", Acts.parse("change ${HelloWorld.SHELL}: Matthew calls me Gemma."), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), 1_793_178_000_000L).proposal
+        assertTrue(Bench.judgeTalk(named, "Gemma it is.", opening).any { it.contains("change her shell's opening") }, "her shell's opening replaced is no line on it")
     }
 
     /** E2B's Write job wrote the shell line with no way word before it: an act all the same; plain words stay talk. */

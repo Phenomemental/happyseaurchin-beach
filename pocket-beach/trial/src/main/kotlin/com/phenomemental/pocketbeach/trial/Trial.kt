@@ -100,6 +100,11 @@ fun main(args: Array<String>) {
     if ("echo" in flags) {
         // Seed 0 is the app's; seed 1 drew as seed 0 did on every way tried, so the others run from 2.
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        if ("shell" in flags) {
+            shellLab(engine, label, shelf, listOf(0) + (2..runs).toList())
+            engine.close()
+            return
+        }
         if (System.getProperty("echo.ways") != "") echo(engine, label, shelf, listOf(0) + (2..runs).toList())
         talkAsks(engine, label, shelf)
         engine.close()

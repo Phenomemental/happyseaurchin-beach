@@ -185,14 +185,19 @@ class Asking(private val app: PocketApp) {
     /** How many times Ask has been opened: a close asked for before the latest opening lets nothing go. */
     @Volatile private var openings = 0
 
-    /** Ask is open: load the model and open the conversations now, while Matthew writes. */
+    /**
+     * Ask is open: load the model, and open the Write job's conversation, now,
+     * while Matthew writes. 0.6.1: hers is opened afresh for each message,
+     * its instruction carrying the time then and the blocks his words name,
+     * so only her model is loaded here.
+     */
     fun opened() {
         openings++
         if (benchRunning) return
         scope.launch(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
-                    talker(MindJob.TALK)
+                    app.mind.warm(app.settings(MindJob.TALK))
                     if (together) talker(MindJob.WRITE)
                 }
             }
