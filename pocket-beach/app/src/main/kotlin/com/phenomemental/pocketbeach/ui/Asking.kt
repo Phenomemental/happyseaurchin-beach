@@ -97,8 +97,12 @@ class Asking(private val app: PocketApp) {
     /** While the bench runs, Ask waits: the bench loads the model its own ways, and a conversation open here would be cut off. */
     val benchRunning: Boolean get() = app.benching.running
 
+    /** How many times Ask has been opened: a close asked for before the latest opening lets nothing go. */
+    @Volatile private var openings = 0
+
     /** Ask is open: load the model and open the conversation now, while Matthew writes. */
     fun opened() {
+        openings++
         if (benchRunning) return
         scope.launch(Dispatchers.IO) { runCatching { talking.withLock { talker() } } }
     }
@@ -112,10 +116,23 @@ class Asking(private val app: PocketApp) {
         }
     }
 
-    /** Ask is closed: let the conversation go (the model goes after a few idle minutes). */
+    /**
+     * Ask is closed: let the conversation go (the model goes after a few idle
+     * minutes). A close and an opening run on other threads in either order
+     * (as when Ask is left and opened again at once): a close is let go once
+     * Ask has been opened since, or it would shut the conversation just
+     * opened, to be opened again at the first ask.
+     */
     fun closed() {
         if (stage is Stage.Thinking) return
-        scope.launch(Dispatchers.IO) { talking.withLock { talker?.close(); talker = null } }
+        val at = openings
+        scope.launch(Dispatchers.IO) {
+            talking.withLock {
+                if (openings != at) return@withLock
+                talker?.close()
+                talker = null
+            }
+        }
     }
 
     /** The conversation, opened afresh if the pocket has changed since it was. Called holding [talking]. */

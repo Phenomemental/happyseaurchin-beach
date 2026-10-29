@@ -74,7 +74,8 @@ fun AskScreen(model: Model, nav: Nav) {
     val ready = modelState is ModelStore.State.Ready && shell != null
     DisposableEffect(ready) {
         if (ready) asking.opened()
-        onDispose { asking.closed() }
+        // Only a visit that opened the conversation lets it go: not the wait for the model and the shell, ended as they come ready.
+        onDispose { if (ready) asking.closed() }
     }
     // A message posted already is not sent again unless Matthew asks for that on purpose.
     val postedBefore = (stage as? Asking.Stage.Written)?.carried?.post?.let(model.app.posts::landed)
