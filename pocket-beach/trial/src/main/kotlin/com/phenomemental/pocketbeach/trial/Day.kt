@@ -85,18 +85,20 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
             else SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed)
             fun label(state: JsObj, telling: String, log: StringBuilder): Pair<List<Telling.Placed>, String> {
                 val config = ConversationConfig(
-                    systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.BENCH_DATE, telling)),
+                    systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.date(Telling.BENCH_DAY), telling)),
                     samplerConfig = sampler,
-                    maxOutputToken = 64,
+                    maxOutputToken = 256,
+                    enableResponseFormat = true,
                     thinkingConfig = ThinkingConfig(enableThinking = false),
                 )
+                val cards = Telling.cards(state)
                 val start = System.nanoTime()
                 return engine.createConversation(config).use { c ->
                     val firsts = mutableListOf<String>()
                     val labelled = Telling.cut(telling).map { piece ->
-                        val r = send(c, Telling.pieceAsk(piece))
+                        val r = send(c, Telling.pieceAsk(piece, Telling.BENCH_DAY, cards), Telling.PIECE_FORM)
                         firsts += r.timing.substringBefore(",").removePrefix("first token ")
-                        log.append("${Telling.pieceAsk(piece)} -> ${r.text.trim()}\n")
+                        log.append("\u201c$piece\u201d -> ${r.text.trim()}\n")
                         piece to Telling.places(r.text)
                     }
                     val rungs = send(c, Telling.RUNGS_ASK)
@@ -123,12 +125,12 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
 internal class Reply(val text: String, val timing: String)
 
 @OptIn(ExperimentalApi::class)
-private fun send(c: Conversation, message: String): Reply {
+private fun send(c: Conversation, message: String, form: String? = null): Reply {
     val start = System.nanoTime()
     var first: Long? = null
     val whole = StringBuilder()
     kotlinx.coroutines.runBlocking {
-        c.sendMessageAsync(message).collect { m ->
+        (if (form != null) c.sendMessageAsync(message, responseFormat = com.google.ai.edge.litertlm.ResponseFormat.regex(form)) else c.sendMessageAsync(message)).collect { m ->
             if (first == null) first = (System.nanoTime() - start) / 1_000_000
             whole.append(m.toString())
         }

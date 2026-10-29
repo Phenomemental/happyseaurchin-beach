@@ -65,7 +65,22 @@ object Telling {
      * his words beneath its places. The block's own words given back are
      * passed over, as is anything else.
      */
-    fun placed(answer: String): List<Placed> = (lines(answer) + filled(answer)).filter { !echo(it.words) }
+    fun placed(answer: String): List<Placed> =
+        (lines(answer) + filled(answer)).filter { !echo(it.words) }.map(::unlabelled).filter { it.words.isNotEmpty() && !echo(it.words) }
+
+    /** A place's own words, which she sometimes writes before his: "What I felt: in my body and in me: Felt rotten". */
+    private fun unlabelled(p: Placed): Placed {
+        val (top, at) = p.place.split(".")
+        val node = (shape()[top] as JsObj)[at]
+        val label = collectUnderscore(node) ?: (node as? JsStr)?.value ?: return p
+        var words = p.words
+        for (prefix in listOf(label, label.substringBefore(':'))) {
+            while (words.startsWith(prefix, ignoreCase = true) && words.length > prefix.length && words[prefix.length] in ":-–") {
+                words = words.substring(prefix.length).trimStart(':', '-', '–', ' ')
+            }
+        }
+        return if (words == p.words) p else p.copy(words = words)
+    }
 
     private fun lines(answer: String): List<Placed> = answer.lines().mapNotNull { line ->
         val m = LINE.matchEntire(line.trim()) ?: return@mapNotNull null
@@ -89,7 +104,7 @@ object Telling {
         all(shape()).map(::plain).toSet()
     }
 
-    private fun echo(words: String) = plain(words) in OWN
+    private fun echo(words: String) = plain(words).let { w -> w in OWN || OWN.any { it.endsWith(" $w") } }
 
     private val KEYED = Regex("^\"([1-9_])\"\\s*:")
     private val QUOTED = Regex("\"((?:[^\"\\\\]|\\\\.)*)\"")
@@ -238,13 +253,34 @@ object Telling {
     fun piecesInstruction(state: JsObj, date: String, said: String): String =
         "You sort what Matthew said about his day into this block, one piece at a time.\n\nThe block:\n${stringifyPretty(state, " ")}\n\n" +
             "Today is $date. What Matthew said:\n${said.trim()}\n\n" +
-            "Each message is one piece of what he said. Answer only with the addresses of the places it belongs in, separated by " +
-            "commas. Every piece goes somewhere in the day (1.1 to 1.6). If it is something he says he'll do, it also goes on the " +
-            "hand (2.1 to 2.5), on the shelf for when; if a card already on the hand is about the same thing, give that card's " +
-            "address (2.1.1) instead. A piece may go in more than one place."
+            "Each message gives one piece of what he said and the places to choose from. Answer only with addresses."
 
-    /** One piece, as she is given it. */
-    fun pieceAsk(piece: String) = "\u201c$piece\u201d"
+    /** The hand's shelves, each with the day it runs to, from [today]: the pocket's reckoning, not hers. */
+    fun shelves(today: java.time.LocalDate): List<String> {
+        fun day(d: java.time.LocalDate) = d.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK))
+        return listOf(
+            "2.1 tomorrow (${day(today.plusDays(1))})",
+            "2.2 this week (by ${day(today.plusDays(7))})",
+            "2.3 this month (by ${day(today.plusDays(30))})",
+            "2.4 this season (by ${day(today.plusMonths(3))})",
+            "2.5 this year or beyond",
+        )
+    }
+
+    /** Today, as she is told it: "Thursday 29 October 2026". */
+    fun date(today: java.time.LocalDate): String = today.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", java.util.Locale.UK))
+
+    /** The day the bench is fixed at, so the key holds. */
+    val BENCH_DAY: java.time.LocalDate = java.time.LocalDate.of(2026, 10, 29)
+
+    /** One piece, with its choices: one or two places in the day; a shelf too if it is something he'll do, or the card it is about. */
+    fun pieceAsk(piece: String, today: java.time.LocalDate, cards: Map<String, String>): String =
+        "\u201c$piece\u201d\nIn the day, one or two of: 1.1 what happened, 1.2 what I felt, 1.3 what I made of it, 1.4 what matters to me, " +
+            "1.5 what I chose, 1.6 what's ahead.\nThen, only if it is something he says he'll do, one of: " + shelves(today).joinToString(", ") +
+            (if (cards.isEmpty()) "" else "; or, if it is about a card already on the hand, that card: " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) + "."
+
+    /** The form her answer to a piece is held to. */
+    const val PIECE_FORM = "1\\.[1-6](, 1\\.[1-6])?(, 2\\.[1-5](\\.[1-9])?)?"
 
     /** Her places for a piece: the addresses she gave that are places of the block or cards on its hand. */
     fun places(answer: String): List<Pair<String, String?>> = Regex("([12])\\.([1-9])(?:\\.([1-9]))?").findAll(answer).mapNotNull { m ->
