@@ -21,8 +21,11 @@ interface Mind {
     /** A conversation, its standing [instruction] given; close it when the Ask is over. */
     suspend fun chat(instruction: String): Chat
 
-    /** Load it now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
-    suspend fun warm(): Long? = null
+    /** Whether the engine [settings] run on is in memory now. */
+    fun loaded(settings: JobSettings): Boolean = loaded
+
+    /** Load the engine [settings] run on now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
+    suspend fun warm(settings: JobSettings = JobSettings.of(Job.WRITE)): Long? = null
 
     /** Run it on [processor] alone ("CPU"), or as ever (null: the GPU, else the CPU); it is let go, to load that way next. For the bench. */
     suspend fun only(processor: String?) {}
@@ -35,9 +38,10 @@ interface Mind {
      * ([com.phenomemental.pocketbeach.bsp.Talks.HELD]) where it allows. Ask's
      * is free: on Matthew's Pixel (the bench of 0.4.1) held and free gave the
      * same answers, and free was never slower (holding cost about 2.8 s an
-     * ask when each had a conversation of its own).
+     * ask when each had a conversation of its own). 0.5: drawn, and run on
+     * the engine, as [settings] say: a job's settings.
      */
-    suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = false): Talker
+    suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = false, settings: JobSettings = JobSettings.of(Job.WRITE)): Talker
 
     interface Talker : Closeable {
         val stream: com.phenomemental.pocketbeach.bsp.Talks.Stream

@@ -20,6 +20,7 @@ import com.google.ai.edge.litertlm.ThinkingConfig
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Talk
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -30,6 +31,10 @@ import kotlinx.coroutines.withContext
  * minutes or whenever Android asks for memory back (decision 13). Its GPU is
  * tried first, the CPU if the GPU can't take it, and why the GPU couldn't is
  * kept to be shown. Each Ask's [Pace] says where it ran and how fast.
+ *
+ * 0.5: each job runs on the engine its settings ask for ([JobSettings]):
+ * jobs that agree on the model, the processor and the context share one, and
+ * a job set apart has its own, loaded beside it.
  */
 class Gemma(private val store: ModelStore, private val cacheDir: String, private val nativeLibraryDir: String) : Mind {
     companion object {
@@ -44,23 +49,33 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         const val SPECULATIVE = false
     }
 
-    /** One thread for every call into the engine, so it is never used from two at once. */
+    /** One thread for every call into the engines, so none is ever used from two at once. */
     private val thread = Executors.newSingleThreadExecutor { r -> Thread(r, "gemma").apply { isDaemon = true } }.asCoroutineDispatcher()
     private val main = Handler(Looper.getMainLooper())
     private val letGo = Runnable { release() }
 
-    @Volatile private var engine: Engine? = null
+    /** An engine as loaded: on which processor, and why not the GPU when the GPU was asked for and couldn't. */
+    private class Loaded(val engine: Engine, val processor: String, val whyNotGpu: String?)
 
-    /** The one processor the bench has asked for ("CPU"), or null: the GPU, else the CPU. */
+    /** The engines loaded now, one for each set of model, processor and context the jobs ask for. */
+    private val engines = ConcurrentHashMap<EngineKey, Loaded>()
+
+    /** The one processor the bench has asked for ("CPU"), or null: as each job's settings say. */
     @Volatile private var onlyOn: String? = null
 
     override suspend fun only(processor: String?) = withContext(thread) {
         check(synchronized(this@Gemma) { open == 0 }) { "An Ask is open; the engine changes processor only when none is." }
         main.removeCallbacks(letGo)
-        engine?.let { runCatching { it.close() } }
-        engine = null
-        this@Gemma.processor = null
+        closeAll()
         onlyOn = processor
+    }
+
+    /** Close every engine. Called on [thread]. */
+    private fun closeAll() {
+        val all = engines.values.toList()
+        engines.clear()
+        this.processor = null
+        for (l in all) runCatching { l.engine.close() }
     }
 
     /** Why holding her first word failed on this phone, once it has; her replies are then free for the rest of the app's run. */
@@ -70,63 +85,72 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     private var open = 0
     private var letGoWhenDone = false
 
-    /** Which of the phone's processors runs it, once loaded: "GPU" or "CPU". */
+    /** Which of the phone's processors ran the last engine asked for: "GPU" or "CPU". */
     @Volatile override var processor: String? = null
         private set
 
-    /** Why the GPU couldn't run it, when it runs on the CPU. */
-    @Volatile private var whyNotGpu: String? = null
+    override val loaded: Boolean get() = engines.isNotEmpty()
 
-    override val loaded: Boolean get() = engine != null
+    /** Whether the engine [settings] run on is in memory now. */
+    override fun loaded(settings: JobSettings): Boolean = engines.containsKey(key(settings))
 
     override fun state(): ModelStore.State = store.state()
 
-    override suspend fun warm(): Long? = withContext(thread) {
-        if (engine != null) return@withContext null
-        engineNow().second
+    override suspend fun warm(settings: JobSettings): Long? = withContext(thread) {
+        engineNow(key(settings)).second
     }
 
-    /** The engine, loaded if it isn't; how long loading took, if it had to. */
-    private fun engineNow(): Pair<Engine, Long?> {
-        engine?.let { return it to null }
+    /** The engine [settings] run on, the bench's one processor taking the place of theirs. */
+    private fun key(settings: JobSettings): EngineKey = settings.engine.let { k -> onlyOn?.let { k.copy(processor = it) } ?: k }
+
+    /** The engine for [key], loaded if it isn't; how long loading took, if it had to. Called on [thread]. */
+    private fun engineNow(key: EngineKey): Pair<Loaded, Long?> {
+        engines[key]?.let { processor = it.processor; return it to null }
         val started = System.nanoTime()
-        val e = load(SPECULATIVE)
-        engine = e
-        return e to (System.nanoTime() - started) / 1_000_000
+        val l = load(key, SPECULATIVE)
+        engines[key] = l
+        processor = l.processor
+        return l to (System.nanoTime() - started) / 1_000_000
     }
 
-    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean): Mind.Talker = withContext(thread) {
+    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker = withContext(thread) {
         main.removeCallbacks(letGo)
-        val (e, loadMs) = engineNow()
+        val (l, loadMs) = engineNow(key(settings))
         val holding = held && whyNotHeld == null
+        val c = conversation(l.engine, instruction, history, holding, settings)
         synchronized(this@Gemma) { open++ }
-        Talker(e, instruction, history, holding, conversation(e, instruction, history, holding), Pace(processor, whyNotGpu, loadMs))
+        Talker(l.engine, instruction, history, holding, settings, c, Pace(l.processor, l.whyNotGpu, loadMs))
     }
 
-    /** A conversation of 0.4's: the instruction and the earlier exchanges given, her replies held to begin with the route word if [held]. */
-    private fun conversation(e: Engine, instruction: String, history: List<Pair<String, String>>, held: Boolean): Conversation = e.createConversation(
+    /** A conversation: the instruction and the earlier exchanges given, drawn as [settings] say, her replies held to begin with the route word if [held]. */
+    private fun conversation(e: Engine, instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Conversation = e.createConversation(
         ConversationConfig(
             systemInstruction = Contents.of(instruction),
             initialMessages = history.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
-            samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-            maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+            samplerConfig = sampler(settings),
+            maxOutputToken = settings.longestReply,
             thinkingConfig = ThinkingConfig(enableThinking = false),
             enableResponseFormat = held,
         ),
     )
 
+    /** As Edge draws: the seed left at 0, as Edge leaves it. */
+    private fun sampler(s: JobSettings) =
+        if (s.greedy) SamplerConfig(topK = 1, topP = 1.0, temperature = 0.0, seed = 0) else SamplerConfig(topK = s.topK, topP = s.topP, temperature = s.temperature, seed = 0)
+
     /**
-     * 0.4's conversation: each reply streamed, timed from the message to its
-     * first piece, and held to begin with her route word. Should holding
-     * fail before anything comes, she is asked again free, in a conversation
-     * opened afresh with the exchanges so far, and stays free for the rest of
-     * the app's run.
+     * A kept conversation: each reply streamed, timed from the message to its
+     * first piece, and, if asked, held to begin with her route word. Should
+     * holding fail before anything comes, she is asked again free, in a
+     * conversation opened afresh with the exchanges so far, and stays free
+     * for the rest of the app's run.
      */
     inner class Talker(
         private val engine: Engine,
         private val instruction: String,
         private val history: List<Pair<String, String>>,
         private var held: Boolean,
+        private val settings: JobSettings,
         private var conversation: Conversation,
         override val pace: Pace,
     ) : Mind.Talker {
@@ -157,7 +181,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
                     whyNotHeld = firstLine(t)
                     held = false
                     runCatching { conversation.close() }
-                    conversation = conversation(engine, instruction, history + done, held = false)
+                    conversation = conversation(engine, instruction, history + done, held = false, settings)
                     send()
                 }
                 counted(conversation)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
@@ -169,28 +193,34 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
-            val now = synchronized(this@Gemma) {
-                open--
-                letGoWhenDone && open == 0
-            }
-            if (now) release() else main.postDelayed(letGo, IDLE_MS)
+            done()
         }
+    }
+
+    /** A conversation has closed: the model goes now if it was asked to go, else after a few idle minutes. */
+    private fun done() {
+        val now = synchronized(this@Gemma) {
+            open--
+            letGoWhenDone && open == 0
+        }
+        if (now) release() else main.postDelayed(letGo, IDLE_MS)
     }
 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
-        val (e, loadMs) = engineNow()
-        val conversation = e.createConversation(
+        val settings = JobSettings.of(Job.WRITE)
+        val (l, loadMs) = engineNow(key(settings))
+        val conversation = l.engine.createConversation(
             ConversationConfig(
                 systemInstruction = Contents.of(instruction),
-                samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
-                maxOutputToken = Asks.Tuning.MAX_OUTPUT,
+                samplerConfig = sampler(settings),
+                maxOutputToken = settings.longestReply,
                 thinkingConfig = ThinkingConfig(enableThinking = false),
                 enableResponseFormat = true,
             ),
         )
         synchronized(this@Gemma) { open++ }
-        Chat(conversation, Pace(processor, whyNotGpu, loadMs))
+        Chat(conversation, Pace(l.processor, l.whyNotGpu, loadMs))
     }
 
     inner class Chat(private val conversation: Conversation, override val pace: Pace) : Mind.Chat {
@@ -205,11 +235,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
-            val now = synchronized(this@Gemma) {
-                open--
-                letGoWhenDone && open == 0
-            }
-            if (now) release() else main.postDelayed(letGo, IDLE_MS)
+            done()
         }
     }
 
@@ -220,14 +246,14 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         Pace.Turn(b.lastPrefillTokenCount, b.lastPrefillTokensPerSecond, b.lastDecodeTokenCount, b.lastDecodeTokensPerSecond, b.timeToFirstTokenInSecond)
     }.getOrNull()?.takeIf { it.read > 0 || it.wrote > 0 }
 
-    /** An engine on [backend], counting each exchange if [counting], with speculative decoding asked for or not ([speculative] null: the engine's default). */
+    /** An engine on [backend] holding [context] tokens, counting each exchange if [counting], with speculative decoding asked for or not ([speculative] null: the engine's default). */
     @OptIn(ExperimentalApi::class)
-    private fun open(backend: Backend, counting: Boolean, speculative: Boolean? = null): Engine {
+    private fun open(backend: Backend, counting: Boolean, speculative: Boolean? = null, context: Int = Asks.Tuning.MAX_TOKENS): Engine {
         // Both are read only as the engine is made.
         ExperimentalFlags.enableBenchmark = counting
         @Suppress("DEPRECATION")
         ExperimentalFlags.enableSpeculativeDecoding = speculative
-        val e = Engine(EngineConfig(modelPath = store.file.path, backend = backend, maxNumTokens = Asks.Tuning.MAX_TOKENS, cacheDir = cacheDir))
+        val e = Engine(EngineConfig(modelPath = store.file.path, backend = backend, maxNumTokens = context, cacheDir = cacheDir))
         try {
             e.initialize()
         } catch (t: Throwable) {
@@ -241,18 +267,16 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
         return e
     }
 
-    private fun load(speculative: Boolean = false): Engine {
-        if (onlyOn == "CPU") return open(Backend.CPU(), counting = true, speculative = speculative).also { processor = "CPU"; whyNotGpu = null }
+    /** The engine [key] asks for: on the CPU if it asks for the CPU; else on the GPU, falling back to the CPU, and why. */
+    private fun load(key: EngineKey, speculative: Boolean = false): Loaded {
+        if (key.processor == "CPU") return Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context), "CPU", null)
         return try {
-            open(Backend.GPU(), counting = true, speculative = speculative).also { processor = "GPU"; whyNotGpu = null }
+            Loaded(open(Backend.GPU(), counting = true, speculative = speculative, context = key.context), "GPU", null)
         } catch (t: Throwable) {
             Log.w("Gemma", "The GPU couldn't load the model.", t)
             // Counting is the one thing asked of the GPU beyond what 0.3.1 asked, so it is tried once more without it before the CPU.
-            runCatching { open(Backend.GPU(), counting = false, speculative = speculative) }.getOrNull()?.also { processor = "GPU"; whyNotGpu = null }
-                ?: open(Backend.CPU(), counting = true, speculative = speculative).also {
-                    processor = "CPU"
-                    whyNotGpu = t.message?.lineSequence()?.firstOrNull { line -> line.isNotBlank() }?.trim()?.take(240) ?: t::class.java.simpleName
-                }
+            runCatching { open(Backend.GPU(), counting = false, speculative = speculative, context = key.context) }.getOrNull()?.let { Loaded(it, "GPU", null) }
+                ?: Loaded(open(Backend.CPU(), counting = true, speculative = speculative, context = key.context), "CPU", firstLine(t))
         }
     }
 
@@ -267,9 +291,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
     suspend fun probes(step: (String) -> Unit): List<String> = withContext(thread) {
         check(synchronized(this@Gemma) { open == 0 }) { "An Ask is open; the bench tries the engine only when none is." }
         main.removeCallbacks(letGo)
-        engine?.let { runCatching { it.close() } }
-        engine = null
-        processor = null
+        closeAll()
         val lines = mutableListOf<String>()
         val info = runCatching { ModelInfo.from(store.file.path) }.getOrNull()
         val backends = info?.let { runCatching { it.supportedBackends(Modality.TEXT) }.getOrNull() }.orEmpty()
@@ -344,7 +366,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
 
     private fun one(x: Double) = String.format(Locale.UK, "%.1f", x)
 
-    /** Let the model go, freeing its memory, once no conversation is open; it loads again on the next Ask. */
+    /** Let the model go, every engine of it, freeing its memory, once no conversation is open; it loads again on the next Ask. */
     fun release() {
         main.removeCallbacks(letGo)
         synchronized(this) {
@@ -354,9 +376,7 @@ class Gemma(private val store: ModelStore, private val cacheDir: String, private
             }
             letGoWhenDone = false
         }
-        val e = engine ?: return
-        engine = null
-        processor = null
-        thread.executor.execute { runCatching { e.close() } }
+        if (engines.isEmpty()) return
+        thread.executor.execute { closeAll() }
     }
 }

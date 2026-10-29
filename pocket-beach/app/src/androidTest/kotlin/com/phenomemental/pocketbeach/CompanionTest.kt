@@ -22,6 +22,8 @@ import com.phenomemental.pocketbeach.bsp.Talk
 import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.bsp.WireReply
+import com.phenomemental.pocketbeach.model.Job
+import com.phenomemental.pocketbeach.model.JobSettings
 import com.phenomemental.pocketbeach.model.Mind
 import com.phenomemental.pocketbeach.model.ModelStore
 import com.phenomemental.pocketbeach.model.Pace
@@ -59,18 +61,42 @@ class NowhereWire : Wire {
  * A stand-in for the companion, since no test can run the model: it answers
  * the hello world as the shell describes it, or, with a hello-world already
  * in the pocket, as its instruction then says; 0.3's way in a JSON plan, 0.4's
- * in actions. Anything else it answers in plain words.
+ * in actions. Anything else it answers in plain words. 0.5: a conversation
+ * of the Talk job (its instruction has no route words) only talks.
  */
 class StandIn : Mind {
+    /** The Write job's instruction, as 0.4's was. */
     var instruction = ""
-    /** The earlier exchanges each 0.4 conversation was opened with. */
+    /** The Talk job's instruction. */
+    var talkInstruction = ""
+    /** The earlier exchanges each Write conversation (0.4's) was opened with. */
     val histories = mutableListOf<List<Pair<String, String>>>()
-    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean): Mind.Talker {
-        this.instruction = instruction
-        histories += history
+    /** The earlier exchanges each Talk conversation was opened with, and the settings it was drawn by. */
+    val talkHistories = mutableListOf<List<Pair<String, String>>>()
+    val talkSettings = mutableListOf<JobSettings>()
+    /** Every message the Talk job was given, and how many the Write job was. */
+    val talkMessages = mutableListOf<String>()
+    var writeMessages = 0
+
+    override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker {
+        val talking = !instruction.contains("Answer in one of three ways")
+        if (talking) {
+            talkInstruction = instruction
+            talkHistories += history
+            talkSettings += settings
+        } else {
+            this.instruction = instruction
+            histories += history
+        }
         return object : Mind.Talker {
             override val stream = Talks.Stream { message, piece ->
-                val reply = talk(message)
+                val reply = if (talking) {
+                    talkMessages += message
+                    talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
+                } else {
+                    writeMessages++
+                    talk(message)
+                }
                 reply.chunked(4).forEach(piece)
                 reply
             }
@@ -80,8 +106,11 @@ class StandIn : Mind {
         }
     }
 
-    /** Replies to give first, in order, before answering as above. */
+    /** The Write job's replies to give first, in order, before answering as above. */
     val script = ArrayDeque<String>()
+
+    /** The Talk job's replies to give first, in order, before its plain one. */
+    val talkScript = ArrayDeque<String>()
 
     fun talk(message: String): String {
         script.removeFirstOrNull()?.let { return it }
@@ -304,19 +333,23 @@ class CompanionTest {
         app.pages.carryOut(app.pages.planNewBlock("garden"))
         app.pages.carryOut(app.pages.planAdd("garden", "", "Autumn: plant the bulbs"))
         app.pages.carryOut(app.pages.planAdd("garden", "", "Winter: prune the roses"))
-        mind.script += listOf("talk\nI'm the pocket companion.", "act\nadd garden under \"the\": mulch the beds")
+        mind.talkScript += listOf("I'm the pocket companion.", "Yes: under one of the two lines that say that.")
+        mind.script += listOf("act\nadd garden under \"the\": mulch the beds")
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
             compose.waitFor("question")
             compose.onNodeWithTag("question").performTextInput("What's your name?")
             compose.tap("ask")
             compose.waitFor("over", "She talked.")
+            compose.waitFor("say", "I'm the pocket companion.")
             compose.waitFor("took", "first words after")
+            assertEquals("a question asks no write: the Write job isn't asked", 0, mind.writeMessages)
             compose.onNodeWithTag("question").performTextClearance()
             compose.onNodeWithTag("question").performTextInput("Under the line with the, note: mulch the beds.")
             compose.tap("ask")
             // The quote matches both lines: Matthew says which before anything is planned.
             compose.waitFor("which-line", "2 lines say that")
+            compose.waitFor("say", "Yes: under one of the two lines")
             assertEquals("the first exchange is shown above", 1, compose.onAllNodes(hasTestTag("earlier"), useUnmergedTree = true).fetchSemanticsNodes().size)
             compose.tap("choose:2")
             compose.waitFor("writes")
@@ -324,8 +357,9 @@ class CompanionTest {
             assertFalse("nothing written before yes", app.pages.position(Region.POCKET, "garden", "2")!!.lines.isNotEmpty())
             compose.tap("yes")
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "garden", "2.1")?.text == "mulch the beds" }
-            assertEquals("one conversation for both asks, opened with the examples", 1, mind.histories.size)
+            assertEquals("one Write conversation for both asks, opened with the examples", 1, mind.histories.size)
             assertEquals(Talks.EXAMPLES, mind.histories.single())
+            assertEquals("one Talk conversation, opened with nothing before", listOf(emptyList<Pair<String, String>>()), mind.talkHistories)
         }
     }
 
@@ -342,13 +376,15 @@ class CompanionTest {
         fun main(block: () -> Unit) = InstrumentationRegistry.getInstrumentation().runOnMainSync(block)
         ActivityScenario.launch(MainActivity::class.java).use {
             repeat(10) {
-                val before = mind.histories.size
+                val before = mind.talkHistories.size
+                val writes = mind.histories.size
                 main { asking.reset(); asking.closed(); asking.opened() }
-                compose.waitUntil(5_000) { mind.histories.size == before + 1 }
+                compose.waitUntil(5_000) { mind.talkHistories.size == before + 1 && mind.histories.size == writes + 1 }
                 Thread.sleep(300)
-                main { asking.question = "What's your name?"; asking.ask() }
-                compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over }
-                assertEquals("one conversation, opened once and kept for the first ask (round ${it + 1})", before + 1, mind.histories.size)
+                main { asking.question = "Add to garden: compost."; asking.ask() }
+                compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over || asking.stage is Asking.Stage.Shown }
+                assertEquals("one Talk conversation, opened once and kept for the first ask (round ${it + 1})", before + 1, mind.talkHistories.size)
+                assertEquals("one Write conversation, beside it (round ${it + 1})", writes + 1, mind.histories.size)
             }
         }
     }
@@ -361,27 +397,22 @@ class CompanionTest {
     }
 
     @Test
-    fun timingsShowUnderEveryAnswerWhenOnAndAreAlwaysLogged() {
+    fun detailsShowTheWorkingsUnderEveryAnswerAndTheLogKeepsThemAlways() {
         Fresh.clear()
         HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         app.pages.carryOut(app.pages.planNewBlock("garden"))
         app.pages.carryOut(app.pages.planAdd("garden", "", "Autumn: plant the bulbs"))
-        mind.script += listOf(
-            "talk\nI'm the pocket companion.",
-            "read\nread garden",
-            "talk\nIt says: Autumn: plant the bulbs.",
-            "act\nadd garden: buy more compost",
-            "talk\nYou're welcome.",
-        )
+        mind.script += listOf("act\nadd garden: buy more compost")
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
-            // On (the default): talk, read and act each show the time and where she ran.
+            // Details on: each answer shows the time and where she ran.
             asked("What's your name?")
             compose.waitFor("over", "She talked.")
             compose.waitFor("took", "on the stand-in")
-            asked("What's in my garden block?")
-            compose.waitFor("over", "She read 1 block, then answered.")
+            asked("What does the whetstone say?")
+            compose.waitFor("over", "She talked.")
             compose.waitFor("took", "on the stand-in")
+            assertTrue("a teaching block his words name is read for her, in the turn", mind.talkMessages.last().contains("What the app read for you"))
             asked("Add to garden: buy more compost.")
             compose.waitFor("writes")
             compose.waitFor("took", "on the stand-in")
@@ -389,19 +420,89 @@ class CompanionTest {
             compose.tap("just-not-now")
             compose.waitFor("over", "Matthew said not now.")
 
-            // Off: nothing extra under any answer, the earlier ones too.
-            app.showTimings = false
+            // Off: only the conversation, and what came of a proposal.
+            app.showDetails = false
             compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("wearing"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
             asked("Thanks.")
-            compose.waitFor("over", "She talked.")
+            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over }
+            compose.waitFor("say", "I'm a stand-in for the companion, talking.")
             assertTrue(compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
             assertTrue(compose.onAllNodes(hasText("Took ", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            assertTrue("what came of the proposal stays", compose.onAllNodes(hasText("Matthew said not now.", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
+            assertTrue(compose.onAllNodes(hasText("She talked.", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
         }
         // The ask log keeps every answer's time, shown or not.
         val log = app.pages.position(Region.POCKET, Asks.LOG)!!
         assertEquals(4, log.lines.size)
         for (entry in log.lines) assertTrue(app.pages.position(Region.POCKET, Asks.LOG, entry.address)!!.lines.any { it.text?.startsWith("Took ") == true })
-        app.showTimings = true
+        app.showDetails = true
+    }
+
+    /** 0.5's Stage 2: every message gets a reply, each turn with the date, the time and her shell; the conversation saved whole. */
+    @Test
+    fun sheTalksToEveryMessageAndTheConversationCanBeSaved() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf("Good morning, Matthew. What's on your mind?", "I'd keep that in a new block, running; say yes below if it's right.")
+        mind.script += listOf("act\nnew running: I want to run a marathon next spring.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("Good morning")
+            compose.waitFor("say", "Good morning, Matthew.")
+            val first = mind.talkMessages.single()
+            assertTrue(first, first.startsWith("It is "))
+            assertTrue(first, first.contains("Your shell, ${HelloWorld.SHELL}: \"${HelloWorld.SHELL_OPENING}\""))
+            assertTrue(first, first.endsWith("Matthew: Good morning"))
+            assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
+            assertEquals("a greeting asks no write", 0, mind.writeMessages)
+            asked("I want to run a marathon next spring.")
+            compose.waitFor("say", "I'd keep that in a new block, running")
+            compose.waitFor("writes")
+            assertEquals(1, mind.writeMessages)
+            assertTrue("she talked as Edge does", mind.talkSettings.all { it == JobSettings.of(Job.TALK) })
+            compose.tap("yes")
+            compose.waitUntil(10_000) { app.pages.exists("running") }
+            compose.waitFor("save-conversation")
+        }
+        val t = app.asking.transcript()
+        assertTrue(t, t.contains("Matthew: Good morning"))
+        assertTrue(t, t.contains("Companion: Good morning, Matthew. What's on your mind?"))
+        assertTrue(t, t.contains("Matthew: I want to run a marathon next spring."))
+        assertTrue(t, t.contains("Talk: Gemma 4 E2B"))
+        assertTrue(t, t.contains("temperature 1.00, top-k 64, top-p 0.95"))
+    }
+
+    /** 0.5's Stage 1: a job's settings, changed in Settings, are what its next conversation is opened with. */
+    @Test
+    fun aJobsSettingsAreKeptAndUsedFromTheNextAsk() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("settings")
+            compose.waitFor("job-talk-temperature", "1.00")
+            compose.tap("job-talk-temperature-less")
+            compose.waitFor("job-talk-temperature", "0.90")
+            compose.tap("job-talk-topk-less")
+            compose.waitFor("job-talk-topk", "40")
+            compose.waitFor("job-talk-reset")
+            compose.waitFor("job-write-temperature", "0.00")
+            compose.onNodeWithTag("job-write-temperature-less").assertIsNotEnabled()
+            assertEquals(0.9, app.settings(Job.TALK).temperature, 1e-9)
+            assertEquals(40, app.settings(Job.TALK).topK)
+            assertEquals("kept on the phone", 40, JobSettings.read(app.getSharedPreferences("pocket", 0), Job.TALK).topK)
+            compose.tap("back")
+            compose.tap("ask-companion")
+            asked("Hello")
+            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over }
+            assertEquals(0.9, mind.talkSettings.last().temperature, 1e-9)
+            assertEquals(40, mind.talkSettings.last().topK)
+            compose.tap("back")
+            compose.tap("settings")
+            compose.tap("job-talk-reset")
+            compose.waitFor("job-talk-temperature", "1.00")
+        }
+        assertEquals(JobSettings.of(Job.TALK), app.settings(Job.TALK))
     }
 
     @Test

@@ -20,7 +20,8 @@ class Pace(val processor: String?, val whyNotGpu: String?, val loadMs: Long?) {
 
     /** The rest in a line: why not the GPU, loading, reading and writing; null when nothing was counted. */
     fun detail(): String? = buildList {
-        if (processor == "CPU") add(whyNotGpu?.let { "The GPU couldn't run it: $it." } ?: "The GPU couldn't run it.")
+        // On the CPU because the GPU couldn't, not because the CPU was asked for.
+        if (processor == "CPU" && whyNotGpu != null) add("The GPU couldn't run it: $whyNotGpu.")
         loadMs?.let { add("Loading the model: ${secs(it / 1000.0)} s.") }
         if (turns.isNotEmpty()) {
             val read = turns.sumOf { it.read }

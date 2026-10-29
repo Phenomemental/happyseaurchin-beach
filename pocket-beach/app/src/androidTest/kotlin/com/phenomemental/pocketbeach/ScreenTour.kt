@@ -121,14 +121,21 @@ class ScreenTour {
                 shot("$theme-13b-ask-failed")
             }
             Fresh.clear()
-            app.mind = StandIn()
+            val standIn = StandIn()
+            app.mind = standIn
             app.wire = wire
-            Fresh.open().use {
+            // 0.5: the new Ask shows only the conversation; its workings are behind the Details switch.
+            app.showDetails = false
+            standIn.talkScript += listOf(
+                "Here's the hello world with your secret. Say yes below, and then I'll offer the post.",
+                "Again, then: the same block with your new secret, and the post after it.",
+            )
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.waitFor("make-shell")
                 shot("$theme-14-ask-no-shell")
                 compose.tap("Make the companion's shell")
-                compose.waitFor("wearing", "Wearing pocket-companion")
+                compose.waitFor("question")
                 compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
                 shot("$theme-15-ask-ready")
                 compose.tap("ask")
@@ -194,6 +201,7 @@ class ScreenTour {
             app.unsent.clear()
             // The bench, run with the stand-in, and the block it keeps; it is offered between asks, so the Ask still waiting on Yes is let go.
             app.asking.reset()
+            app.showDetails = true
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.tap("open-bench")
@@ -206,13 +214,19 @@ class ScreenTour {
                 compose.waitFor("standing", "Bench, ")
                 shot("$theme-31-bench-block")
             }
-            // 0.4's conversation: a plain answer, then an act whose quote matches two lines, put to Matthew, then planned.
+            // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
             app.asking.reset()
+            app.showDetails = false
             app.pages.carryOut(app.pages.planNewBlock("orchard"))
             app.pages.carryOut(app.pages.planAdd("orchard", "", "Apples: pick in the autumn"))
             app.pages.carryOut(app.pages.planAdd("orchard", "", "Pears: prune in the winter"))
-            (app.mind as StandIn).script += listOf(
-                "talk\nI'm the pocket companion. I read your blocks freely, and write only when you say yes.",
+            standIn.talkScript.clear()
+            standIn.talkScript += listOf(
+                "I'm the pocket companion. I read your blocks freely, and write only when you say yes.",
+                "I'd note it under the line about the season. Two lines speak of one, so tap the one you mean.",
+                "Before June, then: the blossom will have set by then, so netting soon is wise.",
+            )
+            standIn.script += listOf(
                 "act\nadd orchard under \"in the\": net the trees against the birds",
                 "talk\nThat sounds like a good plan.",
             )
@@ -221,7 +235,8 @@ class ScreenTour {
                 compose.waitFor("question")
                 compose.onNodeWithTag("question").performTextInput("What's your name?")
                 compose.tap("ask")
-                compose.waitFor("over", "She talked.")
+                compose.waitFor("say", "I'm the pocket companion.")
+                compose.waitUntil(10_000) { app.asking.stage is com.phenomemental.pocketbeach.ui.Asking.Stage.Over }
                 shot("$theme-32-ask-talk")
                 compose.onNodeWithTag("question").performTextClearance()
                 compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
@@ -240,13 +255,24 @@ class ScreenTour {
                 compose.tap("ask")
                 compose.waitFor("keep-in", "Keep this in orchard?")
                 shot("$theme-36-ask-keep")
+                // The same conversation with its workings shown: her shell, how each ask ended, and how long it took.
+                app.showDetails = true
+                compose.waitFor("wearing")
+                shot("$theme-37-ask-details")
+                compose.tap("keep-in")
+                compose.waitFor("writes")
+                shot("$theme-38-ask-details-proposal")
             }
             app.asking.reset()
-            // Settings: whether each answer shows its time.
+            // Settings: each job's settings, as Edge shows them.
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("settings")
-                compose.waitFor("show-timings")
+                compose.waitFor("job-talk")
                 shot("$theme-35-settings")
+                compose.tap("job-write-reply-less")
+                compose.waitFor("job-write-reset")
+                shot("$theme-35a-settings-write")
+                compose.tap("job-write-reset")
             }
             Fresh.clear()
             val send = android.content.Intent(android.content.Intent.ACTION_SEND).setClass(app, MainActivity::class.java).setType("text/plain")

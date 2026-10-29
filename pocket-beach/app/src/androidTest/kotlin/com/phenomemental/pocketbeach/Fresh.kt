@@ -33,7 +33,9 @@ object Fresh {
         app.getSharedPreferences("posts", 0).edit().clear().commit()
         app.unsent.clear()
         app.connectedForTests = null
-        app.showTimings = true
+        // The tests read the workings; the pictures of the new Ask turn them off.
+        app.showDetails = true
+        for (job in com.phenomemental.pocketbeach.model.Job.values()) app.set(job, com.phenomemental.pocketbeach.model.JobSettings.of(job))
         // A download kept part way, or a failure recorded, but never the model itself.
         File(app.getExternalFilesDir(null), "models/${com.phenomemental.pocketbeach.model.ModelStore.FILE}.part").delete()
         app.getSharedPreferences("model", 0).edit().remove("failed").commit()

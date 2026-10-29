@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -28,9 +30,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Planned
@@ -79,18 +83,49 @@ fun AskScreen(model: Model, nav: Nav) {
     }
     // A message posted already is not sent again unless Matthew asks for that on purpose.
     val postedBefore = (stage as? Asking.Stage.Written)?.carried?.post?.let(model.app.posts::landed)
+    // 0.5: the conversation, and its workings only behind the Details switch.
+    val details = model.app.showDetails
+    val context = LocalContext.current
+    val saveTo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val text = asking.transcript()
+        scope.launch {
+            val outcome = withContext(Dispatchers.IO) {
+                runCatching { context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray(Charsets.UTF_8)) } }
+            }
+            outcome.onSuccess { model.say(Screen.Ask, "Saved the conversation as a file.") }
+                .onFailure { model.say(Screen.Ask, "The conversation wasn't saved: ${it.message ?: "the file couldn't be written"}.") }
+        }
+    }
 
     Page(
         onBack = { nav.back() },
         top = { Text("Ask", style = Type.name, color = ink.ink, maxLines = 1) },
         bottom = bottom(asking, stage, ready = modelState is ModelStore.State.Ready && shell != null, postedBefore = postedBefore),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                if (details) "How she answers: her shell, what she proposes and the time each reply took." else "The workings: her shell, what she proposes, the times.",
+                style = Type.small, color = ink.soft, modifier = Modifier.weight(1f),
+            )
+            Text("Details", style = Type.small, color = ink.ink)
+            Switch(
+                checked = details,
+                onCheckedChange = { model.app.showDetails = it },
+                colors = SwitchDefaults.colors(checkedTrackColor = ink.crimson),
+                modifier = Modifier.testTag("details"),
+            )
+        }
+        if (details) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label("The companion")
             Text(
                 if (shell != null) "Wearing ${HelloWorld.SHELL}: ${Words.quoted(shell, 120)}" else "The companion wears a shell, a block of yours that says how it behaves.",
                 style = Type.heading.copy(fontSize = Type.body.fontSize, lineHeight = Type.body.lineHeight), color = ink.ink,
                 modifier = Modifier.testTag("wearing"),
+            )
+            Text(
+                "She talks as Settings' Talk job says, then, when your words may ask for a write, the Write job sets out the lines.",
+                style = Type.small, color = ink.soft,
             )
             Stroke()
         }
@@ -129,38 +164,43 @@ fun AskScreen(model: Model, nav: Nav) {
 
         // The conversation so far; the last, once over, is shown in full below.
         val earlier = if (stage is Asking.Stage.Over) asking.history.dropLast(1) else asking.history.toList()
-        earlier.forEach { Earlier(it, model.app.showTimings) }
+        earlier.forEach { Earlier(it, details) }
 
         if (modelState is ModelStore.State.Ready && shell != null) when (stage) {
             Asking.Stage.Writing, is Asking.Stage.Over -> {
-                if (stage is Asking.Stage.Over) Over(model, stage)
-                Label("Your ask")
-                PaperField(asking.question, { asking.question = it }, "Ask the companion something, or for the hello world with your secret", tag = "question")
+                if (stage is Asking.Stage.Over) Over(model, stage, details)
+                PaperField(asking.question, { asking.question = it }, "Say something to the companion, or ask for the hello world with your secret", tag = "question")
                 Speak { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
                 if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
-                TextLink(if (asking.benchRunning) "See the bench" else "Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
+                if (asking.history.isNotEmpty()) TextLink("Save the conversation as a file", { saveTo.launch(asking.fileName()) }, tag = "save-conversation")
+                if (details || asking.benchRunning) TextLink(if (asking.benchRunning) "See the bench" else "Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
             }
             is Asking.Stage.Thinking -> {
-                Asked(asking.question)
+                His(asking.question)
                 // Her words as she writes them.
                 if (asking.live.isNotBlank()) Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
                 var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
                 LaunchedEffect(stage) { while (true) { delay(1000); now = System.currentTimeMillis() } }
                 val secs = ((now - stage.since) / 1000).coerceAtLeast(0)
                 Text(
-                    if (model.app.mind.loaded) "Thinking… ${secs} s" else "Loading the companion, then thinking… ${secs} s",
+                    when {
+                        asking.checking -> "Seeing whether there's anything to write…" + if (details) " ${secs} s" else ""
+                        asking.live.isNotBlank() -> if (details) "${secs} s" else ""
+                        !model.app.mind.loaded(model.app.settings(com.phenomemental.pocketbeach.model.Job.TALK)) -> "Loading the companion…" + if (details) " ${secs} s" else ""
+                        else -> "Thinking…" + if (details) " ${secs} s" else ""
+                    },
                     style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"),
                 )
             }
             is Asking.Stage.Choosing -> Choosing(asking, stage)
-            is Asking.Stage.Shown -> Proposed(asking.question, stage, model.app.showTimings)
+            is Asking.Stage.Shown -> Proposed(asking.question, stage, details)
             is Asking.Stage.Declining -> {
-                Proposed(asking.question, stage.shown, model.app.showTimings)
+                Proposed(asking.question, stage.shown, details)
                 Label("Why not now?")
                 Text("One tap says why, so the log keeps it.", style = Type.small, color = ink.soft)
             }
             is Asking.Stage.Carrying -> {
-                Proposed(asking.question, stage.shown, model.app.showTimings)
+                Proposed(asking.question, stage.shown, details)
                 Text("Writing…", style = Type.aside, color = ink.soft)
             }
             is Asking.Stage.Written -> {
@@ -208,15 +248,29 @@ private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBe
     })
 }
 
-/** An earlier exchange of the conversation: what Matthew asked, what she said, how it ended and how long it took. */
+/** An earlier exchange of the conversation: what Matthew said, what she said, what came of a proposal, and, in Details, how it ended and how long it took. */
 @Composable
-private fun Earlier(e: Asking.Exchange, timings: Boolean) {
+private fun Earlier(e: Asking.Exchange, details: Boolean) {
     val ink = LocalInk.current
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("earlier")) {
-        Text(e.question, style = Type.small, color = ink.soft)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("earlier")) {
+        His(e.question)
         if (e.said.isNotBlank()) Text(e.said, style = Type.body, color = ink.ink)
-        Text(if (timings) e.note + " " + e.time else e.note, style = Type.small, color = ink.soft)
-        Rule()
+        when {
+            details -> Text(e.note + " " + e.time, style = Type.small, color = ink.soft)
+            e.outcome != null -> Text(e.outcome, style = Type.small, color = ink.soft)
+        }
+    }
+}
+
+/** What Matthew said, set to the right in a softer hand, as in a conversation. */
+@Composable
+private fun His(words: String) {
+    val ink = LocalInk.current
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+        Text(
+            words, style = Type.body, color = ink.soft, textAlign = TextAlign.End,
+            modifier = Modifier.fillMaxWidth(0.85f).background(ink.sheet).padding(horizontal = 12.dp, vertical = 6.dp).testTag("his"),
+        )
     }
 }
 
@@ -225,7 +279,8 @@ private fun Earlier(e: Asking.Exchange, timings: Boolean) {
 private fun Choosing(asking: Asking, stage: Asking.Stage.Choosing) {
     val ink = LocalInk.current
     val choice = stage.answered.planned?.choose ?: return
-    Asked(asking.question)
+    His(asking.question)
+    if (stage.answered.said.isNotBlank()) Text(stage.answered.said, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
     Text(
         "She means the line “${choice.quote}” in ${choice.block}, and ${choice.lines.size} lines say that. Which one?",
         style = Type.body, color = ink.ink, modifier = Modifier.testTag("which-line"),
@@ -237,21 +292,13 @@ private fun Choosing(asking: Asking, stage: Asking.Stage.Choosing) {
     }
 }
 
-@Composable
-private fun Asked(question: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Label("You asked")
-        Text(question, style = Type.body, color = LocalInk.current.ink)
-    }
-}
-
 /** What the companion said and proposes, before anything is written. */
 @Composable
-private fun Proposed(question: String, shown: Asking.Stage.Shown, timings: Boolean) {
+private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boolean) {
     val ink = LocalInk.current
-    Asked(question)
+    His(question)
     val answer = shown.asked.answer
-    if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.aside, color = ink.ink, modifier = Modifier.testTag("say"))
+    if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
     if (shown.asked.found.isNotEmpty()) {
         Label("What it read")
         SelectionContainer { Text(shown.asked.found.joinToString("\n\n"), style = Type.call, color = ink.soft) }
@@ -267,8 +314,8 @@ private fun Proposed(question: String, shown: Asking.Stage.Shown, timings: Boole
     }
     p.postRefusal?.let { Notice("It offered a post the pocket can't send: $it", tag = "post-refusal") }
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        // The time and the chip, when Settings shows timings; that nothing is written yet, always.
-        if (timings) {
+        // The time and the chip, in Details; that nothing is written yet, always.
+        if (details) {
             Text(
                 "Took %.1f s".format(shown.took / 1000.0) + (shown.pace?.where?.takeIf(String::isNotEmpty)?.let { " $it" } ?: "") +
                     (shown.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
@@ -369,13 +416,13 @@ private fun PostCard(message: PoolMessage, postedBefore: String?) {
 
 /** How the Ask ended. */
 @Composable
-private fun Over(model: Model, over: Asking.Stage.Over) {
+private fun Over(model: Model, over: Asking.Stage.Over, details: Boolean) {
     val ink = LocalInk.current
     val context = LocalContext.current
+    His(model.app.asking.question)
     over.shown?.let { shown ->
         val answer = shown.asked.answer
-        Asked(model.app.asking.question)
-        if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.aside, color = ink.ink, modifier = Modifier.testTag("say"))
+        if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
         if (over.carried == null) shown.asked.proposal?.let { if (it.refusal != null) Writes(it) }
     }
     when (val p = over.posted) {
@@ -401,11 +448,14 @@ private fun Over(model: Model, over: Asking.Stage.Over) {
     model.app.asking.keepIn?.let { block ->
         TextLink("Keep this in $block?", { model.app.asking.keep() }, tag = "keep-in")
     }
-    Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
-    // Every answer's time and chip, talk, read or act, when Settings shows timings.
-    if (model.app.showTimings) model.app.asking.history.lastOrNull()?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }
-    Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
-    Rule()
+    // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
+    val last = model.app.asking.history.lastOrNull()
+    if (details || last?.outcome != null || over.shown == null) Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+    // Every answer's time and chip, in Details.
+    if (details) {
+        last?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }
+        Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
+    }
 }
 
 /** The model: offered only when the phone can run it, fetched once over Wi-Fi, checked before it is used. */
