@@ -75,6 +75,15 @@ fun main(args: Array<String>) {
     val engine = Engine(EngineConfig(modelPath = model, backend = Backend.CPU(), maxNumTokens = Asks.Tuning.MAX_TOKENS, cacheDir = cache))
     engine.initialize()
     println("Loaded in ${secs(loadStart)} s." + (if (mtp) " Speculative decoding, the form not held." else "") + (if ("existing" in flags) " Each run begins with a hello-world made before." else ""))
+    // 0.5's item 7: one telling, three landings, the pocket beside plain Gemma. A spoken telling rides as -Dpocket.spoken=<file of text>.
+    if ("telling" in flags) {
+        val spoken = System.getProperty("pocket.spoken")?.let { File(it).readText() }
+        val list = listOf("written" to com.phenomemental.pocketbeach.bsp.Telling.WRITTEN) + listOfNotNull(spoken?.let { "spoken" to it })
+        val out = File(System.getProperty("pocket.out") ?: "tellings")
+        if ("pieces" in flags) pieces(engine, list, out, runs) else tellings(engine, list, out, runs)
+        engine.close()
+        return
+    }
     if ("bench" in flags) {
         if ("kept" in flags) kept(engine, shelf) else if ("after" in flags) benchAfter(engine, shelf) else bench(engine, shelf)
         engine.close()
