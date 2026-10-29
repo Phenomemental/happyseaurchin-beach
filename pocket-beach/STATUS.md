@@ -4,9 +4,10 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach-v0.4.2** is being made, from the Pixel's bench of 0.4.1:
-her first word free in Ask, and opening Ask opens her conversation once
-(see "What 0.4.2 changes").
+**pocket-beach-v0.4.2** is released, from the Pixel's bench of 0.4.1: her
+first word free in Ask, opening Ask opens her conversation once, and a
+block can be saved as a file, whole (see "What 0.4.2 changes"). Its tag is
+at `e25d892` on main. Next is Matthew trying it (see "Next").
 
 **pocket-beach-v0.4.1** is released: the companion keeps what Matthew
 tells her that is worth keeping; block names match whatever their capitals;
@@ -723,6 +724,20 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.4.2 release
+
+- Its tag is at `e25d892` on main, published 29 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.4.2 (`versionCode` 11), for arm64 phones, 50 MB. Its SHA-256 is
+  `4cb0c7581b2424f57c369bdbb4f57c84a28f454ebc785596d79ee2059cd42af0`.
+- Read back from the downloaded APK: the same five hosts, each without
+  subdomains, and nothing else; plain HTTP refused everywhere; the same
+  seven permissions (saving a file goes through the phone's own picker,
+  and needs none).
+- Built by the release run on main after every test passed again there.
 
 ### The 0.4.1 release
 
