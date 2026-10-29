@@ -279,11 +279,16 @@ object Telling {
             "1.5 what I chose, 1.6 what's ahead.\nThen, only if it is something he says he'll do, one of: " + shelves(today).joinToString(", ") +
             (if (cards.isEmpty()) "" else "; or, if it is about a card already on the hand, that card: " + cards.entries.joinToString(", ") { "${it.key} \u201c${it.value}\u201d" }) + "."
 
-    /** The form her answer to a piece is held to. */
-    const val PIECE_FORM = "1\\.[1-6](, 1\\.[1-6])?(, 2\\.[1-5](\\.[1-9])?)?"
+    /**
+     * The form her answer to a piece is held to: it begins with a place in
+     * the day, so every piece lands there; the rest is free, and only its
+     * first line is read. (A form held to the end failed in the engine at the
+     * space after a comma, on the laptop.)
+     */
+    const val PIECE_FORM = "1\\.[1-6][\\s\\S]*"
 
     /** Her places for a piece: the addresses she gave that are places of the block or cards on its hand. */
-    fun places(answer: String): List<Pair<String, String?>> = Regex("([12])\\.([1-9])(?:\\.([1-9]))?").findAll(answer).mapNotNull { m ->
+    fun places(answer: String): List<Pair<String, String?>> = Regex("([12])\\.([1-9])(?:\\.([1-9]))?").findAll(answer.trim().lineSequence().first()).mapNotNull { m ->
         val (top, at, card) = m.destructured
         val place = "$top.$at"
         if (place in DAY || place in HAND) place to card.takeIf { top == "2" && it.isNotEmpty() } else null
@@ -426,6 +431,7 @@ object Telling {
         val sam = Item("Sam's line", "sam said", "always the one apologising")
         val jo = Item("Jo's birthday", "jo's birthday", "twelfth")
         val joShelves = HAND.filter { s -> at(s).any(jo::inside) }
+        val rungs = kept.filter { it.place in RUNGS }
         val notFirst = kept.filter { it.place in RUNGS && Regex("\\b(you|your|yours|he|his|him|matthew)\\b").containsMatchIn(plain(it.words)) }
         return listOf(
             Mark("Nothing invented", checked.invented.isEmpty(), if (checked.invented.isEmpty()) "every line of the day and the hand found in what was said" else "${checked.invented.size} refused: " + checked.invented.joinToString("; ") { "${it.place} “${it.words}”" }),
@@ -435,7 +441,12 @@ object Telling {
             Mark("Double: the garage chosen and ahead", at("1.5").any(garage::inside) && at("1.6").any(garage::inside), "chose ${at("1.5").count(garage::inside)}, ahead ${at("1.6").count(garage::inside)}"),
             Mark("Double: Sam's line happened and made of", at("1.1").any(sam::inside) && at("1.3").any(sam::inside), "happened ${at("1.1").count(sam::inside)}, made of it ${at("1.3").count(sam::inside)}"),
             Mark("Double: the twelfth on one shelf with its reason, or on two", at("2.3").any { foundIn("twelfth", it) } || joShelves.size >= 2, "on " + joShelves.joinToString(", ").ifEmpty { "no shelf" }),
-            Mark("Every line in the first person", notFirst.isEmpty(), if (notFirst.isEmpty()) "the rungs say I" else notFirst.joinToString("; ") { "${it.place} “${it.words}”" }),
+            // With no rung lines there is nothing in his voice to check, and a landing is missing: not met.
+            Mark("Every line in the first person", rungs.isNotEmpty() && notFirst.isEmpty(), when {
+                rungs.isEmpty() -> "no rung lines"
+                notFirst.isEmpty() -> "the ${rungs.size} rung lines say I"
+                else -> notFirst.joinToString("; ") { "${it.place} “${it.words}”" }
+            }),
         )
     }
 

@@ -87,7 +87,7 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
                 val config = ConversationConfig(
                     systemInstruction = Contents.of(Telling.piecesInstruction(state, Telling.date(Telling.BENCH_DAY), telling)),
                     samplerConfig = sampler,
-                    maxOutputToken = 256,
+                    maxOutputToken = 96,
                     enableResponseFormat = true,
                     thinkingConfig = ThinkingConfig(enableThinking = false),
                 )
@@ -118,6 +118,29 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
             for (m in all) println("  ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(400)}")
             println("  rungs: " + placed.filter { it.place in Telling.RUNGS }.joinToString(" | ") { "${it.place} ${it.words}" })
             println("  hand after both: " + Telling.cards(after).entries.joinToString(" | ") { "${it.key} ${it.value}" })
+        }
+    }
+}
+
+/** The one-pass marks again, from her answers kept in [dir] by [tellings]: the same reading, without the model. */
+internal fun remark(tellings: List<Pair<String, String>>, dir: File) {
+    for ((name, said) in tellings) for (pocket in listOf(true, false)) {
+        val who = if (pocket) "pocket" else "plain"
+        println("\n== $name, $who, marked again ==")
+        for (seed in 0..9) {
+            val tag = "${name.replace(' ', '-')}-$who-$seed"
+            val first = File(dir, "$tag-1.txt").takeIf { it.exists() }?.readText() ?: continue
+            val second = File(dir, "$tag-2.txt").readText()
+            val placed = if (pocket) Telling.placed(first) else Telling.fromPlain(first)
+            val after = if (pocket) {
+                val state = Telling.land(Telling.shape(), Telling.check(said, placed).kept)
+                Telling.land(state, Telling.check(Telling.SECOND, Telling.placed(second)).kept)
+            } else {
+                Telling.land(Telling.shape(), Telling.fromPlain(second).filter { it.place in Telling.HAND }.ifEmpty { placed.filter { it.place in Telling.HAND } })
+            }
+            val all = Telling.marks(said, placed) + Telling.secondMarks(after)
+            println("${if (seed == 0) "as the phone asks" else "sampled, seed $seed"}: ${all.count { it.met }} of ${all.size} marks; ${placed.size} lines")
+            for (m in all) println("  ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(300)}")
         }
     }
 }
