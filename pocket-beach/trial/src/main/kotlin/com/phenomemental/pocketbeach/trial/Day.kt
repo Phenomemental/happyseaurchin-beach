@@ -135,6 +135,57 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
     }
 }
 
+/**
+ * 0.5's Stage 4 on the laptop: code cuts the telling and reckons when each
+ * piece falls from the time words; she gives each piece one word for its
+ * place in the day, a conversation of its own each; a piece sharing words
+ * with a card on the hand is put to her, yes or no. Then the rungs, once.
+ */
+@OptIn(ExperimentalApi::class)
+internal fun stage4(engine: Engine, label: String, tellings: List<Pair<String, String>>, out: File, runs: Int = 5) {
+    out.mkdirs()
+    val off = ThinkingConfig(enableThinking = false)
+    val ways = listOf("as the phone asks" to null) + (1..runs).map { "sampled, seed $it" to it }
+    for ((name, said) in tellings) {
+        println("\n== $name, Stage 4, $label ==")
+        for ((way, seed) in ways) {
+            val sampler = if (seed == null) SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0)
+            else SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed)
+            val log = StringBuilder()
+            val firsts = mutableListOf<Double>()
+            fun ask(system: String?, message: String): String =
+                engine.createConversation(ConversationConfig(systemInstruction = system?.let { Contents.of(it) }, samplerConfig = sampler, maxOutputToken = Telling.PIECE_TOKENS, thinkingConfig = off)).use { c ->
+                    send(c, message).also { r -> r.timing.substringAfter("first token ").substringBefore(" s").toDoubleOrNull()?.let(firsts::add) }.text
+                }
+            fun sort(state: JsObj, telling: String): Pair<List<Telling.Placed>, String> {
+                val start = System.nanoTime()
+                val (placed, steps) = Telling.sorted(
+                    telling, Telling.BENCH_DAY, com.phenomemental.pocketbeach.bsp.Whens.first(), state,
+                    judge = { piece -> ask(Telling.sortInstruction(Telling.BENCH_DAY), Telling.aloneAsk(piece, telling)).also { log.append("\u201c$piece\u201d -> ${it.trim().lineSequence().first()}\n") } },
+                    about = { piece, card -> Telling.yes(ask(null, Telling.cardAsk(piece, telling, card)).also { log.append("  about \u201c$card\u201d? ${it.trim().lineSequence().first()}\n") }) },
+                )
+                for (st in steps) if (st.whenBy != null) log.append("  when: \u201c${st.piece}\u201d by \u201c${st.whenBy}\u201d -> ${st.places.last()}\n")
+                val sorting = (System.nanoTime() - start) / 1e9
+                val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = off)).use { r -> send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling)) }
+                log.append("rungs -> ${rungs.text.trim()}\n")
+                val rungLines = Telling.placed(rungs.text).filter { it.place in Telling.RUNGS }
+                return (placed + rungLines) to "${steps.size} pieces sorted in ${"%.1f".format(sorting)} s (first tokens median ${"%.1f".format(firsts.sorted().getOrElse(firsts.size / 2) { 0.0 })} s), rungs in ${rungs.timing.substringAfter(", ").substringBefore(" in all")}"
+            }
+            val (placed, timing) = sort(Telling.shape(), said)
+            val state = Telling.land(Telling.shape(), Telling.check(said, placed).kept)
+            log.append("-- second --\n")
+            val (placed2, timing2) = sort(state, Telling.SECOND)
+            val after = Telling.land(state, Telling.check(Telling.SECOND, placed2).kept)
+            File(out, "${name.replace(' ', '-')}-stage4-$label-${seed ?: 0}.txt").writeText(log.toString())
+            val all = Telling.marks(said, placed) + Telling.secondMarks(after)
+            println("$way: ${all.count { it.met }} of ${all.size} marks; ${placed.size} lines; $timing; then $timing2")
+            for (m in all) println("  ${if (m.met) "✓" else "✗"} ${m.name}: ${m.note.take(400)}")
+            println("  rungs: " + placed.filter { it.place in Telling.RUNGS }.joinToString(" | ") { "${it.place} ${it.words}" })
+            println("  hand after both: " + Telling.cards(after).entries.joinToString(" | ") { "${it.key} ${it.value}" })
+        }
+    }
+}
+
 /** The one-pass marks again, from her answers kept in [dir] by [tellings]: the same reading, without the model. */
 internal fun remark(tellings: List<Pair<String, String>>, dir: File) {
     for ((name, said) in tellings) for (pocket in listOf(true, false)) {
