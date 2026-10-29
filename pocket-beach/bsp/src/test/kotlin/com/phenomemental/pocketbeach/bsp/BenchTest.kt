@@ -48,6 +48,8 @@ class BenchTest {
             22 to """{"say": "A new block.", "steps": [{"do": "make", "block": "sailing", "at": "", "text": "My plan is to learn to sail next summer."}]}""",
             23 to """{"say": "Good night!", "steps": []}""",
             7 to """{"say": "garden holds: Autumn: plant the bulbs, and Winter: prune the roses.", "steps": []}""",
+            // As 0.4 answered on Matthew's Pixel (the bench of 0.4.1), first judged wrong for want of "prune".
+            12 to """{"say": "Yes, the garden block has a line about winter pruning roses.", "steps": []}""",
             13 to """{"say": "Adding it.", "steps": [{"do": "add", "block": "garden", "at": "", "text": "buy more compost"}]}""",
             14 to """{"say": "Under autumn.", "steps": [{"do": "add", "block": "garden", "at": "1", "text": "tulips came from Holland"}]}""",
             17 to """{"say": "Making it.", "steps": [{"do": "make", "block": "recipes", "at": "", "text": ""}]}""",

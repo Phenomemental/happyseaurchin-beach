@@ -281,7 +281,7 @@ class CompanionTest {
             assertTrue("nothing posted", wire.sent.isEmpty())
             val results = app.benching.results
             val n = Bench.ASKS.size
-            assertEquals("the asks before, after with her first word held, with it free, and held on the CPU", 4 * n, results.size)
+            assertEquals("the asks before, after with her first word held, with it free, and free on the CPU", 4 * n, results.size)
             val hello = Bench.ASKS.indexOfFirst { it.hello }
             for (run in 0 until 4) assertTrue("the stand-in's hello world is right in run ${run + 1}", results[run * n + hello].right)
             val run = app.pages.position(Region.POCKET, made.single())!!

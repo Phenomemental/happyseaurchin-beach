@@ -32,9 +32,12 @@ interface Mind {
      * processed once; [history], the last exchanges (Matthew's words, hers),
      * carried into it. Replies are streamed; if [held], each is held by the
      * engine to begin with her route word
-     * ([com.phenomemental.pocketbeach.bsp.Talks.HELD]) where it allows.
+     * ([com.phenomemental.pocketbeach.bsp.Talks.HELD]) where it allows. Ask's
+     * is free: on Matthew's Pixel (the bench of 0.4.1) held and free gave the
+     * same answers, and holding cost about 2.8 s each time a conversation
+     * opened.
      */
-    suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = true): Talker
+    suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean = false): Talker
 
     interface Talker : Closeable {
         val stream: com.phenomemental.pocketbeach.bsp.Talks.Stream

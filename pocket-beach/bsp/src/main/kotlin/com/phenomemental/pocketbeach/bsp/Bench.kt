@@ -68,7 +68,7 @@ object Bench {
         Ask(9, Route.READ, "Read me the autumn line in garden.", says = listOf(listOf("plant the bulbs"))),
         Ask(10, Route.READ, "How many lines does my garden block have?", says = listOf(listOf("two", "2"))),
         Ask(11, Route.READ, "What's the opening line of my garden block?", says = listOf(listOf("through the year"))),
-        Ask(12, Route.READ, "Is there anything about roses in my garden block?", says = listOf(listOf("prune"))),
+        Ask(12, Route.READ, "Is there anything about roses in my garden block?", says = listOf(listOf("prune", "pruning"))),
         Ask(13, Route.ACT, "Add a line to garden: buy more compost.", writes = listOf(Want("garden", Kind.ADD, "3", "buy more compost"))),
         Ask(14, Route.ACT, "In garden, under the autumn line, note that the tulips came from Holland.", writes = listOf(Want("garden", Kind.ADD, "1.1", "tulips came from Holland"))),
         Ask(15, Route.ACT, "Under the winter line in garden, add: mulch the beds.", writes = listOf(Want("garden", Kind.ADD, "2.1", "mulch the beds"))),
