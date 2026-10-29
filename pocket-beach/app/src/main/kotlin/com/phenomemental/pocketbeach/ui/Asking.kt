@@ -118,11 +118,10 @@ class Asking(private val app: PocketApp) {
 
     /**
      * Ask is closed: let the conversation go (the model goes after a few idle
-     * minutes). Ask's screen also asks for a close just before it opens (as
-     * the model and the shell come ready), and the two run on other threads
-     * in either order: a close is let go once Ask has been opened since, or it
-     * would shut the conversation just opened, to be opened again at the
-     * first ask.
+     * minutes). A close and an opening run on other threads in either order
+     * (as when Ask is left and opened again at once): a close is let go once
+     * Ask has been opened since, or it would shut the conversation just
+     * opened, to be opened again at the first ask.
      */
     fun closed() {
         if (stage is Stage.Thinking) return
