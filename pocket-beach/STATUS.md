@@ -4,10 +4,14 @@ Current state only. Newest first.
 
 ## Now
 
-**0.5** is built on `ccr-4c84d736-pvgv13`, with Stage 1's settings and
-Stage 2, let her talk (see "0.5: the plan on the beach"). Pictures of the
-new Ask go to Matthew before it is released. On the laptop, Stage 4 (when
-by code) and E4B beside E2B are run and recorded.
+**0.6** is being built on `ccr-4c84d736-pvgv13`: Stage 4 in Ask, his
+corrections before Yes kept as the examples she is shown next time; and
+Gemma 4 E4B as a choice for each job, with the bench timing each model on
+his Pixel (see "0.6: his day, sorted").
+
+**pocket-beach-v0.5** is released: Stage 1's settings and Stage 2, let her
+talk (see "0.5: the plan on the beach"). Matthew saw the pictures of the new
+Ask and said go. Its tag is at `c234904` on main.
 
 **pocket-beach-v0.4.2** is released, from the Pixel's bench of 0.4.1: her
 first word free in Ask, opening Ask opens her conversation once, and a
@@ -730,6 +734,21 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.5 release
+
+- Its tag is at `c234904` on main, published 29 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.5 (`versionCode` 12), for arm64 phones, 50 MB. Its SHA-256 is
+  `177d2fc3d2a64d7804fdc71d00706c350d7168e77d5b28747f3885293338131c`.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else;
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there
+  (the emulator's 37 among them).
+
 ### The 0.4.2 release
 
 - Its tag is at `e25d892` on main, published 29 October.
@@ -1205,6 +1224,80 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
+## 0.6: his day, sorted
+
+His message of 29 October: "Next build, as your STATUS says: Stage 4 in the
+app, with my corrections before Yes kept as the examples she's shown; and
+E4B as a choice for each job, with its speed on my Pixel."
+
+### Stage 4 in Ask
+
+- **When his words are a day told,** after her reply, the Sort job places
+  it. A day told is three sentences or more, of forty words or more, not a
+  question, or news of a card on his hand (a sentence sharing words with
+  one, as "Rang the garage first thing…" does). An ask to write stays the
+  Write job's. If a day isn't read as one, "Sort this into your day" sorts
+  it on his tap.
+- **The Sort job** (a third job in Settings, the laptop's settings: the
+  likeliest word, a word or two a piece) is asked a piece at a time, each
+  piece in a conversation of its own, as Stage 4 ran on the laptop. "When"
+  comes from his time words; a piece near a card is put to her yes or no;
+  the rungs are asked once after. Ask shows "Placing your day: 12 of 25…".
+- **One proposal:** the day (six places), the hand (five shelves), the
+  rungs, and any sentence of his she placed nowhere. Each line is his words,
+  with a tick and "Move", which offers the day's six places and the hand's
+  five shelves; a sentence placed nowhere has "Place it". Nothing is written
+  until "Yes, keep my day".
+- **Where it lands, for one Yes,** each block written whole, and only while
+  it still stands as it did when the proposal was made:
+  - **The day at today's place on his clock,** a block `now` of the clock's
+    form (floor 10), as his now is on the beach. The telling whole is the
+    day's line; the six are kept with it in the day's hidden directory
+    (block-conventions 4.7.2), never on the day's digits, which are its
+    day-parts. The pocket's port showed that writing the six at the day
+    itself puts them on the day-parts, and over a beat already there. A
+    second telling the same day follows the first, and its lines follow the
+    first's in each place (nine a place).
+  - **Cards and rungs** in his structure block, `telling` (his block of
+    item 7, its hand and rungs); a card already there is updated, not
+    doubled.
+  - **His time words**, `time-words`, written with the first Yes, so he
+    can change them.
+  - **His moves**, `sort-examples`: each line he moved, with the word for
+    the place he chose (a move to the hand is "ahead", to her), the newest
+    nine. Unticked lines aren't examples.
+- **His moves are shown to her next time:** the Sort job's instruction
+  ends "Matthew placed these himself:" and his examples.
+
+### Gemma 4 E4B, a choice for each job
+
+- **A second pinned model:** `litert-community/gemma-4-E4B-it-litert-lm`
+  at revision `e6a3892a`, the file the laptop ran, 3,659,530,240 bytes,
+  SHA-256 `0b2a8980…52e0`.
+  - Hugging Face sends it on to `us.aws.cdn.hf.co`, as it does E2B, so no
+    host is added.
+  - It is fetched only on his tap, in Settings, over Wi-Fi, and checked
+    byte for byte before it is used.
+  - Offered on a phone with 12 GB (Edge's allowlist asks that of its E4B).
+    His Pixel has 16.
+- **Each job's model** can then be set to E4B. A job set to E4B loads its
+  own engine beside E2B's, so both are in memory while Ask is open.
+
+### The bench: each model on his Pixel
+
+- **"Time each model on your day"** (new, on the bench's page, a few
+  minutes a model). For each model on the phone, with the Sort job's
+  settings:
+  - how long it takes to load;
+  - a plain answer, timed to its first token, its tokens a second, and in
+    all;
+  - the telling test, written then spoken, each followed by the second
+    telling, sorted a piece at a time as Ask sorts a day, on a scratch hand.
+    It reports the marks of the 11, the time for the pieces, the median
+    first token, the rungs, and what was missed.
+- The run is kept as `bench-models-` and the date. The full bench runs the
+  same, kept second in its block, after "How it was run".
+
 ## 0.5: the plan on the beach
 
 Since 29 October the plan lives on the beach, under the pocket beach
@@ -1217,11 +1310,11 @@ item 7 is now Stage 1's telling test (below).
 
 | Stage | Where it stands |
 |---|---|
-| 1. The measure and the controls | Each job's settings are built (in 0.5). The telling test is built in the core and run on the laptop; on the bench, with ten everyday things to say to her, it is not yet. |
-| 2. Let her talk | Built (in 0.5). |
+| 1. The measure and the controls | Each job's settings: released in 0.5. The telling test: run on the laptop; on the bench, timed for each model, in 0.6. Ten everyday things to say to her on the bench: not yet. |
+| 2. Let her talk | Released in 0.5. |
 | 3. Knowledge when it's needed | A first step is in 0.5: a block his words name that she can't see whole is read for her into the turn. Her instruction still lists every block's lines, and there is no primer yet. |
-| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app, not yet. |
-| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). Each job's settings are in Settings, but not yet a block he can change. On his Pixel, not yet. |
+| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app: built in 0.6, with his corrections kept as her examples. |
+| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). In the app: E4B a choice for each job, and its speed on his Pixel on the bench, in 0.6. Each job's settings are in Settings, not yet a block he can change. |
 | 6. Fine-tuning, only if needed | Not started. |
 
 ### Stage 1, the controls: each job's settings (0.5)
