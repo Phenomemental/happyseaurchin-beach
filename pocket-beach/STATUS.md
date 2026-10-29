@@ -4,6 +4,14 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.6.1** is released, from his first test of 0.6 on his
+Pixel. She answers him, and his turn is his words alone. Every line he is
+shown is his words, the rungs too. The day is sorted only when he taps
+"Sort as my day", and a misheard word is his to put right. The saved
+conversation carries everything. See "0.6.1: she answers him, and every
+line he is shown is his words". Its tag is at `d10629c` on main. Next is
+Matthew trying it (see "Next").
+
 **pocket-beach-v0.6** is released: Stage 4 in Ask, his corrections before
 Yes kept as the examples she is shown next time; and Gemma 4 E4B as a
 choice for each job, with the bench timing each model on his Pixel (see
@@ -734,6 +742,21 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - more room between the rows of a proposal;
   - after a post, "Posted" first;
   - the shell's notice reworded.
+
+### The 0.6.1 release
+
+- Its tag is at `d10629c` on main, published 29 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.6.1 (`versionCode` 14), for arm64 phones, 50 MB. Its SHA-256 is
+  `ce64b07cfde44ebab5d3c852963ce1df363af3c6f9de891d28825ef9ea5084c1`, the
+  same as GitHub's record of it.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else;
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there.
 
 ### The 0.6 release
 
