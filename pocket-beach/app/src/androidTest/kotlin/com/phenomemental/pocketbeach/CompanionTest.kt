@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.HelloWorld
@@ -26,6 +27,7 @@ import com.phenomemental.pocketbeach.model.ModelStore
 import com.phenomemental.pocketbeach.model.Pace
 import java.io.File
 import com.phenomemental.pocketbeach.net.HttpsWire
+import com.phenomemental.pocketbeach.ui.Asking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -324,6 +326,30 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "garden", "2.1")?.text == "mulch the beds" }
             assertEquals("one conversation for both asks, opened with the examples", 1, mind.histories.size)
             assertEquals(Talks.EXAMPLES, mind.histories.single())
+        }
+    }
+
+    /**
+     * Ask closes and opens as the model and the shell come ready, and the two
+     * run on other threads in either order (CI, twice): the close must never
+     * shut the conversation just opened, to be read again at the first ask.
+     */
+    @Test
+    fun askOpenedAsItClosesKeepsTheConversationForTheFirstAsk() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        val asking = app.asking
+        fun main(block: () -> Unit) = InstrumentationRegistry.getInstrumentation().runOnMainSync(block)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            repeat(10) {
+                val before = mind.histories.size
+                main { asking.reset(); asking.closed(); asking.opened() }
+                compose.waitUntil(5_000) { mind.histories.size == before + 1 }
+                Thread.sleep(300)
+                main { asking.question = "What's your name?"; asking.ask() }
+                compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over }
+                assertEquals("one conversation, opened once and kept for the first ask (round ${it + 1})", before + 1, mind.histories.size)
+            }
         }
     }
 

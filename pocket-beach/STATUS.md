@@ -10,6 +10,12 @@ the bench runs 0.4 on the CPU beside the GPU (see "What 0.4.1 changes").
 Its tag is at `73ed17a` on main. Next is Matthew running its bench and
 telling her something worth keeping (see "Next").
 
+Since 0.4.1, on main: opening Ask could now and then open her conversation
+and shut it again at once (the screen let its wait for the model go on
+another thread, in either order with the opening), so the first ask read
+her instruction a second time. Seen twice in CI; fixed, with a device test
+that repeats it. It goes out with the next build.
+
 **pocket-beach-v0.4** is released, finished against the Pixel's bench of 0.3
 (see "What 0.4 changes"). Its tag is at `62511f7` on main.
 
