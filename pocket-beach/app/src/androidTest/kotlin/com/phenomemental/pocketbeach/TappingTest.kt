@@ -1,6 +1,10 @@
 package com.phenomemental.pocketbeach
 
 import android.Manifest
+import android.app.Activity
+import android.app.Instrumentation
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.hasTestTag
@@ -11,13 +15,19 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
+import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.floorDepth
 import com.phenomemental.pocketbeach.bsp.parseJson
 import java.io.File
+import org.hamcrest.Matchers.allOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +67,37 @@ class TappingTest {
 
             val stored = parseJson(File(Fresh.app.filesDir, "regions/pocket/garden.json").readText()) as JsObj
             assertEquals(2, floorDepth(stored))
+        }
+    }
+
+    /**
+     * A block saved as a file is the block whole: shared and copied from the
+     * menu, 0.4.1's bench came through cut short, at about 19,000 characters.
+     * The phone's file picker is stood in for, answering with a file of the test's.
+     */
+    @Test
+    fun aBlockIsSavedAsAFileWhole() {
+        Fresh.clear()
+        val pages = Fresh.app.pages
+        pages.carryOut(pages.planNewBlock("long"))
+        repeat(9) { i -> pages.carryOut(pages.planAdd("long", "", "line ${i + 1}: " + "words ".repeat(400))) }
+        val file = File(Fresh.app.cacheDir, "saved-long.json").also { it.delete() }
+        Intents.init()
+        try {
+            Intents.intending(hasAction(Intent.ACTION_CREATE_DOCUMENT))
+                .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, Intent().setData(Uri.fromFile(file))))
+            ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("block:long")
+                compose.waitFor("standing", "long at pocket.")
+                compose.tap("save-file")
+                compose.waitFor("slip", "Saved long as a file, whole.")
+            }
+            Intents.intended(allOf(hasAction(Intent.ACTION_CREATE_DOCUMENT), hasExtra(Intent.EXTRA_TITLE, "long.json")))
+            val whole = Fresh.app.storage.read("long")!!
+            assertTrue("longer than the share that came through cut short: ${whole.length}", whole.length > 20_000)
+            assertEquals(whole, file.readText())
+        } finally {
+            Intents.release()
         }
     }
 

@@ -49,7 +49,7 @@ fun BenchScreen(model: Model, nav: Nav) {
         Text(
             "Twenty-three fixed asks, put to the companion one by one: seven to talk, six to read, eight to act (among them a line added beneath " +
                 "a plain line and a fresh hello world) and two things worth keeping. They are put four times: to 0.3's way of asking (before), then " +
-                "to 0.4's, with her first word held by the engine and then free, and then held on the CPU alone. Each is asked of " +
+                "to 0.4's, with her first word held by the engine and then free, as Ask has it, and then free on the CPU alone. Each is asked of " +
                 "a scratch copy of a small pocket (garden, notes, an empty Million and the companion's shell), so nothing of yours is written, and nothing is posted.",
             style = Type.body, color = ink.ink,
         )

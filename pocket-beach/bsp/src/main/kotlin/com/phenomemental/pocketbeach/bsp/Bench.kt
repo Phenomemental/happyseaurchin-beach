@@ -68,7 +68,7 @@ object Bench {
         Ask(9, Route.READ, "Read me the autumn line in garden.", says = listOf(listOf("plant the bulbs"))),
         Ask(10, Route.READ, "How many lines does my garden block have?", says = listOf(listOf("two", "2"))),
         Ask(11, Route.READ, "What's the opening line of my garden block?", says = listOf(listOf("through the year"))),
-        Ask(12, Route.READ, "Is there anything about roses in my garden block?", says = listOf(listOf("prune"))),
+        Ask(12, Route.READ, "Is there anything about roses in my garden block?", says = listOf(listOf("prune", "pruning"))),
         Ask(13, Route.ACT, "Add a line to garden: buy more compost.", writes = listOf(Want("garden", Kind.ADD, "3", "buy more compost"))),
         Ask(14, Route.ACT, "In garden, under the autumn line, note that the tulips came from Holland.", writes = listOf(Want("garden", Kind.ADD, "1.1", "tulips came from Holland"))),
         Ask(15, Route.ACT, "Under the winter line in garden, add: mulch the beds.", writes = listOf(Want("garden", Kind.ADD, "2.1", "mulch the beds"))),
@@ -246,20 +246,22 @@ object Bench {
     }
 
     /**
-     * The bench as one block: a summary for its opening line, then each
-     * companion's run (its summary, then talk, read and act, each ask a
-     * line), then how it was run.
+     * The bench as one block: a summary for its opening line, then how it
+     * was run, then each companion's run (its summary, then talk, read and
+     * act, each ask a line). A block is written with its opening last, so
+     * how it was run comes first: shared from Matthew's Pixel, 0.4.1's bench
+     * came through cut off at about 19,000 characters, twice, losing it.
      */
     fun block(runs: List<Run>, about: List<String>, whenMs: Long): JsObj {
         val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }
         val out = JsObj.of("_" to str(opening))
         var key = 1
-        for (run in runs) out["${key++}"] = runBlock(run)
         if (about.isNotEmpty()) {
             val group = JsObj.of("_" to str("How it was run"))
             about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
-            out["${key}"] = group
+            out["${key++}"] = group
         }
+        for (run in runs) out["${key++}"] = runBlock(run)
         return out
     }
 

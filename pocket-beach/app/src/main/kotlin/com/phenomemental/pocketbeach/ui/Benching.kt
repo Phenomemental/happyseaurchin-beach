@@ -56,7 +56,7 @@ class Benching(private val app: PocketApp) {
         const val BEFORE = "0.3 (one JSON plan, held)"
         const val HELD = "0.4, her first word held (route word, actions, streamed)"
         const val FREE = "0.4, her first word free (route word, actions, streamed)"
-        const val CPU = "0.4 on the CPU, her first word held (route word, actions, streamed)"
+        const val CPU = "0.4 on the CPU, her first word free (route word, actions, streamed)"
     }
 
     var stage by mutableStateOf<Stage>(Stage.Ready)
@@ -102,7 +102,7 @@ class Benching(private val app: PocketApp) {
                 }
                 stage = Stage.Probing("Keeping one conversation for three asks")
                 val keptGpu = withContext(Dispatchers.IO) { kept(mind) }
-                // Then on the CPU alone, beside the GPU: the same asks, and one conversation kept, where its slower reading falls on the first ask.
+                // Then on the CPU alone, beside the GPU: the same asks, free as in Ask, and one conversation kept, where its slower reading falls on the first ask.
                 stage = Stage.Probing("Loading the model on the CPU")
                 val cpu = try {
                     withContext(Dispatchers.IO) { mind.only("CPU") }
@@ -112,12 +112,12 @@ class Benching(private val app: PocketApp) {
                     for (ask in Bench.ASKS) {
                         stage = Stage.Asking(CPU, ask)
                         results += withContext(Dispatchers.IO) {
-                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, true) } }
+                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, false) } }
                         }
                     }
                     stage = Stage.Probing("Keeping one conversation for three asks, on the CPU")
                     val keptCpu = withContext(Dispatchers.IO) { kept(mind) }
-                    about += "One conversation kept for three asks, her first words after: on the GPU $keptGpu; on the CPU $keptCpu."
+                    about += "One conversation kept for three asks, her first word free as in Ask, her first words after: on the GPU $keptGpu; on the CPU $keptCpu."
                     Bench.Run(CPU, results.drop(from))
                 } finally {
                     withContext(Dispatchers.IO + NonCancellable) { runCatching { mind.only(null) } }

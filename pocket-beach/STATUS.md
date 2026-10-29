@@ -4,17 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.4.2** is being made, from the Pixel's bench of 0.4.1:
+her first word free in Ask, and opening Ask opens her conversation once
+(see "What 0.4.2 changes").
+
 **pocket-beach-v0.4.1** is released: the companion keeps what Matthew
 tells her that is worth keeping; block names match whatever their capitals;
 the bench runs 0.4 on the CPU beside the GPU (see "What 0.4.1 changes").
-Its tag is at `73ed17a` on main. Next is Matthew running its bench and
-telling her something worth keeping (see "Next").
-
-Since 0.4.1, on main: opening Ask could now and then open her conversation
-and shut it again at once (the screen let its wait for the model go on
-another thread, in either order with the opening), so the first ask read
-her instruction a second time. Seen twice in CI; fixed, with a device test
-that repeats it. It goes out with the next build.
+Its tag is at `73ed17a` on main. Matthew ran its bench on his Pixel on 29
+October.
 
 **pocket-beach-v0.4** is released, finished against the Pixel's bench of 0.3
 (see "What 0.4 changes"). Its tag is at `62511f7` on main.
@@ -45,6 +43,70 @@ and with it today's finish line, the hello world. Its tag is at `ec9cea3` on
 main, signed with the same key as 0.1 and 0.2, so it installs over them.
 Before it, wearing a shell offline was built and matched against the original
 (decisions 8–12).
+
+### What 0.4.2 changes
+
+From Matthew's bench of 0.4.1 on his Pixel 9 Pro XL (Tensor G4, Android 17),
+29 October. Each of the 23 asks was put in a conversation of its own:
+
+- 0.3, one JSON plan held to its form: 13 of 23 right, its answers after a
+  median of 25.4 s. It read a block to answer "What's your name?" and
+  "Good morning!".
+- 0.4 on the GPU, her first word held: 22 of 23, something showed after a
+  median of 4.7 s, answers done after 5.7 s.
+- 0.4 on the GPU, her first word free: 22 of 23, something showed after
+  1.8 s, answers done after 2.4 s.
+- 0.4 on the CPU alone, her first word held: 23 of 23, something showed
+  after 10.8 s, answers done after 11.2 s.
+
+What it says:
+
+- **Held and free gave the same answers**, word for word, on every ask.
+  With each ask in a conversation of its own, holding cost about 2.8 s
+  between the first token and her first words, on the GPU and the CPU
+  alike. In the one conversation kept for three asks, held, it cost
+  nothing that showed (below). Free is never slower and answered the
+  same, so her first word is free in Ask now; the next bench times the
+  kept conversation free, beside these held figures.
+- **The GPU reads much faster; the CPU writes about as fast.** The first
+  token came after 1.6 s on the GPU and 7.5 s on the CPU: that is the
+  reading of her instruction, about 1,300 tokens. After it, her words came
+  about as fast on either.
+- **In one conversation kept for three asks** (held), her first words
+  came after 1.9 s, then 0.5 s, then 0.6 s on the GPU, and after 8.5 s,
+  then 1.0 s, then 1.0 s on the CPU. The CPU's slower reading falls on the
+  first ask, as Matthew expected, and the asks after it are still about
+  twice as quick on the GPU. Ask stays on the GPU.
+- **The engine's probes:** speculative decoding off wrote 15.4 tokens a
+  second, on 13.1, so it stays off. The model loaded in about 3 s on the
+  GPU and on the CPU. No build of the model for the Tensor G4's NPU (only
+  for the G5 and G6).
+- **The share came through cut short.** Shared and copied from the menu,
+  the block stopped at the same place twice, at about 19,000 characters,
+  partway into "How it was run". A block is written with its opening
+  last, so "How it was run", its last part, and the opening's summary of
+  every run were what was lost. Matthew sent screenshots of the rest.
+- **The one miss on the GPU was the judge's.** For "Is there anything
+  about roses in my garden block?" she said "Yes, the garden block has a
+  line about winter pruning roses." The judge wanted "prune"; "pruning"
+  counts now.
+
+What 0.4.2 changes:
+
+- Her first word is free in Ask, and in the bench's conversation kept for
+  three asks. The bench still asks with it held once, to compare.
+- The bench's run on the CPU is free, as Ask is.
+- The bench's block puts "How it was run" first, so a share cut short
+  loses only the end of the last run.
+- **Save this block as a file**, under "Share this block": the block
+  whole, as a `.json` file where Matthew picks (Downloads, Drive), to keep
+  or attach. Only the one block, unlike the Shore's copy of the whole
+  pocket.
+- Opening Ask opens her conversation once. Now and then it opened it and
+  shut it again at once: the screen let its wait for the model go on
+  another thread, in either order with the opening. The first ask then read
+  her instruction a second time. Seen twice in CI; a device test repeats it.
+- Version 0.4.2 (`versionCode` 11).
 
 ### What 0.4.1 changes
 
@@ -802,59 +864,23 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. Matthew installs `pocket-beach-v0.4.1.apk` over 0.4. Then:
-   - **Ask, then "Run the bench".** It puts the 23 asks to 0.3's way, then
-     to 0.4's with her first word held, then free, then held on the CPU
-     alone; then one conversation kept for three asks on the GPU and on the
-     CPU, then the engine's probes. About half an hour; keep the app open.
-     Share the `bench-` block it keeps.
+1. Matthew installs `pocket-beach-v0.4.2.apk` over 0.4.1. Then:
+   - **Ask her things, one after another,** in one visit to Ask: a question,
+     a read ("What's in my garden block?"), an act ("Under the autumn line
+     in garden, note …"). Her words should begin to show within about 2 s
+     and stream; an act shows its writes for Yes.
    - **Tell her something worth keeping:** "I'm going to make a million
      pound…" with Million there. She should offer an add to Million; if she
      only talks, the app offers "Keep this in Million?". And something
      that fits no block: she should offer a new one.
-   - **Ask her things, one after another,** in one visit to Ask: a question,
-     a read ("What's in my garden block?"), an act ("Under the autumn line
-     in garden, note …"). Talk should begin to show at once and stream; an
-     act shows its writes for Yes. The first ask also reads her
-     instruction; the ones after should be quicker.
    - **Show timings** (Settings, from the Shore): under every answer, the
      time and GPU or CPU; off, nothing.
    - **Speaking a line with the keyboard up,** in Ask: the keyboard should
      go, and listening start. If it still says speech is busy, the message
-     now gives the phone's error number (10 or 8): send it back.
-2. With the Pixel's bench of 0.4: whether her first word stays held (it
-   costs a little once per conversation), and what comes next.
-3. **Built in 0.4.1** (see "What 0.4.1 changes"), from Matthew on 0.4's
-   Ask:
-   - **Keep what he says.** He told her "I'm going to make a million pound
-     by creating tech that changes the world… before the end of 2027". She
-     only chatted back, and only the ask log got a line.
-     - When he tells her something worth keeping (a goal, a plan, an idea,
-       something about his life), she should offer to keep it. It goes in
-       the block it belongs in if one fits, by its name or opening line.
-       Otherwise it goes in a new block named for it in a word or two, with
-       his words as its opening line. He sees it before Yes, as always.
-     - Chat like "good morning" or "thanks" stays chat.
-     - The rule that stops her now: 0.4 says act "only when Matthew asks
-       you to write", and "When unsure, talk".
-   - **The Million case.** He had made a block called Million (still empty,
-     its opening "Million at pocket."), then said that sentence. She could
-     see Million by name, and still only chatted.
-     - If she can't judge this reliably, the app does it: when his words
-       name one of his blocks, it shows "Keep this in Million?" under her
-       reply.
-     - Block names match whatever their capitals: speech writes "million",
-       and the block is "Million".
-   - **The bench:**
-     - asks of both kinds: things worth keeping, and chat;
-     - this exact case: an empty Million block, that sentence, and the
-       right answer is an add to Million;
-     - Gemma 4 E2B on the CPU as well as the GPU, the same asks, side by
-       side. On Tensor the Mali GPU is the weak part, and Google's own
-       LiteRT-LM table has the CPU nearly matching the GPU for E2B on new
-       phones. With the conversation kept, the CPU's slower reading of the
-       instruction should fall mostly on the first ask.
-4. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+     gives the phone's error number (10 or 8): send it back.
+   - **The bench, if he likes** (about half an hour): its `bench-` block,
+     with "Save this block as a file", and the file attached.
+2. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 

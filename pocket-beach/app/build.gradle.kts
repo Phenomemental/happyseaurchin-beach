@@ -15,8 +15,8 @@ android {
         applicationId = "com.phenomemental.pocketbeach"
         minSdk = 31
         targetSdk = 37
-        versionCode = 10
-        versionName = "0.4.1"
+        versionCode = 11
+        versionName = "0.4.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -78,5 +78,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test:rules:1.7.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.7.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
