@@ -4,10 +4,11 @@ Current state only. Newest first.
 
 ## Now
 
-**0.6** is being built on `ccr-4c84d736-pvgv13`: Stage 4 in Ask, his
-corrections before Yes kept as the examples she is shown next time; and
-Gemma 4 E4B as a choice for each job, with the bench timing each model on
-his Pixel (see "0.6: his day, sorted").
+**pocket-beach-v0.6** is released: Stage 4 in Ask, his corrections before
+Yes kept as the examples she is shown next time; and Gemma 4 E4B as a
+choice for each job, with the bench timing each model on his Pixel (see
+"0.6: his day, sorted"). Its tag is at `742b981` on main. Next is Matthew
+trying it (see "Next").
 
 **pocket-beach-v0.5** is released: Stage 1's settings and Stage 2, let her
 talk (see "0.5: the plan on the beach"). Matthew saw the pictures of the new
@@ -734,6 +735,21 @@ About, in Matthew's book look, with `Pages` and `Copies` beneath them. Since
   - after a post, "Posted" first;
   - the shell's notice reworded.
 
+### The 0.6 release
+
+- Its tag is at `742b981` on main, published 29 October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.6 (`versionCode` 13), for arm64 phones, 50 MB. Its SHA-256 is
+  `58e83c09d72076cf2000a231fdf6240ad64172bd9c5b5706b691fc5da6ed6ea7`.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else (E4B
+    comes through them);
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there.
+
 ### The 0.5 release
 
 - Its tag is at `c234904` on main, published 29 October.
@@ -903,34 +919,37 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. **Pictures of the new Ask go to Matthew** (from CI's screen tour), and
-   0.5 is released when he has seen them.
-2. **Matthew installs 0.5 over 0.4.2. Then:**
-   - **Talk to her, one thing after another,** in one visit to Ask:
-     - a greeting;
-     - a question;
-     - something told ("I'm going to make a million pound…");
-     - an ask to write ("Add to shopping: oat milk").
-     She should reply to every one in her own words, and what she proposes
-     to write should show beneath her reply, for Yes. Her first words
-     should come within about 2 s; the proposal comes after.
-   - **The Details switch:** her shell, how each ask ended, and the times;
-     off, only the conversation.
-   - **Settings, Talk:** turn the temperature down or up and talk again.
-     "Back to Edge's settings" puts it back.
-   - **Save the conversation as a file,** and send it back with what he
-     makes of her talk beside Edge's.
-   - If she says the Write job couldn't answer, or the two jobs seem
-     slow, the phone may not keep two conversations side by side: the
-     file says so.
-3. **On the laptop and in the app, next** (his choice of 29 October, all
-   three together):
-   - Stage 4 in the app: the telling's landing as one proposal, any line
-     unticked or moved before Yes, each move kept as a worked example she
-     is shown next time.
-   - Stage 5: E4B on his Pixel, for speed.
-   - Stage 1's bench: the telling test, written and spoken, and ten
-     everyday things to say to her.
+1. **Matthew installs `pocket-beach-v0.6.apk` over 0.5.** It keeps his
+   blocks. Then:
+   - **Tell her your day in Ask**, as you'd tell it, typed or spoken: a few
+     sentences or more.
+     - She replies first.
+     - Then "Placing your day, a piece at a time: … of …", and your day
+       comes back as one proposal: the day, the hand, the rungs, and any
+       sentence she put nowhere.
+     - Untick what's wrong, or Move it, then "Yes, keep my day".
+     - Each move is kept as an example for her next time.
+     - Your day lands in `now`, on today's date; the hand and the rungs in
+       `telling`.
+     - If something told doesn't come back sorted, "Sort this into your
+       day" sorts it.
+   - **The next day's telling**, or news of a card ("Rang the garage…"),
+     should update the card, not add another.
+   - **Get Gemma 4 E4B** in Settings (3.7 GB, over Wi-Fi). Then, on the
+     bench, "Time each model on your day", and send back its
+     `bench-models-` block, saved as a file. That gives E4B's speed on his
+     Pixel beside E2B, and both on the telling test.
+   - **Set a job to E4B**, Sort first, and tell your day again.
+   - What 0.5 asked for still stands: talk to her, the Details switch,
+     Talk's settings, and save the conversation as a file.
+2. **From what his Pixel says:**
+   - which model for which job (Stage 5, his to decide);
+   - whether the sort needs more than his examples (Stage 6 only if
+     needed).
+3. **Not yet built:**
+   - Stage 1's ten everyday things to say to her, on the bench;
+   - Stage 3's primer, and her instruction as an index only;
+   - Stage 5's settings kept in a block he can change.
 4. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
@@ -1298,6 +1317,30 @@ E4B as a choice for each job, with its speed on my Pixel."
 - The run is kept as `bench-models-` and the date. The full bench runs the
   same, kept second in its block, after "How it was run".
 
+### Found on the way
+
+- **A clock hung the app.** CI's first run of 0.6 timed out on four tests.
+  After his first Yes, her instruction lists the pocket's blocks, the clock
+  among them, and opening a block counted the summaries it owes by walking
+  every path to its floor: 9^9 (387 million) on the clock's floor-10 form.
+  Every ask after waited on it, and so did the bench.
+  - Owed summaries are now counted only up to floor 6; a pocket
+    accumulator is far below it.
+  - A clock is named in her instructions without its days read in, and is
+    never read into a turn.
+  - A core test opens a landed clock, and builds her instructions and a
+    turn, within ten seconds.
+- **A wait that times out in the device tests now says why:** Ask's stage,
+  how its last exchange ended, whether its conversations are in use, and
+  the bench's stage.
+- **Tests.**
+  - Core: 125, every one passing.
+  - On the emulator: all passing. Among the new ones:
+    - his day sorted after her reply, one line unticked and one moved,
+      then the second telling with his move in her instruction;
+    - each model timed on the telling test;
+    - each job's settings.
+
 ## 0.5: the plan on the beach
 
 Since 29 October the plan lives on the beach, under the pocket beach
@@ -1310,11 +1353,11 @@ item 7 is now Stage 1's telling test (below).
 
 | Stage | Where it stands |
 |---|---|
-| 1. The measure and the controls | Each job's settings: released in 0.5. The telling test: run on the laptop; on the bench, timed for each model, in 0.6. Ten everyday things to say to her on the bench: not yet. |
+| 1. The measure and the controls | Each job's settings: released in 0.5. The telling test: run on the laptop; on the bench, timed for each model, released in 0.6. Ten everyday things to say to her on the bench: not yet. |
 | 2. Let her talk | Released in 0.5. |
 | 3. Knowledge when it's needed | A first step is in 0.5: a block his words name that she can't see whole is read for her into the turn. Her instruction still lists every block's lines, and there is no primer yet. |
-| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app: built in 0.6, with his corrections kept as her examples. |
-| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). In the app: E4B a choice for each job, and its speed on his Pixel on the bench, in 0.6. Each job's settings are in Settings, not yet a block he can change. |
+| 4. Sorting in small steps | On the laptop: when by code from a block of time words, she judges only the day, a piece at a time. 8 of 11 marks on both tellings with E2B (below). In the app: released in 0.6, with his corrections kept as her examples. |
+| 5. A model for each job | On the laptop: E4B beside E2B on Stage 4 (below). In the app: E4B a choice for each job, and the bench to time it on his Pixel, released in 0.6; his Pixel's numbers not yet. Each job's settings are in Settings, not yet a block he can change. |
 | 6. Fine-tuning, only if needed | Not started. |
 
 ### Stage 1, the controls: each job's settings (0.5)
