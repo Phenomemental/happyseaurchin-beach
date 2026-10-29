@@ -210,6 +210,57 @@ object Bench {
         }
     }
 
+    /** 0.6.1: what Matthew said on his Pixel on 29 October at 17:37, as the phone heard it ("torque" is "talk"). */
+    const val GEMMA_ASK = "Hey I'm quite happy to call you Gemma I like Gemma and one of the main things that I'm trying to produce is a tool " +
+        "that I can just waffle on to torque and speak and highly complex verbal slop really"
+
+    /**
+     * 0.6.1: a fixed ask for the Talk job as Ask puts it now, his words alone:
+     * right only if her reply, as Ask shows it, plays none of her turn back
+     * and answers him: takes the name [name] as hers, or says one of
+     * [orSays]; and, given [onShell], if the Write job proposes a line on her
+     * shell that holds it, for his yes.
+     */
+    class TalkAsk(val n: Int, val question: String, val name: String, val orSays: List<String> = emptyList(), val onShell: String? = null)
+
+    val TALK_ASKS: List<TalkAsk> = listOf(
+        TalkAsk(21, GEMMA_ASK, "Gemma", orSays = listOf("tool")),
+        TalkAsk(22, "I'd like to call you Gemma", "Gemma", onShell = "gemma"),
+    )
+
+    /** Whether [said] takes [name] as hers ("I'm Gemma", "call me Gemma", "Gemma it is"), not his ("Hello, Gemma", "I'll call you Gemma"). */
+    fun takesName(said: String, name: String): Boolean {
+        val n = Regex.escape(name)
+        return Regex("""\b(i'm|i am|call me|be|called|name is|name's)\s+(?:now\s+)?$n\b|\b$n\s+(it is|is my name|is fine|suits me|is lovely|is perfect)""", RegexOption.IGNORE_CASE).containsMatchIn(said)
+    }
+
+    /** Whether her words, as Ask shows them, answer [ask]. */
+    fun answers(ask: TalkAsk, shown: String): Boolean = takesName(shown, ask.name) || ask.orSays.any { shown.contains(it, ignoreCase = true) }
+
+    /** What makes her [reply] (as she wrote it) and the Write job's [proposal] wrong for [ask]; empty when right. */
+    fun judgeTalk(ask: TalkAsk, reply: String, proposal: Proposal?): List<String> = buildList {
+        val copied = Talking.copied(reply, ask.question, HelloWorld.SHELL_OPENING)
+        if (copied.isNotEmpty()) add("She played her turn back: " + copied.joinToString(" / ") { "“${it.trim().take(120)}”" } + ".")
+        val shown = Talking.unechoed(reply, ask.question, HelloWorld.SHELL_OPENING)
+        if (shown.isBlank()) add("She said nothing of her own.")
+        else if (!answers(ask, shown)) add("She didn't answer him: she didn't take the name ${ask.name}" + ask.orSays.joinToString("") { " or speak to the $it" } + ".")
+        ask.onShell?.let { word ->
+            val onShell = proposal?.writes.orEmpty().filter { !it.step.byApp && it.plan.block == HelloWorld.SHELL }
+            if (proposal?.refusal != null) add("The Write job's plan can't go ahead: ${proposal.refusal}")
+            else if (onShell.none { (it.text ?: it.plan.text).contains(word, ignoreCase = true) }) add("The Write job didn't propose \"$word\" as a line on her shell.")
+        }
+    }
+
+    /** One Talk ask's result, as a line for the bench's block. */
+    fun talkLine(ask: TalkAsk, reply: String, proposal: Proposal?, ms: Long): String {
+        val problems = judgeTalk(ask, reply, proposal)
+        val shown = Talking.unechoed(reply, ask.question, HelloWorld.SHELL_OPENING).replace("\n", " / ")
+        val wrote = proposal?.writes.orEmpty().filter { !it.step.byApp }.joinToString("; ") { "${it.plan.block}: ${(it.text ?: it.plan.text).take(100)}" }
+        return "${ask.n}. ${if (problems.isEmpty()) "right" else "WRONG"} in ${secs(ms)} s: “${ask.question.take(60)}${if (ask.question.length > 60) "…" else ""}” " +
+            "She said: “${shown.take(300)}”" + (if (ask.onShell != null) " The Write job proposed: ${wrote.ifEmpty { "nothing" }}." else "") +
+            problems.takeIf { it.isNotEmpty() }?.joinToString(" ", prefix = " ").orEmpty()
+    }
+
     /** One ask's result. */
     class Result(val ask: Ask, val did: Did, val problems: List<String>) {
         val right: Boolean get() = problems.isEmpty()

@@ -15,8 +15,8 @@ android {
         applicationId = "com.phenomemental.pocketbeach"
         minSdk = 31
         targetSdk = 37
-        versionCode = 13
-        versionName = "0.6"
+        versionCode = 14
+        versionName = "0.6.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

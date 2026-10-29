@@ -30,10 +30,10 @@ class TellingTest {
         2.3: Jo's birthday is on the twelfth
         2.4: Before the frost comes I want the garden shut down properly for once
         2.5: One day I want a job where mornings aren't a fight
-        3.1: I ring the garage and get to the dentist.
-        3.2: I mark Jo's birthday.
-        3.3: I shut the garden down before the frost.
-        3.4: I keep the kids seeing me calm.
+        3.1: I'm ringing the garage tomorrow
+        3.2: Jo's birthday is on the twelfth
+        3.3: Before the frost comes I want the garden shut down properly for once
+        3.4: The thing I keep coming back to is the kids seeing me calm
     """.trimIndent()
 
     @Test
@@ -68,13 +68,13 @@ class TellingTest {
     @Test
     fun wordsNotHisAreRefusedAndSentencesLeftOutAreListed() {
         val checked = Telling.check(Telling.WRITTEN, Telling.placed("1.1: The car wouldn't START again this morning!\n1.2: I felt embarrassed\n2.1: ring the garage\n3.1: I'll sort the car."))
-        assertEquals(listOf("I felt embarrassed", "ring the garage"), checked.invented.map { it.words })
-        // A rung is hers to word, in his voice; the day and the hand are his words.
-        assertEquals(listOf("1.1", "3.1"), checked.kept.map { it.place })
+        // 0.6.1: the rungs too are his words; a rung she wrote herself is refused like any other line.
+        assertEquals(listOf("I felt embarrassed", "ring the garage", "I'll sort the car."), checked.invented.map { it.words })
+        assertEquals(listOf("1.1"), checked.kept.map { it.place })
         assertEquals(10, checked.dropped.size)
         assertFalse(checked.dropped.any { it.startsWith("Right, so the car") })
         val marks = Telling.marks(Telling.WRITTEN, Telling.placed("1.1: the bus\n3.1: You ring the garage."))
-        assertFalse(marks.single { it.name == "Every line in the first person" }.met)
+        assertFalse(marks.single { it.name == "Nothing invented" }.met, "a rung in her words, as \"you\", is invented")
     }
 
     @Test
@@ -83,14 +83,16 @@ class TellingTest {
         val landed = Telling.land(Telling.shape(), first.kept)
         assertEquals("I'm ringing the garage tomorrow", Telling.cards(landed)["2.1.1"])
         assertEquals(5, Telling.cards(landed).size)
-        assertEquals("I ring the garage and get to the dentist.", Telling.rungs(landed)["3.1.1"])
+        assertEquals("I'm ringing the garage tomorrow", Telling.rungs(landed)["3.1.1"])
         // The same words again, on another shelf: not doubled.
         assertEquals(5, Telling.cards(Telling.land(landed, listOf(Telling.Placed("2.2", null, "I'm ringing the garage tomorrow")))).size)
-        // The second telling names the card at its own address: updated, the rungs refreshed.
+        // The second telling names the card at its own address: updated. A rung in her words is refused, and the rung keeps its line.
         val second = Telling.check(Telling.SECOND, Telling.placed("1.1: Rang the garage first thing\n2.1.1: Rang the garage first thing, they're coming Monday\n3.1: I get the car fixed on Monday."))
         val after = Telling.land(landed, second.kept)
         assertEquals("Rang the garage first thing, they're coming Monday", Telling.cards(after)["2.1.1"])
-        assertEquals("I get the car fixed on Monday.", Telling.rungs(after)["3.1.1"])
+        assertEquals("I'm ringing the garage tomorrow", Telling.rungs(after)["3.1.1"])
+        // One of his pieces lifted to a rung replaces its line.
+        assertEquals("they're coming Monday", Telling.rungs(Telling.land(landed, Telling.placed("3.1: they're coming Monday")))["3.1.1"])
         for (m in Telling.secondMarks(after)) assertTrue(m.met, "${m.name}: ${m.note}")
         // A second card for the garage is what the mark is for.
         val doubled = Telling.land(landed, Telling.placed("2.2: Rang the garage first thing, they're coming Monday"))
@@ -278,11 +280,11 @@ class TellingTest {
             "The meeting went on forever" to "happened", "Sam said something that stuck with me" to "happened", "that I'm always the one apologising" to "thought",
             "Felt rotten about the morning" to "felt", "that hot-faced thing" to "felt", "Walked home the long way by the water" to "happened", "felt lighter by the end of it" to "felt",
             "Dentist on Thursday" to "ahead", "I keep forgetting" to "thought", "I've decided I'm ringing the garage tomorrow" to "chose", "not fiddling with it myself again" to "chose",
-            "Before the frost comes I want the garden shut down properly for once" to "ahead", "The thing I keep coming back to is the kids seeing me calm" to "matters", "not this" to "matters",
+            "Before the frost comes I want the garden shut down properly for once" to "ahead", "The thing I keep coming back to is the kids seeing me calm, not this" to "matters",
             "One day I want a job where mornings aren't a fight" to "matters",
         )
         val (placed, _) = Telling.sorted(Telling.WRITTEN, Telling.BENCH_DAY, Whens.first(), Telling.shape(), { words.getValue(it) }, { _, _ -> false })
-        val all = placed + Telling.placed("3.1: I ring the garage tomorrow.")
+        val all = placed + Telling.placed("3.1: I've decided I'm ringing the garage tomorrow")
         for (m in Telling.marks(Telling.WRITTEN, all)) assertTrue(m.met, "${m.name}: ${m.note}")
         // The second telling: "garage" is on a card, she says the piece is about it, and the card takes his sentence whole.
         val state = Telling.land(Telling.shape(), Telling.check(Telling.WRITTEN, all).kept)

@@ -31,7 +31,7 @@ class LandingTest {
         1.6: Dentist on Thursday, I keep forgetting
         2.1: I'm ringing the garage tomorrow
         2.2: Dentist on Thursday
-        3.1: I ring the garage and get to the dentist.
+        3.1: I'm ringing the garage tomorrow
         """.trimIndent(),
     )
 
@@ -64,7 +64,7 @@ class LandingTest {
         // The hand and the rungs, in his structure block.
         val hand = parseJson(storage.read(Landing.TELLING)!!) as JsObj
         assertEquals("I'm ringing the garage tomorrow", Telling.cards(hand)["2.1.1"])
-        assertEquals("I ring the garage and get to the dentist.", Telling.rungs(hand)["3.1.1"])
+        assertEquals("I'm ringing the garage tomorrow", Telling.rungs(hand)["3.1.1"])
         assertTrue(deepEqual(Whens.first(), parseJson(storage.read(Whens.BLOCK)!!)))
     }
 

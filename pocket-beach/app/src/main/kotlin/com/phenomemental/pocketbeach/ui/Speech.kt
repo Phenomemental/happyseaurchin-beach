@@ -73,7 +73,9 @@ class OnDeviceRecogniser(context: Context) : Recogniser {
             Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
-                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true),
+                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                // 0.6.1: his own sentences, punctuated, where the phone can (Android 13 on), so the pocket cuts his speech where he paused.
+                .apply { if (android.os.Build.VERSION.SDK_INT >= 33) putExtra(RecognizerIntent.EXTRA_ENABLE_FORMATTING, RecognizerIntent.FORMATTING_OPTIMIZE_QUALITY) },
         )
     }
 

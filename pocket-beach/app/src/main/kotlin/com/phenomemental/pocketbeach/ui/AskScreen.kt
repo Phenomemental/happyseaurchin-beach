@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import android.net.Uri
@@ -206,7 +207,7 @@ fun AskScreen(model: Model, nav: Nav) {
                 DayProposed(asking, stage.day, details, moving = false)
                 Text("Writing your day…", style = Type.aside, color = ink.soft)
             }
-            is Asking.Stage.Shown -> Proposed(asking.question, stage, details)
+            is Asking.Stage.Shown -> Proposed(asking.question, stage, details, sortAsDay = if (asking.sortable) asking::sortAsDay else null)
             is Asking.Stage.Declining -> {
                 Proposed(asking.question, stage.shown, details)
                 Label("Why not now?")
@@ -318,10 +319,11 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
     Label("Your day, sorted")
     Text(
         "Every line is your words. Untick a line to leave it out, or move it to another place: each move is kept, " +
-            "to show her next time how you'd place it.",
+            "to show her next time how you'd place it. Tap a line to put a misheard word right.",
         style = Type.small, color = ink.soft,
     )
     var choosing by remember { mutableStateOf<Int?>(null) }
+    var correcting by remember { mutableStateOf<Int?>(null) }
     val groups = listOf(
         "Today, on your clock" to Telling.DAY,
         "Your hand" to Telling.HAND,
@@ -336,7 +338,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
                 val at = here.filter { it.value.place == place }
                 if (at.isEmpty()) continue
                 Text(Landing.name(place), style = Type.name, color = ink.ink, modifier = Modifier.padding(top = 8.dp))
-                for ((i, line) in at) DayLine(i, line, moving && place !in Telling.RUNGS, moving, { asking.tick(i) }, { choosing = i })
+                for ((i, line) in at) DayLine(i, line, moving && place !in Telling.RUNGS, moving, { asking.tick(i) }, { choosing = i }, { correcting = i })
             }
         }
     }
@@ -344,7 +346,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
     if (unplaced.isNotEmpty()) {
         Label("Not placed")
         Text("Sentences of yours she put nowhere. Place one, and it lands there.", style = Type.small, color = ink.soft)
-        for ((i, line) in unplaced) DayLine(i, line, moving, moving, {}, { choosing = i })
+        for ((i, line) in unplaced) DayLine(i, line, moving, moving, {}, { choosing = i }, { correcting = i })
     }
     if (d.sorting.invented.isNotEmpty() && details) {
         Text("Left out, as not your words: " + d.sorting.invented.joinToString("; ") { Words.quoted(it.words, 80) }, style = Type.small, color = ink.soft, modifier = Modifier.testTag("day-invented"))
@@ -355,6 +357,20 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
             style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
         )
         Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
+    }
+    // A word the phone misheard, put right: his correction counts as his words.
+    correcting?.let { i ->
+        var words by remember(i) { mutableStateOf(d.lines[i].words) }
+        PaperDialog(
+            "Put a word right", onDismiss = { correcting = null },
+            actions = {
+                TextLink("Not now", { correcting = null }, tag = "day-correct-not-now")
+                TextLink("Keep it", { asking.correct(i, words); correcting = null }, tag = "day-correct-keep")
+            },
+        ) {
+            Text("As the phone heard it: " + Words.quoted(d.lines[i].heard ?: d.lines[i].words, 300), style = Type.small, color = ink.soft)
+            PaperField(words, { words = it }, "Your words", tag = "day-correct-field", focus = true)
+        }
     }
     choosing?.let { i ->
         PaperDialog("Where does it go?", onDismiss = { choosing = null }, actions = { TextLink("Not now", { choosing = null }, tag = "day-move-not-now") }) {
@@ -373,7 +389,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
 
 /** One line of the day: ticked or not, his words, and, if he moved it, from where. */
 @Composable
-private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Boolean, tick: () -> Unit, move: () -> Unit) {
+private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Boolean, tick: () -> Unit, move: () -> Unit, correct: () -> Unit) {
     val ink = LocalInk.current
     Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
         if (line.place != null) Checkbox(
@@ -382,7 +398,12 @@ private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Bool
             modifier = Modifier.testTag("day-tick:$i"),
         )
         Column(Modifier.weight(1f).padding(top = if (line.place == null) 0.dp else 10.dp, start = if (line.place == null) 0.dp else 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(line.words, style = Type.body, color = if (line.ticked || line.place == null) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
+            // Tapped, his words open to put a misheard word right.
+            Text(
+                line.words, style = Type.body, color = if (line.ticked || line.place == null) ink.ink else ink.soft,
+                modifier = Modifier.then(if (tickable) Modifier.clickable(onClickLabel = "Put a word right", onClick = correct) else Modifier).testTag("day-words:$i"),
+            )
+            if (line.corrected) Text("You put it right; the phone heard " + Words.quoted(line.heard ?: "", 200) + ".", style = Type.small, color = ink.crimson)
             if (line.card != null) Text("Updates the card already on this shelf.", style = Type.small, color = ink.soft)
             if (line.moved) Text("You moved it here" + (line.from?.takeIf { it.isNotEmpty() }?.let { " from ${Landing.name(it)}" } ?: "") + ".", style = Type.small, color = ink.crimson)
             if (movable) TextLink(if (line.place == null) "Place it" else "Move", move, tag = "day-move:$i")
@@ -392,11 +413,13 @@ private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Bool
 
 /** What the companion said and proposes, before anything is written. */
 @Composable
-private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boolean) {
+private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boolean, sortAsDay: (() -> Unit)? = null) {
     val ink = LocalInk.current
     His(question)
     val answer = shown.asked.answer
     if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
+    // 0.6.1: his words could be a day: one quiet link under her reply, and nothing sorted unless he taps it.
+    sortAsDay?.let { TextLink("Sort as my day", it, tag = "sort-as-day") }
     if (shown.asked.found.isNotEmpty()) {
         Label("What it read")
         SelectionContainer { Text(shown.asked.found.joinToString("\n\n"), style = Type.call, color = ink.soft) }
@@ -546,9 +569,9 @@ private fun Over(model: Model, over: Asking.Stage.Over, details: Boolean) {
     model.app.asking.keepIn?.let { block ->
         TextLink("Keep this in $block?", { model.app.asking.keep() }, tag = "keep-in")
     }
-    // What he said wasn't read as his day, and nothing was proposed: he can have it sorted as one.
-    if (over.shown != null && over.carried == null && over.shown.asked.proposal == null && model.app.asking.history.lastOrNull()?.outcome == null) {
-        TextLink("Sort this into your day", { model.app.asking.sortAsDay() }, tag = "sort-as-day")
+    // 0.6.1: his words could be a day, and nothing is sorted unless he asks: one quiet link.
+    if (over.shown != null && model.app.asking.sortable) {
+        TextLink("Sort as my day", { model.app.asking.sortAsDay() }, tag = "sort-as-day")
     }
     // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
     val last = model.app.asking.history.lastOrNull()

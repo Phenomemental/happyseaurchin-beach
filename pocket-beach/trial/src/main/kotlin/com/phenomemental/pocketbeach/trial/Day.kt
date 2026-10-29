@@ -114,7 +114,7 @@ internal fun pieces(engine: Engine, tellings: List<Pair<String, String>>, out: F
                     }
                 }
                 val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = off)).use { r ->
-                    send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling))
+                    send(r, Telling.rewrittenRungsAsk(state, Telling.BENCH_DAY, telling))
                 }
                 log.append("rungs -> ${rungs.text.trim()}\n")
                 return Telling.fromPieces(telling, labelled, rungs.text) to "${pieces.size} pieces, ${"%.1f".format((System.nanoTime() - start) / 1e9)} s in all with the rungs, first tokens ${firsts.take(3).joinToString(", ")}, …"
@@ -166,9 +166,13 @@ internal fun stage4(engine: Engine, label: String, tellings: List<Pair<String, S
                 )
                 for (st in steps) if (st.whenBy != null) log.append("  when: \u201c${st.piece}\u201d by \u201c${st.whenBy}\u201d -> ${st.places.last()}\n")
                 val sorting = (System.nanoTime() - start) / 1e9
-                val rungs = engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 256, thinkingConfig = off)).use { r -> send(r, Telling.rungsAsk(state, Telling.BENCH_DAY, telling)) }
-                log.append("rungs -> ${rungs.text.trim()}\n")
-                val rungLines = Telling.placed(rungs.text).filter { it.place in Telling.RUNGS }
+                // 0.6.1: a rung his words bear on is given one of his pieces, or left; nothing is asked when none bears on one.
+                val rungStart = System.nanoTime()
+                val rungLines = Telling.rungsFor(state, steps) { ask ->
+                    engine.createConversation(ConversationConfig(samplerConfig = sampler, maxOutputToken = 64, thinkingConfig = off)).use { r -> send(r, ask).text }
+                        .also { log.append("rungs -> ${it.trim()}\n") }
+                }
+                val rungs = Reply("", "rungs, ${"%.1f".format((System.nanoTime() - rungStart) / 1e9)} s in all")
                 return (placed + rungLines) to "${steps.size} pieces sorted in ${"%.1f".format(sorting)} s (first tokens median ${"%.1f".format(firsts.sorted().getOrElse(firsts.size / 2) { 0.0 })} s), rungs in ${rungs.timing.substringAfter(", ").substringBefore(" in all")}"
             }
             val (placed, timing) = sort(Telling.shape(), said)

@@ -11,6 +11,7 @@ import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Shells
+import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.Telling
@@ -161,7 +162,8 @@ class Benching(private val app: PocketApp) {
             try {
                 val mind = app.mind
                 withContext(Dispatchers.IO) { app.asking.letGo() }
-                val about = listOf(phone(), "The companion: ${companion(mind)}.", "The Sort job's settings, each model in turn: " + settingsLine(app.settings(MindJob.SORT)) + ".")
+                val about = listOf(phone(), "The companion: ${companion(mind)}.", "The Sort job's settings, each model in turn: " + settingsLine(app.settings(MindJob.SORT)) + ".",
+                    "The Talk job's settings, each model in turn: " + settingsLine(app.settings(MindJob.TALK)) + "; the Write job's: " + settingsLine(app.settings(MindJob.WRITE)) + ".")
                 val models = withContext(Dispatchers.IO) { models(mind) }
                 val name = "bench-models-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
                 val block = Bench.block(emptyList(), about, System.currentTimeMillis(), models)
@@ -202,10 +204,53 @@ class Benching(private val app: PocketApp) {
                     plain.fold({ a -> "a plain answer, " + (a.turn?.let { t -> "first token ${t.firstTokenSeconds?.let { "%.1f".format(Locale.UK, it) } ?: "?"} s, ${t.wrote} tokens at ${"%.1f".format(Locale.UK, t.writePerSecond)} a second, " } ?: "") + "${Bench.secs(a.ms)} s in all." }, { "a plain answer failed (${it.message})." }),
             )
             if (load.isFailure) continue
+            stage = Stage.Probing("${spec.name}: the Talk job, his message of 29 October")
+            addAll(runCatching { talkAsks(mind, spec.name) }.getOrElse { listOf("${spec.name}, the Talk job: it failed (${it.message}).") })
             for ((told, said) in listOf("written" to Telling.WRITTEN, "spoken" to Telling.SPOKEN)) {
                 stage = Stage.Probing("${spec.name}: the telling test, $told")
                 add(runCatching { tellingTest(mind, s, said) }.getOrElse { "the telling test failed (${it.message})" }.let { "${spec.name}, the telling test, $told: $it" })
             }
+        }
+    }
+
+    /**
+     * 0.6.1, with [model] and the Talk job's settings: what makes her play her
+     * turn back, his message of 29 October put to her each way tried on the
+     * laptop (one reply each, as the app draws them), then the Talk job's two
+     * fixed asks as Ask puts them now, each with the Write job's proposal
+     * where his words may ask for a write. A scratch pocket; nothing written.
+     */
+    private suspend fun talkAsks(mind: Mind, model: String): List<String> = buildList {
+        val talk = app.settings(MindJob.TALK).copy(model = model)
+        val write = app.settings(MindJob.WRITE).copy(model = model)
+        val nowMs = System.currentTimeMillis()
+        val now = java.time.ZonedDateTime.now()
+        val (_, fixture) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
+        val q = Bench.GEMMA_ASK
+        val ways = listOf(
+            "his message alone" to (null to q),
+            "her 0.6 instruction" to (Talking.instruction(HelloWorld.SHELL, fixture) to q),
+            "0.6, the date and her shell in his turn" to (Talking.instruction(HelloWorld.SHELL, fixture) to Talking.turn(q, now, HelloWorld.SHELL, fixture)),
+            "0.6.1, the time and her shell in her instruction, his words alone" to (Talking.instruction(HelloWorld.SHELL, fixture, now, q) to Talking.said(q)),
+        )
+        for ((name, way) in ways) {
+            val a = mind.ask(way.first, way.second, talk.copy(longestReply = 300))
+            val copied = Talking.copied(a.text, q, HelloWorld.SHELL_OPENING)
+            val shown = Talking.unechoed(a.text, q, HelloWorld.SHELL_OPENING)
+            val answers = Bench.answers(Bench.TALK_ASKS.first(), shown)
+            add("$model, the Talk job, $name: " + (if (copied.isEmpty()) "plays nothing back" else "PLAYS HER TURN BACK") + ", " + (if (answers) "answers him" else "doesn't answer him") +
+                " (${Bench.secs(a.ms)} s): “${a.text.replace("\n", " / ").take(240)}”")
+        }
+        for (ask in Bench.TALK_ASKS) {
+            val (storage, pages) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
+            val a = mind.ask(Talking.instruction(HelloWorld.SHELL, pages, now, ask.question), Talking.said(ask.question), talk)
+            val proposal = if (!Talking.mayWrite(ask.question)) null else {
+                val window = Shells(storage, app.shelf).wear(HelloWorld.SHELL, nowMs).window
+                mind.talker(Talks.instruction(HelloWorld.SHELL, window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false), Talks.opening(emptyList()), settings = write).use { t ->
+                    Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, answerReads = false).planned?.proposal
+                }
+            }
+            add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms))
         }
     }
 
@@ -223,8 +268,11 @@ class Benching(private val app: PocketApp) {
             )
             val sorting = (System.nanoTime() - started) / 1_000_000
             val rungStarted = System.nanoTime()
-            val rungs = Telling.placed(ask(null, Telling.rungsAsk(state, Telling.BENCH_DAY, telling), s.copy(longestReply = maxOf(256, s.longestReply)))).filter { it.place in Telling.RUNGS }
-            return (placed + rungs) to "${steps.size} pieces in ${Bench.secs(sorting)} s, the rungs in ${Bench.secs((System.nanoTime() - rungStarted) / 1_000_000)} s"
+            // 0.6.1: a rung is asked about only when his words bear on it, and takes one of his pieces or none.
+            var rungsAsked = false
+            val rungs = Telling.rungsFor(state, steps) { a -> rungsAsked = true; ask(null, a, s.copy(longestReply = maxOf(64, s.longestReply))) }
+            return (placed + rungs) to "${steps.size} pieces in ${Bench.secs(sorting)} s, " +
+                if (rungsAsked) "the rungs in ${Bench.secs((System.nanoTime() - rungStarted) / 1_000_000)} s" else "no rung asked about"
         }
         val (placed, timing) = sort(Telling.shape(), said)
         val state = Telling.land(Telling.shape(), Telling.check(said, placed).kept)
