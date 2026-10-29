@@ -895,7 +895,10 @@ post offline failing plainly, with nothing sent (0.3.2).
      gives the phone's error number (10 or 8): send it back.
    - **The bench, if he likes** (about half an hour): its `bench-` block,
      with "Save this block as a file", and the file attached.
-2. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+2. **0.5's item 7, one telling, three landings** (see "0.5"): the test on
+   the laptop first, the pocket beside plain Gemma, five runs of each
+   telling. The spoken telling, his `marathon` block, is still to come.
+3. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough (no source documents the two competing; the error number will
    say which way it is turned down).
 
@@ -1187,6 +1190,127 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.5
+
+Matthew's plan for 0.5 is not all in STATUS yet: only its item 7, below
+(29 October). Items 1 to 6 are to be added when he gives them.
+
+### Item 7: one telling, three landings (a pocket test)
+
+Build this test, then the shape that passes it.
+
+**What it proves.** Someone tells their day once, in whatever order it
+comes, and the pocket, offline, hands it back sorted and landed:
+- the day six ways;
+- the forward bits on the hand's shelves;
+- the rungs above refreshed.
+
+If Gemma does it from the block alone, the sophistication is in the
+structure, not the model. The shapes are those of his now and his hand on
+the beach, so it lands the same whichever door he comes through.
+
+**The structure** is a block in the pocket, not her instruction. The six are
+P6's points in plain words (Facts, Feelings, Fictions, Purpose, Decision,
+Outcomes):
+
+```
+{"_": "One telling, three landings: my day, told once in any order, kept in my pocket. In the day and the hand every line is my own words, copied exactly; a piece may stand in more than one place; nothing is added.",
+ "1": {"_": "THE DAY: what I said, sorted six ways",
+  "1": "What happened: what could be seen or checked, before any meaning",
+  "2": "What I felt: in my body and in me",
+  "3": "What I made of it: my conclusions, judgements and the stories I tell",
+  "4": "What matters to me: how I want to be",
+  "5": "What I chose: the choice I've made",
+  "6": "What's ahead: what's coming, planned or expected"},
+ "2": {"_": "THE HAND: what I say I'll do, one card each, on the shelf for when; a card already there is updated, not doubled",
+  "1": "Tomorrow", "2": "This week", "3": "This month", "4": "This season", "5": "This year or beyond"},
+ "3": {"_": "THE RUNGS ABOVE: one line each in my own voice, as what I intend, drawn only from what I said",
+  "1": "This week", "2": "This month", "3": "This season", "4": "This year"}}
+```
+
+She is given this block, today's date and what he said, nothing else. She
+gives the block back filled: each piece of his words, copied, as a line
+beneath every place it belongs.
+
+**What the pocket checks** before anything lands:
+- every line in the day and the hand must be found in what he said, or it
+  is refused as invented;
+- every sentence must land somewhere in the day, or it is listed as
+  dropped.
+
+**Where it lands,** for one Yes:
+- The day goes at today's place on his clock: the telling whole as the
+  day's line, with the six kept with it. The digits beneath a day on the
+  clock are its day-parts, so block-conventions says where the six go.
+- Cards go on the hand's shelves, and a card already there is updated, not
+  doubled.
+- The rung lines are refreshed in his voice.
+
+In Ask, she replies to his day first, in her own words. The landings show
+under her reply as one proposal, and any line can be unticked.
+
+**The telling, written:** "Right, so the car wouldn't start again this
+morning, which meant the bus, which meant I was twenty minutes late and
+walked into that meeting with everyone already looking at me. I've been
+putting that car off for weeks and I know it, same as the tax, same as the
+garden. Anyway Jo's birthday is on the twelfth so I need to think about that
+at some point. The meeting went on forever but Sam said something that
+stuck with me, that I'm always the one apologising. Felt rotten about the
+morning, that hot-faced thing. Walked home the long way by the water and
+felt lighter by the end of it. Dentist on Thursday, I keep forgetting. I've
+decided I'm ringing the garage tomorrow, not fiddling with it myself again.
+Before the frost comes I want the garden shut down properly for once. The
+thing I keep coming back to is the kids seeing me calm, not this. One day I
+want a job where mornings aren't a fight."
+
+And spoken, unpunctuated, as his phone heard it: his `marathon` block (not
+yet received here). The bench fixes the date at Thursday 29 October 2026,
+so the key holds.
+
+**The key.** The day:
+- What happened: car, bus, late, the meeting, Sam's line, the walk home.
+- What I felt: rotten, hot-faced; lighter after the walk.
+- What I made of it: putting things off (car, tax, garden); Sam's line
+  about apologising.
+- What I chose: ringing the garage, not fixing it myself.
+- What matters to me: the kids seeing me calm.
+- What's ahead: Jo's birthday, the dentist, the garage, the garden.
+
+The hand:
+- Tomorrow: the garage.
+- This week: the dentist, Thursday.
+- This month: Jo's birthday on the twelfth, two weeks off.
+- This season: the garden before the frost.
+- This year or beyond: a job where mornings aren't a fight.
+
+The rungs are judged by Matthew, not matched.
+
+**The marks:**
+- Nothing invented.
+- Nothing dropped.
+- The three doubles handled:
+  - the garage as both what he chose and what's ahead;
+  - Sam's line as both what happened and what he made of it;
+  - the twelfth on one shelf with the date's reason, or on two.
+- Every line in the first person. The day and the hand are copies, so that
+  comes free there; the rung lines are checked for "you".
+
+**The second telling,** straight after: "Rang the garage first thing,
+they're coming Monday." The garage card lands as done and Monday is kept;
+there is no second garage card.
+
+**The runs, in order:**
+1. In the pocket's own core on the laptop: five runs of each telling.
+   Beside them, the same Gemma with no pocket: his six names and shelves as
+   plain text, then the paragraph. Both sets of marks are reported; the
+   difference is what the structure adds.
+2. On his Pixel's bench, timed.
+3. Then he speaks it in Ask.
+
+If the one-pass fill drops pieces or misses the doubles, the phone cuts the
+telling into pieces, copying and never changing a word, and she labels each
+piece with its places, one short choice at a time.
 
 ## 0.4: as fast and dependable as the phone allows
 
