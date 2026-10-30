@@ -215,7 +215,23 @@ internal fun feed(engine: Engine, shelf: Shelf) {
     println("    the teaching blocks named: ${tokens(write.substringAfter("The teaching blocks, read only:"))}")
     println("  the examples, as first exchanges (${opening.size}): ${read(null, opening, message) - read(null, emptyList(), message)}")
     println("  his words, \"Matthew says: \" and his message: ${tokens(message)}")
+    // 0.6.2, part two: what each job reads now.
+    println("\n== 0.6.2: Talk, her name from her shell and the heart line; his message of 29 October")
+    val talk2 = Talking.instruction(HelloWorld.SHELL, pages, now, ask)
+    println("in all: ${read(talk2, emptyList(), ask)} tokens read; her instruction ${tokens(talk2)}")
+    println("with a block his words name (garden), that block only: ${read(Talking.instruction(HelloWorld.SHELL, pages, now, "What's in my garden block?"), emptyList(), "What's in my garden block?")} in all")
+    println("\n== 0.6.2: Write, what it needs; his message of 29 October")
+    val lean = Talks.lean(HelloWorld.SHELL, pages)
+    val leanOpening = Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages))
+    val leanMessage = listOfNotNull(Talks.forMessage(HelloWorld.SHELL, pages, ask)?.let { "($it)" }, Talks.SAYS + ask).joinToString("\n")
+    println("in all: ${read(lean, leanOpening, leanMessage)} tokens read (instruction ${lean.length} characters)")
+    println("  the instruction: ${tokens(lean)}; the examples, as first exchanges: ${read(null, leanOpening, leanMessage) - read(null, emptyList(), leanMessage)}")
+    val gardenAsk = "Add to my garden: sow the sweet peas in March."
+    val gardenMessage = listOfNotNull(Talks.forMessage(HelloWorld.SHELL, pages, gardenAsk)?.let { "($it)" }, Talks.SAYS + gardenAsk).joinToString("\n")
+    println("a message naming his garden block, its lines with it: ${read(lean, leanOpening, gardenMessage)} in all")
     File(System.getProperty("pocket.out") ?: "feed").also { it.mkdirs() }.let { dir ->
+        File(dir, "write-instruction-0.6.2.txt").writeText(lean)
+        File(dir, "talk-instruction-0.6.2.txt").writeText(talk2)
         File(dir, "talk-instruction.txt").writeText(talk)
         File(dir, "write-instruction.txt").writeText(write)
         File(dir, "write-examples.txt").writeText(opening.joinToString("\n\n") { (a, b) -> "$a\n$b" })
