@@ -83,3 +83,34 @@ data class JobSettings(
 
 /** What an engine is loaded with: jobs that agree on these share it. */
 data class EngineKey(val model: String, val processor: String, val context: Int)
+
+/**
+ * 0.6.2: never two engines on the GPU. On Matthew's Pixel (30 October),
+ * Talk on Gemma 4 E4B beside Write and Sort on E2B failed at E4B's first
+ * answer, every time; with all three on E4B it answered. So the GPU goes to
+ * Talk's engine (when Talk asks for the CPU, to the first of Write and Sort
+ * that asks for the GPU), and a job that asks for the GPU on another engine,
+ * another model or another context, runs on the CPU. It is settled by the
+ * settings, never swapped from one message to the next.
+ */
+object Gpu {
+    /** The job whose engine holds the GPU, and that engine; null when no job asks for the GPU. */
+    fun holder(asked: Map<Job, JobSettings>): Pair<Job, EngineKey>? =
+        Job.values().firstOrNull { asked.getValue(it).processor == "GPU" }?.let { it to asked.getValue(it).engine }
+
+    /** [job]'s settings as it runs: as [asked], but on the CPU when it asks for the GPU and another engine holds it. */
+    fun running(asked: Map<Job, JobSettings>, job: Job): JobSettings {
+        val s = asked.getValue(job)
+        val h = holder(asked) ?: return s
+        return if (s.processor == "GPU" && s.engine != h.second) s.copy(processor = "CPU") else s
+    }
+
+    /** Why [job] runs on the CPU though it asks for the GPU, in a few plain words; null when it runs as asked. */
+    fun why(asked: Map<Job, JobSettings>, job: Job): String? {
+        val s = asked.getValue(job)
+        val (by, key) = holder(asked) ?: return null
+        if (s.processor != "GPU" || s.engine == key) return null
+        val which = if (key.model != s.model) key.model else "${key.model} at a context of ${String.format(java.util.Locale.UK, "%,d", key.context)} tokens"
+        return "${by.title}'s $which holds the GPU, and the phone runs one engine on it at a time"
+    }
+}

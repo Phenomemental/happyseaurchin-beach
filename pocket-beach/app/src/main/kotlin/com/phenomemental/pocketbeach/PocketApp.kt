@@ -16,6 +16,7 @@ import com.phenomemental.pocketbeach.bsp.PoolPost
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Wire
 import com.phenomemental.pocketbeach.model.Gemma
+import com.phenomemental.pocketbeach.model.Gpu
 import com.phenomemental.pocketbeach.model.Job
 import com.phenomemental.pocketbeach.model.JobSettings
 import com.phenomemental.pocketbeach.model.Mind
@@ -114,6 +115,13 @@ class PocketApp : Application() {
 
     /** Each job's settings (Settings): Edge's for talking, 0.4's for writing, until he changes them. */
     fun settings(job: Job): JobSettings = jobs.value.getValue(job)
+
+    /** [job]'s settings as it runs: on the CPU when it asks for the GPU and another job's engine holds it (0.6.2). */
+    fun running(job: Job): JobSettings = Gpu.running(jobs.value, job)
+
+    /** Why [job] runs on the CPU though set to the GPU: another job's engine holds it, or the GPU failed on one of its answers. Null when it runs as set. */
+    fun cpuWhy(job: Job): String? = Gpu.why(jobs.value, job)
+        ?: running(job).takeIf { it.processor == "GPU" && mind.gpuFailed(it) }?.let { "the GPU failed on one of its answers, so it stays on the CPU until the app starts again" }
 
     fun set(job: Job, s: JobSettings) {
         jobs.value = jobs.value + (job to s)

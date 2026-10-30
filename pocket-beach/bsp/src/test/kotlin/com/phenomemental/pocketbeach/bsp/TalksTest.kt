@@ -183,6 +183,47 @@ class TalksAskTest {
         assertEquals("(Matthew said not now: wrong block.)\nMatthew says: And now?", heard.single())
     }
 
+    /** 0.6.2, one home per fact: her shell carries "Matthew calls me Gemma.", as his Pixel's did on 30 October. */
+    private fun askNamed(question: String, s: Talks.Stream): Talks.Answered {
+        val (storage, pages) = Bench.fixture(shelf, now)
+        check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
+        return Talks.ask(question, s, pages, storage, shelf, HelloWorld.SHELL_OPENING, "0".repeat(32), { now })
+    }
+
+    @Test
+    fun aNameHerShellAlreadyCarriesIsNotProposedAgain() {
+        for (written in listOf("add pocket-companion: Matthew calls me Gemma.", "add pocket-companion: matthew calls me gemma", "add pocket-companion under \"Matthew calls me Gemma.\": Matthew calls me Gemma")) {
+            val a = askNamed("I'd like to call you Gemma", stream("act\n$written"))
+            assertEquals(Talks.Route.TALK, a.route, written)
+            kotlin.test.assertTrue(a.planned!!.nothing, written)
+            kotlin.test.assertTrue(a.planned!!.dropped.single().contains("already says"), written)
+        }
+    }
+
+    @Test
+    fun aLineCutShortIsNotProposed() {
+        for (written in listOf("add pocket-companion: Matthew calls me…", "add pocket-companion: Matthew calls me...", "add pocket-companion: Matthew calls me <the name>.")) {
+            val a = askNamed("I'd like to call you Robin", stream("act\n$written"))
+            assertEquals(Talks.Route.TALK, a.route, written)
+            kotlin.test.assertTrue(a.planned!!.dropped.single().contains("cut short"), written)
+        }
+    }
+
+    @Test
+    fun aNewNameIsStillProposed() {
+        val a = askNamed("I'd like to call you Robin", stream("act\nadd pocket-companion: Matthew calls me Robin."))
+        assertEquals(Talks.Route.ACT, a.route)
+        assertEquals(listOf("Matthew calls me Robin."), a.planned!!.proposal!!.writes.map { it.text })
+    }
+
+    @Test
+    fun onlyTheLineAlreadyThereIsLetBe() {
+        val a = ask("Keep both", stream("act\nadd garden: Autumn: plant the bulbs\nadd garden: Spring: sow the peas"))
+        assertEquals(Talks.Route.ACT, a.route)
+        assertEquals(listOf("Spring: sow the peas"), a.planned!!.proposal!!.writes.map { it.text })
+        assertEquals(1, a.planned!!.dropped.size)
+    }
+
     @Test
     fun aQuoteMatchingTwoLinesIsLeftForMatthew() {
         val a = ask("Under the line with 'the', add a note.", stream("act\nadd garden under \"the\": a note"))

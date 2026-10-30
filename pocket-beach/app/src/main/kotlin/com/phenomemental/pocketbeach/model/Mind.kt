@@ -16,7 +16,7 @@ interface Mind {
     fun state(model: String): ModelStore.State = state()
 
     /** One reply to one message: her words, how long they took, and the engine's count, where it ran. */
-    class Answer(val text: String, val ms: Long, val turn: Pace.Turn?, val processor: String?, val whyNotGpu: String?, val loadMs: Long?)
+    class Answer(val text: String, val ms: Long, val turn: Pace.Turn?, val processor: String?, val whyNotGpu: String?, val loadMs: Long?, val gpuFailed: Boolean = false)
 
     /** One message in a conversation of its own, opened and closed for it: as the Sort job asks a piece at a time (0.6). */
     suspend fun ask(instruction: String?, message: String, settings: JobSettings): Answer
@@ -35,6 +35,9 @@ interface Mind {
 
     /** Load the engine [settings] run on now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
     suspend fun warm(settings: JobSettings = JobSettings.of(Job.WRITE)): Long? = null
+
+    /** Whether an answer on the GPU failed for the engine [settings] run on, so it runs on the CPU until the app starts again (0.6.2). */
+    fun gpuFailed(settings: JobSettings): Boolean = false
 
     /** Run it on [processor] alone ("CPU"), or as ever (null: the GPU, else the CPU); it is let go, to load that way next. For the bench. */
     suspend fun only(processor: String?) {}

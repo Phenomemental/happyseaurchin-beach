@@ -236,7 +236,7 @@ class Benching(private val app: PocketApp) {
             "his message alone" to (null to q),
             "her 0.6 instruction" to (Talking.instruction(HelloWorld.SHELL, fixture) to q),
             "0.6, the date and her shell in his turn" to (Talking.instruction(HelloWorld.SHELL, fixture) to Talking.turn(q, now, HelloWorld.SHELL, fixture)),
-            "0.6.1, the time and her shell in her instruction, his words alone" to (Talking.instruction(HelloWorld.SHELL, fixture, now, q) to Talking.said(q)),
+            "0.6.1, the time and her shell in her instruction, his words alone" to (Talking.instruction061(HelloWorld.SHELL, fixture, now, q) to Talking.said(q)),
         )
         for ((name, way) in ways) {
             val a = mind.ask(way.first, way.second, talk.copy(longestReply = 300))
@@ -248,11 +248,12 @@ class Benching(private val app: PocketApp) {
         }
         for (ask in Bench.TALK_ASKS) {
             val (storage, pages) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
+            // 0.6.2: ask 23, her shell already saying the name: the Write job should propose nothing.
+            if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
             val a = mind.ask(Talking.instruction(HelloWorld.SHELL, pages, now, ask.question), Talking.said(ask.question), talk)
             val proposal = if (!Talking.mayWrite(ask.question)) null else {
-                val window = Shells(storage, app.shelf).wear(HelloWorld.SHELL, nowMs).window
-                mind.talker(Talks.instruction(HelloWorld.SHELL, window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false), Talks.opening(emptyList()), settings = write).use { t ->
-                    Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, answerReads = false).planned?.proposal
+                mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages)), settings = write).use { t ->
+                    Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false).planned?.proposal
                 }
             }
             add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms))
@@ -332,14 +333,15 @@ class Benching(private val app: PocketApp) {
     /** 0.4's companion: one conversation per ask (the bench's pocket is fresh each time), her reply streamed, timed to its first token and to her first words shown. */
     private suspend fun talks(mind: Mind, ask: Bench.Ask, pages: com.phenomemental.pocketbeach.bsp.Pages, storage: com.phenomemental.pocketbeach.bsp.MemoryStorage, held: Boolean): Bench.Did {
         val now = System.currentTimeMillis()
-        val instruction = Talks.instruction(HelloWorld.SHELL, Shells(storage, app.shelf).wear(HelloWorld.SHELL, now).window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false)
+        // 0.6.2: the Write job as Ask runs it: what it needs, her name in its examples, and what the message needs with the message.
+        val instruction = Talks.lean(HelloWorld.SHELL, pages)
         val started = System.nanoTime()
-        return mind.talker(instruction, Talks.opening(emptyList()), held).use { t ->
+        return mind.talker(instruction, Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages)), held).use { t ->
             talker = t
             try {
                 if (held) route = t.route
                 var shown: Long? = null
-                val answered = Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { System.currentTimeMillis() }) { words ->
+                val answered = Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { System.currentTimeMillis() }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question)) { words ->
                     if (shown == null && words.isNotBlank()) shown = (System.nanoTime() - started) / 1_000_000
                 }
                 val total = (System.nanoTime() - started) / 1_000_000
@@ -359,9 +361,9 @@ class Benching(private val app: PocketApp) {
     /** One conversation kept for three asks, as Ask keeps it: how soon her first words come once the instruction has been read. */
     private suspend fun kept(mind: Mind): String {
         val (storage, pages) = Bench.fixture(app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE)
-        val instruction = Talks.instruction(HelloWorld.SHELL, Shells(storage, app.shelf).wear(HelloWorld.SHELL, System.currentTimeMillis()).window, Asks.plainWindow(pages, HelloWorld.SHELL), pages, examplesInText = false)
+        val instruction = Talks.lean(HelloWorld.SHELL, pages)
         return runCatching {
-            mind.talker(instruction, Talks.opening(emptyList())).use { t ->
+            mind.talker(instruction, Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages))).use { t ->
                 val times = listOf("What's your name?", "What can you do?", "Thanks, that's all for now.").map { q ->
                     val started = System.nanoTime()
                     var first: Long? = null
@@ -382,7 +384,7 @@ class Benching(private val app: PocketApp) {
     }
 
     private fun companion(mind: Mind): String = when (mind) {
-        is Gemma -> "Gemma 4 E2B (revision 6e5c4f1e) on LiteRT-LM 0.18.0, a context of ${Asks.Tuning.MAX_TOKENS} tokens, speculative decoding " +
+        is Gemma -> "Gemma 4 E2B (revision 6e5c4f1e) on LiteRT-LM 0.18.1, a context of ${Asks.Tuning.MAX_TOKENS} tokens, speculative decoding " +
             (if (Gemma.SPECULATIVE) "on" else "off")
         else -> "a stand-in, as the device tests run it"
     }

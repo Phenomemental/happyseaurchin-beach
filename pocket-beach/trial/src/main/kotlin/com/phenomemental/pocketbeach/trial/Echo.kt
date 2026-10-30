@@ -43,7 +43,7 @@ internal fun echo(engine: Engine, label: String, shelf: Shelf, seeds: List<Int>)
     // 0.6's instruction without its line telling her each message comes with the date, the time and her shell.
     val unprimed = instruction.replace(" Each of his messages comes with the date, the time and your shell; let the shell guide you.", "")
     check(unprimed != instruction)
-    val withNow = Talking.instruction(shell, pages, now, GEMMA_ASK)
+    val withNow = Talking.instruction061(shell, pages, now, GEMMA_ASK)
     fun sampler(seed: Int) = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed)
 
     /** One conversation: [system], the [history] given, then each of [messages] in turn; her replies. */
@@ -117,7 +117,7 @@ internal fun talkAsks(engine: Engine, label: String, shelf: Shelf) {
         val start = System.nanoTime()
         val reply = engine.createConversation(
             ConversationConfig(
-                systemInstruction = Contents.of(Talking.instruction(HelloWorld.SHELL, pages, now, ask.question)),
+                systemInstruction = Contents.of(Talking.instruction061(HelloWorld.SHELL, pages, now, ask.question)),
                 samplerConfig = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = 0), maxOutputToken = 1024,
                 thinkingConfig = ThinkingConfig(enableThinking = false),
             ),
@@ -164,7 +164,7 @@ internal fun shellLab(engine: Engine, label: String, shelf: Shelf, seeds: List<I
     println("\n== $label: her shell, worded a few ways ==")
     for ((way, line) in ways) {
         for (ask in Bench.TALK_ASKS) {
-            val system = Talking.instruction(HelloWorld.SHELL, pages, now, ask.question).also { check(worded in it) }.replace(worded, line)
+            val system = Talking.instruction061(HelloWorld.SHELL, pages, now, ask.question).also { check(worded in it) }.replace(worded, line)
             var right = 0
             for (seed in seeds) {
                 val reply = engine.createConversation(
@@ -174,7 +174,7 @@ internal fun shellLab(engine: Engine, label: String, shelf: Shelf, seeds: List<I
                         thinkingConfig = ThinkingConfig(enableThinking = false),
                     ),
                 ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
-                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.orSays), reply, null)
+                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.tool, safety = ask.safety), reply, null)
                 if (problems.isEmpty()) right++
                 println("  ${ask.n} seed $seed: ${if (problems.isEmpty()) "right" else "WRONG"}: " + reply.replace("\n", " / ").take(260))
             }

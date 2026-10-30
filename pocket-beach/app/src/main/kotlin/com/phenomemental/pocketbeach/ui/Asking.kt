@@ -200,7 +200,7 @@ class Asking(private val app: PocketApp) {
         scope.launch(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
-                    app.mind.warm(app.settings(MindJob.TALK))
+                    app.mind.warm(app.running(MindJob.TALK))
                     if (together) talker(MindJob.WRITE)
                 }
             }
@@ -243,7 +243,7 @@ class Asking(private val app: PocketApp) {
      * Called holding [talking].
      */
     private suspend fun talker(job: MindJob): Mind.Talker {
-        val settings = app.settings(job)
+        val settings = app.running(job)
         kept[job]?.let { k ->
             if (job !in stale && k.settings == settings) return k.talker
             runCatching { k.talker.close() }
@@ -258,9 +258,10 @@ class Asking(private val app: PocketApp) {
                     Talking.instruction(HelloWorld.SHELL, app.pages, ZonedDateTime.now(), talkSaid) + (talkNote?.let { "\n\nHow his last proposal ended: $it" }.orEmpty()),
                     context.getValue(job).toList(), settings = settings,
                 )
+                // 0.6.2: what the Write job needs, about 1,000 tokens; her name in its examples as her shell gives it.
                 MindJob.WRITE -> app.mind.talker(
-                    Talks.instruction(HelloWorld.SHELL, Companion.window(app), Asks.plainWindow(app.pages, HelloWorld.SHELL), app.pages, examplesInText = false),
-                    Talks.opening(context.getValue(job).toList()), settings = settings,
+                    Talks.lean(HelloWorld.SHELL, app.pages),
+                    Talks.opening(context.getValue(job).toList(), Talking.name(HelloWorld.SHELL, app.pages)), settings = settings,
                 )
             }
         }
@@ -320,7 +321,12 @@ class Asking(private val app: PocketApp) {
                             if (firstShown == null && shown.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
                             live = shown
                         }
-                        pace = Pace(t.pace.processor, t.pace.whyNotGpu, if (first) t.pace.loadMs else null).also { p -> p.turns.addAll(t.pace.turns.drop(before)) }
+                        pace = t.pace.copy(if (first) t.pace.loadMs else null).also { p ->
+                            p.turns.addAll(t.pace.turns.drop(before))
+                            app.cpuWhy(MindJob.TALK)?.takeIf { Pace.GPU_FAILED !in p.notes }?.let { p.notes += "Talk ran on the CPU: $it." }
+                        }
+                        // 0.6.2: the GPU failed her answer and that engine was closed: every conversation on it is opened again, on the CPU.
+                        if (Pace.GPU_FAILED in t.pace.notes) stale += MindJob.values()
                         lastCopied = Talking.copied(reply, q, opening)
                         jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
                         message to Talking.unechoed(reply, q, opening)
@@ -348,10 +354,12 @@ class Asking(private val app: PocketApp) {
                             val sinceLast = unseen.takeLast(3).joinToString(" ") { (his, hers) -> "Matthew said: ${Words.quoted(his, 200)}; the companion said: ${Words.quoted(hers, 200)}." }
                             val a = Talks.ask(
                                 q, w.stream, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), { System.currentTimeMillis() },
-                                before = listOfNotNull(sinceLast.takeIf(String::isNotEmpty)?.let { "Since you were last asked: $it" }, note).joinToString(" ").ifEmpty { null },
+                                before = listOfNotNull(sinceLast.takeIf(String::isNotEmpty)?.let { "Since you were last asked: $it" }, note, Talks.forMessage(HelloWorld.SHELL, app.pages, q)).joinToString(" ").ifEmpty { null },
                                 answerReads = false,
                             )
                             pace?.turns?.addAll(w.pace.turns.drop(before))
+                            if (Pace.GPU_FAILED in w.pace.notes) { pace?.gpuFailed(); stale += MindJob.values() }
+                            app.cpuWhy(MindJob.WRITE)?.let { pace?.notes?.add("Write ran on the CPU: $it.") }
                             answeredBy += MindJob.WRITE
                             jobMs[MindJob.WRITE] = (System.nanoTime() - writeStarted) / 1_000_000
                             a
@@ -389,14 +397,15 @@ class Asking(private val app: PocketApp) {
         val outcome = withContext(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
-                    val settings = app.settings(MindJob.SORT)
+                    val settings = app.running(MindJob.SORT)
                     val today = java.time.LocalDate.now()
                     val state = handNow()
                     val words = stored(Whens.BLOCK) as? JsObj ?: Whens.first()
                     val instruction = Telling.sortInstruction(today, Landing.examples(stored(Landing.EXAMPLES)))
                     // On a phone that keeps one conversation at a time, hers are let go while the pieces are placed.
                     if (!together) closeAll()
-                    val pace = talked.pace?.let { p -> Pace(p.processor, p.whyNotGpu, p.loadMs).also { it.turns.addAll(p.turns) } }
+                    val pace = talked.pace?.let { p -> p.copy().also { it.turns.addAll(p.turns) } }
+                    app.cpuWhy(MindJob.SORT)?.let { pace?.notes?.add("Sort ran on the CPU: $it.") }
                     fun ask(system: String?, message: String, s: com.phenomemental.pocketbeach.model.JobSettings): String = kotlinx.coroutines.runBlocking {
                         val a = try {
                             app.mind.ask(system, message, s)
@@ -408,6 +417,7 @@ class Asking(private val app: PocketApp) {
                             app.mind.ask(system, message, s)
                         }
                         a.turn?.let { pace?.turns?.add(it) }
+                        if (a.gpuFailed) { pace?.gpuFailed(); stale += MindJob.values() }
                         a.text
                     }
                     var placed = 0
@@ -685,7 +695,7 @@ class Asking(private val app: PocketApp) {
         fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
         appendLine("Pocket beach: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
         appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
-        for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.settings(j)))
+        for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty())
         for (e in history) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
@@ -735,7 +745,7 @@ class Asking(private val app: PocketApp) {
             asked, shown?.asked?.answer?.say.orEmpty(), note, time,
             at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(),
             outcome = if (proposed) note else null,
-            jobs = answeredBy.joinToString("; ") { j -> "${j.title}" + (jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.settings(j)) },
+            jobs = answeredBy.joinToString("; ") { j -> "${j.title}" + (jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty() },
             // A day sorted on his tap: the Write job's proposal he left for it comes first.
             proposal = listOfNotNull(dayFrom?.proposal?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: written).joinToString("\n").ifEmpty { null },
             copied = lastCopied,

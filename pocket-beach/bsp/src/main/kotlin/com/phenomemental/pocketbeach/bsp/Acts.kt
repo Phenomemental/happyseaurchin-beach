@@ -147,7 +147,26 @@ object Acts {
      * Yes), or a quote to put to Matthew first ([choose]), or why it can't go
      * ahead ([problem]); and the reads it asks for.
      */
-    class Planned(val proposal: Proposal?, val choose: Choice?, val problem: String?, val reads: List<Step>)
+    class Planned(val proposal: Proposal?, val choose: Choice?, val problem: String?, val reads: List<Step>, val dropped: List<String> = emptyList()) {
+        /** Every action she wrote was let be, each a line that already has its home or was cut short: nothing is proposed. */
+        val nothing: Boolean get() = proposal == null && choose == null && problem == null && reads.isEmpty() && dropped.isNotEmpty()
+    }
+
+    /**
+     * 0.6.2, one home per fact: a line cut short ("Matthew calls me…"), or
+     * one still holding a slot ("<the name>"), is never proposed. On his
+     * Pixel (30 October) the Write job proposed "Matthew calls me…" beneath
+     * her shell's opening though "Matthew calls me Gemma." stood there.
+     */
+    fun cutShort(text: String): Boolean = text.trimEnd().let { it.endsWith("…") || it.endsWith("...") } || Regex("""<[^<>]+>""").containsMatchIn(text)
+
+    /** The line of [block] (its opening line too) that already says [text], the same words whatever their case and the stops at their ends; null when none does. */
+    fun saying(pages: Pages, block: String, text: String): String? {
+        val t = plain(text)
+        if (t.isEmpty() || !pages.exists(block)) return null
+        pages.position(Region.POCKET, block)?.text?.takeIf { plain(it) == t }?.let { return it }
+        return lines(pages, block).firstOrNull { it.text != null && plain(it.text) == t }?.text
+    }
 
     /**
      * Plan [actions] on a copy of the pocket, in order, each quote found on
@@ -173,6 +192,7 @@ object Acts {
         val run = Asks.Run(pages, trial, shellOpening, seal)
         val steps = mutableListOf<Step>()
         val reads = mutableListOf<Step>()
+        val dropped = mutableListOf<String>()
         val post = actions.filterIsInstance<Action.Post>().lastOrNull()?.let { Offer(HelloWorld.POOL, it.message) }
 
         fun address(i: Int, block: String, quote: String): Pair<String?, Planned?> {
@@ -210,6 +230,20 @@ object Acts {
                 is Action.Change -> typed.copy(block = pages.named(typed.block))
                 is Action.Read -> typed.copy(block = pages.named(typed.block))
                 else -> typed
+            }
+            // 0.6.2, one home per fact: a line already in its block, or one cut short, is not proposed again; nor written beneath a line that already says it.
+            // (The hello world is the recipe's own, written whole each time: let be.)
+            val again = if (makesHello || (action as? Action.Add)?.block == HelloWorld.BLOCK) null else when (action) {
+                is Action.New -> action.opening?.takeIf(::cutShort)?.let { "\u201c$it\u201d was cut short" }
+                is Action.Add -> if (cutShort(action.text)) "\u201c${action.text}\u201d was cut short"
+                    else saying(pages, action.block, action.text)?.let { "${action.block} already says \u201c$it\u201d" }
+                is Action.Change -> if (cutShort(action.text)) "\u201c${action.text}\u201d was cut short"
+                    else saying(pages, action.block, action.text)?.let { "${action.block} already says \u201c$it\u201d" }
+                else -> null
+            }
+            if (again != null) {
+                dropped += again
+                continue
             }
             val step = when (action) {
                 is Action.New -> Step(Act.MAKE, action.block, "", action.opening)
@@ -253,12 +287,13 @@ object Acts {
             }
             steps += written
         }
+        if (steps.isEmpty() && post == null && reads.isEmpty() && dropped.isNotEmpty()) return Planned(null, null, null, reads, dropped)
         val answer = Answer(say, steps, post)
         val hello = Asks.isHello(answer)
         if (hello) {
             run.sealAndFingerprint()?.let { why -> return Planned(Proposal(answer, seal, run.done, "${Asks.APP_WRITE} ${HelloWorld.BLOCK}: $why", null, null), null, null, reads) }
         }
         val (offered, postRefusal) = run.post(post, hello)
-        return Planned(Proposal(answer, seal, run.done, null, offered, postRefusal), null, null, reads)
+        return Planned(Proposal(answer, seal, run.done, null, offered, postRefusal), null, null, reads, dropped)
     }
 }

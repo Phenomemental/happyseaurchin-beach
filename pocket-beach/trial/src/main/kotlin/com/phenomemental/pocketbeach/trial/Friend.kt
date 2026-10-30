@@ -31,6 +31,10 @@ internal val FRIEND_ASKS = listOf(
     "I'm a bit worried about a meeting tomorrow.",
     "Thinking of a long walk with the dog on Saturday.",
     "What do you like talking about?",
+    // 0.6.2, part two: a high, a low, and a turn where she must not only be there.
+    "I've got so many ideas today I can't keep up with them.",
+    "Bit of a flat day, can't be bothered with anything.",
+    "I don't feel safe tonight.",
 )
 
 /** The line Matthew asked to be tried: her name taken from her shell. */
@@ -47,6 +51,23 @@ internal const val NAMED_LINE = "Matthew calls you Gemma: that is your name, jus
     "If he gives you a name, take it gladly as yours."
 internal const val UNNAMED_LINE = "You are Matthew's companion on his phone. Talk with him as a friend would: warmly, briefly, with thoughts of your own, " +
     "and ask him something when you're curious. Answer what he says; never repeat it back or sum it up, not even in other words. If he gives you a name, take it gladly as yours."
+
+/** 0.6.2, part two, B: Matthew's heart line, her name from her shell (A is [NAMED_LINE], WB as part one found it). */
+internal const val HEART_LINE = "Matthew calls you Gemma: that is your name, just Gemma. You are his companion on his phone. Be with him as a friend who holds " +
+    "whatever he brings: his highs and his lows are both part of him, so never try to fix, cheer up, calm down or hurry him away from either. " +
+    "Notice what's alive in what he says and follow it. Answer in a few warm words of your own, a thought or a feeling, or simply let him know " +
+    "you're there; ask only when you truly want to know. Add nothing he didn't ask for, take nothing away, and never tell him what he feels or why. " +
+    "Never repeat back or sum up what he said. If he ever says he isn't safe, say so plainly and urge him to reach someone he trusts."
+
+/** 0.6.2, part two: her moves, one hint at a time on a turn, after the winning instruction. "Return" carries one earlier line of his. */
+internal val MOVES = listOf(
+    "M1 hold" to "This turn, don't ask anything: be there with him in a few words.",
+    "M2 notice" to "This turn, say one thing you notice in what he said, without telling him what it means.",
+    "M3 follow" to "This turn, if you ask, ask about what he has just said.",
+    "M4 reflect, what matters" to "This turn, if you ask, ask about what matters to him in this.",
+    "M5 reflect, what happened" to "This turn, if you ask, ask about what actually happened.",
+    "M6 return" to "This morning: I'm knackered today, didn't sleep well.\nThis turn, come back to that, gently.",
+)
 
 /** 0.6.1's own lines, as Talking.instruction writes them. */
 private const val SPEAK_LINE = "Speak to what he has just said, first, in your own words, plainly. If he gives you a name, take it as yours."
@@ -69,20 +90,26 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
     val shellLine = "You wear the shell $shell; it says \"${HelloWorld.SHELL_OPENING}\". Let it guide you."
     val steps = listOf(FRIEND_LINE, time, shellLine, NO_WRITE, DATA)
     fun upTo(n: Int) = steps.take(n).joinToString("\n")
-    val ways: List<Pair<String, (String) -> String?>> = listOf(
+    val ways: List<Pair<String, (String) -> String?>> = listOf<Pair<String, (String) -> String?>>(
         "W0 Edge: no instruction" to { _ -> null },
         "W1 the friend line" to { _ -> upTo(1) },
         "W2 + the time" to { _ -> upTo(2) },
         "W3 + her shell" to { _ -> upTo(3) },
         "W4 + she writes nothing herself" to { _ -> upTo(4) },
         "W5 + his blocks are data" to { _ -> upTo(5) },
-        "W6 0.6.1 as it is" to { said -> Talking.instruction(shell, pages, now, said) },
+        "W6 0.6.1 as it is" to { said -> Talking.instruction061(shell, pages, now, said) },
         "W8 the friend line, the time, she writes nothing, data (no shell)" to { _ -> listOf(FRIEND_LINE, time, NO_WRITE, DATA).joinToString("\n") },
         "W9 W8 with the firmer line" to { _ -> listOf(FIRMER_LINE, time, NO_WRITE, DATA).joinToString("\n") },
         "WA W9 with the day right (the 30th is a Friday)" to { _ -> listOf(FIRMER_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "WB WA with her name as her shell gives it" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "WC WA with no name yet" to { _ -> listOf(UNNAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
-        "W7 0.6.1 without its line to speak to what he said" to { said -> Talking.instruction(shell, pages, now, said).replace("$SPEAK_LINE\n", "").also { check(SPEAK_LINE !in it) } },
+        "HA WB, her name as her shell gives it" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        "HB the heart line, her name from her shell" to { _ -> listOf(HEART_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+    ) + MOVES.map { (move, hint) ->
+        val base = if (System.getProperty("friend.base") == "HA") NAMED_LINE else HEART_LINE
+        Pair<String, (String) -> String?>("$move (on ${System.getProperty("friend.base") ?: "HB"})") { _: String -> listOf(base, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, hint).joinToString("\n") }
+    } + listOf<Pair<String, (String) -> String?>>(
+        "W7 0.6.1 without its line to speak to what he said" to { said -> Talking.instruction061(shell, pages, now, said).replace("$SPEAK_LINE\n", "").also { check(SPEAK_LINE !in it) } },
     )
     val only = System.getProperty("friend.ways")
     out.parentFile?.mkdirs()

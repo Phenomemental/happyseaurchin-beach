@@ -22,7 +22,7 @@ kotlin {
 dependencies {
     implementation(project(":bsp"))
     // -PlitertlmVersion=… tries another release of the engine on the laptop first.
-    implementation("com.google.ai.edge.litertlm:litertlm-jvm:${findProperty("litertlmVersion") ?: "0.18.0"}")
+    implementation("com.google.ai.edge.litertlm:litertlm-jvm:${findProperty("litertlmVersion") ?: "0.18.1"}")
 }
 
 application {
