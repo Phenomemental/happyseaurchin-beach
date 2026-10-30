@@ -239,9 +239,9 @@ object Talks {
         return parts.joinToString(" ").ifEmpty { null }
     }
 
-    /** The blocks the app keeps itself: the ask log, his structure, the sort's examples, the time words, and a clock. */
+    /** The blocks the app keeps itself: the ask log, his structure, the sort's examples, the time words, the safety words, and a clock. */
     fun appOwn(name: String, pages: Pages): Boolean =
-        name == Asks.LOG || name == Landing.TELLING || name == Landing.EXAMPLES || name == Whens.BLOCK || pages.floorOf(name) >= TEMPORAL_FLOOR
+        name == Asks.LOG || name == Landing.TELLING || name == Landing.EXAMPLES || name == Whens.BLOCK || name == Talking.SAFETY_BLOCK || pages.floorOf(name) >= TEMPORAL_FLOOR
 
     /** The pocket's blocks, each with its lines at pscale 0 by their words; the shell, shown already, and the log, named only. */
     internal fun pocket(pages: Pages, shell: String): String = buildString {

@@ -254,8 +254,10 @@ class Asking(private val app: PocketApp) {
             when (job) {
                 MindJob.SORT -> error("The Sort job asks a piece at a time, in conversations of its own.")
                 // 0.6.1: the date, the time and her shell in her instruction, opened afresh for each message; the earlier exchanges his words and hers.
+                // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line; how his last proposal ended waits.
                 MindJob.TALK -> app.mind.talker(
-                    Talking.instruction(HelloWorld.SHELL, app.pages, ZonedDateTime.now(), talkSaid) + (talkNote?.let { "\n\nHow his last proposal ended: $it" }.orEmpty()),
+                    Talking.instruction(HelloWorld.SHELL, app.pages, ZonedDateTime.now(), talkSaid) +
+                        (talkNote?.takeUnless { Talking.unsafe(talkSaid, app.pages) }?.let { "\n\nHow his last proposal ended: $it" }.orEmpty()),
                     context.getValue(job).toList(), settings = settings,
                 )
                 // 0.6.2: what the Write job needs, about 1,000 tokens; her name in its examples as her shell gives it.

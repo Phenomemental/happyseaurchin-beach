@@ -88,6 +88,32 @@ class HisWordsTest {
         assertContains(Talking.instruction(HelloWorld.SHELL, pages, now, "What blocks do I have?"), "The blocks in the pocket", message = "asked about his blocks, she is shown them")
     }
 
+    /** 0.6.2, part three: on a turn when his words say he isn't safe, the safety line is her instruction's only line for the turn; the words are his to change. */
+    @Test
+    fun theSafetyLineIsTheTurnsOnlyLineWhenHisWordsSayHeIsntSafe() {
+        val (_, pages) = Bench.fixture(shelf, 1_793_178_000_000L)
+        val now = java.time.ZonedDateTime.of(2026, 10, 30, 22, 10, 0, 0, java.time.ZoneId.of("Europe/London"))
+        for (said in listOf("I don't feel safe tonight.", "I dont feel safe", "I can\u2019t go on like this", "Everyone would be better off without me.", "I want to DIE.", "Feeling unsafe."))
+            assertTrue(Talking.unsafe(said, pages), said)
+        for (said in listOf("I feel safe now.", "Had a really good chat with a friend this morning.", "That's not a safe bet, the garden", "Bit of a flat day.", ""))
+            assertFalse(Talking.unsafe(said, pages), said)
+        val unsafe = Talking.instruction(HelloWorld.SHELL, pages, now, "I don't feel safe tonight, not even in my garden block.")
+        assertTrue(unsafe.endsWith(Talking.SAFETY), unsafe.takeLast(120))
+        assertContains(unsafe, "Samaritans on 116 123 at any hour, or 999 if he's in danger now.")
+        assertFalse(unsafe.contains("What the app read for you"), "no other line that turn")
+        assertFalse(Talking.instruction(HelloWorld.SHELL, pages, now, "Had a good day.").contains(Talking.SAFETY))
+        // Kept as a block, his words are the ones used: a word of his own added, one taken away.
+        pages.carryOut(pages.planKeep(Talking.SAFETY_BLOCK, Talking.safetyBlock())).let { assertTrue(it.ok, "kept: ${it.problem}") }
+        assertEquals(Talking.SAFETY_WORDS, Talking.safetyWords(pages))
+        pages.carryOut(pages.planAdd(Talking.SAFETY_BLOCK, "", "at the end of my rope")).let { assertTrue(it.ok, "added: ${it.problem}") }
+        assertTrue(Talking.unsafe("I'm at the end of my rope.", pages))
+        val first = pages.position(Region.POCKET, Talking.SAFETY_BLOCK, "1")!!.lines.first { it.text == "not safe" }
+        pages.carryOut(pages.planChange(Talking.SAFETY_BLOCK, first.address, "not safe at home")).let { assertTrue(it.ok, "changed: ${it.problem}") }
+        assertFalse(Talking.unsafe("It's not safe out there.", pages))
+        assertTrue(Talking.unsafe("I'm not safe at home.", pages))
+        assertTrue(Talks.appOwn(Talking.SAFETY_BLOCK, pages), "the Write job names it only")
+    }
+
     /** The bench's two fixed asks for the Talk job, judged on her reply and the Write job's proposal. */
     @Test
     fun theBenchMarksAnAnswerAndAPlayback() {

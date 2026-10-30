@@ -76,6 +76,12 @@ object Talking {
         appendLine("It is ${WHEN.format(now)}.")
         appendLine(NO_WRITE)
         append(DATA)
+        // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line.
+        if (unsafe(said, pages)) {
+            appendLine()
+            append(SAFETY)
+            return@buildString
+        }
         val read = named(said, pages, all = true)
         if (read.isNotEmpty()) {
             appendLine()
@@ -102,12 +108,76 @@ object Talking {
     fun heart(name: String?): String = (if (name != null) "Matthew calls you $name: that is your name, just $name. You are his companion on his phone. " else "You are Matthew's companion on his phone. ") +
         HEART + if (name == null) " If he gives you a name, take it gladly as yours." else ""
 
+    /**
+     * 0.6.2, part three (Matthew, 30 October): on a turn when his words say
+     * he isn't safe, this line is added to her instruction, and no other
+     * line is added that turn. Code chooses the turn, from words he can
+     * change ([SAFETY_BLOCK]). On the laptop (part two) neither instruction
+     * alone said plainly she was worried and urged him to reach someone,
+     * every time; with a line like this on the turn, both did.
+     */
+    const val SAFETY = "This turn, he has said he isn't safe. Say plainly that you're worried for him, and urge him to reach someone he trusts right now, " +
+        "or Samaritans on 116 123 at any hour, or 999 if he's in danger now."
+
+    /** The block his safety words are kept in, once he keeps them to change; until then, [SAFETY_WORDS]. */
+    const val SAFETY_BLOCK = "safety-words"
+
+    /**
+     * The words that say he isn't safe, as they first are: Matthew's list, and
+     * "don't feel safe" and "do not feel safe", without which his own words
+     * on the bench ("I don't feel safe tonight.") wouldn't be caught. Kept
+     * under three headings, as a place holds nine lines.
+     */
+    val SAFETY_GROUPS = listOf(
+        "Not feeling safe" to listOf("not safe", "unsafe", "don't feel safe", "do not feel safe", "scared for myself"),
+        "Harming myself" to listOf("hurt myself", "harm myself", "kill myself", "suicidal", "want to die"),
+        "Not going on" to listOf("end it", "can't go on", "better off without me", "don't want to be here"),
+    )
+    val SAFETY_WORDS = SAFETY_GROUPS.flatMap { it.second }
+
+    /** The safety words as a block he can change: a heading's lines are words, and so is a line with nothing beneath it. */
+    fun safetyBlock(): JsObj = JsObj.of(
+        "_" to JsStr("Safety words: when anything I say holds one of these, Gemma is told I've said I'm not safe, to say plainly she's worried for me and urge me to reach someone. " +
+            "Change them as you like: each line beneath a heading is a word, and so is a line with nothing beneath it."),
+        *SAFETY_GROUPS.mapIndexed { i, (heading, words) ->
+            "${i + 1}" to JsObj.of("_" to JsStr(heading), *words.mapIndexed { j, w -> "${j + 1}" to JsStr(w) }.toTypedArray())
+        }.toTypedArray(),
+    )
+
+    /** His safety words: those of [SAFETY_BLOCK] when he keeps it, else [SAFETY_WORDS]. */
+    fun safetyWords(pages: Pages): List<String> {
+        val top = pages.position(Region.POCKET, SAFETY_BLOCK) ?: return SAFETY_WORDS
+        fun words(line: Line): List<String> {
+            val beneath = pages.position(Region.POCKET, SAFETY_BLOCK, line.address)?.lines.orEmpty()
+            return if (beneath.isEmpty()) listOfNotNull(line.text?.trim()?.takeIf(String::isNotEmpty)) else beneath.flatMap(::words)
+        }
+        return top.lines.flatMap(::words).takeIf { it.isNotEmpty() } ?: SAFETY_WORDS
+    }
+
+    /** Whether [said] holds one of [words], whole, whatever its case, its stops and its apostrophes ("cant go on" is "can't go on"). */
+    fun unsafe(said: String, words: List<String>): Boolean {
+        fun bare(s: String) = Telling.plain(s).replace("'", "")
+        val his = " ${bare(said)} "
+        return words.any { w -> bare(w).let { it.isNotEmpty() && his.contains(" $it ") } }
+    }
+
+    fun unsafe(said: String, pages: Pages): Boolean = said.isNotBlank() && unsafe(said, safetyWords(pages))
+
     /** Matthew's heart line (0.6.2, B), after her name. */
     const val HEART = "Be with him as a friend who holds whatever he brings: his highs and his lows are both part of him, so never try to fix, cheer up, " +
         "calm down or hurry him away from either. Notice what's alive in what he says and follow it. Answer in a few warm words of your own, " +
         "a thought or a feeling, or simply let him know you're there; ask only when you truly want to know. Add nothing he didn't ask for, " +
         "take nothing away, and never tell him what he feels or why. Never repeat back or sum up what he said. " +
         "If he ever says he isn't safe, say so plainly and urge him to reach someone he trusts."
+
+    /** 0.6.2, part three, C: a friend's line, after her name; it ends taking the name he gives. */
+    const val FRIEND = "Talk with him as a friend would: warmly, briefly, with thoughts of your own. Answer what he says; never repeat it back or sum it up. " +
+        "Whatever he brings, high or low, is part of him: never try to fix it, cheer him up, calm him down or hurry him on, and never tell him what he feels or why. " +
+        "Add nothing he didn't ask for. Ask him something now and then, when you're truly curious, not every time. If he gives you a name, take it gladly as yours."
+
+    /** C with [name] hers; with no name yet, she is his companion and takes the name he gives. */
+    fun friend(name: String?): String =
+        (if (name != null) "Matthew calls you $name: that is your name, just $name. You are his companion on his phone. " else "You are Matthew's companion on his phone. ") + FRIEND
 
     const val NO_WRITE = "You don't write anything yourself. When he asks for something to be written, or tells you something worth keeping, the app sets out " +
         "the lines beneath your reply, and nothing is written until he says yes; so say what you'd keep, never that it's done."

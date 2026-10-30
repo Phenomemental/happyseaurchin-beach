@@ -712,6 +712,28 @@ class CompanionTest {
         assertEquals(JobSettings.of(Job.TALK), app.settings(Job.TALK))
     }
 
+    /** 0.6.2, part three: when his words say he isn't safe, the safety line is her instruction's only line that turn; his safety words are kept as a block on his tap. */
+    @Test
+    fun theSafetyLineComesWithHisWordsAndTheWordsAreHisToChange() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf("I'm worried about you. Please reach someone you trust right now, or Samaritans on 116 123.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("I don't feel safe tonight.")
+            compose.waitFor("say", "I'm worried about you.")
+            assertTrue(mind.talkInstruction, mind.talkInstruction.endsWith(com.phenomemental.pocketbeach.bsp.Talking.SAFETY))
+            compose.tap("back")
+            compose.tap("settings")
+            compose.waitFor("safety-words", "don't feel safe")
+            assertFalse("nothing written until he taps", app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK))
+            compose.tap("keep-safety-words")
+            compose.waitUntil(10_000) { app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK) }
+            compose.waitFor("open-safety-words")
+        }
+        assertEquals(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_WORDS, com.phenomemental.pocketbeach.bsp.Talking.safetyWords(app.pages))
+    }
+
     /** 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so. */
     @Test
     fun oneEngineOnTheGpuAndAJobMovedOffItSaysSo() {
