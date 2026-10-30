@@ -4,7 +4,8 @@ Current state only. Newest first.
 
 ## Now
 
-**pocket-beach 0.6.2** is built from Matthew's decisions on part two
+**pocket-beach-v0.6.2** is released (its tag is at `ef8cf63` on main),
+from Matthew's decisions on part two
 (see "0.6.2, part three"): her instruction is C, the friend line, which
 passed the most of A, B and C on both models; on a turn when his words say
 he isn't safe, the safety line, with Samaritans and 999, which with C
@@ -1394,8 +1395,20 @@ to ask; his earlier line given as an earlier turn) wait.
 
 ### The 0.6.2 release
 
-Version 0.6.2 (`versionCode` 15), started from main once this is merged;
-its tag, APK and checks are recorded here after.
+- Its tag is at `ef8cf63` on main (pull request #223), published 30
+  October.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.6.2 (`versionCode` 15), for arm64 phones, 50 MB. Its SHA-256 is
+  `70f4313676094cfbeaca3f4ca519465c1d9fde1bcf4073b9e77eebc4606d81b2`, the
+  same as GitHub's record of it.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else;
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there.
+- The APK: https://github.com/Phenomemental/happyseaurchin-beach/releases/download/pocket-beach-v0.6.2/pocket-beach-v0.6.2.apk
 
 ### What Matthew tries on his Pixel
 
