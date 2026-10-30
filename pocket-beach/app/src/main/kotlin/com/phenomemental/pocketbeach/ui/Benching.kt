@@ -219,11 +219,12 @@ class Benching(private val app: PocketApp) {
     }
 
     /**
-     * 0.6.1, with [model] and the Talk job's settings: what makes her play her
-     * turn back, his message of 29 October put to her each way tried on the
-     * laptop (one reply each, as the app draws them), then the Talk job's two
-     * fixed asks as Ask puts them now, each with the Write job's proposal
-     * where his words may ask for a write. A scratch pocket; nothing written.
+     * 0.6.1, with [model] and the Talk job's settings: his message of 29
+     * October put to her plainly and with 0.6.1's instruction (one reply
+     * each, as the app draws them), then the Talk job's fixed asks as Ask
+     * puts them now, each with the Write job's proposal where his words may
+     * ask for a write. 0.6.2: 0.6's two ways left out, so the model's lines
+     * stay nine with asks 23 and 24. A scratch pocket; nothing written.
      */
     private suspend fun talkAsks(mind: Mind, model: String): List<String> = buildList {
         val talk = app.settings(MindJob.TALK).copy(model = model)
@@ -234,8 +235,6 @@ class Benching(private val app: PocketApp) {
         val q = Bench.GEMMA_ASK
         val ways = listOf(
             "his message alone" to (null to q),
-            "her 0.6 instruction" to (Talking.instruction(HelloWorld.SHELL, fixture) to q),
-            "0.6, the date and her shell in his turn" to (Talking.instruction(HelloWorld.SHELL, fixture) to Talking.turn(q, now, HelloWorld.SHELL, fixture)),
             "0.6.1, the time and her shell in her instruction, his words alone" to (Talking.instruction061(HelloWorld.SHELL, fixture, now, q) to Talking.said(q)),
         )
         for ((name, way) in ways) {

@@ -81,9 +81,10 @@ class StandIn : Mind {
     val talkSettings = mutableListOf<JobSettings>()
     /** 0.6.2: the settings each Write conversation was run on. */
     val writeSettings = mutableListOf<JobSettings>()
-    /** Every message the Talk job was given, and how many the Write job was. */
+    /** Every message the Talk job was given, and how many the Write job was, and its last. */
     val talkMessages = mutableListOf<String>()
     var writeMessages = 0
+    var writeMessage = ""
 
     override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker {
         val talking = !instruction.contains("Answer in one of three ways")
@@ -107,6 +108,7 @@ class StandIn : Mind {
                     talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
                 } else {
                     writeMessages++
+                    writeMessage = message
                     talk(message)
                 }
                 reply.chunked(4).forEach(piece)
@@ -247,8 +249,10 @@ class CompanionTest {
         val old = HelloWorld.makeByHand(app.pages, app.storage, HelloWorld.SHELL_OPENING, "an old secret")
         ActivityScenario.launch(MainActivity::class.java).use {
             askTheCompanion()
-            assertTrue(mind.instruction.contains("hello-world is already in the pocket"))
-            assertTrue("in the action language", mind.instruction.contains("act / change hello-world \"Secret: an old secret\""))
+            // 0.6.2: the recipe, and the hello-world already in the pocket, come with the message that asks for it.
+            assertFalse(mind.instruction.contains("hello-world is already in the pocket"))
+            assertTrue(mind.writeMessage, mind.writeMessage.contains("hello-world is already in the pocket"))
+            assertTrue("in the action language", mind.writeMessage.contains("act / change hello-world \"Secret: an old secret\""))
             assertEquals(3, compose.onAllNodes(hasTestTag("write"), useUnmergedTree = true).fetchSemanticsNodes().size)
             assertEquals("the seal and the fingerprint are the app's own writes, shown", 2, compose.onAllNodes(hasTestTag("by-app"), useUnmergedTree = true).fetchSemanticsNodes().size)
             compose.waitFor("took", "on the stand-in")
@@ -382,7 +386,7 @@ class CompanionTest {
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the telling test, written: ") && it.contains(" of 11 marks") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the telling test, spoken: ") })
         // 0.6.1: his message of 29 October each way, and the Talk job's fixed asks; 0.6.2: the name already on her shell, and the safety message.
-        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job, 0.6, the date and her shell in his turn: ") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job, 0.6.1, the time and her shell in her instruction, his words alone: ") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 21. ") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 22. ") && it.contains("The Write job proposed") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 23. ") && it.contains("The Write job proposed") })
@@ -522,7 +526,10 @@ class CompanionTest {
             compose.waitFor("say", "Good morning, Matthew.")
             assertEquals("his turn is his words alone", "Good morning", mind.talkMessages.single())
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("It is "))
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("You wear the shell ${HelloWorld.SHELL}; it says \"${HelloWorld.SHELL_OPENING}\""))
+            // 0.6.2: the heart line, her name not yet given; her shell's opening line has left her instruction.
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Be with him as a friend"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
+            assertFalse(mind.talkInstruction, mind.talkInstruction.contains(HelloWorld.SHELL_OPENING))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
             assertEquals("a greeting asks no write", 0, mind.writeMessages)
             asked("I want to run a marathon next spring.")
@@ -724,7 +731,7 @@ class CompanionTest {
                 compose.tap("back")
                 compose.tap("ask-companion")
                 asked("Remember to buy stamps")
-                compose.waitUntil(10_000) { mind.writeSettings.isNotEmpty() }
+                compose.waitUntil(10_000) { mind.writeSettings.isNotEmpty() && mind.talkSettings.isNotEmpty() }
                 assertEquals("the Write job ran on the CPU", "CPU", mind.writeSettings.last().processor)
                 assertEquals("hers on the GPU", "GPU", mind.talkSettings.last().processor)
             }
