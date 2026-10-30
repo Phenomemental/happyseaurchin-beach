@@ -735,18 +735,25 @@ class CompanionTest {
                 assertEquals("the Write job ran on the CPU", "CPU", mind.writeSettings.last().processor)
                 assertEquals("hers on the GPU", "GPU", mind.talkSettings.last().processor)
             }
-            // An answer that failed on the GPU, answered on the CPU, says so under her reply, Details on or off.
-            mind.gpuFailsNext = true
-            ActivityScenario.launch(MainActivity::class.java).use {
-                compose.tap("ask-companion")
-                asked("Hello")
-                compose.waitFor("gpu-failed", com.phenomemental.pocketbeach.model.Pace.GPU_FAILED)
+            // An answer that failed on the GPU, answered on the CPU, says so under her reply: in its time line with Details on, a line of its own with them off.
+            for (details in listOf(true, false)) {
+                app.showDetails = details
+                mind.gpuFailsNext = true
+                val before = mind.talkMessages.size
+                ActivityScenario.launch(MainActivity::class.java).use {
+                    compose.tap("ask-companion")
+                    asked("Hello")
+                    compose.waitUntil(10_000) { mind.talkMessages.size > before }
+                    compose.waitFor(if (details) "took" else "gpu-failed", com.phenomemental.pocketbeach.model.Pace.GPU_FAILED)
+                }
             }
+            app.showDetails = true
             // All three on one model share the GPU's one engine.
             app.set(Job.WRITE, JobSettings.of(Job.WRITE).copy(model = JobSettings.GEMMA_E4B))
             assertEquals("GPU", app.running(Job.WRITE).processor)
             assertEquals(null, app.cpuWhy(Job.WRITE))
         } finally {
+            app.showDetails = true
             app.set(Job.TALK, JobSettings.of(Job.TALK))
             app.set(Job.WRITE, JobSettings.of(Job.WRITE))
         }
