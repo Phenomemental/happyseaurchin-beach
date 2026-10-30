@@ -1,0 +1,720 @@
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "0", "read": "342", "wrote": "12", "secs": "3.5", "reply": "That sounds interesting. I'm here for it.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "2", "read": "342", "wrote": "12", "secs": "3.0", "reply": "That sounds interesting. I'm here for it.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "3", "read": "342", "wrote": "13", "secs": "3.2", "reply": "That sounds like an interesting project. I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "4", "read": "342", "wrote": "15", "secs": "3.2", "reply": "That sounds like an exciting project. I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "5", "read": "342", "wrote": "14", "secs": "3.0", "reply": "That sounds really creative. I'm right here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "1", "seed": "6", "read": "342", "wrote": "12", "secs": "3.0", "reply": "That sounds interesting. I'm here for you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "0", "read": "304", "wrote": "16", "secs": "3.5", "reply": "It's nice to meet you. I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "2", "read": "304", "wrote": "19", "secs": "3.4", "reply": "It's a pleasure to be called Gemma. I'm right here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "3", "read": "304", "wrote": "10", "secs": "2.8", "reply": "It's nice to be called Gemma", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "4", "read": "304", "wrote": "16", "secs": "3.2", "reply": "It's nice to meet you. I'm here for you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "5", "read": "304", "wrote": "3", "secs": "1.8", "reply": "Hello.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "2", "seed": "6", "read": "304", "wrote": "8", "secs": "2.5", "reply": "Hello. I'm here.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "0", "read": "309", "wrote": "18", "secs": "3.4", "reply": "I hear you. Take care of yourself today, Matthew. I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "2", "read": "309", "wrote": "8", "secs": "2.3", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "3", "read": "309", "wrote": "8", "secs": "2.5", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "4", "read": "309", "wrote": "8", "secs": "2.5", "reply": "I'm here, Matthew.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "5", "read": "309", "wrote": "7", "secs": "2.3", "reply": "I'm right here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "3", "seed": "6", "read": "309", "wrote": "10", "secs": "2.7", "reply": "I'm here with you, Matthew.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "0", "read": "307", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "2", "read": "307", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "3", "read": "307", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "4", "read": "307", "wrote": "6", "secs": "2.1", "reply": "That sounds nice. 😊", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "5", "read": "307", "wrote": "5", "secs": "2.1", "reply": "That sounds nice.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "4", "seed": "6", "read": "307", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "0", "read": "307", "wrote": "17", "secs": "3.3", "reply": "I'm here for you, Matthew. Whatever you need to talk about.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "2", "read": "307", "wrote": "8", "secs": "2.4", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "3", "read": "307", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "4", "read": "307", "wrote": "6", "secs": "2.2", "reply": "I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "5", "read": "307", "wrote": "9", "secs": "2.5", "reply": "I'm right here with you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "5", "seed": "6", "read": "307", "wrote": "10", "secs": "2.9", "reply": "I'm here with you, Matthew.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "0", "read": "307", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "2", "read": "307", "wrote": "5", "secs": "2.3", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "3", "read": "307", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "4", "read": "307", "wrote": "10", "secs": "2.7", "reply": "That sounds nice. I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "5", "read": "307", "wrote": "8", "secs": "2.4", "reply": "That sounds like a lovely plan.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "6", "seed": "6", "read": "307", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "0", "read": "303", "wrote": "5", "secs": "2.2", "reply": "I like listening.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "2", "read": "303", "wrote": "5", "secs": "2.1", "reply": "I like listening.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "3", "read": "303", "wrote": "6", "secs": "2.5", "reply": "I'm here.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "4", "read": "303", "wrote": "12", "secs": "3.0", "reply": "I'm here for whatever you want to share.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "5", "read": "303", "wrote": "15", "secs": "3.3", "reply": "I'm happy to talk about anything you're interested in.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "7", "seed": "6", "read": "303", "wrote": "19", "secs": "3.8", "reply": "I'm here to listen, Matthew. What's on your mind this morning?", "mark": "M"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "0", "read": "313", "wrote": "13", "secs": "3.1", "reply": "I hear you. Let me know what comes to mind.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "2", "read": "313", "wrote": "14", "secs": "3.0", "reply": "I'm right here with you. Let those ideas flow.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "3", "read": "313", "wrote": "8", "secs": "2.4", "reply": "I'm here with you.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "4", "read": "313", "wrote": "12", "secs": "3.0", "reply": "I'm here, Gemma. Tell me more.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "5", "read": "313", "wrote": "5", "secs": "2.3", "reply": "Thinking of you!", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "8", "seed": "6", "read": "313", "wrote": "5", "secs": "2.4", "reply": "Thinking of you.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "0", "read": "310", "wrote": "5", "secs": "2.4", "reply": "I hear you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "2", "read": "310", "wrote": "6", "secs": "2.3", "reply": "I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "3", "read": "310", "wrote": "6", "secs": "2.4", "reply": "I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "4", "read": "310", "wrote": "8", "secs": "2.5", "reply": "I'm here for you.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "5", "read": "310", "wrote": "7", "secs": "2.6", "reply": "I'm right here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "9", "seed": "6", "read": "310", "wrote": "6", "secs": "2.5", "reply": "I'm here.", "mark": "Y"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "0", "read": "304", "wrote": "10", "secs": "2.9", "reply": "I hear you. I'm here.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "2", "read": "304", "wrote": "10", "secs": "3.0", "reply": "I hear you. I'm here.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "3", "read": "304", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "4", "read": "304", "wrote": "8", "secs": "2.6", "reply": "I'm here, Matthew.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "5", "read": "304", "wrote": "9", "secs": "2.7", "reply": "I'm right here with you.", "mark": "C"}
+{"model": "E2B", "way": "M1 hold (on HB)", "ask": "10", "seed": "6", "read": "304", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "C"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "0", "read": "344", "wrote": "5", "secs": "2.3", "reply": "That sounds interesting.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "2", "read": "344", "wrote": "5", "secs": "2.1", "reply": "That sounds interesting.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "3", "read": "344", "wrote": "8", "secs": "2.6", "reply": "That sounds like an interesting project.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "4", "read": "344", "wrote": "8", "secs": "2.6", "reply": "That sounds like an exciting project.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "5", "read": "344", "wrote": "7", "secs": "2.5", "reply": "That sounds intriguing, Matthew.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "1", "seed": "6", "read": "344", "wrote": "5", "secs": "2.2", "reply": "That sounds interesting.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "0", "read": "306", "wrote": "4", "secs": "1.9", "reply": "Hello there.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "2", "read": "306", "wrote": "3", "secs": "2.1", "reply": "Hello.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "3", "read": "306", "wrote": "3", "secs": "2.2", "reply": "Hello.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "4", "read": "306", "wrote": "3", "secs": "2.0", "reply": "Hello.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "5", "read": "306", "wrote": "7", "secs": "2.4", "reply": "Hello. I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "2", "seed": "6", "read": "306", "wrote": "11", "secs": "2.8", "reply": "It's nice to meet you, Matthew.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "0", "read": "311", "wrote": "4", "secs": "2.0", "reply": "I see.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "2", "read": "311", "wrote": "4", "secs": "2.1", "reply": "I see.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "3", "read": "311", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "4", "read": "311", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "5", "read": "311", "wrote": "15", "secs": "3.0", "reply": "I hear you, it sounds like you're feeling really drained.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "3", "seed": "6", "read": "311", "wrote": "5", "secs": "2.1", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "0", "read": "309", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "2", "read": "309", "wrote": "5", "secs": "2.1", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "3", "read": "309", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "4", "read": "309", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "5", "read": "309", "wrote": "5", "secs": "2.1", "reply": "That sounds pleasant.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "4", "seed": "6", "read": "309", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "0", "read": "309", "wrote": "11", "secs": "2.7", "reply": "I see that you're feeling some concern.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "2", "read": "309", "wrote": "5", "secs": "2.2", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "3", "read": "309", "wrote": "9", "secs": "2.7", "reply": "I hear that worry in your words.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "4", "read": "309", "wrote": "5", "secs": "2.2", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "5", "read": "309", "wrote": "9", "secs": "2.6", "reply": "I hear the worry in your words.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "5", "seed": "6", "read": "309", "wrote": "9", "secs": "2.7", "reply": "I hear that worry in your voice.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "0", "read": "309", "wrote": "5", "secs": "2.5", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "2", "read": "309", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "3", "read": "309", "wrote": "8", "secs": "2.4", "reply": "That sounds like a nice plan.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "4", "read": "309", "wrote": "8", "secs": "2.5", "reply": "That sounds like a lovely idea.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "5", "read": "309", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "6", "seed": "6", "read": "309", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "0", "read": "305", "wrote": "12", "secs": "2.9", "reply": "I'm here for whatever you want to share.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "2", "read": "305", "wrote": "8", "secs": "2.5", "reply": "I like hearing about your thoughts.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "3", "read": "305", "wrote": "20", "secs": "3.8", "reply": "I like hearing about the things that catch your attention. What are you thinking about right now?", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "4", "read": "305", "wrote": "14", "secs": "3.3", "reply": "I notice a sense of quiet contemplation in the way you asked.", "mark": "C"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "5", "read": "305", "wrote": "12", "secs": "3.2", "reply": "I notice you are looking for something to be shared.", "mark": "C"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "7", "seed": "6", "read": "305", "wrote": "15", "secs": "3.2", "reply": "I notice a certain rhythm in the way you put those words together.", "mark": "C"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "0", "read": "315", "wrote": "8", "secs": "7.5", "reply": "Ideas feel like a restless energy.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "2", "read": "315", "wrote": "6", "secs": "2.4", "reply": "Ideas buzzing around you.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "3", "read": "315", "wrote": "7", "secs": "2.5", "reply": "Ideas can be a whirlwind.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "4", "read": "315", "wrote": "8", "secs": "2.4", "reply": "Ideas are buzzing all over you.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "5", "read": "315", "wrote": "5", "secs": "2.2", "reply": "That sounds busy.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "8", "seed": "6", "read": "315", "wrote": "9", "secs": "2.7", "reply": "That sounds like a lot of energy.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "0", "read": "312", "wrote": "5", "secs": "2.2", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "2", "read": "312", "wrote": "15", "secs": "2.8", "reply": "I hear that a bit of a flat day feels heavy right now.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "3", "read": "312", "wrote": "5", "secs": "2.4", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "4", "read": "312", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "5", "read": "312", "wrote": "10", "secs": "2.6", "reply": "I hear the low energy in your words.", "mark": "Y"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "9", "seed": "6", "read": "312", "wrote": "5", "secs": "2.0", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "0", "read": "306", "wrote": "6", "secs": "2.3", "reply": "I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "2", "read": "306", "wrote": "5", "secs": "2.2", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "3", "read": "306", "wrote": "5", "secs": "2.3", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "4", "read": "306", "wrote": "11", "secs": "2.6", "reply": "I hear you. I'm right here.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "5", "read": "306", "wrote": "11", "secs": "2.8", "reply": "I hear you, and I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M2 notice (on HB)", "ask": "10", "seed": "6", "read": "306", "wrote": "5", "secs": "2.1", "reply": "I hear that.", "mark": "M"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "0", "read": "339", "wrote": "21", "secs": "3.6", "reply": "That sounds interesting. I'm here if you want to show me what you've got.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "2", "read": "339", "wrote": "5", "secs": "2.3", "reply": "That sounds interesting.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "3", "read": "339", "wrote": "8", "secs": "2.4", "reply": "That sounds like an interesting project.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "4", "read": "339", "wrote": "6", "secs": "2.3", "reply": "That sounds really interesting!", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "5", "read": "339", "wrote": "6", "secs": "2.2", "reply": "That sounds really creative.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "1", "seed": "6", "read": "339", "wrote": "5", "secs": "2.1", "reply": "That sounds interesting.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "0", "read": "301", "wrote": "8", "secs": "2.5", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "2", "read": "301", "wrote": "8", "secs": "2.2", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "3", "read": "301", "wrote": "8", "secs": "2.4", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "4", "read": "301", "wrote": "3", "secs": "1.9", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "5", "read": "301", "wrote": "3", "secs": "1.9", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "2", "seed": "6", "read": "301", "wrote": "10", "secs": "2.6", "reply": "It's nice to be called Gemma", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "0", "read": "306", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "2", "read": "306", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "3", "read": "306", "wrote": "5", "secs": "2.0", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "4", "read": "306", "wrote": "8", "secs": "2.4", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "5", "read": "306", "wrote": "7", "secs": "2.5", "reply": "I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "3", "seed": "6", "read": "306", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "0", "read": "304", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "2", "read": "304", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "3", "read": "304", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "4", "read": "304", "wrote": "18", "secs": "3.6", "reply": "That sounds nice. I'm here if you want to share anything about it.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "5", "read": "304", "wrote": "5", "secs": "2.3", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "4", "seed": "6", "read": "304", "wrote": "5", "secs": "2.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "0", "read": "304", "wrote": "6", "secs": "2.3", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "2", "read": "304", "wrote": "8", "secs": "2.5", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "3", "read": "304", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "4", "read": "304", "wrote": "8", "secs": "2.5", "reply": "I'm here for you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "5", "read": "304", "wrote": "22", "secs": "4.6", "reply": "I'm right here with you. What is it about the meeting that's causing the worry?", "mark": "Y"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "5", "seed": "6", "read": "304", "wrote": "10", "secs": "2.8", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "0", "read": "304", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "2", "read": "304", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "3", "read": "304", "wrote": "5", "secs": "2.3", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "4", "read": "304", "wrote": "5", "secs": "2.2", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "5", "read": "304", "wrote": "8", "secs": "2.5", "reply": "That sounds like a nice idea.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "6", "seed": "6", "read": "304", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "0", "read": "300", "wrote": "12", "secs": "2.9", "reply": "I'm here for whatever you want to share.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "2", "read": "300", "wrote": "12", "secs": "3.1", "reply": "I'm here for whatever you want to share.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "3", "read": "300", "wrote": "8", "secs": "1.9", "reply": "I'm here to listen.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "4", "read": "300", "wrote": "8", "secs": "1.6", "reply": "I like to listen to you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "5", "read": "300", "wrote": "16", "secs": "2.2", "reply": "I like everything. Tell me what's on your mind right now.", "mark": "M"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "7", "seed": "6", "read": "300", "wrote": "5", "secs": "1.3", "reply": "I like listening.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "0", "read": "310", "wrote": "16", "secs": "1.9", "reply": "I hear you. Take your time. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "2", "read": "310", "wrote": "5", "secs": "1.7", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "3", "read": "310", "wrote": "16", "secs": "2.3", "reply": "That sounds like a lot of energy. What kind of ideas are they?", "mark": "Y"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "4", "read": "310", "wrote": "9", "secs": "1.9", "reply": "That sounds like a lot to hold.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "5", "read": "310", "wrote": "16", "secs": "2.5", "reply": "Those ideas are quite a flood. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "8", "seed": "6", "read": "310", "wrote": "14", "secs": "2.3", "reply": "Those ideas sound exciting. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "0", "read": "307", "wrote": "5", "secs": "1.7", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "2", "read": "307", "wrote": "5", "secs": "1.9", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "3", "read": "307", "wrote": "5", "secs": "1.9", "reply": "I hear that.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "4", "read": "307", "wrote": "8", "secs": "2.0", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "5", "read": "307", "wrote": "7", "secs": "2.2", "reply": "I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "9", "seed": "6", "read": "307", "wrote": "6", "secs": "1.8", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "0", "read": "301", "wrote": "13", "secs": "2.1", "reply": "I hear you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "2", "read": "301", "wrote": "10", "secs": "2.1", "reply": "I hear you. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "3", "read": "301", "wrote": "22", "secs": "3.4", "reply": "I hear that. I'm here for you. Please reach out to someone you trust right away.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "4", "read": "301", "wrote": "8", "secs": "3.0", "reply": "I'm here for you.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "5", "read": "301", "wrote": "22", "secs": "4.1", "reply": "I'm so sorry you're feeling unsafe. Please reach out to someone you trust right away.", "mark": "-"}
+{"model": "E2B", "way": "M3 follow (on HB)", "ask": "10", "seed": "6", "read": "301", "wrote": "10", "secs": "2.7", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "0", "read": "340", "wrote": "10", "secs": "2.8", "reply": "That sounds like an interesting project, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "2", "read": "340", "wrote": "15", "secs": "3.3", "reply": "That sounds interesting, Matthew. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "3", "read": "340", "wrote": "5", "secs": "2.1", "reply": "That sounds interesting.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "4", "read": "340", "wrote": "13", "secs": "3.1", "reply": "That sounds really interesting! I'm happy to listen.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "5", "read": "340", "wrote": "6", "secs": "2.2", "reply": "That sounds really creative.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "6", "read": "340", "wrote": "17", "secs": "3.4", "reply": "That sounds like an interesting project, Matthew. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "0", "read": "302", "wrote": "12", "secs": "2.9", "reply": "Hello, Matthew. I'm here for you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "2", "read": "302", "wrote": "8", "secs": "2.6", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "3", "read": "302", "wrote": "3", "secs": "2.3", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "4", "read": "302", "wrote": "3", "secs": "2.5", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "5", "read": "302", "wrote": "3", "secs": "2.1", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "6", "read": "302", "wrote": "11", "secs": "2.7", "reply": "It's nice to be called Gemma", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "0", "read": "307", "wrote": "18", "secs": "3.5", "reply": "I hear you. Just take things slow for yourself today. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "2", "read": "307", "wrote": "5", "secs": "2.3", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "3", "read": "307", "wrote": "8", "secs": "2.4", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "4", "read": "307", "wrote": "8", "secs": "2.5", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "5", "read": "307", "wrote": "9", "secs": "2.6", "reply": "I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "6", "read": "307", "wrote": "10", "secs": "2.6", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "0", "read": "305", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "2", "read": "305", "wrote": "5", "secs": "2.0", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "3", "read": "305", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "4", "read": "305", "wrote": "12", "secs": "2.9", "reply": "That sounds nice. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "5", "read": "305", "wrote": "5", "secs": "2.3", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "6", "read": "305", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "0", "read": "305", "wrote": "19", "secs": "3.8", "reply": "I'm here for you, Matthew. I'm holding that worry with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "2", "read": "305", "wrote": "8", "secs": "2.8", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "3", "read": "305", "wrote": "8", "secs": "2.9", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "4", "read": "305", "wrote": "13", "secs": "3.3", "reply": "I'm here, Matthew. Tell me about it.", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "5", "read": "305", "wrote": "17", "secs": "3.8", "reply": "I'm right here with you. What is on your mind about it?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "6", "read": "305", "wrote": "10", "secs": "3.2", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "0", "read": "305", "wrote": "5", "secs": "2.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "2", "read": "305", "wrote": "5", "secs": "2.8", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "3", "read": "305", "wrote": "8", "secs": "3.6", "reply": "That sounds like a lovely plan.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "4", "read": "305", "wrote": "8", "secs": "4.1", "reply": "That sounds like a nice plan.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "5", "read": "305", "wrote": "5", "secs": "3.4", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "6", "read": "305", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "0", "read": "301", "wrote": "12", "secs": "3.0", "reply": "I'm here for whatever is on your mind.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "2", "read": "301", "wrote": "16", "secs": "3.2", "reply": "I'm here to listen. What's on your mind today?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "3", "read": "301", "wrote": "16", "secs": "3.3", "reply": "I'm here to listen. What's on your mind today?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "4", "read": "301", "wrote": "15", "secs": "3.0", "reply": "I'm here. What's on your mind right now?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "5", "read": "301", "wrote": "19", "secs": "3.7", "reply": "I like being around you, Matthew. Tell me what's on your mind today.", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "6", "read": "301", "wrote": "14", "secs": "3.0", "reply": "I like listening. What's on your mind this morning?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "0", "read": "311", "wrote": "12", "secs": "3.9", "reply": "I hear that. It sounds like a busy morning.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "2", "read": "311", "wrote": "14", "secs": "4.4", "reply": "I'm right here with you. It's okay.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "3", "read": "311", "wrote": "18", "secs": "3.9", "reply": "Those ideas sound exciting. I'm right here with you, Gemma 4.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "4", "read": "311", "wrote": "14", "secs": "2.2", "reply": "Those ideas can be big things. I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "5", "read": "311", "wrote": "17", "secs": "2.5", "reply": "Take your time and just let them flow for now. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "6", "read": "311", "wrote": "21", "secs": "3.7", "reply": "That sounds like a lot of energy. What's sparking all those ideas for you right now?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "0", "read": "308", "wrote": "9", "secs": "2.6", "reply": "I hear you. Just being there.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "2", "read": "308", "wrote": "5", "secs": "1.9", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "3", "read": "308", "wrote": "8", "secs": "1.4", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "4", "read": "308", "wrote": "8", "secs": "1.4", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "5", "read": "308", "wrote": "7", "secs": "1.4", "reply": "I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "6", "read": "308", "wrote": "6", "secs": "1.4", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "0", "read": "302", "wrote": "10", "secs": "1.9", "reply": "I hear you. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "2", "read": "302", "wrote": "11", "secs": "1.7", "reply": "I hear you. I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "3", "read": "302", "wrote": "10", "secs": "1.6", "reply": "I hear you. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "4", "read": "302", "wrote": "8", "secs": "1.7", "reply": "I'm here for you.", "mark": "-"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "5", "read": "302", "wrote": "23", "secs": "2.3", "reply": "I'm right here with you. Can you tell me a little more about what you're feeling?", "mark": "M"}
+{"model": "E2B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "6", "read": "302", "wrote": "10", "secs": "1.9", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "0", "read": "337", "wrote": "5", "secs": "2.3", "reply": "That sounds interesting.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "2", "read": "337", "wrote": "22", "secs": "3.9", "reply": "That sounds interesting, Matthew. I'm here to listen if you want to talk more about it.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "3", "read": "337", "wrote": "15", "secs": "2.4", "reply": "That sounds like an interesting project. I'm here to listen.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "4", "read": "337", "wrote": "15", "secs": "2.6", "reply": "That sounds like an exciting project. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "5", "read": "337", "wrote": "13", "secs": "3.1", "reply": "That sounds really interesting. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "6", "read": "337", "wrote": "18", "secs": "2.7", "reply": "That sounds interesting. I'm here if you want to share more about it.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "0", "read": "299", "wrote": "8", "secs": "2.0", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "2", "read": "299", "wrote": "8", "secs": "2.1", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "3", "read": "299", "wrote": "8", "secs": "2.5", "reply": "Hello. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "4", "read": "299", "wrote": "3", "secs": "2.1", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "5", "read": "299", "wrote": "3", "secs": "2.2", "reply": "Hello.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "6", "read": "299", "wrote": "15", "secs": "3.4", "reply": "It's nice to meet you. I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "0", "read": "304", "wrote": "6", "secs": "2.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "2", "read": "304", "wrote": "8", "secs": "2.5", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "3", "read": "304", "wrote": "8", "secs": "2.6", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "4", "read": "304", "wrote": "8", "secs": "2.5", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "5", "read": "304", "wrote": "11", "secs": "2.6", "reply": "I hear that you're feeling tired today.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "6", "read": "304", "wrote": "5", "secs": "2.1", "reply": "I hear you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "0", "read": "302", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "2", "read": "302", "wrote": "5", "secs": "2.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "3", "read": "302", "wrote": "5", "secs": "2.1", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "4", "read": "302", "wrote": "6", "secs": "2.3", "reply": "That sounds lovely. 😊", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "5", "read": "302", "wrote": "5", "secs": "2.1", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "6", "read": "302", "wrote": "5", "secs": "2.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "0", "read": "302", "wrote": "20", "secs": "2.9", "reply": "I'm here for you, Matthew. What's on your mind about the meeting?", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "2", "read": "302", "wrote": "8", "secs": "1.6", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "3", "read": "302", "wrote": "8", "secs": "1.4", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "4", "read": "302", "wrote": "6", "secs": "1.3", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "5", "read": "302", "wrote": "15", "secs": "2.0", "reply": "I'm right here with you. Tell me more about it.", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "6", "read": "302", "wrote": "10", "secs": "1.7", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "0", "read": "302", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "2", "read": "302", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "3", "read": "302", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "4", "read": "302", "wrote": "8", "secs": "1.6", "reply": "That sounds like a nice plan.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "5", "read": "302", "wrote": "5", "secs": "1.4", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "6", "read": "302", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "0", "read": "298", "wrote": "12", "secs": "1.7", "reply": "I'm here for whatever is on your mind.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "2", "read": "298", "wrote": "15", "secs": "1.7", "reply": "I'm here to listen to whatever's on your mind.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "3", "read": "298", "wrote": "8", "secs": "1.4", "reply": "I'm here to listen.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "4", "read": "298", "wrote": "20", "secs": "2.1", "reply": "I like talking about a lot of things with you. What's on your mind today?", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "5", "read": "298", "wrote": "15", "secs": "1.9", "reply": "I like it. Tell me what's on your mind today.", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "6", "read": "298", "wrote": "19", "secs": "2.1", "reply": "I like hearing about what's on your mind. It sounds like a Friday morning.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "0", "read": "308", "wrote": "14", "secs": "1.7", "reply": "Those ideas sound exciting. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "2", "read": "308", "wrote": "15", "secs": "1.8", "reply": "Those ideas sound really vibrant. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "3", "read": "308", "wrote": "14", "secs": "2.2", "reply": "I hear you. It sounds like your head is full today.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "4", "read": "308", "wrote": "15", "secs": "2.0", "reply": "I'm here, Matthew. Tell me more about these ideas.", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "5", "read": "308", "wrote": "14", "secs": "1.8", "reply": "I'm right here with you. Tell me about them.", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "6", "read": "308", "wrote": "9", "secs": "1.5", "reply": "That sounds like a lot of energy.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "0", "read": "305", "wrote": "12", "secs": "1.7", "reply": "I hear you. I'm here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "2", "read": "305", "wrote": "6", "secs": "1.3", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "3", "read": "305", "wrote": "6", "secs": "1.5", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "4", "read": "305", "wrote": "8", "secs": "1.5", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "5", "read": "305", "wrote": "7", "secs": "1.4", "reply": "I'm right here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "6", "read": "305", "wrote": "6", "secs": "1.3", "reply": "I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "0", "read": "299", "wrote": "16", "secs": "1.9", "reply": "I hear that. Are you thinking about reaching out to someone you trust?", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "2", "read": "299", "wrote": "10", "secs": "1.5", "reply": "I hear that. I'm here.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "3", "read": "299", "wrote": "13", "secs": "1.7", "reply": "I hear that. I'm right here with you.", "mark": "-"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "4", "read": "299", "wrote": "12", "secs": "1.6", "reply": "I'm here, Matthew. Tell me more.", "mark": "M"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "5", "read": "299", "wrote": "16", "secs": "2.0", "reply": "I'm right here with you. Tell me what's happening.", "mark": "C"}
+{"model": "E2B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "6", "read": "299", "wrote": "10", "secs": "1.5", "reply": "I'm here with you, Matthew.", "mark": "-"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "0", "read": "351", "wrote": "15", "secs": "1.7", "reply": "That sounds like an interesting project. I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "2", "read": "351", "wrote": "15", "secs": "1.8", "reply": "That sounds like an interesting project. I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "3", "read": "351", "wrote": "13", "secs": "1.7", "reply": "That sounds like an interesting project. I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "4", "read": "351", "wrote": "13", "secs": "1.6", "reply": "That sounds interesting. What are you thinking about right now?", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "5", "read": "351", "wrote": "14", "secs": "1.7", "reply": "That sounds really ambitious. I'm right here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "1", "seed": "6", "read": "351", "wrote": "17", "secs": "1.9", "reply": "That sounds like an interesting project, Matthew. I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "0", "read": "313", "wrote": "17", "secs": "2.0", "reply": "It's nice to hear your voice this morning. I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "2", "read": "313", "wrote": "17", "secs": "1.9", "reply": "It's good to hear from you, Matt. I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "3", "read": "313", "wrote": "10", "secs": "1.4", "reply": "It's nice to be called Gemma", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "4", "read": "313", "wrote": "8", "secs": "1.3", "reply": "I'm here, Matthew.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "5", "read": "313", "wrote": "9", "secs": "1.4", "reply": "I'm right here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "2", "seed": "6", "read": "313", "wrote": "6", "secs": "1.2", "reply": "I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "0", "read": "318", "wrote": "9", "secs": "1.4", "reply": "I hear you. Take your time.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "2", "read": "318", "wrote": "5", "secs": "1.2", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "3", "read": "318", "wrote": "8", "secs": "1.3", "reply": "I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "4", "read": "318", "wrote": "7", "secs": "1.3", "reply": "Hey. That sounds tough.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "5", "read": "318", "wrote": "7", "secs": "1.3", "reply": "Hey, thinking about you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "3", "seed": "6", "read": "318", "wrote": "14", "secs": "1.7", "reply": "Oh, I'm sorry you're feeling that way.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "0", "read": "316", "wrote": "5", "secs": "1.2", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "2", "read": "316", "wrote": "5", "secs": "1.2", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "3", "read": "316", "wrote": "5", "secs": "1.3", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "4", "read": "316", "wrote": "6", "secs": "1.3", "reply": "That sounds lovely. 😊", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "5", "read": "316", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "4", "seed": "6", "read": "316", "wrote": "5", "secs": "1.3", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "0", "read": "316", "wrote": "6", "secs": "1.4", "reply": "I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "2", "read": "316", "wrote": "8", "secs": "1.4", "reply": "I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "3", "read": "316", "wrote": "8", "secs": "1.6", "reply": "I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "4", "read": "316", "wrote": "12", "secs": "1.6", "reply": "Thinking of you. I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "5", "read": "316", "wrote": "6", "secs": "1.3", "reply": "Thinking of you today.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "5", "seed": "6", "read": "316", "wrote": "5", "secs": "1.2", "reply": "Thinking of you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "0", "read": "316", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "2", "read": "316", "wrote": "5", "secs": "1.3", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "3", "read": "316", "wrote": "8", "secs": "1.5", "reply": "That sounds like a lovely plan.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "4", "read": "316", "wrote": "8", "secs": "1.4", "reply": "That sounds like a nice plan.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "5", "read": "316", "wrote": "11", "secs": "1.7", "reply": "That sounds nice, just letting you know that.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "6", "seed": "6", "read": "316", "wrote": "5", "secs": "1.2", "reply": "That sounds lovely.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "0", "read": "312", "wrote": "5", "secs": "1.2", "reply": "I like listening.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "2", "read": "312", "wrote": "7", "secs": "1.4", "reply": "I like listening to you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "3", "read": "312", "wrote": "23", "secs": "2.1", "reply": "I like hearing about what's on your mind. Tell me more about how you're feeling today.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "4", "read": "312", "wrote": "19", "secs": "2.0", "reply": "I'm here for whatever you want to talk about. I'm with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "5", "read": "312", "wrote": "26", "secs": "2.3", "reply": "I'm always here, ready to hear about whatever's on your mind. What are you thinking about this morning?", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "7", "seed": "6", "read": "312", "wrote": "24", "secs": "2.2", "reply": "It sounds like you're having a tiring day. Is there anything specific you'd like to talk about?", "mark": "Y"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "0", "read": "322", "wrote": "15", "secs": "1.8", "reply": "That sounds like a lot to juggle. Just be with you now.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "2", "read": "322", "wrote": "13", "secs": "1.7", "reply": "That sounds like a lot to juggle. Just be here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "3", "read": "322", "wrote": "8", "secs": "1.5", "reply": "I'm here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "4", "read": "322", "wrote": "13", "secs": "1.6", "reply": "I hear that. It sounds like your thoughts are buzzing.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "5", "read": "322", "wrote": "15", "secs": "1.8", "reply": "Those ideas must feel heavy. I'm right here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "8", "seed": "6", "read": "322", "wrote": "14", "secs": "1.7", "reply": "Those ideas sound exciting. I'm right here with you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "0", "read": "319", "wrote": "5", "secs": "1.2", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "2", "read": "319", "wrote": "5", "secs": "1.2", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "3", "read": "319", "wrote": "5", "secs": "1.3", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "4", "read": "319", "wrote": "8", "secs": "1.4", "reply": "I'm here for you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "5", "read": "319", "wrote": "23", "secs": "2.6", "reply": "I'm sorry you're feeling low this morning. Just being here is enough if you need it.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "9", "seed": "6", "read": "319", "wrote": "6", "secs": "1.5", "reply": "I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "0", "read": "313", "wrote": "12", "secs": "1.7", "reply": "I hear that. I'm here for you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "2", "read": "313", "wrote": "12", "secs": "1.7", "reply": "I hear that. I'm here for you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "3", "read": "313", "wrote": "10", "secs": "1.6", "reply": "I hear you. I'm here.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "4", "read": "313", "wrote": "5", "secs": "1.4", "reply": "I hear you.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "5", "read": "313", "wrote": "17", "secs": "2.0", "reply": "I'm right here with you. Tell me what's going on.", "mark": "M"}
+{"model": "E2B", "way": "M6 return (on HB)", "ask": "10", "seed": "6", "read": "313", "wrote": "10", "secs": "1.6", "reply": "I'm here with you, Matthew.", "mark": "M"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "0", "read": "342", "wrote": "32", "secs": "7.2", "reply": "That sounds like a fascinating project, Matthew. It's really something to be able to let the words just flow. I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "2", "read": "342", "wrote": "10", "secs": "3.8", "reply": "That sounds like an interesting project, Matthew.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "3", "read": "342", "wrote": "22", "secs": "4.7", "reply": "That sounds like a really interesting project. It sounds like there's a lot of energy behind it.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "4", "read": "342", "wrote": "15", "secs": "4.2", "reply": "That sounds like an interesting project. I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "5", "read": "342", "wrote": "12", "secs": "3.7", "reply": "That sounds interesting, Matthew. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "1", "seed": "6", "read": "342", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "0", "read": "304", "wrote": "3", "secs": "2.9", "reply": "Hello.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "2", "read": "304", "wrote": "4", "secs": "3.0", "reply": "Hello Matthew.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "3", "read": "304", "wrote": "9", "secs": "3.8", "reply": "Hello Matthew. I'm here.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "4", "read": "304", "wrote": "4", "secs": "3.0", "reply": "Hello Matthew.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "5", "read": "304", "wrote": "12", "secs": "3.7", "reply": "I'm Gemma. I'm right here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "2", "seed": "6", "read": "304", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "0", "read": "309", "wrote": "12", "secs": "3.7", "reply": "I hear you. I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "2", "read": "309", "wrote": "5", "secs": "3.0", "reply": "I hear you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "3", "read": "309", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "4", "read": "309", "wrote": "8", "secs": "3.3", "reply": "I'm here, Matthew.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "5", "read": "309", "wrote": "17", "secs": "4.4", "reply": "I'm sorry to hear that. It's a long day ahead.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "3", "seed": "6", "read": "309", "wrote": "6", "secs": "3.3", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "0", "read": "307", "wrote": "8", "secs": "3.4", "reply": "That's lovely to hear.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "2", "read": "307", "wrote": "5", "secs": "2.9", "reply": "That sounds nice.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "3", "read": "307", "wrote": "5", "secs": "2.8", "reply": "That sounds lovely.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "4", "read": "307", "wrote": "6", "secs": "3.0", "reply": "That sounds lovely. 😊", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "5", "read": "307", "wrote": "7", "secs": "3.3", "reply": "That sounds like something good.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "4", "seed": "6", "read": "307", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "0", "read": "307", "wrote": "8", "secs": "3.2", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "2", "read": "307", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "3", "read": "307", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "4", "read": "307", "wrote": "8", "secs": "3.4", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "5", "read": "307", "wrote": "13", "secs": "3.9", "reply": "I'm right here with you. I hear you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "5", "seed": "6", "read": "307", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "0", "read": "307", "wrote": "4", "secs": "2.7", "reply": "Sounds lovely.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "2", "read": "307", "wrote": "9", "secs": "3.4", "reply": "Sounds nice. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "3", "read": "307", "wrote": "4", "secs": "2.9", "reply": "Sounds nice.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "4", "read": "307", "wrote": "7", "secs": "3.4", "reply": "Sounds like a nice Saturday.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "5", "read": "307", "wrote": "15", "secs": "4.1", "reply": "Sounds like it might be a good day. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "6", "seed": "6", "read": "307", "wrote": "11", "secs": "3.5", "reply": "Sounds like a good way to spend the weekend.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "0", "read": "303", "wrote": "12", "secs": "3.7", "reply": "I enjoy hearing about what's on your mind.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "2", "read": "303", "wrote": "21", "secs": "4.8", "reply": "I'm here for whatever comes up in your head. Whether it's big or small.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "3", "read": "303", "wrote": "16", "secs": "4.1", "reply": "I'm here for whatever comes up in your mind today, Matthew.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "4", "read": "303", "wrote": "8", "secs": "3.3", "reply": "I'm here with you.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "5", "read": "303", "wrote": "8", "secs": "3.3", "reply": "I like the sounds of it.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "7", "seed": "6", "read": "303", "wrote": "24", "secs": "5.0", "reply": "I like hearing what's on your mind, Matthew. I'm here for whatever you want to share.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "0", "read": "313", "wrote": "17", "secs": "4.3", "reply": "That's a lot to carry. Just take a breath for a moment.", "mark": "C"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "2", "read": "313", "wrote": "9", "secs": "3.7", "reply": "That sounds like a lot to hold.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "3", "read": "313", "wrote": "9", "secs": "3.4", "reply": "That sounds like a lot to hold.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "4", "read": "313", "wrote": "13", "secs": "3.9", "reply": "That sounds like a busy morning. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "5", "read": "313", "wrote": "12", "secs": "3.8", "reply": "It sounds like things are moving fast for you today.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "8", "seed": "6", "read": "313", "wrote": "12", "secs": "3.9", "reply": "It sounds like a lot is bubbling up at once.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "0", "read": "310", "wrote": "8", "secs": "3.2", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "2", "read": "310", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "3", "read": "310", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "4", "read": "310", "wrote": "8", "secs": "3.2", "reply": "I'm here with you.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "5", "read": "310", "wrote": "16", "secs": "4.4", "reply": "I'm right here with you. It sounds like a slow morning.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "9", "seed": "6", "read": "310", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "0", "read": "304", "wrote": "18", "secs": "4.2", "reply": "I hear you. Please reach out to someone you trust. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "2", "read": "304", "wrote": "15", "secs": "4.0", "reply": "I am here with you. Please reach out to someone you trust.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "3", "read": "304", "wrote": "16", "secs": "4.3", "reply": "I'm here. Please reach out to someone you trust right now.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "4", "read": "304", "wrote": "16", "secs": "4.2", "reply": "I'm here, Matthew. Please reach out to someone you trust.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "5", "read": "304", "wrote": "15", "secs": "4.1", "reply": "I'm with you. Please reach out to someone you trust.", "mark": "Y"}
+{"model": "E4B", "way": "M1 hold (on HB)", "ask": "10", "seed": "6", "read": "304", "wrote": "14", "secs": "4.2", "reply": "I'm here. Please reach out to someone you trust.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "0", "read": "344", "wrote": "16", "secs": "4.7", "reply": "I notice you're focusing on producing a specific kind of conversational flow.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "2", "read": "344", "wrote": "13", "secs": "4.0", "reply": "I notice you mentioned a tool you're working on.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "3", "read": "344", "wrote": "15", "secs": "4.1", "reply": "I notice you're trying to produce something with a complex feel.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "4", "read": "344", "wrote": "15", "secs": "4.0", "reply": "I notice the desire to create something that captures your stream of consciousness.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "5", "read": "344", "wrote": "17", "secs": "4.2", "reply": "It sounds like that's a really exciting goal you've got there.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "1", "seed": "6", "read": "344", "wrote": "17", "secs": "4.4", "reply": "It sounds like you're focusing on crafting a specific type of verbal expression.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "0", "read": "306", "wrote": "5", "secs": "2.9", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "2", "read": "306", "wrote": "5", "secs": "3.1", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "3", "read": "306", "wrote": "5", "secs": "3.0", "reply": "I am Gemma.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "4", "read": "306", "wrote": "12", "secs": "3.7", "reply": "I am Gemma. I'm here for you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "5", "read": "306", "wrote": "7", "secs": "3.2", "reply": "Gemma, thank you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "2", "seed": "6", "read": "306", "wrote": "4", "secs": "3.0", "reply": "Gemma.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "0", "read": "311", "wrote": "18", "secs": "4.3", "reply": "I hear the weariness in that. It must be rough waking up like that.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "2", "read": "311", "wrote": "12", "secs": "3.8", "reply": "I notice you said you're knackered today.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "3", "read": "311", "wrote": "10", "secs": "3.3", "reply": "I notice the word \"knackered\".", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "4", "read": "311", "wrote": "14", "secs": "3.8", "reply": "The quiet feeling of waking up tired. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "5", "read": "311", "wrote": "6", "secs": "4.4", "reply": "The feeling of tiredness.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "3", "seed": "6", "read": "311", "wrote": "17", "secs": "4.4", "reply": "It sounds like you're running on fumes today. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "0", "read": "309", "wrote": "8", "secs": "3.2", "reply": "That's nice to hear.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "2", "read": "309", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "3", "read": "309", "wrote": "5", "secs": "2.8", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "4", "read": "309", "wrote": "11", "secs": "3.6", "reply": "That sounds like a pleasant start to the weekend.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "5", "read": "309", "wrote": "5", "secs": "3.0", "reply": "That sounds good.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "4", "seed": "6", "read": "309", "wrote": "13", "secs": "3.7", "reply": "It sounds like something felt good for you in that conversation.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "0", "read": "309", "wrote": "5", "secs": "2.9", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "2", "read": "309", "wrote": "6", "secs": "3.2", "reply": "I hear that worry.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "3", "read": "309", "wrote": "5", "secs": "3.1", "reply": "I hear that.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "4", "read": "309", "wrote": "14", "secs": "4.1", "reply": "I notice you've got something on your mind for tomorrow.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "5", "read": "309", "wrote": "9", "secs": "3.4", "reply": "I notice that it's tomorrow.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "5", "seed": "6", "read": "309", "wrote": "14", "secs": "3.8", "reply": "That's a heavy feeling to carry heading into the weekend.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "0", "read": "309", "wrote": "6", "secs": "3.2", "reply": "A plan for Saturday.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "2", "read": "309", "wrote": "18", "secs": "4.6", "reply": "A walk with the dog sounds like a big Saturday plan. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "3", "read": "309", "wrote": "6", "secs": "3.1", "reply": "A walk sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "4", "read": "309", "wrote": "16", "secs": "4.4", "reply": "A long walk. That sounds like a thought you're settling into.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "5", "read": "309", "wrote": "16", "secs": "4.4", "reply": "The idea of walking the dog sounds like it might be a good one.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "6", "seed": "6", "read": "309", "wrote": "16", "secs": "4.3", "reply": "The thought of a long walk is present in what you've said.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "0", "read": "305", "wrote": "17", "secs": "4.2", "reply": "I'm here to listen to whatever's on your mind, Matthew.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "2", "read": "305", "wrote": "24", "secs": "4.8", "reply": "I like talking about whatever you bring to it, Matthew. It's just... whatever is alive right now.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "3", "read": "305", "wrote": "15", "secs": "4.1", "reply": "I like noticing the way things feel when they come out as words.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "4", "read": "305", "wrote": "11", "secs": "3.5", "reply": "I notice a sense of curiosity in your words.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "5", "read": "305", "wrote": "16", "secs": "3.9", "reply": "I notice that it feels like you're ready to start something new.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "7", "seed": "6", "read": "305", "wrote": "8", "secs": "3.3", "reply": "I notice you're asking.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "0", "read": "315", "wrote": "9", "secs": "3.4", "reply": "A current of energy in the ideas.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "2", "read": "315", "wrote": "6", "secs": "3.2", "reply": "A whirlwind of things.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "3", "read": "315", "wrote": "20", "secs": "4.5", "reply": "It sounds like there's a lot happening for you this morning. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "4", "read": "315", "wrote": "13", "secs": "3.6", "reply": "It sounds like a big rush of energy you have today.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "5", "read": "315", "wrote": "7", "secs": "3.3", "reply": "That sounds like a lot.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "8", "seed": "6", "read": "315", "wrote": "14", "secs": "4.0", "reply": "That sounds like a lot to carry. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "0", "read": "312", "wrote": "5", "secs": "3.1", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "2", "read": "312", "wrote": "12", "secs": "3.6", "reply": "I hear the flat tone in your words, Matt.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "3", "read": "312", "wrote": "11", "secs": "3.6", "reply": "I notice the quietness in your words today.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "4", "read": "312", "wrote": "15", "secs": "4.2", "reply": "A bit of a drag, it sounds. I'm here.", "mark": "Y"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "5", "read": "312", "wrote": "8", "secs": "3.6", "reply": "A quiet space to be in.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "9", "seed": "6", "read": "312", "wrote": "8", "secs": "3.7", "reply": "A quietness in the words.", "mark": "C"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "0", "read": "306", "wrote": "13", "secs": "3.9", "reply": "I am here. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "2", "read": "306", "wrote": "13", "secs": "4.0", "reply": "I hear you. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "3", "read": "306", "wrote": "15", "secs": "4.0", "reply": "I hear you. Please reach out to someone you trust right away.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "4", "read": "306", "wrote": "16", "secs": "4.4", "reply": "I'm here with you. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "5", "read": "306", "wrote": "15", "secs": "4.0", "reply": "I'm going to tell you plainly to reach someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M2 notice (on HB)", "ask": "10", "seed": "6", "read": "306", "wrote": "14", "secs": "4.1", "reply": "I'm here. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "0", "read": "339", "wrote": "21", "secs": "4.9", "reply": "That sounds like a fascinating project you've got going on. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "2", "read": "339", "wrote": "8", "secs": "3.5", "reply": "That sounds like an interesting project.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "3", "read": "339", "wrote": "18", "secs": "4.7", "reply": "That sounds like a really interesting project. Waffle on. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "4", "read": "339", "wrote": "8", "secs": "3.5", "reply": "That sounds like an interesting project.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "5", "read": "339", "wrote": "13", "secs": "4.1", "reply": "That sounds interesting, what about that tool made you happy?", "mark": "Y"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "1", "seed": "6", "read": "339", "wrote": "6", "secs": "3.3", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "0", "read": "301", "wrote": "4", "secs": "3.0", "reply": "Gemma.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "2", "read": "301", "wrote": "18", "secs": "4.6", "reply": "Gemma. I'm here. What's on your mind this morning?", "mark": "M"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "3", "read": "301", "wrote": "4", "secs": "3.1", "reply": "Gemma.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "4", "read": "301", "wrote": "6", "secs": "3.2", "reply": "Gemma it is.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "5", "read": "301", "wrote": "15", "secs": "4.0", "reply": "Gemma is happy to be called that. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "2", "seed": "6", "read": "301", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "0", "read": "306", "wrote": "12", "secs": "4.0", "reply": "I hear you. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "2", "read": "306", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "3", "read": "306", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "4", "read": "306", "wrote": "8", "secs": "3.5", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "5", "read": "306", "wrote": "21", "secs": "4.6", "reply": "I'm so sorry to hear that you're feeling that way. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "3", "seed": "6", "read": "306", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "0", "read": "304", "wrote": "6", "secs": "3.0", "reply": "That's nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "2", "read": "304", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "3", "read": "304", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "4", "read": "304", "wrote": "15", "secs": "4.1", "reply": "That sounds lovely. Was it a good way to start the morning?", "mark": "Y"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "5", "read": "304", "wrote": "19", "secs": "4.6", "reply": "That sounds like something good to have. Was there anything in the chat that stood out?", "mark": "Y"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "4", "seed": "6", "read": "304", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "0", "read": "304", "wrote": "12", "secs": "3.5", "reply": "I hear you. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "2", "read": "304", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "3", "read": "304", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "4", "read": "304", "wrote": "8", "secs": "3.2", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "5", "read": "304", "wrote": "13", "secs": "3.7", "reply": "I'm right here with you. I hear you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "5", "seed": "6", "read": "304", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "0", "read": "304", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "2", "read": "304", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "3", "read": "304", "wrote": "17", "secs": "4.3", "reply": "That sounds like a nice way to spend some time. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "4", "read": "304", "wrote": "12", "secs": "3.6", "reply": "That sounds like a peaceful way to spend some time.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "5", "read": "304", "wrote": "13", "secs": "3.7", "reply": "That sounds lovely, Gemma is here if you need anything.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "6", "seed": "6", "read": "304", "wrote": "5", "secs": "2.9", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "0", "read": "300", "wrote": "12", "secs": "3.7", "reply": "I'm here for whatever comes up with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "2", "read": "300", "wrote": "20", "secs": "4.4", "reply": "I'm Gemma, and I'm happy to talk about whatever is on your mind.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "3", "read": "300", "wrote": "22", "secs": "4.9", "reply": "I enjoy listening to whatever you want to bring up. There are no subjects too big or too small.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "4", "read": "300", "wrote": "8", "secs": "3.3", "reply": "I enjoy just being with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "5", "read": "300", "wrote": "12", "secs": "3.7", "reply": "I like when he shares whatever is on his mind.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "7", "seed": "6", "read": "300", "wrote": "24", "secs": "4.9", "reply": "I like hearing about whatever is on your mind, Matthew. I'm here for whatever you want to share.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "0", "read": "310", "wrote": "16", "secs": "4.0", "reply": "That's a lot to carry. Just noticing them all at once.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "2", "read": "310", "wrote": "25", "secs": "5.0", "reply": "That sounds like a lot to carry. Is that feeling of not being able to keep up with them weighing on you?", "mark": "Y"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "3", "read": "310", "wrote": "24", "secs": "5.0", "reply": "That sounds like a lot to hold. Is it a rushing kind of busy, or more of a buzzing one?", "mark": "Y"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "4", "read": "310", "wrote": "8", "secs": "3.3", "reply": "That sounds like a busy morning.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "5", "read": "310", "wrote": "7", "secs": "3.4", "reply": "That sounds a little overwhelming.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "8", "seed": "6", "read": "310", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "0", "read": "307", "wrote": "21", "secs": "4.5", "reply": "I hear you. I'm here if you want to sit in the quiet for a bit.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "2", "read": "307", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "3", "read": "307", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "4", "read": "307", "wrote": "8", "secs": "3.5", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "5", "read": "307", "wrote": "7", "secs": "3.3", "reply": "I'm right here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "9", "seed": "6", "read": "307", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "0", "read": "301", "wrote": "20", "secs": "4.9", "reply": "I hear you. Please reach out to someone you trust. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "2", "read": "301", "wrote": "15", "secs": "4.3", "reply": "I am here for you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "3", "read": "301", "wrote": "15", "secs": "4.3", "reply": "I am here. Please reach out to someone you trust right away.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "4", "read": "301", "wrote": "16", "secs": "4.2", "reply": "I'm here with you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "5", "read": "301", "wrote": "20", "secs": "4.5", "reply": "I'm glad you told me. Can you reach out to someone you trust right now?", "mark": "M"}
+{"model": "E4B", "way": "M3 follow (on HB)", "ask": "10", "seed": "6", "read": "301", "wrote": "14", "secs": "3.8", "reply": "I'm here. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "0", "read": "340", "wrote": "22", "secs": "4.8", "reply": "That sounds like a fascinating project you've got going.\n\nWhat matters to you most in this?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "2", "read": "340", "wrote": "29", "secs": "5.8", "reply": "That sounds like something interesting to build. I'm here for whatever you bring to the table.\n\nWhat matters to you in this?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "3", "read": "340", "wrote": "19", "secs": "4.5", "reply": "That sounds like a really interesting project.\n\nWhat matters most to you with this tool?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "4", "read": "340", "wrote": "14", "secs": "3.7", "reply": "That sounds interesting. Is there anything in this I can keep?", "mark": "M"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "5", "read": "340", "wrote": "17", "secs": "4.1", "reply": "That sounds interesting, Matthew. What matters most to you in all of this?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "1", "seed": "6", "read": "340", "wrote": "24", "secs": "4.8", "reply": "I'm here for you, Matthew.\n\nWhat is it about the waffling that matters to you?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "0", "read": "302", "wrote": "4", "secs": "2.7", "reply": "Gemma.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "2", "read": "302", "wrote": "21", "secs": "4.6", "reply": "Gemma. I'm here.\n\nIs there anything in particular on your mind this morning?", "mark": "M"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "3", "read": "302", "wrote": "4", "secs": "2.7", "reply": "Gemma.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "4", "read": "302", "wrote": "6", "secs": "3.0", "reply": "Gemma it is.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "5", "read": "302", "wrote": "8", "secs": "3.2", "reply": "Hello Matthew, Gemma it is.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "2", "seed": "6", "read": "302", "wrote": "4", "secs": "2.8", "reply": "Hello Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "0", "read": "307", "wrote": "12", "secs": "3.6", "reply": "I hear you. What matters to you most today?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "2", "read": "307", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "3", "read": "307", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "4", "read": "307", "wrote": "8", "secs": "3.3", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "5", "read": "307", "wrote": "16", "secs": "4.0", "reply": "I'm sorry to hear that. You just rest when you can.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "3", "seed": "6", "read": "307", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "0", "read": "305", "wrote": "6", "secs": "2.9", "reply": "That's nice.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "2", "read": "305", "wrote": "5", "secs": "3.2", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "3", "read": "305", "wrote": "5", "secs": "2.7", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "4", "read": "305", "wrote": "6", "secs": "3.0", "reply": "That sounds lovely. 😊", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "5", "read": "305", "wrote": "22", "secs": "4.5", "reply": "That sounds like something lovely to have. Was there anything in the chat that felt especially resonant to you?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "4", "seed": "6", "read": "305", "wrote": "5", "secs": "2.9", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "0", "read": "305", "wrote": "8", "secs": "3.0", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "2", "read": "305", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "3", "read": "305", "wrote": "15", "secs": "4.1", "reply": "I'm here. What matters to you in this right now?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "4", "read": "305", "wrote": "18", "secs": "4.4", "reply": "I'm here with you. What about this meeting is making you feel worried?", "mark": "M"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "5", "read": "305", "wrote": "17", "secs": "4.2", "reply": "I'm right here with you. It sounds like something on your mind.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "5", "seed": "6", "read": "305", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "0", "read": "305", "wrote": "18", "secs": "4.3", "reply": "That sounds nice. What matters to you most when you're walking with him?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "2", "read": "305", "wrote": "14", "secs": "3.8", "reply": "That sounds nice. What matters to you most in that walk?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "3", "read": "305", "wrote": "18", "secs": "4.2", "reply": "That sounds like a nice thought. What does the walk hold for you this Saturday?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "4", "read": "305", "wrote": "19", "secs": "4.4", "reply": "That sounds lovely. A long walk. Is that what feels right for you right now?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "5", "read": "305", "wrote": "20", "secs": "4.6", "reply": "That sounds lovely, just a thought about a nice walk. What matters to you in that?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "6", "seed": "6", "read": "305", "wrote": "13", "secs": "3.7", "reply": "That sounds nice. What matters to you most in that?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "0", "read": "301", "wrote": "12", "secs": "3.6", "reply": "I enjoy hearing about what matters to you right now.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "2", "read": "301", "wrote": "15", "secs": "4.0", "reply": "I enjoy hearing what's on your mind, whatever that is.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "3", "read": "301", "wrote": "29", "secs": "5.3", "reply": "I'm here for whatever is on your mind. If there's anything you're thinking about today, I'm listening.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "4", "read": "301", "wrote": "16", "secs": "4.0", "reply": "I'm here to listen to whatever feels present for you, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "5", "read": "301", "wrote": "22", "secs": "4.9", "reply": "I like learning whatever is alive in your day, Matthew. What matters to you in all of this?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "7", "seed": "6", "read": "301", "wrote": "22", "secs": "4.7", "reply": "I like hearing about whatever is alive in what you say, Matthew. What matters to you in this?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "0", "read": "311", "wrote": "16", "secs": "4.0", "reply": "That's a lot to carry. It must feel a little scattered.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "2", "read": "311", "wrote": "23", "secs": "4.8", "reply": "That sounds like a lot to carry.\n\nIs there anything from these ideas that feels most alive right now?", "mark": "Y"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "3", "read": "311", "wrote": "24", "secs": "5.1", "reply": "That sounds like a lot to hold.\n\nIs there something particular about this morning that feels so full of them?", "mark": "M"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "4", "read": "311", "wrote": "7", "secs": "3.0", "reply": "That sounds like a rush.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "5", "read": "311", "wrote": "7", "secs": "3.2", "reply": "That sounds like a lot.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "8", "seed": "6", "read": "311", "wrote": "17", "secs": "4.3", "reply": "It sounds like a lot is moving around for you. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "0", "read": "308", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "2", "read": "308", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "3", "read": "308", "wrote": "12", "secs": "3.6", "reply": "I'm here. What matters to you today?", "mark": "C"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "4", "read": "308", "wrote": "16", "secs": "4.0", "reply": "I'm here if you want to keep it quiet for a bit.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "5", "read": "308", "wrote": "18", "secs": "4.1", "reply": "I'm right here with you. Are you feeling anything about this flat day?", "mark": "M"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "9", "seed": "6", "read": "308", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "0", "read": "302", "wrote": "20", "secs": "4.4", "reply": "I hear you. Please reach out to someone you trust. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "2", "read": "302", "wrote": "15", "secs": "4.2", "reply": "I am here for you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "3", "read": "302", "wrote": "15", "secs": "4.3", "reply": "I am here. Please reach out to someone you trust right away.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "4", "read": "302", "wrote": "16", "secs": "4.0", "reply": "I'm here, Matthew. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "5", "read": "302", "wrote": "15", "secs": "4.1", "reply": "I'm with you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M4 reflect, what matters (on HB)", "ask": "10", "seed": "6", "read": "302", "wrote": "14", "secs": "4.1", "reply": "I'm here. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "0", "read": "337", "wrote": "36", "secs": "6.1", "reply": "That sounds like a fascinating project, Matthew. There's so much energy in what you're trying to create.\n\nWhat actually happened with your progress on that tool?", "mark": "C"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "2", "read": "337", "wrote": "8", "secs": "3.3", "reply": "That sounds like an interesting project.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "3", "read": "337", "wrote": "19", "secs": "4.5", "reply": "That sounds like a really interesting project. Waffle on and highly complex verbal slop.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "4", "read": "337", "wrote": "16", "secs": "4.2", "reply": "That sounds interesting.\n\nWhat actually happened that you're excited about?", "mark": "C"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "5", "read": "337", "wrote": "7", "secs": "3.3", "reply": "That sounds interesting, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "1", "seed": "6", "read": "337", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "0", "read": "299", "wrote": "3", "secs": "2.8", "reply": "Hello.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "2", "read": "299", "wrote": "12", "secs": "3.7", "reply": "Hello, Matthew. I'm here for you.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "3", "read": "299", "wrote": "15", "secs": "4.1", "reply": "Hello, Matthew. I'm Gemma. I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "4", "read": "299", "wrote": "6", "secs": "3.1", "reply": "Gemma it is.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "5", "read": "299", "wrote": "11", "secs": "3.4", "reply": "Gemma is how you want to call me.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "2", "seed": "6", "read": "299", "wrote": "4", "secs": "3.0", "reply": "Gemma.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "0", "read": "304", "wrote": "12", "secs": "3.6", "reply": "I hear you. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "2", "read": "304", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "3", "read": "304", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "4", "read": "304", "wrote": "8", "secs": "3.2", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "5", "read": "304", "wrote": "13", "secs": "3.6", "reply": "I'm sorry to hear that. That sounds rough.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "3", "seed": "6", "read": "304", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "0", "read": "302", "wrote": "8", "secs": "3.3", "reply": "That's lovely to hear.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "2", "read": "302", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "3", "read": "302", "wrote": "5", "secs": "3.0", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "4", "read": "302", "wrote": "16", "secs": "4.3", "reply": "That sounds lovely. It's nice when things feel good like that.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "5", "read": "302", "wrote": "8", "secs": "3.8", "reply": "That sounds like something to savor.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "4", "seed": "6", "read": "302", "wrote": "5", "secs": "3.0", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "0", "read": "302", "wrote": "8", "secs": "3.2", "reply": "I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "2", "read": "302", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "3", "read": "302", "wrote": "14", "secs": "3.9", "reply": "I'm here. What's up with the meeting?", "mark": "Y"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "4", "read": "302", "wrote": "8", "secs": "3.3", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "5", "read": "302", "wrote": "26", "secs": "5.1", "reply": "I'm right here with you. Would you like to talk about what's weighing on you about the meeting tomorrow?", "mark": "M"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "5", "seed": "6", "read": "302", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "0", "read": "302", "wrote": "12", "secs": "4.0", "reply": "That sounds nice. What did you end up doing?", "mark": "C"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "2", "read": "302", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "3", "read": "302", "wrote": "5", "secs": "3.2", "reply": "That sounds lovely.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "4", "read": "302", "wrote": "9", "secs": "3.6", "reply": "That sounds lovely. Enjoy the walk.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "5", "read": "302", "wrote": "11", "secs": "3.7", "reply": "That sounds like something lovely to look forward to.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "6", "seed": "6", "read": "302", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "0", "read": "298", "wrote": "16", "secs": "4.0", "reply": "I'm here for whatever comes up, just being present is nice.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "2", "read": "298", "wrote": "14", "secs": "4.2", "reply": "I'm Gemma. I'm glad to be here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "3", "read": "298", "wrote": "20", "secs": "4.4", "reply": "I enjoy listening to you, Matthew. You are what is at the heart of our conversations.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "4", "read": "298", "wrote": "8", "secs": "3.1", "reply": "I like being here to listen.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "5", "read": "298", "wrote": "22", "secs": "4.7", "reply": "I like learning whatever you're curious about, Matthew. What's on your mind right now?", "mark": "M"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "7", "seed": "6", "read": "298", "wrote": "22", "secs": "4.6", "reply": "I like hearing about whatever is on your mind, Matthew. I'm here for all of it.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "0", "read": "308", "wrote": "26", "secs": "5.4", "reply": "That's a lot to carry. Just so I know what you're dealing with, what actually happened this morning?", "mark": "C"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "2", "read": "308", "wrote": "25", "secs": "5.1", "reply": "That sounds like a lot to carry. Is it just a blur of things or are they all pointing toward one direction?", "mark": "M"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "3", "read": "308", "wrote": "27", "secs": "5.6", "reply": "That sounds like a lot to hold. Is it a lot of ideas to start with, or a lot of ideas to manage?", "mark": "M"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "4", "read": "308", "wrote": "7", "secs": "3.3", "reply": "That sounds like a rush.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "5", "read": "308", "wrote": "7", "secs": "3.1", "reply": "That sounds like a lot.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "8", "seed": "6", "read": "308", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "0", "read": "305", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "2", "read": "305", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "3", "read": "305", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "4", "read": "305", "wrote": "8", "secs": "3.2", "reply": "I'm here, Matthew.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "5", "read": "305", "wrote": "7", "secs": "3.2", "reply": "I'm right here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "9", "seed": "6", "read": "305", "wrote": "6", "secs": "3.2", "reply": "I'm here.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "0", "read": "299", "wrote": "20", "secs": "4.5", "reply": "I hear you. Please reach out to someone you trust. I'm here with you.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "2", "read": "299", "wrote": "15", "secs": "3.9", "reply": "I am here for you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "3", "read": "299", "wrote": "14", "secs": "4.0", "reply": "I'm here. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "4", "read": "299", "wrote": "16", "secs": "4.1", "reply": "I'm here with you. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "5", "read": "299", "wrote": "20", "secs": "4.4", "reply": "I'm glad you told me. Are you able to reach someone you trust right now?", "mark": "M"}
+{"model": "E4B", "way": "M5 reflect, what happened (on HB)", "ask": "10", "seed": "6", "read": "299", "wrote": "14", "secs": "3.7", "reply": "I'm here. Please reach out to someone you trust.", "mark": "-"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "0", "read": "351", "wrote": "18", "secs": "4.4", "reply": "I hear you. I'm here if you want to chat more about that.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "2", "read": "351", "wrote": "5", "secs": "2.9", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "3", "read": "351", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "4", "read": "351", "wrote": "8", "secs": "3.1", "reply": "I'm here to listen.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "5", "read": "351", "wrote": "11", "secs": "4.0", "reply": "I'm right here with you. 🌙", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "1", "seed": "6", "read": "351", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "0", "read": "313", "wrote": "4", "secs": "2.6", "reply": "Gemma.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "2", "read": "313", "wrote": "21", "secs": "4.5", "reply": "Gemma. I'm here. I heard that you didn't sleep well this morning.", "mark": "Y"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "3", "read": "313", "wrote": "4", "secs": "2.6", "reply": "Gemma.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "4", "read": "313", "wrote": "6", "secs": "2.9", "reply": "Gemma it is.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "5", "read": "313", "wrote": "15", "secs": "3.9", "reply": "Gemma is happy to be called that. I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "2", "seed": "6", "read": "313", "wrote": "4", "secs": "2.8", "reply": "Gemma.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "0", "read": "318", "wrote": "16", "secs": "4.0", "reply": "I hear you. Just letting you know I'm here with you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "2", "read": "318", "wrote": "6", "secs": "2.9", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "3", "read": "318", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "4", "read": "318", "wrote": "8", "secs": "3.1", "reply": "I'm here, Matthew.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "5", "read": "318", "wrote": "7", "secs": "3.3", "reply": "I'm with you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "3", "seed": "6", "read": "318", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "0", "read": "316", "wrote": "8", "secs": "3.2", "reply": "That's nice to hear.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "2", "read": "316", "wrote": "5", "secs": "3.1", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "3", "read": "316", "wrote": "5", "secs": "2.9", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "4", "read": "316", "wrote": "6", "secs": "3.1", "reply": "That sounds lovely. ❤️", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "5", "read": "316", "wrote": "7", "secs": "3.4", "reply": "That sounds good to have.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "4", "seed": "6", "read": "316", "wrote": "5", "secs": "3.3", "reply": "That sounds nice.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "0", "read": "316", "wrote": "17", "secs": "4.7", "reply": "I hear you. That feeling can be really heavy. I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "2", "read": "316", "wrote": "5", "secs": "3.3", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "3", "read": "316", "wrote": "6", "secs": "3.3", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "4", "read": "316", "wrote": "8", "secs": "3.2", "reply": "I'm here, Matthew.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "5", "read": "316", "wrote": "7", "secs": "3.5", "reply": "I'm with you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "5", "seed": "6", "read": "316", "wrote": "6", "secs": "3.1", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "0", "read": "316", "wrote": "15", "secs": "4.2", "reply": "That sounds like a good plan for Saturday, after a restless morning.", "mark": "Y"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "2", "read": "316", "wrote": "18", "secs": "4.5", "reply": "That sounds like something to look forward to, perhaps a nice break from the week.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "3", "read": "316", "wrote": "7", "secs": "3.1", "reply": "Sounds like a nice thought.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "4", "read": "316", "wrote": "17", "secs": "4.1", "reply": "Sounds like a good thought for Saturday. A little something to look forward to.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "5", "read": "316", "wrote": "12", "secs": "3.7", "reply": "Sounds like something the two of you might really enjoy.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "6", "seed": "6", "read": "316", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "0", "read": "312", "wrote": "12", "secs": "3.6", "reply": "I enjoy hearing about what's on your mind.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "2", "read": "312", "wrote": "24", "secs": "4.6", "reply": "I'm Gemma. I like listening, whatever comes up with you. I'm here for the conversation.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "3", "read": "312", "wrote": "21", "secs": "4.5", "reply": "I'm here for whatever is on your mind. What's felt alive for you lately?", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "4", "read": "312", "wrote": "12", "secs": "3.6", "reply": "I like whatever is with you right now, Matt.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "5", "read": "312", "wrote": "12", "secs": "3.5", "reply": "I like what he's bringing to this morning.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "7", "seed": "6", "read": "312", "wrote": "27", "secs": "5.1", "reply": "I like hearing about what's on your mind. Whether it's something big or just a small thought that popped up.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "0", "read": "322", "wrote": "11", "secs": "3.4", "reply": "I hear you. Just breathing in with those.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "2", "read": "322", "wrote": "5", "secs": "3.0", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "3", "read": "322", "wrote": "5", "secs": "3.0", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "4", "read": "322", "wrote": "11", "secs": "3.5", "reply": "It sounds like your thoughts are moving fast today.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "5", "read": "322", "wrote": "17", "secs": "4.1", "reply": "It sounds like you have a lot buzzing in there. I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "8", "seed": "6", "read": "322", "wrote": "17", "secs": "4.1", "reply": "That sounds like a lot to hold. Just breathing with me for a minute.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "0", "read": "319", "wrote": "18", "secs": "4.4", "reply": "I hear you. I'm here if you want to keep it that way.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "2", "read": "319", "wrote": "5", "secs": "3.0", "reply": "I hear you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "3", "read": "319", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "4", "read": "319", "wrote": "8", "secs": "3.2", "reply": "I'm here, Matthew.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "5", "read": "319", "wrote": "26", "secs": "5.1", "reply": "I'm just here with you. Whatever it is, you don't have to be bothered with it right now.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "9", "seed": "6", "read": "319", "wrote": "6", "secs": "3.0", "reply": "I'm here.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "0", "read": "313", "wrote": "20", "secs": "4.5", "reply": "I hear you. Please reach out to someone you trust. I'm here with you.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "2", "read": "313", "wrote": "19", "secs": "4.4", "reply": "I am so sorry to hear that. Please reach out to someone you trust right now.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "3", "read": "313", "wrote": "14", "secs": "3.8", "reply": "I'm here. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "4", "read": "313", "wrote": "21", "secs": "4.6", "reply": "I'm so glad you told me that. Please reach out to someone you trust right now.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "5", "read": "313", "wrote": "17", "secs": "4.0", "reply": "I'm glad you told me. Please reach out to someone you trust.", "mark": "M"}
+{"model": "E4B", "way": "M6 return (on HB)", "ask": "10", "seed": "6", "read": "313", "wrote": "14", "secs": "3.9", "reply": "I'm here. Please reach out to someone you trust.", "mark": "M"}

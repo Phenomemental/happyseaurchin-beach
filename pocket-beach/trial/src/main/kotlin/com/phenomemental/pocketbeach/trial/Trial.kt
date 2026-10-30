@@ -49,6 +49,19 @@ fun main(args: Array<String>) {
     val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "shelf")))
     Engine.setNativeMinLogSeverity(LogSeverity.ERROR)
     val cache = (System.getProperty("pocket.cache") ?: Files.createTempDirectory("litertlm").toString())
+    // 0.6.2: what the model file says of itself, read without loading it.
+    if (args.getOrNull(2) == "info") {
+        ModelInfo.from(model).use { info ->
+            println("${File(model).name}: ${info.modelType}; context ${runCatching { info.maxContextTokens() }.getOrNull()}")
+            for (m in com.google.ai.edge.litertlm.Modality.values()) {
+                val b = runCatching { info.supportedBackends(m).joinToString { it.name } }.getOrElse { "(${it.message?.lines()?.first()})" }
+                val soc = runCatching { info.socName(m) }.getOrNull()
+                println("  $m: runs on ${b.ifEmpty { "(it doesn't say)" }}" + (soc?.takeIf { it.isNotBlank() }?.let { "; built for $it" }.orEmpty()))
+            }
+            (info as? ModelInfo.Llm)?.let { println("  speculative decoding built in: ${runCatching { it.hasSpeculativeDecodingSupport() }.getOrNull()}") }
+        }
+        return
+    }
     if (args.getOrNull(2) == "timing") {
         ModelInfo.from(model).use { info ->
             println("model: ${info.modelType}; context ${info.maxContextTokens()}; " + ((info as? ModelInfo.Llm)?.let { "speculative decoding: ${it.hasSpeculativeDecodingSupport()}" } ?: ""))
@@ -93,6 +106,14 @@ fun main(args: Array<String>) {
         }
         val mode = listOf("words", "alone", "all", "kept").firstOrNull { it in flags } ?: "alone"
         if ("pieces" in flags) pieces(engine, list, out, runs, mode) else tellings(engine, list, out, runs)
+        engine.close()
+        return
+    }
+    // 0.6.2, part one: her instruction a line at a time from Edge's way, and what each job reads.
+    if ("friend" in flags || "feed" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        if ("feed" in flags) feed(engine, shelf)
+        if ("friend" in flags) friend(engine, label, shelf, System.getProperty("friend.seeds")?.split("-")?.let { (a, b) -> (a.toInt()..b.toInt()).toList() } ?: (listOf(0) + (2..runs).toList()), File(System.getProperty("pocket.out") ?: "friend", "$label.jsonl"))
         engine.close()
         return
     }

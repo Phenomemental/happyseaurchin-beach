@@ -105,7 +105,9 @@ class ActsTest {
         assertEquals(listOf("garden CHANGE 2: Winter: mulch"), writes("change garden \"Winter\" to \"Winter: mulch\""))
         // A line restated before the action that quotes it is let be.
         assertEquals(listOf("garden ADD 2.1: mulch the beds"), writes("add garden: Winter: prune the roses\nadd garden under \"Winter: prune the roses\": mulch the beds"))
-        assertEquals(listOf("garden ADD 3: Winter: prune the roses"), writes("add garden: Winter: prune the roses"), "but asked for alone, it is added")
+        // 0.6.2, one home per fact: asked for alone, a line the block already holds isn't proposed again.
+        assertTrue(plan("add garden: Winter: prune the roses").nothing, "a line already in its block")
+        assertContains(plan("add garden: winter: prune the roses.").dropped.single(), "garden already says")
         // A block named in other capitals is that block: speech writes "million", and the block is Million.
         assertEquals(listOf("Million ADD 1: a million pound by 2027"), writes("add million: a million pound by 2027"))
         assertContains(plan("new million").problem!!, "There's already a block called Million.")

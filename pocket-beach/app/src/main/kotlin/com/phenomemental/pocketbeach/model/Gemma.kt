@@ -35,6 +35,12 @@ import kotlinx.coroutines.withContext
  * 0.5: each job runs on the engine its settings ask for ([JobSettings]):
  * jobs that agree on the model, the processor and the context share one, and
  * a job set apart has its own, loaded beside it.
+ *
+ * 0.6.2: never two engines on the GPU (the app settles which job's engine
+ * holds it, [Gpu]; here, should a second ever be asked for, the first is let
+ * go if it is idle, else the second goes on the CPU). An answer that fails on
+ * the GPU closes that engine, loads the model on the CPU and is answered once
+ * more there; that engine stays on the CPU until the app starts again.
  */
 class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: String, private val nativeLibraryDir: String) : Mind {
     /** Gemma 4 E2B's store: the model Ask needs, and the bench's. */
@@ -62,6 +68,11 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
     /** The engines loaded now, one for each set of model, processor and context the jobs ask for. */
     private val engines = ConcurrentHashMap<EngineKey, Loaded>()
+
+    /** Engines an answer failed on, on the GPU: they run on the CPU until the app starts again. */
+    private val failedOnGpu = ConcurrentHashMap.newKeySet<EngineKey>()
+
+    override fun gpuFailed(settings: JobSettings): Boolean = settings.engine in failedOnGpu
 
     /** The one processor the bench has asked for ("CPU"), or null: as each job's settings say. */
     @Volatile private var onlyOn: String? = null
@@ -105,14 +116,24 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         engineNow(key(settings)).second
     }
 
-    /** The engine [settings] run on, the bench's one processor taking the place of theirs. */
+    /** The engine [settings] run on, the bench's one processor taking the place of theirs, and the CPU once the GPU has failed it. */
     private fun key(settings: JobSettings): EngineKey = settings.engine.let { k -> onlyOn?.let { k.copy(processor = it) } ?: k }
+        .let { k -> if (k.processor == "GPU" && k in failedOnGpu) k.copy(processor = "CPU") else k }
 
     /** The engine for [key], loaded if it isn't; how long loading took, if it had to. Called on [thread]. */
     private fun engineNow(key: EngineKey): Pair<Loaded, Long?> {
         engines[key]?.let { processor = it.processor; return it to null }
         val started = System.nanoTime()
-        val l = load(key, SPECULATIVE)
+        val onGpu = engines.filter { (k, l) -> k != key && l.processor == "GPU" }
+        val l = when {
+            key.processor != "GPU" || onGpu.isEmpty() -> load(key, SPECULATIVE)
+            // Never two on the GPU: the one there goes first if nothing is open on it, else this one runs on the CPU.
+            synchronized(this) { open == 0 } -> {
+                for ((k, other) in onGpu) { engines.remove(k); runCatching { other.engine.close() } }
+                load(key, SPECULATIVE)
+            }
+            else -> Loaded(open(Backend.CPU(), counting = true, speculative = SPECULATIVE, context = key.context, model = key.model), "CPU", "another engine holds the GPU")
+        }
         engines[key] = l
         processor = l.processor
         return l to (System.nanoTime() - started) / 1_000_000
@@ -120,11 +141,23 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
     override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker = withContext(thread) {
         main.removeCallbacks(letGo)
-        val (l, loadMs) = engineNow(key(settings))
+        val key = key(settings)
+        val (l, loadMs) = engineNow(key)
         val holding = held && whyNotHeld == null
         val c = conversation(l.engine, instruction, history, holding, settings)
         synchronized(this@Gemma) { open++ }
-        Talker(l.engine, instruction, history, holding, settings, c, Pace(l.processor, l.whyNotGpu, loadMs))
+        Talker(key, l.engine, l.processor, instruction, history, holding, settings, c, Pace(l.processor, l.whyNotGpu, loadMs))
+    }
+
+    /**
+     * An answer failed on the GPU (0.6.2): that engine is closed, and the
+     * model loaded on the CPU, where it stays until the app starts again.
+     * Called on [thread], with nothing of the engine's still being written.
+     */
+    private fun ontoCpu(key: EngineKey): Loaded {
+        failedOnGpu += key
+        engines.remove(key)?.let { runCatching { it.engine.close() } }
+        return engineNow(key.copy(processor = "CPU")).first
     }
 
     /** A conversation: the instruction and the earlier exchanges given, drawn as [settings] say, her replies held to begin with the route word if [held]. */
@@ -151,7 +184,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
      * for the rest of the app's run.
      */
     inner class Talker(
-        private val engine: Engine,
+        private val key: EngineKey,
+        private var engine: Engine,
+        private var on: String,
         private val instruction: String,
         private val history: List<Pair<String, String>>,
         private var held: Boolean,
@@ -181,13 +216,36 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                 try {
                     send()
                 } catch (t: Throwable) {
-                    if (!held || first != null || t is kotlinx.coroutines.CancellationException) throw t
-                    Log.w("Gemma", "Holding her first word failed; she answers free from now on.", t)
-                    whyNotHeld = firstLine(t)
-                    held = false
-                    runCatching { conversation.close() }
-                    conversation = conversation(engine, instruction, history + done, held = false, settings)
-                    send()
+                    if (first != null || t is kotlinx.coroutines.CancellationException) throw t
+                    if (on == "GPU") {
+                        // 0.6.2: the GPU failed on this answer: she answers once more on the CPU.
+                        Log.w("Gemma", "An answer failed on the GPU; that engine runs on the CPU from now on.", t)
+                        runCatching { conversation.close() }
+                        val cpu = ontoCpu(key)
+                        engine = cpu.engine
+                        on = cpu.processor
+                        pace.gpuFailed()
+                        conversation = conversation(engine, instruction, history + done, held, settings)
+                        whole.clear()
+                        try {
+                            send()
+                        } catch (u: Throwable) {
+                            if (!held || first != null || u is kotlinx.coroutines.CancellationException) throw u
+                            whyNotHeld = firstLine(u)
+                            held = false
+                            runCatching { conversation.close() }
+                            conversation = conversation(engine, instruction, history + done, held = false, settings)
+                            send()
+                        }
+                    } else {
+                        if (!held) throw t
+                        Log.w("Gemma", "Holding her first word failed; she answers free from now on.", t)
+                        whyNotHeld = firstLine(t)
+                        held = false
+                        runCatching { conversation.close() }
+                        conversation = conversation(engine, instruction, history + done, held = false, settings)
+                        send()
+                    }
                 }
                 counted(conversation)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
                 whole.toString().also { done += message to it }
@@ -219,10 +277,11 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
     @OptIn(ExperimentalApi::class)
     override suspend fun ask(instruction: String?, message: String, settings: JobSettings): Mind.Answer = withContext(thread) {
         main.removeCallbacks(letGo)
-        val (l, loadMs) = engineNow(key(settings))
+        val key = key(settings)
+        val (l, loadMs) = engineNow(key)
         synchronized(this@Gemma) { open++ }
         try {
-            l.engine.createConversation(
+            fun on(e: Engine, processor: String, whyNotGpu: String?, failed: Boolean): Mind.Answer = e.createConversation(
                 ConversationConfig(
                     systemInstruction = instruction?.let { Contents.of(it) },
                     samplerConfig = sampler(settings),
@@ -232,7 +291,16 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
             ).use { c ->
                 val started = System.nanoTime()
                 val text = c.sendMessage(message).toString()
-                Mind.Answer(text, (System.nanoTime() - started) / 1_000_000, counted(c), l.processor, l.whyNotGpu, loadMs)
+                Mind.Answer(text, (System.nanoTime() - started) / 1_000_000, counted(c), processor, whyNotGpu, loadMs, gpuFailed = failed)
+            }
+            try {
+                on(l.engine, l.processor, l.whyNotGpu, failed = false)
+            } catch (t: Throwable) {
+                if (l.processor != "GPU" || t is kotlinx.coroutines.CancellationException) throw t
+                // 0.6.2: the GPU failed on this answer: it is asked once more on the CPU.
+                Log.w("Gemma", "An answer failed on the GPU; that engine runs on the CPU from now on.", t)
+                val cpu = ontoCpu(key)
+                on(cpu.engine, cpu.processor, null, failed = true)
             }
         } finally {
             done()

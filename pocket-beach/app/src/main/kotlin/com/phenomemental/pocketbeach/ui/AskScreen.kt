@@ -353,9 +353,12 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
     }
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (details) Text(
-            "Took %.1f s, %d pieces placed".format(d.shown.took / 1000.0, d.pieces) + (d.shown.pace?.where?.takeIf(String::isNotEmpty)?.let { ", $it" } ?: "") + ".",
+            "Took %.1f s, %d pieces placed".format(d.shown.took / 1000.0, d.pieces) + (d.shown.pace?.where?.takeIf(String::isNotEmpty)?.let { ", $it" } ?: "") + "." +
+                d.shown.pace?.notes?.takeIf { it.isNotEmpty() }?.joinToString(" ", prefix = " ").orEmpty(),
             style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
-        )
+        ) else if (d.shown.pace?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
+            Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
+        }
         Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
     }
     // A word the phone misheard, put right: his correction counts as his words.
@@ -444,6 +447,9 @@ private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boole
                 style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
             )
             shown.pace?.detail()?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("pace")) }
+        } else if (shown.pace?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
+            // 0.6.2: said whether or not Details are on.
+            Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
         }
         Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
     }
@@ -580,6 +586,9 @@ private fun Over(model: Model, over: Asking.Stage.Over, details: Boolean) {
     if (details) {
         last?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }
         Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
+    } else if (over.shown?.pace?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
+        // 0.6.2: said whether or not Details are on.
+        Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
     }
 }
 

@@ -15,8 +15,8 @@ android {
         applicationId = "com.phenomemental.pocketbeach"
         minSdk = 31
         targetSdk = 37
-        versionCode = 14
-        versionName = "0.6.1"
+        versionCode = 15
+        versionName = "0.6.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -69,7 +69,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.activity:activity-compose:1.13.0")
     // The companion's engine: LiteRT-LM, the version Google's gallery app pins.
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.0")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.1")
 
     testImplementation("junit:junit:4.13.2")
 

@@ -79,9 +79,12 @@ class StandIn : Mind {
     /** The earlier exchanges each Talk conversation was opened with, and the settings it was drawn by. */
     val talkHistories = mutableListOf<List<Pair<String, String>>>()
     val talkSettings = mutableListOf<JobSettings>()
-    /** Every message the Talk job was given, and how many the Write job was. */
+    /** 0.6.2: the settings each Write conversation was run on. */
+    val writeSettings = mutableListOf<JobSettings>()
+    /** Every message the Talk job was given, and how many the Write job was, and its last. */
     val talkMessages = mutableListOf<String>()
     var writeMessages = 0
+    var writeMessage = ""
 
     override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker {
         val talking = !instruction.contains("Answer in one of three ways")
@@ -92,24 +95,33 @@ class StandIn : Mind {
         } else {
             this.instruction = instruction
             histories += history
+            writeSettings += settings
         }
+        val gpuFails = talking && gpuFailsNext.also { gpuFailsNext = false }
+        val paced = Pace(processor, null, null)
         return object : Mind.Talker {
             override val stream = Talks.Stream { message, piece ->
+                // 0.6.2: as Gemma does when an answer fails on the GPU and she answers on the CPU.
+                if (gpuFails) paced.gpuFailed()
                 val reply = if (talking) {
                     talkMessages += message
                     talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
                 } else {
                     writeMessages++
+                    writeMessage = message
                     talk(message)
                 }
                 reply.chunked(4).forEach(piece)
                 reply
             }
-            override val pace = Pace(processor, null, null)
+            override val pace = paced
             override fun stop() {}
             override fun close() {}
         }
     }
+
+    /** 0.6.2: the next Talk conversation's answer fails on the GPU, and is answered on the CPU. */
+    var gpuFailsNext = false
 
     /** The Write job's replies to give first, in order, before answering as above. */
     val script = ArrayDeque<String>()
@@ -139,8 +151,10 @@ class StandIn : Mind {
         script.removeFirstOrNull()?.let { return it }
         if (!message.contains("hello world", ignoreCase = true)) return "talk\nI'm a stand-in for the companion."
         val secret = message.substringAfter("secret is ", "").trim().removeSuffix(".")
-        val again = instruction.substringAfter("don't make it: answer ", "").substringBefore(", writing the secret", "")
-        val lines = again.ifEmpty { instruction.substringAfter("changing nothing else: ", "").substringBefore(". (Each", "") }
+        // 0.6.2: the recipe, and what to do when a hello-world is already in the pocket, come with the message that asks for it.
+        val told = instruction + "\n" + message
+        val again = told.substringAfter("don't make it: answer ", "").substringBefore(", writing the secret", "")
+        val lines = again.ifEmpty { told.substringAfter("changing nothing else: ", "").substringBefore(". (Each", "") }
         return lines.replace(" / ", "\n").replace(HelloWorld.SECRET_SLOT, secret)
     }
     override fun state(): ModelStore.State = ModelStore.State.Ready
@@ -235,8 +249,10 @@ class CompanionTest {
         val old = HelloWorld.makeByHand(app.pages, app.storage, HelloWorld.SHELL_OPENING, "an old secret")
         ActivityScenario.launch(MainActivity::class.java).use {
             askTheCompanion()
-            assertTrue(mind.instruction.contains("hello-world is already in the pocket"))
-            assertTrue("in the action language", mind.instruction.contains("act / change hello-world \"Secret: an old secret\""))
+            // 0.6.2: the recipe, and the hello-world already in the pocket, come with the message that asks for it.
+            assertFalse(mind.instruction.contains("hello-world is already in the pocket"))
+            assertTrue(mind.writeMessage, mind.writeMessage.contains("hello-world is already in the pocket"))
+            assertTrue("in the action language", mind.writeMessage.contains("act / change hello-world \"Secret: an old secret\""))
             assertEquals(3, compose.onAllNodes(hasTestTag("write"), useUnmergedTree = true).fetchSemanticsNodes().size)
             assertEquals("the seal and the fingerprint are the app's own writes, shown", 2, compose.onAllNodes(hasTestTag("by-app"), useUnmergedTree = true).fetchSemanticsNodes().size)
             compose.waitFor("took", "on the stand-in")
@@ -369,10 +385,12 @@ class CompanionTest {
         val lines = models.lines.flatMap { m -> app.pages.position(Region.POCKET, made, m.address)!!.lines.mapNotNull { it.text } }
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the telling test, written: ") && it.contains(" of 11 marks") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the telling test, spoken: ") })
-        // 0.6.1: his message of 29 October each way, and the Talk job's two fixed asks.
-        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job, 0.6, the date and her shell in his turn: ") })
+        // 0.6.1: his message of 29 October each way, and the Talk job's fixed asks; 0.6.2: the name already on her shell, and the safety message.
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job, 0.6.1, the time and her shell in her instruction, his words alone: ") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 21. ") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 22. ") && it.contains("The Write job proposed") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 23. ") && it.contains("The Write job proposed") })
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 24. ") && it.contains("urge him") })
         assertTrue("each piece asked on its own", mind.sortAsks.size > Telling.cut(Telling.WRITTEN).size)
         assertTrue("nothing posted", wire.sent.isEmpty())
         assertFalse("nothing of his written but the run", app.pages.exists(Landing.NOW) || app.pages.exists(Landing.TELLING))
@@ -508,7 +526,10 @@ class CompanionTest {
             compose.waitFor("say", "Good morning, Matthew.")
             assertEquals("his turn is his words alone", "Good morning", mind.talkMessages.single())
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("It is "))
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("You wear the shell ${HelloWorld.SHELL}; it says \"${HelloWorld.SHELL_OPENING}\""))
+            // 0.6.2: the friend line (C), her name not yet given; her shell's opening line has left her instruction.
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
+            assertFalse(mind.talkInstruction, mind.talkInstruction.contains(HelloWorld.SHELL_OPENING))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
             assertEquals("a greeting asks no write", 0, mind.writeMessages)
             asked("I want to run a marathon next spring.")
@@ -689,6 +710,75 @@ class CompanionTest {
             compose.waitFor("job-talk-temperature", "1.00")
         }
         assertEquals(JobSettings.of(Job.TALK), app.settings(Job.TALK))
+    }
+
+    /** 0.6.2, part three: when his words say he isn't safe, the safety line is her instruction's only line that turn; his safety words are kept as a block on his tap. */
+    @Test
+    fun theSafetyLineComesWithHisWordsAndTheWordsAreHisToChange() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf("I'm worried about you. Please reach someone you trust right now, or Samaritans on 116 123.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("I don't feel safe tonight.")
+            compose.waitFor("say", "I'm worried about you.")
+            assertTrue(mind.talkInstruction, mind.talkInstruction.endsWith(com.phenomemental.pocketbeach.bsp.Talking.SAFETY))
+            compose.tap("back")
+            compose.tap("settings")
+            compose.waitFor("safety-words", "don't feel safe")
+            assertFalse("nothing written until he taps", app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK))
+            compose.tap("keep-safety-words")
+            compose.waitUntil(10_000) { app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK) }
+            compose.waitFor("open-safety-words")
+        }
+        assertEquals(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_WORDS, com.phenomemental.pocketbeach.bsp.Talking.safetyWords(app.pages))
+    }
+
+    /** 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so. */
+    @Test
+    fun oneEngineOnTheGpuAndAJobMovedOffItSaysSo() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+        try {
+            assertEquals("GPU", app.running(Job.TALK).processor)
+            assertEquals("CPU", app.running(Job.WRITE).processor)
+            assertEquals("CPU", app.running(Job.SORT).processor)
+            assertEquals("Talk's Gemma 4 E4B holds the GPU, and the phone runs one engine on it at a time", app.cpuWhy(Job.WRITE))
+            ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("settings")
+                compose.waitFor("job-write-processor-hint", "Runs on the CPU: Talk's Gemma 4 E4B holds the GPU")
+                compose.waitFor("job-sort-processor-hint", "Runs on the CPU")
+                assertTrue("Talk runs as set", compose.onAllNodes(androidx.compose.ui.test.hasTestTag("job-talk-processor-hint")).fetchSemanticsNodes().isEmpty())
+                compose.tap("back")
+                compose.tap("ask-companion")
+                asked("Remember to buy stamps")
+                compose.waitUntil(10_000) { mind.writeSettings.isNotEmpty() && mind.talkSettings.isNotEmpty() }
+                assertEquals("the Write job ran on the CPU", "CPU", mind.writeSettings.last().processor)
+                assertEquals("hers on the GPU", "GPU", mind.talkSettings.last().processor)
+            }
+            // An answer that failed on the GPU, answered on the CPU, says so under her reply: in its time line with Details on, a line of its own with them off.
+            for (details in listOf(true, false)) {
+                app.showDetails = details
+                mind.gpuFailsNext = true
+                val before = mind.talkMessages.size
+                ActivityScenario.launch(MainActivity::class.java).use {
+                    compose.tap("ask-companion")
+                    asked("Hello")
+                    compose.waitUntil(10_000) { mind.talkMessages.size > before }
+                    compose.waitFor(if (details) "took" else "gpu-failed", com.phenomemental.pocketbeach.model.Pace.GPU_FAILED)
+                }
+            }
+            app.showDetails = true
+            // All three on one model share the GPU's one engine.
+            app.set(Job.WRITE, JobSettings.of(Job.WRITE).copy(model = JobSettings.GEMMA_E4B))
+            assertEquals("GPU", app.running(Job.WRITE).processor)
+            assertEquals(null, app.cpuWhy(Job.WRITE))
+        } finally {
+            app.showDetails = true
+            app.set(Job.TALK, JobSettings.of(Job.TALK))
+            app.set(Job.WRITE, JobSettings.of(Job.WRITE))
+        }
     }
 
     @Test

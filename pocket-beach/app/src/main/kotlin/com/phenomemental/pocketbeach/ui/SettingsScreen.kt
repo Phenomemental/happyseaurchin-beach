@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.phenomemental.pocketbeach.model.FetchService
 import com.phenomemental.pocketbeach.model.ModelStore
@@ -27,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.model.Job
 import com.phenomemental.pocketbeach.model.JobSettings
 import java.util.Locale
@@ -45,6 +50,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         Text(
             "Each of the companion's jobs has Edge's settings of its own. Jobs set to the same model, processor and context share one engine; " +
                 "a job set apart loads an engine of its own beside it, and both stay in the phone's memory while Ask is open. " +
+                "The phone runs one engine on its GPU at a time: Talk's. A job set to the GPU on another model or context runs on the CPU. " +
                 "A change is used from the next thing you say in Ask.",
             style = Type.small, color = ink.soft,
         )
@@ -58,15 +64,49 @@ fun SettingsScreen(model: Model, nav: Nav) {
         // The models a job can be set to: those on this phone.
         val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelStore.State.Ready }
         BiggerModel(app, e4b)
-        for (job in Job.values()) JobPart(job, app.settings(job), ready) { app.set(job, it) }
+        for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job)) { app.set(job, it) }
+        SafetyWords(model, nav)
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
     }
 }
 
+/**
+ * 0.6.2, part three: the words that say he isn't safe. When anything he
+ * says holds one, her instruction for that turn carries the safety line and
+ * no other. They are his to change once kept as a block, which is written
+ * only when he taps; until then the app's first words are used.
+ */
 @Composable
-private fun JobPart(job: Job, s: JobSettings, models: List<String>, set: (JobSettings) -> Unit) {
+private fun SafetyWords(model: Model, nav: Nav) {
+    val ink = LocalInk.current
+    val app = model.app
+    val scope = rememberCoroutineScope()
+    var kept by remember { mutableStateOf(app.pages.exists(Talking.SAFETY_BLOCK)) }
+    var problem by remember { mutableStateOf<String?>(null) }
+    Column(Modifier.fillMaxWidth().testTag("safety"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Text("Safety words", style = Type.heading, color = ink.ink)
+        Text(
+            "When anything you say holds one of these, she is told you've said you aren't safe: to say plainly she's worried for you, and urge you " +
+                "to reach someone you trust, Samaritans on 116 123 at any hour, or 999 if you're in danger now.",
+            style = Type.small, color = ink.soft,
+        )
+        Text(Talking.safetyWords(app.pages).joinToString(", ") { "\u201c$it\u201d" }, style = Type.body, color = ink.ink, modifier = Modifier.testTag("safety-words"))
+        if (kept) TextLink("Change them in your ${Talking.SAFETY_BLOCK} block", { nav.go(Screen.Block(Region.POCKET, Talking.SAFETY_BLOCK, "")) }, tag = "open-safety-words")
+        else TextLink("Keep them as a block you can change", {
+            scope.launch {
+                val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(Talking.SAFETY_BLOCK, Talking.safetyBlock())) }
+                if (done.ok) { kept = true; model.changed() } else problem = "They weren't kept: ${done.problem}"
+            }
+        }, tag = "keep-safety-words")
+        problem?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("safety-problem")) }
+    }
+}
+
+@Composable
+private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: String?, set: (JobSettings) -> Unit) {
     val ink = LocalInk.current
     val tag = "job-${job.name.lowercase()}"
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -82,6 +122,8 @@ private fun JobPart(job: Job, s: JobSettings, models: List<String>, set: (JobSet
         )
         Setting(
             "Processor", if (s.processor == "GPU") "GPU, else the CPU" else "CPU", tag = "$tag-processor",
+            // 0.6.2: said plainly when it runs on the CPU though set to the GPU.
+            hint = cpuWhy?.let { "Runs on the CPU: $it." },
             less = step(JobSettings.PROCESSORS, s.processor, -1)?.let { p -> { set(s.copy(processor = p)) } },
             more = step(JobSettings.PROCESSORS, s.processor, 1)?.let { p -> { set(s.copy(processor = p)) } },
         )
@@ -196,7 +238,7 @@ private fun Setting(name: String, value: String, tag: String, hint: String? = nu
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Column(Modifier.weight(1f)) {
             Text(name, style = Type.body, color = ink.ink)
-            if (hint != null) Text(hint, style = Type.small, color = ink.soft)
+            if (hint != null) Text(hint, style = Type.small, color = ink.soft, modifier = Modifier.testTag("$tag-hint"))
         }
         Action("−", { less?.invoke() }, enabled = less != null, tag = "$tag-less")
         Text(value, style = Type.small, color = ink.ink, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 84.dp).testTag(tag))
