@@ -526,8 +526,8 @@ class CompanionTest {
             compose.waitFor("say", "Good morning, Matthew.")
             assertEquals("his turn is his words alone", "Good morning", mind.talkMessages.single())
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("It is "))
-            // 0.6.2: the heart line, her name not yet given; her shell's opening line has left her instruction.
-            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Be with him as a friend"))
+            // 0.6.2: the friend line (C), her name not yet given; her shell's opening line has left her instruction.
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"))
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
             assertFalse(mind.talkInstruction, mind.talkInstruction.contains(HelloWorld.SHELL_OPENING))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))

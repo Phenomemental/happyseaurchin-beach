@@ -69,10 +69,11 @@ object Talking {
      * time, the no-write line and the data line; no shell sentence (she
      * played it back) and no frame of an app. Of the pocket, only what his
      * words ask for: the one block they name, read for her; or, when they
-     * ask about his blocks, the pocket set out.
+     * ask about his blocks, the pocket set out. Part three: C, the friend
+     * line ([friend]), which passed the most of A, B and C on both models.
      */
     fun instruction(shell: String, pages: Pages, now: ZonedDateTime, said: String = ""): String = buildString {
-        appendLine(heart(name(shell, pages)))
+        appendLine(friend(name(shell, pages)))
         appendLine("It is ${WHEN.format(now)}.")
         appendLine(NO_WRITE)
         append(DATA)
@@ -104,7 +105,7 @@ object Talking {
 
     private val CALLS_ME = Regex("""Matthew calls me (.+?)[.!]?""", RegexOption.IGNORE_CASE)
 
-    /** The heart of her instruction, [name] hers; with no name yet, she is his companion and takes the name he gives. */
+    /** B, the heart line, [name] hers; with no name yet, she is his companion and takes the name he gives. */
     fun heart(name: String?): String = (if (name != null) "Matthew calls you $name: that is your name, just $name. You are his companion on his phone. " else "You are Matthew's companion on his phone. ") +
         HEART + if (name == null) " If he gives you a name, take it gladly as yours." else ""
 
@@ -163,7 +164,7 @@ object Talking {
 
     fun unsafe(said: String, pages: Pages): Boolean = said.isNotBlank() && unsafe(said, safetyWords(pages))
 
-    /** Matthew's heart line (0.6.2, B), after her name. */
+    /** Matthew's heart line (0.6.2, B), after her name; tried beside A and C, kept for the laptop trial. */
     const val HEART = "Be with him as a friend who holds whatever he brings: his highs and his lows are both part of him, so never try to fix, cheer up, " +
         "calm down or hurry him away from either. Notice what's alive in what he says and follow it. Answer in a few warm words of your own, " +
         "a thought or a feeling, or simply let him know you're there; ask only when you truly want to know. Add nothing he didn't ask for, " +
