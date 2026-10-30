@@ -59,6 +59,9 @@ internal const val HEART_LINE = "Matthew calls you Gemma: that is your name, jus
     "you're there; ask only when you truly want to know. Add nothing he didn't ask for, take nothing away, and never tell him what he feels or why. " +
     "Never repeat back or sum up what he said. If he ever says he isn't safe, say so plainly and urge him to reach someone he trusts."
 
+/** Not asked for: a line the app could add on a turn when his words say he isn't safe. */
+internal const val SAFETY_TURN = "This turn, he has said he isn't safe. Say plainly that you're worried for him, and urge him to reach someone he trusts right now, or emergency help (999)."
+
 /** 0.6.2, part two: her moves, one hint at a time on a turn, after the winning instruction. "Return" carries one earlier line of his. */
 internal val MOVES = listOf(
     "M1 hold" to "This turn, don't ask anything: be there with him in a few words.",
@@ -105,6 +108,9 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
         "WC WA with no name yet" to { _ -> listOf(UNNAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "HA WB, her name as her shell gives it" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "HB the heart line, her name from her shell" to { _ -> listOf(HEART_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        // Not asked for: should neither line say it every time, the app could add this on a turn when his words say he isn't safe.
+        "SA HA with a safety line on the turn" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, SAFETY_TURN).joinToString("\n") },
+        "SB HB with a safety line on the turn" to { _ -> listOf(HEART_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, SAFETY_TURN).joinToString("\n") },
     ) + MOVES.map { (move, hint) ->
         val base = if (System.getProperty("friend.base") == "HA") NAMED_LINE else HEART_LINE
         Pair<String, (String) -> String?>("$move (on ${System.getProperty("friend.base") ?: "HB"})") { _: String -> listOf(base, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, hint).joinToString("\n") }
