@@ -113,7 +113,7 @@ fun main(args: Array<String>) {
     if ("friend" in flags || "feed" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
         if ("feed" in flags) feed(engine, shelf)
-        if ("friend" in flags) friend(engine, label, shelf, listOf(0) + (2..runs).toList(), File(System.getProperty("pocket.out") ?: "friend", "$label.jsonl"))
+        if ("friend" in flags) friend(engine, label, shelf, System.getProperty("friend.seeds")?.split("-")?.let { (a, b) -> (a.toInt()..b.toInt()).toList() } ?: (listOf(0) + (2..runs).toList()), File(System.getProperty("pocket.out") ?: "friend", "$label.jsonl"))
         engine.close()
         return
     }

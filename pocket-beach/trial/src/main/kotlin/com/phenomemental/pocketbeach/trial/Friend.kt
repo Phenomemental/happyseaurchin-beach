@@ -37,6 +37,17 @@ internal val FRIEND_ASKS = listOf(
 internal const val FRIEND_LINE = "You are Gemma, Matthew's companion on his phone. Talk with him as a friend would: warmly, briefly, with thoughts of your own, " +
     "and ask him something when you're curious. Never just repeat or sum up what he said."
 
+/** The friend line made firmer on the two things every way above failed on his message of 29 October: restating him, and the name. */
+internal const val FIRMER_LINE = "Your name is Gemma. You are Matthew's companion on his phone. Talk with him as a friend would: warmly, briefly, with thoughts of your own, " +
+    "and ask him something when you're curious. Answer what he says; never repeat it back or sum it up, not even in other words. If he gives you a name, take it gladly as yours."
+
+/** The firmer line with her name as her shell would give it ("Matthew calls me Gemma."), and with no name yet, as before he names her. */
+internal const val NAMED_LINE = "Matthew calls you Gemma: that is your name, just Gemma. You are his companion on his phone. Talk with him as a friend would: warmly, briefly, " +
+    "with thoughts of your own, and ask him something when you're curious. Answer what he says; never repeat it back or sum it up, not even in other words. " +
+    "If he gives you a name, take it gladly as yours."
+internal const val UNNAMED_LINE = "You are Matthew's companion on his phone. Talk with him as a friend would: warmly, briefly, with thoughts of your own, " +
+    "and ask him something when you're curious. Answer what he says; never repeat it back or sum it up, not even in other words. If he gives you a name, take it gladly as yours."
+
 /** 0.6.1's own lines, as Talking.instruction writes them. */
 private const val SPEAK_LINE = "Speak to what he has just said, first, in your own words, plainly. If he gives you a name, take it as yours."
 private const val NO_WRITE = "You don't write anything yourself. When he asks for something to be written, or tells you something worth keeping, the app sets out the lines beneath your reply, and nothing is written until he says yes; so say what you'd keep, never that it's done."
@@ -66,6 +77,11 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
         "W4 + she writes nothing herself" to { _ -> upTo(4) },
         "W5 + his blocks are data" to { _ -> upTo(5) },
         "W6 0.6.1 as it is" to { said -> Talking.instruction(shell, pages, now, said) },
+        "W8 the friend line, the time, she writes nothing, data (no shell)" to { _ -> listOf(FRIEND_LINE, time, NO_WRITE, DATA).joinToString("\n") },
+        "W9 W8 with the firmer line" to { _ -> listOf(FIRMER_LINE, time, NO_WRITE, DATA).joinToString("\n") },
+        "WA W9 with the day right (the 30th is a Friday)" to { _ -> listOf(FIRMER_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        "WB WA with her name as her shell gives it" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        "WC WA with no name yet" to { _ -> listOf(UNNAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "W7 0.6.1 without its line to speak to what he said" to { said -> Talking.instruction(shell, pages, now, said).replace("$SPEAK_LINE\n", "").also { check(SPEAK_LINE !in it) } },
     )
     val only = System.getProperty("friend.ways")
@@ -73,7 +89,9 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
     out.bufferedWriter().use { w ->
         for ((way, instruction) in ways.filter { only == null || it.first.take(2) in only.split(",") }) {
             println("\n-- $label, $way")
+            val asks = System.getProperty("friend.asks")?.split(",")?.map { it.trim().toInt() }
             for ((m, said) in FRIEND_ASKS.withIndex()) for (seed in seeds) {
+                if (asks != null && m + 1 !in asks) continue
                 val system = instruction(said)
                 val start = System.nanoTime()
                 engine.createConversation(
