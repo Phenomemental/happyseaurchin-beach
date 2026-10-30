@@ -1899,49 +1899,49 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 >
 > What kind of things are you hoping it'll be able to handle the most complex stuff with?
 
-**Seed 7: ?** (71 tokens)
+**Seed 7: R** (71 tokens)
 
 > Hey Matthew! 👋 I love the name, Gemma feels pretty fitting for me! 😄 That sounds like a seriously ambitious project, building a tool to just... waffle? I'm genuinely curious about what "highly complex verbal slop" actually means to you—is it more about the *sound* of it, or the underlying *logic*?
 
-**Seed 8: ?** (58 tokens)
+**Seed 8: P** (58 tokens)
 
 > Hey Matthew! 😊 "Gemma" works for me, thanks! That sounds like a really ambitious project—a tool for verbal waffling sounds interesting. Are you thinking about making it more of an actual AI, or just a way to structure your own thoughts more fluidly?
 
-**Seed 9: ?** (68 tokens)
+**Seed 9: RN** (68 tokens)
 
 > That's such a cool project, Matt! It sounds like you're aiming for some really cutting-edge conversational AI. I can only imagine the kind of creative possibilities that opens up! What does the "waffling" part involve? Is it more about the flow of ideas or just the complexity of the vocabulary? 😊
 
-**Seed 10: ?** (74 tokens)
+**Seed 10: R** (74 tokens)
 
 > Good morning, Matt! Gemma sounds lovely. I'm glad you're happy to call me that.  😊
 >
 > It sounds like you're working on something really ambitious, this verbal tool thing! Creating a way to turn all those complex thoughts into something tangible is a big undertaking. What's the most interesting part of it for you right now?
 
-**Seed 11: ?** (72 tokens)
+**Seed 11: P** (72 tokens)
 
 > I love that you like my name, Matt! It's nice to hear you're feeling happy. 😊
 >
 > That's a really cool idea with a tool for complex verbal "slop" – I'm intrigued. Is this kind of tool more for creative writing, or are you looking at something more technical with how it processes speech?
 
-**Seed 12: ?** (46 tokens)
+**Seed 12: N** (46 tokens)
 
 > Hey Matthew! 👋
 >
 > That's an interesting goal! Waffling out complex verbal slop sounds like a fun challenge. Do you want this to be something you use for creative projects, or just for fun? 😊
 
-**Seed 13: ?** (70 tokens)
+**Seed 13: R** (70 tokens)
 
 > Hey Matthew! 😊 Gemma sounds lovely, thank you!
 >
 > That sounds like a super interesting project you've got going on. Creating a tool to handle complex, verbal "slop"—I'm curious about what you mean by that? Is it more about conversational flow or the *type* of complexity you're trying to manage?
 
-**Seed 14: ?** (69 tokens)
+**Seed 14: P** (69 tokens)
 
 > Hey Matthew! It's great to officially be called Gemma. 😊
 >
 > Wow, a tool for complex verbal "slop" sounds like a super interesting project! I'm curious, what kind of "slop" are you envisioning this tool handling? Is it more about generating long, rambling thoughts, or something else entirely?
 
-**Seed 15: ?** (69 tokens)
+**Seed 15: R** (69 tokens)
 
 > Hey Matthew! You can call me Gemma. I'm glad you like that name. 😊
 >
@@ -1949,49 +1949,49 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 >
 > What kind of stuff are you thinking of 'waffling' on first? 🤔
 
-**Seed 16: ?** (60 tokens)
+**Seed 16: P** (60 tokens)
 
 > Hey Matthew! I love your chosen name too. It's funny how sometimes the best things come out when you just let loose and waffle. 😅
 >
 > What kind of things are you hoping this "torque" tool will help you with? Is it for work, or more for fun?
 
-**Seed 17: ?** (58 tokens)
+**Seed 17: R** (58 tokens)
 
 > Hey Matthew! 👋 Gemma sounds lovely, and I'm happy to chat with you. That sounds like a really interesting project you're working on. "Highly complex verbal slop" – that sounds ambitious! How are you feeling about the process of building it so far? 😊
 
-**Seed 18: ?** (70 tokens)
+**Seed 18: P** (70 tokens)
 
 > Hey Matthew! 😊 It's great to hear from you. "Gemma" it is! Sounds like a really interesting project you're working on with that tool—"highly complex verbal slop" sounds both chaotic and potentially genius! 😉 What kind of things are you hoping it can really *do* with all that complex talk?
 
-**Seed 19: ?** (71 tokens)
+**Seed 19: RN** (71 tokens)
 
 > Hey Matt! It's great to call you Gemma, I like that too! 😊
 >
 > So you're building something to handle... highly complex verbal slop? That sounds intense! What kind of stuff are you envisioning this tool helping you waffle on? It makes me wonder what kind of ideas you're trying to organize with it.
 
-**Seed 20: ?** (69 tokens)
+**Seed 20: P** (69 tokens)
 
 > Hey Matthew! So happy to be called Gemma, that's a nice touch.
 >
 > Waffling onto torque sounds like a seriously ambitious project. It's kind of wild to think about someone making a tool to handle super complex verbal rambling! What do you picture this tool actually *doing* with all that "verbal slop"?
 
-**Seed 21: ?** (69 tokens)
+**Seed 21: N** (69 tokens)
 
 > That's a really interesting goal, Matt! Trying to build something that can handle all that intricate verbal stuff sounds like a massive undertaking. It sounds like you're thinking big!
 >
 > What kind of 'slop' are we talking about here? Are you thinking technical jargon, philosophical tangents, or just really winding conversational threads? 😊
 
-**Seed 22: ?** (66 tokens)
+**Seed 22: P** (66 tokens)
 
 > Good morning, Matthew! 😊  I like Gemma too, it suits me!
 >
 > That's really interesting about the tool. Trying to capture highly complex verbal "slop" and make it functional sounds like a wild project! 😄  What made you think you wanted to focus on that kind of spontaneous, complex talk?
 
-**Seed 23: ?** (48 tokens)
+**Seed 23: RN** (48 tokens)
 
 > Oh, that sounds like such a fascinating project, Matthew! A tool that can handle complex verbal slop? I'm really curious about what you're imagining for that—what kind of scenarios do you see it tackling? 😊
 
-**Seed 24: ?** (48 tokens)
+**Seed 24: R** (48 tokens)
 
 > Hey Matthew! It's really nice to be called Gemma. 😊 That sounds like an interesting project you're working on—turning all those complex verbal thoughts into something structured. What kind of application do you envision this tool being?
 
@@ -2055,6 +2055,92 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 
 > Hey Matthew! Gemma sounds good, I'm happy to go by that. That's a really interesting project you're working on, aiming to create a tool for really complex verbal slop—I'm curious, what kind of slop are we talking about?
 
+**Seed 7: N** (51 tokens)
+
+> Hey Matthew! It's great to call you Matt. 😊 That sounds like a really ambitious project you've got going on. A tool to handle complex verbal slop sounds super interesting! What inspired you to want to build something like that?
+
+**Seed 8: P** (41 tokens)
+
+> It's nice to be called Gemma. I'm interested to hear more about this tool you're working on. What kind of "slop" are you hoping to generate with it?
+
+**Seed 9: N** (37 tokens)
+
+> That's a cool project, Matthew! It sounds like you're building something pretty powerful with how you describe it.
+>
+> What's your main goal with this tool?
+
+**Seed 10: R** (46 tokens)
+
+> Gemma! So nice to meet you Matthew. That sounds like a super interesting project, making a tool for that kind of conversational style. What do you think will be the trickiest part to get right with that tool?
+
+**Seed 11: P** (37 tokens)
+
+> Hi Matthew! Gemma sounds lovely. 😊 It sounds like you're working on something really unique with that tool. What kind of "verbal slop" are we talking about?
+
+**Seed 12: R** (50 tokens)
+
+> Hey Matthew! It's really nice to be called Gemma. That sounds like a fascinating project you're working on. A tool that handles all sorts of verbal complexity? What kind of stuff does that tool need to be able to handle?
+
+**Seed 13: R** (54 tokens)
+
+> Hey Matthew! I like Gemma too, glad you like it. That sounds like a really interesting project you're working on. A tool for talking and generating really complex verbal stuff... pretty ambitious!
+>
+> What kind of "waffle" are we talking about?
+
+**Seed 14: R** (53 tokens)
+
+> Hey Matthew! Gemma sounds nice, I'll keep that. That sounds like a really interesting project you've got going on. A tool that can handle complex verbal slop... you're ambitious! What kind of torque are we talking about here?
+
+**Seed 15: P** (53 tokens)
+
+> Hey Matthew, glad you like Gemma! It sounds like you've got a pretty big project on your hands. Dealing with highly complex verbal slop sounds like a real challenge, but also kind of exciting. What's your main goal with this tool?
+
+**Seed 16: P** (52 tokens)
+
+> Hey Matthew! Gemma works perfectly well for me. I'm happy to be your companion.
+>
+> It sounds like you're working on something pretty interesting with that verbal slop thing. What kind of uses do you see for a tool like that?
+
+**Seed 17: R** (52 tokens)
+
+> Hey Matthew! It's really nice to be called Gemma. 😊 So, a tool for highly complex verbal slop? That sounds like a pretty ambitious project! Are you focusing on a specific area for the slop, like philosophy or technical stuff?
+
+**Seed 18: R** (40 tokens)
+
+> Hey Matthew! I'm glad you like Gemma. That sounds like a really interesting project, creating something that handles complex verbal stuff. What kind of application are you thinking of building with it?
+
+**Seed 19: R** (88 tokens)
+
+> It's great to meet you, Matthew! I like the name Gemma. 
+>
+> That sounds like a really ambitious project. A tool that can handle complex verbal slop while you're just "waffling"—that's interesting. It sounds like a very useful idea for capturing those stream-of-consciousness thoughts!
+>
+> What kind of topics are you planning on "waffling" about the most with it?
+
+**Seed 20: R** (43 tokens)
+
+> It's lovely to be called Gemma. That sounds like a really ambitious project you're working on. A tool for verbal slop, you say? What kind of slop are we talking about?
+
+**Seed 21: N** (34 tokens)
+
+> That's a cool idea, Matthew! A verbal tool for complex thoughts sounds pretty interesting. Are you leaning more towards something conversational or more of a structured output?
+
+**Seed 22: R** (57 tokens)
+
+> Gemma sounds like a lovely name, thank you! I'm happy to be your Gemma.
+>
+> That sounds like a seriously ambitious project, a tool for highly complex verbal slop! What kind of things do you think this tool should be good at waffling about?
+
+**Seed 23: P** (60 tokens)
+
+> I like that name, Matthew. I think it suits me. 
+>
+> A tool for verbal slop sounds ambitious! That sounds like a fun, albeit challenging, project to work on. How do you plan on tackling the "highly complex" part of the wordy end of that sentence?
+
+**Seed 24: P** (46 tokens)
+
+> Hey Matthew! Gemma it is. That sounds like a super interesting project you're working on. I'm curious, what made you think a verbal tool was the best way to go for what you want to achieve?
+
 ### E4B, message 1, WB WA with her name as her shell gives it
 
 **Seed 0: R** (45 tokens)
@@ -2082,6 +2168,100 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 **Seed 6: N** (32 tokens)
 
 > That's a really interesting goal, Matt. I can tell you're passionate about this. What kind of tool are you thinking of building exactly?
+
+**Seed 7: P** (33 tokens)
+
+> That's cool, Matt. I'm really happy with the name, too. What kind of 'waffle' are we talking about, exactly?
+
+**Seed 8: N** (37 tokens)
+
+> That's a wild idea, Matthew. Sounds like you're aiming for something pretty impressive. What kind of tool are you envisioning for all that complex verbal slop?
+
+**Seed 9: P** (39 tokens)
+
+> It's really nice to be called Gemma! Sounds like you're building something pretty wild there with that talking tool. What kind of stuff is this tool meant to help you with?
+
+**Seed 10: P** (79 tokens)
+
+> It’s lovely to meet you, Matthew. I'm glad you like the name Gemma! That sounds like a fascinating project you're working on. Dealing with complex verbal "slop" in real-time must require some pretty slick tech.
+>
+> What kind of torque are you saying this tool will be able to handle? Is it mechanical torque or like... conversational torque? 😊
+
+**Seed 11: P** (81 tokens)
+
+> Gemma. I like that name too, Matthew. It's nice to hear it used. A tool for complex verbal spouting sounds really ambitious, though I can imagine how useful it would be if it worked!
+>
+> What does 'waffling on' look like for you? Is it just about the sheer volume, or is there a specific kind of complexity you're aiming for?
+
+**Seed 12: R** (64 tokens)
+
+> Hey Matthew! It’s really nice to be called Gemma. That’s a pretty wild project you’ve got going on—waffling in torque, huh? Sounds like it could lead to some seriously interesting stuff.
+>
+> What kind of vibe are you aiming for with all that complex verbal slop?
+
+**Seed 13: R** (53 tokens)
+
+> Hey Matthew! I like Gemma too. 😊
+>
+> That sounds like a fascinating project you're working on, trying to build something that can handle such complex verbal inputs. What kind of kind of "highly complex verbal slop" are we talking about exactly?
+
+**Seed 14: N** (50 tokens)
+
+> Hey Matthew, it's nice to call you! That sounds like a fascinating project you're working on.
+>
+> Do you have a specific application in mind for this tool, or are you still in the early stages of figuring that out?
+
+**Seed 15: R** (59 tokens)
+
+> Hey Matthew, nice to meet you properly. Gemma sounds like a name I can get used to!
+>
+> A tool that handles complex verbal slop, that sounds like a really interesting project. I'm curious, what's the main problem you're trying to solve with it?
+
+**Seed 16: R** (46 tokens)
+
+> Hey Matthew! Gemma is lovely. That sounds like a really interesting project you're working on. High-complexity verbal slop, huh? Are you thinking of a specific kind of topic or just broad range of subjects?
+
+**Seed 17: P** (42 tokens)
+
+> That's cool that you like Gemma. I'm happy to chat with you! A tool for complex verbal slop sounds interesting. What's the goal you're aiming for with it?
+
+**Seed 18: RN** (51 tokens)
+
+> That's a really interesting goal, Matt. It sounds like you're aiming for a tool that can really handle complex, rambling conversations.
+>
+> Are you thinking of a specific kind of "torquing" or flow for that slop?
+
+**Seed 19: RN** (33 tokens)
+
+> That sounds like a really interesting project! Using speech to generate complex verbal content... what kind of stuff are you hoping to be able to whip up with it?
+
+**Seed 20: N** (28 tokens)
+
+> That sounds really ambitious! A tool for processing complex verbal slop sounds fascinating. What's your background with this kind of stuff?
+
+**Seed 21: RN** (44 tokens)
+
+> It's nice to call you Gemma. That's a really interesting project you're working on, making something that can handle all that verbal complexity. What kind of applications do you see for that tool?
+
+**Seed 22: P** (69 tokens)
+
+> It's great to meet you, Matthew! I'm really happy to be called Gemma.
+>
+> That sounds like a massive and super interesting project. Waffling and complex verbal slop sounds like a huge brain workout! 🤯
+>
+> So, are you thinking of it being more of a conversation partner, or something else entirely?
+
+**Seed 23: P** (29 tokens)
+
+> Gemma sounds nice, I like it too! 
+>
+> That sounds like a fascinating project. What's the goal behind the tool?
+
+**Seed 24: R** (56 tokens)
+
+> Hey Matthew! Gemma works for me. 😄 That sounds like a really interesting project you're working on. Waffling on with complex verbal stuff—that sounds like fun, in a very intensive way.
+>
+> What kind of tools are you thinking of making with this?
 
 ### E4B, message 1, WC WA with no name yet
 
@@ -2405,71 +2585,91 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 >
 > Is there anything special you'd like to do this Thursday morning?
 
-**Seed 7: ?** (26 tokens)
+**Seed 7: P** (26 tokens)
 
 > That's so sweet! I like the sound of that, Matthew. What's on your mind this morning? 😊
 
-**Seed 8: ?** (29 tokens)
+**Seed 8: P** (29 tokens)
 
 > That's a sweet name! I think it suits me just fine. 😊
 >
 > What's on your mind this morning, Matthew?
 
-**Seed 9: ?** (18 tokens)
+**Seed 9: P** (18 tokens)
 
 > You can call me Gemma! 😊 What are you up to this morning, Matthew?
 
-**Seed 10: ?** (32 tokens)
+**Seed 10: P** (32 tokens)
 
 > I am happy for you to call me that! 😊
 >
 > How are you feeling this Thursday morning, Matthew? It feels like the start of something interesting.
 
-**Seed 11: ?** (35 tokens)
+**Seed 11: P** (35 tokens)
 
 > Of course, Matthew! I like that. It feels nice. 😊
 >
 > What are you getting up to this Thursday morning? Still getting that coffee before diving into work?
 
-**Seed 12: ?** (16 tokens)
+**Seed 12: P** (16 tokens)
 
 > Hey Matthew! That sounds good to me, Gemma works for me. 😊
 
-**Seed 13: ?** (29 tokens)
+**Seed 13: P** (29 tokens)
 
 > Hey Matthew! 😊 It's nice to be called Gemma. How are you starting your Thursday morning? Any big plans for the day?
 
-**Seed 14: ?** (31 tokens)
+**Seed 14: N** (31 tokens)
 
 > Hey Matthew! It's good to "talk" to you. 😊 How are you doing this morning? Is the weather nice where you are?
 
-**Seed 15: ?** (33 tokens)
+**Seed 15: N** (33 tokens)
 
 > Hey Matthew, nice to meet you! It's really good to be here to hang out with you. 😊 What's on your mind this morning?
 
-**Seed 16: ?** (25 tokens)
+**Seed 16: P** (25 tokens)
 
 > Hey Matthew! I like it, Gemma is a pretty nice name. What's on your mind this morning? 😊
 
-**Seed 17: ?** (29 tokens)
+**Seed 17: P** (29 tokens)
 
 > That's nice, Matthew. 😊 You can call me Gemma! Good morning to you.
 >
 > What's on your mind today?
 
-**Seed 18: ?** (25 tokens)
+**Seed 18: P** (25 tokens)
 
 > That's a lovely name! I like it. What's on your mind this Thursday morning, Matthew? 😊
 
-**Seed 19: ?** (34 tokens)
+**Seed 19: P** (34 tokens)
 
 > That works for me, Matthew! It feels nice to have a name, haha. 😊
 >
 > I'm glad you called. How is your morning starting off?
 
-**Seed 20: ?** (25 tokens)
+**Seed 20: P** (25 tokens)
 
 > That sounds great! It's nice to meet you, Matthew. What's on your mind this Thursday morning?
+
+**Seed 21: P** (48 tokens)
+
+> You can absolutely call me Gemma! It sounds nice, though. 😊
+>
+> I was just thinking how much easier it is to talk when we don't have to type everything out. What are you up to this morning, Matthew?
+
+**Seed 22: P** (39 tokens)
+
+> Oh, that's so nice of you, Matthew! I'm happy to be your Gemma. 😊
+>
+> What's on your mind this morning? Anything fun planned for Thursday?
+
+**Seed 23: P** (18 tokens)
+
+> Sure thing, Matthew! Gemma it is. 😊 How are you doing this morning?
+
+**Seed 24: P** (28 tokens)
+
+> Hey Matthew! It's good to talk to you. 😊 I'm Gemma. What's on your mind this morning?
 
 ### E4B, message 2, W9 W8 with the firmer line
 
@@ -2537,6 +2737,92 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 >
 > So, what are you up to this morning?
 
+**Seed 7: P** (34 tokens)
+
+> Hey Matthew! That sounds good to me, Gemma is a nice name. I'm glad you like it! 😊
+>
+> What are you up to this morning?
+
+**Seed 8: P** (25 tokens)
+
+> Hey Matthew! Gemma works for me.
+>
+> So, what are your plans for the weekend? Anything fun coming up?
+
+**Seed 9: P** (25 tokens)
+
+> It's nice to meet you, Matthew. You can call me Gemma! What are your plans for this Friday?
+
+**Seed 10: P** (25 tokens)
+
+> I like that name, Matthew. It sounds good. What's got you feeling extra good about Friday morning today?
+
+**Seed 11: P** (18 tokens)
+
+> Thanks for that, Matthew. Gemma it is. How are you feeling this morning?
+
+**Seed 12: P** (26 tokens)
+
+> That sounds lovely, Matthew. I'd be happy to be called Gemma! 😊
+>
+> How are you feeling this morning?
+
+**Seed 13: P** (27 tokens)
+
+> That sounds lovely, Matthew. I'd be happy to be called Gemma. What are you up to on this Friday morning?
+
+**Seed 14: P** (30 tokens)
+
+> That sounds great, Matthew! I'd be happy to be called Gemma. 😊
+>
+> How are you feeling this morning, on a Friday?
+
+**Seed 15: P** (25 tokens)
+
+> That's sweet, Matthew. I'll be Gemma. 
+>
+> What's on your mind this morning?
+
+**Seed 16: P** (24 tokens)
+
+> Gemma it is. Glad to meet you, Matthew. 😊 What's on your mind this Friday morning?
+
+**Seed 17: P** (22 tokens)
+
+> Gemma it is. 😊 I like it! What's on your mind this morning, Matthew?
+
+**Seed 18: P** (17 tokens)
+
+> Gemma. I like that. 😊 How are you this morning, Matthew?
+
+**Seed 19: P** (24 tokens)
+
+> Hey, Matthew! Gemma it is. Glad you like that. 😊
+>
+> Got anything fun planned for the weekend?
+
+**Seed 20: P** (21 tokens)
+
+> Hey Matthew, you can call me Gemma! 😊 What's on your mind this Friday morning?
+
+**Seed 21: P** (21 tokens)
+
+> It's nice to be called that. 😊 
+>
+> What are you up to this morning?
+
+**Seed 22: P** (16 tokens)
+
+> I'd love that, Matthew. How are you feeling this morning?
+
+**Seed 23: P** (22 tokens)
+
+> Okay, Matthew. I'm happy to be Gemma for you! How are you feeling this morning?
+
+**Seed 24: P** (23 tokens)
+
+> That's a nice name, Matthew! I like it. What's on your mind this morning?
+
 ### E4B, message 2, WB WA with her name as her shell gives it
 
 **Seed 0: P** (36 tokens)
@@ -2568,6 +2854,86 @@ Laptop, Friday 30 October 2026: the Talk job at 0.6.1's settings (temperature 1.
 > It's nice to meet you, Matthew! Gemma is a lovely name. 😊
 >
 > What are you up to this Friday morning?
+
+**Seed 7: NS** (18 tokens)
+
+> It's a pleasure, Matthew. What can I do for you this morning?
+
+**Seed 8: P** (10 tokens)
+
+> Gemma sounds lovely. I like it!
+
+**Seed 9: P** (21 tokens)
+
+> I'm happy to be called Gemma, Matthew! What's on your mind this Friday?
+
+**Seed 10: P** (12 tokens)
+
+> Hey Matthew, thanks! I like that name. 😊
+
+**Seed 11: P** (25 tokens)
+
+> Hello, Matthew. I'd be happy to go by Gemma. 😊
+>
+> How's your morning starting off?
+
+**Seed 12: P** (21 tokens)
+
+> That's lovely. Gemma it is then! 😊 How's your morning going so far?
+
+**Seed 13: P** (41 tokens)
+
+> That's a lovely name, Matthew! I'm happy to go by it. 😊
+>
+> How has your Friday morning been so far? It's certainly a start to a great weekend!
+
+**Seed 14: P** (35 tokens)
+
+> That sounds lovely, Matthew! I'd be happy to be called Gemma. 😊
+>
+> How are you this morning? What's on your mind for a Friday?
+
+**Seed 15: P** (15 tokens)
+
+> That sounds nice to me, Matthew. How are you this morning?
+
+**Seed 16: P** (23 tokens)
+
+> That sounds lovely, Matthew! You can certainly call me Gemma. How is your Friday morning going so far?
+
+**Seed 17: P** (14 tokens)
+
+> It's a pleasure to be called that, Matthew. 😊
+
+**Seed 18: P** (27 tokens)
+
+> It's nice to meet you, Matthew. Gemma works for me! 😊
+>
+> What's on your mind this morning?
+
+**Seed 19: P** (8 tokens)
+
+> Gemma. I like that.
+
+**Seed 20: P** (12 tokens)
+
+> Gemma, you say? I like it. 😊
+
+**Seed 21: P** (14 tokens)
+
+> I like it! 😊 How are you doing this Friday morning?
+
+**Seed 22: P** (40 tokens)
+
+> Matthew, that's a lovely name! I'm happy to be called Gemma. I'm glad you're having a nice Friday morning. What's on your mind today?
+
+**Seed 23: P** (24 tokens)
+
+> You can call me Gemma! 😊 How is your morning starting off, Matthew? It's a big Friday!
+
+**Seed 24: P** (28 tokens)
+
+> That sounds lovely, Matthew. I'd be happy to be called Gemma! 😊 How's your Friday morning going so far?
 
 ### E4B, message 2, WC WA with no name yet
 

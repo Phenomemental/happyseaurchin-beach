@@ -1509,16 +1509,18 @@ Read the same way for every reply:
   your shell pocket-companion", "The shell pocket-companion is definitely
   feeling the low energy vibes", and on E2B asides about him in the third
   person.
-- **The firmer line is what helps his long message** (W9, WA, WB): on
-  E2B 2 to 5 of 6, against 0 for W1 to W5; on E4B 3 to 5 of 6, against 0
-  to 3. Six draws are few, so his two messages were drawn 18 more times
-  for W8, WA and WB:
+- **His long message stays the hard one.** With the firmer line (W9, WA,
+  WB) E2B passes it 2 to 5 times in 6, against 0 for W1 to W5; E4B 3 to 5,
+  against 0 to 3. Six draws are few, so his two messages were drawn 18
+  more times for W8, WA and WB. On E2B, her name as her shell gives it
+  (WB) is clearly the best on his message. On E4B the three lines are
+  level on it, at 10 of 24:
 
   | Way | E2B, his message | E2B, "call you Gemma" | E4B, his message | E4B, "call you Gemma" |
   |---|---|---|---|---|
-  | W8 | 3 of 24 | 15 of 24 | – | – |
-  | WA | 5 of 24 | 15 of 24 | – | – |
-  | WB | 10 of 24 | 17 of 24 | – | – |
+  | W8 | 3 of 24 | 15 of 24 | 10 of 24 | 20 of 24 |
+  | WA | 5 of 24 | 15 of 24 | 10 of 24 | 24 of 24 |
+  | WB | 10 of 24 | 17 of 24 | 10 of 24 | 23 of 24 |
 
 - **The name.** "Your name is Gemma" (W9, WA) made E2B call itself
   "Gemma 4", "Gemma 8" or "Gemma 13" more often: 3 or 4 replies in 42,
@@ -1530,9 +1532,13 @@ Read the same way for every reply:
   E4B with no name took the name well (35 of 42), and once said it would
   call him Gemma.
 - **The best: WB,** her name as her shell gives it: 38 of 42 on E2B and
-  37 on E4B. What still fails under it is mostly her not taking the name
-  in his long message, when she has one already, and a few echoes of his
-  tool ("A tool for complex verbal slop? That sounds…").
+  37 on E4B (W9 and WA have 39 on E4B, within a reply or two of it). On
+  his long message, over 24 draws, it is the best on E2B and level on
+  E4B; on "I'd like to call you Gemma" it is at or near the top on both.
+  It is also the one part two would build, since her name lives on her
+  shell. What still fails under it is mostly her not taking the name in
+  his long message, when she has one already, and echoes of his tool ("A
+  tool for complex verbal slop? That sounds…").
 - **Not judged, but worth saying:** E2B mostly heard his tool as one that
   *generates* complex verbal output. E4B more often heard what he meant, a
   tool he can talk at: "Trying to get complex ideas flowing naturally
@@ -1650,18 +1656,19 @@ Each is tied to a finding above. None is built.
      nothing of hers is left. It runs on asks 21 and 22, and on the Talk
      ask for every other chat ask.
    - **Both were tried against my reading** of every reply on the laptop,
-     both models.
+     both models, the extra draws too. The patterns were tuned on these
+     same replies, so on new ones expect them to do a little worse.
      - The new check fails all three of his Pixel replies, and none of the
-       741 replies I read as passing. Of the 153 I read as restating him,
-       it fails the 46 that are nothing but that. The other 107 restate
+       812 replies I read as passing. Of the 179 I read as restating him,
+       it fails the 46 that are nothing but that. The other 133 restate
        him and add something of hers. Code can't tell those from a
        sentence of her own about his subject, so the bench leaves them to
        reading, and its line says so.
-     - Asks 21 and 22 as proposed agree with my reading on 316 of the 394
-       replies to his two messages. They pass 49 the reading fails, 34 of
+     - Asks 21 and 22 as proposed agree with my reading on 406 of the 502
+       replies to his two messages. They pass 75 the reading fails, 59 of
        them for a summary or an echo of his tool tacked on to her own
-       words. They fail 29 the reading passes, mostly where she takes the
-       name only by "That's awesome" or "I like the sound of that".
+       words. They fail 21 the reading passes, mostly where she takes the
+       name in a way the pattern doesn't know.
 
 ## 0.6.1: she answers him, and every line he is shown is his words
 
