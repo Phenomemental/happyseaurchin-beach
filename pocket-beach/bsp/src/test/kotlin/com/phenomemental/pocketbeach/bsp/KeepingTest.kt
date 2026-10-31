@@ -187,6 +187,10 @@ class KeepingTest {
         assertTrue(run(6, "new compost: buy more compost", guarded = false).any { it.contains("didn't name") })
         assertTrue(run(6, "add garden: Compost, more of it", guarded = false).any { it.contains("isn't his words") })
         assertTrue(run(13, "post: the garden is planted").isEmpty())
+        // E4B copied the grammar's "<block>": his words name one block, so that is the block.
+        val (_, garden) = Bench.keepFixture(ask(7), shelf, nowMs)
+        assertEquals("add garden under \"Autumn: plant the bulbs\": tulips came from Holland", Talks.blockNamed("add <block> under \"Autumn: plant the bulbs\": tulips came from Holland", ask(7).question, garden))
+        assertEquals("add <block>: x", Talks.blockNamed("add <block>: x", "Keep this: x", garden), "no block named: left as it is")
         assertTrue(Bench.keepLine(ask(3), Keeping.way(ask(3).question, emptyList(), Bench.keepFixture(ask(3), shelf, nowMs).second), null, 10).startsWith("Keep 3. right in 0.0 s"))
     }
 }

@@ -189,6 +189,16 @@ object Talks {
     /** The actions the writing check may give: [Acts.GRAMMAR] without read, which Ask never follows. */
     private val LEAN_GRAMMAR: String = Acts.GRAMMAR.lines().filterNot { it.startsWith("read ") }.joinToString("\n")
 
+    /**
+     * 0.6.4: where she wrote the grammar's "<block>" for the block, the block
+     * his words name, when they name just one: code decides it from his
+     * words, as the structure should. (E4B, with no examples, copied it.)
+     */
+    fun blockNamed(actions: String, said: String, pages: Pages): String {
+        val named = Keeping.named(said, pages).singleOrNull() ?: return actions
+        return actions.replace(Regex("""<\s*(?:the\s+)?block(?:\s+name)?\s*>""", RegexOption.IGNORE_CASE), named)
+    }
+
     /** What a message of his needs beyond [lean], said before it: the lines of the block his words name, a teaching block he names, the hello world recipe; null when it needs nothing. */
     fun forMessage(shell: String, pages: Pages, said: String): String? {
         val lower = said.lowercase()
@@ -373,7 +383,7 @@ object Talks {
                 Route.ACT -> {
                     val problem: String
                     try {
-                        val actions = Acts.parse(her.rest)
+                        val actions = Acts.parse(if (guard != null) blockNamed(her.rest, guard.said, pages) else her.rest)
                         val planned = Acts.propose(her.words, actions, storage, shelf, shellOpening, seal, nowMs(), secret = secretIn(question), guard = guard)
                         // 0.6.2: every line she wrote already has its home, or was cut short: nothing is proposed.
                         if (planned.nothing) return Answered(Route.TALK, her.words, emptyList(), planned, null, exchanges, actions)
