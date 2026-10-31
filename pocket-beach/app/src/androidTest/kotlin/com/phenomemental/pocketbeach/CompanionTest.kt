@@ -711,7 +711,9 @@ class CompanionTest {
         assertFalse(now.contains("mourning"))
         val t = app.asking.transcript()
         assertEquals("his day continues the exchange it sorts: his words once", 1, Regex("Matthew: Right, so the car").findAll(t).count())
-        for (part in listOf("Answered by: Talk (", "; Write (", "; Sort (", "Proposed:", "[x] ", "(corrected by him; heard", "His answer: Yes", "How it ended: Matthew said yes to his day")) {
+        // 0.6.4: his day told, not asked to keep: no writing check.
+        assertFalse(t, t.contains("; Write ("))
+        for (part in listOf("Answered by: Talk (", "; Sort (", "Proposed:", "[x] ", "(corrected by him; heard", "His answer: Yes", "How it ended: Matthew said yes to his day")) {
             assertTrue("$part in\n$t", t.contains(part))
         }
     }
@@ -1027,7 +1029,7 @@ class CompanionTest {
             asked("Make a block called now: buy more compost")
             compose.waitFor("over", "Nothing proposed: now is the app's own")
             asked("Keep this in garden: buy more compost.")
-            compose.waitFor("over", "Nothing proposed:")
+            compose.waitUntil(10_000) { app.asking.history.last().note.isNotEmpty() }
             assertTrue(app.asking.history.last().note, app.asking.history.last().note.contains("isn't his words"))
         }
         assertEquals(HelloWorld.SHELL_OPENING, app.pages.position(Region.POCKET, HelloWorld.SHELL)!!.text)
