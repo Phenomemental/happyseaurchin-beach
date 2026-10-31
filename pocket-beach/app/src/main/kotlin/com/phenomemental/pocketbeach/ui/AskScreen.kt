@@ -197,7 +197,7 @@ private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking)
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             PaperField(
                 asking.question, { asking.question = it }, "Say something to the companion",
-                modifier = Modifier.weight(1f), tag = "question", minLines = 1, maxLines = 5,
+                modifier = Modifier.weight(1f), tag = "question", minLines = 3, maxLines = 6,
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 Action(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, Modifier.width(96.dp), tag = "speak")

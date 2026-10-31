@@ -33,7 +33,9 @@ class ScreenTour {
         Thread.sleep(3000)
     }
 
-    private fun shot(name: String) {
+    /** A picture of the screen; [keyboard] false puts the keyboard away first, so a page shows whole (0.6.3, Ask's thread). */
+    private fun shot(name: String, keyboard: Boolean = true) {
+        if (!keyboard) runCatching { androidx.test.espresso.Espresso.closeSoftKeyboard() }
         compose.waitForIdle()
         Thread.sleep(400)
         val picture = instrumentation.uiAutomation.takeScreenshot() ?: return
@@ -254,14 +256,15 @@ class ScreenTour {
                     compose.waitUntil(10_000) { app.asking.history.size == i + 1 && app.asking.settled }
                 }
                 compose.waitFor("yes")
-                shot("$theme-32-ask-chat")
-                compose.onNodeWithTag("yes").performScrollTo()
-                shot("$theme-32b-ask-chat-proposal")
+                shot("$theme-32-ask-chat", keyboard = false)
+                // His second line at the top: her reply, and the proposal waiting beneath it.
+                compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
+                shot("$theme-32b-ask-chat-proposal", keyboard = false)
                 app.showDetails = true
                 compose.waitFor("wearing")
                 compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took")).fetchSemanticsNodes().size >= 4 }
-                compose.onNodeWithTag("yes").performScrollTo()
-                shot("$theme-32c-ask-chat-details-proposal")
+                compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
+                shot("$theme-32c-ask-chat-details-proposal", keyboard = false)
                 compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
                 shot("$theme-32d-ask-chat-details-typing")
             }
@@ -288,15 +291,15 @@ class ScreenTour {
                 compose.tap("ask")
                 compose.waitFor("say", "I'm the pocket companion.")
                 compose.waitUntil(10_000) { app.asking.settled }
-                shot("$theme-32-ask-talk")
+                shot("$theme-32-ask-talk", keyboard = false)
                 compose.onNodeWithTag("question").performTextClearance()
                 compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
                 compose.tap("ask")
                 compose.waitFor("which-line")
-                shot("$theme-33-ask-which-line")
+                shot("$theme-33-ask-which-line", keyboard = false)
                 compose.tap("choose:1")
                 compose.waitFor("writes")
-                shot("$theme-34-ask-chosen")
+                shot("$theme-34-ask-chosen", keyboard = false)
                 // Something told that names a block, which she only talks about: the app offers to keep it there.
                 compose.tap("not-now")
                 compose.tap("just-not-now")
@@ -305,14 +308,14 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("The orchard needs netting before June.")
                 compose.tap("ask")
                 compose.waitFor("keep-in", "Keep this in orchard?")
-                shot("$theme-36-ask-keep")
+                shot("$theme-36-ask-keep", keyboard = false)
                 // The same conversation with its workings shown: her shell, how each ask ended, and how long it took.
                 app.showDetails = true
                 compose.waitFor("wearing")
-                shot("$theme-37-ask-details")
+                shot("$theme-37-ask-details", keyboard = false)
                 compose.tap("keep-in")
                 compose.waitFor("writes")
-                shot("$theme-38-ask-details-proposal")
+                shot("$theme-38-ask-details-proposal", keyboard = false)
             }
             app.asking.reset()
             // 0.6, his day told: her reply; 0.6.1, "Sort as my day" under it, then the day sorted as one proposal; a line moved, a word put right, and the move kept.
@@ -331,10 +334,10 @@ class ScreenTour {
                 compose.tap("ask")
                 compose.waitFor("sort-as-day")
                 compose.onNodeWithTag("sort-as-day").performScrollTo()
-                shot("$theme-38b-ask-sort-as-day")
+                shot("$theme-38b-ask-sort-as-day", keyboard = false)
                 compose.tap("sort-as-day")
                 compose.waitFor("day-yes", timeoutMs = 30_000)
-                shot("$theme-39-ask-day")
+                shot("$theme-39-ask-day", keyboard = false)
                 val day = app.asking.waiting as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
                 val sam = day.lines.indexOfFirst { it.words.contains("Sam said something that stuck with me") }.takeIf { it >= 0 }
                     ?: day.lines.indexOfFirst { it.place != null }
@@ -343,7 +346,7 @@ class ScreenTour {
                 shot("$theme-40-ask-day-move")
                 compose.tap("day-to:1.3")
                 compose.waitFor("day-move:$sam")
-                shot("$theme-41-ask-day-moved")
+                shot("$theme-41-ask-day-moved", keyboard = false)
                 // A word the phone misheard, put right by a tap on the line.
                 val car = day.lines.indexOfFirst { it.words.contains("car wouldn't start") }.takeIf { it >= 0 } ?: 0
                 compose.tap("day-words:$car")
@@ -353,7 +356,7 @@ class ScreenTour {
                 compose.waitFor("day-yes")
                 compose.tap("day-yes")
                 compose.waitFor("over", "kept as an example")
-                shot("$theme-42-ask-day-kept")
+                shot("$theme-42-ask-day-kept", keyboard = false)
             }
             app.asking.reset()
             // Settings: each job's settings, as Edge shows them, and the bigger model to fetch.
