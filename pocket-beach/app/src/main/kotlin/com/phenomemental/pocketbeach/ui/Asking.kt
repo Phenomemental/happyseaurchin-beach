@@ -126,6 +126,9 @@ class Asking(private val app: PocketApp) {
         /** How it ended, once it has; empty while it hasn't. */
         var note by mutableStateOf("")
             internal set
+        /** 0.6.3: the safety note shown beneath her reply when his safety words match, whatever she says; null otherwise. */
+        var safety by mutableStateOf<String?>(null)
+            internal set
         /** Her answer's time and chip, for Details and the log. */
         var time by mutableStateOf("")
             internal set
@@ -346,6 +349,7 @@ class Asking(private val app: PocketApp) {
         history.lastOrNull()?.let { it.sortable = false; it.keepIn = null }
         yieldWrite()
         val e = Exchange(q)
+        e.safety = safetyNote(q)
         history += e
         live = ""
         e.answeredBy += MindJob.TALK
@@ -832,6 +836,7 @@ class Asking(private val app: PocketApp) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
@@ -856,6 +861,17 @@ class Asking(private val app: PocketApp) {
         else -> "it was being carried out."
     }.trimEnd()
 
+    /**
+     * 0.6.3: the note shown beneath her reply when his words hold one of his
+     * safety words; his own note when he keeps one. It never depends on her
+     * words; should his pocket not be read, the first words and note stand.
+     */
+    private fun safetyNote(said: String): String? = try {
+        Talking.note(said, app.pages)
+    } catch (e: Exception) {
+        if (Talking.unsafe(said, Talking.SAFETY_WORDS)) Talking.SAFETY_NOTE else null
+    }
+
     /** The name the conversation's file is offered under. */
     fun fileName(): String =
         "ask-" + java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", java.util.Locale.UK).format(java.time.LocalDateTime.now()) + ".txt"
@@ -867,8 +883,9 @@ class Asking(private val app: PocketApp) {
 
     private fun landed(c: Carried): String =
         c.landed.groupBy { it.step.block }.entries.joinToString("; ") { (block, writes) ->
-            val at = writes.mapNotNull { it.plan.landsAt?.takeIf { a -> a.isNotEmpty() } }
-            if (at.isEmpty()) "$block was written" else "$block was written at ${at.joinToString(", ")}"
+            // 0.6.3: where, in words; never by a line's number.
+            val beneath = writes.mapNotNull { w -> w.standing?.takeIf { w.plan.kind == com.phenomemental.pocketbeach.bsp.Kind.ADD && w.plan.address.isNotEmpty() } }
+            if (beneath.isEmpty()) "$block was written" else "$block was written, beneath " + beneath.joinToString(" and ") { Words.quoted(it) }
         }.ifEmpty { "nothing was written" } + "."
 
     /** A proposal's writes and post, a line each, as the saved conversation and the log keep them. */
@@ -898,7 +915,7 @@ class Asking(private val app: PocketApp) {
         e.proposal = listOfNotNull(e.writeLeft?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: describe(shown?.asked?.proposal)).joinToString("\n").ifEmpty { null }
         if (proposedHere) told = note
         scope.launch {
-            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(e.question, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
+            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(e.question, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note + (if (e.safety != null) " The safety note was shown beneath her reply." else ""), time)) } }
             changed()
         }
     }

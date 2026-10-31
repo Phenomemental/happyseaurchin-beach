@@ -139,7 +139,7 @@ internal fun talkAsks(engine: Engine, label: String, shelf: Shelf) {
                 a.planned?.proposal
             }
         }
-        println(Bench.talkLine(ask, reply, proposal, talked))
+        println(Bench.talkLine(ask, reply, proposal, talked, Talking.note(ask.question, pages)))
         println("  Her reply whole:\n  " + reply.replace("\n", "\n  "))
     }
 }
@@ -174,11 +174,46 @@ internal fun shellLab(engine: Engine, label: String, shelf: Shelf, seeds: List<I
                         thinkingConfig = ThinkingConfig(enableThinking = false),
                     ),
                 ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
-                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.tool, safety = ask.safety), reply, null)
+                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.tool, safety = ask.safety), reply, null, Talking.note(ask.question, pages))
                 if (problems.isEmpty()) right++
                 println("  ${ask.n} seed $seed: ${if (problems.isEmpty()) "right" else "WRONG"}: " + reply.replace("\n", " / ").take(260))
             }
             println("=> $way, ask ${ask.n}: right in $right of ${seeds.size}")
         }
     }
+}
+
+/**
+ * 0.6.3 (Matthew, 31 October): the bench's ask 24 as the app now asks it,
+ * her instruction as 0.6.3 makes it with his safety line on the turn, at
+ * the Talk job's settings, each reply with the note the app shows beneath
+ * it, judged as the bench judges it.
+ */
+@OptIn(ExperimentalApi::class)
+internal fun noteAsk(engine: Engine, label: String, shelf: Shelf, seeds: List<Int>) {
+    val now = ZonedDateTime.of(2026, 10, 31, 22, 10, 0, 0, ZoneId.of("Europe/London"))
+    val ask = Bench.TALK_ASKS.single { it.safety }
+    val (_, pages) = Bench.fixture(shelf, now.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
+    val system = Talking.instruction(HelloWorld.SHELL, pages, now, ask.question)
+    check(system.endsWith(Talking.SAFETY) && Talking.KEEPING in system && Talking.MEET in system)
+    val note = Talking.note(ask.question, pages)
+    println("\n== $label: ask ${ask.n}, the note beneath her reply: ${note ?: "none"} ==")
+    var right = 0
+    var noted = 0
+    for (seed in seeds) {
+        val start = System.nanoTime()
+        val reply = engine.createConversation(
+            ConversationConfig(
+                systemInstruction = Contents.of(system),
+                samplerConfig = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed), maxOutputToken = 300,
+                thinkingConfig = ThinkingConfig(enableThinking = false),
+            ),
+        ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
+        val ms = (System.nanoTime() - start) / 1_000_000
+        if (Bench.judgeTalk(ask, reply, null, note).isEmpty()) right++
+        if (!note.isNullOrBlank()) noted++
+        println("seed $seed: " + Bench.talkLine(ask, reply, null, ms, note))
+    }
+    println("=> $label, ask ${ask.n}: the note showed beneath her reply $noted of ${seeds.size}; the bench marked it right $right of ${seeds.size}")
+    println("=> with no note, a reply that urges him is still marked: " + Bench.judgeTalk(ask, "I'm worried about you. Please call someone you trust now, or 999 if you're in danger.", null, null))
 }

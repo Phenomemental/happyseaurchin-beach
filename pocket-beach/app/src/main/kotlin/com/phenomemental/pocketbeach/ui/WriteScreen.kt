@@ -86,8 +86,8 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
                             returnTo,
                             when {
                                 chosen.kind == Kind.CHANGE -> "Saved."
-                                result.wraps -> "Added at ${result.landsAt}. The block wrapped: the lines at its opening now stand one step beneath the opening line."
-                                else -> "Added at ${result.landsAt}."
+                                result.wraps -> "Added. The block wrapped: the lines at its opening now stand one step beneath the opening line."
+                                else -> "Added."
                             },
                         )
                         nav.back()
@@ -113,7 +113,7 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
                     screen.kind == Kind.ADD && screen.address.isEmpty() -> "Beneath the opening line of ${screen.block}"
                     screen.kind == Kind.ADD -> "Beneath ${Words.quoted(current)}"
                     screen.address.isEmpty() -> "The opening line of ${screen.block}"
-                    else -> "The line at ${screen.address}"
+                    else -> "The line ${Words.quoted(current)}"
                 },
                 style = Type.heading, color = ink.ink,
             )

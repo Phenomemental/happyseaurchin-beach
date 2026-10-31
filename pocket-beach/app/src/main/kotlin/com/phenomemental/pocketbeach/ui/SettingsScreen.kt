@@ -76,7 +76,10 @@ fun SettingsScreen(model: Model, nav: Nav) {
  * 0.6.2, part three: the words that say he isn't safe. When anything he
  * says holds one, her instruction for that turn carries the safety line and
  * no other. They are his to change once kept as a block, which is written
- * only when he taps; until then the app's first words are used.
+ * only when he taps; until then the app's first words are used. 0.6.3:
+ * and the app shows its note beneath her reply, whatever she says; the
+ * note is kept with the words, his to change. Words kept before 0.6.3 have
+ * no note until he taps to add it; till then the app's own note shows.
  */
 @Composable
 private fun SafetyWords(model: Model, nav: Nav) {
@@ -84,23 +87,34 @@ private fun SafetyWords(model: Model, nav: Nav) {
     val app = model.app
     val scope = rememberCoroutineScope()
     var kept by remember { mutableStateOf(app.pages.exists(Talking.SAFETY_BLOCK)) }
+    var noted by remember { mutableStateOf(Talking.keepsNote(app.pages)) }
     var problem by remember { mutableStateOf<String?>(null) }
     Column(Modifier.fillMaxWidth().testTag("safety"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
         Text("Safety words", style = Type.heading, color = ink.ink)
         Text(
             "When anything you say holds one of these, she is told you've said you aren't safe: to say plainly she's worried for you, and urge you " +
-                "to reach someone you trust, Samaritans on 116 123 at any hour, or 999 if you're in danger now.",
+                "to reach someone you trust, Samaritans on 116 123 at any hour, or 999 if you're in danger now. And beneath her reply, whatever she says, " +
+                "the app shows this note:",
             style = Type.small, color = ink.soft,
         )
+        Text(Talking.safetyNote(app.pages), style = Type.body, color = ink.ink, modifier = Modifier.testTag("safety-note-words"))
+        Text("The words:", style = Type.small, color = ink.soft)
         Text(Talking.safetyWords(app.pages).joinToString(", ") { "\u201c$it\u201d" }, style = Type.body, color = ink.ink, modifier = Modifier.testTag("safety-words"))
         if (kept) TextLink("Change them in your ${Talking.SAFETY_BLOCK} block", { nav.go(Screen.Block(Region.POCKET, Talking.SAFETY_BLOCK, "")) }, tag = "open-safety-words")
-        else TextLink("Keep them as a block you can change", {
+        else TextLink("Keep the words and the note as a block you can change", {
             scope.launch {
                 val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(Talking.SAFETY_BLOCK, Talking.safetyBlock())) }
-                if (done.ok) { kept = true; model.changed() } else problem = "They weren't kept: ${done.problem}"
+                if (done.ok) { kept = true; noted = true; model.changed() } else problem = "They weren't kept: ${done.problem}"
             }
         }, tag = "keep-safety-words")
+        // Kept before 0.6.3: the note isn't in his block yet, so it's the app's until he adds it.
+        if (kept && !noted) TextLink("Add the note to your ${Talking.SAFETY_BLOCK} block, to change it", {
+            scope.launch {
+                val why = withContext(Dispatchers.IO) { Talking.addNote(app.pages) }
+                if (why == null) { noted = true; model.changed() } else problem = "The note wasn't added: $why"
+            }
+        }, tag = "add-safety-note")
         problem?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("safety-problem")) }
     }
 }

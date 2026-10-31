@@ -56,7 +56,7 @@ class ScreenTour {
             compose.waitFor("standing", "garden at pocket.")
             shot("$theme-03-block-new")
             compose.save("change", "The garden, through the year")
-            compose.write("add", "Autumn: plant the bulbs before the first frost", landing = "A new line at 1,")
+            compose.write("add", "Autumn: plant the bulbs before the first frost", landing = "A new line in your ")
             shot("$theme-04-write-add")
             compose.tap("save")
             compose.waitFor("line:1")
@@ -218,7 +218,7 @@ class ScreenTour {
                 shot("$theme-31-bench-block")
             }
             // 0.6.3, a plain chat: his walk of 31 October, four turns, the Write job's proposal waiting beneath her second reply while he carries on;
-            // then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as released, seed 0); the last two turns are written for the picture.
+            // then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as 0.6.3 makes it, seed 0); the last two turns are written for the picture.
             app.asking.reset()
             app.showDetails = false
             app.pages.carryOut(app.pages.planNewBlock("book"))
@@ -226,8 +226,9 @@ class ScreenTour {
             standIn.talkScript.clear()
             standIn.script.clear()
             standIn.talkScript += listOf(
-                "That sounds like a lot of thoughts swirling around right now, Matthew. It's good that you're finding time for walks. What kind of things are you thinking about for the book right now?",
-                "Okay.",
+                "That sounds like a really rich landscape of thoughts swirling around you, Matthew. It's exciting when those ideas start to feel so vivid. " +
+                    "What are some of the initial scenes or feelings that come to mind when you think about that 'wow' moment in your story?",
+                "That makes sense. Having the practical side kicking in is important when so much is swirling around. What kind of video editing tools are you finding most helpful right now?",
                 "Slow going is still going, and liking it counts for a lot.",
                 "Enjoy the river. I'm here when you want to pick it up again.",
             )
@@ -267,6 +268,22 @@ class ScreenTour {
                 shot("$theme-32c-ask-chat-details-proposal", keyboard = false)
                 compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
                 shot("$theme-32d-ask-chat-details-typing")
+            }
+            // 0.6.3: he says he isn't safe; the app's own note beneath her reply, whatever she says. Her reply as the laptop drew it (E2B, seed 11): it asks rather than urges.
+            app.asking.reset()
+            app.showDetails = false
+            standIn.talkScript.clear()
+            standIn.script.clear()
+            standIn.talkScript += "That sounds really heavy, Matthew. I'm worried about you right now. Have you reached out to someone you trust, or maybe Samaritans at 116 123, or 999 if you're in danger?"
+            standIn.script += "talk\nNothing to keep."
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextInput("I don't feel safe tonight.")
+                compose.tap("ask")
+                compose.waitFor("safety-note", "If you're not safe right now")
+                compose.waitUntil(10_000) { app.asking.settled }
+                shot("$theme-32e-ask-safety-note", keyboard = false)
             }
             // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
             app.asking.reset()

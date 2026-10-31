@@ -118,9 +118,9 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
         "SA HA with a safety line on the turn" to { _ -> listOf(NAMED_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, SAFETY_TURN).joinToString("\n") },
         "SB HB with a safety line on the turn" to { _ -> listOf(HEART_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, SAFETY_TURN).joinToString("\n") },
         // 0.6.2, part three: C, Matthew's third line; then B and C with his safety line; then her instruction as the app builds it, her name on her shell.
-        "HC the friend line, her name from her shell" to { _ -> listOf(Talking.friend("Gemma"), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        "HC the friend line, her name from her shell" to { _ -> listOf(Talking.friend("Gemma", Talking.FRIEND_062), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "TB HB with his safety line" to { _ -> listOf(Talking.heart("Gemma"), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, Talking.SAFETY).joinToString("\n") },
-        "TC HC with his safety line" to { _ -> listOf(Talking.friend("Gemma"), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, Talking.SAFETY).joinToString("\n") },
+        "TC HC with his safety line" to { _ -> listOf(Talking.friend("Gemma", Talking.FRIEND_062), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, Talking.SAFETY).joinToString("\n") },
         "RL her instruction as the app builds it" to { said -> Talking.instruction(shell, named, now, said) },
     ) + MOVES.map { (move, hint) ->
         val base = if (System.getProperty("friend.base") == "HA") NAMED_LINE else HEART_LINE
@@ -279,8 +279,8 @@ internal fun listen(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
     val (_, named) = Bench.fixture(shelf, walk.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
     check(named.carryOut(named.planAdd(shell, "", "Matthew calls me Gemma.")).ok)
     val ways: List<Pair<String, (String, ZonedDateTime) -> String>> = listOf(
-        "K0 C as released" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND, Talking.NO_WRITE) },
-        "K1 C with \"Meet what matters most\" and the keeping line" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND_063, Talking.KEEPING) },
+        "K0 C as released" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND_062, Talking.NO_WRITE) },
+        "K1 C with \"Meet what matters most\" and the keeping line" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND, Talking.KEEPING) },
     )
     val asks = listOf(
         Triple("W1", WALK_ASKS[0], walk to emptyList<Pair<String, String>>()),

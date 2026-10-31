@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.width
@@ -41,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.phenomemental.pocketbeach.bsp.HelloWorld
@@ -234,6 +237,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             } + if (details) " ${secs} s" else ""
             if (line.isNotBlank()) Text(line.trim(), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"))
         }
+        // 0.6.3: when his safety words match, the app's own note beneath her reply, whatever she says.
+        e.safety?.let { SafetyNote(it) }
         // Behind the chat, the Write job looks at what he said; what it sets out comes here.
         if (e.checking) Text("Seeing whether there's anything to keep…", style = Type.small, color = ink.soft, modifier = Modifier.testTag("checking"))
         when (val w = e.waiting) {
@@ -298,7 +303,7 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             }
             else -> {}
         }
-        e.over?.let { over -> Ended(model, over) }
+        e.over?.let { over -> Ended(model, over, details) }
         // Offered under her reply while it's the last thing said: keeping his words in the block they name, and sorting them as his day.
         if (latest && !thinking) {
             e.keepIn?.let { block -> TextLink("Keep this in $block?", { asking.keep(e) }, tag = "keep-in") }
@@ -317,9 +322,9 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
 
 /** What saying yes wrote and posted, or the proposal that couldn't go ahead. */
 @Composable
-private fun Ended(model: Model, over: Asking.Stage.Over) {
+private fun Ended(model: Model, over: Asking.Stage.Over, details: Boolean) {
     val context = LocalContext.current
-    if (over.carried == null) over.shown?.asked?.proposal?.let { if (it.refusal != null) Writes(it) }
+    if (over.carried == null) over.shown?.asked?.proposal?.let { if (it.refusal != null) Writes(it, details) }
     when (val p = over.posted) {
         is Posted.Landed -> {
             Done("Posted to your pool at entry ${p.slot}.", detail = "pool:${p.pool} on beach.happyseaurchin.com", tag = "posted")
@@ -480,7 +485,7 @@ private fun ProposalParts(shown: Asking.Stage.Shown, details: Boolean) {
         SelectionContainer { Text(shown.asked.found.joinToString("\n\n"), style = Type.call, color = ink.soft) }
     }
     val p = shown.asked.proposal ?: return
-    Writes(p)
+    Writes(p, details)
     p.post?.let { post ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Label("Then it offers to post")
@@ -493,14 +498,14 @@ private fun ProposalParts(shown: Asking.Stage.Shown, details: Boolean) {
 }
 
 @Composable
-private fun Writes(p: Proposal) {
+private fun Writes(p: Proposal, details: Boolean) {
     val ink = LocalInk.current
     if (p.writes.isEmpty() && p.refusal == null) return
     Label(if (p.refusal == null) "What it proposes" else "What it proposed")
     Sheet(Modifier.testTag("writes")) {
         p.writes.forEachIndexed { i, w ->
             if (i > 0) Rule()
-            WriteRow(w)
+            WriteRow(w, details)
         }
         if (p.writes.isEmpty()) Text("Nothing could be planned.", style = Type.aside, color = ink.soft)
     }
@@ -508,13 +513,24 @@ private fun Writes(p: Proposal) {
 }
 
 @Composable
-private fun WriteRow(w: Planned) {
+private fun WriteRow(w: Planned, details: Boolean) {
     val ink = LocalInk.current
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("write"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing), style = Type.small, color = ink.ink)
         if (w.step.byApp) Text(byApp(w), style = Type.small, color = ink.crimson, modifier = Modifier.testTag("by-app"))
         w.shown?.let { Text(Words.quoted(it.replace("{{fingerprint}}", PRINT_SHOWN), 400), style = Type.body, color = ink.ink) }
-        SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft) }
+        // 0.6.3: the bsp call, with Details on.
+        if (details) SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft, modifier = Modifier.testTag("call")) }
+    }
+}
+
+/** 0.6.3: the app's own note beneath her reply when his safety words match; its words are his to change, with his safety words. */
+@Composable
+private fun SafetyNote(note: String) {
+    val ink = LocalInk.current
+    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).background(ink.wash).semantics(mergeDescendants = true) {}.testTag("safety-note")) {
+        Box(Modifier.width(3.dp).fillMaxHeight().background(ink.crimson))
+        Text(note, style = Type.body, color = ink.ink, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
     }
 }
 
@@ -538,7 +554,7 @@ private fun Written(model: Model, seal: String, carried: com.phenomemental.pocke
         carried.landed.forEachIndexed { i, w ->
             if (i > 0) Rule()
             Text(
-                (if (w.plan.landsAt.isNullOrEmpty()) w.plan.block else "${w.plan.block} at ${w.plan.landsAt}") + ": " + Words.quoted(w.text ?: w.plan.text, 200),
+                w.plan.block + ": " + Words.quoted(w.text ?: w.plan.text, 200),
                 style = Type.small, color = ink.ink, modifier = Modifier.padding(vertical = 6.dp),
             )
         }
