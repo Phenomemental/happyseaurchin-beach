@@ -421,7 +421,9 @@ class Asking(private val app: PocketApp) {
             // a name for her is one line on her shell, by code; asked to keep with no block of his named, the app asks him where.
             stage = Stage.Writing
             val earlier = history.takeWhile { it !== e }.map { it.question }
-            when (val way = withContext(Dispatchers.IO) { runCatching { Keeping.way(q, earlier, app.pages) }.getOrDefault(Keeping.Way.Talk) }) {
+            val gate = withContext(Dispatchers.IO) { runCatching { Keeping.way(q, earlier, app.pages) } }
+            gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
+            when (val way = gate.getOrDefault(Keeping.Way.Talk)) {
                 is Keeping.Way.Write -> {
                     e.checking = true
                     writes.addLast(e)
@@ -745,7 +747,16 @@ class Asking(private val app: PocketApp) {
     /** 0.6.4: the blocks his day's Yes will write, by name, before he taps it. */
     fun dayWrites(d: Stage.Day): List<String> = runCatching {
         Landing.writes(Landing.landed(d.lines, d.said, System.currentTimeMillis()) { stored(it) })
-    }.getOrDefault(emptyList())
+    }.getOrElse { t -> failed("the day's blocks", t); emptyList() }
+
+    /** What last went wrong where the app reads his words for itself, for Details and the device tests; never silent. */
+    var failure: String? = null
+        private set
+
+    private fun failed(where: String, t: Throwable) {
+        android.util.Log.w("Asking", "$where failed", t)
+        failure = "$where: $t" + (t.cause?.let { " (cause: $it)" } ?: "") + " at " + t.stackTrace.take(4).joinToString(" < ")
+    }
 
     /** The exchange whose [waiting] is of [kind], the newest. */
     private inline fun <reified T : Stage> waitingOn(): Exchange? = history.lastOrNull { it.waiting is T }

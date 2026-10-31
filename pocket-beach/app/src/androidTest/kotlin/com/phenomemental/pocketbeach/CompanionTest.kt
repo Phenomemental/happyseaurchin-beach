@@ -385,7 +385,9 @@ class CompanionTest {
             compose.waitFor("bench-saved", "Kept as bench-models-", timeoutMs = 60_000)
         }
         val made = (app.storage.names().toSet() - before).single()
-        val models = app.pages.position(Region.POCKET, made, "2")!!
+        // 0.6.4: the Keep asks first, then each model.
+        assertEquals("The Keep asks, each model: what the app does with his words, by the principles", app.pages.position(Region.POCKET, made, "2")!!.text)
+        val models = app.pages.position(Region.POCKET, made, "3")!!
         assertEquals("Each model on this phone: its speed, the Talk job, and the telling test", models.text)
         assertEquals("each model an entry of its own", listOf("Gemma 4 E2B", "Gemma 4 E4B"), models.lines.map { it.text })
         val lines = models.lines.flatMap { m -> app.pages.position(Region.POCKET, made, m.address)!!.lines.mapNotNull { it.text } }
