@@ -63,6 +63,14 @@ import java.time.ZonedDateTime
  * words could be a day); her conversation is opened afresh for each message,
  * the date, the time and her shell in her instruction and his turn his words
  * alone; and a line of her reply that plays her turn back is never shown.
+ *
+ * 0.6.3, a plain chat: [stage] is the turn in hand only, his next line
+ * being written or her reply (or his day) coming. Her reply shows and the
+ * box is ready at once; the Write job runs after it, behind the chat, one
+ * exchange at a time, and gives way when he says the next thing (it runs
+ * again once she has answered). What waits on his answer (a proposal, which
+ * line she meant, his day, a post) waits on its own exchange in the thread
+ * ([Exchange.waiting]) while he carries on.
  */
 class Asking(private val app: PocketApp) {
     sealed interface Stage {
@@ -77,7 +85,7 @@ class Asking(private val app: PocketApp) {
         /** The writes landed (or one didn't); the post, if one was offered, waits on its own Yes. */
         class Written(val shown: Shown, val carried: Carried) : Stage
         class Posting(val written: Written, val message: PoolMessage) : Stage
-        /** The Ask is over and logged: [note] says how it ended. */
+        /** The exchange is over and logged: [note] says how it ended. */
         class Over(val shown: Shown?, val carried: Carried?, val posted: Posted?, val note: String) : Stage
         /** His day, sorted: her reply, and every line of the landing, to untick or move before Yes. [pieces], how many she placed. */
         class Day(val shown: Shown, val said: String, val sorting: Landing.Sorting, val lines: List<Landing.Line>, val pieces: Int) : Stage
@@ -101,62 +109,105 @@ class Asking(private val app: PocketApp) {
     /** Whether a job's conversation is in use now: for the device tests to say, when a wait times out. */
     val lockedForTests: Boolean get() = talking.isLocked
 
-    /** Her reply is in, and the Write job is seeing whether his words ask for a write. */
-    var checking by mutableStateOf(false)
-        private set
-
-    /** Her reply is in, and the Sort job is placing his day: pieces placed, of how many; null when it isn't. */
-    var sorting by mutableStateOf<Pair<Int, Int>?>(null)
-        private set
-
     /** Her words so far, as they stream in. */
     var live by mutableStateOf("")
         private set
 
-    /** The block Matthew's words named when she only talked: the app offers to keep them there ("Keep this in Million?"). */
-    var keepIn by mutableStateOf<String?>(null)
-        private set
-
     /**
-     * An exchange of this Ask screen's conversation, as the page shows it:
-     * his words, her reply, how it ended and how long it took, when he said
-     * it ([at]), and what came of a proposal ([outcome], null when there
-     * was none).
+     * An exchange of the conversation, as the thread shows it: his words, her
+     * reply, and what came of it. 0.6.3: what waits on his answer waits here
+     * ([waiting]) while he carries on, and the Write job's look at his words
+     * comes after her reply ([checking]).
      */
-    class Exchange(
-        val question: String,
-        val said: String,
-        val note: String,
-        val time: String,
-        val at: Long = System.currentTimeMillis(),
-        val outcome: String? = null,
+    class Exchange(val question: String, val at: Long = System.currentTimeMillis()) {
+        /** Her reply, as shown: never a line playing her turn back. */
+        var said by mutableStateOf("")
+            internal set
+        /** How it ended, once it has; empty while it hasn't. */
+        var note by mutableStateOf("")
+            internal set
+        /** 0.6.3: the safety note shown beneath her reply when his safety words match, whatever she says; null otherwise. */
+        var safety by mutableStateOf<String?>(null)
+            internal set
+        /** Her answer's time and chip, for Details and the log. */
+        var time by mutableStateOf("")
+            internal set
+        /** What came of a proposal; null when there was none. */
+        var outcome by mutableStateOf<String?>(null)
+            internal set
+        /** What waits on his answer beneath her reply: a proposal, which line she meant, his day, a post. */
+        var waiting by mutableStateOf<Stage?>(null)
+            internal set
+        /** How it ended, with what was written and posted, once it has. */
+        var over by mutableStateOf<Stage.Over?>(null)
+            internal set
+        /** The Write job is seeing whether his words ask for something to be kept, or waits to. */
+        var checking by mutableStateOf(false)
+            internal set
+        /** His day being placed, a piece at a time: placed, of how many. */
+        var sorting by mutableStateOf<Pair<Int, Int>?>(null)
+            internal set
+        /** His words could be a day ([Landing.isTelling]): "Sort as my day" is offered under her reply while it's the last thing said. */
+        var sortable by mutableStateOf(false)
+            internal set
+        /** The block his words named when she only talked: the app offers to keep them there ("Keep this in Million?"). */
+        var keepIn by mutableStateOf<String?>(null)
+            internal set
+        /** For the saved conversation: when "Sort as my day" was offered, and when he tapped it. */
+        var sortOffered: Long? = null
+            internal set
+        var sortTapped: Long? = null
+            internal set
         /** 0.6.1, for the saved conversation: which model and settings answered each job. */
-        val jobs: String = "",
+        var jobs = ""
+            internal set
         /** The proposal whole, as he saw it; null when there was none. */
-        val proposal: String? = null,
+        var proposal: String? = null
+            internal set
         /** The lines of her reply left out, as her turn played back. */
-        val copied: List<String> = emptyList(),
-    )
+        var copied: List<String> = emptyList()
+            internal set
+        /** How long her reply took, where it ran, when her first words showed; her answer as shown. */
+        internal var took: Long? = null
+        internal var pace: Pace? = null
+        internal var firstShown: Long? = null
+        internal var shown: Stage.Shown? = null
+        /** Her turn as the engine had it: his words and hers. */
+        internal var talk: List<Pair<String, String>> = emptyList()
+        /** How his last proposal ended, when he said this: told her, and the Write job. */
+        internal var told: String? = null
+        /** He sorted it as his day: a Write proposal still to come is left, and one waiting is kept as left. */
+        internal var dropped = false
+        internal var writeLeft: String? = null
+        internal val answeredBy = linkedSetOf<MindJob>()
+        internal val jobMs = java.util.concurrent.ConcurrentHashMap<MindJob, Long>()
+    }
 
-    /** His words could be a day ([Landing.isTelling]): "Sort as my day" is offered under her reply. */
-    var sortable by mutableStateOf(false)
-        private set
+    /** The Write job is on an exchange, or one waits for it. */
+    val checking: Boolean get() = history.any { it.checking }
 
-    /** The jobs that answered this ask, for the saved conversation. */
-    private val answeredBy = linkedSetOf<MindJob>()
-    /** How long each job took on the last thing he said. */
-    private val jobMs = java.util.concurrent.ConcurrentHashMap<MindJob, Long>()
+    /** His day being placed: pieces placed, of how many; null when it isn't. */
+    val sorting: Pair<Int, Int>? get() = history.firstNotNullOfOrNull { it.sorting }
 
-    /** The lines of her last reply left out, as her turn played back. */
-    private var lastCopied: List<String> = emptyList()
+    /** "Sort as my day" is offered under her last reply. */
+    val sortable: Boolean get() = history.lastOrNull()?.sortable == true
+
+    /** The block his last words named, when she only talked: "Keep this in …?". */
+    val keepIn: String? get() = history.lastOrNull()?.keepIn
+
+    /** What waits on his answer, the newest. */
+    val waiting: Stage? get() = history.lastOrNull { it.waiting != null }?.waiting
+
+    /** Nothing in hand: her last reply is in, the Write job has looked, and it is over or waits on his answer. For the device tests. */
+    val settled: Boolean get() = stage !is Stage.Thinking && history.none { it.checking } && history.lastOrNull()?.let { it.over != null || it.waiting != null } == true
+
+    /** Her reply coming, or something he said yes to being written: the bench waits. */
+    val busy: Boolean get() = stage is Stage.Thinking || history.any { it.waiting is Stage.Carrying || it.waiting is Stage.Posting || it.waiting is Stage.DayWriting }
 
     /** How his last proposal ended, for her instruction as her conversation is opened for his next message. */
     private var talkNote: String? = null
     /** What he has just said: her instruction reads her the blocks it names. */
     private var talkSaid = ""
-
-    /** The exchange a day sorted on his tap continues: taken back from [history], to be kept whole with the day. */
-    private var dayFrom: Exchange? = null
 
     /** The exchanges so far, oldest first. */
     val history = mutableStateListOf<Exchange>()
@@ -165,7 +216,7 @@ class Asking(private val app: PocketApp) {
     private val context = MindJob.values().associateWith { ArrayDeque<Pair<String, String>>() }
 
     /** Her talk since the Write job was last asked: told it the next time it is, since it doesn't see turns it sat out. */
-    private val unseen = mutableListOf<Pair<String, String>>()
+    private val unseen = mutableListOf<Exchange>()
 
     /** How her last act ended (yes, not now), told her with the next ask, since she can't see it otherwise. */
     private var told: String? = null
@@ -176,8 +227,12 @@ class Asking(private val app: PocketApp) {
     var question by mutableStateOf("")
     var stage by mutableStateOf<Stage>(Stage.Writing)
         private set
-    private var asked: String = ""
-    private var askedAt = 0L
+
+    /** The exchanges waiting for the Write job, oldest first; the one it is on; whether it gave way to her reply. */
+    private val writes = ArrayDeque<Exchange>()
+    private var writingNow: Exchange? = null
+    private var yielded = false
+    private var writer: Job? = null
 
     /** The shell's opening line as it stands in the pocket. */
     fun shellOpening(): String = app.pages.position(Region.POCKET, HelloWorld.SHELL)?.text ?: HelloWorld.SHELL_OPENING
@@ -281,37 +336,40 @@ class Asking(private val app: PocketApp) {
         return t
     }
 
+    /**
+     * He says the next thing: the box empties, her reply streams in, and the
+     * box is ready again as soon as it has. What was offered under her last
+     * reply lapses; a proposal waiting stays, for his answer; and the Write
+     * job, if it is on something, gives way to her reply.
+     */
     fun ask() {
         val q = question.trim()
-        if (q.isEmpty() || benchRunning || stage !is Stage.Writing && stage !is Stage.Over) return
-        asked = q
-        askedAt = System.currentTimeMillis()
+        if (q.isEmpty() || benchRunning || stage is Stage.Thinking) return
+        question = ""
+        history.lastOrNull()?.let { it.sortable = false; it.keepIn = null }
+        yieldWrite()
+        val e = Exchange(q)
+        e.safety = safetyNote(q)
+        history += e
         live = ""
-        keepIn = null
-        checking = false
-        sortable = false
-        dayFrom = null
-        answeredBy.clear()
-        jobMs.clear()
-        answeredBy += MindJob.TALK
-        lastCopied = emptyList()
+        e.answeredBy += MindJob.TALK
+        e.told = told.also { told = null }
         stage = Stage.Thinking(System.currentTimeMillis())
         job = scope.launch {
             val started = System.nanoTime()
             var pace: Pace? = null
             var firstShown: Long? = null
-            val note = told.also { told = null }
             // Her reply, streamed as she writes it.
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
                     talking.withLock {
                         // Her conversation is opened afresh for each message, so her instruction's time is now, and how his last proposal ended.
                         stale += MindJob.TALK
-                        talkNote = note
+                        talkNote = e.told
                         talkSaid = q
                         val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
-                        val first = history.isEmpty()
+                        val first = history.size == 1
                         // His turn is his words alone.
                         val message = Talking.said(q)
                         val opening = shellOpening()
@@ -329,56 +387,110 @@ class Asking(private val app: PocketApp) {
                         }
                         // 0.6.2: the GPU failed her answer and that engine was closed: every conversation on it is opened again, on the CPU.
                         if (Pace.GPU_FAILED in t.pace.notes) stale += MindJob.values()
-                        lastCopied = Talking.copied(reply, q, opening)
-                        jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
+                        e.copied = Talking.copied(reply, q, opening)
+                        e.jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
                         message to Talking.unechoed(reply, q, opening)
                     }
                 }
             }
-            val (message, said) = talked.getOrElse { e ->
-                if (stage is Stage.Thinking) end(null, null, null, "The companion couldn't answer: ${e.message ?: e::class.simpleName}.", (System.nanoTime() - started) / 1_000_000, pace)
+            if (stage !is Stage.Thinking) return@launch
+            e.took = (System.nanoTime() - started) / 1_000_000
+            e.pace = pace
+            e.firstShown = firstShown
+            val (message, said) = talked.getOrElse { ex ->
+                live = ""
+                stage = Stage.Writing
+                finish(e, null, "The companion couldn't answer: ${ex.message ?: ex::class.simpleName}.")
+                runWrites()
                 return@launch
             }
-            live = said
+            e.said = said
+            e.talk = listOf(message to said)
+            e.time = timeLine(e, pace, e.talk.size)
+            live = ""
             // What she said, never her turn played back, is what she is given again: his words and hers.
             remember(MindJob.TALK, Talking.said(q), said.ifBlank { "…" })
             // 0.6.1: his words could be a day: "Sort as my day" is offered under her reply. Nothing is sorted unless he asks.
-            sortable = withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
-            // Then, if his words may ask for a write, what the Write job proposes.
-            val written = if (!Talking.mayWrite(q)) null else {
-                checking = true
-                withContext(Dispatchers.IO) {
-                    runCatching {
-                        talking.withLock {
-                            val writeStarted = System.nanoTime()
-                            val w = talker(MindJob.WRITE)
-                            val before = w.pace.turns.size
-                            val sinceLast = unseen.takeLast(3).joinToString(" ") { (his, hers) -> "Matthew said: ${Words.quoted(his, 200)}; the companion said: ${Words.quoted(hers, 200)}." }
-                            val a = Talks.ask(
-                                q, w.stream, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), { System.currentTimeMillis() },
-                                before = listOfNotNull(sinceLast.takeIf(String::isNotEmpty)?.let { "Since you were last asked: $it" }, note, Talks.forMessage(HelloWorld.SHELL, app.pages, q)).joinToString(" ").ifEmpty { null },
-                                answerReads = false,
-                            )
-                            pace?.turns?.addAll(w.pace.turns.drop(before))
-                            if (Pace.GPU_FAILED in w.pace.notes) { pace?.gpuFailed(); stale += MindJob.values() }
-                            app.cpuWhy(MindJob.WRITE)?.let { pace?.notes?.add("Write ran on the CPU: $it.") }
-                            answeredBy += MindJob.WRITE
-                            jobMs[MindJob.WRITE] = (System.nanoTime() - writeStarted) / 1_000_000
-                            a
-                        }
-                    }
-                }.also { checking = false }
+            e.sortable = withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
+            if (e.sortable) e.sortOffered = System.currentTimeMillis()
+            unseen += e
+            // The box is ready: then, behind the chat, if his words may ask for a write, the Write job looks at them.
+            stage = Stage.Writing
+            if (Talking.mayWrite(q)) {
+                e.checking = true
+                writes.addLast(e)
+            } else {
+                answered(e, talkOnly(e), emptyMap())
             }
-            unseen += q to said
-            if (written != null) unseen.clear()
-            val took = (System.nanoTime() - started) / 1_000_000
-            val talk = Talks.Answered(Talks.Route.TALK, said, emptyList(), null, null, listOf(message to said))
-            val a = written?.getOrNull()?.let { w ->
-                remember(MindJob.WRITE, Talks.SAYS + asked, w.exchanges.lastOrNull()?.second.orEmpty())
-                if (w.route == Talks.Route.ACT) Talks.Answered(w.route, said, w.found, w.planned, w.problem, talk.exchanges + w.exchanges, w.actions) else null
-            } ?: talk
-            answered(a, emptyMap(), took, pace, firstShown, writeFailed = written?.exceptionOrNull())
+            runWrites()
         }
+    }
+
+    /** Her turn alone, as an answer: she talked. */
+    private fun talkOnly(e: Exchange) = Talks.Answered(Talks.Route.TALK, e.said, emptyList(), null, null, e.talk)
+
+    /**
+     * The Write job, behind the chat: one exchange at a time, oldest first,
+     * and never while her reply or his day is coming. Its proposal appears
+     * beneath her reply when it's ready.
+     */
+    private fun runWrites() {
+        if (stage is Stage.Thinking || writingNow != null || benchRunning) return
+        val e = writes.removeFirstOrNull() ?: return
+        writingNow = e
+        yielded = false
+        writer = scope.launch {
+            val started = System.nanoTime()
+            val since = unseen.takeWhile { it !== e }.takeLast(3)
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    talking.withLock {
+                        val w = talker(MindJob.WRITE)
+                        val before = w.pace.turns.size
+                        val sinceLast = since.joinToString(" ") { x -> "Matthew said: ${Words.quoted(x.question, 200)}; the companion said: ${Words.quoted(x.said, 200)}." }
+                        val a = Talks.ask(
+                            e.question, w.stream, app.pages, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), { System.currentTimeMillis() },
+                            before = listOfNotNull(sinceLast.takeIf(String::isNotEmpty)?.let { "Since you were last asked: $it" }, e.told, Talks.forMessage(HelloWorld.SHELL, app.pages, e.question)).joinToString(" ").ifEmpty { null },
+                            answerReads = false,
+                        )
+                        e.pace?.turns?.addAll(w.pace.turns.drop(before))
+                        if (Pace.GPU_FAILED in w.pace.notes) { e.pace?.gpuFailed(); stale += MindJob.values() }
+                        app.cpuWhy(MindJob.WRITE)?.let { e.pace?.notes?.add("Write ran on the CPU: $it.") }
+                        a
+                    }
+                }
+            }
+            writingNow = null
+            when {
+                // He sorted it as his day: what the Write job had to say is let go.
+                e.dropped -> {}
+                // It gave way to her reply: it runs again after.
+                yielded -> writes.addFirst(e)
+                else -> {
+                    e.checking = false
+                    e.answeredBy += MindJob.WRITE
+                    e.jobMs[MindJob.WRITE] = (System.nanoTime() - started) / 1_000_000
+                    // Her talk up to this exchange has now been told the Write job.
+                    val i = unseen.indexOf(e)
+                    if (i >= 0) repeat(i + 1) { unseen.removeAt(0) }
+                    val a = result.getOrNull()?.let { w ->
+                        remember(MindJob.WRITE, Talks.SAYS + e.question, w.exchanges.lastOrNull()?.second.orEmpty())
+                        if (w.route == Talks.Route.ACT) Talks.Answered(w.route, e.said, w.found, w.planned, w.problem, e.talk + w.exchanges, w.actions) else null
+                    } ?: talkOnly(e)
+                    answered(e, a, emptyMap(), writeFailed = result.exceptionOrNull())
+                }
+            }
+            runWrites()
+        }
+    }
+
+    /** The Write job gives way: what it is on is stopped, and asked again once her reply is in. */
+    private fun yieldWrite() {
+        if (writingNow == null) return
+        yielded = true
+        kept[MindJob.WRITE]?.talker?.stop()
+        // A conversation stopped part way can't be asked again: it is opened afresh.
+        stale += MindJob.WRITE
     }
 
     /** His structure block as it stands: the six named, the hand and the rungs; his structure as first given when there is none yet. */
@@ -387,15 +499,16 @@ class Asking(private val app: PocketApp) {
     private fun stored(name: String): Js? = app.storage.read(name)?.let(::parseJson)
 
     /**
-     * Sort [said] as his day, after her reply [talked]: each piece placed by
-     * the Sort job in a conversation of its own, its when by his time words,
-     * a piece near a card put to her yes or no, then the rungs; the lines
-     * shown as one proposal.
+     * Sort [e]'s words as his day, after her reply: each piece placed by the
+     * Sort job in a conversation of its own, its when by his time words, a
+     * piece near a card put to her yes or no, then the rungs; the lines shown
+     * as one proposal beneath her reply.
      */
-    private suspend fun day(said: String, talked: Stage.Shown, started: Long) {
-        answeredBy += MindJob.SORT
+    private suspend fun day(e: Exchange, talked: Stage.Shown, started: Long) {
+        val said = e.question
+        e.answeredBy += MindJob.SORT
         val names = withContext(Dispatchers.IO) { runCatching { Landing.names(app.pages) }.getOrDefault(setOf("gemma")) }
-        sorting = 0 to Telling.cut(said, names).size
+        e.sorting = 0 to Telling.cut(said, names).size
         val outcome = withContext(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
@@ -411,9 +524,9 @@ class Asking(private val app: PocketApp) {
                     fun ask(system: String?, message: String, s: com.phenomemental.pocketbeach.model.JobSettings): String = kotlinx.coroutines.runBlocking {
                         val a = try {
                             app.mind.ask(system, message, s)
-                        } catch (e: Throwable) {
-                            if (e is kotlinx.coroutines.CancellationException || kept.isEmpty()) throw e
-                            android.util.Log.w("Asking", "A conversation of its own couldn't be opened beside hers; hers are let go while the day is sorted.", e)
+                        } catch (ex: Throwable) {
+                            if (ex is kotlinx.coroutines.CancellationException || kept.isEmpty()) throw ex
+                            android.util.Log.w("Asking", "A conversation of its own couldn't be opened beside hers; hers are let go while the day is sorted.", ex)
                             together = false
                             closeAll()
                             app.mind.ask(system, message, s)
@@ -425,7 +538,7 @@ class Asking(private val app: PocketApp) {
                     var placed = 0
                     val (pieces, steps) = Telling.sorted(
                         said, today, words, state,
-                        judge = { piece -> ask(instruction, Telling.aloneAsk(piece, said), settings).also { sorting = ++placed to (sorting?.second ?: placed) } },
+                        judge = { piece -> ask(instruction, Telling.aloneAsk(piece, said), settings).also { e.sorting = ++placed to (e.sorting?.second ?: placed) } },
                         about = { piece, card -> Telling.yes(ask(null, Telling.cardAsk(piece, said, card), settings)) },
                         names = names,
                     )
@@ -435,43 +548,48 @@ class Asking(private val app: PocketApp) {
                 }
             }
         }
-        sorting = null
+        e.sorting = null
+        if (stage !is Stage.Thinking) return
         val took = (System.nanoTime() - started) / 1_000_000
-        jobMs[MindJob.SORT] = took
-        outcome.onFailure { e ->
-            if (stage is Stage.Thinking) end(Stage.Shown(talked.asked, took, talked.pace, talked.firstShown), null, null, "She talked. Your day couldn't be sorted: ${e.message ?: e::class.simpleName}.", took)
+        e.jobMs[MindJob.SORT] = took
+        stage = Stage.Writing
+        outcome.onFailure { ex ->
+            finish(e, talked, "She talked. Your day couldn't be sorted: ${ex.message ?: ex::class.simpleName}.")
         }.onSuccess { (sorted, pieces, pace) ->
-            if (stage !is Stage.Thinking) return@onSuccess
-            stage = Stage.Day(Stage.Shown(talked.asked, took, pace, talked.firstShown), said, sorted, sorted.lines, pieces)
+            e.waiting = Stage.Day(Stage.Shown(talked.asked, took, pace, talked.firstShown), said, sorted, sorted.lines, pieces)
         }
+        runWrites()
     }
 
+    /** The exchange whose day waits on his answer, the newest. */
+    private fun dayOf(): Exchange? = history.lastOrNull { it.waiting is Stage.Day }
+
     /** Untick or tick the [i]th line of the day. */
-    fun tick(i: Int) {
-        val d = stage as? Stage.Day ?: return
+    fun tick(i: Int, e: Exchange? = dayOf()) {
+        val d = e?.waiting as? Stage.Day ?: return
         val l = d.lines.getOrNull(i) ?: return
         if (l.place == null) return
-        stage = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.copy(ticked = !l.ticked) }, d.pieces)
+        e.waiting = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.copy(ticked = !l.ticked) }, d.pieces)
     }
 
     /** He corrects a word the phone misheard in the [i]th line ("torque" to "talk"): his correction is his words. */
-    fun correct(i: Int, words: String) {
-        val d = stage as? Stage.Day ?: return
+    fun correct(i: Int, words: String, e: Exchange? = dayOf()) {
+        val d = e?.waiting as? Stage.Day ?: return
         val l = d.lines.getOrNull(i) ?: return
-        stage = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.correctedTo(words) }, d.pieces)
+        e.waiting = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.correctedTo(words) }, d.pieces)
     }
 
     /** Move the [i]th line of the day to [place], ticked: kept as a worked example once he says yes. */
-    fun move(i: Int, place: String) {
-        val d = stage as? Stage.Day ?: return
+    fun move(i: Int, place: String, e: Exchange? = dayOf()) {
+        val d = e?.waiting as? Stage.Day ?: return
         val l = d.lines.getOrNull(i) ?: return
-        stage = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.movedTo(place) }, d.pieces)
+        e.waiting = Stage.Day(d.shown, d.said, d.sorting, d.lines.toMutableList().also { it[i] = l.movedTo(place) }, d.pieces)
     }
 
     /** Matthew said yes to his day: each block whole, in order, each only if it still stands as planned; his moves kept as examples. */
-    fun yesToDay() {
-        val d = stage as? Stage.Day ?: return
-        stage = Stage.DayWriting(d)
+    fun yesToDay(e: Exchange? = dayOf()) {
+        val d = e?.waiting as? Stage.Day ?: return
+        e.waiting = Stage.DayWriting(d)
         scope.launch {
             val done = withContext(Dispatchers.IO) {
                 runCatching {
@@ -500,92 +618,98 @@ class Asking(private val app: PocketApp) {
                 },
                 onFailure = { "Matthew said yes to his day, but it couldn't be written: ${it.message ?: it::class.simpleName}." },
             )
-            end(d.shown, null, null, note, d.shown.took, proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Yes")
+            finish(e, d.shown, note, proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Yes")
         }
     }
 
     /** Matthew said not now to his day: nothing is written. */
-    fun notNowToDay() {
-        val d = stage as? Stage.Day ?: return
-        end(d.shown, null, null, "Matthew said not now to his day.", d.shown.took, proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Not now")
+    fun notNowToDay(e: Exchange? = dayOf()) {
+        val d = e?.waiting as? Stage.Day ?: return
+        finish(e, d.shown, "Matthew said not now to his day.", proposed = true, proposal = Landing.describe(d.lines, d.sorting.invented) + "\n  His answer: Not now")
     }
 
     /**
-     * 0.6.1: sort the last thing he said as his day, on his tap of "Sort as
-     * my day" under her reply, and only then. A Write proposal still waiting
-     * is left as not taken, and logged so.
+     * 0.6.1: sort what he said as his day, on his tap of "Sort as my day"
+     * under her reply, and only then. A Write proposal waiting, or still to
+     * come, is left as not taken, and the saved conversation says so.
      */
-    fun sortAsDay() {
-        if (benchRunning || !sortable) return
-        val talked = when (val s = stage) {
-            is Stage.Over -> s.shown
-            is Stage.Shown -> s.also { end(it, null, null, "Matthew sorted it as his day instead.", it.took) }
-            else -> null
-        } ?: return
-        // The day continues the exchange just ended, its jobs and times kept: his words and hers are shown once.
-        dayFrom = history.removeLastOrNull()
-        sortable = false
+    fun sortAsDay(e: Exchange? = history.lastOrNull()) {
+        if (e == null || benchRunning || !e.sortable || stage is Stage.Thinking) return
+        e.sortable = false
+        e.sortTapped = System.currentTimeMillis()
+        if (e.checking) {
+            e.checking = false
+            e.dropped = true
+            writes.remove(e)
+            if (writingNow === e) { kept[MindJob.WRITE]?.talker?.stop(); stale += MindJob.WRITE }
+        }
+        (e.waiting as? Stage.Shown)?.let { s -> e.writeLeft = describe(s.asked.proposal) }
+        if (e.waiting is Stage.Shown || e.waiting is Stage.Choosing || e.waiting is Stage.Declining) e.waiting = null
+        val talked = e.shown ?: Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown)
         stage = Stage.Thinking(System.currentTimeMillis())
-        job = scope.launch { day(asked, talked, System.nanoTime()) }
+        job = scope.launch { day(e, talked, System.nanoTime()) }
     }
 
-    /** Her answer: talk ends the Ask with her words; a proposal is shown for Yes, or a quote is put to Matthew first. */
-    private fun answered(a: Talks.Answered, chosen: Map<Int, String>, took: Long, pace: Pace?, firstShown: Long?, writeFailed: Throwable? = null) {
-        val shown = Stage.Shown(asAsked(a), took, pace, firstShown)
+    /** Her answer, once the Write job has looked: talk ends the exchange with her words; a proposal waits beneath them for Yes, or a quote is put to Matthew first. */
+    private fun answered(e: Exchange, a: Talks.Answered, chosen: Map<Int, String>, writeFailed: Throwable? = null) {
+        val shown = Stage.Shown(asAsked(a), e.took ?: 0, e.pace, e.firstShown)
+        e.shown = shown
         val planned = a.planned
         when {
-            writeFailed != null -> end(shown, null, null, "She talked. The Write job couldn't answer: ${writeFailed.message ?: writeFailed::class.simpleName}.", took)
+            writeFailed != null -> finish(e, shown, "She talked. The Write job couldn't answer: ${writeFailed.message ?: writeFailed::class.simpleName}.")
             a.route == Talks.Route.TALK -> {
-                // What he told her names one of his blocks, and nothing was proposed: the app offers to keep it there.
-                keepIn = Talks.keepIn(asked, app.pages)
-                end(shown, null, null, "She talked.", took)
+                // What he told her names one of his blocks, and nothing was proposed: the app offers to keep it there, while it's the last thing said.
+                if (e === history.lastOrNull()) e.keepIn = Talks.keepIn(e.question, app.pages)
+                finish(e, shown, "She talked.")
             }
-            a.route == Talks.Route.READ -> end(shown, null, null, "She read ${a.found.size} block${if (a.found.size == 1) "" else "s"}, then answered.", took)
-            a.problem != null -> end(shown, null, null, "Her proposal couldn't go ahead: ${a.problem}", took)
-            planned?.choose != null -> stage = Stage.Choosing(a, chosen, took, pace)
-            planned?.proposal?.asks != true -> end(shown, null, null, planned?.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.", took)
-            else -> stage = shown
+            a.route == Talks.Route.READ -> finish(e, shown, "She read ${a.found.size} block${if (a.found.size == 1) "" else "s"}, then answered.")
+            a.problem != null -> finish(e, shown, "Her proposal couldn't go ahead: ${a.problem}")
+            planned?.choose != null -> e.waiting = Stage.Choosing(a, chosen, e.took ?: 0, e.pace)
+            planned?.proposal?.asks != true -> finish(e, shown, planned?.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.")
+            else -> e.waiting = shown
         }
     }
 
     /** Matthew tapped "Keep this in …?": his words, as he said them, planned as a line added to that block, for Yes. */
-    fun keep() {
-        val block = keepIn ?: return
-        val over = stage as? Stage.Over ?: return
-        keepIn = null
+    fun keep(e: Exchange? = history.lastOrNull()) {
+        val block = e?.keepIn ?: return
+        e.keepIn = null
         scope.launch {
-            val actions = listOf(Acts.Action.Add(block, null, asked))
+            val actions = listOf(Acts.Action.Add(block, null, e.question))
             val planned = withContext(Dispatchers.IO) {
                 Acts.propose("", actions, app.storage, app.shelf, shellOpening(), HelloWorld.seal(), System.currentTimeMillis())
             }
             // Shown as her talk was timed: the offer is the app's, made in no time.
-            val a = Talks.Answered(Talks.Route.ACT, "", emptyList(), planned, planned.problem, over.shown?.asked?.exchanges.orEmpty(), actions)
-            val shown = Stage.Shown(asAsked(a), over.shown?.took ?: 0, over.shown?.pace, over.shown?.firstShown)
+            val a = Talks.Answered(Talks.Route.ACT, "", emptyList(), planned, planned.problem, e.talk, actions)
+            val shown = Stage.Shown(asAsked(a), e.took ?: 0, e.pace, e.firstShown)
             when {
-                planned.problem != null -> end(shown, null, null, "It couldn't be kept in $block: ${planned.problem}", shown.took)
-                planned.proposal?.asks != true -> end(shown, null, null, planned.proposal?.refusal?.let { "It couldn't be kept in $block: $it" } ?: "Nothing to say yes to.", shown.took)
-                else -> stage = shown
+                planned.problem != null -> finish(e, shown, "It couldn't be kept in $block: ${planned.problem}")
+                planned.proposal?.asks != true -> finish(e, shown, planned.proposal?.refusal?.let { "It couldn't be kept in $block: $it" } ?: "Nothing to say yes to.")
+                else -> e.waiting = shown
             }
         }
     }
 
+    /** The exchange whose [waiting] is of [kind], the newest. */
+    private inline fun <reified T : Stage> waitingOn(): Exchange? = history.lastOrNull { it.waiting is T }
+
     /** Matthew picked which line a quote means; the act is planned again with it. */
-    fun choose(address: String) {
-        val c = stage as? Stage.Choosing ?: return
+    fun choose(address: String, e: Exchange? = waitingOn<Stage.Choosing>()) {
+        val c = e?.waiting as? Stage.Choosing ?: return
         val choice = c.answered.planned?.choose ?: return
         val chosen = c.chosen + (choice.action to address)
         scope.launch {
             val planned = withContext(Dispatchers.IO) {
-                Acts.propose(c.answered.said, c.answered.actions, app.storage, app.shelf, shellOpening(), c.answered.planned!!.proposal?.seal ?: HelloWorld.seal(), System.currentTimeMillis(), chosen, Talks.secretIn(asked))
+                Acts.propose(c.answered.said, c.answered.actions, app.storage, app.shelf, shellOpening(), c.answered.planned!!.proposal?.seal ?: HelloWorld.seal(), System.currentTimeMillis(), chosen, Talks.secretIn(e.question))
             }
-            answered(Talks.Answered(c.answered.route, c.answered.said, c.answered.found, planned, planned.problem, c.answered.exchanges, c.answered.actions), chosen, c.took, c.pace, null)
+            answered(e, Talks.Answered(c.answered.route, c.answered.said, c.answered.found, planned, planned.problem, c.answered.exchanges, c.answered.actions), chosen)
         }
     }
 
     /** Matthew won't say which line now; nothing is planned. */
-    fun dropChoice() {
-        val c = stage as? Stage.Choosing ?: return
-        end(Stage.Shown(asAsked(c.answered), c.took, c.pace), null, null, "Matthew said not now to which line she meant.", c.took)
+    fun dropChoice(e: Exchange? = waitingOn<Stage.Choosing>()) {
+        val c = e?.waiting as? Stage.Choosing ?: return
+        finish(e, Stage.Shown(asAsked(c.answered), c.took, c.pace), "Matthew said not now to which line she meant.")
     }
 
     /** A job's exchange, kept as context for its next conversation; only the last six. */
@@ -602,54 +726,61 @@ class Asking(private val app: PocketApp) {
         return Asked(a.exchanges, a.found, Answer(a.said, p?.answer?.steps.orEmpty(), p?.answer?.post), p, a.problem)
     }
 
+    /** Stop her reply, or the placing of his day; the Write job, if it was on something, asks again after. */
     fun stop() {
+        if (stage !is Stage.Thinking) return
         kept.values.forEach { it.talker.stop() }
         // A conversation stopped part way can't be asked again: the next ask opens it afresh.
         stale += MindJob.values()
-        val writing = checking
-        checking = false
-        sorting = null
+        if (writingNow != null) yielded = true
         job?.cancel()
-        end(null, null, null, if (writing) "Stopped while the Write job was seeing whether there was anything to write." else "Stopped before the companion answered.", null)
+        live = ""
+        stage = Stage.Writing
+        history.lastOrNull()?.let { e ->
+            when {
+                e.sorting != null -> { e.sorting = null; finish(e, e.shown, "Stopped while his day was being placed.") }
+                e.over == null && e.waiting == null && e.said.isEmpty() -> finish(e, null, "Stopped before the companion answered.")
+            }
+        }
+        runWrites()
     }
 
-    fun notNow() {
-        val s = stage as? Stage.Shown ?: return
-        stage = Stage.Declining(s)
+    fun notNow(e: Exchange? = waitingOn<Stage.Shown>()) {
+        val s = e?.waiting as? Stage.Shown ?: return
+        e.waiting = Stage.Declining(s)
     }
 
-    fun because(reason: String?) {
-        val d = stage as? Stage.Declining ?: return
-        end(d.shown, null, null, if (reason == null) "Matthew said not now." else "Matthew said not now: $reason.", d.shown.took)
+    fun because(reason: String?, e: Exchange? = waitingOn<Stage.Declining>()) {
+        val d = e?.waiting as? Stage.Declining ?: return
+        finish(e, d.shown, if (reason == null) "Matthew said not now." else "Matthew said not now: $reason.")
     }
 
-    fun back() {
-        val d = stage as? Stage.Declining ?: return
-        stage = d.shown
+    fun back(e: Exchange? = waitingOn<Stage.Declining>()) {
+        val d = e?.waiting as? Stage.Declining ?: return
+        e.waiting = d.shown
     }
 
-    fun yes() {
-        val s = stage as? Stage.Shown ?: return
+    fun yes(e: Exchange? = waitingOn<Stage.Shown>()) {
+        val s = e?.waiting as? Stage.Shown ?: return
         val proposal = s.asked.proposal ?: return
-        stage = Stage.Carrying(s)
+        e.waiting = Stage.Carrying(s)
         scope.launch {
             val carried = withContext(Dispatchers.IO) { Asks.carryOut(proposal, app.pages, app.storage, shellOpening()) }
             // Her instructions show the pocket as it stood; the next ask opens the conversations afresh.
             if (carried.landed.isNotEmpty()) stale += MindJob.values()
             changed()
-            val written = Stage.Written(s, carried)
             when {
-                carried.problem != null -> end(s, carried, null, "Matthew said yes. ${carried.problem}", s.took)
-                carried.post == null -> end(s, carried, null, "Matthew said yes; " + landed(carried) + (carried.postRefusal?.let { " The post couldn't be offered: $it" } ?: ""), s.took)
-                else -> stage = written
+                carried.problem != null -> finish(e, s, "Matthew said yes. ${carried.problem}", carried)
+                carried.post == null -> finish(e, s, "Matthew said yes; " + landed(carried) + (carried.postRefusal?.let { " The post couldn't be offered: $it" } ?: ""), carried)
+                else -> e.waiting = Stage.Written(s, carried)
             }
         }
     }
 
-    fun post() {
-        val w = stage as? Stage.Written ?: return
+    fun post(e: Exchange? = waitingOn<Stage.Written>()) {
+        val w = e?.waiting as? Stage.Written ?: return
         val message = w.carried.post ?: return
-        stage = Stage.Posting(w, message)
+        e.waiting = Stage.Posting(w, message)
         scope.launch {
             val posted = withContext(Dispatchers.IO) { app.post(message) }
             val said = when (posted) {
@@ -657,23 +788,24 @@ class Asking(private val app: PocketApp) {
                 is Posted.Refused -> "He said yes to the post, but it didn't go: ${posted.why}"
                 is Posted.Unreached -> "He said yes to the post, but it didn't go: ${posted.why} It is kept, to be posted only when he taps Post now."
             }
-            end(w.shown, w.carried, posted, "Matthew said yes; " + landed(w.carried) + " " + said, w.shown.took)
+            finish(e, w.shown, "Matthew said yes; " + landed(w.carried) + " " + said, w.carried, posted)
         }
     }
 
-    fun dontPost() {
-        val w = stage as? Stage.Written ?: return
-        end(w.shown, w.carried, null, "Matthew said yes; " + landed(w.carried) + " He said not now to the post.", w.shown.took)
+    fun dontPost(e: Exchange? = waitingOn<Stage.Written>()) {
+        val w = e?.waiting as? Stage.Written ?: return
+        finish(e, w.shown, "Matthew said yes; " + landed(w.carried) + " He said not now to the post.", w.carried)
     }
 
     /** Forget the Ask in hand and the conversation without logging them, as the device tests begin. */
     fun reset() {
         job?.cancel()
+        writer?.cancel()
+        writes.clear()
+        writingNow = null
+        yielded = false
         question = ""
         live = ""
-        keepIn = null
-        checking = false
-        sorting = null
         stage = Stage.Writing
         history.clear()
         context.values.forEach { it.clear() }
@@ -689,7 +821,9 @@ class Asking(private val app: PocketApp) {
     /**
      * The conversation so far as a file of plain text, to keep or send: each
      * exchange, when he said it, her reply, and how it ended and how long it
-     * took; first, the settings her jobs ran on.
+     * took; first, the settings her jobs ran on. 0.6.3: when "Sort as my day"
+     * was offered under her reply, and whether he tapped it; and what still
+     * waits on his answer.
      */
     fun transcript(): String = buildString {
         val day = java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", java.util.Locale.UK)
@@ -702,12 +836,40 @@ class Asking(private val app: PocketApp) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
-            appendLine("  Times: ${e.time}")
+            if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
+            e.sortOffered?.let { offered ->
+                appendLine("  At ${time.format(at(offered))}, \"Sort as my day\" was offered under her reply; " +
+                    (e.sortTapped?.let { "he tapped it at ${time.format(at(it))}." } ?: "he didn't tap it."))
+            }
             e.proposal?.let { appendLine("  Proposed:"); appendLine(it.prependIndent("  ")) }
-            appendLine("  How it ended: ${e.note}")
+            e.waiting?.let { w -> appendLine("  Waiting on his answer: " + waitingLine(w)) }
+            if (e.checking) appendLine("  The Write job hadn't looked at it yet.")
+            if (e.note.isNotEmpty()) appendLine("  How it ended: ${e.note}")
         }
+    }
+
+    /** What waits on his answer, in a line for the saved conversation. */
+    private fun waitingLine(w: Stage): String = when (w) {
+        is Stage.Shown -> "a proposal.\n" + (describe(w.asked.proposal) ?: "")
+        is Stage.Declining -> "why not now.\n" + (describe(w.shown.asked.proposal) ?: "")
+        is Stage.Choosing -> "which line she meant."
+        is Stage.Day -> "his day, sorted.\n" + Landing.describe(w.lines, w.sorting.invented)
+        is Stage.Written -> "the post, after the writes: " + landed(w.carried)
+        else -> "it was being carried out."
+    }.trimEnd()
+
+    /**
+     * 0.6.3: the note shown beneath her reply when his words hold one of his
+     * safety words; his own note when he keeps one. It never depends on her
+     * words; should his pocket not be read, the first words and note stand.
+     */
+    private fun safetyNote(said: String): String? = try {
+        Talking.note(said, app.pages)
+    } catch (e: Exception) {
+        if (Talking.unsafe(said, Talking.SAFETY_WORDS)) Talking.SAFETY_NOTE else null
     }
 
     /** The name the conversation's file is offered under. */
@@ -719,43 +881,41 @@ class Asking(private val app: PocketApp) {
             (if (s.greedy) "the likeliest word each time" else "temperature %.2f, top-k %d, top-p %.2f".format(java.util.Locale.UK, s.temperature, s.topK, s.topP)) +
             ", replies of up to ${s.longestReply} tokens."
 
-    /** Begin again, the last Ask's words kept to change or clear. */
-    fun again() {
-        if (stage is Stage.Over) stage = Stage.Writing
-    }
-
     private fun landed(c: Carried): String =
         c.landed.groupBy { it.step.block }.entries.joinToString("; ") { (block, writes) ->
-            val at = writes.mapNotNull { it.plan.landsAt?.takeIf { a -> a.isNotEmpty() } }
-            if (at.isEmpty()) "$block was written" else "$block was written at ${at.joinToString(", ")}"
+            // 0.6.3: where, in words; never by a line's number.
+            val beneath = writes.mapNotNull { w -> w.standing?.takeIf { w.plan.kind == com.phenomemental.pocketbeach.bsp.Kind.ADD && w.plan.address.isNotEmpty() } }
+            if (beneath.isEmpty()) "$block was written" else "$block was written, beneath " + beneath.joinToString(" and ") { Words.quoted(it) }
         }.ifEmpty { "nothing was written" } + "."
 
-    private fun end(shown: Stage.Shown?, carried: Carried?, posted: Posted?, note: String, took: Long?, pace: Pace? = shown?.pace, proposed: Boolean = false, proposal: String? = null) {
-        stage = Stage.Over(shown, carried, posted, note)
-        val exchanges = shown?.asked?.exchanges?.size ?: 0
-        val time = took?.let {
-            "Took %.1f s to answer".format(it / 1000.0) + (pace?.where?.takeIf(String::isNotEmpty)?.let { w -> ", $w" } ?: "") +
-                (shown?.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
-                ", in ${Words.count(exchanges, "exchange")}." + (pace?.detail()?.let { d -> " $d" } ?: "")
-        } ?: "Stopped."
-        val proposed = proposed || shown?.asked?.proposal != null || shown?.asked?.unasked != null
-        val written = shown?.asked?.proposal?.let { p ->
-            p.writes.joinToString("\n") { w -> "  " + Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing) + (w.shown ?: w.plan.text).takeIf { it.isNotBlank() }?.let { " \u201c$it\u201d" }.orEmpty() } +
-                (p.post?.let { "\n  Then a post to pool:${it.pool}" }.orEmpty()) + (p.refusal?.let { "\n  It couldn't go ahead: $it" }.orEmpty())
-        }
-        history += Exchange(
-            asked, shown?.asked?.answer?.say.orEmpty(), note, time,
-            at = askedAt.takeIf { it > 0 } ?: System.currentTimeMillis(),
-            outcome = if (proposed) note else null,
-            jobs = answeredBy.joinToString("; ") { j -> "${j.title}" + (jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty() },
-            // A day sorted on his tap: the Write job's proposal he left for it comes first.
-            proposal = listOfNotNull(dayFrom?.proposal?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: written).joinToString("\n").ifEmpty { null },
-            copied = lastCopied,
-        )
-        dayFrom = null
-        if (proposed) told = note
+    /** A proposal's writes and post, a line each, as the saved conversation and the log keep them. */
+    private fun describe(p: com.phenomemental.pocketbeach.bsp.Proposal?): String? = p?.let {
+        it.writes.joinToString("\n") { w -> "  " + Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing) + (w.shown ?: w.plan.text).takeIf { t -> t.isNotBlank() }?.let { t -> " “$t”" }.orEmpty() } +
+            (it.post?.let { post -> "\n  Then a post to pool:${post.pool}" }.orEmpty()) + (it.refusal?.let { r -> "\n  It couldn't go ahead: $r" }.orEmpty())
+    }
+
+    /** Her answer's time and chip: how long her reply took, where it ran, when her first words showed, and the engine's counts. */
+    private fun timeLine(e: Exchange, pace: Pace?, exchanges: Int): String = e.took?.let {
+        "Took %.1f s to answer".format(it / 1000.0) + (pace?.where?.takeIf(String::isNotEmpty)?.let { w -> ", $w" } ?: "") +
+            (e.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
+            ", in ${Words.count(exchanges, "exchange")}." + (pace?.detail()?.let { d -> " $d" } ?: "")
+    } ?: "Stopped."
+
+    /** [e] is over: how it ended, what was written and posted, its times; logged; how a proposal ended is told her with the next thing he says. */
+    private fun finish(e: Exchange, shown: Stage.Shown?, note: String, carried: Carried? = null, posted: Posted? = null, proposed: Boolean = false, proposal: String? = null) {
+        e.waiting = null
+        e.over = Stage.Over(shown, carried, posted, note)
+        e.note = note
+        val time = timeLine(e, shown?.pace ?: e.pace, shown?.asked?.exchanges?.size ?: e.talk.size)
+        e.time = time
+        val proposedHere = proposed || shown?.asked?.proposal != null || shown?.asked?.unasked != null
+        e.outcome = if (proposedHere) note else null
+        e.jobs = e.answeredBy.joinToString("; ") { j -> "${j.title}" + (e.jobMs[j]?.let { " (%.1f s)".format(java.util.Locale.UK, it / 1000.0) }.orEmpty()) + ": " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty() }
+        // A day sorted on his tap: the Write job's proposal he left for it comes first.
+        e.proposal = listOfNotNull(e.writeLeft?.let { "The Write job's proposal, left as he sorted it as his day:\n$it" }, proposal ?: describe(shown?.asked?.proposal)).joinToString("\n").ifEmpty { null }
+        if (proposedHere) told = note
         scope.launch {
-            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(asked, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
+            withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(e.question, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note + (if (e.safety != null) " The safety note was shown beneath her reply." else ""), time)) } }
             changed()
         }
     }

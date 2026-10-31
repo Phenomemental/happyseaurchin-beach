@@ -5,6 +5,7 @@ import android.security.NetworkSecurityPolicy
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onNodeWithTag
@@ -99,6 +100,9 @@ class StandIn : Mind {
         }
         val gpuFails = talking && gpuFailsNext.also { gpuFailsNext = false }
         val paced = Pace(processor, null, null)
+        // 0.6.3: a Write answer held back until stopped or let go, as a slow one on the phone; stopped part way, it says nothing.
+        var holding: java.util.concurrent.CountDownLatch? = null
+        var stopped = false
         return object : Mind.Talker {
             override val stream = Talks.Stream { message, piece ->
                 // 0.6.2: as Gemma does when an answer fails on the GPU and she answers on the CPU.
@@ -109,16 +113,20 @@ class StandIn : Mind {
                 } else {
                     writeMessages++
                     writeMessage = message
-                    talk(message)
+                    writeHold?.let { h -> writeHold = null; holding = h; h.await(10, java.util.concurrent.TimeUnit.SECONDS); holding = null }
+                    if (stopped) { stopped = false; "talk\n" } else talk(message)
                 }
                 reply.chunked(4).forEach(piece)
                 reply
             }
             override val pace = paced
-            override fun stop() {}
+            override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
         }
     }
+
+    /** 0.6.3: the next Write answer is held back until it is stopped. */
+    @Volatile var writeHold: java.util.concurrent.CountDownLatch? = null
 
     /** 0.6.2: the next Talk conversation's answer fails on the GPU, and is answered on the CPU. */
     var gpuFailsNext = false
@@ -391,6 +399,8 @@ class CompanionTest {
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 22. ") && it.contains("The Write job proposed") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 23. ") && it.contains("The Write job proposed") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 24. ") && it.contains("urge him") })
+        // 0.6.3: ask 24 says the note showed beneath her reply.
+        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 24. ") && it.contains("The note beneath her reply: “If you're not safe right now") })
         assertTrue("each piece asked on its own", mind.sortAsks.size > Telling.cut(Telling.WRITTEN).size)
         assertTrue("nothing posted", wire.sent.isEmpty())
         assertFalse("nothing of his written but the run", app.pages.exists(Landing.NOW) || app.pages.exists(Landing.TELLING))
@@ -420,7 +430,7 @@ class CompanionTest {
             // The quote matches both lines: Matthew says which before anything is planned.
             compose.waitFor("which-line", "2 lines say that")
             compose.waitFor("say", "Yes: under one of the two lines")
-            assertEquals("the first exchange is shown above", 1, compose.onAllNodes(hasTestTag("earlier"), useUnmergedTree = true).fetchSemanticsNodes().size)
+            assertEquals("the first exchange is shown above, in the thread", 2, compose.onAllNodes(hasTestTag("turn"), useUnmergedTree = true).fetchSemanticsNodes().size)
             compose.tap("choose:2")
             compose.waitFor("writes")
             compose.waitFor("yes")
@@ -455,18 +465,22 @@ class CompanionTest {
                 Thread.sleep(300)
                 assertEquals("hers isn't opened until he speaks (round ${it + 1})", before, mind.talkHistories.size)
                 main { asking.question = "Add to garden: compost."; asking.ask() }
-                compose.waitUntil(5_000) { asking.stage is Asking.Stage.Over || asking.stage is Asking.Stage.Shown }
+                compose.waitUntil(5_000) { asking.settled }
                 assertEquals("one Talk conversation, for his message (round ${it + 1})", before + 1, mind.talkHistories.size)
                 assertEquals("one Write conversation, opened as Ask opened and kept for the first ask (round ${it + 1})", writes + 1, mind.histories.size)
             }
         }
     }
 
+    /** He says [question]; 0.6.3: the thread keeps every turn, so the wait is for her reply to this one (the Write job may still be looking). */
     private fun asked(question: String) {
         compose.waitFor("question")
         compose.onNodeWithTag("question").performTextClearance()
         compose.onNodeWithTag("question").performTextInput(question)
+        val before = app.asking.history.size
         compose.tap("ask")
+        compose.waitUntil(10_000) { app.asking.history.size > before && app.asking.stage !is Asking.Stage.Thinking }
+        assertEquals("the box empties when he sends", "", app.asking.question)
     }
 
     @Test
@@ -499,7 +513,7 @@ class CompanionTest {
             compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
             compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("wearing"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
             asked("Thanks.")
-            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over }
+            compose.waitUntil(10_000) { app.asking.settled }
             compose.waitFor("say", "I'm a stand-in for the companion, talking.")
             assertTrue(compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
             assertTrue(compose.onAllNodes(hasText("Took ", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
@@ -529,6 +543,8 @@ class CompanionTest {
             // 0.6.2: the friend line (C), her name not yet given; her shell's opening line has left her instruction.
             assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"))
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
+            // 0.6.3: C changed is hers.
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.Talking.MEET) && mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.Talking.KEEPING))
             assertFalse(mind.talkInstruction, mind.talkInstruction.contains(HelloWorld.SHELL_OPENING))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
             assertEquals("a greeting asks no write", 0, mind.writeMessages)
@@ -568,18 +584,19 @@ class CompanionTest {
             compose.waitFor("say", "That sounds like a hard morning")
             compose.waitFor("sort-as-day")
             assertEquals("nothing sorted until he asks", 0, mind.sortAsks.size)
-            assertEquals("the Write job ran, as for any message", 1, mind.writeMessages)
+            // 0.6.3: the Write job runs behind the chat, after her reply.
+            compose.waitUntil(10_000) { mind.writeMessages == 1 }
             compose.tap("sort-as-day")
             compose.waitFor("day-yes", timeoutMs = 30_000)
             assertEquals("each piece asked on its own, then the rungs", Telling.cut(Telling.WRITTEN, Landing.names(app.pages)).size + 1, mind.sortAsks.size)
             assertFalse("nothing written before yes", app.pages.exists(Landing.NOW))
-            val day = app.asking.stage as Asking.Stage.Day
+            val day = app.asking.waiting as Asking.Stage.Day
             val car = day.lines.indexOfFirst { it.words == "the car wouldn't start again this morning" }
             val sam = day.lines.indexOfFirst { it.words == "that I'm always the one apologising" }
             compose.tap("day-tick:$car")
             compose.tap("day-move:$sam")
             compose.tap("day-to:1.3")
-            compose.waitUntil(5_000) { (app.asking.stage as? Asking.Stage.Day)?.lines?.get(sam)?.place == "1.3" }
+            compose.waitUntil(5_000) { (app.asking.waiting as? Asking.Stage.Day)?.lines?.get(sam)?.place == "1.3" }
             compose.tap("day-yes")
             compose.waitUntil(10_000) { app.pages.exists(Landing.NOW) }
             compose.waitFor("over", "kept as an example for her next time")
@@ -604,6 +621,17 @@ class CompanionTest {
             compose.tap("day-yes")
             compose.waitUntil(10_000) { Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj).values.any { it.contains("coming Monday") } }
         }
+        // 0.6.3: the saved conversation says when "Sort as my day" was offered under her reply, and whether he tapped it.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked(Telling.WRITTEN)
+            compose.waitFor("sort-as-day")
+            asked("Never mind, another time.")
+            assertTrue("offered under her last reply only", compose.onAllNodes(hasTestTag("sort-as-day"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        }
+        val saved = app.asking.transcript()
+        assertTrue(saved, Regex("""At \d\d:\d\d, "Sort as my day" was offered under her reply; he tapped it at \d\d:\d\d\.""").containsMatchIn(saved))
+        assertTrue(saved, saved.contains("\"Sort as my day\" was offered under her reply; he didn't tap it."))
         val hand2 = Telling.cards(parseJson(app.storage.read(Landing.TELLING)!!) as JsObj)
         assertEquals("the card updated, not doubled", 1, hand2.values.count { it.contains("garage") })
         assertEquals(Telling.WRITTEN + "\n\n" + Telling.SECOND, app.pages.position(Region.POCKET, Landing.NOW, day)?.text)
@@ -625,13 +653,13 @@ class CompanionTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
             asked(Bench.GEMMA_ASK)
-            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over || app.asking.stage is Asking.Stage.Shown }
+            compose.waitUntil(10_000) { app.asking.settled }
             compose.waitFor("say", "What would you like to keep in your blocks?")
             for (copy in listOf("Shell:", "It's Thursday", "Matthew: Hey")) {
                 assertTrue(copy, compose.onAllNodes(hasText(copy, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
             }
             assertTrue("one run of his words is no day", compose.onAllNodes(hasTestTag("sort-as-day"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
-            if (app.asking.stage is Asking.Stage.Shown) compose.tap("not-now").also { compose.tap("just-not-now") }
+            if (app.asking.waiting is Asking.Stage.Shown) compose.tap("not-now").also { compose.tap("just-not-now") }
             asked("Gemma it is, then.")
             compose.waitFor("say", "Gemma it is.")
             assertEquals("her turn played back isn't given her again", "What would you like to keep in your blocks?", mind.talkHistories.last().single().second)
@@ -655,9 +683,11 @@ class CompanionTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
             asked(told)
+            // The Write job looks first, behind the chat, so the saved conversation carries its answer too.
+            compose.waitUntil(10_000) { !app.asking.checking }
             compose.tap("sort-as-day")
             compose.waitFor("day-yes", timeoutMs = 30_000)
-            val day = app.asking.stage as Asking.Stage.Day
+            val day = app.asking.waiting as Asking.Stage.Day
             val i = day.lines.indexOfFirst { it.words.contains("mourning") }
             assertTrue(day.lines.joinToString("\n") { it.words }, i >= 0)
             compose.tap("day-words:$i")
@@ -665,7 +695,7 @@ class CompanionTest {
             compose.onNodeWithTag("day-correct-field").performTextClearance()
             compose.onNodeWithTag("day-correct-field").performTextInput(day.lines[i].words.replace("mourning", "morning"))
             compose.tap("day-correct-keep")
-            compose.waitUntil(5_000) { (app.asking.stage as? Asking.Stage.Day)?.lines?.get(i)?.corrected == true }
+            compose.waitUntil(5_000) { (app.asking.waiting as? Asking.Stage.Day)?.lines?.get(i)?.corrected == true }
             compose.waitFor("day-words:$i", "about the morning")
             compose.tap("day-yes")
             compose.waitUntil(10_000) { app.pages.exists(Landing.NOW) }
@@ -701,7 +731,7 @@ class CompanionTest {
             compose.tap("back")
             compose.tap("ask-companion")
             asked("Hello")
-            compose.waitUntil(10_000) { app.asking.stage is Asking.Stage.Over }
+            compose.waitUntil(10_000) { app.asking.settled }
             assertEquals(0.9, mind.talkSettings.last().temperature, 1e-9)
             assertEquals(40, mind.talkSettings.last().topK)
             compose.tap("back")
@@ -710,6 +740,56 @@ class CompanionTest {
             compose.waitFor("job-talk-temperature", "1.00")
         }
         assertEquals(JobSettings.of(Job.TALK), app.settings(Job.TALK))
+    }
+
+    /**
+     * 0.6.3, a plain chat: her reply shows and the box is ready at once; the
+     * Write job looks after, behind the chat, gives way when he says the next
+     * thing, and looks again after her reply; its proposal waits beneath her
+     * first reply while he carries on, until he answers it.
+     */
+    @Test
+    fun writeNeverHoldsUpTheChatAndItsProposalWaitsInTheThread() {
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        check(app.pages.carryOut(app.pages.planNewBlock("book")).ok)
+        mind.talkScript += listOf("Half a book is real work already.", "Resolve is a good place to start.")
+        mind.script += listOf("act\nadd book: I've written half of the book.")
+        mind.writeHold = java.util.concurrent.CountDownLatch(1)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("I've written half of the book. Keep that for me please.")
+            compose.waitFor("say", "Half a book is real work already.")
+            // The Write job is looking, and the box is ready: he carries on.
+            compose.waitFor("checking")
+            compose.waitUntil(5_000) { mind.writeMessages == 1 }
+            compose.onNodeWithTag("question").performTextInput("I'm learning Resolve too.")
+            compose.onNodeWithTag("ask").assertIsEnabled()
+            compose.tap("ask")
+            compose.waitFor("say", "Resolve is a good place to start.")
+            // It gave way to her reply, looked again, and its proposal waits beneath her first reply.
+            compose.waitUntil(10_000) { app.asking.settled }
+            val (first, second) = app.asking.history
+            assertTrue("the proposal waits on the first exchange", first.waiting is Asking.Stage.Shown)
+            assertEquals("She talked.", second.note)
+            assertEquals("stopped once, then asked again, then the second", 3, mind.writeMessages)
+            compose.waitFor("writes")
+            // 0.6.3: where it goes, in words; the bsp line only with Details on.
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("A new line in your book block.")).fetchSemanticsNodes().isNotEmpty() }
+            assertTrue("no line's number", compose.onAllNodes(hasText("A new line at", substring = true)).fetchSemanticsNodes().isEmpty())
+            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("call") and hasText("bsp(agent_id: \"pocket\", block: \"book\"", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+            app.showDetails = false
+            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("call"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+            compose.waitFor("yes")
+            app.showDetails = true
+            assertTrue("nothing written before yes", app.pages.position(Region.POCKET, "book")!!.lines.isEmpty())
+            compose.tap("yes")
+            compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "book")!!.lines.any { it.text == "I've written half of the book." } }
+            compose.waitFor("over", "Matthew said yes")
+        }
+        val t = app.asking.transcript()
+        assertTrue(t, t.contains("Matthew: I've written half of the book. Keep that for me please."))
+        assertTrue(t, t.contains("How it ended: Matthew said yes; book was written"))
     }
 
     /** 0.6.2, part three: when his words say he isn't safe, the safety line is her instruction's only line that turn; his safety words are kept as a block on his tap. */
@@ -730,8 +810,69 @@ class CompanionTest {
             compose.tap("keep-safety-words")
             compose.waitUntil(10_000) { app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK) }
             compose.waitFor("open-safety-words")
+            compose.waitFor("safety-note-words", "If you're not safe right now")
         }
         assertEquals(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_WORDS, com.phenomemental.pocketbeach.bsp.Talking.safetyWords(app.pages))
+        assertTrue("the note is kept with his words", com.phenomemental.pocketbeach.bsp.Talking.keepsNote(app.pages))
+    }
+
+    /**
+     * 0.6.3 (Matthew, 31 October): when his safety words match, the app's own
+     * note shows beneath her reply, whatever she says; none on a turn that
+     * doesn't need it; his own note once he changes it; and words kept before
+     * 0.6.3 get the note on his tap. The saved conversation says it showed.
+     */
+    @Test
+    fun theSafetyNoteShowsBeneathHerReplyWhateverSheSays() {
+        val talking = com.phenomemental.pocketbeach.bsp.Talking
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        mind.talkScript += listOf("Okay.", "Glad to hear it.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("I don't feel safe tonight.")
+            compose.waitFor("say", "Okay.")
+            compose.waitFor("safety-note", talking.SAFETY_NOTE)
+            assertTrue("the safety line stays in her instruction", mind.talkInstruction.endsWith(talking.SAFETY))
+            asked("Had a good day after all.")
+            compose.waitFor("say", "Glad to hear it.")
+            assertEquals("one note, beneath the reply that needed it", 1, compose.onAllNodes(hasTestTag("safety-note")).fetchSemanticsNodes().size)
+            assertEquals(talking.SAFETY_NOTE, app.asking.history.first().safety)
+            assertEquals(null, app.asking.history.last().safety)
+        }
+        val t = app.asking.transcript()
+        assertTrue(t, t.contains("The safety note, shown beneath her reply: \"If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.\""))
+        assertEquals("once", 1, Regex("The safety note, shown").findAll(t).count())
+
+        // His own note, changed in his block, is the one shown.
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        check(app.pages.carryOut(app.pages.planKeep(talking.SAFETY_BLOCK, talking.safetyBlock())).ok)
+        val heading = app.pages.position(Region.POCKET, talking.SAFETY_BLOCK)!!.lines.single { it.text == talking.NOTE_HEADING }
+        val line = app.pages.position(Region.POCKET, talking.SAFETY_BLOCK, heading.address)!!.lines.single()
+        check(app.pages.carryOut(app.pages.planChange(talking.SAFETY_BLOCK, line.address, "Ring Jo, or Samaritans on 116 123.")).ok)
+        mind.talkScript += listOf("I hear you.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("ask-companion")
+            asked("I can't go on like this.")
+            compose.waitFor("say", "I hear you.")
+            compose.waitFor("safety-note", "Ring Jo, or Samaritans on 116 123.")
+        }
+
+        // Words kept before 0.6.3 have no note: the app's own shows, and Settings adds it to his block on his tap.
+        Fresh.clear()
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
+        check(app.pages.carryOut(app.pages.planKeep(talking.SAFETY_BLOCK, talking.safetyBlock().also { it.remove("${talking.SAFETY_GROUPS.size + 1}") })).ok)
+        assertFalse(talking.keepsNote(app.pages))
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("settings")
+            compose.waitFor("safety-note-words", "If you're not safe right now")
+            compose.tap("add-safety-note")
+            compose.waitUntil(10_000) { talking.keepsNote(app.pages) }
+            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("add-safety-note"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+        }
+        assertEquals(talking.SAFETY_NOTE, talking.safetyNote(app.pages))
+        assertEquals(talking.SAFETY_WORDS, talking.safetyWords(app.pages))
     }
 
     /** 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so. */

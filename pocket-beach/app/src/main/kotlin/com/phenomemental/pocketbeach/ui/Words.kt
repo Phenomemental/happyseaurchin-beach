@@ -46,17 +46,17 @@ object Words {
     /** "lines 1 to 9" from the beach's "1-9". */
     fun span(over: String): String = "lines " + over.replace("-", " to ")
 
-    /** Where a write lands, in a sentence. */
+    /** Where a write lands, in a sentence: 0.6.3 (Matthew, 31 October), in words, never by a line's number. */
     fun landing(kind: Kind, block: String, address: String, landsAt: String?, wraps: Boolean, standing: String?): String = when (kind) {
         Kind.NEW_BLOCK -> "A new block called $block."
         Kind.WHOLE -> "$block, written whole with the lines shown."
         Kind.CHANGE ->
             if (address.isEmpty()) "The opening line of $block becomes what you write here. Everything beneath it stays as it is."
-            else "The line at $address becomes what you write here. The lines beneath it stay as they are."
+            else quoted(standing).replaceFirstChar { it.uppercase() } + " in your $block block becomes what you write here. The lines beneath it stay as they are."
         Kind.ADD -> when {
-            wraps -> "The opening of $block is full, so this line wraps it first: the lines there move one step beneath the opening line, and this one lands at $landsAt, beginning the next nine."
-            address.isEmpty() -> "A new line at $landsAt, beneath the opening line of $block."
-            else -> "A new line at $landsAt, beneath ${quoted(standing)}."
+            wraps -> "A new line in your $block block. Its opening is full, so this line wraps it first: the lines there move one step beneath the opening line, and this one begins the next nine."
+            address.isEmpty() -> "A new line in your $block block."
+            else -> "A new line in your $block block, beneath ${quoted(standing)}."
         }
     }
 

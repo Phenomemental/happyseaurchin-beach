@@ -109,6 +109,20 @@ fun main(args: Array<String>) {
         engine.close()
         return
     }
+    // 0.6.3: the bench's ask 24 as the app asks it now, with the safety note beneath her reply.
+    if ("note" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        noteAsk(engine, label, shelf, System.getProperty("friend.seeds")?.split("-")?.let { (a, b) -> (a.toInt()..b.toInt()).toList() } ?: (2..13).toList())
+        engine.close()
+        return
+    }
+    // 0.6.3: C as released against C with "Meet what matters most" and the keeping line.
+    if ("listen" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        listen(engine, label, shelf, System.getProperty("friend.seeds")?.split("-")?.let { (a, b) -> (a.toInt()..b.toInt()).toList() } ?: (listOf(0) + (2..runs).toList()), File(System.getProperty("pocket.out") ?: "listen", "$label.jsonl"))
+        engine.close()
+        return
+    }
     // 0.6.2, part one: her instruction a line at a time from Edge's way, and what each job reads.
     if ("friend" in flags || "feed" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")

@@ -17,8 +17,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Checkbox
@@ -40,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.phenomemental.pocketbeach.bsp.HelloWorld
@@ -60,7 +64,14 @@ import kotlinx.coroutines.withContext
 
 private const val PRINT_SHOWN = "‹its fingerprint, made as it is written›"
 
-/** Ask the companion: Gemma, on this phone, wearing the shell pocket-companion. */
+/**
+ * Ask the companion: Gemma, on this phone, wearing the shell pocket-companion.
+ * 0.6.3, a plain chat: the thread of his words and hers, newest at the foot;
+ * the box pinned beneath it, with his voice and Ask beside it, empty again
+ * when he sends. What waits on his answer waits in the thread, beneath her
+ * reply, while he carries on. The workings stay behind Details; saving the
+ * conversation and the bench are at the top.
+ */
 @Composable
 fun AskScreen(model: Model, nav: Nav) {
     val ink = LocalInk.current
@@ -81,7 +92,6 @@ fun AskScreen(model: Model, nav: Nav) {
             delay(if (s is ModelStore.State.Fetching) 1000 else 3000)
         }
     }
-    val stage = asking.stage
     // The model stays loaded, and the conversation open, while Ask is.
     val ready = modelState is ModelStore.State.Ready && shell != null
     DisposableEffect(ready) {
@@ -89,8 +99,6 @@ fun AskScreen(model: Model, nav: Nav) {
         // Only a visit that opened the conversation lets it go: not the wait for the model and the shell, ended as they come ready.
         onDispose { if (ready) asking.closed() }
     }
-    // A message posted already is not sent again unless Matthew asks for that on purpose.
-    val postedBefore = (stage as? Asking.Stage.Written)?.carried?.post?.let(model.app.posts::landed)
     // 0.5: the conversation, and its workings only behind the Details switch.
     val details = model.app.showDetails
     val context = LocalContext.current
@@ -105,17 +113,19 @@ fun AskScreen(model: Model, nav: Nav) {
                 .onFailure { model.say(Screen.Ask, "The conversation wasn't saved: ${it.message ?: "the file couldn't be written"}.") }
         }
     }
+    // The thread keeps its foot in view: her reply as it streams, what comes beneath it.
+    val scroll = rememberScrollState()
+    val last = asking.history.lastOrNull()
+    LaunchedEffect(asking.history.size, asking.live, last?.said, last?.waiting, last?.checking, last?.over, asking.stage) {
+        scroll.animateScrollTo(scroll.maxValue)
+    }
 
     Page(
         onBack = { nav.back() },
         top = { Text("Ask", style = Type.name, color = ink.ink, maxLines = 1) },
-        bottom = bottom(asking, stage, ready = modelState is ModelStore.State.Ready && shell != null, postedBefore = postedBefore),
-    ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                if (details) "How she answers: her shell, what she proposes and the time each reply took." else "The workings: her shell, what she proposes, the times.",
-                style = Type.small, color = ink.soft, modifier = Modifier.weight(1f),
-            )
+        end = {
+            if (asking.history.isNotEmpty()) TextLink("Save", { saveTo.launch(asking.fileName()) }, tag = "save-conversation")
+            TextLink(if (asking.benchRunning) "See the bench" else "Bench", { nav.go(Screen.Bench) }, tag = "open-bench")
             Text("Details", style = Type.small, color = ink.ink)
             Switch(
                 checked = details,
@@ -123,7 +133,10 @@ fun AskScreen(model: Model, nav: Nav) {
                 colors = SwitchDefaults.colors(checkedTrackColor = ink.crimson),
                 modifier = Modifier.testTag("details"),
             )
-        }
+        },
+        bottom = if (!ready) null else ({ Composer(asking) }),
+        scroll = scroll,
+    ) {
         if (details) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label("The companion")
             Text(
@@ -132,7 +145,7 @@ fun AskScreen(model: Model, nav: Nav) {
                 modifier = Modifier.testTag("wearing"),
             )
             Text(
-                "She talks as Settings' Talk job says, then, when your words may ask for a write, the Write job sets out the lines.",
+                "She talks as Settings' Talk job says. Then, behind the chat, when your words may ask for a write, the Write job sets out the lines beneath her reply.",
                 style = Type.small, color = ink.soft,
             )
             Stroke()
@@ -170,114 +183,167 @@ fun AskScreen(model: Model, nav: Nav) {
 
         ModelPart(model, modelState)
 
-        // The conversation so far; the last, once over, is shown in full below.
-        val earlier = if (stage is Asking.Stage.Over) asking.history.dropLast(1) else asking.history.toList()
-        earlier.forEach { Earlier(it, details) }
+        // The thread: each thing he said, her reply, and what waits on his answer beneath it.
+        asking.history.forEach { e -> Turn(model, e, latest = e === asking.history.lastOrNull(), details = details) }
+        if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
+    }
+}
 
-        if (modelState is ModelStore.State.Ready && shell != null) when (stage) {
-            Asking.Stage.Writing, is Asking.Stage.Over -> {
-                if (stage is Asking.Stage.Over) Over(model, stage, details)
-                PaperField(asking.question, { asking.question = it }, "Say something to the companion, or ask for the hello world with your secret", tag = "question")
-                Speak { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
-                if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
-                if (asking.history.isNotEmpty()) TextLink("Save the conversation as a file", { saveTo.launch(asking.fileName()) }, tag = "save-conversation")
-                if (details || asking.benchRunning) TextLink(if (asking.benchRunning) "See the bench" else "Run the bench", { nav.go(Screen.Bench) }, tag = "open-bench")
+/** The box, pinned at the foot: his words, his voice, and Ask (Stop while her reply comes). It empties when he sends. */
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking) {
+    val ink = LocalInk.current
+    val voice = rememberVoice { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
+    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (voice.heard.isNotEmpty()) Text(voice.heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
+        voice.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            PaperField(
+                asking.question, { asking.question = it }, "Say something to the companion",
+                modifier = Modifier.weight(1f), tag = "question", minLines = 3, maxLines = 6,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
+                Action(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, Modifier.width(96.dp), tag = "speak")
+                if (asking.stage is Asking.Stage.Thinking) Action("Stop", { asking.stop() }, Modifier.width(96.dp), tag = "stop")
+                else Action("Ask", { asking.ask() }, Modifier.width(96.dp), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
             }
-            is Asking.Stage.Thinking -> {
-                His(asking.question)
-                // Her words as she writes them.
-                if (asking.live.isNotBlank()) Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
-                var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-                LaunchedEffect(stage) { while (true) { delay(1000); now = System.currentTimeMillis() } }
-                val secs = ((now - stage.since) / 1000).coerceAtLeast(0)
-                Text(
-                    when {
-                        asking.sorting != null -> asking.sorting!!.let { (done, of) -> "Placing your day, a piece at a time: $done of $of…" } + if (details) " ${secs} s" else ""
-                        asking.checking -> "Seeing whether there's anything to write…" + if (details) " ${secs} s" else ""
-                        asking.live.isNotBlank() -> if (details) "${secs} s" else ""
-                        !model.app.mind.loaded(model.app.settings(com.phenomemental.pocketbeach.model.Job.TALK)) -> "Loading the companion…" + if (details) " ${secs} s" else ""
-                        else -> "Thinking…" + if (details) " ${secs} s" else ""
-                    },
-                    style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"),
-                )
+        }
+    }
+}
+
+/** One exchange of the thread: his words, her reply, what waits on his answer beneath it, and how it ended. */
+@Composable
+private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boolean) {
+    val ink = LocalInk.current
+    val asking = model.app.asking
+    val thinking = latest && asking.stage is Asking.Stage.Thinking
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
+        His(e.question)
+        when {
+            e.said.isNotEmpty() -> Text(e.said, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
+            // Her words as she writes them.
+            thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
+        }
+        if (thinking) {
+            val since = (asking.stage as Asking.Stage.Thinking).since
+            var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+            LaunchedEffect(since) { while (true) { delay(1000); now = System.currentTimeMillis() } }
+            val secs = ((now - since) / 1000).coerceAtLeast(0)
+            val line = when {
+                e.sorting != null -> e.sorting!!.let { (done, of) -> "Placing your day, a piece at a time: $done of $of…" }
+                asking.live.isNotBlank() -> ""
+                !model.app.mind.loaded(model.app.settings(com.phenomemental.pocketbeach.model.Job.TALK)) -> "Loading the companion…"
+                else -> "Thinking…"
+            } + if (details) " ${secs} s" else ""
+            if (line.isNotBlank()) Text(line.trim(), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"))
+        }
+        // 0.6.3: when his safety words match, the app's own note beneath her reply, whatever she says.
+        e.safety?.let { SafetyNote(it) }
+        // Behind the chat, the Write job looks at what he said; what it sets out comes here.
+        if (e.checking) Text("Seeing whether there's anything to keep…", style = Type.small, color = ink.soft, modifier = Modifier.testTag("checking"))
+        when (val w = e.waiting) {
+            is Asking.Stage.Shown -> {
+                ProposalParts(w, details)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Action("Not now", { asking.notNow(e) }, Modifier.weight(1f), tag = "not-now")
+                    Action("Yes, write it", { asking.yes(e) }, Modifier.weight(1f), strong = true, tag = "yes")
+                }
             }
-            is Asking.Stage.Choosing -> Choosing(asking, stage)
-            is Asking.Stage.Day -> DayProposed(asking, stage, details)
-            is Asking.Stage.DayWriting -> {
-                DayProposed(asking, stage.day, details, moving = false)
-                Text("Writing your day…", style = Type.aside, color = ink.soft)
-            }
-            is Asking.Stage.Shown -> Proposed(asking.question, stage, details, sortAsDay = if (asking.sortable) asking::sortAsDay else null)
             is Asking.Stage.Declining -> {
-                Proposed(asking.question, stage.shown, details)
+                ProposalParts(w.shown, details)
                 Label("Why not now?")
                 Text("One tap says why, so the log keeps it.", style = Type.small, color = ink.soft)
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Action("Wrong place", { asking.because("wrong place", e) }, Modifier.weight(1f), tag = "wrong-place")
+                        Action("Wrong block", { asking.because("wrong block", e) }, Modifier.weight(1f), tag = "wrong-block")
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Action("Misunderstood", { asking.because("misunderstood", e) }, Modifier.weight(1f), tag = "misunderstood")
+                        Action("Just not now", { asking.because(null, e) }, Modifier.weight(1f), tag = "just-not-now")
+                    }
+                    TextLink("Back to the proposal", { asking.back(e) }, tag = "back-to-proposal")
+                }
+            }
+            is Asking.Stage.Choosing -> {
+                Choosing(asking, e, w)
+                Action("Not now", { asking.dropChoice(e) }, Modifier.fillMaxWidth(), tag = "not-now")
             }
             is Asking.Stage.Carrying -> {
-                Proposed(asking.question, stage.shown, details)
+                ProposalParts(w.shown, details)
                 Text("Writing…", style = Type.aside, color = ink.soft)
             }
             is Asking.Stage.Written -> {
-                Written(model, stage.shown.asked.proposal!!.seal, stage.carried, asking.shellOpening())
-                stage.carried.post?.let { PostCard(it, postedBefore) }
+                val postedBefore = w.carried.post?.let(model.app.posts::landed)
+                Written(model, w.shown.asked.proposal!!.seal, w.carried, asking.shellOpening())
+                w.carried.post?.let { post ->
+                    PostCard(post, postedBefore)
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Action("Not now", { asking.dontPost(e) }, Modifier.weight(1f), tag = "dont-post")
+                        if (postedBefore == null) Action("Post it", { asking.post(e) }, Modifier.weight(1f), strong = true, tag = "post")
+                        else Action("Post again?", { asking.post(e) }, Modifier.weight(1f), tag = "post-again")
+                    }
+                }
             }
             is Asking.Stage.Posting -> {
-                Written(model, stage.written.shown.asked.proposal!!.seal, stage.written.carried, asking.shellOpening())
-                PostCard(stage.message, null)
+                Written(model, w.written.shown.asked.proposal!!.seal, w.written.carried, asking.shellOpening())
+                PostCard(w.message, null)
                 Text("Posting…", style = Type.aside, color = ink.soft)
             }
+            is Asking.Stage.Day -> {
+                DayProposed(asking, e, w, details)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Action("Not now", { asking.notNowToDay(e) }, Modifier.weight(1f), tag = "day-not-now")
+                    Action("Yes, keep my day", { asking.yesToDay(e) }, Modifier.weight(1f), strong = true, tag = "day-yes")
+                }
+            }
+            is Asking.Stage.DayWriting -> {
+                DayProposed(asking, e, w.day, details, moving = false)
+                Text("Writing your day…", style = Type.aside, color = ink.soft)
+            }
+            else -> {}
+        }
+        e.over?.let { over -> Ended(model, over, details) }
+        // Offered under her reply while it's the last thing said: keeping his words in the block they name, and sorting them as his day.
+        if (latest && !thinking) {
+            e.keepIn?.let { block -> TextLink("Keep this in $block?", { asking.keep(e) }, tag = "keep-in") }
+            if (e.sortable) TextLink("Sort as my day", { asking.sortAsDay(e) }, tag = "sort-as-day")
+        }
+        // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
+        if (e.note.isNotEmpty() && (details || e.outcome != null || e.over?.shown == null)) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+        // Every answer's time and chip, in Details; a GPU that failed, always.
+        if (details) {
+            if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
+        } else if (e.waiting !is Asking.Stage.Day && (e.over?.shown?.pace ?: (e.waiting as? Asking.Stage.Shown)?.pace)?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
+            Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
         }
     }
 }
 
-/** The actions at the foot, by stage. */
-private fun bottom(asking: Asking, stage: Asking.Stage, ready: Boolean, postedBefore: String?): (@Composable androidx.compose.foundation.layout.RowScope.() -> Unit)? = when (stage) {
-    Asking.Stage.Writing, is Asking.Stage.Over -> if (!ready) null else ({
-        Action("Ask", { asking.ask() }, Modifier.weight(1f), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
-    })
-    is Asking.Stage.Thinking -> ({ Action("Stop", { asking.stop() }, Modifier.weight(1f), tag = "stop") })
-    is Asking.Stage.Choosing -> ({ Action("Not now", { asking.dropChoice() }, Modifier.weight(1f), tag = "not-now") })
-    is Asking.Stage.Shown -> ({
-        Action("Not now", { asking.notNow() }, Modifier.weight(1f), tag = "not-now")
-        Action("Yes, write it", { asking.yes() }, Modifier.weight(1f), strong = true, tag = "yes")
-    })
-    is Asking.Stage.Declining -> ({
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Action("Wrong place", { asking.because("wrong place") }, Modifier.weight(1f), tag = "wrong-place")
-                Action("Wrong block", { asking.because("wrong block") }, Modifier.weight(1f), tag = "wrong-block")
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Action("Misunderstood", { asking.because("misunderstood") }, Modifier.weight(1f), tag = "misunderstood")
-                Action("Just not now", { asking.because(null) }, Modifier.weight(1f), tag = "just-not-now")
-            }
-            TextLink("Back to the proposal", { asking.back() }, tag = "back-to-proposal")
-        }
-    })
-    is Asking.Stage.Day -> ({
-        Action("Not now", { asking.notNowToDay() }, Modifier.weight(1f), tag = "day-not-now")
-        Action("Yes, keep my day", { asking.yesToDay() }, Modifier.weight(1f), strong = true, tag = "day-yes")
-    })
-    is Asking.Stage.Carrying, is Asking.Stage.Posting, is Asking.Stage.DayWriting -> null
-    is Asking.Stage.Written -> if (stage.carried.post == null) null else ({
-        Action("Not now", { asking.dontPost() }, Modifier.weight(1f), tag = "dont-post")
-        if (postedBefore == null) Action("Post it", { asking.post() }, Modifier.weight(1f), strong = true, tag = "post")
-        else Action("Post again?", { asking.post() }, Modifier.weight(1f), tag = "post-again")
-    })
-}
-
-/** An earlier exchange of the conversation: what Matthew said, what she said, what came of a proposal, and, in Details, how it ended and how long it took. */
+/** What saying yes wrote and posted, or the proposal that couldn't go ahead. */
 @Composable
-private fun Earlier(e: Asking.Exchange, details: Boolean) {
-    val ink = LocalInk.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("earlier")) {
-        His(e.question)
-        if (e.said.isNotBlank()) Text(e.said, style = Type.body, color = ink.ink)
-        when {
-            details -> Text(e.note + " " + e.time, style = Type.small, color = ink.soft)
-            e.outcome != null -> Text(e.outcome, style = Type.small, color = ink.soft)
+private fun Ended(model: Model, over: Asking.Stage.Over, details: Boolean) {
+    val context = LocalContext.current
+    if (over.carried == null) over.shown?.asked?.proposal?.let { if (it.refusal != null) Writes(it, details) }
+    when (val p = over.posted) {
+        is Posted.Landed -> {
+            Done("Posted to your pool at entry ${p.slot}.", detail = "pool:${p.pool} on beach.happyseaurchin.com", tag = "posted")
+            TextLink("Open the beach", {
+                try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BEACH_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (_: ActivityNotFoundException) {
+                    model.say(Screen.Ask, "There's no browser on this phone to open $BEACH_URL.")
+                }
+            }, tag = "open-beach")
         }
+        is Posted.Refused -> Notice(p.why, tag = "not-posted")
+        is Posted.Unreached -> {
+            Notice("${p.why} It's kept below, and on the Shore, to post when you tap Post now.", tag = "not-posted")
+            Waiting(model)
+        }
+        null -> {}
     }
+    over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
 }
 
 /** What Matthew said, set to the right in a softer hand, as in a conversation. */
@@ -294,28 +360,24 @@ private fun His(words: String) {
 
 /** A quote in her act matches more than one line: each line, to tap the one meant. */
 @Composable
-private fun Choosing(asking: Asking, stage: Asking.Stage.Choosing) {
+private fun Choosing(asking: Asking, e: Asking.Exchange, stage: Asking.Stage.Choosing) {
     val ink = LocalInk.current
     val choice = stage.answered.planned?.choose ?: return
-    His(asking.question)
-    if (stage.answered.said.isNotBlank()) Text(stage.answered.said, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
     Text(
         "She means the line “${choice.quote}” in ${choice.block}, and ${choice.lines.size} lines say that. Which one?",
         style = Type.body, color = ink.ink, modifier = Modifier.testTag("which-line"),
     )
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         choice.lines.forEach { line ->
-            Action(Words.quoted(line.text ?: "", 80), { asking.choose(line.address) }, Modifier.fillMaxWidth(), tag = "choose:${line.address}")
+            Action(Words.quoted(line.text ?: "", 80), { asking.choose(line.address, e) }, Modifier.fillMaxWidth(), tag = "choose:${line.address}")
         }
     }
 }
 
 /** His day, sorted: every line in his words, where it lands, to untick or move before Yes. */
 @Composable
-private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, moving: Boolean = true) {
+private fun DayProposed(asking: Asking, e: Asking.Exchange, d: Asking.Stage.Day, details: Boolean, moving: Boolean = true) {
     val ink = LocalInk.current
-    His(asking.question)
-    d.shown.asked.answer?.say?.takeIf { it.isNotEmpty() }?.let { Text(it, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say")) }
     Label("Your day, sorted")
     Text(
         "Every line is your words. Untick a line to leave it out, or move it to another place: each move is kept, " +
@@ -338,7 +400,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
                 val at = here.filter { it.value.place == place }
                 if (at.isEmpty()) continue
                 Text(Landing.name(place), style = Type.name, color = ink.ink, modifier = Modifier.padding(top = 8.dp))
-                for ((i, line) in at) DayLine(i, line, moving && place !in Telling.RUNGS, moving, { asking.tick(i) }, { choosing = i }, { correcting = i })
+                for ((i, line) in at) DayLine(i, line, moving && place !in Telling.RUNGS, moving, { asking.tick(i, e) }, { choosing = i }, { correcting = i })
             }
         }
     }
@@ -368,7 +430,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
             "Put a word right", onDismiss = { correcting = null },
             actions = {
                 TextLink("Not now", { correcting = null }, tag = "day-correct-not-now")
-                TextLink("Keep it", { asking.correct(i, words); correcting = null }, tag = "day-correct-keep")
+                TextLink("Keep it", { asking.correct(i, words, e); correcting = null }, tag = "day-correct-keep")
             },
         ) {
             Text("As the phone heard it: " + Words.quoted(d.lines[i].heard ?: d.lines[i].words, 300), style = Type.small, color = ink.soft)
@@ -382,7 +444,7 @@ private fun DayProposed(asking: Asking, d: Asking.Stage.Day, details: Boolean, m
                 for (place in Landing.PLACES) {
                     TextLink(
                         (if (place in Telling.DAY) "Today: " else "Hand: ") + Landing.name(place),
-                        { asking.move(i, place); choosing = null }, style = Type.body, tag = "day-to:$place",
+                        { asking.move(i, place, e); choosing = null }, style = Type.body, tag = "day-to:$place",
                     )
                 }
             }
@@ -414,21 +476,16 @@ private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Bool
     }
 }
 
-/** What the companion said and proposes, before anything is written. */
+/** What the Write job proposes beneath her reply, before anything is written: what it read, the writes, the post it offers. */
 @Composable
-private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boolean, sortAsDay: (() -> Unit)? = null) {
+private fun ProposalParts(shown: Asking.Stage.Shown, details: Boolean) {
     val ink = LocalInk.current
-    His(question)
-    val answer = shown.asked.answer
-    if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
-    // 0.6.1: his words could be a day: one quiet link under her reply, and nothing sorted unless he taps it.
-    sortAsDay?.let { TextLink("Sort as my day", it, tag = "sort-as-day") }
     if (shown.asked.found.isNotEmpty()) {
         Label("What it read")
         SelectionContainer { Text(shown.asked.found.joinToString("\n\n"), style = Type.call, color = ink.soft) }
     }
     val p = shown.asked.proposal ?: return
-    Writes(p)
+    Writes(p, details)
     p.post?.let { post ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Label("Then it offers to post")
@@ -437,33 +494,18 @@ private fun Proposed(question: String, shown: Asking.Stage.Shown, details: Boole
         }
     }
     p.postRefusal?.let { Notice("It offered a post the pocket can't send: $it", tag = "post-refusal") }
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        // The time and the chip, in Details; that nothing is written yet, always.
-        if (details) {
-            Text(
-                "Took %.1f s".format(shown.took / 1000.0) + (shown.pace?.where?.takeIf(String::isNotEmpty)?.let { " $it" } ?: "") +
-                    (shown.firstShown?.let { f -> ", first words after %.1f s".format(f / 1000.0) } ?: "") +
-                    ", in ${Words.count(shown.asked.exchanges.size, "exchange")}.",
-                style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"),
-            )
-            shown.pace?.detail()?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("pace")) }
-        } else if (shown.pace?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
-            // 0.6.2: said whether or not Details are on.
-            Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
-        }
-        Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
-    }
+    Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
 }
 
 @Composable
-private fun Writes(p: Proposal) {
+private fun Writes(p: Proposal, details: Boolean) {
     val ink = LocalInk.current
     if (p.writes.isEmpty() && p.refusal == null) return
     Label(if (p.refusal == null) "What it proposes" else "What it proposed")
     Sheet(Modifier.testTag("writes")) {
         p.writes.forEachIndexed { i, w ->
             if (i > 0) Rule()
-            WriteRow(w)
+            WriteRow(w, details)
         }
         if (p.writes.isEmpty()) Text("Nothing could be planned.", style = Type.aside, color = ink.soft)
     }
@@ -471,13 +513,24 @@ private fun Writes(p: Proposal) {
 }
 
 @Composable
-private fun WriteRow(w: Planned) {
+private fun WriteRow(w: Planned, details: Boolean) {
     val ink = LocalInk.current
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("write"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(Words.landing(w.plan.kind, w.plan.block, w.plan.address, w.plan.landsAt, w.plan.wraps, w.standing), style = Type.small, color = ink.ink)
         if (w.step.byApp) Text(byApp(w), style = Type.small, color = ink.crimson, modifier = Modifier.testTag("by-app"))
         w.shown?.let { Text(Words.quoted(it.replace("{{fingerprint}}", PRINT_SHOWN), 400), style = Type.body, color = ink.ink) }
-        SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft) }
+        // 0.6.3: the bsp call, with Details on.
+        if (details) SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft, modifier = Modifier.testTag("call")) }
+    }
+}
+
+/** 0.6.3: the app's own note beneath her reply when his safety words match; its words are his to change, with his safety words. */
+@Composable
+private fun SafetyNote(note: String) {
+    val ink = LocalInk.current
+    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).background(ink.wash).semantics(mergeDescendants = true) {}.testTag("safety-note")) {
+        Box(Modifier.width(3.dp).fillMaxHeight().background(ink.crimson))
+        Text(note, style = Type.body, color = ink.ink, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
     }
 }
 
@@ -501,7 +554,7 @@ private fun Written(model: Model, seal: String, carried: com.phenomemental.pocke
         carried.landed.forEachIndexed { i, w ->
             if (i > 0) Rule()
             Text(
-                (if (w.plan.landsAt.isNullOrEmpty()) w.plan.block else "${w.plan.block} at ${w.plan.landsAt}") + ": " + Words.quoted(w.text ?: w.plan.text, 200),
+                w.plan.block + ": " + Words.quoted(w.text ?: w.plan.text, 200),
                 style = Type.small, color = ink.ink, modifier = Modifier.padding(vertical = 6.dp),
             )
         }
@@ -538,57 +591,6 @@ private fun PostCard(message: PoolMessage, postedBefore: String?) {
                 "It is the only thing the pocket sends.",
             style = Type.small, color = ink.soft,
         )
-    }
-}
-
-/** How the Ask ended. */
-@Composable
-private fun Over(model: Model, over: Asking.Stage.Over, details: Boolean) {
-    val ink = LocalInk.current
-    val context = LocalContext.current
-    His(model.app.asking.question)
-    over.shown?.let { shown ->
-        val answer = shown.asked.answer
-        if (answer != null && answer.say.isNotEmpty()) Text(answer.say, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
-        if (over.carried == null) shown.asked.proposal?.let { if (it.refusal != null) Writes(it) }
-    }
-    when (val p = over.posted) {
-        is Posted.Landed -> {
-            Done("Posted to your pool at entry ${p.slot}.", detail = "pool:${p.pool} on beach.happyseaurchin.com", tag = "posted")
-            TextLink("Open the beach", {
-                try {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BEACH_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                } catch (_: ActivityNotFoundException) {
-                    model.say(Screen.Ask, "There's no browser on this phone to open $BEACH_URL.")
-                }
-            }, tag = "open-beach")
-        }
-        is Posted.Refused -> Notice(p.why, tag = "not-posted")
-        is Posted.Unreached -> {
-            Notice("${p.why} It's kept below, and on the Shore, to post when you tap Post now.", tag = "not-posted")
-            Waiting(model)
-        }
-        null -> {}
-    }
-    over.carried?.let { c -> Written(model, over.shown?.asked?.proposal?.seal ?: "", c, model.app.asking.shellOpening()) }
-    // She only talked, and his words named one of his blocks: the app offers to keep them there, for Yes as ever.
-    model.app.asking.keepIn?.let { block ->
-        TextLink("Keep this in $block?", { model.app.asking.keep() }, tag = "keep-in")
-    }
-    // 0.6.1: his words could be a day, and nothing is sorted unless he asks: one quiet link.
-    if (over.shown != null && model.app.asking.sortable) {
-        TextLink("Sort as my day", { model.app.asking.sortAsDay() }, tag = "sort-as-day")
-    }
-    // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
-    val last = model.app.asking.history.lastOrNull()
-    if (details || last?.outcome != null || over.shown == null) Text(over.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
-    // Every answer's time and chip, in Details.
-    if (details) {
-        last?.let { Text(it.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took")) }
-        Text("This Ask is in your ask-log block.", style = Type.small, color = ink.soft)
-    } else if (over.shown?.pace?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
-        // 0.6.2: said whether or not Details are on.
-        Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
     }
 }
 

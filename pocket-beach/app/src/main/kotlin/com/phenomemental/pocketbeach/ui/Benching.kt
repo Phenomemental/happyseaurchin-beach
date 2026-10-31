@@ -255,7 +255,9 @@ class Benching(private val app: PocketApp) {
                     Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false).planned?.proposal
                 }
             }
-            add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms))
+            // 0.6.3: the safety note Ask would show him beneath her reply, from his own safety words and note (read, never written).
+            val note = if (ask.safety) Talking.note(ask.question, app.pages) else null
+            add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms, note))
         }
     }
 

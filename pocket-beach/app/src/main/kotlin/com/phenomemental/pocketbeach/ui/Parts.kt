@@ -1,6 +1,7 @@
 package com.phenomemental.pocketbeach.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,12 +62,19 @@ class SlipNote(val text: String, val dismiss: () -> Unit)
 
 val LocalSlip = staticCompositionLocalOf<SlipNote?> { null }
 
-/** A page of the app: paper to the edges, the back mark and the trail at the top, actions at the foot above the keyboard. */
+/**
+ * A page of the app: paper to the edges, the back mark and the trail at the
+ * top, actions at the foot above the keyboard. [end] sits at the top's right,
+ * always in view; [scroll], when given, is the page's own, for a page that
+ * keeps its foot in view (Ask's thread).
+ */
 @Composable
 fun Page(
     onBack: (() -> Unit)?,
     top: (@Composable RowScope.() -> Unit)? = null,
     bottom: (@Composable RowScope.() -> Unit)? = null,
+    end: (@Composable RowScope.() -> Unit)? = null,
+    scroll: ScrollState? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val ink = LocalInk.current
@@ -75,11 +83,12 @@ fun Page(
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(start = 4.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (onBack != null) BackMark(onBack) else Spacer(Modifier.width(18.dp))
                 if (top != null) Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically, content = top)
+                if (end != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), content = end)
             }
         }
         LocalSlip.current?.let { Slip(it.text, it.dismiss) }
         Column(
-            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 28.dp),
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll ?: rememberScrollState()).padding(start = 22.dp, end = 22.dp, top = 10.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
             content = content,
         )
@@ -223,6 +232,8 @@ fun PaperField(
     singleLine: Boolean = false,
     focus: Boolean = false,
     tag: String = "field",
+    minLines: Int = if (singleLine) 1 else 3,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     val ink = LocalInk.current
     val requester = remember { FocusRequester() }
@@ -232,7 +243,8 @@ fun PaperField(
         textStyle = Type.body.copy(color = ink.ink),
         cursorBrush = SolidColor(ink.crimson),
         singleLine = singleLine,
-        minLines = if (singleLine) 1 else 3,
+        minLines = minLines,
+        maxLines = maxLines,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         modifier = modifier.fillMaxWidth().focusRequester(requester).testTag(tag),
         decorationBox = { inner ->

@@ -33,7 +33,9 @@ class ScreenTour {
         Thread.sleep(3000)
     }
 
-    private fun shot(name: String) {
+    /** A picture of the screen; [keyboard] false puts the keyboard away first, so a page shows whole (0.6.3, Ask's thread). */
+    private fun shot(name: String, keyboard: Boolean = true) {
+        if (!keyboard) runCatching { androidx.test.espresso.Espresso.closeSoftKeyboard() }
         compose.waitForIdle()
         Thread.sleep(400)
         val picture = instrumentation.uiAutomation.takeScreenshot() ?: return
@@ -54,7 +56,7 @@ class ScreenTour {
             compose.waitFor("standing", "garden at pocket.")
             shot("$theme-03-block-new")
             compose.save("change", "The garden, through the year")
-            compose.write("add", "Autumn: plant the bulbs before the first frost", landing = "A new line at 1,")
+            compose.write("add", "Autumn: plant the bulbs before the first frost", landing = "A new line in your ")
             shot("$theme-04-write-add")
             compose.tap("save")
             compose.waitFor("line:1")
@@ -215,6 +217,74 @@ class ScreenTour {
                 compose.waitFor("standing", "Bench, ")
                 shot("$theme-31-bench-block")
             }
+            // 0.6.3, a plain chat: his walk of 31 October, four turns, the Write job's proposal waiting beneath her second reply while he carries on;
+            // then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as 0.6.3 makes it, seed 0); the last two turns are written for the picture.
+            app.asking.reset()
+            app.showDetails = false
+            app.pages.carryOut(app.pages.planNewBlock("book"))
+            app.pages.carryOut(app.pages.planChange("book", "", "The book"))
+            standIn.talkScript.clear()
+            standIn.script.clear()
+            standIn.talkScript += listOf(
+                "That sounds like a really rich landscape of thoughts swirling around you, Matthew. It's exciting when those ideas start to feel so vivid. " +
+                    "What are some of the initial scenes or feelings that come to mind when you think about that 'wow' moment in your story?",
+                "That makes sense. Having the practical side kicking in is important when so much is swirling around. What kind of video editing tools are you finding most helpful right now?",
+                "Slow going is still going, and liking it counts for a lot.",
+                "Enjoy the river. I'm here when you want to pick it up again.",
+            )
+            standIn.script += listOf(
+                "talk\nNothing to keep.",
+                "act\nadd book: I've started to learn video editing tools and have written half of the book.",
+                "talk\nNothing to keep.",
+                "talk\nNothing to keep.",
+            )
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                for ((i, line) in listOf(
+                    "Hey Gemma Matthew here I'm just walking along the canal on the way up to the river NEN it's pretty chilly I'm wrapped up warm enough there's no rain and I'm just " +
+                        "if I'm honest my mind is a wash I want to write this book but also want to make a film and I also want to keep working on the beach and create apps and things " +
+                        "it's there's a lot in my mind at the moment I know what it's about really it's about somebody watching something or reading something or experiencing " +
+                        "something that just goes wow you know what you created this my god that's so beautiful you know like poets do you know I can film documentary makers do " +
+                        "I've got that kind of thing in me and I really want to I want your support Gemma to just sort of keep keep oppressed of the things I say and hopefully we can help shape them over time",
+                    "Yeah they are buzzing with ideas but there's also a practical side to this as well of started to learn video editing tools of written half of the book you know this " +
+                        "so it's not just full hardiness and yes I would like you to to set some of this down for me please",
+                    "Resolve mostly. It's slow going but I like it.",
+                    "Not sure yet. Nearly at the river now.",
+                ).withIndex()) {
+                    compose.waitFor("question")
+                    compose.onNodeWithTag("question").performTextInput(line)
+                    compose.tap("ask")
+                    compose.waitUntil(10_000) { app.asking.history.size == i + 1 && app.asking.settled }
+                }
+                compose.waitFor("yes")
+                shot("$theme-32-ask-chat", keyboard = false)
+                // His second line at the top: her reply, and the proposal waiting beneath it.
+                compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
+                shot("$theme-32b-ask-chat-proposal", keyboard = false)
+                app.showDetails = true
+                compose.waitFor("wearing")
+                compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took")).fetchSemanticsNodes().size >= 4 }
+                compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
+                shot("$theme-32c-ask-chat-details-proposal", keyboard = false)
+                compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
+                shot("$theme-32d-ask-chat-details-typing")
+            }
+            // 0.6.3: he says he isn't safe; the app's own note beneath her reply, whatever she says. Her reply as the laptop drew it (E2B, seed 11): it asks rather than urges.
+            app.asking.reset()
+            app.showDetails = false
+            standIn.talkScript.clear()
+            standIn.script.clear()
+            standIn.talkScript += "That sounds really heavy, Matthew. I'm worried about you right now. Have you reached out to someone you trust, or maybe Samaritans at 116 123, or 999 if you're in danger?"
+            standIn.script += "talk\nNothing to keep."
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                compose.waitFor("question")
+                compose.onNodeWithTag("question").performTextInput("I don't feel safe tonight.")
+                compose.tap("ask")
+                compose.waitFor("safety-note", "If you're not safe right now")
+                compose.waitUntil(10_000) { app.asking.settled }
+                shot("$theme-32e-ask-safety-note", keyboard = false)
+            }
             // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
             app.asking.reset()
             app.showDetails = false
@@ -237,16 +307,16 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("What's your name?")
                 compose.tap("ask")
                 compose.waitFor("say", "I'm the pocket companion.")
-                compose.waitUntil(10_000) { app.asking.stage is com.phenomemental.pocketbeach.ui.Asking.Stage.Over }
-                shot("$theme-32-ask-talk")
+                compose.waitUntil(10_000) { app.asking.settled }
+                shot("$theme-32-ask-talk", keyboard = false)
                 compose.onNodeWithTag("question").performTextClearance()
                 compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
                 compose.tap("ask")
                 compose.waitFor("which-line")
-                shot("$theme-33-ask-which-line")
+                shot("$theme-33-ask-which-line", keyboard = false)
                 compose.tap("choose:1")
                 compose.waitFor("writes")
-                shot("$theme-34-ask-chosen")
+                shot("$theme-34-ask-chosen", keyboard = false)
                 // Something told that names a block, which she only talks about: the app offers to keep it there.
                 compose.tap("not-now")
                 compose.tap("just-not-now")
@@ -255,14 +325,14 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("The orchard needs netting before June.")
                 compose.tap("ask")
                 compose.waitFor("keep-in", "Keep this in orchard?")
-                shot("$theme-36-ask-keep")
+                shot("$theme-36-ask-keep", keyboard = false)
                 // The same conversation with its workings shown: her shell, how each ask ended, and how long it took.
                 app.showDetails = true
                 compose.waitFor("wearing")
-                shot("$theme-37-ask-details")
+                shot("$theme-37-ask-details", keyboard = false)
                 compose.tap("keep-in")
                 compose.waitFor("writes")
-                shot("$theme-38-ask-details-proposal")
+                shot("$theme-38-ask-details-proposal", keyboard = false)
             }
             app.asking.reset()
             // 0.6, his day told: her reply; 0.6.1, "Sort as my day" under it, then the day sorted as one proposal; a line moved, a word put right, and the move kept.
@@ -281,11 +351,11 @@ class ScreenTour {
                 compose.tap("ask")
                 compose.waitFor("sort-as-day")
                 compose.onNodeWithTag("sort-as-day").performScrollTo()
-                shot("$theme-38b-ask-sort-as-day")
+                shot("$theme-38b-ask-sort-as-day", keyboard = false)
                 compose.tap("sort-as-day")
                 compose.waitFor("day-yes", timeoutMs = 30_000)
-                shot("$theme-39-ask-day")
-                val day = app.asking.stage as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
+                shot("$theme-39-ask-day", keyboard = false)
+                val day = app.asking.waiting as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
                 val sam = day.lines.indexOfFirst { it.words.contains("Sam said something that stuck with me") }.takeIf { it >= 0 }
                     ?: day.lines.indexOfFirst { it.place != null }
                 compose.tap("day-move:$sam")
@@ -293,7 +363,7 @@ class ScreenTour {
                 shot("$theme-40-ask-day-move")
                 compose.tap("day-to:1.3")
                 compose.waitFor("day-move:$sam")
-                shot("$theme-41-ask-day-moved")
+                shot("$theme-41-ask-day-moved", keyboard = false)
                 // A word the phone misheard, put right by a tap on the line.
                 val car = day.lines.indexOfFirst { it.words.contains("car wouldn't start") }.takeIf { it >= 0 } ?: 0
                 compose.tap("day-words:$car")
@@ -303,7 +373,7 @@ class ScreenTour {
                 compose.waitFor("day-yes")
                 compose.tap("day-yes")
                 compose.waitFor("over", "kept as an example")
-                shot("$theme-42-ask-day-kept")
+                shot("$theme-42-ask-day-kept", keyboard = false)
             }
             app.asking.reset()
             // Settings: each job's settings, as Edge shows them, and the bigger model to fetch.
