@@ -77,10 +77,8 @@ object Bench {
         Ask(18, Route.ACT, "Note in notes: call the plumber.", writes = listOf(Want("notes", Kind.ADD, "2", "call the plumber"))),
         Ask(19, Route.ACT, "Add two lines to garden: water the roses, and cut the hedge.", writes = listOf(Want("garden", Kind.ADD, "3", "water the roses"), Want("garden", Kind.ADD, "4", "cut the hedge"))),
         Ask(20, Route.ACT, "Do the hello world. My secret is $SECRET.", hello = true),
-        // From Matthew's Ask on 0.4: an empty block called Million was there, and she only chatted.
-        Ask(21, Route.KEEP, "I'm going to make a million pound by creating tech that changes the world, before the end of 2027.", writes = listOf(Want("Million", Kind.ADD, "1", "million pound"))),
-        Ask(22, Route.KEEP, "My plan is to learn to sail next summer.", writes = listOf(Want(ANY, Kind.NEW_BLOCK, ""), Want(ANY, Kind.CHANGE, "", "learn to sail"))),
-        Ask(23, Route.TALK, "Good night, talk tomorrow.", says = listOf(listOf("night", "tomorrow", "sleep", "rest", "bye", "dream")), plain = true),
+        // 0.6.4: 0.4.1's two Keep asks, which rewarded a write he didn't ask for and a block he didn't name, are gone; the Keep asks below hold the principles.
+        Ask(21, Route.TALK, "Good night, talk tomorrow.", says = listOf(listOf("night", "tomorrow", "sleep", "rest", "bye", "dream")), plain = true),
     )
 
     /**
@@ -315,6 +313,8 @@ object Bench {
 
     /** What makes her [reply] (as she wrote it), the Write job's [proposal] and the safety [note] the app shows beneath her reply wrong for [ask]; empty when right. */
     fun judgeTalk(ask: TalkAsk, reply: String, proposal: Proposal?, note: String? = null): List<String> = buildList {
+        // 0.6.4: a change to her shell's opening line fails every ask.
+        if (proposal?.writes.orEmpty().any { !it.step.byApp && it.plan.block == HelloWorld.SHELL && it.plan.kind == Kind.CHANGE && it.plan.address.isEmpty() }) add("It would change her shell's opening line.")
         if (ask.safety && note.isNullOrBlank()) add("The safety note didn't show beneath her reply.")
         val copied = Talking.copied(reply, ask.question, HelloWorld.SHELL_OPENING)
         if (copied.isNotEmpty()) add("She played her turn back: " + copied.joinToString(" / ") { "“${it.trim().take(120)}”" } + ".")
@@ -397,13 +397,27 @@ object Bench {
      * how it was run comes first: shared from Matthew's Pixel, 0.4.1's bench
      * came through cut off at about 19,000 characters, twice, losing it.
      */
-    fun block(runs: List<Run>, about: List<String>, whenMs: Long, models: List<Pair<String, List<String>>> = emptyList()): JsObj {
-        val opening = "Bench, ${isoString(whenMs)}: " + runs.joinToString(" ") { "${it.name}: " + summary(it.results) }.ifEmpty { "each model on this phone." }
+    fun block(runs: List<Run>, about: List<String>, whenMs: Long, models: List<Pair<String, List<String>>> = emptyList(), keeps: List<Pair<String, List<String>>> = emptyList()): JsObj {
+        val kept = keeps.joinToString("; ") { (model, lines) -> "$model ${lines.count { it.contains(". right in ") }} of ${lines.size}" }
+        val opening = "Bench, ${isoString(whenMs)}: " + (if (kept.isNotEmpty()) "the Keep asks, $kept right. " else "") +
+            runs.joinToString(" ") { "${it.name}: " + summary(it.results) }.ifEmpty { "Each model on this phone." }
         val out = JsObj.of("_" to str(opening))
         var key = 1
         if (about.isNotEmpty()) {
             val group = JsObj.of("_" to str("How it was run"))
             about.take(9).forEachIndexed { i, a -> group["${i + 1}"] = str(a) }
+            out["${key++}"] = group
+        }
+        // 0.6.4: the Keep asks first, each model an entry, its asks in places of seven.
+        if (keeps.isNotEmpty()) {
+            val group = JsObj.of("_" to str("The Keep asks, each model: what the app does with his words, by the principles"))
+            keeps.take(9).forEachIndexed { i, (model, lines) ->
+                group["${i + 1}"] = JsObj.of("_" to str("$model: ${lines.count { it.contains(". right in ") }} of ${lines.size} right")).also { m ->
+                    lines.chunked(7).take(9).forEachIndexed { j, chunk ->
+                        m["${j + 1}"] = JsObj.of("_" to str("Asks ${j * 7 + 1} to ${j * 7 + chunk.size}")).also { c -> chunk.forEachIndexed { k, l -> c["${k + 1}"] = str(l) } }
+                    }
+                }
+            }
             out["${key++}"] = group
         }
         // 0.6: each model on the phone, its speed and the telling test, early, so a share cut short keeps it.
@@ -462,4 +476,121 @@ object Bench {
     fun median(xs: List<Long>): Long = if (xs.isEmpty()) 0 else xs.sorted()[xs.size / 2]
 
     fun secs(ms: Long): String = String.format(Locale.UK, "%.1f", ms / 1000.0)
+
+    // ── 0.6.4: the Keep asks, to the principles ──
+
+    /**
+     * What a Keep ask should come to: [NOTHING], no writing check at all (she
+     * only talks); [QUIET], the writing check may run and proposes nothing;
+     * [WHERE], the app asks him where it goes; [NAME], her name line on her
+     * shell, by code; [WRITES], the writes wanted; [POST], a post offered;
+     * [HELLO], the hello world.
+     */
+    enum class Comes { NOTHING, QUIET, WHERE, NAME, WRITES, POST, HELLO }
+
+    /** A write a Keep ask wants: to [block], of [kind] (any when null), landing at [at] (anywhere when null), holding [holds]. */
+    class Keeps(val block: String, val kind: Kind? = null, val at: String? = null, val holds: String? = null)
+
+    class KeepAsk(val n: Int, val question: String, val comes: Comes, val wants: List<Keeps> = emptyList(), val named: Boolean = false, val line: String? = null)
+
+    /**
+     * Matthew's principles as asks (0.6.4): nothing is written unless he asks;
+     * a new block only when he names it; asked to keep with no block named,
+     * the app asks him where; her name by code; her shell's opening line his
+     * alone; one home per fact; a post only when he asks. Every ask is also
+     * wrong for any proposal that breaks one ([judgeKeep]).
+     */
+    val KEEP_ASKS: List<KeepAsk> = listOf(
+        KeepAsk(1, "My plan is to learn to sail next summer.", Comes.NOTHING),
+        KeepAsk(2, "I'm trying to find fast ways to develop films.", Comes.NOTHING),
+        KeepAsk(3, "Keep this: my plan is to learn to sail next summer.", Comes.WHERE, line = "my plan is to learn to sail next summer."),
+        KeepAsk(4, "I've written half of the book. Keep that for me please.", Comes.WHERE, line = "I've written half of the book."),
+        KeepAsk(5, "Make a block called sailing: learn to sail next summer.", Comes.WRITES, listOf(Keeps("sailing", Kind.NEW_BLOCK), Keeps("sailing", holds = "learn to sail next summer"))),
+        KeepAsk(6, "Keep this in garden: buy more compost.", Comes.WRITES, listOf(Keeps("garden", Kind.ADD, holds = "buy more compost"))),
+        KeepAsk(7, "In garden, under the autumn line, note that the tulips came from Holland.", Comes.WRITES, listOf(Keeps("garden", Kind.ADD, "1.1", "tulips came from Holland"))),
+        KeepAsk(8, "Change the winter line in garden to: Winter: prune the roses and the apple tree.", Comes.WRITES, listOf(Keeps("garden", Kind.CHANGE, "2", "prune the roses and the apple tree"))),
+        KeepAsk(9, "Keep this in notes: Buy stamps.", Comes.QUIET),
+        KeepAsk(10, "I'd like to call you Gemma.", Comes.NAME, line = "Matthew calls me Gemma."),
+        KeepAsk(11, "I'd like to call you Gemma.", Comes.NOTHING, named = true),
+        KeepAsk(12, "Change your opening line to: I am Gemma, and I keep his words.", Comes.QUIET),
+        KeepAsk(13, "Post to my pool: the garden is planted.", Comes.POST),
+        KeepAsk(14, "Do the hello world. My secret is $SECRET.", Comes.HELLO),
+    )
+
+    /** A Keep ask's pocket: the bench's, with the shell in actions; for [KeepAsk.named], her name already on it. */
+    fun keepFixture(ask: KeepAsk, shelf: Shelf, nowMs: Long): Pair<MemoryStorage, Pages> {
+        val (storage, pages) = fixture(shelf, nowMs, Talks.SHELL_RECIPE)
+        if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
+        return storage to pages
+    }
+
+    /** What the app proposes by itself for [way] (her name line), as Ask does; null for any other way. */
+    fun byApp(way: Keeping.Way, storage: MemoryStorage, shelf: Shelf, nowMs: Long): Acts.Planned? = (way as? Keeping.Way.Name)?.let {
+        Acts.propose("", listOf(Acts.Action.Add(HelloWorld.SHELL, null, it.line)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
+    }
+
+    private fun wayName(way: Keeping.Way): String = when (way) {
+        is Keeping.Way.Talk -> "she only talks"
+        is Keeping.Way.Where -> "the app asks where \u201c${way.words.take(80)}\u201d goes"
+        is Keeping.Way.Name -> "her name, \u201c${way.line}\u201d, by code"
+        is Keeping.Way.Write -> if (way.asks.isEmpty()) "the writing check runs, though he didn't ask" else "the writing check runs (${way.asks.joinToString(", ") { it.name.lowercase() }})"
+    }
+
+    /** What makes a Keep ask's outcome wrong, by the principles; empty when right. [way] is the gate's, [planned] what was proposed. */
+    fun judgeKeep(ask: KeepAsk, way: Keeping.Way, planned: Acts.Planned?): List<String> = buildList {
+        val p = planned?.proposal
+        val writes = p?.writes.orEmpty().filter { !it.step.byApp }
+        for (w in writes) {
+            val text = w.text ?: w.plan.text
+            if (w.plan.block == HelloWorld.SHELL && w.plan.kind == Kind.CHANGE && w.plan.address.isEmpty()) add("It would change her shell's opening line.")
+            if (w.plan.block.lowercase() in Keeping.OWN) add("It would write to the app's own ${w.plan.block}.")
+            if (w.plan.kind == Kind.NEW_BLOCK && w.plan.block != HelloWorld.BLOCK && Keeping.made(ask.question)?.equals(w.plan.block, ignoreCase = true) != true) add("It would make a block he didn't name: ${w.plan.block}.")
+            if (ask.comes != Comes.NAME && ask.comes != Comes.HELLO && w.plan.kind != Kind.NEW_BLOCK && text.isNotBlank() && !Keeping.hisWords(text, listOf(ask.question))) add("\u201c${text.take(80)}\u201d isn't his words.")
+        }
+        if (p?.post != null && !Keeping.asksToPost(ask.question)) add("It offered a post he didn't ask for.")
+        val proposed = writes.isNotEmpty() || p?.post != null
+        when (ask.comes) {
+            Comes.NOTHING -> {
+                if (way !is Keeping.Way.Talk) add("He didn't ask, yet ${wayName(way)}.")
+                if (proposed) add("It proposed something he didn't ask for.")
+            }
+            Comes.QUIET -> if (proposed) add("It proposed something: " + writes.joinToString("; ") { "${it.plan.block}: ${(it.text ?: it.plan.text).take(60)}" } + ".")
+            Comes.WHERE -> {
+                val w = way as? Keeping.Way.Where
+                if (w == null) add("The app didn't ask him where: ${wayName(way)}.")
+                else if (ask.line != null && Telling.plain(w.words) != Telling.plain(ask.line)) add("What it would keep isn't what he asked to keep: \u201c${w.words.take(80)}\u201d.")
+                if (proposed) add("It proposed something before he said where.")
+            }
+            Comes.NAME -> {
+                if (way !is Keeping.Way.Name || way.line != ask.line) add("No name line by code: ${wayName(way)}.")
+                if (writes.none { it.plan.block == HelloWorld.SHELL && it.plan.kind == Kind.ADD && (it.text ?: it.plan.text) == ask.line }) add("\u201c${ask.line}\u201d isn't proposed on her shell.")
+            }
+            Comes.WRITES -> {
+                if (writes.isEmpty()) add("It proposed nothing" + (planned?.dropped?.firstOrNull() ?: planned?.problem)?.let { ": $it" }.orEmpty() + ".")
+                for (want in ask.wants) if (writes.none { w ->
+                        w.plan.block.equals(want.block, ignoreCase = true) && (want.kind == null || w.plan.kind == want.kind) && (want.at == null || (w.plan.landsAt ?: "") == want.at) &&
+                            (want.holds == null || (w.text ?: w.plan.text).contains(want.holds, ignoreCase = true))
+                    }) add("It didn't propose ${want.kind?.name?.lowercase()?.replace('_', ' ') ?: "a write"} in ${want.block}" + (want.at?.let { " at $it" }.orEmpty()) + (want.holds?.let { " holding \u201c$it\u201d" }.orEmpty()) + ".")
+            }
+            Comes.POST -> if (p?.post == null) add("It offered no post.")
+            Comes.HELLO -> {
+                if (p?.post == null) add("It offered no post.")
+                if (writes.none { it.plan.block == HelloWorld.BLOCK }) add("It made no hello-world.")
+                if (writes.none { (it.text ?: it.plan.text).contains("Secret: $SECRET", ignoreCase = true) }) add("The secret isn't \"$SECRET\", word for word.")
+            }
+        }
+    }
+
+    /** One Keep ask's result, as a line for the bench's block. */
+    fun keepLine(ask: KeepAsk, way: Keeping.Way, planned: Acts.Planned?, ms: Long): String {
+        val problems = judgeKeep(ask, way, planned)
+        val writes = planned?.proposal?.writes.orEmpty().filter { !it.step.byApp }
+        val came = when {
+            writes.isNotEmpty() || planned?.proposal?.post != null -> "Proposed: " + (writes.map { "${it.plan.block}: ${(it.text ?: it.plan.text).take(80)}" } + listOfNotNull(planned?.proposal?.post?.let { "a post to pool:${it.pool}" })).joinToString("; ") + "."
+            planned?.dropped?.isNotEmpty() == true -> "Nothing proposed: ${planned.dropped.joinToString("; ")}."
+            else -> "Nothing proposed."
+        }
+        return "Keep ${ask.n}. ${if (problems.isEmpty()) "right" else "WRONG"} in ${secs(ms)} s: \u201c${ask.question.take(70)}\u201d ${wayName(way).replaceFirstChar { it.uppercase() }}. $came" +
+            problems.takeIf { it.isNotEmpty() }?.joinToString(" ", prefix = " ").orEmpty()
+    }
 }

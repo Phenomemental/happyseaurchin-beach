@@ -164,7 +164,9 @@ object Landing {
      * [now] (or a new clock) with the day at [address]: the telling as the
      * day's line, after any line the day had, and the six in the day's hidden
      * directory, after the lines they had. A place keeps nine lines; what
-     * would go past nine is returned, not written.
+     * would go past nine is returned, not written. 0.6.4, one home: a
+     * telling the day already holds is not written again, nor a piece its
+     * place already holds, so sorting the same day again adds nothing twice.
      */
     fun withDay(now: Js?, address: String, telling: String, six: Map<String, List<String>>): Pair<JsObj, List<String>> {
         val root = (now as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: emptyClock()
@@ -185,7 +187,13 @@ object Landing {
             else -> JsObj()
         }
         val had = (dir["_"] as? JsStr)?.value?.takeIf { it.isNotBlank() }
-        dir["_"] = str(if (had == null) telling.trim() else had + "\n\n" + telling.trim())
+        dir["_"] = str(
+            when {
+                had == null -> telling.trim()
+                had.split("\n\n").any { Telling.plain(it) == Telling.plain(telling) } -> had
+                else -> had + "\n\n" + telling.trim()
+            },
+        )
         val over = mutableListOf<String>()
         for ((i, place) in Telling.DAY.withIndex()) {
             val words = six[place].orEmpty()
@@ -196,6 +204,7 @@ object Landing {
                 else -> JsObj.of("_" to str(name(place)))
             }
             for (w in words) {
+                if ((1..9).any { k -> (at["$k"] as? JsStr)?.value?.let { Telling.plain(it) == Telling.plain(w) } == true || ((at["$k"] as? JsObj)?.get("_") as? JsStr)?.value?.let { Telling.plain(it) == Telling.plain(w) } == true }) continue
                 val free = (1..9).firstOrNull { !at.has("$it") }
                 if (free == null) over += w else at["$free"] = str(w)
             }
@@ -232,6 +241,9 @@ object Landing {
         }
         return Landed(blocks, over, examples)
     }
+
+    /** 0.6.4: the blocks one Yes writes, by name, in order: shown before he taps it. */
+    fun writes(landed: Landed): List<String> = landed.blocks.map { it.first }
 
     /** The writes for one Yes, each planned whole on the pocket as it stands. */
     fun plans(landed: Landed, pages: Pages): List<Plan> = landed.blocks.map { (name, block) -> pages.planWhole(name, block) }

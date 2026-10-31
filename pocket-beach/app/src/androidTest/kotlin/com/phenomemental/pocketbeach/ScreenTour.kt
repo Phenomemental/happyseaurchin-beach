@@ -232,12 +232,8 @@ class ScreenTour {
                 "Slow going is still going, and liking it counts for a lot.",
                 "Enjoy the river. I'm here when you want to pick it up again.",
             )
-            standIn.script += listOf(
-                "talk\nNothing to keep.",
-                "act\nadd book: I've started to learn video editing tools and have written half of the book.",
-                "talk\nNothing to keep.",
-                "talk\nNothing to keep.",
-            )
+            // 0.6.4: only his second line asks to keep (it names his book): the writing check runs for it alone, and proposes his words as the phone heard them.
+            standIn.script += listOf("act\nadd book: started to learn video editing tools of written half of the book")
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 for ((i, line) in listOf(
@@ -284,6 +280,23 @@ class ScreenTour {
                 compose.waitFor("safety-note", "If you're not safe right now")
                 compose.waitUntil(10_000) { app.asking.settled }
                 shot("$theme-32e-ask-safety-note", keyboard = false)
+            }
+            // 0.6.4: something he tells proposes nothing; asked to keep it with no block named, the app asks him where: his blocks, and his day.
+            app.asking.reset()
+            app.showDetails = false
+            standIn.talkScript.clear()
+            standIn.script.clear()
+            standIn.talkScript += listOf("Fast ways sound good. What have you tried so far?", "It's below, for your yes.")
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                for (line in listOf("I'm trying to find fast ways to develop films", "Keep that for me please.")) {
+                    compose.waitFor("question")
+                    compose.onNodeWithTag("question").performTextInput(line)
+                    compose.tap("ask")
+                    compose.waitUntil(10_000) { app.asking.settled && app.asking.history.lastOrNull()?.question == line }
+                }
+                compose.waitFor("where-day")
+                shot("$theme-32f-ask-where", keyboard = false)
             }
             // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
             app.asking.reset()

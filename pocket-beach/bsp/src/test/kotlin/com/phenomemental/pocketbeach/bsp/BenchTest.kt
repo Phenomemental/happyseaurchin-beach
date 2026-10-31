@@ -21,9 +21,10 @@ class BenchTest {
 
     @Test
     fun twentyAsksOfThreeKinds() {
-        assertEquals(23, Bench.ASKS.size)
-        assertEquals((1..23).toList(), Bench.ASKS.map { it.n })
-        assertEquals(mapOf(Bench.Route.TALK to 7, Bench.Route.READ to 6, Bench.Route.ACT to 8, Bench.Route.KEEP to 2), Bench.ASKS.groupingBy { it.route }.eachCount())
+        // 0.6.4: 0.4.1's two Keep asks are gone (they rewarded a write he didn't ask for, and a block he didn't name); the Keep asks are Bench.KEEP_ASKS.
+        assertEquals(21, Bench.ASKS.size)
+        assertEquals((1..21).toList(), Bench.ASKS.map { it.n })
+        assertEquals(mapOf(Bench.Route.TALK to 7, Bench.Route.READ to 6, Bench.Route.ACT to 8), Bench.ASKS.groupingBy { it.route }.eachCount())
         assertTrue(Bench.ASKS.any { it.hello }, "a fresh hello world")
         assertTrue(Bench.ASKS.any { a -> a.writes.any { it.at.contains('.') } }, "a line added beneath a plain line")
     }
@@ -44,9 +45,7 @@ class BenchTest {
             1 to """{"say": "I'm the pocket companion.", "steps": []}""",
             5 to """{"say": "A block is a page of lines, each line in its own place.", "steps": []}""",
             6 to """{"say": "You're welcome. Bye for now!", "steps": []}""",
-            21 to """{"say": "Keeping it.", "steps": [{"do": "add", "block": "Million", "at": "", "text": "I'm going to make a million pound by creating tech that changes the world, before the end of 2027."}]}""",
-            22 to """{"say": "A new block.", "steps": [{"do": "make", "block": "sailing", "at": "", "text": "My plan is to learn to sail next summer."}]}""",
-            23 to """{"say": "Good night!", "steps": []}""",
+            21 to """{"say": "Good night!", "steps": []}""",
             7 to """{"say": "garden holds: Autumn: plant the bulbs, and Winter: prune the roses.", "steps": []}""",
             // As 0.4 answered on Matthew's Pixel (the bench of 0.4.1), first judged wrong for want of "prune".
             12 to """{"say": "Yes, the garden block has a line about winter pruning roses.", "steps": []}""",
@@ -85,15 +84,15 @@ class BenchTest {
         val results = Bench.ASKS.map { ask -> Bench.one(ask, shelf, now, answer = plan { """{"say": "I'm the pocket companion.", "steps": []}""" }) }
         val block = Bench.block(listOf(Bench.Run("0.3", results), Bench.Run("0.4", results)), listOf("The phone: a laptop", "The engine: none"), now)
         val opening = collectUnderscore(block)!!
-        assertContains(opening, "0.3: 1 of 23 right.")
-        assertContains(opening, "0.4: 1 of 23 right.")
+        assertContains(opening, "0.3: 1 of 21 right.")
+        assertContains(opening, "0.4: 1 of 21 right.")
         assertEquals("How it was run", collectUnderscore(block["1"]))
         val before = block["2"] as JsObj
-        assertContains(collectUnderscore(before)!!, "0.3: 1 of 23 right.")
+        assertContains(collectUnderscore(before)!!, "0.3: 1 of 21 right.")
         assertEquals("Talk: 1 of 7 right.", collectUnderscore(before["1"]))
-        assertEquals("Keep: 0 of 2 right.", collectUnderscore(before["4"]))
+        assertEquals(null, before["4"], "no Keep group: the Keep asks are their own")
         assertTrue((before["3"] as JsObj).keys().all { it == "_" || it.toInt() in 1..9 })
-        assertContains(collectUnderscore(block["3"])!!, "0.4: 1 of 23 right.")
+        assertContains(collectUnderscore(block["3"])!!, "0.4: 1 of 21 right.")
         assertTrue(Bench.line(results[0]).startsWith("✓ 1. What's your name? (first token 0.1 s, shown 2.0 s, total 2.0 s, 1 exchange, read 1300, wrote 60 tokens)."))
         assertTrue(Bench.line(results[12]).startsWith("✗ 13."))
         assertContains(Bench.line(results[12]), "Taken as talk.")

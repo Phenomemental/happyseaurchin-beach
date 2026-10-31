@@ -31,7 +31,7 @@ object Fresh {
         val note = a.history.lastOrNull()?.note?.takeIf { it.isNotEmpty() }?.let { ": $it" }.orEmpty() +
             a.history.lastOrNull()?.waiting?.let { " (waiting: ${it::class.simpleName})" }.orEmpty() + (if (a.checking) " (the Write job looking)" else "")
         val bench = app.benching.stage.let { b -> b::class.simpleName + ((b as? com.phenomemental.pocketbeach.ui.Benching.Stage.Failed)?.why?.let { ": $it" }.orEmpty()) }
-        return "Ask: ${stage::class.simpleName}$note; checking ${a.checking}, sorting ${a.sorting}, its lock ${if (a.lockedForTests) "held" else "free"}; " +
+        return "Ask: ${stage::class.simpleName}$note;${a.failure?.let { " FAILURE $it;" }.orEmpty()} checking ${a.checking}, sorting ${a.sorting}, its lock ${if (a.lockedForTests) "held" else "free"}; " +
             "the last exchange: ${a.history.lastOrNull()?.let { "${it.question.take(60)} / ${it.note}" }}. The bench: $bench."
     }
 
@@ -46,6 +46,8 @@ object Fresh {
         app.connectedForTests = null
         // The tests read the workings; the pictures of the new Ask turn them off.
         app.showDetails = true
+        // 0.6.4: the ask log is off by default; the tests read it, so it is on here, and off where a test says so.
+        app.keepAskLog = true
         for (job in com.phenomemental.pocketbeach.model.Job.values()) app.set(job, com.phenomemental.pocketbeach.model.JobSettings.of(job))
         // A download kept part way, or a failure recorded, but never the model itself.
         File(app.getExternalFilesDir(null), "models/${com.phenomemental.pocketbeach.model.ModelStore.FILE}.part").delete()

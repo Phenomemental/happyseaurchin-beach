@@ -66,6 +66,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         BiggerModel(app, e4b)
         for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job)) { app.set(job, it) }
         SafetyWords(model, nav)
+        AskLog(model)
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
@@ -116,6 +117,29 @@ private fun SafetyWords(model: Model, nav: Nav) {
             }
         }, tag = "add-safety-note")
         problem?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("safety-problem")) }
+    }
+}
+
+/** 0.6.4: whether each exchange in Ask is kept in the ask log; off unless he turns it on. The saved conversation keeps everything either way. */
+@Composable
+private fun AskLog(model: Model) {
+    val ink = LocalInk.current
+    Column(Modifier.fillMaxWidth().testTag("ask-log-part"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Keep an ask log", style = Type.heading, color = ink.ink, modifier = Modifier.weight(1f))
+            androidx.compose.material3.Switch(
+                checked = model.app.keepAskLog,
+                onCheckedChange = { model.app.keepAskLog = it },
+                colors = androidx.compose.material3.SwitchDefaults.colors(checkedTrackColor = ink.crimson),
+                modifier = Modifier.testTag("ask-log"),
+            )
+        }
+        Text(
+            "When on, each exchange in Ask is written to your ask-log block: what you said, what was proposed, and how it ended. Off, nothing is written " +
+                "unless you ask; \u201cSave this conversation\u201d keeps everything either way.",
+            style = Type.small, color = ink.soft,
+        )
     }
 }
 

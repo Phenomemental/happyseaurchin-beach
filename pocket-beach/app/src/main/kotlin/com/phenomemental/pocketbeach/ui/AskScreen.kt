@@ -211,6 +211,35 @@ private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking)
     }
 }
 
+/** 0.6.4: he asked to keep something and named no block of his: where it goes, his to say. The model doesn't choose. */
+@Composable
+private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where) {
+    val ink = LocalInk.current
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().testTag("where")) {
+        Text("Where shall this go?", style = Type.body, color = ink.ink)
+        Text(Words.quoted(w.words, 300), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("where-words"))
+        for (b in w.blocks.take(9)) Action("In $b", { asking.putIn(b, e) }, Modifier.fillMaxWidth(), tag = "where:$b")
+        Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
+        Action("Not now", { asking.notNowWhere(e) }, Modifier.fillMaxWidth(), tag = "where-not-now")
+        Text(
+            if (w.blocks.isEmpty()) "You have no blocks of your own yet. To make one, say \u201cmake a block called \u2026\u201d."
+            else "Or, for a new block, say \u201cmake a block called \u2026\u201d.",
+            style = Type.small, color = ink.soft,
+        )
+    }
+}
+
+/** The blocks a day's Yes writes, in plain words. */
+private fun dayWrites(names: List<String>): String {
+    val plain = mapOf(
+        Landing.NOW to "now, your days on the clock",
+        Landing.TELLING to "telling, your hand and rungs",
+        com.phenomemental.pocketbeach.bsp.Whens.BLOCK to "time-words, your time words (kept the first time)",
+        Landing.EXAMPLES to "sort-examples, the moves you made",
+    )
+    return if (names.isEmpty()) "" else "Yes writes these blocks: " + names.joinToString("; ") { plain[it] ?: it } + "."
+}
+
 /** One exchange of the thread: his words, her reply, what waits on his answer beneath it, and how it ended. */
 @Composable
 private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boolean) {
@@ -265,6 +294,7 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
                     TextLink("Back to the proposal", { asking.back(e) }, tag = "back-to-proposal")
                 }
             }
+            is Asking.Stage.Where -> WhereGoes(asking, e, w)
             is Asking.Stage.Choosing -> {
                 Choosing(asking, e, w)
                 Action("Not now", { asking.dropChoice(e) }, Modifier.fillMaxWidth(), tag = "not-now")
@@ -292,6 +322,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             }
             is Asking.Stage.Day -> {
                 DayProposed(asking, e, w, details)
+                // 0.6.4: every block his Yes will write, named before he taps it.
+                dayWrites(asking.dayWrites(w)).takeIf { it.isNotEmpty() }?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("day-writes")) }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Action("Not now", { asking.notNowToDay(e) }, Modifier.weight(1f), tag = "day-not-now")
                     Action("Yes, keep my day", { asking.yesToDay(e) }, Modifier.weight(1f), strong = true, tag = "day-yes")

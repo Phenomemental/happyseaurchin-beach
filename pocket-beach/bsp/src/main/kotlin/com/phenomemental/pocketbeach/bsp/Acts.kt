@@ -169,10 +169,45 @@ object Acts {
     }
 
     /**
+     * 0.6.4, the guards, in code: what the writing check proposes is let
+     * through only when [his] words (what he said in this conversation; her
+     * words never) hold every line it would write, and only to blocks that
+     * stand: no change to her shell's opening line, nothing to the app's own
+     * blocks, a new block only when [said] names it, a post only when [said]
+     * asks for one.
+     */
+    class Guard(val his: List<String>, val said: String, val shell: String = HelloWorld.SHELL)
+
+    /** Why the guard lets [action] by no further (it is dropped); null when it may go on. */
+    private fun guarded(action: Action, guard: Guard, pages: Pages, hello: Boolean): String? {
+        val block = when (action) {
+            is Action.New -> action.block
+            is Action.Add -> action.block
+            is Action.Change -> action.block
+            else -> return null
+        }
+        if (Keeping.own(block, pages)) return "$block is the app's own: it writes it itself"
+        if (hello && block.equals(HelloWorld.BLOCK, ignoreCase = true)) return null
+        if (action is Action.New && !pages.exists(block)) {
+            val made = Keeping.made(guard.said)
+            if (made == null || !made.equals(block, ignoreCase = true)) return "he didn't ask for a block called $block"
+        }
+        if (action is Action.Change && block == guard.shell && action.line == null) return "her shell's opening line is his to change, on the Write screen"
+        val text = when (action) {
+            is Action.New -> action.opening
+            is Action.Add -> action.text
+            is Action.Change -> action.text
+            else -> null
+        }
+        if (text != null && !Keeping.hisWords(text, guard.his)) return "\u201c$text\u201d isn't his words"
+        return null
+    }
+
+    /**
      * Plan [actions] on a copy of the pocket, in order, each quote found on
      * the copy as the actions before it left it. [chosen] holds Matthew's
      * answers to quotes put to him: an action's place to the address he
-     * picked.
+     * picked. With a [guard] (0.6.4), what it doesn't let by is dropped.
      */
     fun propose(
         say: String,
@@ -184,6 +219,7 @@ object Acts {
         nowMs: Long,
         chosen: Map<Int, String> = emptyMap(),
         secret: String? = null,
+        guard: Guard? = null,
     ): Planned {
         val trial = MemoryStorage()
         for (name in storage.names()) storage.read(name)?.let { trial.write(name, it) }
@@ -193,7 +229,10 @@ object Acts {
         val steps = mutableListOf<Step>()
         val reads = mutableListOf<Step>()
         val dropped = mutableListOf<String>()
+        val helloAsked = guard != null && Keeping.Ask.HELLO in Keeping.asks(guard.said)
+        // 0.6.4: a post only when he asks for one.
         val post = actions.filterIsInstance<Action.Post>().lastOrNull()?.let { Offer(HelloWorld.POOL, it.message) }
+            ?.takeIf { guard == null || Keeping.asksToPost(guard.said) || run { dropped += "he didn't ask to post"; false } }
 
         fun address(i: Int, block: String, quote: String): Pair<String?, Planned?> {
             chosen[i]?.let { return it to null }
@@ -231,6 +270,8 @@ object Acts {
                 is Action.Read -> typed.copy(block = pages.named(typed.block))
                 else -> typed
             }
+            // 0.6.4, the guards.
+            if (guard != null) guarded(action, guard, pages, helloAsked)?.let { dropped += it; continue }
             // 0.6.2, one home per fact: a line already in its block, or one cut short, is not proposed again; nor written beneath a line that already says it.
             // (The hello world is the recipe's own, written whole each time: let be.)
             val again = if (makesHello || (action as? Action.Add)?.block == HelloWorld.BLOCK) null else when (action) {
@@ -255,6 +296,11 @@ object Acts {
                 }
                 is Action.Change -> {
                     val at = action.line?.let { q -> address(i, action.block, q).let { (a, stop) -> a ?: return stop!! } } ?: ""
+                    // 0.6.4: her shell's opening line, quoted rather than named, is still his alone.
+                    if (guard != null && at.isEmpty() && action.block == guard.shell) {
+                        dropped += "her shell's opening line is his to change, on the Write screen"
+                        continue
+                    }
                     Step(Act.CHANGE, action.block, at, action.text)
                 }
                 is Action.Read -> {
