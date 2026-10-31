@@ -216,7 +216,7 @@ class ScreenTour {
                 shot("$theme-31-bench-block")
             }
             // 0.6.3, a plain chat: his walk of 31 October, four turns, the Write job's proposal waiting beneath her second reply while he carries on;
-            // then with Details on. His first two lines and her replies are as the phone heard him and the laptop drew her; the last two are written for the picture.
+            // then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as released, seed 0); the last two turns are written for the picture.
             app.asking.reset()
             app.showDetails = false
             app.pages.carryOut(app.pages.planNewBlock("book"))
@@ -224,9 +224,8 @@ class ScreenTour {
             standIn.talkScript.clear()
             standIn.script.clear()
             standIn.talkScript += listOf(
-                "That sounds like a really rich landscape of thoughts swirling around you, Matthew. It's exciting when those ideas start to feel so vivid. " +
-                    "What are some of the initial scenes or feelings that come to mind when you think about that 'wow' moment in your story?",
-                "That makes sense. Having the practical side kicking in is important when so much is swirling around. What kind of video editing tools are you finding most helpful right now?",
+                "That sounds like a lot of thoughts swirling around right now, Matthew. It's good that you're finding time for walks. What kind of things are you thinking about for the book right now?",
+                "Okay.",
                 "Slow going is still going, and liking it counts for a lot.",
                 "Enjoy the river. I'm here when you want to pick it up again.",
             )
@@ -261,7 +260,6 @@ class ScreenTour {
                 app.showDetails = true
                 compose.waitFor("wearing")
                 compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took")).fetchSemanticsNodes().size >= 4 }
-                compose.onNodeWithTag("question").performScrollTo()
                 compose.onNodeWithTag("yes").performScrollTo()
                 shot("$theme-32c-ask-chat-details-proposal")
                 compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
