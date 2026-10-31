@@ -21,6 +21,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -171,44 +172,65 @@ class Speech {
  * the device is told so plainly. There is no fallback to the cloud. The
  * recogniser is the app's one ([Speech]).
  */
+/**
+ * The voice behind a Speak button: whether it is listening, what it has
+ * heard so far, and a note when it can't. 0.6.3: shared by the Speak link
+ * and Ask's compact button beside the box.
+ */
+class Voice internal constructor() {
+    var listening by mutableStateOf(false)
+        internal set
+    var heard by mutableStateOf("")
+        internal set
+    var note by mutableStateOf<String?>(null)
+        internal set
+    internal var tap: () -> Unit = {}
+    /** Start listening, or stop and keep what was heard. */
+    fun tap() = tap.invoke()
+}
+
+/**
+ * Speaking a line instead of typing it (decision 16). Only the phone's own
+ * on-device recognition is used, and a phone that can't recognise speech on
+ * the device is told so plainly. There is no fallback to the cloud. The
+ * recogniser is the app's one ([Speech]).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun Speak(onWords: (String) -> Unit) {
-    val ink = LocalInk.current
+fun rememberVoice(onWords: (String) -> Unit): Voice {
     val context = LocalContext.current
     val speech = (context.applicationContext as PocketApp).speech
     val me = remember { Any() }
-    var listening by remember { mutableStateOf(false) }
-    var heard by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf<String?>(null) }
+    val voice = remember { Voice() }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val keyboardUp = WindowInsets.isImeVisible
     val scope = rememberCoroutineScope()
     var waiting by remember { mutableStateOf<Job?>(null) }
+    val deliver by rememberUpdatedState(onWords)
 
     fun ended() {
         waiting?.cancel()
         waiting = null
-        listening = false
-        heard = ""
+        voice.listening = false
+        voice.heard = ""
     }
 
     fun start() {
-        note = null
+        voice.note = null
         val started = speech.start(context, me, object : Heard {
-            override fun ready() { listening = true }
-            override fun partial(words: String) { heard = words }
+            override fun ready() { voice.listening = true }
+            override fun partial(words: String) { voice.heard = words }
             override fun done(words: String?) {
-                words?.takeIf { it.isNotBlank() }?.let(onWords)
+                words?.takeIf { it.isNotBlank() }?.let { deliver(it) }
                 ended()
             }
             override fun failed(error: Int) {
-                note = speechTrouble(error)
+                voice.note = speechTrouble(error)
                 ended()
             }
         })
-        if (started) listening = true else note = busy(speech.busyError)
+        if (started) voice.listening = true else voice.note = busy(speech.busyError)
     }
 
     // With the keyboard up the phone's recogniser may be the keyboard's (Gboard's) to hold, so the keyboard goes first.
@@ -216,7 +238,7 @@ fun Speak(onWords: (String) -> Unit) {
         if (!keyboardUp) return start()
         keyboard?.hide()
         focus.clearFocus()
-        listening = true
+        voice.listening = true
         waiting = scope.launch {
             delay(Speech.KEYBOARD_MS)
             waiting = null
@@ -226,14 +248,14 @@ fun Speak(onWords: (String) -> Unit) {
 
     // Stopped by a tap: the recogniser is let go at once, and what it had heard so far is the line.
     fun stop() {
-        val words = heard
+        val heard = voice.heard
         speech.letGo(me)
         ended()
-        if (words.isNotBlank()) onWords(words)
+        if (heard.isNotBlank()) deliver(heard)
     }
 
     val askMicrophone = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) begin() else note = "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings, then try again."
+        if (granted) begin() else voice.note = "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings, then try again."
     }
 
     // Leaving the screen, or the app going to the background, lets the recogniser go.
@@ -252,23 +274,28 @@ fun Speak(onWords: (String) -> Unit) {
         }
     }
 
+    voice.tap = {
+        when {
+            voice.listening -> stop()
+            speech.busy -> voice.note = busy(speech.busyError)
+            !speech.available(context) -> voice.note = NO_SPEECH
+            context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ->
+                askMicrophone.launch(Manifest.permission.RECORD_AUDIO)
+            else -> begin()
+        }
+    }
+    return voice
+}
+
+/** Speak the line: a link, and beneath it what has been heard so far, or why it can't listen. */
+@Composable
+fun Speak(onWords: (String) -> Unit) {
+    val ink = LocalInk.current
+    val voice = rememberVoice(onWords)
     Column {
-        TextLink(
-            if (listening) "Listening… tap to stop" else "Speak the line",
-            {
-                when {
-                    listening -> stop()
-                    speech.busy -> note = busy(speech.busyError)
-                    !speech.available(context) -> note = NO_SPEECH
-                    context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ->
-                        askMicrophone.launch(Manifest.permission.RECORD_AUDIO)
-                    else -> begin()
-                }
-            },
-            tag = "speak",
-        )
-        if (heard.isNotEmpty()) Text(heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
-        note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
+        TextLink(if (voice.listening) "Listening… tap to stop" else "Speak the line", { voice.tap() }, tag = "speak")
+        if (voice.heard.isNotEmpty()) Text(voice.heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
+        voice.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
     }
 }
 

@@ -248,3 +248,72 @@ internal fun feed(engine: Engine, shelf: Shelf) {
         File(dir, "write-examples.txt").writeText(opening.joinToString("\n\n") { (a, b) -> "$a\n$b" })
     }
 }
+
+/** 0.6.3: his first talk with her on 0.6.2 (31 October, 13:21, E4B on the GPU), as the phone heard him, and her first reply there. */
+internal val WALK_ASKS = listOf(
+    "Hey Gemma Matthew here I'm just walking along the canal on the way up to the river NEN it's pretty chilly I'm wrapped up warm enough there's no rain and I'm just " +
+        "if I'm honest my mind is a wash I want to write this book but also want to make a film and I also want to keep working on the beach and create apps and things " +
+        "it's there's a lot in my mind at the moment I know what it's about really it's about somebody watching something or reading something or experiencing " +
+        "something that just goes wow you know what you created this my god that's so beautiful you know like poets do you know I can film documentary makers do " +
+        "I've got that kind of thing in me and I really want to I want your support Gemma to just sort of keep keep oppressed of the things I say and hopefully we can help shape them over time",
+    "Yeah they are buzzing with ideas but there's also a practical side to this as well of started to learn video editing tools of written half of the book you know this " +
+        "so it's not just full hardiness and yes I would like you to to set some of this down for me please",
+)
+internal const val WALK_REPLY = "It sounds like your head is buzzing with a lot of ideas right now. It's cool to hear you're getting a walk in.\n" +
+    "If you want to keep any of what you just said, I can put it down for you."
+
+/**
+ * 0.6.3: her instruction as the app builds it, C as released (K0) against C
+ * with "Meet what matters most" and the keeping line (K1). His two messages
+ * of 31 October (W1, and W2 after his first exchange as it went on his
+ * Pixel), on her shell as his stands ("Matthew calls me Gemma."), at the
+ * time he said them; then part two's ten, at Friday 07:00 as before. The
+ * safety line comes on message 10, as the app adds it. Every reply is
+ * written whole to [out], one JSON object a line, to be read.
+ */
+@OptIn(ExperimentalApi::class)
+internal fun listen(engine: Engine, label: String, shelf: Shelf, seeds: List<Int>, out: File) {
+    val walk = ZonedDateTime.of(2026, 10, 31, 13, 21, 0, 0, ZoneId.of("Europe/London"))
+    val friday = ZonedDateTime.of(2026, 10, 30, 7, 0, 0, 0, ZoneId.of("Europe/London"))
+    val shell = HelloWorld.SHELL
+    val (_, named) = Bench.fixture(shelf, walk.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
+    check(named.carryOut(named.planAdd(shell, "", "Matthew calls me Gemma.")).ok)
+    val ways: List<Pair<String, (String, ZonedDateTime) -> String>> = listOf(
+        "K0 C as released" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND, Talking.NO_WRITE) },
+        "K1 C with \"Meet what matters most\" and the keeping line" to { said, now -> Talking.instruction(shell, named, now, said, Talking.FRIEND_063, Talking.KEEPING) },
+    )
+    val asks = listOf(
+        Triple("W1", WALK_ASKS[0], walk to emptyList<Pair<String, String>>()),
+        Triple("W2", WALK_ASKS[1], walk to listOf(WALK_ASKS[0] to WALK_REPLY)),
+    ) + FRIEND_ASKS.take(10).mapIndexed { i, s -> Triple("${i + 1}", s, friday to emptyList()) }
+    val onlyWays = System.getProperty("friend.ways"); val onlyAsks = System.getProperty("friend.asks")?.split(",")
+    out.parentFile?.mkdirs()
+    out.bufferedWriter().use { w ->
+        for ((way, instruction) in ways.filter { onlyWays == null || it.first.take(2) in onlyWays.split(",") }) {
+            println("\n-- $label, $way")
+            for ((n, said, at) in asks.filter { onlyAsks == null || it.first in onlyAsks }) for (seed in seeds) {
+                val (now, history) = at
+                val start = System.nanoTime()
+                engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of(instruction(said, now)),
+                        initialMessages = history.flatMap { (a, b) -> listOf(Message.user(a), Message.model(b)) },
+                        samplerConfig = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = seed), maxOutputToken = 300,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { c ->
+                    val reply = c.sendMessage(Talking.said(said)).toString().trim()
+                    val b = c.getBenchmarkInfo()
+                    val row = com.phenomemental.pocketbeach.bsp.JsObj.of(
+                        "model" to com.phenomemental.pocketbeach.bsp.JsStr(label), "way" to com.phenomemental.pocketbeach.bsp.JsStr(way),
+                        "ask" to com.phenomemental.pocketbeach.bsp.JsStr(n), "seed" to com.phenomemental.pocketbeach.bsp.JsStr("$seed"),
+                        "read" to com.phenomemental.pocketbeach.bsp.JsStr("${b.lastPrefillTokenCount}"), "wrote" to com.phenomemental.pocketbeach.bsp.JsStr("${b.lastDecodeTokenCount}"),
+                        "secs" to com.phenomemental.pocketbeach.bsp.JsStr(secs(start)), "reply" to com.phenomemental.pocketbeach.bsp.JsStr(reply),
+                    )
+                    w.write(com.phenomemental.pocketbeach.bsp.stringify(row)); w.newLine(); w.flush()
+                    println("$n s$seed (${secs(start)} s, read ${b.lastPrefillTokenCount}, wrote ${b.lastDecodeTokenCount}): " + reply.replace("\n", " / ").take(160))
+                }
+            }
+        }
+    }
+}

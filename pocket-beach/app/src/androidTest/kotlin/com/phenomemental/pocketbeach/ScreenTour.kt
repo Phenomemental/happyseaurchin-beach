@@ -215,6 +215,58 @@ class ScreenTour {
                 compose.waitFor("standing", "Bench, ")
                 shot("$theme-31-bench-block")
             }
+            // 0.6.3, a plain chat: his walk of 31 October, four turns, the Write job's proposal waiting beneath her second reply while he carries on;
+            // then with Details on. His first two lines and her replies are as the phone heard him and the laptop drew her; the last two are written for the picture.
+            app.asking.reset()
+            app.showDetails = false
+            app.pages.carryOut(app.pages.planNewBlock("book"))
+            app.pages.carryOut(app.pages.planChange("book", "", "The book"))
+            standIn.talkScript.clear()
+            standIn.script.clear()
+            standIn.talkScript += listOf(
+                "That sounds like a really rich landscape of thoughts swirling around you, Matthew. It's exciting when those ideas start to feel so vivid. " +
+                    "What are some of the initial scenes or feelings that come to mind when you think about that 'wow' moment in your story?",
+                "That makes sense. Having the practical side kicking in is important when so much is swirling around. What kind of video editing tools are you finding most helpful right now?",
+                "Slow going is still going, and liking it counts for a lot.",
+                "Enjoy the river. I'm here when you want to pick it up again.",
+            )
+            standIn.script += listOf(
+                "talk\nNothing to keep.",
+                "act\nadd book: I've started to learn video editing tools and have written half of the book.",
+                "talk\nNothing to keep.",
+                "talk\nNothing to keep.",
+            )
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("ask-companion")
+                for ((i, line) in listOf(
+                    "Hey Gemma Matthew here I'm just walking along the canal on the way up to the river NEN it's pretty chilly I'm wrapped up warm enough there's no rain and I'm just " +
+                        "if I'm honest my mind is a wash I want to write this book but also want to make a film and I also want to keep working on the beach and create apps and things " +
+                        "it's there's a lot in my mind at the moment I know what it's about really it's about somebody watching something or reading something or experiencing " +
+                        "something that just goes wow you know what you created this my god that's so beautiful you know like poets do you know I can film documentary makers do " +
+                        "I've got that kind of thing in me and I really want to I want your support Gemma to just sort of keep keep oppressed of the things I say and hopefully we can help shape them over time",
+                    "Yeah they are buzzing with ideas but there's also a practical side to this as well of started to learn video editing tools of written half of the book you know this " +
+                        "so it's not just full hardiness and yes I would like you to to set some of this down for me please",
+                    "Resolve mostly. It's slow going but I like it.",
+                    "Not sure yet. Nearly at the river now.",
+                ).withIndex()) {
+                    compose.waitFor("question")
+                    compose.onNodeWithTag("question").performTextInput(line)
+                    compose.tap("ask")
+                    compose.waitUntil(10_000) { app.asking.history.size == i + 1 && app.asking.settled }
+                }
+                compose.waitFor("yes")
+                shot("$theme-32-ask-chat")
+                compose.onNodeWithTag("yes").performScrollTo()
+                shot("$theme-32b-ask-chat-proposal")
+                app.showDetails = true
+                compose.waitFor("wearing")
+                compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took")).fetchSemanticsNodes().size >= 4 }
+                compose.onNodeWithTag("question").performScrollTo()
+                compose.onNodeWithTag("yes").performScrollTo()
+                shot("$theme-32c-ask-chat-details-proposal")
+                compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
+                shot("$theme-32d-ask-chat-details-typing")
+            }
             // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
             app.asking.reset()
             app.showDetails = false
@@ -237,7 +289,7 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("What's your name?")
                 compose.tap("ask")
                 compose.waitFor("say", "I'm the pocket companion.")
-                compose.waitUntil(10_000) { app.asking.stage is com.phenomemental.pocketbeach.ui.Asking.Stage.Over }
+                compose.waitUntil(10_000) { app.asking.settled }
                 shot("$theme-32-ask-talk")
                 compose.onNodeWithTag("question").performTextClearance()
                 compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
@@ -285,7 +337,7 @@ class ScreenTour {
                 compose.tap("sort-as-day")
                 compose.waitFor("day-yes", timeoutMs = 30_000)
                 shot("$theme-39-ask-day")
-                val day = app.asking.stage as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
+                val day = app.asking.waiting as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
                 val sam = day.lines.indexOfFirst { it.words.contains("Sam said something that stuck with me") }.takeIf { it >= 0 }
                     ?: day.lines.indexOfFirst { it.place != null }
                 compose.tap("day-move:$sam")

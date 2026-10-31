@@ -33,8 +33,7 @@ fun BenchScreen(model: Model, nav: Nav) {
         view.keepScreenOn = benching.running
         onDispose { view.keepScreenOn = false }
     }
-    val asking = model.app.asking.stage
-    val busy = asking is Asking.Stage.Thinking || asking is Asking.Stage.Carrying
+    val busy = model.app.asking.busy
 
     Page(
         onBack = { nav.back() },
