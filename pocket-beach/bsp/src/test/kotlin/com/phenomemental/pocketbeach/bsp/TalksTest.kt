@@ -83,13 +83,15 @@ class TalksTest {
         assertContains(text, "add <block> under \"<the words of a line>\": <line>")
         assertContains(text, "Greetings, thanks and questions are talk, never act.")
         assertFalse(text.contains("is already in the pocket"))
-        assertContains(text, "Matthew says: What's your name?\ntalk\nI'm the pocket companion.")
-        assertContains(text, "when he tells you something worth keeping")
+        // 0.6.4: no worked examples, no keeping of what he only tells, a new block only when he names it.
+        assertFalse(text.contains("Robin") || text.contains("running") || text.contains("What's your name?"), "no examples")
+        assertFalse(text.contains("worth keeping"))
+        assertContains(text, "Make a new block only when he names it, by his name for it.")
         assertContains(text, "- Million, opening \"Million at pocket.\", 0 lines")
-        val turns = Talks.instruction(HelloWorld.SHELL, "pocket-companion", "", pages, examplesInText = false)
-        assertFalse(turns.contains("What's your name?"), "given as turns instead")
-        assertTrue(turns.contains("read\nread whetstone"), "but a read is always written in")
-        assertFalse(text.contains("Autumn: plant the bulbs\":"), "no example is one of the bench's own asks")
+        val lean = Talks.lean(HelloWorld.SHELL, pages)
+        assertFalse(lean.contains("Robin") || lean.contains("worth keeping") || lean.contains("read <block>"))
+        assertContains(lean, "Each line you write is Matthew's own words, as he said them")
+        assertEquals(emptyList(), Talks.opening(emptyList(), "Gemma"), "no worked examples as first turns")
     }
 
     @Test

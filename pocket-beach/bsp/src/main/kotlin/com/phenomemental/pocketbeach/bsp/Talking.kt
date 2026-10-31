@@ -343,28 +343,5 @@ object Talking {
         return (mine + teaching).distinct().take(2)
     }
 
-    /**
-     * Whether his words may ask for a write, so the writing job is run after
-     * her reply: words that ask for one (add, note, keep, the hello world …),
-     * or something told. A question that asks for no write, and a greeting
-     * or thanks, are only talk.
-     */
-    fun mayWrite(said: String): Boolean {
-        val lower = said.trim().lowercase()
-        val words = Regex("""[\p{L}']+""").findAll(lower).map { it.value }.toList()
-        if (words.isEmpty()) return false
-        if (words.any { it in WRITE_WORDS } || lower.contains("hello world") || lower.contains("hello-world")) return true
-        if (lower.endsWith("?")) return false
-        if (words.first() in CHAT && words.size <= 6) return false
-        return true
-    }
-
-    private val WRITE_WORDS = setOf(
-        "add", "note", "change", "make", "post", "put", "write", "keep", "remember", "save", "record", "rename", "remove", "delete", "jot", "log", "secret",
-    )
-
-    private val CHAT = setOf(
-        "hello", "hi", "hey", "thanks", "thank", "cheers", "morning", "afternoon", "evening", "good", "bye", "goodbye", "night", "ok", "okay", "yes", "no",
-        "great", "nice", "lovely", "sorry", "well", "oh", "ah",
-    )
+    // 0.6.4: whether the writing check runs is the gate's (Keeping.way), from how his words ask.
 }

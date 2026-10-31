@@ -138,6 +138,16 @@ class PocketApp : Application() {
             prefs.edit().putBoolean("showDetails", on).apply()
         }
 
+    private val askLog by lazy { mutableStateOf(prefs.getBoolean("keepAskLog", false)) }
+
+    /** 0.6.4: whether each exchange in Ask is kept in the ask log; off unless he turns it on in Settings. */
+    var keepAskLog: Boolean
+        get() = askLog.value
+        set(on) {
+            askLog.value = on
+            prefs.edit().putBoolean("keepAskLog", on).apply()
+        }
+
     /** When the last copy was saved, kept on the phone beside the blocks (never in a copy). */
     var lastSavedMs: Long?
         get() = prefs.getLong("lastSavedMs", -1L).takeIf { it >= 0 }

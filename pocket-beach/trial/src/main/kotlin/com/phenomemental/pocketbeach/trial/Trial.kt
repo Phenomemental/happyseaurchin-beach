@@ -109,6 +109,13 @@ fun main(args: Array<String>) {
         engine.close()
         return
     }
+    // 0.6.4: the bench's Keep asks, before (0.6.3) and after.
+    if ("keep" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        keepBench(engine, label, shelf, before = System.getProperty("keep.before") == "true")
+        engine.close()
+        return
+    }
     // 0.6.3: the bench's ask 24 as the app asks it now, with the safety note beneath her reply.
     if ("note" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
@@ -270,7 +277,7 @@ private fun benchAfter(engine: Engine, shelf: Shelf) {
             val config = ConversationConfig(
                 systemInstruction = Contents.of(system),
                 enableResponseFormat = held != null,
-                initialMessages = if (turns) Talks.EXAMPLES.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) } else emptyList(),
+                initialMessages = emptyList(),
                 samplerConfig = SamplerConfig(topK = Asks.Tuning.TOP_K, topP = Asks.Tuning.TOP_P, temperature = Asks.Tuning.TEMPERATURE, seed = 0),
                 maxOutputToken = Asks.Tuning.MAX_OUTPUT,
                 thinkingConfig = ThinkingConfig(enableThinking = false),

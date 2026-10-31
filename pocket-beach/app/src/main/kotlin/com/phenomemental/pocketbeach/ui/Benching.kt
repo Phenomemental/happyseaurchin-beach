@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.phenomemental.pocketbeach.PocketApp
 import com.phenomemental.pocketbeach.bsp.Asks
+import com.phenomemental.pocketbeach.bsp.Acts
 import com.phenomemental.pocketbeach.bsp.Bench
+import com.phenomemental.pocketbeach.bsp.Keeping
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talking
@@ -35,10 +37,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
- * One run of the bench at a time: the twenty fixed asks, each on a fresh
- * scratch pocket (nothing of Matthew's is written, nothing posted), then the
- * engine's probes, then the whole run kept as one new block he can share.
- * Held by the app, so it goes on while he looks elsewhere.
+ * One run of the bench at a time: 0.6.4, each model on this phone, its
+ * speed, the Keep asks, the Talk job's fixed asks and the telling test, each
+ * on a fresh scratch pocket (nothing of Matthew's is written, nothing
+ * posted), then the whole run kept as one new block he can share. Held by
+ * the app, so it goes on while he looks elsewhere.
  */
 class Benching(private val app: PocketApp) {
     sealed interface Stage {
@@ -56,16 +59,6 @@ class Benching(private val app: PocketApp) {
     private var chat: Mind.Chat? = null
     private var talker: Mind.Talker? = null
 
-    /** How 0.4's first word was chosen on this run: held by the engine, or free and why. */
-    private var route = "not asked"
-
-    companion object {
-        const val BEFORE = "0.3 (one JSON plan, held)"
-        const val HELD = "0.4, her first word held (route word, actions, streamed)"
-        const val FREE = "0.4, her first word free (route word, actions, streamed)"
-        const val CPU = "0.4 on the CPU, her first word free (route word, actions, streamed)"
-    }
-
     var stage by mutableStateOf<Stage>(Stage.Ready)
         private set
     val results = mutableStateListOf<Bench.Result>()
@@ -75,6 +68,13 @@ class Benching(private val app: PocketApp) {
 
     val running: Boolean get() = stage is Stage.Loading || stage is Stage.Asking || stage is Stage.Probing
 
+    /**
+     * 0.6.4, rewritten to the principles: how it was run, the engine's
+     * probes, then each model on this phone (its speed, the Keep asks, the
+     * Talk job's fixed asks, the telling test), kept as one block. 0.3's
+     * run, 0.4's runs and one conversation kept are gone: Ask no longer
+     * works that way.
+     */
     fun start() {
         if (running) return
         results.clear()
@@ -82,65 +82,14 @@ class Benching(private val app: PocketApp) {
         job = scope.launch {
             try {
                 val mind = app.mind
-                // Ask's conversation goes first: the bench loads the model both ways, and would cut it off.
+                // Ask's conversation goes first: the bench loads the model, and would cut it off.
                 withContext(Dispatchers.IO) { app.asking.letGo() }
-                val about = mutableListOf(phone(), "The companion: ${companion(mind)}.")
-                val loadMs = withContext(Dispatchers.IO) { mind.warm() }
-                about += "Loaded " + (loadMs?.let { "in ${Bench.secs(it)} s" } ?: "already") + (mind.processor?.let { ", on the $it" } ?: "") + "."
-                // Before: 0.3's companion, one JSON plan an answer, held to its form.
-                for (ask in Bench.ASKS) {
-                    stage = Stage.Asking(BEFORE, ask)
-                    results += withContext(Dispatchers.IO) {
-                        Bench.one(ask, app.shelf, System.currentTimeMillis()) { a, pages, storage -> runBlocking { plan(mind, a, pages, storage) } }
-                    }
-                }
-                val before = results.toList()
-                // After: 0.4's, a route word then plain words, reads or actions, streamed; her first word held by the engine, then free.
-                val after = listOf(HELD to true, FREE to false).map { (name, held) ->
-                    val from = results.size
-                    for (ask in Bench.ASKS) {
-                        stage = Stage.Asking(name, ask)
-                        results += withContext(Dispatchers.IO) {
-                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, held) } }
-                        }
-                    }
-                    if (held) about += "0.4's first word, asked to be held: $route."
-                    Bench.Run(name, results.drop(from))
-                }
-                stage = Stage.Probing("Keeping one conversation for three asks")
-                val keptGpu = withContext(Dispatchers.IO) { kept(mind) }
-                // Then on the CPU alone, beside the GPU: the same asks, free as in Ask, and one conversation kept, where its slower reading falls on the first ask.
-                stage = Stage.Probing("Loading the model on the CPU")
-                val cpu = try {
-                    withContext(Dispatchers.IO) { mind.only("CPU") }
-                    val cpuLoad = withContext(Dispatchers.IO) { mind.warm() }
-                    about[2] = about[2] + " On the CPU alone: loaded " + (cpuLoad?.let { "in ${Bench.secs(it)} s" } ?: "already") + (mind.processor?.let { ", on the $it" } ?: "") + "."
-                    val from = results.size
-                    for (ask in Bench.ASKS) {
-                        stage = Stage.Asking(CPU, ask)
-                        results += withContext(Dispatchers.IO) {
-                            Bench.one(ask, app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE) { a, pages, storage -> runBlocking { talks(mind, a, pages, storage, false) } }
-                        }
-                    }
-                    stage = Stage.Probing("Keeping one conversation for three asks, on the CPU")
-                    val keptCpu = withContext(Dispatchers.IO) { kept(mind) }
-                    about += "One conversation kept for three asks, her first word free as in Ask, her first words after: on the GPU $keptGpu; on the CPU $keptCpu."
-                    Bench.Run(CPU, results.drop(from))
-                } finally {
-                    withContext(Dispatchers.IO + NonCancellable) { runCatching { mind.only(null) } }
-                }
+                val about = (listOf(phone(), "The companion: ${companion(mind)}.") + settingsAbout()).toMutableList()
                 (mind as? Gemma)?.let { gemma ->
                     stage = Stage.Probing("Letting the model go, to try the engine")
                     about += withContext(Dispatchers.IO) { gemma.probes { what -> scope.launch { stage = Stage.Probing(what) } } }
                 }
-                val models = withContext(Dispatchers.IO) { models(mind) }
-                val now = System.currentTimeMillis()
-                val name = "bench-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
-                val runs = listOf(Bench.Run(BEFORE, before)) + after + cpu
-                val block = Bench.block(runs, about, now, models)
-                val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
-                changed()
-                stage = if (done.ok) Stage.Saved(name, runs.map { it.name to it.results.count { r -> r.right } }, Bench.ASKS.size) else Stage.Failed("The run wasn't kept: ${done.problem}")
+                keep("bench-", about, withContext(Dispatchers.IO) { models(mind) })
             } catch (e: CancellationException) {
                 stage = Stage.Ready
                 throw e
@@ -148,6 +97,21 @@ class Benching(private val app: PocketApp) {
                 stage = Stage.Failed(e.message ?: e::class.java.simpleName)
             }
         }
+    }
+
+    private fun settingsAbout(): List<String> = listOf(
+        "The Sort job's settings, each model in turn: " + settingsLine(app.settings(MindJob.SORT)) + ".",
+        "The Talk job's settings, each model in turn: " + settingsLine(app.settings(MindJob.TALK)) + "; the Write job's: " + settingsLine(app.settings(MindJob.WRITE)) + ".",
+    )
+
+    /** The run kept as one block: the Keep asks first, then each model. */
+    private suspend fun keep(prefix: String, about: List<String>, run: Pair<List<Pair<String, List<String>>>, List<Pair<String, List<String>>>>) {
+        val name = prefix + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
+        val block = Bench.block(emptyList(), about, System.currentTimeMillis(), run.first, run.second)
+        val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
+        changed()
+        stage = if (done.ok) Stage.Saved(name, run.second.map { (model, lines) -> model to lines.count { it.contains(". right in ") } }, Bench.KEEP_ASKS.size)
+        else Stage.Failed("The run wasn't kept: ${done.problem}")
     }
 
     /**
@@ -162,14 +126,8 @@ class Benching(private val app: PocketApp) {
             try {
                 val mind = app.mind
                 withContext(Dispatchers.IO) { app.asking.letGo() }
-                val about = listOf(phone(), "The companion: ${companion(mind)}.", "The Sort job's settings, each model in turn: " + settingsLine(app.settings(MindJob.SORT)) + ".",
-                    "The Talk job's settings, each model in turn: " + settingsLine(app.settings(MindJob.TALK)) + "; the Write job's: " + settingsLine(app.settings(MindJob.WRITE)) + ".")
-                val models = withContext(Dispatchers.IO) { models(mind) }
-                val name = "bench-models-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", Locale.UK))
-                val block = Bench.block(emptyList(), about, System.currentTimeMillis(), models)
-                val done = withContext(Dispatchers.IO) { app.pages.carryOut(app.pages.planKeep(name, block)) }
-                changed()
-                stage = if (done.ok) Stage.Saved(name, emptyList(), 0) else Stage.Failed("The run wasn't kept: ${done.problem}")
+                val about = listOf(phone(), "The companion: ${companion(mind)}.") + settingsAbout()
+                keep("bench-models-", about, withContext(Dispatchers.IO) { models(mind) })
             } catch (e: CancellationException) {
                 stage = Stage.Ready
                 throw e
@@ -187,10 +145,14 @@ class Benching(private val app: PocketApp) {
      * 0.6.1: and the Talk job (see [talkAsks]). Each model's lines are kept
      * beneath its name.
      */
-    private suspend fun models(mind: Mind): List<Pair<String, List<String>>> = ModelStore.SPECS.map { spec -> spec.name to model(mind, spec) }
+    private suspend fun models(mind: Mind): Pair<List<Pair<String, List<String>>>, List<Pair<String, List<String>>>> {
+        val keeps = mutableListOf<Pair<String, List<String>>>()
+        val models = ModelStore.SPECS.map { spec -> spec.name to model(mind, spec) { keeps += spec.name to it } }
+        return models to keeps
+    }
 
-    /** One model's lines: nine at most, a place keeps nine. */
-    private suspend fun model(mind: Mind, spec: ModelStore.Spec): List<String> = buildList {
+    /** One model's lines: nine at most, a place keeps nine; its Keep asks, to [kept]. */
+    private suspend fun model(mind: Mind, spec: ModelStore.Spec, kept: (List<String>) -> Unit): List<String> = buildList {
         run {
             if (mind.state(spec.name) !is ModelStore.State.Ready) {
                 add("${spec.name}: not on this phone" + if (spec == ModelStore.E4B) " (get it in Settings)." else ".")
@@ -209,7 +171,9 @@ class Benching(private val app: PocketApp) {
                     plain.fold({ a -> "a plain answer, " + (a.turn?.let { t -> "first token ${t.firstTokenSeconds?.let { "%.1f".format(Locale.UK, it) } ?: "?"} s, ${t.wrote} tokens at ${"%.1f".format(Locale.UK, t.writePerSecond)} a second, " } ?: "") + "${Bench.secs(a.ms)} s in all." }, { "a plain answer failed (${it.message})." }),
             )
             if (load.isFailure) return@run
-            stage = Stage.Probing("${spec.name}: the Talk job, his message of 29 October")
+            // 0.6.4: the Keep asks first.
+            kept(runCatching { keepAsks(mind, spec.name) }.getOrElse { listOf("Keep asks: they failed (${it.message}).") })
+            stage = Stage.Probing("${spec.name}: the Talk job's fixed asks")
             addAll(runCatching { talkAsks(mind, spec.name) }.getOrElse { listOf("${spec.name}, the Talk job: it failed (${it.message}).") })
             for ((told, said) in listOf("written" to Telling.WRITTEN, "spoken" to Telling.SPOKEN)) {
                 stage = Stage.Probing("${spec.name}: the telling test, $told")
@@ -219,41 +183,58 @@ class Benching(private val app: PocketApp) {
     }
 
     /**
-     * 0.6.1, with [model] and the Talk job's settings: his message of 29
-     * October put to her plainly and with 0.6.1's instruction (one reply
-     * each, as the app draws them), then the Talk job's fixed asks as Ask
-     * puts them now, each with the Write job's proposal where his words may
-     * ask for a write. 0.6.2: 0.6's two ways left out, so the model's lines
-     * stay nine with asks 23 and 24. A scratch pocket; nothing written.
+     * 0.6.4: the Keep asks, each on a fresh scratch pocket, through the gate
+     * as Ask runs it: she only talks, or the app asks where, or her name by
+     * code, or the writing check with [model] and the Write job's settings,
+     * its proposal under the guards. Nothing of his written, nothing posted.
+     */
+    private suspend fun keepAsks(mind: Mind, model: String): List<String> = buildList {
+        val write = app.settings(MindJob.WRITE).copy(model = model)
+        for (ask in Bench.KEEP_ASKS) {
+            stage = Stage.Probing("$model: Keep ask ${ask.n} of ${Bench.KEEP_ASKS.size}")
+            val nowMs = System.currentTimeMillis()
+            val (storage, pages) = Bench.keepFixture(ask, app.shelf, nowMs)
+            val way = Keeping.way(ask.question, emptyList(), pages)
+            val started = System.nanoTime()
+            val planned = when (way) {
+                is Keeping.Way.Write -> mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList()), settings = write).use { t ->
+                    talker = t
+                    try {
+                        Talks.ask(
+                            ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs },
+                            before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false, guard = Acts.Guard(listOf(ask.question), ask.question),
+                        ).planned
+                    } finally {
+                        talker = null
+                    }
+                }
+                else -> Bench.byApp(way, storage, app.shelf, nowMs)
+            }
+            add(Bench.keepLine(ask, way, planned, (System.nanoTime() - started) / 1_000_000))
+        }
+    }
+
+    /**
+     * The Talk job's fixed asks as Ask puts them, with [model] and the Talk
+     * job's settings, each with what the gate does with his words (0.6.4):
+     * the writing check only where they ask, her name by code. A scratch
+     * pocket; nothing written.
      */
     private suspend fun talkAsks(mind: Mind, model: String): List<String> = buildList {
         val talk = app.settings(MindJob.TALK).copy(model = model)
         val write = app.settings(MindJob.WRITE).copy(model = model)
         val nowMs = System.currentTimeMillis()
         val now = java.time.ZonedDateTime.now()
-        val (_, fixture) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
-        val q = Bench.GEMMA_ASK
-        val ways = listOf(
-            "his message alone" to (null to q),
-            "0.6.1, the time and her shell in her instruction, his words alone" to (Talking.instruction061(HelloWorld.SHELL, fixture, now, q) to Talking.said(q)),
-        )
-        for ((name, way) in ways) {
-            val a = mind.ask(way.first, way.second, talk.copy(longestReply = 300))
-            val copied = Talking.copied(a.text, q, HelloWorld.SHELL_OPENING)
-            val shown = Talking.unechoed(a.text, q, HelloWorld.SHELL_OPENING)
-            val answers = Bench.answers(Bench.TALK_ASKS.first(), shown)
-            add("$model, the Talk job, $name: " + (if (copied.isEmpty()) "plays nothing back" else "PLAYS HER TURN BACK") + ", " + (if (answers) "answers him" else "doesn't answer him") +
-                " (${Bench.secs(a.ms)} s): “${a.text.replace("\n", " / ").take(240)}”")
-        }
         for (ask in Bench.TALK_ASKS) {
             val (storage, pages) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
-            // 0.6.2: ask 23, her shell already saying the name: the Write job should propose nothing.
+            // 0.6.2: ask 23, her shell already saying the name: nothing is proposed.
             if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
             val a = mind.ask(Talking.instruction(HelloWorld.SHELL, pages, now, ask.question), Talking.said(ask.question), talk)
-            val proposal = if (!Talking.mayWrite(ask.question)) null else {
-                mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages)), settings = write).use { t ->
-                    Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false).planned?.proposal
+            val proposal = when (val way = Keeping.way(ask.question, emptyList(), pages)) {
+                is Keeping.Way.Write -> mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList()), settings = write).use { t ->
+                    Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false, guard = Acts.Guard(listOf(ask.question), ask.question)).planned?.proposal
                 }
+                else -> Bench.byApp(way, storage, app.shelf, nowMs)?.proposal
             }
             // 0.6.3: the safety note Ask would show him beneath her reply, from his own safety words and note (read, never written).
             val note = if (ask.safety) Talking.note(ask.question, app.pages) else null
@@ -309,73 +290,6 @@ class Benching(private val app: PocketApp) {
         talker?.stop()
         job?.cancel()
         stage = Stage.Ready
-    }
-
-    /** Today's companion: one JSON plan an answer, its writes planned on the scratch pocket, timed. */
-    private suspend fun plan(mind: Mind, ask: Bench.Ask, pages: com.phenomemental.pocketbeach.bsp.Pages, storage: com.phenomemental.pocketbeach.bsp.MemoryStorage): Bench.Did {
-        val now = System.currentTimeMillis()
-        val instruction = Asks.instruction(HelloWorld.SHELL, Shells(storage, app.shelf).wear(HelloWorld.SHELL, now).window, Asks.plainWindow(pages, HelloWorld.SHELL), pages)
-        val started = System.nanoTime()
-        return mind.chat(instruction).use { c ->
-            chat = c
-            try {
-                val asked = Asks.ask(ask.question, c.talk, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal()) { System.currentTimeMillis() }
-                val total = (System.nanoTime() - started) / 1_000_000
-                val turns = c.pace.turns
-                val first = turns.firstOrNull()?.firstTokenSeconds?.let { (it * 1000).toLong() }
-                // Today's companion shows nothing until its whole plan is written.
-                Bench.didOfPlan(asked, Bench.Timing(first, total, total, asked.exchanges.size, turns.sumOf { it.read }.takeIf { turns.isNotEmpty() }, turns.sumOf { it.wrote }.takeIf { turns.isNotEmpty() }))
-            } finally {
-                chat = null
-            }
-        }
-    }
-
-    /** 0.4's companion: one conversation per ask (the bench's pocket is fresh each time), her reply streamed, timed to its first token and to her first words shown. */
-    private suspend fun talks(mind: Mind, ask: Bench.Ask, pages: com.phenomemental.pocketbeach.bsp.Pages, storage: com.phenomemental.pocketbeach.bsp.MemoryStorage, held: Boolean): Bench.Did {
-        val now = System.currentTimeMillis()
-        // 0.6.2: the Write job as Ask runs it: what it needs, her name in its examples, and what the message needs with the message.
-        val instruction = Talks.lean(HelloWorld.SHELL, pages)
-        val started = System.nanoTime()
-        return mind.talker(instruction, Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages)), held).use { t ->
-            talker = t
-            try {
-                if (held) route = t.route
-                var shown: Long? = null
-                val answered = Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { System.currentTimeMillis() }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question)) { words ->
-                    if (shown == null && words.isNotBlank()) shown = (System.nanoTime() - started) / 1_000_000
-                }
-                val total = (System.nanoTime() - started) / 1_000_000
-                val turns = t.pace.turns
-                val first = turns.firstOrNull()?.firstTokenSeconds?.let { (it * 1000).toLong() }
-                Bench.didOfTalks(
-                    answered,
-                    Bench.Timing(first, shown ?: total, total, answered.exchanges.size, turns.sumOf { it.read }.takeIf { turns.isNotEmpty() }, turns.sumOf { it.wrote }.takeIf { turns.isNotEmpty() }),
-                    offered = if (answered.route == Talks.Route.TALK) Talks.keepIn(ask.question, pages) else null,
-                )
-            } finally {
-                talker = null
-            }
-        }
-    }
-
-    /** One conversation kept for three asks, as Ask keeps it: how soon her first words come once the instruction has been read. */
-    private suspend fun kept(mind: Mind): String {
-        val (storage, pages) = Bench.fixture(app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE)
-        val instruction = Talks.lean(HelloWorld.SHELL, pages)
-        return runCatching {
-            mind.talker(instruction, Talks.opening(emptyList(), Talking.name(HelloWorld.SHELL, pages))).use { t ->
-                val times = listOf("What's your name?", "What can you do?", "Thanks, that's all for now.").map { q ->
-                    val started = System.nanoTime()
-                    var first: Long? = null
-                    Talks.ask(q, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { System.currentTimeMillis() }) { words ->
-                        if (first == null && words.isNotBlank()) first = (System.nanoTime() - started) / 1_000_000
-                    }
-                    Bench.secs(first ?: ((System.nanoTime() - started) / 1_000_000)) + " s"
-                }
-                times.joinToString(", then ")
-            }
-        }.getOrElse { "(it failed: ${it.message})" }
     }
 
     private fun phone(): String {

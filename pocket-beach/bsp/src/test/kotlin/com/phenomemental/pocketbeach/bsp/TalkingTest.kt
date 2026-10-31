@@ -49,13 +49,14 @@ class TalkingTest {
     }
 
     @Test
-    fun theWritingJobRunsOnlyWhenHisWordsMayAskForAWrite() {
-        for (asks in listOf("Add to shopping: oat milk.", "Can you add oat milk to shopping?", "Do the hello world. My secret is purple walrus.",
-            "The shopping is on Saturdays from now on.", "I want to run a marathon next spring.", "Remember that Jo's birthday is on the twelfth.")) {
-            assertTrue(Talking.mayWrite(asks), asks)
+    fun theWritingJobRunsOnlyWhenHisWordsAsk() {
+        // 0.6.4: something told is not an ask to keep it.
+        for (asks in listOf("Add to shopping: oat milk.", "Can you add oat milk to shopping?", "Do the hello world. My secret is purple walrus.", "Remember that Jo's birthday is on the twelfth.")) {
+            assertTrue(Keeping.asks(asks).isNotEmpty(), asks)
         }
-        for (talk in listOf("Hello!", "Thanks!", "Good morning", "What's your name?", "How are you today?", "What does the whetstone say?", "")) {
-            assertFalse(Talking.mayWrite(talk), talk)
+        for (talk in listOf("Hello!", "Thanks!", "Good morning", "What's your name?", "How are you today?", "What does the whetstone say?", "",
+            "The shopping is on Saturdays from now on.", "I want to run a marathon next spring.")) {
+            assertTrue(Keeping.asks(talk).isEmpty(), talk)
         }
     }
 }

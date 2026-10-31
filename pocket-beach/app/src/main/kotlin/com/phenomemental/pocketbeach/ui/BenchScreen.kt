@@ -46,16 +46,15 @@ fun BenchScreen(model: Model, nav: Nav) {
         },
     ) {
         Text(
-            "Twenty-three fixed asks, put to the companion one by one: seven to talk, six to read, eight to act (among them a line added beneath " +
-                "a plain line and a fresh hello world) and two things worth keeping. They are put four times: to 0.3's way of asking (before), then " +
-                "to 0.4's, with her first word held by the engine and then free, as Ask has it, and then free on the CPU alone. Each is asked of " +
-                "a scratch copy of a small pocket (garden, notes, an empty Million and the companion's shell), so nothing of yours is written, and nothing is posted.",
+            "Each model on this phone in turn: how fast it loads and answers; the Keep asks, fourteen of them, to the principles (nothing is written " +
+                "unless you ask; a new block only when you name it; asked to keep something with no block named, the app asks you where; her name by code; " +
+                "her shell's opening line yours alone; one home per fact; a post only when you ask); her four fixed asks; and the telling test. Each is put " +
+                "to a scratch copy of a small pocket (garden, notes, an empty Million and the companion's shell), so nothing of yours is written, and nothing is posted.",
             style = Type.body, color = ink.ink,
         )
         Text(
-            "Each ask is timed (to the first token, until anything shows, in all) and judged right or wrong. Then one conversation is kept " +
-                "for three asks, and the bench tries the engine itself: what this phone's chip and the model file allow, and a plain answer with " +
-                "speculative decoding off and on. It takes about half an hour, and keeps the screen on.",
+            "Each ask is timed and judged right or wrong; a change to her shell's opening line fails every ask. Then the bench tries the engine itself: what " +
+                "this phone's chip and the model file allow. It keeps the screen on.",
             style = Type.small, color = ink.soft,
         )
         Text("The run is kept as one new block, bench- and the date, which you can share from its page.", style = Type.small, color = ink.soft)
