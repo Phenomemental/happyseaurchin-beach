@@ -88,7 +88,8 @@ class StandIn : Mind {
     var writeMessage = ""
 
     override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker {
-        val talking = !instruction.contains("Answer in one of three ways")
+        // 0.6.4: the writing check answers "in one of two ways" (it was three before reads went).
+        val talking = !instruction.contains("Answer in one of")
         if (talking) {
             talkInstruction = instruction
             talkHistories += history
@@ -592,7 +593,7 @@ class CompanionTest {
             compose.tap("sort-as-day")
             compose.waitFor("day-yes", timeoutMs = 30_000)
             // 0.6.4: every block his Yes will write, named before he taps it.
-            compose.waitFor("day-writes", "Yes writes these blocks: now")
+            compose.waitFor("day-writes", "now, your days on the clock")
             assertEquals("each piece asked on its own, then the rungs", Telling.cut(Telling.WRITTEN, Landing.names(app.pages)).size + 1, mind.sortAsks.size)
             assertFalse("nothing written before yes", app.pages.exists(Landing.NOW))
             val day = app.asking.waiting as Asking.Stage.Day
