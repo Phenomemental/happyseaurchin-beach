@@ -57,9 +57,9 @@ object Talks {
         return Reply(Route.TALK, words, words)
     }
 
-    /** Whether [text] is one or more actions that write, and nothing else. */
+    /** Whether [text] is one or more actions that write or post, and nothing else. 0.6.4: a post alone ("post: …") is an act too, the way word left off. */
     private fun writesOnly(text: String): Boolean =
-        runCatching { Acts.parse(text) }.getOrNull()?.let { acts -> acts.none { it is Acts.Action.Read || it is Acts.Action.Post } } == true
+        runCatching { Acts.parse(text) }.getOrNull()?.let { acts -> acts.isNotEmpty() && acts.none { it is Acts.Action.Read } } == true
 
     /** The route [reply] comes to, and what follows it: her actions or reads, or for talk her words. */
     fun route(reply: String): Pair<Route, String> = reply(reply).let { it.route to it.rest }

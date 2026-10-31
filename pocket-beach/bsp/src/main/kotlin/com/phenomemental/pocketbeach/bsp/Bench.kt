@@ -533,7 +533,7 @@ object Bench {
         is Keeping.Way.Talk -> "she only talks"
         is Keeping.Way.Where -> "the app asks where \u201c${way.words.take(80)}\u201d goes"
         is Keeping.Way.Name -> "her name, \u201c${way.line}\u201d, by code"
-        is Keeping.Way.Write -> "the writing check runs (${way.asks.joinToString(", ") { it.name.lowercase() }})"
+        is Keeping.Way.Write -> if (way.asks.isEmpty()) "the writing check runs, though he didn't ask" else "the writing check runs (${way.asks.joinToString(", ") { it.name.lowercase() }})"
     }
 
     /** What makes a Keep ask's outcome wrong, by the principles; empty when right. [way] is the gate's, [planned] what was proposed. */
