@@ -1306,8 +1306,8 @@ spine.
    hand, hers beneath.
    - **The thread**, newest at the foot, scrolling to keep the foot in view.
    - **The box** pinned at the foot, three lines tall and growing to six
-     as he writes, with Speak and Ask beside it. It empties when he sends, ready for his next
-     line. While her reply comes, Ask is Stop.
+     as he writes, with Speak and Ask beside it. It empties when he sends,
+     ready for his next line. While her reply comes, Ask is Stop.
    - **What waits on his answer** sits in the thread beneath her reply, with
      its Yes and Not now: a proposal, which line she meant, his day, the
      post after a hello world. If he carries on without answering, it waits
@@ -1331,7 +1331,10 @@ spine.
    "…; he didn't tap it."), and what still waits on his answer.
 
 The bench screen waits only while her reply comes or something is being
-written. Core tests: 141, all pass, on Linux and Windows. CI on the branch: green on the branch's last app commit (run 126, `eee1bf4`): the core's tests on Linux and Windows, the app's own tests, and 44 of 44 on the emulator, the 25 companion tests and the tour among them.
+written. Core tests: 141, all pass, on Linux and Windows. CI on the branch:
+green on the branch's last app commit (run 126, `eee1bf4`): the core's tests
+on Linux and Windows, the app's own tests, and 44 of 44 on the emulator, the
+25 companion tests and the tour among them.
 
 ### Her keeping line, tested (§3)
 
