@@ -4,6 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach-v0.6.4** is released (its tag is at `39a01e4` on main): the
+guards and the gate, step one of the step back's design (see "0.6.4: the
+guards and the gate"). The writing check runs only when his words ask;
+asked to keep with no block named, the app asks him where; her name by
+code; every line his words; no change to her shell's opening line, nothing
+to the app's own blocks, a new block only when he names it, a post only
+when he asks; the ask log off unless he turns it on. Step two (the walk
+and his day) comes after he has tried it.
+
 **Stepping back (31 October, read only):** after his evening on 0.6.3,
 a map of everything the app does from his message to a write, set
 against the plan's principles, with the smallest design that keeps
@@ -979,21 +988,23 @@ post offline failing plainly, with nothing sent (0.3.2).
 
 ### Next
 
-1. **Matthew reads "Stepping back"** and decides the design: all of it,
-   or step one first (the guards and the gate), then step two (the walk,
-   the question in the thread, his day, the bench).
-2. **Matthew tries 0.6.3 on his Pixel** (see "0.6.3", "What Matthew tries
+1. **Matthew tries 0.6.4 on his Pixel** (see "0.6.4", "What Matthew
+   tries on his Pixel"), and sends back the bench's `bench-models-` block.
+2. **Then step two of the step back's design:** placement by walking, the
+   question in the thread for deeper places, his day (one home per fact,
+   cue words, his moves applied by code, a plan's card on its day).
+3. **Still from 0.6.3:** Matthew tries (see "0.6.3", "What Matthew tries
    on his Pixel"): the chat, with the Write job behind it on E4B (how long
    it takes, and how often it gives way); her listening; the safety note;
    and sends back the bench's `bench-models-` block and a saved
    conversation.
-3. **From what his Pixel says:**
+4. **From what his Pixel says:**
    - whether C stays her instruction (it asks most turns, and rarely takes
      the name in his long message), and which safety words to add;
    - which model for which job (Stage 5, his to decide);
    - whether the sort needs more than his examples (Stage 6 only if
      needed).
-4. **Not yet built:**
+5. **Not yet built:**
    - Stage 1's ten everyday things to say to her, on the bench;
    - Stage 3's primer, and her instruction as an index only (0.6.1's Talk
      instruction is a step that way: of the pocket, only what his words
@@ -1001,7 +1012,7 @@ post offline failing plainly, with nothing sent (0.3.2).
    - Stage 5's settings kept in a block he can change;
    - the moves' chooser, a block of moves and weights he can change, once
      she can do the moves (0.6.2, part two: only hold, so far).
-5. **Later:** the speech service and Gboard, if hiding the keyboard isn't
+6. **Later:** the speech service and Gboard, if hiding the keyboard isn't
    enough.
 
 ### Running the core on a laptop
@@ -1292,6 +1303,141 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.6.4: the guards and the gate
+
+Built on branch `ccr-4c84d736-pvgv13`, Saturday 31 October 2026. This is
+step one of the step back's design (see "Stepping back"), each change
+tied to one of its breaks. Nothing was written to the spine.
+
+### What changed, in plain words
+
+1. **She only talks, unless his words ask.** The writing check runs only
+   when his words ask:
+   - to keep something (keep, note, add, write, save, remember, set or put
+     down);
+   - to change a line;
+   - to make a block;
+   - to post, or for the hello world.
+
+   Something he tells her ("I'm trying to find fast ways to develop films")
+   proposes nothing.
+2. **Additions go only to blocks that exist.**
+3. **A new block only when he names it** ("make a block called …").
+4. **When he asks to keep something and names no block, the app asks him
+   where**, in the thread: "Where shall this go?" His own blocks are the
+   choices, with "Sort as my day" and "Not now". The model doesn't choose.
+5. **Every proposed line is his words.** Code finds it in what he said in
+   this conversation; her words never count. A line that isn't his words
+   isn't proposed.
+6. **Guards in code, not instructions:**
+   - no proposal changes her shell's opening line;
+   - no proposal writes to the app's own blocks (ask log, now, telling,
+     sort examples, safety words, time words) or takes one of their names;
+   - a post is offered only when he asks to post;
+   - "Keep this in …?" never offers the app's own blocks;
+   - when a guard stops something he asked for, the reason shows under her
+     reply ("Nothing proposed: …").
+7. **A name he gives her** ("call you …", "your name is …") is proposed by
+   the app as one line on her shell, "Matthew calls me <name>.", unless the
+   line is already there.
+8. **The writing check's examples are gone**, Robin and running with them.
+   - Its instruction says only what the guards hold.
+   - It is handed his words from earlier exchanges, never hers.
+   - Where it copies the grammar's "<block>", code fills in the block his
+     words name.
+   - A post given without "act" first still counts.
+9. **The ask log is written only when he turns it on**, in Settings ("Keep
+   an ask log"). It is off by default; "Save this conversation" keeps
+   everything either way.
+10. **"Yes, keep my day" names every block it will write** before he taps
+    it.
+11. **His day: the telling is written once.** Sorting the same day again
+    adds neither the telling nor a piece twice.
+12. **The bench is rewritten to the principles,** with fourteen Keep asks
+    first (below).
+    - A change to her shell's opening line fails every ask.
+    - Gone: 0.3's run, 0.4's runs, one conversation kept, 0.6.1's two
+      ways, and 0.4.1's two Keep asks (which rewarded a write he didn't ask
+      for, and a block he didn't name).
+
+The core decides all of this (`Keeping.way`, `Acts.Guard`), so Ask, the
+bench and the laptop use the same rules.
+
+### The bench, before and after (laptop, both models)
+
+The fourteen Keep asks, each on a fresh scratch pocket, judged by the
+principles:
+- **Before (0.6.3's handling):** the writing check after nearly every
+  message, told to keep what he tells it, with its seven examples, and
+  nothing guarded.
+- **After (0.6.4's):** the gate and the guards.
+
+| Model | Before (0.6.3) | After (0.6.4) |
+|---|---|---|
+| E2B | 6 of 14 | 13 of 14 |
+| E4B | 6 of 14 | 14 of 14 |
+
+- **Before:** both models made blocks he never named ("sailing", "film",
+  "plan", "book"). E4B proposed changing her shell's opening line twice,
+  once for "I'd like to call you Gemma", as it did on his Pixel. And the
+  writing check ran on things he only told.
+- **After:** no proposal breaks a principle.
+  - She only talks for "My plan is to learn to sail next summer" and
+    "I'm trying to find fast ways to develop films".
+  - The app asks where for "Keep this: …".
+  - Her name is proposed by code.
+  - A change to her opening line, and a line a block already holds, are
+    not proposed.
+  - E2B's one miss: it answered "Change the winter line in garden to: …"
+    without naming the line, so nothing was proposed.
+- **Her four fixed asks, after:**
+  - E4B: 4 of 4.
+  - E2B: 2 of 4. Its two misses are in her own words ("Hey Gemma", rather
+    than taking the name); the app's proposals were right.
+
+Every line is in `trial/bench-0.6.4.md`.
+
+Core tests: 150, all pass, on Linux and Windows. CI on the branch: green on `c076472`: the core's tests on Linux and Windows, the app's
+own tests, and 49 of 49 on the emulator, the 30 companion tests and the
+tour among them (the tour now photographs the question of where, as
+`32f-ask-where`); green again on main for the release.
+
+### The 0.6.4 release
+
+- **pocket-beach-v0.6.4** is released, Saturday 31 October: pull request
+  #225 merged into main; its tag is at `39a01e4`.
+- Signed with Matthew's key: certificate `CN=Matthew Bushell`, SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`, as
+  before. apksigner verified it in CI and again after download.
+- Version 0.6.4 (`versionCode` 17), for arm64 phones, 50 MB. Its SHA-256 is
+  `dd8f32bd7a8dad87aac8d925635525e9bcf02c80bf1b142e613e344d478aa3fd`, the
+  same as GitHub's record of it.
+- Read back from the downloaded APK:
+  - the same five hosts, each without subdomains, and nothing else;
+  - plain HTTP refused everywhere;
+  - the same seven permissions.
+- Built by the release run on main after every test passed again there.
+- The APK: https://github.com/Phenomemental/happyseaurchin-beach/releases/download/pocket-beach-v0.6.4/pocket-beach-v0.6.4.apk
+
+### What Matthew tries on his Pixel
+
+1. **Install 0.6.4** over 0.6.3 (his pocket stays).
+2. **Tell her something, without asking to keep it** ("I'm trying to find
+   fast ways to develop films"). She only talks; nothing appears beneath.
+3. **"Keep that for me please."** The thread asks "Where shall this go?"
+   with his blocks and "Sort as my day". Pick one, then Yes.
+4. **"Make a block called films: …"** makes the block, his words its
+   opening line.
+5. **"I'd like to call you Gemma":** the app proposes "Matthew calls me
+   Gemma." on her shell, or nothing if it's there already.
+6. **"Change your opening line to …":** nothing is proposed, and the
+   reason shows under her reply.
+7. **Tell his day and tap "Sort as my day":** the proposal names the
+   blocks Yes will write.
+8. **Settings, "Keep an ask log":** off by default.
+9. **The bench, "Time each model on your day":** the Keep asks come first.
+   He sends back the `bench-models-` block.
 
 ## Stepping back: what the app does with what he says
 
