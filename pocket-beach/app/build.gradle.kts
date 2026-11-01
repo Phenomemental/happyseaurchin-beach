@@ -15,8 +15,8 @@ android {
         applicationId = "com.phenomemental.pocketbeach"
         minSdk = 31
         targetSdk = 37
-        versionCode = 20
-        versionName = "0.8.1"
+        versionCode = 21
+        versionName = "0.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,6 +43,8 @@ android {
     sourceSets {
         // The teaching shelf, byte for byte as bsp-mcp-server bundles it.
         getByName("main").assets.srcDir(rootProject.file("shelf"))
+        // Rockpool: the app's own procedures, read only, beside the shelf (assets/procedures).
+        getByName("main").assets.srcDir(rootProject.file("assets"))
         // The golden calls, replayed on the device by the instrumented test.
         getByName("androidTest").assets.srcDir(rootProject.file("conformance/golden"))
     }

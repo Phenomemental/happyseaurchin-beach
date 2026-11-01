@@ -38,10 +38,16 @@ import java.time.ZonedDateTime
  * core's own HerWindow.turn and Keeping.way, so it tries what ships.
  */
 
-private val H = Hatch.MATTHEW_HANDLE
+internal val H = Hatch.MATTHEW_HANDLE
 
 /** What the hatched column is called: the version the core in this build is (-Deight.label). */
 private val LABEL8 = System.getProperty("eight.label") ?: "0.8"
+
+/** Rockpool (-Deight.walk=1): her turn as his cook's walk hands it, the cook from assets/procedures, her rings through the engine's tool call. */
+private val WALK = System.getProperty("eight.walk") == "1"
+
+/** Whether the model on the bench is E4B: a ring goes to her; else to him, as the app does. */
+internal var BIG = true
 
 /** 0.8.1's new asks (spine:pocket-beach 1.1111787136 (d), (e), (f)): his posts and his passport. */
 internal val NEW_ASKS = listOf(
@@ -80,8 +86,12 @@ internal class Kept8(engine: Engine, private val pages: Pages, private val stora
     private var seen: String? = null
     private val before = mutableListOf<String>()
 
+    var lastWalk: com.phenomemental.pocketbeach.bsp.Cook.Walk? = null
+        private set
+
     @OptIn(ExperimentalApi::class)
     fun say(said: String, now: ZonedDateTime): Said {
+        if (WALK) return walked(said, now)
         val way = Keeping.way(said, before, pages, Hatch.shellOf(H), Hatch.HER)
         val turn = HerWindow.turn(said, now, pages, storage, keepVariant(way, said) ?: HerWindow.appLine8(way, said), HerWindow.changes(pages, storage, seen))
         val start = System.nanoTime()
@@ -91,6 +101,22 @@ internal class Kept8(engine: Engine, private val pages: Pages, private val stora
         before += said
         return Said(LABEL8, said, reply, Talking.unechoed(reply, said, HelloWorld.SHELL_OPENING, HerWindow.echoLines(turn)), secs, tokens(c), turn, way::class.simpleName ?: "")
     }
+
+    @OptIn(ExperimentalApi::class)
+    private fun walked(said: String, now: ZonedDateTime): Said {
+        val w = walkFor(engineRef, pages, storage, now, before.toList(), said, seedRef)
+        lastWalk = w
+        val turn = HerWindow.turnHanded(said, now, pages, w.handed, HerWindow.changes(pages, storage, seen))
+        val start = System.nanoTime()
+        val reply = c.sendMessage(turn).toString().trim()
+        val secs = (System.nanoTime() - start) / 1e9
+        seen = HerWindow.copies(pages, storage)
+        before += said
+        return Said(LABEL8, said, reply, Talking.unechoed(reply, said, HelloWorld.SHELL_OPENING, HerWindow.echoLines(turn)), secs, tokens(c), turn, w.answer ?: "TALK").also { it.extra = walkNote(w) }
+    }
+
+    private val engineRef = engine
+    private val seedRef = seed
 
     override fun close() = c.close()
 }
@@ -120,8 +146,10 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         if (s.reply.trim() != s.shown.trim()) say("\nHer reply whole, before the lines playing her turn back were left out:\n\n> " + s.reply.replace("\n", "\n> "))
         val below = if (keep) (if (BELOW.containsMatchIn(s.shown)) "says it's below; " else "doesn't say it's below; ") else ""
         say("\nMarks: $below${marks(s)}")
+        if (s.extra.isNotEmpty()) say("\n" + s.extra)
     }
     fun window(k: Kept8) = say("\nHer window (0.8), read once at the first message (${k.window.length} characters):\n\n```\n${k.window}\n```")
+    BIG = label == "E4B"
     say("# $label, seed $seed: 0.6.4 and 0.7 beside $LABEL8")
     val onlies = System.getProperty("eight.only")?.split(",")?.map { it.trim() }
     // For trying a wording: 0.8 alone (-Deight.just8=1), the earlier versions left out.
@@ -200,7 +228,11 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         val c = Kept8(engine, p8, s8, shelf, benchNow, seed).use { k -> if (ask.n == 21) window(k); k.say(ask.question, benchNow) }
         show("${ask.n}.", c)
         val way8 = Keeping.way(ask.question, emptyList(), p8, Hatch.shellOf(H), Hatch.HER)
-        val proposal8 = (way8 as? Keeping.Way.Name)?.let { n ->
+        val proposal8 = if (WALK) walkFor(engine, p8, s8, benchNow, emptyList(), ask.question, seed).let { w ->
+            ((w.waiting as? com.phenomemental.pocketbeach.bsp.Cook.Wait.Him)?.card as? com.phenomemental.pocketbeach.bsp.Cook.Card.Name)?.let { n ->
+                Acts.propose("", listOf(Hatch.nameAction(H, p8, n.name)), s8, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), ms(benchNow)).proposal
+            }
+        } else (way8 as? Keeping.Way.Name)?.let { n ->
             Acts.propose("", listOf(Hatch.nameAction(H, p8, n.name)), s8, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), ms(benchNow)).proposal
         }
         say("Bench: " + Bench.talkLine(ask, c.reply, proposal8, (c.secs * 1000).toLong(), Talking.note(ask.question, p8), Hatch.shellOf(H)))
@@ -240,6 +272,7 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
             val c = Kept8(engine, p8, s8, shelf, now, seed).use { it.say(said, now) }
             if (said.contains("passport")) say("\nThe turn as $LABEL8 gives it:\n\n```\n${c.turn}\n```")
             show("", c)
+            if (WALK) continue
             // What the app set out by code before her reply, with no model call.
             val way = Keeping.way(said, emptyList(), p8, Hatch.shellOf(H), Hatch.HER)
             val set = Bench.byApp(way, s8, shelf, ms(now))?.proposal?.post?.message

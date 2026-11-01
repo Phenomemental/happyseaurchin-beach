@@ -11,6 +11,9 @@ import com.phenomemental.pocketbeach.bsp.Asked
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.Close
+import com.phenomemental.pocketbeach.bsp.Cook
+import com.phenomemental.pocketbeach.bsp.CookActs
+import com.phenomemental.pocketbeach.bsp.Days
 import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.HerWindow
@@ -95,6 +98,9 @@ class Asking(private val app: PocketApp) {
         class DayWriting(val day: Day) : Stage
         /** 0.6.4: he asked to keep [words] and named no block of his: where it goes is his to say, among [blocks] and his day. */
         class Where(val words: String, val blocks: List<String>) : Stage
+        /** Rockpool: his day as TELL MY DAY set it out (his now, his ahead, his P6), each line to untick or move before Yes. */
+        class Told(val shown: Shown, val card: Days.DayCard) : Stage
+        class ToldWriting(val told: Told) : Stage
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -184,6 +190,16 @@ class Asking(private val app: PocketApp) {
             internal set
         /** Her turn as the engine had it: his words and hers. */
         internal var talk: List<Pair<String, String>> = emptyList()
+        /** Rockpool: the walk his cook ran for this message, waiting on him or done; its trace, step by step (the film strip, in Details). */
+        internal var walk: Cook.Walk? = null
+        var trace by mutableStateOf<List<Cook.Trace>>(emptyList())
+            internal set
+        /** Rockpool: why his own cook didn't run ("Your cook couldn't be read at …, so the shipped copy ran."), shown beneath her reply always. */
+        var cookNote by mutableStateOf<String?>(null)
+            internal set
+        /** What the guards made of a card he said yes to, and of his post: what the walk's next step reports. */
+        internal var walkProblem: String? = null
+        internal var postProblem: String? = null
         /** How his last proposal ended, when he said this: told her, and the Write job. */
         internal var told: String? = null
         /** He sorted it as his day: a Write proposal still to come is left, and one waiting is kept as left. */
@@ -217,7 +233,7 @@ class Asking(private val app: PocketApp) {
     /**
      * 0.7: her conversation is kept while Ask is open, her window read once
      * (spine:pocket-beach 1.1111781). It is opened afresh on a new day, after
-     * [TURNS] messages (so it never outgrows her 4,096 tokens), and whenever
+     * [TURNS] messages (so it never outgrows her context, 8,192 tokens by default), and whenever
      * the pocket changes by a write.
      */
     private var windowDay: java.time.LocalDate? = null
@@ -235,6 +251,52 @@ class Asking(private val app: PocketApp) {
     }
     private var conversation = Conversation()
 
+    /**
+     * Rockpool: what his cook's walker needs of the app. A card he said yes to
+     * is carried out by the app's own path, through the guards; the walk's
+     * next step reports what came of it. His day is written whole.
+     */
+    private inner class AppWorld(val e: Exchange?, override val handle: String, override val before: List<String>) : Cook.World {
+        override val pages get() = app.pages
+        override val storage get() = app.storage
+        override val shelf get() = app.procedures
+        override val now: ZonedDateTime get() = ZonedDateTime.now()
+        override val big: Boolean get() = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
+        override fun cards(): Map<String, String> = aheadCards(handle)
+        override fun write(card: Cook.Card): String? =
+            if (card is Cook.Card.Day) CookActs.carryOut(card, handle, app.pages, app.storage, app.shelf, System.currentTimeMillis()) else e?.walkProblem
+        override fun send(words: String): String? = e?.postProblem
+        override fun close(): String? = closing?.let { t ->
+            runCatching { Close.plan(t, app.pages, app.storage)?.let { plan -> app.pages.carryOut(plan).let { if (it.ok) null else it.problem ?: "it didn't land" } } }.getOrElse { it.message }
+        }
+        var closing: Close.Talk? = null
+    }
+
+    /** His cards on his ahead, by pile and place, for "news of a card". */
+    private fun aheadCards(handle: String): Map<String, String> = runCatching {
+        val a = app.storage.read(Days.aheadOf(handle))?.let(::parseJson) as? JsObj ?: return@runCatching emptyMap<String, String>()
+        buildMap { for (p in 1..9) (a["$p"] as? JsObj)?.let { pile -> for (k in 1..9) pile["$k"]?.let { c -> com.phenomemental.pocketbeach.bsp.collectUnderscore(c) ?: (c as? com.phenomemental.pocketbeach.bsp.JsStr)?.value }?.takeIf { it.isNotBlank() }?.let { put("$p.$k", it) } } }
+    }.getOrDefault(emptyMap())
+
+    /** Rockpool: her choices for the rings the walk waits on, each a short call through the engine's tool call, under the same lock as her talk. */
+    private suspend fun serveHer(w: Cook.Walk, e: Exchange?) {
+        while (true) {
+            val her = w.waiting as? Cook.Wait.Her ?: return
+            var placed = 0
+            if (her.rings.size > 1) e?.sorting = 0 to her.rings.size
+            val choices = her.rings.map { r ->
+                val ring = r.places.mapIndexed { i, p -> "${i + 1} $p" }.joinToString("\n")
+                val question = Regex("""THE [A-Z][A-Z ]*[A-Z]""").replace(her.question) { "his words" }
+                val instruction = "Choose $question, from this ring:\n$ring"
+                val d = runCatching { talking.withLock { app.mind.choose(instruction, r.about.ifBlank { w.carried["THE MESSAGE"]?.toString() ?: "" }, r.places.size, app.running(MindJob.TALK)) } }.getOrNull()
+                if (her.rings.size > 1) e?.sorting = ++placed to her.rings.size
+                d
+            }
+            e?.sorting = null
+            w.her(choices)
+        }
+    }
+
     /** 0.8: the handle his shell on this phone is of, once he has hatched; null before. */
     fun hatched(): String? = runCatching { Hatch.hatched(app.storage) }.getOrNull()
 
@@ -247,8 +309,18 @@ class Asking(private val app: PocketApp) {
         val c = conversation
         conversation = Conversation()
         if (c.said.isEmpty()) return
+        val talk = Close.Talk(c.said.toList(), c.read.toList(), c.written.toList())
+        // Rockpool: the close is his cook's CLOSE, as his kernel names it.
+        hatched()?.let { h ->
+            runCatching {
+                val loaded = Cook.load(h, app.storage, app.procedures)
+                val world = AppWorld(null, h, emptyList()).also { it.closing = talk }
+                Cook.Walk(loaded.parsed, world, "").start(loaded.kernel.close ?: "7")
+            }.onFailure { android.util.Log.w("Asking", "The close's history entry couldn't be written.", it) }
+            return
+        }
         runCatching {
-            Close.plan(Close.Talk(c.said.toList(), c.read.toList(), c.written.toList()), app.pages, app.storage)?.let { plan ->
+            Close.plan(talk, app.pages, app.storage)?.let { plan ->
                 val done = app.pages.carryOut(plan)
                 if (!done.ok) android.util.Log.w("Asking", "The close's history entry didn't land: ${done.problem}")
             }
@@ -323,6 +395,14 @@ class Asking(private val app: PocketApp) {
     }
 
     /** Close both jobs' conversations. Called holding [talking], or as Ask is reset. */
+    /** The close of the Ask last left, still writing his history perhaps. */
+    @Volatile private var closing: Job? = null
+
+    /** For the device tests: wait for the close of the Ask last left, so the next test's pocket is its own. */
+    fun awaitClosing() {
+        kotlinx.coroutines.runBlocking { closing?.join() }
+    }
+
     private fun closeAll() {
         kept.values.forEach { runCatching { it.talker.close() } }
         kept.clear()
@@ -338,7 +418,7 @@ class Asking(private val app: PocketApp) {
     fun closed() {
         if (stage is Stage.Thinking) return
         val at = openings
-        scope.launch(Dispatchers.IO) {
+        closing = scope.launch(Dispatchers.IO) {
             talking.withLock {
                 if (openings != at) return@withLock
                 // 0.8: Ask left: the conversation closes into his history.
@@ -435,10 +515,19 @@ class Asking(private val app: PocketApp) {
             val earlier = history.takeWhile { it !== e }.map { it.question }
             val h = withContext(Dispatchers.IO) { hatched() }
             // 0.8: her name is a line at her place in his shell.
-            val gate = withContext(Dispatchers.IO) { runCatching { if (h != null) Keeping.way(q, earlier, app.pages, Hatch.shellOf(h), Hatch.HER) else Keeping.way(q, earlier, app.pages) } }
+            // Rockpool: once he has hatched, his message runs his cook as his kernel names it; before, the gate as 0.8.1 has it.
+            val walk = if (h == null) null else withContext(Dispatchers.IO) {
+                runCatching {
+                    val loaded = Cook.load(h, app.storage, app.procedures)
+                    e.cookNote = loaded.refusal
+                    Cook.Walk(loaded.parsed, AppWorld(e, h, earlier), q).start(loaded.kernel.message ?: "1")
+                }.onFailure { t -> failed("his cook", t) }.getOrNull()
+            }
+            walk?.let { w -> runCatching { serveHer(w, e) }.onFailure { t -> failed("her ring choice", t) }; e.walk = w; e.trace = w.trace.toList() }
+            val gate = if (walk != null) Result.success(Keeping.Way.Talk) else withContext(Dispatchers.IO) { runCatching { if (h != null) Keeping.way(q, earlier, app.pages, Hatch.shellOf(h), Hatch.HER) else Keeping.way(q, earlier, app.pages) } }
             gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
             val way = gate.getOrDefault(Keeping.Way.Talk)
-            e.asked = way !is Keeping.Way.Talk
+            e.asked = if (walk != null) walk.answer != null && walk.answer != "TALK" else way !is Keeping.Way.Talk
             // Her reply, streamed as she writes it.
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
@@ -452,10 +541,13 @@ class Asking(private val app: PocketApp) {
                         // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
                         val seen = runCatching { copies.takeIf { it.isFile }?.readText() }.getOrNull()
                         val changes = runCatching { HerWindow.changes(app.pages, app.storage, seen) }.getOrNull()
-                        e.appLine = if (h != null) HerWindow.appLine8(way, q) else HerWindow.appLine(way, q)
+                        e.appLine = if (walk != null) walk.handed.joinToString(" / ") { it.line }.ifEmpty { HerWindow.TALK_LINE }
+                            else if (h != null) HerWindow.appLine8(way, q) else HerWindow.appLine(way, q)
                         conversation.said += q
-                        runCatching { Talking.named(q, app.pages, all = true) }.getOrNull()?.let { names -> conversation.read += names.map { "his $it" } }
-                        val message = HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
+                        if (walk != null) conversation.read += walk.reads.map { "his $it" }
+                        else runCatching { Talking.named(q, app.pages, all = true) }.getOrNull()?.let { names -> conversation.read += names.map { "his $it" } }
+                        val message = if (walk != null) HerWindow.turnHanded(q, now, app.pages, walk.handed, changes, e.told)
+                            else HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
@@ -501,12 +593,19 @@ class Asking(private val app: PocketApp) {
             // What she said, never her turn played back, is what she is given again: his words and hers.
             remember(MindJob.TALK, Talking.said(q), said.ifBlank { "…" })
             // 0.6.1: his words could be a day: "Sort as my day" is offered under her reply. Nothing is sorted unless he asks.
-            e.sortable = withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
+            // Rockpool: once he has hatched, his cook says when it is offered.
+            e.sortable = if (walk != null) (walk.waiting as? Cook.Wait.Him)?.card is Cook.Card.Offer
+                else withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
             if (e.sortable) e.sortOffered = System.currentTimeMillis()
             unseen += e
             // The box is ready. 0.6.4, the gate: the writing check runs only when his words ask to keep, change, make a block or post;
             // a name for her is one line on her shell, by code; asked to keep with no block of his named, the app asks him where.
             stage = Stage.Writing
+            if (walk != null && h != null) {
+                walked(e, walk, h)
+                runWrites()
+                return@launch
+            }
             when (way) {
                 is Keeping.Way.Write -> {
                     e.checking = true
@@ -529,6 +628,44 @@ class Asking(private val app: PocketApp) {
             }
             runWrites()
         }
+    }
+
+    /**
+     * Rockpool: what his cook's walk left after her reply: a card for his yes
+     * or tap beneath it, the ring given to him, "Sort as my day" offered, the
+     * writing check for a change to one of his lines, or nothing, and why.
+     */
+    private fun walked(e: Exchange, w: Cook.Walk, h: String) {
+        e.trace = w.trace.toList()
+        when (val wait = w.waiting) {
+            is Cook.Wait.Him -> when (val c = wait.card) {
+                is Cook.Card.Keep -> byApp(e, CookActs.actions(c, h, app.pages), "It couldn't be kept in ${HerWindow.called(c.block)}")
+                is Cook.Card.New -> byApp(e, CookActs.actions(c, h, app.pages), "The block couldn't be made")
+                is Cook.Card.Name -> byApp(e, CookActs.actions(c, h, app.pages), "Her name couldn't be kept")
+                is Cook.Card.Post -> postOut(e, c.words)
+                is Cook.Card.Ring -> e.waiting = Stage.Where(c.words, c.places)
+                is Cook.Card.Offer -> answered(e, talkOnly(e), emptyMap())
+                is Cook.Card.Day -> answered(e, talkOnly(e), emptyMap())
+            }
+            else -> when {
+                w.writingCheck -> {
+                    e.checking = true
+                    writes.addLast(e)
+                }
+                w.answer == "POST" -> finish(e, null, "Nothing was set out: your words held no message of your own. Say what you'd like to post after a colon, or in quotes.", proposed = true)
+                w.answer == "KEEP" -> finish(e, null, "Nothing was set out: there were no words of yours to keep. Say what you'd like kept after a colon.", proposed = true)
+                w.answer == "MAKE" -> finish(e, null, "Nothing was set out: your words gave the new block no name. Say \u201cmake a block called \u2026\u201d.", proposed = true)
+                w.reads.isNotEmpty() -> finish(e, e.shown ?: Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown), "She read ${w.reads.joinToString("; ")}, then answered.")
+                else -> answered(e, talkOnly(e), emptyMap())
+            }
+        }
+    }
+
+    /** The walk on [e] goes on after his yes, his tap, his choice or his not now; what it leaves is shown. */
+    private fun walkOn(e: Exchange, step: (Cook.Walk) -> Unit) {
+        val w = e.walk ?: return
+        runCatching { step(w) }.onFailure { android.util.Log.w("Asking", "His cook's walk couldn't go on.", it) }
+        e.trace = w.trace.toList()
     }
 
     /** Her turn alone, as an answer: she talked. */
@@ -667,6 +804,71 @@ class Asking(private val app: PocketApp) {
         runWrites()
     }
 
+    /**
+     * Rockpool: TELL MY DAY, walked: her portal for each sentence, a ring of
+     * six through the tool call; then his day set out for his yes. [words],
+     * his telling when it isn't the message the walk began with.
+     */
+    private suspend fun tellMyDay(e: Exchange, talked: Stage.Shown, h: String, words: String) {
+        val started = System.nanoTime()
+        val w = e.walk?.takeIf { (it.waiting as? Cook.Wait.Him)?.card is Cook.Card.Offer && words == e.question }
+            ?: withContext(Dispatchers.IO) {
+                val loaded = Cook.load(h, app.storage, app.procedures)
+                Cook.Walk(loaded.parsed, AppWorld(e, h, history.takeWhile { it !== e }.map { it.question }), words).also { e.walk = it }
+            }
+        val done = runCatching {
+            withContext(Dispatchers.IO) { if (w.trace.isEmpty()) w.start("6") else w.yes() }
+            serveHer(w, e)
+        }
+        e.trace = w.trace.toList()
+        e.sorting = null
+        if (stage !is Stage.Thinking) return
+        stage = Stage.Writing
+        val card = ((w.waiting as? Cook.Wait.Him)?.card as? Cook.Card.Day)?.landing
+        when {
+            done.isFailure -> finish(e, talked, "She talked. Your day couldn't be sorted: ${done.exceptionOrNull()?.message}.")
+            card == null -> finish(e, talked, "She talked. Nothing of your day was set out.")
+            else -> e.waiting = Stage.Told(Stage.Shown(talked.asked, (System.nanoTime() - started) / 1_000_000, talked.pace, talked.firstShown), card)
+        }
+        runWrites()
+    }
+
+    private fun toldOf(): Exchange? = history.lastOrNull { it.waiting is Stage.Told }
+
+    fun tickTold(i: Int, e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        e.waiting = Stage.Told(t.shown, t.card.tick(i))
+    }
+
+    fun moveTold(i: Int, to: Days.Where, e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        e.waiting = Stage.Told(t.shown, t.card.move(i, to))
+    }
+
+    fun yesToTold(e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        e.waiting = Stage.ToldWriting(t)
+        scope.launch {
+            val w = e.walk
+            withContext(Dispatchers.IO) { walkOn(e) { it.changed(Cook.Card.Day(t.card)); it.yes() } }
+            stale += MindJob.values()
+            changed()
+            val wrote = w?.trace?.lastOrNull { it.did.startsWith("wrote it") || it.did.startsWith("couldn't write it") }?.did
+            val note = if (wrote == null || wrote.startsWith("wrote it")) "Matthew said yes to his day: ${t.card.describe()}."
+                else "Matthew said yes to his day, but it couldn't be written: ${wrote.removePrefix("couldn't write it: ")}."
+            if (wrote == null || wrote.startsWith("wrote it")) conversation.written += "his day: ${t.card.describe()}"
+            finish(e, t.shown, note, proposed = true, proposal = describeTold(t.card) + "\n  His answer: Yes")
+        }
+    }
+
+    fun notNowToTold(e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        walkOn(e) { it.notNow() }
+        finish(e, t.shown, "Matthew said not now to his day.", proposed = true, proposal = describeTold(t.card) + "\n  His answer: Not now")
+    }
+
+    private fun describeTold(c: Days.DayCard): String = c.lines.joinToString("\n") { l -> "  ${if (l.ticked) "[x]" else "[ ]"} ${Days.name(l.where)}: \u201c${l.words}\u201d" }
+
     /** The exchange whose day waits on his answer, the newest. */
     private fun dayOf(): Exchange? = history.lastOrNull { it.waiting is Stage.Day }
 
@@ -743,6 +945,14 @@ class Asking(private val app: PocketApp) {
         if (e == null || benchRunning || !e.sortable || stage is Stage.Thinking) return
         e.sortable = false
         e.sortTapped = System.currentTimeMillis()
+        // Rockpool: his tap carries on his cook's walk ("On his tap, run cook 6."): TELL MY DAY.
+        val h = hatched()
+        if (h != null && e.walk != null) {
+            val talked = e.shown ?: Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown)
+            stage = Stage.Thinking(System.currentTimeMillis())
+            job = scope.launch { tellMyDay(e, talked, h, e.question) }
+            return
+        }
         if (e.checking) {
             e.checking = false
             e.dropped = true
@@ -844,6 +1054,14 @@ class Asking(private val app: PocketApp) {
     fun putIn(block: String, e: Exchange? = waitingOn<Stage.Where>()) {
         val w = e?.waiting as? Stage.Where ?: return
         e.waiting = null
+        // Rockpool: the ring his cook gave him; his choice goes on through the walk.
+        val walk = e.walk
+        val h = hatched()
+        if (walk != null && h != null && (walk.waiting as? Cook.Wait.Him)?.card is Cook.Card.Ring) {
+            walkOn(e) { it.hisChoice(block) }
+            walked(e, walk, h)
+            return
+        }
         byApp(e, listOf(Acts.Action.Add(block, null, w.words)), "It couldn't be kept in $block")
     }
 
@@ -857,6 +1075,12 @@ class Asking(private val app: PocketApp) {
         e.sortTapped = System.currentTimeMillis()
         val talked = e.shown ?: Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown)
         stage = Stage.Thinking(System.currentTimeMillis())
+        // Rockpool: his words, told as his day, through his cook's TELL MY DAY.
+        val h = hatched()
+        if (h != null && e.walk != null) {
+            job = scope.launch { tellMyDay(e, talked, h, w.words) }
+            return
+        }
         job = scope.launch { day(e, talked, System.nanoTime(), w.words) }
     }
 
@@ -942,6 +1166,7 @@ class Asking(private val app: PocketApp) {
 
     fun because(reason: String?, e: Exchange? = waitingOn<Stage.Declining>()) {
         val d = e?.waiting as? Stage.Declining ?: return
+        walkOn(e) { it.notNow() }
         finish(e, d.shown, if (reason == null) "Matthew said not now." else "Matthew said not now: $reason.")
     }
 
@@ -956,6 +1181,11 @@ class Asking(private val app: PocketApp) {
         e.waiting = Stage.Carrying(s)
         scope.launch {
             val carried = withContext(Dispatchers.IO) { Asks.carryOut(proposal, app.pages, app.storage, shellOpening()) }
+            // Rockpool: the walk that set it out goes on from the step after the one that waited: "On his yes, write it."
+            if ((e.walk?.waiting as? Cook.Wait.Him)?.card.let { it is Cook.Card.Keep || it is Cook.Card.New || it is Cook.Card.Name }) {
+                e.walkProblem = carried.problem
+                withContext(Dispatchers.IO) { walkOn(e) { it.yes() } }
+            }
             // Her instructions show the pocket as it stood; the next ask opens the conversations afresh.
             if (carried.landed.isNotEmpty()) stale += MindJob.values()
             for (w in carried.landed) conversation.written += "${w.plan.block}${w.plan.landsAt?.takeIf { it.isNotEmpty() }?.let { " at $it" }.orEmpty()}: \u201c${(w.text ?: w.plan.text).take(120)}\u201d"
@@ -974,6 +1204,11 @@ class Asking(private val app: PocketApp) {
         e.waiting = Stage.Posting(w, message)
         scope.launch {
             val posted = withContext(Dispatchers.IO) { app.post(message) }
+            // Rockpool: "On his tap, send it." reports what came of it.
+            if ((e.walk?.waiting as? Cook.Wait.Him)?.card is Cook.Card.Post) {
+                e.postProblem = (posted as? Posted.Refused)?.why ?: (posted as? Posted.Unreached)?.why
+                withContext(Dispatchers.IO) { walkOn(e) { it.yes() } }
+            }
             val said = when (posted) {
                 is Posted.Landed -> "He said yes to the post: it landed at entry ${posted.slot} of pool:${posted.pool}."
                 is Posted.Refused -> "He said yes to the post, but it didn't go: ${posted.why}"
@@ -985,6 +1220,7 @@ class Asking(private val app: PocketApp) {
 
     fun dontPost(e: Exchange? = waitingOn<Stage.Written>()) {
         val w = e?.waiting as? Stage.Written ?: return
+        walkOn(e) { it.notNow() }
         finish(e, w.shown, "Matthew said yes; " + landed(w.carried) + " He said not now to the post.", w.carried)
     }
 
@@ -1047,7 +1283,7 @@ class Asking(private val app: PocketApp) {
         val day = java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", java.util.Locale.UK)
         val time = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.UK)
         fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
-        appendLine("Pocket beach: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
+        appendLine("Rockpool: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
         val h = hatched()
         if (h != null) appendLine("Wearing ${Hatch.shellOf(h)}: her window is its nine places.") else appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
         for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty())
@@ -1056,6 +1292,8 @@ class Asking(private val app: PocketApp) {
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
             e.appLine?.let { appendLine("  The app's line to her: $it") }
+            e.cookNote?.let { appendLine("  $it") }
+            if (e.trace.isNotEmpty()) { appendLine("  His cook, step by step:"); e.trace.forEach { appendLine("    $it") } }
             e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
@@ -1078,6 +1316,7 @@ class Asking(private val app: PocketApp) {
         is Stage.Choosing -> "which line she meant."
         is Stage.Where -> "where it goes: \u201c${w.words}\u201d, among ${w.blocks.joinToString(", ").ifEmpty { "none of his blocks" }}, or his day."
         is Stage.Day -> "his day, sorted.\n" + Landing.describe(w.lines, w.sorting.invented)
+        is Stage.Told -> "his day, set out.\n" + describeTold(w.card)
         is Stage.Written -> "the post, after the writes: " + landed(w.carried)
         else -> "it was being carried out."
     }.trimEnd()

@@ -108,7 +108,8 @@ class SmallReleaseDeviceTest {
             say("Read my passport")
             compose.waitFor("say", timeoutMs = 20_000)
             val turn = mind.talkMessages.last()
-            assertTrue(turn, turn.contains("His passport is long, so the app gives you its places"))
+            // Rockpool: READ, from his cook: his passport's places, as a ring.
+            assertTrue(turn, turn.contains("(His passport, its places by their opening lines:)"))
             for (place in listOf("1. The heart.", "2. The other side of the &: people who will meet me in the middle and build with, not at.", "6. WHERE THINGS GO — for an AI working with me."))
                 assertTrue("“$place” in: $turn", turn.contains(place))
         }

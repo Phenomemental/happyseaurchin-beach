@@ -339,7 +339,7 @@ private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where)
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().testTag("where")) {
         Text("Where shall this go?", style = Type.body, color = ink.ink)
         Text(Words.quoted(w.words, 300), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("where-words"))
-        for (b in w.blocks.take(9)) Action("In $b", { asking.putIn(b, e) }, Modifier.fillMaxWidth(), tag = "where:$b")
+        for (b in w.blocks.take(9)) Action("In ${if (b.startsWith("stash:")) "your stash" else b}", { asking.putIn(b, e) }, Modifier.fillMaxWidth(), tag = "where:$b")
         Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
         Action("Not now", { asking.notNowWhere(e) }, Modifier.fillMaxWidth(), tag = "where-not-now")
         Text(
@@ -389,6 +389,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
         }
         // 0.6.3: when his safety words match, the app's own note beneath her reply, whatever she says.
         e.safety?.let { SafetyNote(it) }
+        // Rockpool: his own cook couldn't be read, so the shipped copy ran: said always.
+        e.cookNote?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("cook-note")) }
         // Behind the chat, the Write job looks at what he said; what it sets out comes here.
         if (e.checking) Text("Seeing whether there's anything to keep…", style = Type.small, color = ink.soft, modifier = Modifier.testTag("checking"))
         when (val w = e.waiting) {
@@ -416,6 +418,17 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
                 }
             }
             is Asking.Stage.Where -> WhereGoes(asking, e, w)
+            is Asking.Stage.Told -> {
+                Told(asking, e, w.card, moving = true)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Action("Not now", { asking.notNowToTold(e) }, Modifier.weight(1f), tag = "day-not-now")
+                    Action("Yes, keep my day", { asking.yesToTold(e) }, Modifier.weight(1f), strong = true, tag = "day-yes")
+                }
+            }
+            is Asking.Stage.ToldWriting -> {
+                Told(asking, e, w.told.card, moving = false)
+                Text("Writing your day…", style = Type.aside, color = ink.soft)
+            }
             is Asking.Stage.Choosing -> {
                 Choosing(asking, e, w)
                 Action("Not now", { asking.dropChoice(e) }, Modifier.fillMaxWidth(), tag = "not-now")
@@ -468,6 +481,10 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
+            // Rockpool: the film strip, his cook's walk step by step.
+            if (e.trace.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.testTag("trace")) {
+                for (t in e.trace) Text(t.toString(), style = Type.call, color = ink.soft)
+            }
         } else if (e.waiting !is Asking.Stage.Day && (e.over?.shown?.pace ?: (e.waiting as? Asking.Stage.Shown)?.pace)?.notes?.contains(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED) == true) {
             Text(com.phenomemental.pocketbeach.model.Pace.GPU_FAILED, style = Type.small, color = ink.soft, modifier = Modifier.testTag("gpu-failed"))
         }
@@ -602,6 +619,58 @@ private fun DayProposed(asking: Asking, e: Asking.Exchange, d: Asking.Stage.Day,
                         (if (place in Telling.DAY) "Today: " else "Hand: ") + Landing.name(place),
                         { asking.move(i, place, e); choosing = null }, style = Type.body, tag = "day-to:$place",
                     )
+                }
+            }
+        }
+    }
+}
+
+/** Rockpool: his day as TELL MY DAY set it out: today's line, each sentence beneath its portal of his P6, his hand, his bookings and rungs; each to untick or move. */
+@Composable
+private fun Told(asking: Asking, e: Asking.Exchange, card: com.phenomemental.pocketbeach.bsp.Days.DayCard, moving: Boolean) {
+    val ink = LocalInk.current
+    Label("Your day, set out")
+    Text("Every line is your words. Untick a line to leave it out, or move it to another place.", style = Type.small, color = ink.soft)
+    var choosing by remember { mutableStateOf<Int?>(null) }
+    val groups = listOf<Pair<String, (com.phenomemental.pocketbeach.bsp.Days.Where) -> Boolean>>(
+        "Today, on your clock" to { it == com.phenomemental.pocketbeach.bsp.Days.Where.DayLine },
+        "Your P6" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Portal },
+        "Your hand" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Pile },
+        "Booked in your now" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Booking },
+        "The rungs above" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Rung },
+        "Not placed yet" to { it == com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced },
+    )
+    for ((title, holds) in groups) {
+        val here = card.lines.withIndex().filter { holds(it.value.where) }
+        if (here.isEmpty()) continue
+        Sheet(Modifier.testTag("day-group")) {
+            Label(title, Modifier.padding(top = 8.dp))
+            for ((i, line) in here) Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
+                if (line.where != com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced) Checkbox(
+                    checked = line.ticked, onCheckedChange = { asking.tickTold(i, e) }, enabled = moving,
+                    colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft), modifier = Modifier.testTag("day-tick:$i"),
+                )
+                Column(Modifier.weight(1f).padding(top = 10.dp, start = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(line.words, style = Type.body, color = if (line.ticked) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
+                    Text(com.phenomemental.pocketbeach.bsp.Days.name(line.where), style = Type.small, color = ink.soft)
+                    if (line.moved) Text("You moved it here.", style = Type.small, color = ink.crimson)
+                    if (moving && line.where != com.phenomemental.pocketbeach.bsp.Days.Where.DayLine) TextLink(if (line.where == com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced) "Place it" else "Move", { choosing = i }, tag = "day-move:$i")
+                }
+            }
+        }
+    }
+    Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
+    choosing?.let { i ->
+        PaperDialog("Where does it go?", onDismiss = { choosing = null }, actions = { TextLink("Not now", { choosing = null }, tag = "day-move-not-now") }) {
+            Text(Words.quoted(card.lines[i].words, 200), style = Type.body, color = ink.ink)
+            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                for (p in com.phenomemental.pocketbeach.bsp.Days.PORTALS) {
+                    val to = com.phenomemental.pocketbeach.bsp.Days.Where.Portal(p)
+                    TextLink("P6: " + com.phenomemental.pocketbeach.bsp.Days.name(to), { asking.moveTold(i, to, e); choosing = null }, style = Type.body, tag = "day-to:$p")
+                }
+                for (n in 1..7) {
+                    val to = com.phenomemental.pocketbeach.bsp.Days.Where.Pile(n)
+                    TextLink(com.phenomemental.pocketbeach.bsp.Days.name(to), { asking.moveTold(i, to, e); choosing = null }, style = Type.body, tag = "day-to:pile$n")
                 }
             }
         }

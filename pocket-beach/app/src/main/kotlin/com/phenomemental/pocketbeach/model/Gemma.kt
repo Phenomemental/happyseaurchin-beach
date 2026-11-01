@@ -307,6 +307,34 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
     }
 
+    /** Rockpool: her ring choice through the engine's own tool call ("choose", a place 1 to [places]); her words beside it are never kept. */
+    override suspend fun choose(instruction: String, message: String, places: Int, settings: JobSettings): Int? = withContext(thread) {
+        main.removeCallbacks(letGo)
+        val key = key(settings)
+        val (l, _) = engineNow(key)
+        synchronized(this@Gemma) { open++ }
+        val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
+            override fun getToolDescriptionJsonString() = """{"name":"choose","description":"Choose the one place in the ring.","parameters":{"type":"object","properties":{"place":{"type":"integer","description":"The place's number in the ring, 1 to $places"}},"required":["place"]}}"""
+            override fun execute(p0: String): String = "unused"
+        }
+        try {
+            l.engine.createConversation(
+                ConversationConfig(
+                    systemInstruction = Contents.of("$instruction Call choose with the place."),
+                    tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
+                    samplerConfig = sampler(settings), maxOutputToken = 60,
+                    thinkingConfig = ThinkingConfig(enableThinking = false),
+                ),
+            ).use { c ->
+                val m = runCatching { c.sendMessage(message) }.getOrNull()
+                m?.toolCalls?.firstOrNull { it.name == "choose" }?.arguments?.get("place")?.toString()?.toDoubleOrNull()?.toInt()?.takeIf { it in 1..places }
+                    ?: m?.contents?.toString()?.trim()?.let { Regex("""^\D{0,3}([1-9])""").find(it)?.groupValues?.get(1)?.toInt()?.takeIf { d -> d in 1..places } }
+            }
+        } finally {
+            done()
+        }
+    }
+
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {
         main.removeCallbacks(letGo)
         val settings = JobSettings.of(Job.WRITE)

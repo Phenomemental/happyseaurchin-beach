@@ -73,7 +73,9 @@ object HerWindow {
      * line he changes: it says what this version does.
      */
     const val CAN_DO = "What you can do: when he asks to keep, change or make something, or to post his own words to his own room on the beach, the app can set it out " +
-        "beneath your reply for his yes, and each turn the app's line tells you whether it has; when his words name one of his blocks, the app reads it to you. " +
+        "beneath your reply for his yes, and each turn the app's line tells you whether it has; when he asks what one of his blocks holds, the app reads it to you. " +
+        "You can't keep anything yourself: only what the app sets out beneath your reply and he says yes to is kept. " +
+        "You can't look anything up: when he names a thing you don't know, say so and ask him; never guess what it stands for. " +
         "You can't yet look in his blocks yourself, or send into anyone else's room."
 
     /** 0.7's line of what she can do, as 0.8 shipped it: it said a post was set out whenever he asked (spine:pocket-beach 1.11117871361). */
@@ -175,6 +177,7 @@ object HerWindow {
 
     /** His hand as he left it: each shelf's cards, and when he left it. Null when it holds no card. */
     fun hand(storage: BlockStorage): String? {
+        Hatch.hatched(storage)?.let { h -> storage.read(Days.aheadOf(h))?.let { return ahead(parseJson(it) as? JsObj, storage.stamps().touched[Days.aheadOf(h)]) } }
         val telling = storage.read(Landing.TELLING)?.let(::parseJson) as? JsObj ?: return null
         val hand = telling["2"] as? JsObj ?: return null
         val shelves = (1..9).mapNotNull { k ->
@@ -185,6 +188,18 @@ object HerWindow {
         if (shelves.isEmpty()) return null
         val left = storage.stamps().touched[Landing.TELLING]?.let(::parseIsoMs)?.let { " on " + voiceAddress(momentToAddress(it)).substringBefore(" (beat") }.orEmpty()
         return "His hand, as he left it$left: " + shelves.joinToString(". ") + "."
+    }
+
+    /** Rockpool: his hand as his ahead holds it, pile by pile (function:ahead), and when he left it. Null when it holds no card. */
+    fun ahead(block: JsObj?, touched: String?): String? {
+        val piles = (1..9).mapNotNull { k ->
+            val pile = block?.get("$k") as? JsObj ?: return@mapNotNull null
+            val cards = (1..9).mapNotNull { c -> (pile["$c"] as? JsStr)?.value ?: pile["$c"]?.let(::collectUnderscore) }.map { it.trim() }.filter { it.isNotEmpty() }
+            if (cards.isEmpty()) null else "${collectUnderscore(pile)?.replaceFirstChar { it.uppercase() }}: " + cards.joinToString("; ") { quoted(it) }
+        }
+        if (piles.isEmpty()) return null
+        val left = touched?.let(::parseIsoMs)?.let { " on " + voiceAddress(momentToAddress(it)).substringBefore(" (beat") }.orEmpty()
+        return "His hand, as he left it$left: " + piles.joinToString(". ") + "."
     }
 
     // ── 0.8: her window, the nine places of his shell ──
@@ -408,6 +423,24 @@ object HerWindow {
     }
 
     /**
+     * Rockpool: her turn as his cook hands it: the day and the time, what has
+     * changed, how his last proposal ended, what was read for her (only when
+     * READ read it), the safety line when his words say he isn't safe, the
+     * lines the walker handed her, then his words.
+     */
+    fun turnHanded(said: String, now: ZonedDateTime, pages: Pages, handed: List<Cook.Handed>, changes: String? = null, told: String? = null): String = buildString {
+        appendLine("(It is ${WHEN.format(now)}.)")
+        changes?.let { appendLine("($it)") }
+        told?.let { appendLine("(How his last proposal ended: $it)") }
+        val unsafe = Talking.unsafe(said, pages)
+        if (!unsafe) for (h in handed) for (m in h.material) appendLine(m)
+        if (unsafe) appendLine("(${Talking.SAFETY})")
+        for (h in handed) appendLine("(${h.line})")
+        if (handed.isEmpty()) appendLine("($TALK_LINE)")
+        append(said.trim())
+    }
+
+    /**
      * The lines of a turn she must never play back: the time, how his last
      * proposal ended, and the app's line. Not what has changed, nor what was
      * read for her, nor the safety line: those hold his words, or words she
@@ -425,12 +458,12 @@ object HerWindow {
     }
 
     /** A block's name as she is told it: his own four by their role ("his passport"), any other by its name. */
-    private fun called(name: String): String = Regex("""^(passport|stash|shell|history):""").find(name)?.groupValues?.get(1) ?: name
+    fun called(name: String): String = Regex("""^(passport|stash|shell|history):""").find(name)?.groupValues?.get(1) ?: name
 
     /** A place in a long block: read whole up to this many characters. */
     const val PLACE_MAX = 3000
 
-    private val PLAIN_WORDS = setOf(
+    val PLAIN_WORDS = setOf(
         "read", "show", "tell", "what", "whats", "what's", "about", "from", "with", "that", "this", "your", "mine", "please", "passport", "stash", "shell", "history",
         "block", "there", "have", "does", "into", "open", "look", "where", "says", "say", "the", "and", "my", "me", "in", "of", "is", "it", "to", "a",
     )

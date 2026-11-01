@@ -49,6 +49,15 @@ fun main(args: Array<String>) {
     val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "shelf")))
     Engine.setNativeMinLogSeverity(LogSeverity.ERROR)
     val cache = (System.getProperty("pocket.cache") ?: Files.createTempDirectory("litertlm").toString())
+    // spine:pocket-beach 1.11117871365: what Gemma brings that the app doesn't use (-Dgifts.only=ring,hold,picture).
+    if (args.getOrNull(2) == "gifts") { gifts(model, cache); return }
+    // Rockpool: point 6's proofs on the bench, and the cases a fresh model walks beside the walker (no model needed).
+    if (args.getOrNull(2) == "proofs") {
+        proofs(shelf, File(System.getProperty("pocket.out") ?: "trial/proofs-0.9.md"))
+        val passport = System.getProperty("eight.passport")?.let { parseJson(File(it).readText()) as JsObj }
+        if (passport != null) kernelCases(shelf, passport, File(System.getProperty("kernel.out") ?: "trial/kernel-cases-0.9.json"))
+        return
+    }
     // 0.6.2: what the model file says of itself, read without loading it.
     if (args.getOrNull(2) == "info") {
         ModelInfo.from(model).use { info ->

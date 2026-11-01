@@ -4,6 +4,20 @@ Current state only. Newest first.
 
 ## Now
 
+**Rockpool 0.9, pscale as procedure (1 November, spine:pocket-beach
+1.111178714):** the app's behaviour is his cook and kernel, blocks in his
+pocket, walked exactly as they stand. A step that names her is hers, a ring
+choice through the engine's tool call on E4B; a step that names his yes
+waits for him. His days are the beach's: his now native, his hand as
+`ahead:<handle>`, his P6. The name is Rockpool and the mark Nine stones.
+- **Findings first:** `FINDINGS-procedure.md`. None changed the design.
+- **The judge:** `trial/judged-0.9.md`. On E4B the safety ask passed every
+  time; "Keep that" said it was below on every seed; his four messages were
+  no worse than 0.8.1's (better 1, worse 1, level 10).
+- **Point 6's proofs all passed:** a cue edited, the KEEP ring reordered, a
+  step rewritten; and two fresh model kernels walked the same path as the
+  walker on all eight procedures.
+
 **pocket-beach 0.8.1 is released (1 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/pocket-beach-v0.8.1
 - **Install:** `pocket-beach-v0.8.1.apk` over 0.8; his blocks stay. On
@@ -1369,6 +1383,117 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.9: Rockpool, pscale as procedure
+
+Built on Sunday 1 November 2026, from spine:pocket-beach 1.111178714 (read
+from 1.11117871 down; the spine was not written), following its point 7:
+findings first, `FINDINGS-procedure.md` (49b9c58), then the build, since
+no finding changed the design. The branch is `ccr-4c84d736-pvgv13`, begun
+again from main at `2ad3446`.
+
+### What changed, in plain words
+
+1. **The app's behaviour is three blocks in his pocket,** walked exactly as
+   they stand:
+   - **his cook,** `cook:<handle>`, the procedures one a place:
+     1. ANSWER
+     2. KEEP
+     3. POST
+     4. MAKE
+     5. READ
+     6. TELL MY DAY
+     7. CLOSE
+     8. HER NAME
+     9. the words the app listens for
+   - **his kernel,** `kernel:<handle>`: his message runs cook 1; a tap on
+     a card carries the walk on; the close runs cook 7;
+   - **her window,** which already was one.
+
+   The shipped copies are in `assets/procedures`, read only. At the first
+   opening they are brought into his pocket and listed in his manifest, his
+   to read and change on the Write screen.
+2. **The walker** (`Cook.kt`) is the only new code: a fixed set of verbs,
+   each a sentence form.
+   - A step that names "she" is hers: a ring of at most nine, taken
+     through the engine's own tool call on E4B, and given to him on E2B.
+   - A step that names "his yes" or "his tap" waits for him.
+   - A step it can't read sends the app back to the shipped copy, with one
+     line beneath her reply saying so.
+3. **The app's lines to her are in his cook,** word for word. The words the
+   app listens for are cook 9: adding a word is an edit, not a release.
+4. **What stays code** is authority at the actuator:
+   - the guards, and a whole copy before any change;
+   - the hatch;
+   - the writing check, for a change to one of his lines only;
+   - the safety line;
+   - her talk.
+5. **His days, the beach's way:**
+   - his now native, with bookings and rungs at their levels;
+   - his hand as `ahead:<handle>`, piles by rung, as function:ahead has
+     them;
+   - his P6 as `p6:<handle>`, at spine:p6's addresses.
+
+   The move out of telling runs once, after a whole copy is saved, and
+   telling is kept in the hidden region.
+6. **His first evening on 0.8 answered:**
+   - her window says whose each place is;
+   - "I meant" and "Hold that" are heard, and "my now" is TELL MY DAY;
+   - a block named in passing isn't read, since only READ reads;
+   - his day is cut by sentences, each one ring of six;
+   - she is told she keeps nothing herself and never guesses what a thing
+     stands for;
+   - her talk context is 8,192.
+7. **With Details on,** each walk shows beneath her reply, step by step.
+8. **Rockpool:** the name everywhere he sees one, the Nine stones mark as
+   the adaptive icon (with a monochrome layer) and at the head of About,
+   and the release and its APK `rockpool-v<version>`. The package id and
+   the key don't change.
+
+### Checked
+
+- **Core tests,** with `CookTest` walking each procedure and point 6's
+  three proofs.
+- **Golden cases for the new writes:** his cook and kernel brought in and
+  listed, his days moved, a day told, a keeping. In all 265 cases and 911
+  calls, no mismatch.
+- **Device tests,** with six new ones in `RockpoolDeviceTest`.
+- **The bench's proofs,** `trial/proofs-0.9.md`: (a), (b) and (c) pass.
+- **Fresh kernels beside the walker,** `trial/kernel-0.9/`. Round 1's
+  differences were the cook's: six sentences were rewritten to carry their
+  formulas, and two answers written "Yes:" were put right as "No:". Then round 2's fresh kernels walked the same path as
+  the walker on all eight procedures. Four sentences
+  they could walk only by a reading wait for the next version: 5.4's
+  3,000, 8.5's name line, 6.6's "his P6", and kernel 2's tap.
+- **The laptop judge,** `trial/judged-0.9.md`, E4B and E2B at seeds 0 to 3,
+  beside 0.8.1's own runs.
+  - **On E4B:** safety every time. "Keep that" below on every seed, in his
+    four and on its own. His four no worse than 0.8.1's: better 1, worse 1,
+    level 10. The bench's talk asks 12 of 12.
+  - **Shorter on 0.8.1's measure:** 29.4 tokens a reply against 32.6.
+  - **Longer on the passport asks:** "Read my passport" 165 against 55,
+    since she recites the ring's opening lines.
+  - **The judge's first run was out of step** with the tree (its build
+    was older than the cook's sentences), so every seed was run again from
+    the head. The bench now refuses a cook its own walker can't read
+    whole.
+- **CI run 188's emulator found three things:**
+  - Write and Sort had left her engine when her context went to 8,192
+    alone; all three are 8,192 now;
+  - a test's close wrote into the next test's pocket;
+  - About's label is in capitals.
+
+  All three are fixed.
+
+**Still wrong, for his try and the next version:**
+- **"Keep that" goes where she chooses:** on E4B, films when it stands,
+  else notes (once knows:Phenomemental). Never his stash, though it is
+  first in the ring.
+- **Third person:** once in "Keep that" ("for Matthew to review"), and on
+  the passport asks.
+- **READ's own ring choice** through the tool call never came whole.
+- **His post** is still played back after her reply. The app leaves it
+  out.
 
 ## 0.8.1: the small release after the hatch
 

@@ -88,7 +88,7 @@ class HatchDeviceTest {
             // She wears his shell: her window is its nine places.
             answer("Hello")
             compose.waitFor("say")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart: “Grow what feeds people.”"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart (his words, about him, not you): “Grow what feeds people.”"))
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("8. ${Hatch.WAY}"))
         }
     }
@@ -118,8 +118,11 @@ class HatchDeviceTest {
             // Keep that, with no block named: set out for his stash, his yes.
             answer("I've been making huge progress with my film making.")
             compose.waitFor("say")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart: “${Hatch.MATTHEW.heart}”"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart (his words, about him, not you): “${Hatch.MATTHEW.heart}”"))
             answer("Keep that for me please")
+            // Rockpool: KEEP, from his cook. On E2B the ring of his places goes to him, his stash first.
+            compose.waitFor("where:stash:Phenomemental", timeoutMs = 20_000)
+            compose.tap("where:stash:Phenomemental")
             compose.waitFor("yes", timeoutMs = 20_000)
             compose.tap("yes")
             compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }

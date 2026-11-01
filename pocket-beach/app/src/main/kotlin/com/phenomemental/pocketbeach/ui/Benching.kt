@@ -299,7 +299,7 @@ class Benching(private val app: PocketApp) {
     private fun phone(): String {
         val memory = ActivityManager.MemoryInfo().also { app.getSystemService(ActivityManager::class.java).getMemoryInfo(it) }.totalMem
         return "The phone: ${Build.MANUFACTURER} ${Build.MODEL}, ${Build.SOC_MANUFACTURER} ${Build.SOC_MODEL}, " +
-            String.format(Locale.UK, "%.1f", memory / 1e9) + " GB, Android ${Build.VERSION.RELEASE}; Pocket beach ${app.packageManager.getPackageInfo(app.packageName, 0).versionName}."
+            String.format(Locale.UK, "%.1f", memory / 1e9) + " GB, Android ${Build.VERSION.RELEASE}; Rockpool ${app.packageManager.getPackageInfo(app.packageName, 0).versionName}."
     }
 
     private fun companion(mind: Mind): String = when (mind) {

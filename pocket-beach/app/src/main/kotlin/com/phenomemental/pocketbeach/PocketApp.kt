@@ -49,6 +49,8 @@ class PocketApp : Application() {
         RoutedStorage(pocket, FileStorage(filesDir, "app"), Hidden::routes, openNow = Hatch.hatched(pocket) != null)
     }
     val shelf by lazy { Shelf(AssetShelfSource(assets)) }
+    /** Rockpool: the app's own procedures as shipped (cook, kernel, spine:p6), read only. */
+    val procedures by lazy { Shelf(AssetShelfSource(assets, "procedures/")) }
     val pocket: PocketBsp by lazy { PocketBsp(storage, shelf) }
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
     val models by lazy { ModelStore(this) }
@@ -171,9 +173,9 @@ class PocketApp : Application() {
 }
 
 /** The teaching shelf as the app bundles it, at the root of its assets. */
-class AssetShelfSource(private val assets: AssetManager) : ShelfSource {
+class AssetShelfSource(private val assets: AssetManager, private val folder: String = "") : ShelfSource {
     override fun read(file: String): String? = try {
-        assets.open(file).bufferedReader(Charsets.UTF_8).use { it.readText() }
+        assets.open(folder + file).bufferedReader(Charsets.UTF_8).use { it.readText() }
     } catch (_: FileNotFoundException) {
         null
     }

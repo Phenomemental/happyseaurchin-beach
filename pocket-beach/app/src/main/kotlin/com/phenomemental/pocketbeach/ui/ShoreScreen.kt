@@ -82,7 +82,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
 
     Page(onBack = null) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 18.dp)) {
-            Text("Pocket beach", style = Type.title, color = ink.ink)
+            Text("Rockpool", style = Type.title, color = ink.ink)
             Stroke()
         }
         CopyLine(model.lastSavedMs, Copies.reminderDue(model.lastSavedMs, stamps, System.currentTimeMillis()), Copies.changedSince(model.lastSavedMs, stamps)) {

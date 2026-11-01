@@ -21,6 +21,15 @@ interface Mind {
     /** One message in a conversation of its own, opened and closed for it: as the Sort job asks a piece at a time (0.6). */
     suspend fun ask(instruction: String?, message: String, settings: JobSettings): Answer
 
+    /**
+     * Rockpool: her choice from a ring of at most nine (a step of his cook
+     * that names "she"): the place's number, or null when her answer isn't
+     * whole. Only her digit is taken; her words are never shown. Gemma makes
+     * it through the engine's own tool call; this, the free digit.
+     */
+    suspend fun choose(instruction: String, message: String, places: Int, settings: JobSettings): Int? =
+        Regex("""^\D{0,3}([1-9])""").find(ask("$instruction Answer with the place's digit first.", message, settings).text.trim())?.groupValues?.get(1)?.toInt()?.takeIf { it in 1..places }
+
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 
