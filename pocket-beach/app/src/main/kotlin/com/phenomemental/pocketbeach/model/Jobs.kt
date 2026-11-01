@@ -48,9 +48,10 @@ data class JobSettings(
             // Rockpool: her context 8,192 by default (his first evening on 0.8: 4,096 against the 32,000 she holds), his to change.
             Job.TALK -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 1.0, topK = 64, topP = 0.95, longestReply = 1024)
             // 0.4's: the likeliest word each time, so the same words propose the same lines.
-            Job.WRITE -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 1024)
+            // Rockpool: Write and Sort at her 8,192 too, so the three still share one engine on the GPU (an engine is its model, processor and context).
+            Job.WRITE -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 1024)
             // As the laptop ran Stage 4: the likeliest word, a word or two a piece (the rungs, asked once after, may run to 256).
-            Job.SORT -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 16)
+            Job.SORT -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 16)
         }
 
         /** [job]'s settings as kept in [prefs], each one its default where none is kept. */

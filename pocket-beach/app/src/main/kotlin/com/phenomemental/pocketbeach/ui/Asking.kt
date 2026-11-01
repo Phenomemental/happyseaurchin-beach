@@ -233,7 +233,7 @@ class Asking(private val app: PocketApp) {
     /**
      * 0.7: her conversation is kept while Ask is open, her window read once
      * (spine:pocket-beach 1.1111781). It is opened afresh on a new day, after
-     * [TURNS] messages (so it never outgrows her 4,096 tokens), and whenever
+     * [TURNS] messages (so it never outgrows her context, 8,192 tokens by default), and whenever
      * the pocket changes by a write.
      */
     private var windowDay: java.time.LocalDate? = null
@@ -395,6 +395,14 @@ class Asking(private val app: PocketApp) {
     }
 
     /** Close both jobs' conversations. Called holding [talking], or as Ask is reset. */
+    /** The close of the Ask last left, still writing his history perhaps. */
+    @Volatile private var closing: Job? = null
+
+    /** For the device tests: wait for the close of the Ask last left, so the next test's pocket is its own. */
+    fun awaitClosing() {
+        kotlinx.coroutines.runBlocking { closing?.join() }
+    }
+
     private fun closeAll() {
         kept.values.forEach { runCatching { it.talker.close() } }
         kept.clear()
@@ -410,7 +418,7 @@ class Asking(private val app: PocketApp) {
     fun closed() {
         if (stage is Stage.Thinking) return
         val at = openings
-        scope.launch(Dispatchers.IO) {
+        closing = scope.launch(Dispatchers.IO) {
             talking.withLock {
                 if (openings != at) return@withLock
                 // 0.8: Ask left: the conversation closes into his history.

@@ -68,7 +68,7 @@ class RockpoolDeviceTest {
         check(app.pages.carryOut(app.pages.planNewBlock("films")).ok)
         val passport = JsObj.of("_" to str("Matthew Bushell — digital social innovator."), "1" to str("The heart."))
         val planned = Hatch.plan(h, passport, Hatch.MATTHEW, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
-        check(Hatch.carryOut(planned, app.pages, app.storage).problem == null)
+        Hatch.carryOut(planned, app.pages, app.storage).problem?.let { error("The hatch: $it") }
     }
 
     private fun block(name: String): JsObj? = app.storage.read(name)?.let { parseJson(it) as? JsObj }
@@ -184,7 +184,9 @@ class RockpoolDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.menu("menu-about")
             compose.waitFor("mark")
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("Rockpool")).fetchSemanticsNodes().isNotEmpty() }
+            // The label is set in capitals, as every label is; About's first sentence names it as written.
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("ROCKPOOL")).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("Rockpool keeps pscale blocks", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         }
     }
 }

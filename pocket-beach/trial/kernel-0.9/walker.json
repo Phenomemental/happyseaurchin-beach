@@ -1,0 +1,638 @@
+[
+ {
+  "name": "keep",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Keep that for me please",
+  "before": [
+   "I've been making huge progress with my film making."
+  ],
+  "her choices": "1",
+  "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for KEEP",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "did": "runs cook 2",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "did": "begins KEEP",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "did": "lifted his words",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "did": "THE WORDS holds something",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "did": "handed her “The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept,…”",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "did": "his words name no block of his to keep it in",
+    "carried": {}
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "did": "THE PLACE holds nothing",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2.1",
+    "reader": "she",
+    "did": "she chose 1",
+    "carried": {
+     "THE PLACE": "stash:Phenomemental"
+    }
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "did": "set out the keeping, for his yes",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "did": "wrote it",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "post",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Post this message to my room: \"Back on Tuesday\"",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for POST",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "did": "runs cook 3",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "did": "begins POST",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "did": "lifted his words",
+    "carried": {
+     "THE WORDS": "Back on Tuesday"
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "did": "THE WORDS holds something",
+    "carried": {}
+   },
+   {
+    "at": "3.3",
+    "reader": "walker",
+    "did": "handed her “The app: the app sets out his own words beneath your reply, as he wrote them, as a messag…”",
+    "carried": {}
+   },
+   {
+    "at": "3.4",
+    "reader": "him",
+    "did": "set out his post, for his tap",
+    "carried": {}
+   },
+   {
+    "at": "3.5",
+    "reader": "walker",
+    "did": "sent it",
+    "carried": {}
+   },
+   {
+    "at": "3.6",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "post, no words",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Send a post to my room.",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "none given",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for POST",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "did": "runs cook 3",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "did": "begins POST",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "did": "lifted his words",
+    "carried": {}
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "did": "THE WORDS holds nothing",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.1",
+    "reader": "walker",
+    "did": "handed her “The app: he asks to post to his own room on the beach but gives no words of his own, so n…”",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.2",
+    "reader": "walker",
+    "did": "stops",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "make",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Make a block called sailing: knots I'm learning",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for MAKE",
+    "carried": {
+     "THE ANSWER": "MAKE"
+    }
+   },
+   {
+    "at": "1.1.3",
+    "reader": "walker",
+    "did": "runs cook 4",
+    "carried": {}
+   },
+   {
+    "at": "4",
+    "reader": "walker",
+    "did": "begins MAKE",
+    "carried": {}
+   },
+   {
+    "at": "4.1",
+    "reader": "walker",
+    "did": "lifted the new block's name",
+    "carried": {
+     "THE NAME": "sailing"
+    }
+   },
+   {
+    "at": "4.2",
+    "reader": "walker",
+    "did": "lifted his words",
+    "carried": {
+     "THE WORDS": "knots I'm learning"
+    }
+   },
+   {
+    "at": "4.3",
+    "reader": "walker",
+    "did": "THE NAME holds something",
+    "carried": {}
+   },
+   {
+    "at": "4.4",
+    "reader": "walker",
+    "did": "handed her “The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept,…”",
+    "carried": {}
+   },
+   {
+    "at": "4.5",
+    "reader": "walker",
+    "did": "no block called sailing stands",
+    "carried": {}
+   },
+   {
+    "at": "4.6",
+    "reader": "him",
+    "did": "set out a new block, for his yes",
+    "carried": {}
+   },
+   {
+    "at": "4.7",
+    "reader": "walker",
+    "did": "wrote it",
+    "carried": {}
+   },
+   {
+    "at": "4.8",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "read",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "What does my passport say about where things go?",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "none given",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for READ",
+    "carried": {
+     "THE ANSWER": "READ"
+    }
+   },
+   {
+    "at": "1.1.6",
+    "reader": "walker",
+    "did": "runs cook 5",
+    "carried": {}
+   },
+   {
+    "at": "5",
+    "reader": "walker",
+    "did": "begins READ",
+    "carried": {}
+   },
+   {
+    "at": "5.1",
+    "reader": "walker",
+    "did": "his words ask about a block of his",
+    "carried": {
+     "THE BLOCK": "passport:Phenomemental"
+    }
+   },
+   {
+    "at": "5.2",
+    "reader": "walker",
+    "did": "THE BLOCK holds something",
+    "carried": {}
+   },
+   {
+    "at": "5.3",
+    "reader": "walker",
+    "did": "read passport:Phenomemental as a ring of 8 places",
+    "carried": {
+     "THE READING": "1. The heart.\n2. The other side of the &: people who will meet me in the middle and build with, not at.\n3. Meet me in the pool: leave a note in my pool on the beach (pool:Phenomemental), and I'll see …"
+    }
+   },
+   {
+    "at": "5.4",
+    "reader": "walker",
+    "did": "his words point to place 6",
+    "carried": {
+     "THE PLACE": "WHERE THINGS GO — for an AI working with me. Confirmed with me in conversation, and it grows only that way (see position 5). PUBLIC means anyone on the beach can read it; PRIVATE means encrypted, read…"
+    }
+   },
+   {
+    "at": "5.5",
+    "reader": "walker",
+    "did": "THE PLACE holds something",
+    "carried": {}
+   },
+   {
+    "at": "5.6",
+    "reader": "walker",
+    "did": "handed her “The app: he asks what his block holds, and the app read it for you beneath, his words as…”, and what was read",
+    "carried": {}
+   },
+   {
+    "at": "5.7",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "her name",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Your name is Ada",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for HER NAME",
+    "carried": {
+     "THE ANSWER": "HER NAME"
+    }
+   },
+   {
+    "at": "1.1.1",
+    "reader": "walker",
+    "did": "runs cook 8",
+    "carried": {}
+   },
+   {
+    "at": "8",
+    "reader": "walker",
+    "did": "begins HER NAME",
+    "carried": {}
+   },
+   {
+    "at": "8.1",
+    "reader": "walker",
+    "did": "lifted the name he gives her",
+    "carried": {
+     "THE NAME": "Ada"
+    }
+   },
+   {
+    "at": "8.2",
+    "reader": "walker",
+    "did": "THE NAME holds something",
+    "carried": {}
+   },
+   {
+    "at": "8.3",
+    "reader": "walker",
+    "did": "his shell doesn't give her Ada yet",
+    "carried": {}
+   },
+   {
+    "at": "8.4",
+    "reader": "walker",
+    "did": "handed her “The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (“…”",
+    "carried": {}
+   },
+   {
+    "at": "8.5",
+    "reader": "him",
+    "did": "set out her name, for his yes",
+    "carried": {}
+   },
+   {
+    "at": "8.6",
+    "reader": "walker",
+    "did": "wrote it",
+    "carried": {}
+   },
+   {
+    "at": "8.7",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "talk",
+  "event": "his message (kernel 1: run cook 1)",
+  "message": "Hello Gemma, how are you this evening?",
+  "before": [],
+  "her choices": "none asked",
+  "his answer": "none given",
+  "walker": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "did": "begins ANSWER",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "did": "his message asks for TALK",
+    "carried": {
+     "THE ANSWER": "TALK"
+    }
+   },
+   {
+    "at": "1.1.8.1",
+    "reader": "walker",
+    "did": "handed her “The app: nothing is being kept or set out from this. Just talk with him, in a sentence or…”",
+    "carried": {}
+   },
+   {
+    "at": "1.1.8.2",
+    "reader": "walker",
+    "did": "his words don't tell of his day",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ },
+ {
+  "name": "tell my day",
+  "event": "a tap on “Sort as my day”: run cook 6",
+  "message": "Took the dog out with Sam this afternoon. I felt calm for the first time this week. I need to ring Jo tomorrow about the music. This month is all about the pilot.",
+  "before": [],
+  "her choices": "1, 2, 5, 4",
+  "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
+  "walker": [
+   {
+    "at": "6",
+    "reader": "walker",
+    "did": "begins TELL MY DAY",
+    "carried": {}
+   },
+   {
+    "at": "6.1",
+    "reader": "walker",
+    "did": "lifted his telling",
+    "carried": {
+     "THE TELLING": "Took the dog out with Sam this afternoon. I felt calm for the first time this week. I need to ring Jo tomorrow about the music. This month is all about the pilot."
+    }
+   },
+   {
+    "at": "6.2",
+    "reader": "walker",
+    "did": "cut it into 4 sentences",
+    "carried": {
+     "THE PIECES": "[Took the dog out with Sam this afternoon., I felt calm for the first time this week., I need to ring Jo tomorrow about the music., This month is all about the pilot.]"
+    }
+   },
+   {
+    "at": "6.3",
+    "reader": "she",
+    "did": "she chose 4 of 4 portals",
+    "carried": {
+     "THE PORTALS": "[1.1, 1.2, 2.2, 2.1]"
+    }
+   },
+   {
+    "at": "6.4",
+    "reader": "walker",
+    "did": "found 1 thing he means to do",
+    "carried": {
+     "THE CARDS": "[Intent(words=I need to ring Jo tomorrow about the music., pile=null, date=2026-11-02, by=tomorrow)]"
+    }
+   },
+   {
+    "at": "6.5",
+    "reader": "walker",
+    "did": "found 2 rungs",
+    "carried": {
+     "THE RUNGS": "[Rung(level=week, words=I felt calm for the first time this week.), Rung(level=month, words=This month is all about the pilot.)]"
+    }
+   },
+   {
+    "at": "6.6",
+    "reader": "him",
+    "did": "set out his day, for his yes",
+    "carried": {}
+   },
+   {
+    "at": "6.7",
+    "reader": "walker",
+    "did": "wrote it",
+    "carried": {}
+   },
+   {
+    "at": "6.8",
+    "reader": "walker",
+    "did": "accounted",
+    "carried": {}
+   }
+  ],
+  "set out": "Set out beneath her reply: nothing"
+ }
+]

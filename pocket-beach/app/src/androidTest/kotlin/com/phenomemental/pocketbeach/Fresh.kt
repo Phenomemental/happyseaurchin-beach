@@ -36,6 +36,8 @@ object Fresh {
     }
 
     fun clear() {
+        // Rockpool: the test before left Ask, and its close may still be writing his history into the pocket about to be cleared.
+        app.asking.awaitClosing()
         File(app.filesDir, "regions").deleteRecursively()
         // 0.8: the hidden region shut again, the hatch forgotten, and the copies saved before one.
         app.storage.shut()

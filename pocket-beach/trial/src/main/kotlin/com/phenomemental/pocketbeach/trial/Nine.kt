@@ -23,7 +23,13 @@ import java.time.ZonedDateTime
  * same files the app packs), walked by the same walker; her rings through the
  * engine's own tool call, as Gemma.choose makes them on the phone.
  */
-internal val PROCEDURES: Shelf by lazy { Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "assets/procedures"))) }
+internal val PROCEDURES: Shelf by lazy {
+    val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "assets/procedures")))
+    // The bench runs the blocks the phone runs: a shipped cook this walker can't read whole is a bench out of step with them, never a run.
+    val refused = Cook.parse(shelf.load(Cook.SHIPPED_COOK)).refused
+    check(refused.isEmpty()) { "The shipped cook doesn't read whole with this build, at ${refused.joinToString("; ")}: rebuild the bench from the tree." }
+    shelf
+}
 
 internal class BenchWorld(override val pages: Pages, override val storage: BlockStorage, override val now: ZonedDateTime, override val big: Boolean, override val before: List<String>) : Cook.World {
     override val handle = H
