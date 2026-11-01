@@ -109,6 +109,14 @@ fun main(args: Array<String>) {
         engine.close()
         return
     }
+    // 1 November: her window, her walk and her loop (-Dwindow.ways=a,b,c; -Dpocket.out=<file>).
+    if ("window" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        val ways = (System.getProperty("window.ways") ?: "a,b,c").split(",").map { it.trim() }.toSet()
+        windowTrial(engine, label, shelf, File(System.getProperty("pocket.out") ?: "trial/replies-window-$label.md"), ways)
+        engine.close()
+        return
+    }
     // 0.6.4: the bench's Keep asks, before (0.6.3) and after.
     if ("keep" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
