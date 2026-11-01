@@ -175,6 +175,7 @@ object HerWindow {
 
     /** His hand as he left it: each shelf's cards, and when he left it. Null when it holds no card. */
     fun hand(storage: BlockStorage): String? {
+        Hatch.hatched(storage)?.let { h -> storage.read(Days.aheadOf(h))?.let { return ahead(parseJson(it) as? JsObj, storage.stamps().touched[Days.aheadOf(h)]) } }
         val telling = storage.read(Landing.TELLING)?.let(::parseJson) as? JsObj ?: return null
         val hand = telling["2"] as? JsObj ?: return null
         val shelves = (1..9).mapNotNull { k ->
@@ -185,6 +186,18 @@ object HerWindow {
         if (shelves.isEmpty()) return null
         val left = storage.stamps().touched[Landing.TELLING]?.let(::parseIsoMs)?.let { " on " + voiceAddress(momentToAddress(it)).substringBefore(" (beat") }.orEmpty()
         return "His hand, as he left it$left: " + shelves.joinToString(". ") + "."
+    }
+
+    /** Rockpool: his hand as his ahead holds it, pile by pile (function:ahead), and when he left it. Null when it holds no card. */
+    fun ahead(block: JsObj?, touched: String?): String? {
+        val piles = (1..9).mapNotNull { k ->
+            val pile = block?.get("$k") as? JsObj ?: return@mapNotNull null
+            val cards = (1..9).mapNotNull { c -> (pile["$c"] as? JsStr)?.value ?: pile["$c"]?.let(::collectUnderscore) }.map { it.trim() }.filter { it.isNotEmpty() }
+            if (cards.isEmpty()) null else "${collectUnderscore(pile)?.replaceFirstChar { it.uppercase() }}: " + cards.joinToString("; ") { quoted(it) }
+        }
+        if (piles.isEmpty()) return null
+        val left = touched?.let(::parseIsoMs)?.let { " on " + voiceAddress(momentToAddress(it)).substringBefore(" (beat") }.orEmpty()
+        return "His hand, as he left it$left: " + piles.joinToString(". ") + "."
     }
 
     // ── 0.8: her window, the nine places of his shell ──
@@ -425,12 +438,12 @@ object HerWindow {
     }
 
     /** A block's name as she is told it: his own four by their role ("his passport"), any other by its name. */
-    private fun called(name: String): String = Regex("""^(passport|stash|shell|history):""").find(name)?.groupValues?.get(1) ?: name
+    fun called(name: String): String = Regex("""^(passport|stash|shell|history):""").find(name)?.groupValues?.get(1) ?: name
 
     /** A place in a long block: read whole up to this many characters. */
     const val PLACE_MAX = 3000
 
-    private val PLAIN_WORDS = setOf(
+    val PLAIN_WORDS = setOf(
         "read", "show", "tell", "what", "whats", "what's", "about", "from", "with", "that", "this", "your", "mine", "please", "passport", "stash", "shell", "history",
         "block", "there", "have", "does", "into", "open", "look", "where", "says", "say", "the", "and", "my", "me", "in", "of", "is", "it", "to", "a",
     )
