@@ -745,7 +745,7 @@
             "_": "ANSWER — what the app does with his message. Inputs: THE MESSAGE and what he said before. Walk 1.1 and 1.2 in order; branch at 1.1."
           },
           "2": {
-            "1": "LIFT. Lift his words from THE MESSAGE: after the colon; else his sentences with the asking at cook 9.8 taken off; else what he said before. Carry them as THE WORDS.",
+            "1": "LIFT. Lift his words from THE MESSAGE: after the colon; else his sentences, each that asks cut at its ask (the words at cook 9.5): what comes before the ask, and what follows an asking verb when it says more than this, that, it, for me or please, with the asking at cook 9.8 taken off its ends; else what he said before. Carry them as THE WORDS.",
             "2": {
               "1": "Yes: walk on.",
               "2": {
@@ -775,7 +775,7 @@
             "_": "KEEP — he asks to keep something of his. Inputs: THE MESSAGE and what he said before. Walk 2.1 to 2.8 in order; branch at 2.2 and 2.5."
           },
           "3": {
-            "1": "LIFT. Lift his words from THE MESSAGE: after the colon; else in quotes. Carry them as THE WORDS.",
+            "1": "LIFT. Lift his words from THE MESSAGE: after the colon, its quote marks taken off; else in quotes. Carry them as THE WORDS.",
             "2": {
               "1": "Yes: walk on.",
               "2": {
@@ -792,7 +792,7 @@
             "_": "POST — he asks to post his own words to his own room on the beach. Inputs: THE MESSAGE. Walk 3.1 to 3.6 in order; branch at 3.2."
           },
           "4": {
-            "1": "LIFT. Lift the new block's name from THE MESSAGE: the words after “called” or “named”. Carry it as THE NAME.",
+            "1": "LIFT. Lift the new block's name from THE MESSAGE: the words after “called” or “named”, up to a colon, a comma, a stop, or a joining word (and, with, for, to, that, where, please). Carry it as THE NAME.",
             "2": "LIFT. Lift his words from THE MESSAGE: after the colon. Carry them as THE WORDS.",
             "3": {
               "1": "Yes: walk on.",
@@ -812,7 +812,7 @@
                 "4": "Stop.",
                 "_": "Yes:"
               },
-              "2": "Yes: walk on.",
+              "2": "No: walk on.",
               "_": "Is there a block called THE NAME already?"
             },
             "6": "Set out a new block called THE NAME, with THE WORDS as its opening line, beneath her reply, for his yes.",
@@ -832,7 +832,7 @@
               "_": "Is there THE BLOCK?"
             },
             "3": "Read THE BLOCK at its aperture: whole when it is 1,500 characters or fewer, else as a ring of its places by their opening lines. Carry it as THE READING.",
-            "4": "Find the place of THE READING his words point to, the one sharing the most of his words of four letters or more, and read it whole, up to 3,000 characters. Carry it as THE PLACE.",
+            "4": "Find the place of THE READING his words point to: the one whose first 200 characters share the most of his words of four letters or more, other than read, show, tell, what, whats, what's, about, from, with, that, this, your, mine, please, passport, stash, shell, history, block, there, have, does, into, open, look, where, says, the first if two share as many, and read it whole, up to 3,000 characters. Carry it as THE PLACE.",
             "5": {
               "1": "Yes: walk on.",
               "2": {
@@ -846,7 +846,7 @@
             "_": "READ — he asks what one of his blocks holds. Inputs: THE MESSAGE. Walk 5.1 to 5.7 in order; branch at 5.2 and 5.5."
           },
           "6": {
-            "1": "LIFT. Lift his telling from THE MESSAGE: his sentences with the asking at cook 9.8 taken off; else what he said before. Carry it as THE TELLING.",
+            "1": "LIFT. Lift his telling from THE MESSAGE: his sentences, each that asks cut at its ask (the words at cook 9.4): what comes before the ask, with the asking at cook 9.8 taken off its ends; else what he said before. Carry it as THE TELLING.",
             "2": "CUT. Cut THE TELLING into its sentences. Carry them as THE PIECES.",
             "3": {
               "1": "spine:p6 1.1",
@@ -857,7 +857,7 @@
               "6": "spine:p6 2.3",
               "_": "PORTALS. For each of THE PIECES, she chooses its portal from the ring beneath, each portal read from spine:p6; on E2B, or when her answer isn't whole, the piece waits for him to place it. Carry the choices as THE PORTALS."
             },
-            "4": "HAND. Find among THE PIECES what he means to do, by the words at cook 9.9: each goes to the pile of his ahead its time words size it for (1 within hours, 2 today, 3 this week, 4 this month, 5 this season, 6 this year, 7 this decade; with no time words, 3 this week), and one naming a date is a booking at that day in his now. Carry them as THE CARDS.",
+            "4": "HAND. Find among THE PIECES what he means to do, by the words at cook 9.9: each goes to the pile of his ahead its time words size it for (1 within hours: soon, in an hour, right now, in a bit; 2 today: today, tonight, this morning, this afternoon, this evening; 3 this week; 4 this month; 5 this season; 6 this year; 7 this decade, one day, someday; and by the time words he keeps), with no time words 3 this week; and one naming a date (tomorrow, a day of the week, a date of the month) is a booking at that day in his now. Carry them as THE CARDS.",
             "5": "RUNGS. Find among THE PIECES those that name this week, this month, this season or this year. Carry them as THE RUNGS, each at its level of his now.",
             "6": "Set out his day beneath her reply, for his yes: THE TELLING as the day's line at today's date in his now, THE CARDS, THE RUNGS, and each of THE PIECES beneath THE PORTALS in his P6.",
             "7": "On his yes, write it.",
@@ -886,7 +886,7 @@
                 "2": "Stop.",
                 "_": "Yes:"
               },
-              "2": "Yes: walk on.",
+              "2": "No: walk on.",
               "_": "Does his shell already give her THE NAME?"
             },
             "4": "Hand her this line: “The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (“THE NAME it is.”), then talk with him. The app sets out a line for your name in his shell, for his yes. A sentence or two is enough.”",
@@ -907,7 +907,7 @@
             "9": "WHAT HE MEANS TO DO, a piece of his day for his hand: i need to, i must, i'll, i will, i want to, i'm going to, i am going to, i plan to, i should, i have to, i've got to, remember to, don't forget to, i'd like to",
             "_": "THE WORDS THE APP LISTENS FOR. Each place beneath names an answer of cook 1.1 and its words. His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words. A question asks only when it says so plainly. Change a line, and the app hears what you write."
           },
-          "_": "His cook: the app's procedures, one a place, walked by the app exactly as they stand (spine:pocket-beach 1.111178714, the beach's convention at spine:code-as-blocks 1.34 and cook:keel 1). Each step is a sentence. A step the app performs carries its formula in the sentence; a step that names “she” is hers, a ring of at most nine, her digit taken and her words never shown; a step that names “his yes” or “his tap” waits for him. A question's answers stand beneath it, 1 yes and 2 no, or a ring taken in order. A word in capitals (THE WORDS) is carried from the step that names it to the steps after. Every procedure ends with ACCOUNT. Change a step and the app does what it says; a step the app can't read sends it back to the shipped copy on the teaching shelf, and it says so."
+          "_": "His cook: the app's procedures, one a place, walked by the app exactly as they stand (spine:pocket-beach 1.111178714, the beach's convention at spine:code-as-blocks 1.34 and cook:keel 1). Each step is a sentence. A step the app performs carries its formula in the sentence; a step that names “she” is hers, a ring of at most nine, her digit taken and her words never shown; a step that names “his yes” or “his tap” waits for him. A question's answers stand beneath it, 1 yes and 2 no, or a ring taken in order. A word in capitals (THE WORDS) is carried from the step that names it to the steps after. Every procedure ends with ACCOUNT; “Stop.” ends the whole walk. Change a step and the app does what it says; a step the app can't read sends it back to the shipped copy on the teaching shelf, and it says so."
         }
       },
       {

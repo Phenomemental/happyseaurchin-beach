@@ -60,7 +60,7 @@ object Cook {
         class FindKeep(val into: String) : Verb()
         class FindAsked(val into: String) : Verb()
         class Read(val block: String, val whole: Int, val into: String) : Verb()
-        class Point(val reading: String, val letters: Int, val max: Int, val into: String) : Verb()
+        class Point(val reading: String, val first: Int, val letters: Int, val other: Set<String>, val max: Int, val into: String) : Verb()
         class ChooseRing(val what: String, val toHim: Boolean, val into: String) : Verb(Reader.SHE)
         class ChooseFrom(val from: String, val toHim: Boolean, val into: String) : Verb(Reader.SHE)
         class ChooseEach(val each: String, val source: String, val into: String) : Verb(Reader.SHE)
@@ -105,8 +105,9 @@ object Cook {
         rx("""Read ($CAP) at its aperture: whole when it is ([\d,]+) characters or fewer, else as a ring of its places by their opening lines\. Carry it as ($CAP)\.""") to { m ->
             Verb.Read(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), m.groupValues[3])
         },
-        rx("""Find the place of ($CAP) his words point to, the one sharing the most of his words of (\w+) letters or more, and read it whole, up to ([\d,]+) characters\. Carry it as ($CAP)\.""") to { m ->
-            Verb.Point(m.groupValues[1], number(m.groupValues[2]) ?: 4, m.groupValues[3].replace(",", "").toInt(), m.groupValues[4])
+        rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole, up to ([\d,]+) characters\. Carry it as ($CAP)\.""") to { m ->
+            Verb.Point(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), number(m.groupValues[3]) ?: 4, m.groupValues[4].split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
+                m.groupValues[5].replace(",", "").toInt(), m.groupValues[6])
         },
         rx("""She chooses (.+?), from the ring beneath; on E2B, or when her answer isn't whole, (the ring goes to him|nothing is chosen)\. Carry the choice as ($CAP)\.""") to { m ->
             Verb.ChooseRing(m.groupValues[1], m.groupValues[2] == "the ring goes to him", m.groupValues[3])
@@ -468,7 +469,7 @@ object Cook {
                 }
                 is Verb.Point -> {
                     val r = carried[v.reading] as? Reading
-                    val p = r?.takeIf { !it.whole }?.let { point(it, v.letters, v.max) }
+                    val p = r?.takeIf { !it.whole }?.let { point(it, v.first, v.letters, v.other, v.max) }
                     put(v.into, p)
                     if (p != null) reads += "${p.block} ${p.key}, whole"
                     note(s, if (p != null) "his words point to place ${p.key}" else "his words point to no one place", v.into)
@@ -784,12 +785,12 @@ object Cook {
             return Reading(name, false, places.joinToString("\n") { (k, t) -> "$k. $t" }, places)
         }
 
-        private fun point(r: Reading, letters: Int, max: Int): PlaceRead? {
-            val words = Regex("""[\p{L}']+""").findAll(str("THE MESSAGE").lowercase()).map { it.value.trim('\'') }.filter { it.length >= letters && it !in HerWindow.PLAIN_WORDS }.toSet()
+        private fun point(r: Reading, first: Int, letters: Int, other: Set<String>, max: Int): PlaceRead? {
+            val words = Regex("""[\p{L}']+""").findAll(str("THE MESSAGE").lowercase()).map { it.value.trim('\'') }.filter { it.length >= letters && it !in other }.toSet()
             val block = world.storage.read(r.block)?.let { runCatching { parseJson(it) }.getOrNull() } as? JsObj ?: return null
             val key = r.places.map { (k, _) ->
                 val t = (block[k] as? JsStr)?.value ?: collectUnderscore(block[k]!!).orEmpty()
-                k to Regex("""[\p{L}']+""").findAll(clip(t, 200).lowercase()).map { it.value }.count { it in words }
+                k to Regex("""[\p{L}']+""").findAll(clip(t, first).lowercase()).map { it.value }.count { it in words }
             }.filter { it.second > 0 }.maxByOrNull { it.second }?.first ?: return null
             return placeWhole(r.block, key, max)
         }

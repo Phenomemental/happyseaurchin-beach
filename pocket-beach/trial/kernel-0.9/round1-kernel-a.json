@@ -1,0 +1,330 @@
+[
+ {
+  "name": "keep",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {
+     "THE MESSAGE": "Keep that for me please"
+    }
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "Keep that"
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACE": "(none)"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2.1",
+    "reader": "she",
+    "carried": {
+     "THE PLACE": "stash:Phenomemental"
+    }
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said."
+  ],
+  "could not": []
+ },
+ {
+  "name": "post",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {
+     "THE MESSAGE": "Post this message to my room: \"Back on Tuesday\""
+    }
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "\"Back on Tuesday\""
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.4",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "3.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.6",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two."
+  ],
+  "could not": []
+ },
+ {
+  "name": "post, no words",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {
+     "THE MESSAGE": "Send a post to my room."
+    }
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "(none)"
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: he asks to post to his own room on the beach but gives no words of his own, so nothing is set out. Ask him, in a few words, what he'd like to say; never write the message for him, or in his voice."
+  ],
+  "could not": []
+ },
+ {
+  "name": "make",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {
+     "THE MESSAGE": "Make a block called sailing: knots I'm learning"
+    }
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "MAKE"
+    }
+   },
+   {
+    "at": "1.1.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.1",
+    "reader": "walker",
+    "carried": {
+     "THE NAME": "sailing: knots I'm learning"
+    }
+   },
+   {
+    "at": "4.2",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "knots I'm learning"
+    }
+   },
+   {
+    "at": "4.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.3.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "4.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said."
+  ],
+  "could not": [
+   "4.5.2 “Yes: walk on.” — the answer at place 2 of 4.5 (no: there is no block called THE NAME) is written “Yes:”, so 4.5 has two Yes answers and no No; taken by its place as the no answer, and walked on."
+  ]
+ }
+]
