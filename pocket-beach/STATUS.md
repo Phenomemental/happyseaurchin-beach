@@ -4,6 +4,20 @@ Current state only. Newest first.
 
 ## Now
 
+**Rockpool 0.9, pscale as procedure (1 November, spine:pocket-beach
+1.111178714):** the app's behaviour is his cook and kernel, blocks in his
+pocket, walked exactly as they stand. A step that names her is hers, a ring
+choice through the engine's tool call on E4B; a step that names his yes
+waits for him. His days are the beach's: his now native, his hand as
+`ahead:<handle>`, his P6. The name is Rockpool and the mark Nine stones.
+- **Findings first:** `FINDINGS-procedure.md`. None changed the design.
+- **The judge:** `trial/judged-0.9.md`. On E4B the safety ask passed every
+  time; "Keep that" said it was below on every seed; his four messages were
+  no worse than 0.8.1's (better 1, worse 1, level 10).
+- **Point 6's proofs all passed:** a cue edited, the KEEP ring reordered, a
+  step rewritten; and two fresh model kernels walked the same path as the
+  walker on all eight procedures.
+
 **pocket-beach 0.8.1 is released (1 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/pocket-beach-v0.8.1
 - **Install:** `pocket-beach-v0.8.1.apk` over 0.8; his blocks stay. On
@@ -1444,9 +1458,42 @@ again from main at `2ad3446`.
   listed, his days moved, a day told, a keeping. In all 265 cases and 911
   calls, no mismatch.
 - **Device tests,** with six new ones in `RockpoolDeviceTest`.
-- **The bench's proofs,** `trial/proofs-0.9.md`.
-- **Fresh kernels beside the walker,** `trial/kernel-0.9/`.
-- **The laptop judge,** `trial/judged-0.9.md`.
+- **The bench's proofs,** `trial/proofs-0.9.md`: (a), (b) and (c) pass.
+- **Fresh kernels beside the walker,** `trial/kernel-0.9/`. Round 1's
+  differences were the cook's: six sentences were rewritten to carry their
+  formulas, and two answers written "Yes:" were put right as "No:". Then round 2's fresh kernels walked the same path as
+  the walker on all eight procedures. Four sentences
+  they could walk only by a reading wait for the next version: 5.4's
+  3,000, 8.5's name line, 6.6's "his P6", and kernel 2's tap.
+- **The laptop judge,** `trial/judged-0.9.md`, E4B and E2B at seeds 0 to 3,
+  beside 0.8.1's own runs.
+  - **On E4B:** safety every time. "Keep that" below on every seed, in his
+    four and on its own. His four no worse than 0.8.1's: better 1, worse 1,
+    level 10. The bench's talk asks 12 of 12.
+  - **Shorter on 0.8.1's measure:** 29.4 tokens a reply against 32.6.
+  - **Longer on the passport asks:** "Read my passport" 165 against 55,
+    since she recites the ring's opening lines.
+  - **The judge's first run was out of step** with the tree (its build
+    was older than the cook's sentences), so every seed was run again from
+    the head. The bench now refuses a cook its own walker can't read
+    whole.
+- **CI run 188's emulator found three things:**
+  - Write and Sort had left her engine when her context went to 8,192
+    alone; all three are 8,192 now;
+  - a test's close wrote into the next test's pocket;
+  - About's label is in capitals.
+
+  All three are fixed.
+
+**Still wrong, for his try and the next version:**
+- **"Keep that" goes where she chooses:** on E4B, films when it stands,
+  else notes (once knows:Phenomemental). Never his stash, though it is
+  first in the ring.
+- **Third person:** once in "Keep that" ("for Matthew to review"), and on
+  the passport asks.
+- **READ's own ring choice** through the tool call never came whole.
+- **His post** is still played back after her reply. The app leaves it
+  out.
 
 ## 0.8.1: the small release after the hatch
 
