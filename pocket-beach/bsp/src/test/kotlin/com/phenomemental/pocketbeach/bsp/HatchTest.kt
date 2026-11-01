@@ -195,9 +195,25 @@ class HatchTest {
         val way = Keeping.way("Keep that for me please", listOf("I've been making huge progress with my film making."), pages, Hatch.shellOf(h), Hatch.HER)
         assertTrue(way is Keeping.Way.Where)
         val line = HerWindow.appLine8(way, "Keep that for me please")
-        assertTrue(line.contains("for his yes. Nothing is kept, made or changed until he says yes, so never say it is") && line.contains("\"It's below, for your yes.\""), line)
+        assertEquals(HerWindow.WRITE_LINE, line, "Keep that's line is the write line")
+        assertTrue(line.contains("Begin your reply with these words: \u201cIt's below, for your yes.\u201d"), line)
+        assertEquals(HerWindow.WRITE_LINE, HerWindow.appLine8(Keeping.way("Make a block called films: fast ways", emptyList(), pages, Hatch.shellOf(h), Hatch.HER), "Make a block called films: fast ways"))
+        assertEquals(HerWindow.LINES_LINE, HerWindow.appLine8(Keeping.way("Change your opening line to: I'm Gemma", emptyList(), pages, Hatch.shellOf(h), Hatch.HER), "Change your opening line to: I'm Gemma"))
         val plan = Acts.propose("", listOf(Acts.Action.Add(Hatch.stashOf(h), null, (way as Keeping.Way.Where).words)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
         assertTrue(plan.proposal?.asks == true, plan.problem ?: plan.proposal?.refusal)
+    }
+
+    @Test
+    fun herProposalsNeverTouchHisPassportShellOrHistory() {
+        val (storage, pages, _) = pocket()
+        hatch(storage, pages)
+        val said = "Change your opening line to: I'm Gemma"
+        for (b in listOf("shell:$h", "passport:$h", "history:$h")) {
+            assertTrue(Keeping.own(b, pages), b)
+            val planned = Acts.propose("", listOf(Acts.Action.Change(b, null, "I'm Gemma")), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs, guard = Acts.Guard(listOf(said), said))
+            assertNull(planned.proposal, "$b: ${planned.dropped}")
+        }
+        assertFalse(Keeping.own("stash:$h", pages), "his stash is his to keep in")
     }
 
     @Test

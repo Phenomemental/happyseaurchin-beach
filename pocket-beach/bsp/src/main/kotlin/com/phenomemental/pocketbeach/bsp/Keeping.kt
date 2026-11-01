@@ -141,7 +141,10 @@ object Keeping {
     val OWN: Set<String> = setOf(com.phenomemental.pocketbeach.bsp.Asks.LOG, Landing.NOW, Landing.TELLING, Landing.EXAMPLES, Talking.SAFETY_BLOCK, Whens.BLOCK) + HerWindow.HERS
 
     /** Whether [name] is one of the app's own blocks: by name, whether or not it stands yet, or a clock. */
-    fun own(name: String, pages: Pages): Boolean = name.lowercase() in OWN || Talks.appOwn(name, pages)
+    fun own(name: String, pages: Pages): Boolean = name.lowercase() in OWN || Talks.appOwn(name, pages) || HATCHED.containsMatchIn(name)
+
+    /** 0.8: his passport, his shell and his history, which the app writes at the hatch and the close, never a proposal of hers; his stash is his to keep in. */
+    private val HATCHED = Regex("""^(?:passport|shell|history):""")
 
     // ── his words ──
 

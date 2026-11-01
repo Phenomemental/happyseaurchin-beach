@@ -993,7 +993,8 @@ class CompanionTest {
             compose.tap("yes")
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "films")!!.lines.any { it.text == "I'm trying to find fast ways to develop films" } }
         }
-        assertEquals("never a new block", before + Asks.LOG, app.storage.names().toSet())
+        // 0.7: her heart and her ways are made by the app the first time she talks, his to change; never a block she proposed.
+        assertEquals("never a new block", before + Asks.LOG + com.phenomemental.pocketbeach.bsp.HerWindow.HERS, app.storage.names().toSet())
         assertTrue(app.asking.transcript(), app.asking.transcript().contains("Matthew: Keep that for me please."))
     }
 

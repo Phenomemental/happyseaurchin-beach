@@ -242,11 +242,29 @@ object HerWindow {
      * name she is given is a line in his shell. The rest as 0.7.
      */
     fun appLine8(way: Keeping.Way, said: String): String = when (way) {
-        is Keeping.Way.Where -> appLine(Keeping.Way.Write(setOf(Keeping.Ask.KEEP)), said)
+        is Keeping.Way.Where -> WRITE_LINE
         is Keeping.Way.Name -> "The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201c${way.name} it is.\u201d), then talk with him. " +
             "The app sets out a line for your name in his shell, for his yes."
+        is Keeping.Way.Write -> when {
+            Keeping.Ask.CHANGE in way.asks && asksHerOpening(said) && way.asks.none { it == Keeping.Ask.KEEP || it == Keeping.Ask.MAKE } -> LINES_LINE
+            way.asks == setOf(Keeping.Ask.POST) -> appLine(way, said)
+            else -> WRITE_LINE
+        }
         else -> appLine(way, said)
     }
+
+    /**
+     * 0.8, the write line, for "Keep that" and every write he asks for. On
+     * the laptop bench E4B, in his four messages, said it was below only
+     * when given the words to begin with (FINDINGS: 0.7's line and the one
+     * naming his stash each missed on one seed or more).
+     */
+    const val WRITE_LINE = "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. " +
+        "Begin your reply with these words: \u201cIt's below, for your yes.\u201d Then talk with him about what he said."
+
+    /** 0.8: her lines are in his shell, his to change on the Write screen; nothing is set out for them. */
+    const val LINES_LINE = "The app: your lines are in his shell, his to change himself on the Write screen, so nothing is set out and nothing changes now. " +
+        "Begin your reply with these words: \u201cThat's yours to change.\u201d Then talk with him, and don't take it on as said."
 
     // ── what has changed since she last looked: the app's copies of what she saw ──
 

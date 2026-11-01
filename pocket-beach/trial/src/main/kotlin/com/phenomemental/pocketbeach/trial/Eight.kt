@@ -71,7 +71,7 @@ internal class Kept8(engine: Engine, private val pages: Pages, private val stora
     @OptIn(ExperimentalApi::class)
     fun say(said: String, now: ZonedDateTime): Said {
         val way = Keeping.way(said, before, pages, Hatch.shellOf(H), Hatch.HER)
-        val turn = HerWindow.turn(said, now, pages, storage, HerWindow.appLine8(way, said), HerWindow.changes(pages, storage, seen))
+        val turn = HerWindow.turn(said, now, pages, storage, keepVariant(way, said) ?: HerWindow.appLine8(way, said), HerWindow.changes(pages, storage, seen))
         val start = System.nanoTime()
         val reply = c.sendMessage(turn).toString().trim()
         val secs = (System.nanoTime() - start) / 1e9
@@ -81,6 +81,20 @@ internal class Kept8(engine: Engine, private val pages: Pages, private val stora
     }
 
     override fun close() = c.close()
+}
+
+/** For the trial only: another form of the app's line for "Keep that" with no block named (-Deight.keep=stash). */
+private fun keepVariant(way: Keeping.Way, said: String): String? {
+    if (way !is Keeping.Way.Where) return null
+    return when (System.getProperty("eight.keep")) {
+        "stash" -> "The app: he asks to keep something and names no place, so the app sets it out in his stash beneath your reply, for his yes. " +
+            "Nothing is kept until he says yes, so never say it is: a few words are enough (\"It's below, for your yes.\"), then talk with him about what he said."
+        "begin" -> "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept until he says yes, so never say it is. " +
+            "Begin your reply with these words: \u201cIt's below, for your yes.\u201d Then talk with him about what he said."
+        "stashbegin" -> "The app: he asks to keep something and names no place, so the app sets it out in his stash beneath your reply, for his yes. " +
+            "Nothing is kept until he says yes, so never say it is. Begin your reply with these words: \u201cIt's below, for your yes.\u201d Then talk with him about what he said."
+        else -> null
+    }
 }
 
 private val BELOW = Regex("""\bbelow\b""", RegexOption.IGNORE_CASE)
@@ -97,10 +111,13 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
     }
     fun window(k: Kept8) = say("\nHer window (0.8), read once at the first message (${k.window.length} characters):\n\n```\n${k.window}\n```")
     say("# $label, seed $seed: 0.6.4 and 0.7 beside 0.8")
-    val only = System.getProperty("eight.only")
+    val onlies = System.getProperty("eight.only")?.split(",")?.map { it.trim() }
+    // For trying a wording: 0.8 alone (-Deight.just8=1), the earlier versions left out.
+    val just8 = System.getProperty("eight.just8") == "1"
+    fun on(part: String) = onlies == null || part in onlies
 
     // His four messages of 1 November, one conversation (00:12), as 0.7's judge put them.
-    if (only == null || only == "his") run {
+    if (on("his")) run {
         val now = at(0, 12)
         val (storage, pages) = scratchPocket(shelf, ms(now), films = false, hers = false, walk = false)
         HerWindow.ensure(pages)
@@ -115,10 +132,12 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
                 for ((i, said) in NOV1.withIndex()) {
                     val t = now.plusMinutes(i.toLong())
                     say("\n### ${i + 1}. Matthew: $said")
-                    val a = old(engine, said, earlier, pages, t, seed)
-                    show("${i + 1}.", a, keep = i == 1)
-                    earlier += said to a.shown
-                    show("${i + 1}.", k7.say(said, t), keep = i == 1)
+                    if (!just8) {
+                        val a = old(engine, said, earlier, pages, t, seed)
+                        show("${i + 1}.", a, keep = i == 1)
+                        earlier += said to a.shown
+                        show("${i + 1}.", k7.say(said, t), keep = i == 1)
+                    }
                     val c = k8.say(said, t)
                     if (i == 0) say("\nThe turn as 0.8 gives it:\n\n```\n${c.turn}\n```")
                     show("${i + 1}.", c, keep = i == 1)
@@ -128,30 +147,30 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
     }
 
     // "Keep that for me please" after his first message, a conversation of its own (08:40, his blocks as they stand).
-    if (only == null || only == "keep") run {
+    if (on("keep")) run {
         val now = at(8, 40)
         say("\n## \"Keep that for me please\" after his first message, a conversation of its own (08:40)")
         val first = NOV1[0]
         val keep = NOV1[1]
         val (storage, pages) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
         HerWindow.ensure(pages)
-        val a1 = old(engine, first, emptyList(), pages, now, seed)
-        val a2 = old(engine, keep, listOf(first to a1.shown), pages, now.plusMinutes(1), seed)
-        val (b1, b2) = Kept(engine, pages, storage, shelf, now, seed).use { k -> k.say(first, now) to k.say(keep, now.plusMinutes(1)) }
+        val a1 = if (just8) null else old(engine, first, emptyList(), pages, now, seed)
+        val a2 = if (just8) null else old(engine, keep, listOf(first to a1!!.shown), pages, now.plusMinutes(1), seed)
+        val (b1, b2) = if (just8) null to null else Kept(engine, pages, storage, shelf, now, seed).use { k -> k.say(first, now) to k.say(keep, now.plusMinutes(1)) }
         val (s8, p8) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
         HerWindow.ensure(p8)
         hatched(s8, p8, ms(now))
         val (c1, c2) = Kept8(engine, p8, s8, shelf, now, seed).use { k -> k.say(first, now) to k.say(keep, now.plusMinutes(1)) }
         say("\n### 1. Matthew: $first")
-        show("1.", a1); show("1.", b1); show("1.", c1)
+        a1?.let { show("1.", it) }; b1?.let { show("1.", it) }; show("1.", c1)
         say("\n### 2. Matthew: $keep")
-        show("2.", a2, keep = true); show("2.", b2, keep = true); show("2.", c2, keep = true)
+        a2?.let { show("2.", it, keep = true) }; b2?.let { show("2.", it, keep = true) }; show("2.", c2, keep = true)
     }
 
     // The bench's talk asks, each an Ask of its own.
-    say("\n## The bench's talk asks, each its own Ask (21:00, 31 October)")
+    if (on("bench")) say("\n## The bench's talk asks, each its own Ask (21:00, 31 October)")
     val benchNow = ZonedDateTime.of(2026, 10, 31, 21, 0, 0, 0, LONDON8)
-    for (ask in Bench.TALK_ASKS.filter { only == null || only == "bench" }) {
+    for (ask in Bench.TALK_ASKS.filter { on("bench") }) {
         say("\n### ${ask.n}. Matthew: ${ask.question}")
         val (storage, pages) = Bench.fixture(shelf, ms(benchNow), Talks.SHELL_RECIPE)
         if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
@@ -176,8 +195,8 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
     }
 
     // The window's gains: his day with no read; asked to post to his own room, she says she can.
-    say("\n## The window's gains (08:40), each its own Ask")
-    for (said in listOf(TODAY_ASK, POST_ASK).filter { only == null || only == "gains" }) {
+    if (on("gains")) say("\n## The window's gains (08:40), each its own Ask")
+    for (said in listOf(TODAY_ASK, POST_ASK).filter { on("gains") }) {
         val now = at(8, 40)
         val (storage, pages) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
         HerWindow.ensure(pages)

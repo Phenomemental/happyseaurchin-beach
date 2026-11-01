@@ -313,7 +313,7 @@ private fun HatchCard(model: Model) {
 @Composable
 private fun Places(places: List<Pair<String, String>>) {
     val ink = LocalInk.current
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("hatch-places")) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.semantics(mergeDescendants = true) {}.testTag("hatch-places")) {
         for ((a, t) in places.take(40)) Text(
             Words.quoted(t, 240), style = Type.small, color = ink.ink,
             modifier = Modifier.padding(start = (12 * a.count { it == '.' } + if (a.isEmpty()) 0 else 12).dp),
@@ -325,7 +325,7 @@ private fun Places(places: List<Pair<String, String>>) {
 @Composable
 private fun Three(three: Hatch.Three) {
     val ink = LocalInk.current
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("hatch-three")) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.semantics(mergeDescendants = true) {}.testTag("hatch-three")) {
         for ((label, line) in Hatch.LABELS.zip(three.lines)) Text("$label: ${Words.quoted(line, 400)}", style = Type.small, color = ink.ink)
     }
 }
