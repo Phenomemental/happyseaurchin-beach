@@ -38,11 +38,12 @@ object Keeping {
      * What to do with [said]: [before] is what he said earlier in this
      * conversation, newest last; [shell] is her shell.
      */
-    fun way(said: String, before: List<String>, pages: Pages, shell: String = HelloWorld.SHELL): Way {
+    fun way(said: String, before: List<String>, pages: Pages, shell: String = HelloWorld.SHELL, at: String = ""): Way {
         val asks = asks(said)
         name(said)?.let { name ->
             if (asks.isEmpty() || asks == setOf(Ask.CHANGE)) {
-                val held = pages.position(Region.POCKET, shell)?.lines.orEmpty().any { it.text != null && Telling.plain(it.text) == Telling.plain("Matthew calls me $name.") }
+                // 0.8: her name is a line at her place in his shell ([at]); before the hatch, a line of her own shell.
+                val held = Talking.name(shell, pages, at)?.let { Telling.plain(it) == Telling.plain(name) } ?: false
                 return if (held) Way.Talk else Way.Name(name)
             }
         }
@@ -130,11 +131,20 @@ object Keeping {
     /** The name he gives a new block ("make a block called sailing"); null when he names none. */
     fun made(said: String): String? = MADE.firstNotNullOfOrNull { it.find(said)?.groupValues?.get(1)?.trim()?.takeIf(String::isNotEmpty) }
 
-    /** The blocks the app keeps itself, by name: written only by the app, on his taps. */
-    val OWN: Set<String> = setOf(com.phenomemental.pocketbeach.bsp.Asks.LOG, Landing.NOW, Landing.TELLING, Landing.EXAMPLES, Talking.SAFETY_BLOCK, Whens.BLOCK)
+    /**
+     * The blocks the app keeps itself, by name: written only by the app, on his
+     * taps. 0.7: and her heart and her ways, his to change on the Write
+     * screen, never by a proposal of hers (in the trial of 1 November the
+     * writing check aimed "Change your opening line to: I'm Gemma" at her
+     * heart block, and only "not his words" stopped it).
+     */
+    val OWN: Set<String> = setOf(com.phenomemental.pocketbeach.bsp.Asks.LOG, Landing.NOW, Landing.TELLING, Landing.EXAMPLES, Talking.SAFETY_BLOCK, Whens.BLOCK) + HerWindow.HERS
 
     /** Whether [name] is one of the app's own blocks: by name, whether or not it stands yet, or a clock. */
-    fun own(name: String, pages: Pages): Boolean = name.lowercase() in OWN || Talks.appOwn(name, pages)
+    fun own(name: String, pages: Pages): Boolean = name.lowercase() in OWN || Talks.appOwn(name, pages) || HATCHED.containsMatchIn(name)
+
+    /** 0.8: his passport, his shell and his history, which the app writes at the hatch and the close, never a proposal of hers; his stash is his to keep in. */
+    private val HATCHED = Regex("""^(?:passport|shell|history):""")
 
     // ── his words ──
 

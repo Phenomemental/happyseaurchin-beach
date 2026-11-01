@@ -100,13 +100,13 @@ object Talking {
     }
 
     /** The name his shell gives her, from its latest "Matthew calls me …" line; null before he has named her. */
-    fun name(shell: String, pages: Pages): String? {
-        val view = pages.position(Region.POCKET, shell) ?: return null
+    fun name(shell: String, pages: Pages, at: String = ""): String? {
+        val view = pages.position(Region.POCKET, shell, at) ?: return null
         return view.lines.mapNotNull { it.text }.mapNotNull { CALLS_ME.matchEntire(it.trim())?.groupValues?.get(1)?.trim()?.trim('"', '“', '”', '\'')?.trim() }
             .lastOrNull { it.isNotEmpty() && !it.endsWith("…") && !it.endsWith("...") }
     }
 
-    private val CALLS_ME = Regex("""Matthew calls me (.+?)[.!]?""", RegexOption.IGNORE_CASE)
+    private val CALLS_ME = Regex("""(?:Matthew|[\p{Lu}][\p{L}'’-]*) calls me (.+?)[.!]?""", RegexOption.IGNORE_CASE)
 
     /** B, the heart line, [name] hers; with no name yet, she is his companion and takes the name he gives. */
     fun heart(name: String?): String = (if (name != null) "Matthew calls you $name: that is your name, just $name. You are his companion on his phone. " else "You are Matthew's companion on his phone. ") +
@@ -280,16 +280,21 @@ object Talking {
      * in a row; when he said fewer, a line that is his words and nothing
      * else, so "Good morning, Matthew" to his "Good morning" is no copy).
      */
-    fun copied(reply: String, said: String, shellOpening: String): List<String> {
+    fun copied(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): List<String> {
         val his = Telling.plain(said).split(' ').filter { it.isNotEmpty() }
         val runs = if (his.size < 8) emptySet() else (0..his.size - 8).map { his.subList(it, it + 8).joinToString(" ") }.toSet()
         val whole = his.joinToString(" ")
         val shell = Telling.plain(shellOpening)
         val own = shell.split(' ').filter { it.isNotEmpty() }
         val shellRuns = if (own.size < 6) emptySet() else (0..own.size - 6).map { own.subList(it, it + 6).joinToString(" ") }.toSet()
+        // 0.7: a line of the app's in her turn (the time, what has changed, the app's line), played back.
+        val appRuns = appLines.flatMap { l -> Telling.plain(l).split(' ').filter { it.isNotEmpty() }.let { w -> if (w.size < 6) listOf(w.joinToString(" ")).filter { it.isNotEmpty() } else (0..w.size - 6).map { w.subList(it, it + 6).joinToString(" ") } } }.toSet()
         return reply.lines().filter { line ->
             val p = Telling.plain(line)
             if (p.isEmpty()) return@filter false
+            if (line.trimStart().startsWith("(") && line.trimEnd().endsWith(")") && appLines.isNotEmpty()) return@filter true
+            if (p.startsWith("the app ")) return@filter true
+            if (appRuns.any { " $p ".contains(" $it ") }) return@filter true
             p.startsWith("shell ") || p.startsWith("your shell") || (shell.isNotEmpty() && p.contains(shell)) ||
                 line.trimStart().trimStart('*', '_', '"').startsWith("Matthew:") ||
                 (YEAR.containsMatchIn(line) && CLOCK.containsMatchIn(line)) ||
@@ -299,8 +304,8 @@ object Talking {
     }
 
     /** Her [reply] with every line that plays her turn back left out: what Ask shows of her. */
-    fun unechoed(reply: String, said: String, shellOpening: String): String {
-        val copies = copied(reply, said, shellOpening).toSet()
+    fun unechoed(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): String {
+        val copies = copied(reply, said, shellOpening, appLines).toSet()
         return reply.lines().filter { it !in copies }.joinToString("\n").trim().replace(Regex("\n{3,}"), "\n\n")
     }
 

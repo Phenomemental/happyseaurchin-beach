@@ -97,8 +97,20 @@ class Speech {
         /** How long the phone's speech is left alone after it says it is busy. */
         const val BUSY_MS = 5_000L
 
-        /** How long the keyboard is given to go before listening. */
-        const val KEYBOARD_MS = 400L
+        /**
+         * 0.7: how long after the keyboard has gone listening waits. With the
+         * keyboard up, Gboard's voice typing holds the phone's on-device speech
+         * (his Pixel said "busy, error 10" on 0.3.5, 0.4 and 0.6.4, when 0.4
+         * started 400 ms after hiding it): the keyboard gone from the screen is
+         * not Gboard letting its speech go.
+         */
+        const val KEYBOARD_MS = 1_000L
+
+        /** The longest listening waits for the keyboard to go. */
+        const val KEYBOARD_WAIT_MS = 3_000L
+
+        /** 0.7: busy once, the one try more he sees comes this long after. */
+        const val RETRY_MS = 1_000L
     }
 
     /** Makes the recogniser on a tap: the phone's own, on the device. The device tests put their own here. */
@@ -125,9 +137,9 @@ class Speech {
 
     val busy: Boolean get() = SystemClock.elapsedRealtime() < busyUntil
 
-    /** Listen for [owner], letting go any other recogniser first. False, with nothing made, while the phone's speech is busy. */
-    fun start(context: Context, owner: Any, heard: Heard): Boolean {
-        if (busy) return false
+    /** Listen for [owner], letting go any other recogniser first. False, with nothing made, while the phone's speech is busy, unless this is the [retry] he sees. */
+    fun start(context: Context, owner: Any, heard: Heard, retry: Boolean = false): Boolean {
+        if (busy && !retry) return false
         letGo()
         val r = make(context)
         held = r
@@ -205,6 +217,7 @@ fun rememberVoice(onWords: (String) -> Unit): Voice {
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val keyboardUp = WindowInsets.isImeVisible
+    val imeUp by rememberUpdatedState(keyboardUp)
     val scope = rememberCoroutineScope()
     var waiting by remember { mutableStateOf<Job?>(null) }
     val deliver by rememberUpdatedState(onWords)
@@ -216,30 +229,44 @@ fun rememberVoice(onWords: (String) -> Unit): Voice {
         voice.heard = ""
     }
 
-    fun start() {
-        voice.note = null
+    fun start(retry: Boolean = false) {
+        if (!retry) voice.note = null
         val started = speech.start(context, me, object : Heard {
-            override fun ready() { voice.listening = true }
+            override fun ready() { voice.listening = true; voice.note = null }
             override fun partial(words: String) { voice.heard = words }
             override fun done(words: String?) {
                 words?.takeIf { it.isNotBlank() }?.let { deliver(it) }
                 ended()
             }
             override fun failed(error: Int) {
+                // 0.7: busy once, one try more, where he can see it; busy again, he is told.
+                if (!retry && (error == SpeechRecognizer.ERROR_TOO_MANY_REQUESTS || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY)) {
+                    voice.note = WAITING
+                    voice.listening = true
+                    waiting = scope.launch {
+                        delay(Speech.RETRY_MS)
+                        waiting = null
+                        start(retry = true)
+                    }
+                    return
+                }
                 voice.note = speechTrouble(error)
                 ended()
             }
-        })
-        if (started) voice.listening = true else voice.note = busy(speech.busyError)
+        }, retry)
+        if (started) voice.listening = true else { voice.note = busy(speech.busyError); voice.listening = false }
     }
 
-    // With the keyboard up the phone's recogniser may be the keyboard's (Gboard's) to hold, so the keyboard goes first.
+    // With the keyboard up the phone's recogniser may be the keyboard's (Gboard's) to hold, so the keyboard goes first:
+    // 0.7, listening starts only once it has gone, and a second more.
     fun begin() {
         if (!keyboardUp) return start()
         keyboard?.hide()
         focus.clearFocus()
         voice.listening = true
         waiting = scope.launch {
+            val since = android.os.SystemClock.elapsedRealtime()
+            while (imeUp && android.os.SystemClock.elapsedRealtime() - since < Speech.KEYBOARD_WAIT_MS) delay(50)
             delay(Speech.KEYBOARD_MS)
             waiting = null
             start()
@@ -300,6 +327,9 @@ fun Speak(onWords: (String) -> Unit) {
 }
 
 const val NO_SPEECH = "This phone can't recognise speech on the device, so speaking is off. Pocket beach never sends your voice to a server."
+
+/** 0.7: shown while the one try more waits, after the phone first says its speech is busy. */
+const val WAITING = "Waiting for the keyboard's voice typing to let go\u2026"
 
 /** The phone said its speech is busy; its error's number shows which way (10: too many requests; 8: its recogniser busy). */
 fun busy(error: Int): String = "Speech is busy" + (if (error != 0) " (the phone's error $error)" else "") + ". Try again in a moment."

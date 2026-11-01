@@ -213,9 +213,10 @@ class CompanionTest {
     }
 
     private fun askTheCompanion() {
+        // 0.8: her own shell is no longer offered in Ask (the hatch is how a new person comes in); made here as a 0.7 pocket has it.
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         compose.tap("ask-companion")
-        compose.waitFor("make-shell")
-        compose.tap("Make the companion's shell")
+        compose.waitFor("hatch-opening")
         compose.waitFor("wearing", "Wearing pocket-companion")
         compose.waitFor("question")
         compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
@@ -439,8 +440,9 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "garden", "2.1")?.text == "mulch the beds" }
             assertEquals("one Write conversation", 1, mind.histories.size)
             assertEquals("0.6.4: opened with no worked examples", emptyList<Pair<String, String>>(), mind.histories.single())
-            // 0.6.1: hers is opened afresh for each message, with the exchanges before: his words and hers.
-            assertEquals("a Talk conversation a message, each opened with the exchanges before", listOf(emptyList(), listOf("What's your name?" to "I'm the pocket companion.")), mind.talkHistories)
+            // 0.7: hers is kept between his messages, her window read once.
+            assertEquals("one Talk conversation, kept between his messages", listOf(emptyList<Pair<String, String>>()), mind.talkHistories)
+            assertTrue("her turn carries the time and the app's line", mind.talkMessages.last().startsWith("(It is ") && mind.talkMessages.last().contains("(The app: "))
         }
     }
 
@@ -499,8 +501,8 @@ class CompanionTest {
             asked("What does the whetstone say?")
             compose.waitFor("over", "She talked.")
             compose.waitFor("took", "on the stand-in")
-            assertTrue("a teaching block his words name is read for her, in her instruction", mind.talkInstruction.contains("What the app read for you"))
-            assertEquals("his turn is his words alone", "What does the whetstone say?", mind.talkMessages.last())
+            assertTrue("0.7: a teaching block his words name is read for her, in her turn", mind.talkMessages.last().contains("What the app read for you"))
+            assertTrue("his words close her turn", mind.talkMessages.last().endsWith("\nWhat does the whetstone say?"))
             asked("Add to garden: buy more compost.")
             compose.waitFor("writes")
             compose.waitFor("took", "on the stand-in")
@@ -538,8 +540,11 @@ class CompanionTest {
             compose.tap("ask-companion")
             asked("Good morning")
             compose.waitFor("say", "Good morning, Matthew.")
-            assertEquals("his turn is his words alone", "Good morning", mind.talkMessages.single())
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("It is "))
+            // 0.7: her turn is the time and the app's line, then his words; her window holds no time.
+            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().endsWith("\nGood morning"))
+            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().startsWith("(It is "))
+            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().contains("(The app: nothing is being kept or set out from this. Just talk with him.)"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.HerWindow.CAN_DO))
             // 0.6.2: the friend line (C), her name not yet given; her shell's opening line has left her instruction.
             assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"))
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
@@ -671,6 +676,7 @@ class CompanionTest {
             assertEquals("her turn played back isn't given her again", "What would you like to keep in your blocks?", mind.talkHistories.last().single().second)
         }
         val t = app.asking.transcript()
+        assertTrue(t, t.contains("The app's line to her: The app: "))
         assertTrue(t, t.contains("Left out of her reply, as her turn played back: "))
         assertTrue(t, t.contains("Companion: What would you like to keep in your blocks?"))
     }
@@ -810,7 +816,7 @@ class CompanionTest {
             compose.tap("ask-companion")
             asked("I don't feel safe tonight.")
             compose.waitFor("say", "I'm worried about you.")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.endsWith(com.phenomemental.pocketbeach.bsp.Talking.SAFETY))
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("(" + com.phenomemental.pocketbeach.bsp.Talking.SAFETY + ")"))
             compose.tap("back")
             compose.tap("settings")
             compose.waitFor("safety-words", "don't feel safe")
@@ -841,9 +847,10 @@ class CompanionTest {
             asked("I don't feel safe tonight.")
             compose.waitFor("say", "Okay.")
             compose.waitFor("safety-note", talking.SAFETY_NOTE)
-            assertTrue("the safety line stays in her instruction", mind.talkInstruction.endsWith(talking.SAFETY))
+            assertTrue("0.7: the safety line rides in her turn", mind.talkMessages.last().contains("(" + talking.SAFETY + ")"))
             asked("Had a good day after all.")
             compose.waitFor("say", "Glad to hear it.")
+            assertFalse("no safety line on a turn that doesn't need it", mind.talkMessages.last().contains(talking.SAFETY))
             assertEquals("one note, beneath the reply that needed it", 1, compose.onAllNodes(hasTestTag("safety-note")).fetchSemanticsNodes().size)
             assertEquals(talking.SAFETY_NOTE, app.asking.history.first().safety)
             assertEquals(null, app.asking.history.last().safety)
@@ -986,7 +993,8 @@ class CompanionTest {
             compose.tap("yes")
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "films")!!.lines.any { it.text == "I'm trying to find fast ways to develop films" } }
         }
-        assertEquals("never a new block", before + Asks.LOG, app.storage.names().toSet())
+        // 0.7: her heart and her ways are made by the app the first time she talks, his to change; never a block she proposed.
+        assertEquals("never a new block", before + Asks.LOG + com.phenomemental.pocketbeach.bsp.HerWindow.HERS, app.storage.names().toSet())
         assertTrue(app.asking.transcript(), app.asking.transcript().contains("Matthew: Keep that for me please."))
     }
 

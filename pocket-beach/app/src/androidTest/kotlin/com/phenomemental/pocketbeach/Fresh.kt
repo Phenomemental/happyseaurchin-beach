@@ -37,6 +37,12 @@ object Fresh {
 
     fun clear() {
         File(app.filesDir, "regions").deleteRecursively()
+        // 0.8: the hidden region shut again, the hatch forgotten, and the copies saved before one.
+        app.storage.shut()
+        app.hatching.reset()
+        File(app.filesDir, com.phenomemental.pocketbeach.ui.Hatching.COPIES).deleteRecursively()
+        // 0.7: the app's copies of what she last saw.
+        File(app.filesDir, com.phenomemental.pocketbeach.ui.Asking.COPIES).delete()
         app.lastSavedMs = null
         app.asking.reset()
         app.benching.reset()

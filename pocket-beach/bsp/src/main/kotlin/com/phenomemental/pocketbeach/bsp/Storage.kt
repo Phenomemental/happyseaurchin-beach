@@ -56,13 +56,13 @@ data class Stamps(val touched: Map<String, String> = emptyMap(), val born: Map<S
  * way, the next start finishes the swap if it had begun and abandons it if it
  * had not, so the blocks are never a mix of the two.
  */
-class FileStorage(root: File) : BlockStorage {
+class FileStorage(root: File, region: String = "pocket") : BlockStorage {
     private val regions = File(root, "regions")
-    private val dir = File(regions, "pocket")
-    private val metaFile = File(regions, "pocket.meta.json")
-    private val incoming = File(regions, "pocket.incoming")
-    private val incomingMeta = File(regions, "pocket.meta.incoming.json")
-    private val outgoing = File(regions, "pocket.outgoing")
+    private val dir = File(regions, region)
+    private val metaFile = File(regions, "$region.meta.json")
+    private val incoming = File(regions, "$region.incoming")
+    private val incomingMeta = File(regions, "$region.meta.incoming.json")
+    private val outgoing = File(regions, "$region.outgoing")
 
     init {
         finishReplace()
@@ -139,6 +139,74 @@ class FileStorage(root: File) : BlockStorage {
         } finally {
             tmp.delete()
         }
+    }
+}
+
+/**
+ * 0.8, the hatch (spine:pocket-beach 1.1111787133): the app's own blocks move
+ * to a hidden region she never sees, a folder of their own beside the pocket
+ * (regions/app). Read and written by name as before, so nothing that keeps
+ * them changes; listed with the pocket's, so a whole copy holds them too.
+ * Before the hatch the region is shut and every block stays in the pocket,
+ * as 0.7 kept them; [open] moves them, once, after a whole copy is saved.
+ */
+class RoutedStorage(private val pocket: BlockStorage, private val hidden: BlockStorage, private val routes: (String) -> Boolean, openNow: Boolean) : BlockStorage {
+    @Volatile var isOpen: Boolean = openNow
+        private set
+
+    private fun away(name: String) = isOpen && routes(name)
+
+    override fun read(name: String): String? = if (away(name)) hidden.read(name) ?: pocket.read(name) else pocket.read(name)
+
+    override fun write(name: String, json: String) {
+        if (away(name)) {
+            hidden.write(name, json)
+            if (pocket.read(name) != null) pocket.delete(name)
+        } else pocket.write(name, json)
+    }
+
+    override fun delete(name: String) {
+        pocket.delete(name)
+        hidden.delete(name)
+    }
+
+    override fun names(): List<String> = (pocket.names() + hidden.names()).distinct()
+
+    override fun stamps(): Stamps {
+        val a = pocket.stamps()
+        val b = hidden.stamps()
+        return Stamps(a.touched + b.touched, a.born + b.born)
+    }
+
+    override fun setStamps(stamps: Stamps) {
+        fun part(m: Map<String, String>, there: Boolean) = m.filterKeys { away(it) == there }
+        pocket.setStamps(Stamps(part(stamps.touched, false), part(stamps.born, false)))
+        hidden.setStamps(Stamps(part(stamps.touched, true), part(stamps.born, true)))
+    }
+
+    override fun replaceAll(blocks: Map<String, String>, stamps: Stamps) {
+        fun part(m: Map<String, String>, there: Boolean) = m.filterKeys { away(it) == there }
+        hidden.replaceAll(part(blocks, true), Stamps(part(stamps.touched, true), part(stamps.born, true)))
+        pocket.replaceAll(part(blocks, false), Stamps(part(stamps.touched, false), part(stamps.born, false)))
+    }
+
+    /** Shut the hidden region again, as an emptied pocket is (the device tests begin so): every block is read from the pocket. */
+    fun shut() {
+        isOpen = false
+    }
+
+    /** Open the hidden region: every block it routes moves there from the pocket, its stamps with it. The names moved. */
+    fun open(): List<String> = synchronized(this) {
+        val stamps = stamps()
+        isOpen = true
+        val moved = pocket.names().filter(routes).sorted()
+        for (name in moved) {
+            val json = pocket.read(name) ?: continue
+            hidden.write(name, json)
+            pocket.delete(name)
+        }
+        setStamps(stamps)
+        moved
     }
 }
 

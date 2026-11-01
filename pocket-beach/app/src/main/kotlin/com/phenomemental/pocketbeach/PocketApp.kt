@@ -7,6 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.phenomemental.pocketbeach.bsp.FileStorage
+import com.phenomemental.pocketbeach.bsp.Hatch
+import com.phenomemental.pocketbeach.bsp.Hidden
+import com.phenomemental.pocketbeach.bsp.RoutedStorage
 import com.phenomemental.pocketbeach.bsp.Pages
 import com.phenomemental.pocketbeach.bsp.PocketBsp
 import com.phenomemental.pocketbeach.bsp.Shelf
@@ -36,7 +39,15 @@ import java.io.FileNotFoundException
  * The companion's model, and the one way out, are held here too.
  */
 class PocketApp : Application() {
-    val storage by lazy { FileStorage(filesDir) }
+    /**
+     * 0.8: the pocket, and beside it the hidden region (regions/app) the app's
+     * own blocks move to once he has hatched: read and written by name as
+     * before, never in his map or hers.
+     */
+    val storage: RoutedStorage by lazy {
+        val pocket = FileStorage(filesDir)
+        RoutedStorage(pocket, FileStorage(filesDir, "app"), Hidden::routes, openNow = Hatch.hatched(pocket) != null)
+    }
     val shelf by lazy { Shelf(AssetShelfSource(assets)) }
     val pocket: PocketBsp by lazy { PocketBsp(storage, shelf) }
     val pages: Pages by lazy { Pages(storage, shelf, pocket) }
@@ -56,6 +67,9 @@ class PocketApp : Application() {
         get() = standIn ?: gemma
         set(value) { standIn = value }
     val asking by lazy { Asking(this) }
+
+    /** 0.8: his shell on this phone, born or adopted. */
+    val hatching by lazy { com.phenomemental.pocketbeach.ui.Hatching(this) }
     val benching by lazy { Benching(this) }
 
     /** The one speech recogniser the app may hold, made on a tap and let go as soon as listening ends. */

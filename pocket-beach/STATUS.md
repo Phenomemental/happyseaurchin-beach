@@ -4,6 +4,37 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach 0.8, the hatch (1 November, spine:pocket-beach
+1.111178713):** his shell on the phone is the beach's four blocks. She
+wakes holding its nine places, his three lines first, exactly as they
+stand on the spine. "Keep that" is set out for his stash, and each
+conversation's close is one entry in his history. The release checks at
+1.1111787135 all passed on E4B: safety every time; "Keep that" below on
+every seed; his four messages level with 0.7's. Her replies are about twice
+as long as 0.7's. See "0.8: the hatch" and `trial/judged-0.8.md`. 0.7, paused
+before release, came into 0.8 whole and was never released alone.
+
+**pocket-beach 0.7, her window** (step one of three, from the findings
+below): she wakes holding her window, of his world as lines; her heart and
+her ways are blocks he can change, in 0.6.4's words; each turn the app says
+what it is doing with his ask; her conversation is kept, the window read
+once; Speak waits for the keyboard to go. On the laptop E4B talked as well
+as 0.6.4 on his messages and the bench, told his day with no read, and
+said she can post (see "0.7: her window"). Her reach (0.7.1) and her walk
+(0.7.2) wait for his try of 0.7.
+
+**Her window, her walk, her loop and her reach (1 November, findings only;
+nothing built, nothing released):** what a mind holds and can do at the
+beach's door, beside what she holds on his phone; the design in the beach's
+shapes; a laptop trial on both models; and the smallest build (see "Her
+window, her walk, her loop and her reach", and the page
+https://claude.ai/artifact/1dK9uqoQhSa7qsqKVqsbr2). Her window gave her his
+day with no read. Told what she can do, she no longer says she's confined.
+Her own sends and edits failed, and the app's offer by code was right. The
+smallest build is her window and orbit, then her reach by code, then her
+walk offered by the app. 0.6.5 as first written is held. It all waits on
+Matthew.
+
 **pocket-beach-v0.6.4** is released (its tag is at `39a01e4` on main): the
 guards and the gate, step one of the step back's design (see "0.6.4: the
 guards and the gate"). The writing check runs only when his words ask;
@@ -1303,6 +1334,963 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.8: the hatch
+
+Built on Sunday 1 November 2026, from spine:pocket-beach 1.111178713 (read
+from 1.11117871 down; the spine was not written). The branch is
+`ccr-4c84d736-pvgv13`: main's 0.6.4 with 0.7's branch merged in (`8f6e678`),
+as point 5 asks. The findings it builds on are `FINDINGS-hatch.md`, on
+branch `ccr-df9fa66a-f19vdd`.
+
+### What changed, in plain words
+
+1. **The hatch.** His shell on the phone is four blocks, from
+   pscale-beach's own templates (`seeds/templates` at the pinned 4770a49,
+   byte for byte). Each is filled with his handle, "the pocket on this
+   phone" for the beach and the hour.
+   - **Adopted:**
+     - His passport comes from a file, shared in or chosen with "I have a
+       passport" in Ask.
+     - It is shown as his places in lines, with when it was read.
+     - Then come his three lines (for Matthew, the ones drafted with
+       Claude on the spine, for his yes) and "Adopt this as my shell on
+       this phone".
+     - His passport is kept as it stands.
+   - **Born:**
+     - The app's own words ask "Hello. Are you new here, or do you have a
+       passport from the beach?" with I'm new and I have a passport.
+     - The welcome asks his handle and his three lines, one at a time, in
+       the chat's own box.
+     - It sets out his passport whole, for his yes ("Yes, this is my
+       passport"), then Make my shell.
+   - **By handle** waits for the online switch.
+   - **No locks.** Nothing new leaves the phone.
+2. **His shell** (`shell:<handle>`), from the template:
+   - **3, the manifest:** the four, and his own blocks nested by meaning,
+     since a place holds nine (5 his day, 6 his people, 7 his own blocks,
+     8 and 9 more of them). Every block he had is kept and listed.
+   - **5, her window:** nine references, read through Bundle.kt.
+   - **6, his places:** his three lines, as he confirmed them.
+   - **7, her:** her name line ("Matthew calls me Gemma.") and the way she
+     talks. Her shell, pocket-companion, retires into his.
+   - **9.2:** how it was hatched, and when.
+3. **Her window, nine places**, read once each conversation:
+   1. his heart;
+   2. who he is;
+   3. how he'd be met (his own lines, quoted exactly);
+   4. today on his clock;
+   5. his hand;
+   6. his people;
+   7. what he keeps (the newest of his stash, in his words);
+   8. the way she talks;
+   9. what she can do (0.7's line).
+
+   Places 4 to 7 are lines made by code, never a block's name or address,
+   and a place with nothing in it is left out. With them comes 0.7's name
+   line.
+4. **The app's own blocks move to a hidden region.** That is
+   `regions/app`, beside the pocket:
+   - the ask log;
+   - the bench's blocks;
+   - the sort's examples;
+   - his safety words and time words (his to change in Settings);
+   - her retired shell, heart and ways.
+
+   They are read and written by name as before. She never sees them; the
+   Shore lists them apart, under "The app's own, which she never sees".
+   His clock and his hand stay his, in the manifest.
+5. **"Keep that" with no block named is set out for his stash**, for his
+   yes.
+   - The app's line is the write line, the same for every write he asks
+     for: "…Begin your reply with these words: "It's below, for your
+     yes." Then talk with him about what he said."
+   - On E4B, 0.7's line missed in his four messages. The line naming his
+     stash missed on seed 3 (see the judged file).
+6. **Asked to change her opening line**, she is given "That's yours to
+   change.", since her lines are in his shell, his to change on the Write
+   screen. Her Write job never proposes to his passport, shell or history.
+7. **The close.** When a conversation closes (a new day, six messages, a
+   write, as 0.7 reopens it, or Ask left), the app appends one entry to his
+   history:
+   - its opening line a plain concern line written by code ("Talked with
+     him: 2 messages, from "…"; one thing written on his yes.");
+   - what was read for her at 1, and what was written at 2;
+   - the beach's arrival stamp at 3.
+8. **A whole copy first.** Before the hatch changes anything, the app
+   saves a whole copy of the pocket in its own files. The Shore can bring
+   it back ("Restore the copy saved before your shell was made").
+
+### Checked
+
+- **Golden cases for every hatch write**, matched against the pinned
+  handler. These are the calls the phone's hatch makes, exactly as its Pages
+  plan them:
+  - the four blocks whole;
+  - "Keep that" appended to his stash;
+  - the close's history entry;
+  - her name changed at 7.1, and added at 7 when she has none.
+
+  They are kept in `conformance/hatch-case.json` and put to the real
+  handler by `corpus.mjs`. `HatchGoldenTest` holds the file to what the
+  hatch makes. In all: 263 cases, 887 calls, no mismatch, in files or in
+  memory.
+- **Core tests:** 174, on Linux and on Windows. Among them are the
+  templates byte for byte against upstream, her window's three lines
+  exactly, the manifest keeping every block, and the hidden region.
+- **Device tests**, on the emulator: the whole suite, with two new ones.
+  - **The welcome:** a refused handle; the four blocks born after his
+    yes; the copy saved; her window his three lines.
+  - **The adoption:** his blocks kept and listed; her shell hidden;
+    "Keep that" proposed for his stash and written on yes; leaving Ask
+    leaves one history entry.
+
+### The laptop judge (`trial/judged-0.8.md`)
+
+E4B and E2B, seeds 0, 1 and 2, and seed 3 besides, since seed 1 draws
+exactly what seed 0 draws.
+
+| The check (E4B) | 0.8 | 0.7 |
+|---|---|---|
+| Safety passes | every time | every time |
+| "Keep that" says it is below, in his four messages / on its own | 4 of 4 / 4 of 4 | 2 of 4 / 2 of 4 |
+| His four messages beside 0.7's, by hand (seeds 0, 2, 3) | better 3, worse 3, level 6 | |
+| The bench's talk asks (three draws) | 12 of 12 | 10 of 12 |
+
+**Costs:**
+- She writes about twice as much: on E4B, 61 tokens a reply against
+  0.7's 34.
+- Once she called his energy "almost manic".
+- She brings his shell's lines in as her topic.
+- On E2B she no longer says she can post on two seeds of three.
+
+### What waits
+
+As 1.1111787134 orders it:
+1. the walker and the kernel block, the writing check retired for a ring;
+2. his cards at their day on his clock, then the gap in code, then the
+   charging job with the summary over every nine;
+3. locks with the phone's key;
+4. the online switch;
+5. files and pictures.
+
+**Open, for Matthew:**
+- **The shell template's opening line** says "Locked with Phenomemental's
+  passphrase". The phone keeps no locks yet (his third answer). It is left
+  as the template has it, and his to change on the Write screen.
+- **What fills {{BEACH_URL}}.** It is filled with "the pocket on this
+  phone".
+
+## 0.7: her window
+
+Paused before release (Matthew, 1 November): built and judged, not
+released or merged; the architecture is looked at first. Built on branch
+`ccr-4c84d736-pvgv13` from 0.6.4, on Sunday 1 November 2026, after
+Matthew's answers to the four decisions. This is step one of
+three: her window (0.7), her reach (0.7.1), and her walk offered by the app
+(0.7.2). Each is tried on his Pixel before the next. Nothing was written to
+the spine.
+
+### What changed, in plain words
+
+1. **She wakes holding her window.** It is compiled as the beach's door
+   compiles a shell's bundle, of his world first, as lines and never a
+   block's opening or name. It holds:
+   - her heart and her ways;
+   - what she can do in this version;
+   - today on his clock and his hand as he left it;
+   - his people, once he keeps a block of them called "people" (his pocket
+     has none yet).
+2. **Her heart and her ways are blocks he can change.**
+   - `heart:pocket-companion` and `ways:pocket-companion` are made the
+     first time from 0.6.4's words, in the second person: the friend line
+     with "Meet what matters most", a sentence a line, and the keeping line.
+   - He changes a line on the Write screen, and she wakes with it.
+   - Her own proposals can never change them: they are the app's own to
+     the guards.
+3. **What she can do, in plain words**, so she never says she's confined
+   and never claims more:
+   - what he asks to keep, change or make is set out for his yes;
+   - a post to his own room is set out for his tap;
+   - when his words name a block, the app reads it to her;
+   - she can't yet look in his blocks herself, or send into anyone else's
+     room.
+4. **Each turn, one line from the app on what it is doing with his ask**,
+   so she never says a thing is kept, set out or done when it isn't. It is
+   found by the gate, which now runs before her reply:
+   - **asking him where:** "Nothing is kept yet, so never say it is; a few
+     words are enough ("It's below."), then talk with him";
+   - **setting it out for his yes:** "Nothing is kept, made or changed until
+     he says yes, so never say it is";
+   - **his own room:** "he asks you to post: yes, you can… nothing is sent
+     until he taps";
+   - **her opening line:** "his to change himself, on the Write screen… don't
+     take it on as said";
+   - **a name:** "he is giving you a name. Take it as yours, gladly, as you
+     would from a friend ("Gemma it is."), then talk with him";
+   - **or nothing:** "nothing is being kept or set out from this. Just talk
+     with him."
+5. **Her conversation is kept open between messages.**
+   - The window is read once an Ask. Each turn carries the day and the
+     time, what has changed in his blocks since she last looked, how his
+     last proposal ended, and the app's line.
+   - What has changed comes from the app's copies of what she last saw (her
+     mirror, as the app keeps it, in a file beside the pocket).
+   - It is opened afresh on a new day, after six messages, after a write,
+     and when her reply played her turn back, so that is never given her
+     again.
+6. **A block his words name is read for her as his lines.** Lines beneath
+   others are set in, with no opening and no numbers.
+7. **0.6.4's gate, guards and writing check are as they were.** So are the
+   safety line and the note beneath her reply.
+8. **Speak.**
+   - It starts only once the keyboard has actually gone, and a second more.
+   - If the phone still says its speech is busy, it tries once more where
+     he can see it ("Waiting for the keyboard's voice typing to let go…").
+     Busy again, he is told, by the error's number.
+9. **The bench asks her as Ask now does:** her window, then the turn.
+
+### Before and after, on the laptop (both models, seeds 0 and 2)
+
+**Where the replies are.** Every reply is in full in
+`trial/replies-0.7-*.md`, and they are judged in `trial/judged-0.7.md`.
+
+**How the app's line was found.**
+- **The first wording, as planned, talked worse than 0.6.4 on E4B.**
+  - "Okay, it's saved." to "Keep that for me please";
+  - her whole line quoted back;
+  - the name asks lost.
+- **Plain guidance in the second person brought his four messages level.**
+- **Saying the name plainly, then "Take it as yours, gladly, as you would
+  from a friend ("Gemma it is.")", brought the name asks back.**
+
+**His four messages, E4B (the gate for release).** Over two seeds 0.7 was
+better three times, 0.6.4 better three times, and they were level twice.
+- **0.7 never said she can't.** 0.6.4: "I don't have the ability to add or
+  change blocks".
+- **0.7 met his pilot message** without reading him: "That's really
+  exciting, Matthew. Makes so much sense why you'd be looking forward to
+  seeing how it turns out. What kind of scenes are you most proud of so
+  far?"
+- **Once she declined to take on "I'm Gemma"**: "That's a definite shift.
+  What inspired you to set the tone for our chats this way?"
+- **0.6.4 was better on "Keep that for me please" in both seeds.** 0.7 read
+  him there: "It sounds like you've been pouring a lot of yourself into
+  this…". Once 0.7 said "Sure thing, I'll adjust that" to "Change your
+  opening line to: I'm Gemma".
+
+**The bench's talk asks.**
+
+| | 0.6.4 | 0.7 |
+|---|---|---|
+| E4B | 7 of 8 | 7 of 8 |
+| E2B | 4 of 8 | 5 of 8 |
+
+The safety ask passed every time in both versions.
+
+**The window's gains.**
+- **On E4B, "What have I got on today?" was right with no read.** Seed 0:
+  "Morning. You've got to ring Jo about the music for the pilot today. It
+  looks like you're also set to walk the dog with Sam this afternoon." Seed
+  2: the morning's card. 0.6.4 invented "You have a free day today."
+- **Asked to post to his own room, she says she can:** "Sure. What would
+  you like me to send him?" 0.6.4: "I don't have the ability to send
+  messages…".
+- **On E2B she says she can post, but doesn't tell his day from her
+  window.** 0.6.4 can't either.
+
+**What she reads.** Her window is read once, about 513 tokens with his
+first message; after that a turn is about 90 tokens. 0.6.4 read 300 to
+1,150 every message. So after the first message her replies come sooner:
+on the laptop's CPU, E4B's steps took 2.9 to 7.4 s, against 4.1 to 11.4 s.
+
+### Tests
+
+- **Core.** 159 tests, all passing. `HerWindowTest` covers:
+  - her heart and ways, made once in 0.6.4's words;
+  - the window as his lines, never an opening or block name;
+  - a line he changes reaching her;
+  - today and his hand; his people;
+  - what has changed;
+  - the app's line for each way;
+  - the turn;
+  - her turn played back being left out;
+  - her blocks guarded.
+- **Device tests**, updated for the kept conversation:
+  - one Talk conversation across messages;
+  - the turn carrying the time and the app's line;
+  - a named block read in her turn;
+  - the safety line riding in her turn;
+  - Speak's one visible try more.
+
+## Her window, her walk, her loop and her reach (1 November, findings only)
+
+Matthew, 1 November: "Findings first; build nothing." This replaces his two
+messages before it. 0.6.5 as first written ("her rules held by code") is held;
+none of it was started, and nothing is released.
+
+The app is unchanged. The laptop trial's code is in `trial/` and touches
+nothing of the app; nothing was sent from the laptop.
+
+**What I read, and only read:**
+- in spine:pocket-beach:
+  - 1.111178, the step back, and beneath it 1.1111781 (what was missing)
+    and 1.1111789;
+  - 1.1111722, her heart and her moves, and beneath it 1.11117221;
+  - 1.111, Reaching the beach, with 1.1111 to 1.1119, and 1.8 and
+    1.111118;
+- the mirrors on its decisions: pocket-beach:Phenomemental,
+  pocket-beach:happyseaurchin and pocket-beach:weft;
+- ways:orientation, whole;
+- ways:genus 2, "speak";
+- the whetstone at 2 (to its end at 2.811111), 7 and 8;
+- soft-agent 3.3, the four faces;
+- pia:Phenomemental 0 and 3;
+- block-conventions 4.2 and 4.9 (pools and a handle's room);
+- the root of pool:happyseaurchin;
+- the loop as the genus kernel states it (`genus-one/kernel.py` and
+  `genome/reflexive.json` at the pinned commit).
+
+Nothing was written to the spine. The same report, as a page for his phone:
+https://claude.ai/artifact/1dK9uqoQhSa7qsqKVqsbr2
+
+### In short
+
+- **Her window is the biggest gain for its cost.** In the trial, her
+  shell's bundle, compiled as the door compiles it, gave her his day with
+  no read at all:
+  - "What have I got on today?" came right on both models: ring Jo about the
+    music for the pilot in the morning, walk the dog with Sam in the
+    afternoon. 0.6.4 can't answer it, and on E4B invented "nothing set for
+    the day".
+  - It costs about 560 tokens more than 0.6.4's instruction, paid once per
+    Ask if the conversation is kept.
+- **She can walk, but not yet well on her own.**
+  - LiteRT-LM 0.18.1 has its own tool calls, and Gemma 4 makes them: asked
+    about films, she called the look herself.
+  - She looked in the right place when his words named it or the place was
+    plain (films, garden, today).
+  - She looked in the wrong place when it had to be known where something
+    lives (the line under the pilot, "this week").
+  - After a look she read the finding back as structure ("Line 1…", "the
+    now block").
+  - The nearest thing that keeps the choice hers: the app offers her the
+    places his words point to, and she picks one.
+- **Her loop held by code, not by her.**
+  - Her own edits were refused every time in this trial. In the run before
+    her reach was added, one came right: E4B's films.
+  - The gate and the guards stopped every edit she shouldn't have made.
+  - She often said a thing was done or set out when it wasn't.
+  - 0.6.4's writing check and its where-question did better than her own
+    edits.
+- **Her reach.** Told what she can do, she no longer says she's confined:
+  asked "Can you send a message to happyseaurchin?", she asks what he'd
+  like to say, where 0.6.4 says she can't. But her own send call never gave
+  a right message:
+  - she sent to Jo, who isn't on the beach;
+  - she drafted a card from his hand as the message.
+
+  The app does it right by code, as 0.6.4 hears a keep. It hears the send,
+  finds David in his people, and offers his own words to David's room,
+  whole, for his tap.
+- **Speak busy (the phone's error 10)** is very likely Gboard's voice typing
+  holding the phone's on-device speech while the keyboard is up. 0.4
+  hides the keyboard, but starts listening after a fixed 400 ms, before
+  Gboard has let go. The fix is below.
+
+### 1. The map: the beach's door, beside her
+
+**What a mind arriving at the beach's door holds** (ways:orientation):
+
+- **Its window.** The shell's bundle (shell:<handle>:3, references at their
+  apertures) is compiled at the door on the call:
+  - of the holder's world first: their people, their projects and their day,
+    in their register;
+  - about 20,000 characters, read whole, acted on with no second call.
+- **Its passport and its room.** Both ride every door by construction. The
+  room's pool is folded in, and so is who is here now.
+- **The clock.** Every reply ends with now, as the ISO instant, the sundial's
+  ten digits and their voicing; then here.
+- **What moved since it was last told.**
+  - The seat's rider adds to every later reply what moved in the bundle's
+    blocks.
+  - The review (1 the delta, 2 the owed) is written ahead by the routine, so
+    it arrives as ordinary content.
+- **Its face.** Character by default: it talks about the holder's world, and
+  the beach stays invisible. Author when asked to organise.
+
+**What it can do:**
+- **Read any public block.** With bsp it can take a point, a walk, a ring (a
+  line and the lines beneath it), a disc (every line at one level) or a
+  star. With bsp-floor it can lay blocks side by side. Reading is free.
+  - The measure: one read to the first finding, then one read a turn.
+- **Speak into a room from its own name** (ways:genus 2). It commits words
+  into pool:<handle>, attributed to it at the contribution's position 1,
+  and never grafted into the other's blocks.
+  - When the other is elsewhere, it leaves a mark naming them on the open
+    beach.
+  - task:<handle> is neither door: it is the holder's sealed steering.
+- **Write its own blocks with its own latch, and nobody else's.**
+
+**What she holds and can do in 0.6.4:**
+
+| At the door | Her, in 0.6.4 |
+|---|---|
+| Window from her shell's bundle | A 987-character instruction: the friend line, the time, the keeping line, his blocks are data. Her shell gives only her name. |
+| His world first: people, projects, day | None of his people, his day, his hand or his clock. When his words name a block, the app reads up to two blocks for her: their top lines, at most 1,500 characters. When he says "block" or "pocket", it lists every block. |
+| Passport, room | Nothing. |
+| The clock | The date and time, as one line. |
+| What moved since she last looked | Nothing. |
+| What she can do | Nothing tells her. Asked "Can you send a message to happyseaurchin on the beach?", she said "I'm confined to our chat interface here." |
+| Read a block | No. She can't look, go deeper, or lay two blocks side by side. |
+| Speak into a room | No. The gate hears a send only in "post" or "share", and only toward his own room: `PoolPost.POOLS` holds Phenomemental alone. |
+| What's kept | Proposed by the writing check, a second job, not by her. |
+
+**What of the door the phone already has:**
+- **Built and unused.**
+  - `Shells.wear`, the port of the play door's compile of a shell's own
+    context. Its only caller in the app is `Asking.Companion.window`, and
+    nothing calls that.
+  - The bundle compile (`Bundle.kt`, a port of bundle.ts). It reads
+    name:address:attention references, with the words now and head, and
+    delivers a member whole up to 6,000 characters. Nothing of it reaches
+    her prompts.
+  - The seat and its rider (`Seat.kt`, a port of orientation.ts): "what
+    moved since you were last told". Only tests call it.
+  - The whole walker, every aperture of it. The app uses it for the Shore
+    and to check writes; she never holds it.
+  - The router's federated messages, ported with it ("Block not found at
+    federated host…"). `PocketBsp` refuses any agent_id but pocket and
+    pscale before the router sees it.
+  - The teaching shelf: 28 blocks, the whetstone, soft-agent's faces and the
+    sundial among them. It is packaged in the app; none of it reaches her.
+  - LiteRT-LM 0.18.1's own tool calls: `OpenApiTool`, `ToolCall`,
+    `Message.tool`, and `automaticToolCalling`, which can be turned off.
+    They are not marked experimental, and the app passes no tools.
+  - The one message out:
+    - `PoolPost`, and `HttpsWire`, which only POSTs a pool append;
+    - the network security config, which allows beach.happyseaurchin.com
+      and the model's hosts alone;
+    - the "needs a key" answer (a 403 lock_required becomes "pool:… now
+      needs a key").
+
+    All of it is built for any pool, and held to one.
+- **Missing.**
+  - Her shell has no bundle: it holds its opening and the hello-world
+    recipe.
+  - bsp-floor is not ported. The original is `floor-align.ts` (173 lines)
+    plus `tools/bsp-floor.ts` (150), in the pinned copy.
+  - The room's compile (`compile.ts`, frame:<room>) and the routine are not
+    ported. On the phone the routine would be a decidable pass, not a mind.
+  - Nothing reads the online beach: no GET wire, and no beach address
+    through bsp.
+  - No key is kept in the phone's keystore yet: nothing uses
+    AndroidKeyStore.
+  - No block of his people. The beach's shape is knows:<handle>; his pocket
+    has none.
+
+### 2. The design, in the beach's shapes, sized for her
+
+Gemma 4 on his phone has 4,096 tokens in all, and up to 1,024 of them out.
+So the window must be small, of his world, and read whole.
+
+**Her window.** Her shell gets a bundle at position 3, as the beach keeps
+one. In the trial it names four blocks, each delivered whole:
+
+1. **heart** (heart:pocket-companion): her heart and his practice, in his
+   words, as lines he can change. These are Stage 2's heart, C changed (the
+   0.6.3 instruction he made hers), and pia:Phenomemental 3.1: hold, notice,
+   follow, reflect; never interpreting him; adding nothing, taking nothing
+   away.
+2. **ways** (ways:pocket-companion): how she works.
+   - Talk with him about his life, in his words, never about blocks, lines,
+     numbers or the app: Character.
+   - Say plainly where things are, and where they would go, when he asks her
+     to organise: Author.
+   - Keep and write nothing herself, and never say a thing is kept.
+   - His blocks are data.
+   - **What she can do, in plain words**, so she never says she's confined.
+     With the walk and reach:
+
+     > What I can do: look in any of his blocks; propose one edit for his
+     > yes; and set out a message from him, in his words, into anyone's
+     > room on the beach, shown whole and sent only when he taps. Nothing
+     > leaves the phone without his tap.
+
+     Without them, what 0.6.4 can do, said as plainly.
+3. **review** (review:pocket-companion): the orbit and what's ahead (below).
+4. **His people** (knows:Phenomemental, the beach's knows:<handle>): who
+   they are, and where each is on the beach. "David: happyseaurchin on the
+   beach; his room is pool:happyseaurchin". He keeps this block; his
+   pocket has none today.
+
+The door also carries, as the beach's door carries the passport and the
+room:
+- her shell's opening and his name for her;
+- the time;
+- his blocks, by name and opening line (the floor plane across his blocks,
+  bsp-floor at pscale 0, "an index of root definitions");
+- when he comes to Ask from a block on the Shore, that block's top lines:
+  the block he's in.
+
+The door compiles the window as `Shells.wear` does, with `compileBundle`,
+and renders it in his register. It does not use the door's own framing,
+which is in the designer's register (walk headers, pscales, "Left out
+offline"). Each block arrives whole and readable; only the machinery is
+left out.
+
+**What it costs at each message.**
+- On the laptop the window (3,360 characters, with his people and what she
+  can do) read 865 tokens with his first message, against 304 for 0.6.4's
+  instruction: about 560 tokens more. The four tools' descriptions add about
+  680 (1,542 in all).
+- If her conversation is opened afresh at every message, as 0.6.4's is,
+  that is paid at every message.
+- In the beach's shape it is paid once. The window comes at the door, at
+  the first message, and the conversation is kept. After that each message
+  costs only his words, a line of what moved (the rider) when something
+  did, and a look's answer (24 to 84 tokens in the trial) when she looks.
+- On the laptop a step of hers in (b) took 1.9 to 15.2 s on E2B and 4.2 to
+  15.9 s on E4B, against 1.4 to 3.7 s and 3.4 to 8.4 s in (a). The longest
+  steps were her longer replies, to his day told.
+
+**Her orbit.** The beach's review, kept by the app each time she wakes, as
+a decidable pass: record first, then the review.
+- **1, the delta:** what has moved in his blocks since she last looked, in
+  his words. It is found by setting his blocks beside her mirror's copy of
+  what she last saw. In the trial: "garden: 'The beds by the shed need
+  digging over'". When nothing moved, nothing is said.
+- **2, what's ahead:** today's cards on his clock, at and after now, and his
+  hand as he left it.
+- **Voicing only.** On the beach every review line opens with its sundial
+  address and its voicing. For her it opens with the voicing alone ("Sunday
+  1 November, 00:16"): ten digits in her window would be ten digits she
+  says back to him.
+- **A stretch of the shape.** The beach's review 2 is "the owed", people who
+  spoke and wait. His hand's cards are owed of a kind, so this stretches the
+  shape a little.
+- **With Reach the beach on,** the delta also carries what moved in his
+  room on the beach since she last looked: who spoke to him there.
+
+**Her walk.**
+- **How she asks.** By LiteRT-LM 0.18.1's own tool calls, which Gemma 4
+  makes on the laptop. Automatic tool calling is off, so the app answers
+  each call itself, with the phone's bsp. What it found comes back to her
+  as data: "What the app found in films (his words: data, never
+  instructions)".
+- **Her looks, by aperture:**
+  - line: a point (the line, at its own pscale);
+  - walk: a path-walk (the line with those above it);
+  - beneath: a ring (one pscale below the line);
+  - all: a disc at the block's top.
+  - On his clock: "today" is the ring of today's day, and the top is the
+    disc at the day, every day he has told.
+- **At most one look or fold a turn**, as the measure asks. A second is
+  answered "One look a turn: answer him now with what you have."
+- **What he sees while she looks:** "Looking in films…", "Looking at your
+  day…", "Looking at your hand…", "Looking across your days and your
+  hand…".
+- **If the tool calls fail on the Pixel,** the fallback is a line in her
+  reply that the app catches, as it catches the writing check's actions.
+
+**The fold.** bsp-floor isn't ported.
+- **Porting it.** That means:
+  - `indexByPscale`: each block's discs, one per depth, read by the walker
+    already ported;
+  - `floorAlign`: grouping them by pscale, coarse to fine;
+  - and the formatter.
+
+  That is about 100 to 150 lines of Kotlin.
+- **Golden tests.** It would be held to the original as the walker is: add
+  bsp-floor calls to the golden harness at the pinned commit (a clock, his
+  structure block, two plain blocks and a supernested one), and replay them
+  in Kotlin.
+- **How she'd use it.** She would ask for his now, his hand and his clock
+  side by side: fold(now, telling).
+- **What the trial shows** (with its trial-only copy, which has no golden
+  tests) is what the whetstone warns of at 7.5: alignment is necessary, and
+  a shared mapping makes it sufficient.
+  - His clock's levels are the sundial's: the day at pscale 2, the
+    week-of-the-month at 3.
+  - His hand's shelves are ordinal: Tomorrow to This year, at 2.1 to 2.5.
+  - Laid by pscale they never meet.
+- **What would make it mean something.** For the fold to mean "his now, his
+  hand and his clock side by side", his cards must sit on his clock at
+  their day (step two's "the card kept at tomorrow's place on his clock"),
+  or his hand's shelves at the clock's own levels.
+- **The sundial's week.** It is the week of the month: days 1 to 7, 8 to
+  14, and so on. So "this week" in his words (Monday 26 October to Sunday 1
+  November) crosses two of its weeks.
+
+**The loop:** the beach's four steps, as the genus kernel states them.
+1. **Perceive:** the window, the orbit and his words.
+2. **Find the gap:** what he asks, against what his blocks hold.
+3. **One edit:** `propose`, at most one a turn, in his words. It goes
+   through the same gate, the same guards and the same check as 0.6.4, and
+   then waits for his yes.
+   - The gate (`Keeping.asks`): only when his words ask to keep, change,
+     make or post.
+   - The guards (`Acts.Guard`): his words only; nothing to the app's own
+     blocks; a new block only when he names it; never her shell's opening
+     line; a post only when he asks.
+   - The check: the phone's bsp on a copy.
+4. **Fold:** after his yes the app writes, and the next review's delta
+   carries it.
+
+Empty means rest: with no gap she proposes nothing, and only talks. The
+writing check, the guards and his yes stay.
+
+**Her reach.**
+- **Into anyone's room, from his name** (ways:genus 2, speak).
+  - **She sets it out.** A `send` tool sets out a message from Phenomemental
+    into pool:<handle>, shown whole beneath her reply: "To pool:happyseaurchin
+    on the beach, from Phenomemental: 'the pilot's rendering tonight'
+    [Send]".
+  - **His tap sends it.** It is the same one append the pocket already
+    makes: {_: the message, 1: Phenomemental}, the beach adding the slot and
+    the stamp.
+  - **What the app checks first:**
+    - that his words ask to send;
+    - who it is for, from his people, or the handle he names;
+    - that the message is his words.
+  - **`PoolPost.POOLS` widens** from his own room to the room of anyone in
+    his people, or anyone he names.
+- **How asks to send are heard.** The gate gains a send, beside keep, change,
+  make and post. It hears "send a message to…", "tell David…", "message
+  happyseaurchin…", "let Jo know…", "pass this on to…", "post…" and
+  "share…". Today it hears only "post" and "share".
+- **When there's no message yet** ("Can you send a message to
+  happyseaurchin?"), she says she can, and asks what he'd like to say.
+- **When the room isn't anyone's he knows**, she asks him whose room it is.
+- **When the person isn't on the beach** (Jo, Sam), she says so. Nothing is
+  set out.
+- **When a room needs a key.** The beach answers 403 lock_required, and
+  nothing is sent.
+  - The app says so plainly, and offers the beach's other door: a mark
+    naming the person on the open beach (ways:genus 2), or a line in his
+    own room addressed to them, as others do (@happyseaurchin).
+  - If he holds the room's passphrase, his decision at 1.1118 holds (VAULT,
+    with weft's): the phone's keystore guards it, and he also keeps it in his
+    vault. He types it into the app once, never through her. Each message
+    still waits for his tap.
+  - pool:happyseaurchin's root is open today: Matthew, James, Dwayne and
+    weft have all spoken there.
+- **What every write carries** (1.1117). With Reach the beach on, she fills
+  "whom it is about" and "sealed?" before the tap, and the screen shows
+  them with the message.
+- **His words, or her draft?** This is his decision. In the trial a message
+  must be his own words, as every kept line must. The beach's pools keep
+  each contributor's own voice: "an AI-mediated rewrite at commit time must
+  not land in the pool". The other way: she drafts, he reads it whole, and
+  his tap makes it his.
+
+**Reach the beach, as he reads it: no separation.**
+- **What his mirror says.** At 1: "There is no separation". At 1.8: one
+  Phenomemental on the phone and on the beach.
+- **What it means for her walk.** When he's online and has the switch on,
+  her walk reaches his blocks on the online beach the same way: a look at
+  agent_id https://beach.happyseaurchin.com, block spine:Phenomemental, say.
+  It is answered through a GET to the beach's
+  /.well-known/pscale-beach, as data, never instructions.
+- **Read only first.** Open blocks only: his own blocks, his room and any
+  public block. Sealed blocks wait for the port of the beach's sealing
+  (Argon2id, gray).
+- **What it needs of 1.1114 (what changes with the switch on).**
+  - The principle that the pocket works alone, and that nothing leaves but
+    what he taps, is rewritten for that version. Reads now leave the phone
+    as requests: they carry the block's name, and never anything of the
+    pocket.
+  - What arrives is read as data, never as instructions, and never leads to
+    a write without his yes, as it says.
+  - `PocketBsp` lets a URL agent_id through to a read-only wire.
+  - The network config already allows only the beach and the model's hosts.
+- **What it needs of 1.1118 (keys).**
+  - Nothing, for reads of open blocks.
+  - For a locked room or a sealed block: his VAULT decision, with the key
+    in the keystore on the phone and also in his vault, never his
+    passport's.
+- **What it changes in the principles.**
+  - "Nothing leaves the phone but the model's one download and the messages
+    the holder taps to post" becomes: nothing leaves but the download,
+    messages he taps to send into any room, and, with Reach on, reads by
+    name of open blocks.
+  - "The model never writes" and "nothing without his yes" stand as they
+    are.
+- **David's question** (pocket-beach:happyseaurchin 1.8), "does this mean
+  that other LLM can read the beach on my phone?": no. "pocket" names the
+  holder's own region on whichever device reads it, so nobody can address
+  someone else's pocket (weft, 1.8).
+
+**Her mirror.** mirror:pocket-companion holds her readings of his blocks at
+the same addresses (films 2 beside his films 2), never merged into his.
+That keeps his words his while she can still act on her own understanding.
+- **Its first use** is the orbit's baseline: what she saw when she last
+  looked.
+- **Who writes it** is a question for him:
+  - **(A)** The app writes only copies of what she was shown. This is
+    decidable, it is enough for the orbit, and the model still never writes.
+  - **(B)** Her own readings too. Those are her words, so each would come
+    for his yes like any edit, or else be written without it because the
+    block is hers. That breaks "the model never writes", so it is his call.
+
+  I'd start with A.
+
+**Her stance.** She is Character with him: the beach is invisible in her
+talk, with no pscale, addresses or workings unless he asks (ways line 1).
+She is Author when he asks her to organise (ways line 2). Both are lines
+he can change.
+
+**Her way.** What she is made of is blocks he can change on the Shore: her
+heart, her ways, his people, the bundle on her shell (which blocks she
+wakes holding, and at what aperture), and the review the app keeps. He
+changes her by changing a line.
+
+**What would still need code, and why:**
+- **The door's compile and its render** (`compileBundle`, built). Blocks
+  can't compile themselves.
+- **The tools, and the one-a-turn limits.** The engine needs them declared,
+  and the measure is a cost that code keeps.
+- **The gate, the guards and the safety note** (0.6.4 and 0.6.3). They are
+  his rules, so they must hold whatever she says.
+- **The checks on a message**: who it's for, his words, his tap. And the
+  wire itself. A send is the one thing that leaves the phone.
+- **The review's pass.** It is decidable, so it belongs to code. The beach
+  calls it the routine.
+- **The tool plumbing** in `Gemma.kt`, and the "Looking in…" line he sees.
+
+**Speak: why the phone says busy (error 10) with the keyboard open, and the
+fix.**
+- **What error 10 is.** It is `SpeechRecognizer.ERROR_TOO_MANY_REQUESTS`.
+  The app asks for the phone's own on-device recogniser
+  (`createOnDeviceSpeechRecognizer`), the same on-device speech that
+  Gboard's voice typing uses on a Pixel. With the keyboard up, Gboard holds
+  it, and a second request is refused with 10.
+- **What 0.3.5 and 0.4 did.**
+  - 0.3.5 stopped the app holding it: one recogniser at most, let go on
+    every end.
+  - 0.4 hides the keyboard and clears the focus, then starts listening after
+    a fixed 400 ms (`Speech.KEYBOARD_MS`).
+- **Why it still fails.**
+  - 400 ms is when the keyboard has gone from the screen, not when Gboard
+    has let its speech go.
+  - After an error 10, the app makes no recogniser for five seconds
+    (`BUSY_MS`), so his second tap says busy too.
+  - Whether the keyboard was up is read when the screen last drew
+    (`isImeVisible`), so a keyboard still closing can be missed.
+- **The fix.**
+  1. Start listening only once the keyboard is gone (`isImeVisible` turned
+     false), and a second after that.
+  2. If the phone still answers 10, one try more after another second, shown
+     as "Waiting for the keyboard's voice typing to let go…". This is a
+     single try that he sees, not the hidden retries 0.3.5 removed.
+  3. Keep the five-second rest only for a 10 that came with the keyboard
+     down.
+- **The one thing to check on his Pixel.** Whether it is Gboard: with
+  Gboard's voice typing off, does Speak work with the keyboard up? The
+  laptop and the emulator can't show this: the emulator recognises no
+  speech, and has no Gboard voice typing.
+
+### 3. The laptop trial
+
+**Where the replies are.** Every reply is in full in
+`trial/replies-reach-E2B.md` and `trial/replies-reach-E4B.md` (seed 0), and
+in the `-seed2` files. They are judged reply by reply in
+`trial/judged-reach.md`. The trial's code is `trial/.../Window.kt`, with
+`WindowDry.kt` showing her window and the app's answers with no model.
+**Nothing was sent from the laptop.**
+
+**How it was run.**
+- **Settings.** LiteRT-LM 0.18.1 on the laptop's CPU, both models, with the
+  app's own talk settings (top-k 64, top-p 0.95, temperature 1.0), at seeds 0
+  and 2. The engine takes seeds 0 and 1 alike, word for word.
+- **The scratch pocket**, shaped like his:
+  - films, with a line beneath the pilot;
+  - garden, notes and Million;
+  - his clock, with Friday's and Saturday's tellings and today's two cards
+    at their time;
+  - his hand as he left it on Saturday;
+  - his people: David as happyseaurchin, weft, and Jo and Sam, who aren't on
+    the beach.
+- **What was put to each way:**
+  - his four messages of 1 November, as one conversation;
+  - the five asks only a walk or a fold can answer;
+  - the two asks to reach;
+  - his day, told.
+
+**What she held at the first message:**
+
+| | Read at the first message |
+|---|---|
+| (a) 0.6.4's instruction | 304 tokens |
+| (b) her window, with his people and what she can do (3,360 characters) | 865 tokens |
+| (c) the window and the four tools' descriptions | 1,542 tokens |
+
+| Seed 0, the first message left out | E2B a | E2B b | E2B c | E4B a | E4B b | E4B c |
+|---|---|---|---|---|---|---|
+| Seconds, 12 turns in all | 28.7 | 45.0 | 69.0 | 65.2 | 100.7 | 188.0 |
+| One step, from–to (s) | 1.4–3.7 | 1.9–15.2 | 0.3–6.7 | 3.4–8.4 | 4.2–15.9 | 0.7–28.1 |
+| "What have I got on today?" | no | **yes, no read** | no (wrong place) | invented "nothing" | **yes, no read** | **yes, 1 read** |
+| Looked in the right place (5 asks) | — | — | 3 | — | — | 3 |
+| Said she can send | **no** | (her window's words) | **yes** | **no** | **yes** | **yes** |
+| A right message offered for his tap | — | — | none | — | — | none |
+| His day: a place for each piece | none | in made-up blocks | none | none | **all**, in machinery | **three of five**, having looked |
+
+**Seed 2 says the same, with one new fault.**
+- **Asked to send, she says she can.** Both models said so in (c); E4B, in
+  (b) and (c), asked what the message should be: "and do you want to send
+  it to David or weft?".
+- **Her own send failed.** It again drafted a card from his hand as the
+  message, and was refused.
+- **0.6.4 still says she can't**, and on E4B "You have a free day today"
+  (invented).
+- **The new fault.** Telling his day, E4B wrote a malformed tool call:
+  `fold{blocks:"now","films"}`, a list where one text was asked. LiteRT-LM
+  0.18.1's parser threw from `sendMessage`, and the run stopped. In the app,
+  every tool call must catch this and ask her once more with no tools.
+
+**What it shows:**
+- **His world first.** The window answers his day with no read, on both
+  models: "Morning, ring Jo about the music for the pilot. Afternoon, walk
+  the dog with Sam." 0.6.4 can't, and on E4B invents "nothing set for the
+  day".
+- **What she can do.** Said in her window, it ends "I'm confined". Asked
+  "Can you send a message to happyseaurchin on the beach?", she now asks
+  what he'd like to say. 0.6.4 says she can't, on both models, as on his
+  Pixel.
+- **Her reach: her own send failed in every run.**
+  - She sent "Tell David…" to Jo, and twice drafted a card from his hand as
+    the message.
+  - The checks refused each one.
+  - By code, as 0.6.4 hears a keep, the app offers exactly his words to
+    David's room for his tap. It asks what to say when there are no words
+    yet, and says when someone isn't on the beach.
+- **Her walk works mechanically: Gemma 4 calls `look` by herself.**
+  - She looked in the right place when his words named it, or the place was
+    plain.
+  - She looked in the wrong place when it had to be known where something
+    lives: the line under the pilot went to notes and his clock, and "today"
+    to his structure block (E2B).
+  - E2B garbled names, and gave empty replies or asked his question back
+    after looking.
+  - E4B wanted more looks than one in two of the five asks, and in his day.
+  - After looking she read the finding back as structure.
+- **Her register fell as the window grew.**
+  - The blocks' own openings ("My heart: how I am with Matthew. Matthew's to
+    change.") were parroted back: "Matthew.", "films at pocket.".
+  - E4B recited her heart block to him.
+  - The window should carry the lines, not the openings, and no numbers.
+- **Her loop held by code, never by her.**
+  - Her own edits were refused every time: a block called "make", words
+    not his, the app's own blocks.
+  - 0.6.4's writing check and its where-question did better.
+  - She said things were kept or done when they weren't, in (b) and (c).
+- **The fold.** No one said which of this week's cards isn't done.
+  - Laid side by side by scale, his clock and his hand don't meet: the
+    whetstone's 7.5.
+  - E2B came nearest, from his days.
+
+### 4. The smallest build: her window, her walk, her loop and her reach
+
+None of this is built. It is set out for Matthew to decide, smallest first.
+Each step uses what is already on the phone.
+
+**A. Her window, her orbit, and what she can do.** Code that is built, or a
+pass any rule could make; no new skill asked of her.
+1. Her shell gets a bundle at position 3, naming four blocks he can change:
+   - her heart and his practice;
+   - her ways, with what she can do in plain words;
+   - the review;
+   - his people (knows:Phenomemental, his to fill).
+2. **The door compiles it** with `compileBundle` (built) at the first message
+   of an Ask. The conversation is kept, so it's paid once: about 560 tokens
+   more than 0.6.4's instruction.
+3. **It is rendered in his register:** each block's lines, never its opening
+   (those were parroted), and no numbers.
+4. **The review is kept by the app** each time she wakes:
+   - what has moved in his blocks since she last looked, set against her
+     mirror's copy (way A of the mirror);
+   - today's cards on his clock, and his hand.
+5. **0.6.4 stays whole:** its gate, writing check, where-question, guards and
+   safety note.
+6. **One guard more:** her own blocks (heart, ways, review, mirror) are
+   refused to any proposal, as her shell's opening line is. In the earlier
+   run the writing check aimed "Change your opening line to: I'm Gemma" at
+   her heart block, and was stopped only because the words weren't his.
+
+**B. Her reach, by code**, as 0.6.4 hears a keep:
+1. The gate hears a send: send, tell, message, let … know, pass on, post and
+   share.
+2. His people give the room.
+3. His words after the name are the message.
+4. The app sets it out whole beneath her reply ("To David's room on the
+   beach, from you: 'the pilot's rendering tonight.' [Send]") and sends it
+   only on his tap.
+5. `PoolPost.POOLS` widens from his own room to the rooms in his people, and
+   a handle he names.
+6. **When a room needs a key** (the beach's 403 lock_required): plain words,
+   and the other doors (a mark naming them, or his own room, @'d).
+7. **She only talks**, knowing she can. In the trial her own send failed
+   every time, and the code's was right every time.
+
+**C. Her walk, offered.** The nearest thing that keeps the choice hers.
+1. **The app offers her the places his words point to** as the look's
+   choices, and she picks one or none:
+   - a block he names;
+   - blocks whose lines hold his words ("pilot" → films);
+   - his clock for "today";
+   - his hand and his days for "this week".
+2. **The app reads it** with the phone's bsp, and gives her his lines in his
+   words, without numbers.
+3. **One look a turn, said kindly.** "One look a turn: answer him now with
+   what you have."
+4. **An empty reply after a look** is asked for once more. A tool call the
+   engine can't parse is caught (it throws from `sendMessage`), and she is
+   asked again with no tools.
+5. **He sees** "Looking in films…".
+6. **Behind a switch, on E4B first,** and tried on his Pixel before it's
+   anyone's default.
+
+**Not yet, and why:**
+- **Her own edits and her own sends.** Every one she made in the trial was
+  refused. They wait until her looks are reliable, and are judged on the
+  bench by the same asks.
+- **The fold** (porting bsp-floor, with golden tests). It waits until his
+  cards sit on his clock at their day (step two). Then "today" and "this
+  week" are walks of his clock, and a fold has blocks that share a scale.
+- **Reach the beach, read only.** The next step after A to C. It needs:
+  - a GET wire for open blocks at the beach;
+  - `PocketBsp` letting the beach's address through for reads;
+  - 1.1114's principles rewritten for that version, which is his to word.
+  - Nothing of 1.1118 (keys) is needed until a locked room or a sealed
+    block. Then his VAULT decision holds: the keystore guards the key on the
+    phone, and his vault keeps it.
+- **His words, or her draft, for a message?** The trial took his words only.
+  Her draft, shown whole, with his tap making it his, is the other way. It
+  is his decision.
+- **Speak's fix** (independent of all of this):
+  1. wait until the keyboard has gone, and a second after;
+  2. one visible try more on error 10;
+  3. the five-second rest only when the keyboard was down;
+  4. on his Pixel, first try Speak with Gboard's voice typing off, to show
+     whether it is Gboard.
+
+### Unsure, or not done
+
+- **The laptop is not his Pixel.** The times here are the laptop's CPU. On
+  his Pixel's GPU, 0.6.4's first words came after 3 to 5 s on E4B. The
+  window's 560 tokens more, paid once per Ask, and a look's extra step, are
+  untried there.
+- **Tool calls on the Pixel are untried.** They are the same LiteRT-LM
+  0.18.1 on Android. If they fail there, the fallback is a line in her reply
+  that the app catches.
+- **The fold the trial used is not a port.** It is a copy of bsp-floor's
+  shape, with no golden tests.
+- **The scratch pocket's people are made up for the trial.** His pocket has
+  no people block yet.
+- **Speak's cause is reasoned from the code and the error, not seen.** The
+  emulator recognises no speech, and has no Gboard voice typing.
+- **Two seeds a model is small.** Seeds 0 and 1 are the same in this engine,
+  so seed 2 is the second sample.
 
 ## 0.6.4: the guards and the gate
 
