@@ -520,7 +520,7 @@ object Cook {
                         }
                     }
                     handed += Handed(line, material)
-                    note(s, "handed her the line" + (if (material.isNotEmpty()) " and what was read" else ""))
+                    note(s, "handed her \u201c${shortly(line)}\u201d" + (if (material.isNotEmpty()) ", and what was read" else ""))
                 }
                 is Verb.SetKeep -> setOut(s, Card.Keep(str(v.place), str(v.words)), "set out the keeping, for his yes")
                 is Verb.SetPost -> setOut(s, Card.Post(str(v.words)), "set out his post, for his tap")

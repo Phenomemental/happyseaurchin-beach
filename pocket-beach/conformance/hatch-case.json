@@ -690,6 +690,12 @@
     "calls": [
       {
         "agent_id": "pocket",
+        "block": "shell:Phenomemental",
+        "spindle": "5.5",
+        "content": "ahead:Phenomemental"
+      },
+      {
+        "agent_id": "pocket",
         "block": "cook:Phenomemental",
         "content": {
           "1": {
@@ -917,6 +923,20 @@
       },
       {
         "agent_id": "pocket",
+        "block": "shell:Phenomemental",
+        "spindle": "3.7",
+        "content": "cook:Phenomemental",
+        "append": true
+      },
+      {
+        "agent_id": "pocket",
+        "block": "shell:Phenomemental",
+        "spindle": "3.7",
+        "content": "kernel:Phenomemental",
+        "append": true
+      },
+      {
+        "agent_id": "pocket",
         "block": "now",
         "content": {
           "2": {
@@ -1031,8 +1051,16 @@
       {
         "agent_id": "pocket",
         "block": "shell:Phenomemental",
-        "spindle": "5.5",
-        "content": "ahead:Phenomemental"
+        "spindle": "3",
+        "content": "ahead:Phenomemental",
+        "append": true
+      },
+      {
+        "agent_id": "pocket",
+        "block": "shell:Phenomemental",
+        "spindle": "3.5",
+        "content": "p6:Phenomemental",
+        "append": true
       },
       {
         "agent_id": "pocket",

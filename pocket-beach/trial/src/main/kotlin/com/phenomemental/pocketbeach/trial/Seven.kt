@@ -43,7 +43,10 @@ private fun talk(seed: Int) = SamplerConfig(topK = 64, topP = 0.95, temperature 
 internal const val POST_ASK = "Can you post a message to my room on the beach?"
 internal const val TODAY_ASK = "What have I got on today?"
 
-internal class Said(val way: String, val said: String, val reply: String, val shown: String, val secs: Double, val tokens: String, val turn: String?, val gate: String)
+internal class Said(val way: String, val said: String, val reply: String, val shown: String, val secs: Double, val tokens: String, val turn: String?, val gate: String) {
+    /** Rockpool: what his cook's walk did for this message, step by step, and what it set out. */
+    var extra: String = ""
+}
 
 @OptIn(ExperimentalApi::class)
 private fun tokens(c: Conversation): String = runCatching { c.getBenchmarkInfo().let { "read ${it.lastPrefillTokenCount}, wrote ${it.lastDecodeTokenCount}" } }.getOrDefault("")

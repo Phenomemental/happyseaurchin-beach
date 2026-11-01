@@ -99,10 +99,13 @@ class HatchGoldenTest {
             calls += parseJson(stringify(plan.call!!)!!)
             assertTrue(pages.carryOut(plan).ok, plan.block)
         }
+        // As the app does it at opening: his shell put right, his cook and kernel brought in and listed, his days moved and listed.
+        Hatch.corrections(pages, storage).forEach(::go)
         Cook.bringIn(h, pages, storage, procedures).forEach(::go)
+        Hatch.listInManifest(h, listOf(Cook.cookOf(h), Cook.kernelOf(h)), pages) { go(it); true }
         val moved = Days.moveOut(h, storage, nowMs)!!
         listOfNotNull(moved.now?.let { Days.NOW to it }, moved.ahead?.let { Days.aheadOf(h) to it }, moved.p6?.let { Days.p6Of(h) to it }).forEach { (n, b) -> go(pages.planWhole(n, b)) }
-        Hatch.corrections(pages, storage).forEach(::go)
+        Hatch.listInManifest(h, listOf(Days.aheadOf(h), Days.p6Of(h)), pages) { go(it); true }
         val day = Days.landing(h, "Rang Jo about the music. I need to send the pilot this week.", listOf("Rang Jo about the music.", "I need to send the pilot this week."), listOf("1.1", "2.2"),
             Days.intents(listOf("I need to send the pilot this week."), listOf("i need to"), now.toLocalDate(), null), emptyList(), now)
         Days.blocks(day, { n -> storage.read(n)?.let(::parseJson) }, nowMs).blocks.forEach { (n, b) -> go(pages.planWhole(n, b)) }
