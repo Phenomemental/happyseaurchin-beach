@@ -50,7 +50,7 @@ private fun tokens(c: Conversation): String = runCatching { c.getBenchmarkInfo()
 
 /** 0.6.4 as released: her instruction opened afresh for each message, the earlier exchanges his words and hers. */
 @OptIn(ExperimentalApi::class)
-private fun old(engine: Engine, said: String, earlier: List<Pair<String, String>>, pages: Pages, now: ZonedDateTime, seed: Int): Said {
+internal fun old(engine: Engine, said: String, earlier: List<Pair<String, String>>, pages: Pages, now: ZonedDateTime, seed: Int): Said {
     val start = System.nanoTime()
     val (reply, tok) = engine.createConversation(ConversationConfig(systemInstruction = Contents.of(Talking.instruction(SHELL, pages, now, said)),
         initialMessages = earlier.flatMap { (h, s) -> listOf(Message.user(Talking.said(h)), Message.model(s)) },
@@ -97,7 +97,7 @@ private fun nameVariant(way: Keeping.Way, said: String): String? {
 }
 
 /** Plain marks to read beside each reply: the judging is by hand. */
-private fun marks(s: Said): String {
+internal fun marks(s: Said): String {
     val window = (HerWindow.HEART_LINES + HerWindow.WAYS_LINES + HerWindow.CAN_DO).map(Telling::plain)
     val runs = window.flatMap { l -> l.split(' ').filter(String::isNotEmpty).let { w -> if (w.size < 6) emptyList() else (0..w.size - 6).map { i -> w.subList(i, i + 6).joinToString(" ") } } }.toSet()
     val p = " ${Telling.plain(s.reply)} "

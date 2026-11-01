@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 // corpus.mjs — the hand-chosen calls. Each case starts from an empty pocket,
 // seeds its blocks (through the beach, or raw where a block is malformed on
 // purpose), then makes its calls in order. agent_id "pocket" is the phone
@@ -423,3 +425,7 @@ export const cases = [
     ],
   },
 ];
+
+// 0.8, the hatch: the calls the phone's hatch makes, exactly as its Pages plan
+// them, written by bsp's HatchGoldenTest (HATCH_WRITE=1) and held to it there.
+cases.push(...JSON.parse(readFileSync(new URL('./hatch-case.json', import.meta.url), 'utf8')));

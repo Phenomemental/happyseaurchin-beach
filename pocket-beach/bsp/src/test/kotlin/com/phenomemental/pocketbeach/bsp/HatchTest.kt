@@ -211,6 +211,26 @@ class HatchTest {
     }
 
     @Test
+    fun aNameIsSetOutAtHerPlaceInHisShell() {
+        val (storage, pages, _) = pocket()
+        hatch(storage, pages)
+        val named = Acts.propose("", listOf(Hatch.nameAction(h, pages, "Robin")), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
+        val w = named.proposal!!.writes.single()
+        assertEquals("shell:$h", w.plan.block)
+        assertEquals(Kind.CHANGE, w.plan.kind)
+        assertEquals("7.1", w.plan.landsAt)
+        assertEquals("Matthew calls me Robin.", w.plan.text)
+        // Unnamed: her name is added at her place.
+        val (fresh, freshPages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
+        assertTrue(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, freshPages, fresh, nowMs, "born"), freshPages, fresh).problem == null)
+        val added = Acts.propose("", listOf(Hatch.nameAction(h, freshPages, "Gemma")), fresh, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs).proposal!!.writes.single()
+        assertEquals(Kind.ADD, added.plan.kind)
+        assertTrue(added.plan.landsAt!!.startsWith("7."), added.plan.landsAt)
+        assertTrue(freshPages.carryOut(added.plan).ok)
+        assertEquals("Gemma", HerWindow.herName(h, freshPages))
+    }
+
+    @Test
     fun theCloseAppendsOneHistoryEntryItsOpeningAPlainConcernLine() {
         val (storage, pages, _) = pocket()
         hatch(storage, pages)

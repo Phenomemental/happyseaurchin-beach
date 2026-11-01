@@ -167,6 +167,22 @@ object Hatch {
         return shell
     }
 
+    /**
+     * A name he gives her, set out for his yes: her name line at her place in
+     * his shell changed to "<his name> calls me <name>.", or added there when
+     * she has none yet.
+     */
+    fun nameAction(handle: String, pages: Pages, name: String): Acts.Action {
+        val shell = shellOf(handle)
+        val his = pages.position(Region.POCKET, shell, "$PLACES.2")?.text?.let(::hisName) ?: "Matthew"
+        val line = "$his calls me $name."
+        val her = pages.position(Region.POCKET, shell, HER)
+        val held = her?.lines?.lastOrNull { l -> l.text?.let { CALLS.containsMatchIn(it) } == true }?.text
+        return if (held != null) Acts.Action.Change(shell, held, line) else Acts.Action.Add(shell, her?.text, line)
+    }
+
+    private val CALLS = Regex("""\bcalls me\b""", RegexOption.IGNORE_CASE)
+
     // ── the hatch, planned ──
 
     /** What the hatch will do, set out for his yes before anything is written. */

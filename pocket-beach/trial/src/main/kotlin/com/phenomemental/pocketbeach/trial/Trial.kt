@@ -109,6 +109,14 @@ fun main(args: Array<String>) {
         engine.close()
         return
     }
+    // 0.8: the hatch, beside 0.7 and 0.6.4, before release (-Dwindow.seed=<n>; -Deight.only=his|keep|bench|gains).
+    if ("eight" in flags) {
+        val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
+        val seed = System.getProperty("window.seed")?.toInt() ?: 0
+        eight(engine, label, shelf, seed, File(System.getProperty("pocket.out") ?: "trial/replies-0.8-$label-seed$seed.md"))
+        engine.close()
+        return
+    }
     // 0.7: her talk with the window beside 0.6.4's, before release (-Dwindow.seed=<n>).
     if ("seven" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
