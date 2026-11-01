@@ -4,6 +4,24 @@ Current state only. Newest first.
 
 ## Now
 
+**Rockpool 0.9 is released (1 November):**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9
+- **Install:** `rockpool-v0.9.apk` over Pocket beach 0.8.1; his blocks
+  stay. At first opening the app saves a whole copy of the pocket, then
+  brings his cook and kernel into his pocket and moves his days out of
+  telling, once. The launcher shows Rockpool and the Nine stones.
+- **Signed** with the same key as every release (certificate SHA-256
+  `217887a6…`). The package id is unchanged, so it installs over 0.8.1.
+- **Version** 0.9 (21), from main at `2a277a1` (PR #230). APK SHA-256
+  `26c55f06…`. The cook it carries is byte for byte
+  `assets/procedures`.
+- **To try:**
+  - "Keep that for me please", and Details on, to see his cook walked
+    step by step beneath her reply.
+  - His cook and kernel on Write: change a word at cook 9 or a line she is
+    handed, and the app does what the block now says.
+  - "Sort as my day", for his now, his ahead and his P6.
+
 **Rockpool 0.9, pscale as procedure (1 November, spine:pocket-beach
 1.111178714):** the app's behaviour is his cook and kernel, blocks in his
 pocket, walked exactly as they stand. A step that names her is hers, a ring
