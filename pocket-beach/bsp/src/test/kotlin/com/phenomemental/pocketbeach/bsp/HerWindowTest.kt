@@ -127,7 +127,8 @@ class HerWindowTest {
         val post = line("Can you post a message to my room on the beach?")
         assertTrue(post.contains("he asks you to post: yes, you can.") && post.contains("nothing is sent until he taps"), post)
         val name = line("I'd like to call you Robin")
-        assertTrue(name.contains("take it gladly as yours") && name.contains("\u201cMatthew calls me Robin.\u201d on your shell"), name)
+        assertTrue(name.contains("he is calling you Robin: that is your name now, so take it gladly as yours") && name.contains("on your shell beneath your reply, for his yes"), name)
+        assertFalse(name.contains("Matthew calls me"), "never the shell's line: she took its \u201cme\u201d as him")
     }
 
     @Test
