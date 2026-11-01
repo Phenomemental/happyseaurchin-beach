@@ -4,6 +4,13 @@ Current state only. Newest first.
 
 ## Now
 
+**0.7 is paused before release (1 November, Matthew):** built and
+judged on the laptop, not released, and not merged into main. Matthew and
+Claude are looking at the architecture first, and a new instruction will
+follow. It stands on branch `ccr-4c84d736-pvgv13` at `4205121`, its version
+raised to 0.7 (18) on the branch only; main and the released app are still
+0.6.4.
+
 **pocket-beach 0.7, her window** (step one of three, from the findings
 below): she wakes holding her window, of his world as lines; her heart and
 her ways are blocks he can change, in 0.6.4's words; each turn the app says
@@ -1327,8 +1334,10 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
 
 ## 0.7: her window
 
-Built on branch `ccr-4c84d736-pvgv13` from 0.6.4, on Sunday 1 November
-2026, after Matthew's answers to the four decisions. This is step one of
+Paused before release (Matthew, 1 November): built and judged, not
+released or merged; the architecture is looked at first. Built on branch
+`ccr-4c84d736-pvgv13` from 0.6.4, on Sunday 1 November 2026, after
+Matthew's answers to the four decisions. This is step one of
 three: her window (0.7), her reach (0.7.1), and her walk offered by the app
 (0.7.2). Each is tried on his Pixel before the next. Nothing was written to
 the spine.
