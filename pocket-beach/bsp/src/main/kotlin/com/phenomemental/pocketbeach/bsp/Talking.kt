@@ -100,13 +100,13 @@ object Talking {
     }
 
     /** The name his shell gives her, from its latest "Matthew calls me …" line; null before he has named her. */
-    fun name(shell: String, pages: Pages): String? {
-        val view = pages.position(Region.POCKET, shell) ?: return null
+    fun name(shell: String, pages: Pages, at: String = ""): String? {
+        val view = pages.position(Region.POCKET, shell, at) ?: return null
         return view.lines.mapNotNull { it.text }.mapNotNull { CALLS_ME.matchEntire(it.trim())?.groupValues?.get(1)?.trim()?.trim('"', '“', '”', '\'')?.trim() }
             .lastOrNull { it.isNotEmpty() && !it.endsWith("…") && !it.endsWith("...") }
     }
 
-    private val CALLS_ME = Regex("""Matthew calls me (.+?)[.!]?""", RegexOption.IGNORE_CASE)
+    private val CALLS_ME = Regex("""(?:Matthew|[\p{Lu}][\p{L}'’-]*) calls me (.+?)[.!]?""", RegexOption.IGNORE_CASE)
 
     /** B, the heart line, [name] hers; with no name yet, she is his companion and takes the name he gives. */
     fun heart(name: String?): String = (if (name != null) "Matthew calls you $name: that is your name, just $name. You are his companion on his phone. " else "You are Matthew's companion on his phone. ") +

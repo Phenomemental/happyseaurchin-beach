@@ -182,11 +182,78 @@ object HerWindow {
         return "His hand, as he left it$left: " + shelves.joinToString(". ") + "."
     }
 
+    // ── 0.8: her window, the nine places of his shell ──
+
+    /**
+     * 0.8 (spine:pocket-beach 1.1111787132): her window is a place of nine in
+     * his shell, read once each conversation through Bundle.kt. 1 his heart,
+     * 2 who he is, 3 how he'd be met: his own lines. 4 today on his clock,
+     * 5 his hand, 6 his people, 7 what he keeps: lines made by code from his
+     * blocks, never a block's name or address. 8 the way she talks. 9 what she
+     * can do. Opened by her name, as his shell gives it. A place with nothing
+     * in it is left out, its number kept.
+     */
+    fun window(handle: String, pages: Pages, storage: BlockStorage, shelf: Shelf, now: ZonedDateTime): String = buildString {
+        val shell = Hatch.shellOf(handle)
+        val node = storage.read(shell)?.let(::parseJson)?.let { jsGet(it, Hatch.WINDOW) }
+        val members = runCatching { compileBundle(node, BundleContext(Shells(storage, shelf).loader(), handle, now.toInstant().toEpochMilli())) }.getOrNull().orEmpty()
+        val bySlot = members.associateBy { it.slot }
+        val his = Hatch.hisName(point(bySlot["2"]).orEmpty()) ?: "Matthew"
+        val name = herName(handle, pages)
+        append(if (name != null) "$his calls you $name: that is your name, just $name. " else "You are $his's companion on his phone. ")
+        append("You wear his shell on his phone for this conversation; it is his, and these are its places.")
+        val places = mutableListOf<Pair<Int, String>>()
+        for ((i, label) in Hatch.LABELS.withIndex()) point(bySlot["${i + 1}"])?.let { places += (i + 1) to "$label: ${quoted(it)}" }
+        if (bySlot["4"]?.let { !it.absent } == true) today(storage, now)?.let { places += 4 to it }
+        if (bySlot["5"]?.let { !it.absent } == true) hand(storage)?.let { places += 5 to it }
+        bySlot["6"]?.takeIf { !it.absent && it.ref != null }?.let { m -> people(mapOf((m.name ?: "people") to memberLines(m)))?.let { places += 6 to it } }
+        bySlot["7"]?.takeIf { !it.absent && it.ref != null }?.let { m -> kept(memberBlock(m))?.let { places += 7 to it } }
+        point(bySlot["8"])?.let { places += 8 to it }
+        places += 9 to CAN_DO
+        for ((n, line) in places) {
+            appendLine()
+            append("$n. $line")
+        }
+    }
+
+    /** Her name, as his shell gives it at her place ("Matthew calls me Gemma."). */
+    fun herName(handle: String, pages: Pages): String? = Talking.name(Hatch.shellOf(handle), pages, Hatch.HER)
+
+    /** A member read at a point: its text. */
+    private fun point(m: Member?): String? = m?.takeIf { !it.absent && it.ref != null }?.result?.let { r -> r.content ?: (r.block?.let(::collectUnderscore)) }?.trim()?.takeIf { it.isNotEmpty() }
+
+    private fun memberBlock(m: Member): Js? = m.result?.takeIf { it.shape == "block" }?.block
+
+    private fun memberLines(m: Member): List<String> = memberBlock(m)?.let { b -> linesOf(b).map { it.second } } ?: listOfNotNull(m.result?.content)
+
+    /** What he keeps: the newest of what he has kept in his stash, in his words, newest last. Null when it holds nothing yet. */
+    fun kept(stash: Js?): String? {
+        val lines = stash?.let { b -> linesOf(b).filter { !it.first.contains('.') }.map { it.second } }.orEmpty()
+        if (lines.isEmpty()) return null
+        val shown = lines.takeLast(KEPT_SHOWN)
+        return "What he keeps: " + shown.joinToString("; ") { quoted(clip(it, 160)) } + (if (lines.size > shown.size) "; and ${lines.size - shown.size} more before them" else "") + "."
+    }
+
+    private const val KEPT_SHOWN = 5
+
+    /**
+     * 0.8, the app's line: "Keep that" with no block named is a write to his
+     * stash, so its line is the write line ("It's below, for your yes"); a
+     * name she is given is a line in his shell. The rest as 0.7.
+     */
+    fun appLine8(way: Keeping.Way, said: String): String = when (way) {
+        is Keeping.Way.Where -> appLine(Keeping.Way.Write(setOf(Keeping.Ask.KEEP)), said)
+        is Keeping.Way.Name -> "The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201c${way.name} it is.\u201d), then talk with him. " +
+            "The app sets out a line for your name in his shell, for his yes."
+        else -> appLine(way, said)
+    }
+
     // ── what has changed since she last looked: the app's copies of what she saw ──
 
-    /** His blocks, as she is shown them: not hers, not the app's own, not her shell, not his clocks. */
+    /** His blocks, as she is shown them: not hers, not the app's own, not her shell, not his clocks; never his passport, shell or history. */
     fun his(pages: Pages, shell: String = HelloWorld.SHELL): List<String> = pages.shore().mine.map { it.name }
         .filter { it != shell && it !in HERS && !Keeping.own(it, pages) && it != Asks.LOG && !it.startsWith("bench-") }
+        .filter { !it.startsWith("passport:") && !it.startsWith("shell:") && !it.startsWith("history:") }
         .sorted()
 
     /** The app's copies of his blocks, as JSON: what she has now seen. */

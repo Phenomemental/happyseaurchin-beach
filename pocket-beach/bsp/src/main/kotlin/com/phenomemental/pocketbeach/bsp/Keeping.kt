@@ -38,11 +38,12 @@ object Keeping {
      * What to do with [said]: [before] is what he said earlier in this
      * conversation, newest last; [shell] is her shell.
      */
-    fun way(said: String, before: List<String>, pages: Pages, shell: String = HelloWorld.SHELL): Way {
+    fun way(said: String, before: List<String>, pages: Pages, shell: String = HelloWorld.SHELL, at: String = ""): Way {
         val asks = asks(said)
         name(said)?.let { name ->
             if (asks.isEmpty() || asks == setOf(Ask.CHANGE)) {
-                val held = pages.position(Region.POCKET, shell)?.lines.orEmpty().any { it.text != null && Telling.plain(it.text) == Telling.plain("Matthew calls me $name.") }
+                // 0.8: her name is a line at her place in his shell ([at]); before the hatch, a line of her own shell.
+                val held = Talking.name(shell, pages, at)?.let { Telling.plain(it) == Telling.plain(name) } ?: false
                 return if (held) Way.Talk else Way.Name(name)
             }
         }

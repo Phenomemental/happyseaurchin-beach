@@ -6,7 +6,7 @@ enum class Region(val agentId: String) { POCKET("pocket"), TEACHING("pscale") }
 /** A block as the Shore lists it. */
 class BlockSummary(val region: Region, val name: String, val opening: String?, val touched: String?, val born: String?)
 
-class ShoreView(val mine: List<BlockSummary>, val teaching: List<BlockSummary>)
+class ShoreView(val mine: List<BlockSummary>, val teaching: List<BlockSummary>, val hidden: List<BlockSummary> = emptyList())
 
 /** One line of a block: where it stands, what it says, its arrival stamp if it was appended, and how many lines stand one step beneath it. */
 class Line(val address: String, val text: String?, val stamp: String?, val beneath: Int)
@@ -83,14 +83,17 @@ class Pages(
 
     fun shore(): ShoreView {
         val stamps = storage.stamps()
-        val mine = storage.names().distinct().mapNotNull { name ->
+        val all = storage.names().distinct().mapNotNull { name ->
             val block = beach.loadBlock(name) ?: return@mapNotNull null
             BlockSummary(Region.POCKET, name, collectUnderscore(block), stamps.touched[name], stamps.born[name])
         }.sortedWith(compareByDescending<BlockSummary> { it.touched ?: it.born ?: "" }.thenBy { it.name })
         val teaching = shelf.shelved().mapNotNull { name ->
             shelf.load(name)?.let { BlockSummary(Region.TEACHING, name, collectUnderscore(it), null, null) }
         }
-        return ShoreView(mine, teaching)
+        // 0.8: once he has hatched, the app's own blocks are in the hidden region: never in his map, never in hers.
+        val hatched = Hatch.hatched(storage) != null
+        val (hidden, mine) = all.partition { hatched && Hidden.routes(it.name) }
+        return ShoreView(mine, teaching, hidden)
     }
 
     fun exists(name: String): Boolean = beach.loadBlock(name) != null
