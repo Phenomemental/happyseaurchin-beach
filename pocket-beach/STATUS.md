@@ -4,6 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach 0.8.1 is released (1 November):**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/pocket-beach-v0.8.1
+- **Install:** `pocket-beach-v0.8.1.apk` over 0.8; his blocks stay. On
+  first opening, the app saves a whole copy of the pocket, then puts his
+  shell's opening and his third line right once.
+- **Signed** with the same key as every release (certificate SHA-256
+  `217887a6…`).
+- **Version** 0.8.1 (20), from main at `2ee5dfa` (PR #228).
+
 **pocket-beach 0.8.1, the small release after the hatch (1 November,
 spine:pocket-beach 1.1111787136; his days, 1.11117871363, wait for a
 release of their own).**
@@ -1362,6 +1371,15 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       choice of his.
 
 ## 0.8.1: the small release after the hatch
+
+Released on Sunday 1 November 2026 as `pocket-beach-v0.8.1`, from main at
+`2ee5dfa` (PR #228).
+- **The APK:** versionCode 20, versionName 0.8.1.
+- **Signed** by the same key as 0.8 (certificate SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`).
+- **Its digest** matches the release's (sha256 `4b3e5361…`).
+- **Its trusted hosts** are unchanged: the beach and the exact Hugging Face
+  hosts.
 
 Built on Sunday 1 November 2026, from spine:pocket-beach 1.1111787136 and
 the points beneath it. The spine was read from 1.11117871 down and not
