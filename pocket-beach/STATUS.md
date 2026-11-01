@@ -1370,6 +1370,84 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
+## 0.9: Rockpool, pscale as procedure
+
+Built on Sunday 1 November 2026, from spine:pocket-beach 1.111178714 (read
+from 1.11117871 down; the spine was not written), following its point 7:
+findings first, `FINDINGS-procedure.md` (49b9c58), then the build, since
+no finding changed the design. The branch is `ccr-4c84d736-pvgv13`, begun
+again from main at `2ad3446`.
+
+### What changed, in plain words
+
+1. **The app's behaviour is three blocks in his pocket,** walked exactly as
+   they stand:
+   - **his cook,** `cook:<handle>`, the procedures one a place:
+     1. ANSWER
+     2. KEEP
+     3. POST
+     4. MAKE
+     5. READ
+     6. TELL MY DAY
+     7. CLOSE
+     8. HER NAME
+     9. the words the app listens for
+   - **his kernel,** `kernel:<handle>`: his message runs cook 1; a tap on
+     a card carries the walk on; the close runs cook 7;
+   - **her window,** which already was one.
+
+   The shipped copies are in `assets/procedures`, read only. At the first
+   opening they are brought into his pocket and listed in his manifest, his
+   to read and change on the Write screen.
+2. **The walker** (`Cook.kt`) is the only new code: a fixed set of verbs,
+   each a sentence form.
+   - A step that names "she" is hers: a ring of at most nine, taken
+     through the engine's own tool call on E4B, and given to him on E2B.
+   - A step that names "his yes" or "his tap" waits for him.
+   - A step it can't read sends the app back to the shipped copy, with one
+     line beneath her reply saying so.
+3. **The app's lines to her are in his cook,** word for word. The words the
+   app listens for are cook 9: adding a word is an edit, not a release.
+4. **What stays code** is authority at the actuator:
+   - the guards, and a whole copy before any change;
+   - the hatch;
+   - the writing check, for a change to one of his lines only;
+   - the safety line;
+   - her talk.
+5. **His days, the beach's way:**
+   - his now native, with bookings and rungs at their levels;
+   - his hand as `ahead:<handle>`, piles by rung, as function:ahead has
+     them;
+   - his P6 as `p6:<handle>`, at spine:p6's addresses.
+
+   The move out of telling runs once, after a whole copy is saved, and
+   telling is kept in the hidden region.
+6. **His first evening on 0.8 answered:**
+   - her window says whose each place is;
+   - "I meant" and "Hold that" are heard, and "my now" is TELL MY DAY;
+   - a block named in passing isn't read, since only READ reads;
+   - his day is cut by sentences, each one ring of six;
+   - she is told she keeps nothing herself and never guesses what a thing
+     stands for;
+   - her talk context is 8,192.
+7. **With Details on,** each walk shows beneath her reply, step by step.
+8. **Rockpool:** the name everywhere he sees one, the Nine stones mark as
+   the adaptive icon (with a monochrome layer) and at the head of About,
+   and the release and its APK `rockpool-v<version>`. The package id and
+   the key don't change.
+
+### Checked
+
+- **Core tests,** with `CookTest` walking each procedure and point 6's
+  three proofs.
+- **Golden cases for the new writes:** his cook and kernel brought in and
+  listed, his days moved, a day told, a keeping. In all 265 cases and 911
+  calls, no mismatch.
+- **Device tests,** with six new ones in `RockpoolDeviceTest`.
+- **The bench's proofs,** `trial/proofs-0.9.md`.
+- **Fresh kernels beside the walker,** `trial/kernel-0.9/`.
+- **The laptop judge,** `trial/judged-0.9.md`.
+
 ## 0.8.1: the small release after the hatch
 
 Released on Sunday 1 November 2026 as `pocket-beach-v0.8.1`, from main at
