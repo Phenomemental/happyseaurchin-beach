@@ -398,6 +398,33 @@ internal fun runSend(pages: Pages, call: ToolCall, said: String, before: List<St
     return "Set out beneath your reply, for his tap (nothing is sent until he taps): $shown" to "The app offers: $shown"
 }
 
+/**
+ * Her reach by code, as 0.6.4 hears a keep: the gate hears the send, his
+ * people give the room, and his words after the name are the message, set
+ * out whole for his tap. Null when his words ask no send.
+ */
+internal fun appSend(pages: Pages, said: String): String? {
+    if (!SEND_ASK.containsMatchIn(said)) return null
+    val people = linesOf(pages, KNOWS).map { it.second }
+    fun room(p: String) = Regex("""pool:([A-Za-z0-9_-]+)""").find(p)?.groupValues?.get(1)
+    val hit = people.firstOrNull { p ->
+        val name = p.substringBefore(':').trim()
+        val handle = Regex("""^[\p{L}]+: ([A-Za-z0-9_-]+) on the beach""").find(p)?.groupValues?.get(1)
+        listOfNotNull(name, handle, room(p)).any { Regex("""(?<![\p{L}\p{N}])${Regex.escape(it)}(?![\p{L}\p{N}])""", RegexOption.IGNORE_CASE).containsMatchIn(said) }
+    } ?: return "The app asks him whose room it should go to."
+    val to = room(hit) ?: return "The app says ${hit.substringBefore(':')} isn't on the beach, so there's no room to send to."
+    val name = """[@\p{L}0-9_-]+(?:\s+on the beach)?"""
+    val forms = listOf(
+        Regex("""\btell\s+$name\s+(?:that\s+)?(.+)$""", RegexOption.IGNORE_CASE),
+        Regex("""\blet\s+$name\s+know\s+(?:that\s+)?(.+)$""", RegexOption.IGNORE_CASE),
+        Regex("""^(?:please\s+)?message\s+$name\s*[:,]\s*(.+)$""", RegexOption.IGNORE_CASE),
+        Regex("""\bsend\s+(?:a\s+)?(?:message|note|line)\s+to\s+$name\s*(?:[:,]|\s+saying|\s+that)\s*(.+)$""", RegexOption.IGNORE_CASE),
+    )
+    val words = forms.firstNotNullOfOrNull { it.find(said.trim())?.groupValues?.get(1)?.trim()?.trimEnd('?')?.takeIf { w -> w.isNotEmpty() } }
+        ?: return "The app asks him what he'd like to say to ${hit.substringBefore(':')} (pool:$to)."
+    return "The app offers: To pool:$to on the beach, from Phenomemental: \u201c$words\u201d [Send]"
+}
+
 private class Tool(private val json: String) : OpenApiTool {
     override fun getToolDescriptionJsonString() = json
     override fun execute(p0: String): String = "automatic tool calling is off; the app answers"

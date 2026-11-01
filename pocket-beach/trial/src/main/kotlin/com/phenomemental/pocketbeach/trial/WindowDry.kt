@@ -38,6 +38,9 @@ fun main() {
         "What's in my films block?" to mapOf("to" to "David", "message" to "films"),
         "Tell Jo the pilot's rendering tonight." to mapOf("to" to "Jo", "message" to "the pilot's rendering tonight"),
     )) println("== send $args for \u201c$said\u201d\n" + runSend(pages, ToolCall("send", args), said, emptyList()) + "\n")
+    for (said in listOf("Can you send a message to happyseaurchin on the beach?", "Tell David the pilot's rendering tonight.", "Tell Jo the music's lovely.",
+        "Let weft know the trial is done.", "Message happyseaurchin: the pilot is rendering", "What's in my films block?", "Send a message to Ada saying hello"))
+        println("== by code, for \u201c$said\u201d: ${appSend(pages, said) ?: "(no send asked)"}")
     val (fold, sees) = runFold(pages, ToolCall("fold", mapOf("blocks" to "now, telling")))
     println("== fold now, telling [$sees] (${fold.length} chars)\n$fold\n")
 }
