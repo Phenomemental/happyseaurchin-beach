@@ -4,6 +4,13 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach 0.8 is released (1 November):**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/pocket-beach-v0.8
+- **Install:** `pocket-beach-v0.8.apk` over 0.6.4; his blocks stay.
+- **Signed** with the same key as every release (certificate SHA-256
+  `217887a6…`).
+- **Version** 0.8 (19), from main at `db3e25d` (PR #226).
+
 **pocket-beach 0.8, the hatch (1 November, spine:pocket-beach
 1.111178713):** his shell on the phone is the beach's four blocks. She
 wakes holding its nine places, his three lines first, exactly as they
@@ -1336,6 +1343,13 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       choice of his.
 
 ## 0.8: the hatch
+
+Released on Sunday 1 November 2026 as `pocket-beach-v0.8`, from main at
+`db3e25d` (PR #226).
+- **The APK:** versionCode 19, versionName 0.8.
+- **Signed** by the same key as 0.6.4 (certificate SHA-256
+  `217887a66749cf2666e6eab726a2e904ceeec76f85285ce5c716eb72ce156ad2`).
+- **Its digest** matches the release's (sha256 `4e2e24ad…`).
 
 Built on Sunday 1 November 2026, from spine:pocket-beach 1.111178713 (read
 from 1.11117871 down; the spine was not written). The branch is
