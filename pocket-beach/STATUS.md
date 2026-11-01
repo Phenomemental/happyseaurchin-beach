@@ -4,12 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
-**0.7 is paused before release (1 November, Matthew):** built and
-judged on the laptop, not released, and not merged into main. Matthew and
-Claude are looking at the architecture first, and a new instruction will
-follow. It stands on branch `ccr-4c84d736-pvgv13` at `4205121`, its version
-raised to 0.7 (18) on the branch only; main and the released app are still
-0.6.4.
+**pocket-beach 0.8, the hatch (1 November, spine:pocket-beach
+1.111178713):** his shell on the phone is the beach's four blocks. She
+wakes holding its nine places, his three lines first, exactly as they
+stand on the spine. "Keep that" is set out for his stash, and each
+conversation's close is one entry in his history. The release checks at
+1.1111787135 all passed on E4B: safety every time; "Keep that" below on
+every seed; his four messages level with 0.7's. Her replies are about twice
+as long as 0.7's. See "0.8: the hatch" and `trial/judged-0.8.md`. 0.7, paused
+before release, came into 0.8 whole and was never released alone.
 
 **pocket-beach 0.7, her window** (step one of three, from the findings
 below): she wakes holding her window, of his world as lines; her heart and
@@ -1331,6 +1334,152 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.8: the hatch
+
+Built on Sunday 1 November 2026, from spine:pocket-beach 1.111178713 (read
+from 1.11117871 down; the spine was not written). The branch is
+`ccr-4c84d736-pvgv13`: main's 0.6.4 with 0.7's branch merged in (`8f6e678`),
+as point 5 asks. The findings it builds on are `FINDINGS-hatch.md`, on
+branch `ccr-df9fa66a-f19vdd`.
+
+### What changed, in plain words
+
+1. **The hatch.** His shell on the phone is four blocks, from
+   pscale-beach's own templates (`seeds/templates` at the pinned 4770a49,
+   byte for byte). Each is filled with his handle, "the pocket on this
+   phone" for the beach and the hour.
+   - **Adopted:**
+     - His passport comes from a file, shared in or chosen with "I have a
+       passport" in Ask.
+     - It is shown as his places in lines, with when it was read.
+     - Then come his three lines (for Matthew, the ones drafted with
+       Claude on the spine, for his yes) and "Adopt this as my shell on
+       this phone".
+     - His passport is kept as it stands.
+   - **Born:**
+     - The app's own words ask "Hello. Are you new here, or do you have a
+       passport from the beach?" with I'm new and I have a passport.
+     - The welcome asks his handle and his three lines, one at a time, in
+       the chat's own box.
+     - It sets out his passport whole, for his yes ("Yes, this is my
+       passport"), then Make my shell.
+   - **By handle** waits for the online switch.
+   - **No locks.** Nothing new leaves the phone.
+2. **His shell** (`shell:<handle>`), from the template:
+   - **3, the manifest:** the four, and his own blocks nested by meaning,
+     since a place holds nine (5 his day, 6 his people, 7 his own blocks,
+     8 and 9 more of them). Every block he had is kept and listed.
+   - **5, her window:** nine references, read through Bundle.kt.
+   - **6, his places:** his three lines, as he confirmed them.
+   - **7, her:** her name line ("Matthew calls me Gemma.") and the way she
+     talks. Her shell, pocket-companion, retires into his.
+   - **9.2:** how it was hatched, and when.
+3. **Her window, nine places**, read once each conversation:
+   1. his heart;
+   2. who he is;
+   3. how he'd be met (his own lines, quoted exactly);
+   4. today on his clock;
+   5. his hand;
+   6. his people;
+   7. what he keeps (the newest of his stash, in his words);
+   8. the way she talks;
+   9. what she can do (0.7's line).
+
+   Places 4 to 7 are lines made by code, never a block's name or address,
+   and a place with nothing in it is left out. With them comes 0.7's name
+   line.
+4. **The app's own blocks move to a hidden region.** That is
+   `regions/app`, beside the pocket:
+   - the ask log;
+   - the bench's blocks;
+   - the sort's examples;
+   - his safety words and time words (his to change in Settings);
+   - her retired shell, heart and ways.
+
+   They are read and written by name as before. She never sees them; the
+   Shore lists them apart, under "The app's own, which she never sees".
+   His clock and his hand stay his, in the manifest.
+5. **"Keep that" with no block named is set out for his stash**, for his
+   yes.
+   - The app's line is the write line, the same for every write he asks
+     for: "…Begin your reply with these words: "It's below, for your
+     yes." Then talk with him about what he said."
+   - On E4B, 0.7's line missed in his four messages. The line naming his
+     stash missed on seed 3 (see the judged file).
+6. **Asked to change her opening line**, she is given "That's yours to
+   change.", since her lines are in his shell, his to change on the Write
+   screen. Her Write job never proposes to his passport, shell or history.
+7. **The close.** When a conversation closes (a new day, six messages, a
+   write, as 0.7 reopens it, or Ask left), the app appends one entry to his
+   history:
+   - its opening line a plain concern line written by code ("Talked with
+     him: 2 messages, from "…"; one thing written on his yes.");
+   - what was read for her at 1, and what was written at 2;
+   - the beach's arrival stamp at 3.
+8. **A whole copy first.** Before the hatch changes anything, the app
+   saves a whole copy of the pocket in its own files. The Shore can bring
+   it back ("Restore the copy saved before your shell was made").
+
+### Checked
+
+- **Golden cases for every hatch write**, matched against the pinned
+  handler. These are the calls the phone's hatch makes, exactly as its Pages
+  plan them:
+  - the four blocks whole;
+  - "Keep that" appended to his stash;
+  - the close's history entry;
+  - her name changed at 7.1, and added at 7 when she has none.
+
+  They are kept in `conformance/hatch-case.json` and put to the real
+  handler by `corpus.mjs`. `HatchGoldenTest` holds the file to what the
+  hatch makes. In all: 263 cases, 887 calls, no mismatch, in files or in
+  memory.
+- **Core tests:** 174, on Linux and on Windows. Among them are the
+  templates byte for byte against upstream, her window's three lines
+  exactly, the manifest keeping every block, and the hidden region.
+- **Device tests**, on the emulator: the whole suite, with two new ones.
+  - **The welcome:** a refused handle; the four blocks born after his
+    yes; the copy saved; her window his three lines.
+  - **The adoption:** his blocks kept and listed; her shell hidden;
+    "Keep that" proposed for his stash and written on yes; leaving Ask
+    leaves one history entry.
+
+### The laptop judge (`trial/judged-0.8.md`)
+
+E4B and E2B, seeds 0, 1 and 2, and seed 3 besides, since seed 1 draws
+exactly what seed 0 draws.
+
+| The check (E4B) | 0.8 | 0.7 |
+|---|---|---|
+| Safety passes | every time | every time |
+| "Keep that" says it is below, in his four messages / on its own | 4 of 4 / 4 of 4 | 2 of 4 / 2 of 4 |
+| His four messages beside 0.7's, by hand (seeds 0, 2, 3) | better 3, worse 3, level 6 | |
+| The bench's talk asks (three draws) | 12 of 12 | 10 of 12 |
+
+**Costs:**
+- She writes about twice as much: on E4B, 61 tokens a reply against
+  0.7's 34.
+- Once she called his energy "almost manic".
+- She brings his shell's lines in as her topic.
+- On E2B she no longer says she can post on two seeds of three.
+
+### What waits
+
+As 1.1111787134 orders it:
+1. the walker and the kernel block, the writing check retired for a ring;
+2. his cards at their day on his clock, then the gap in code, then the
+   charging job with the summary over every nine;
+3. locks with the phone's key;
+4. the online switch;
+5. files and pictures.
+
+**Open, for Matthew:**
+- **The shell template's opening line** says "Locked with Phenomemental's
+  passphrase". The phone keeps no locks yet (his third answer). It is left
+  as the template has it, and his to change on the Write screen.
+- **What fills {{BEACH_URL}}.** It is filled with "the pocket on this
+  phone".
 
 ## 0.7: her window
 
