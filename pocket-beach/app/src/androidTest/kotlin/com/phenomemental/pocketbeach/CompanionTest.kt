@@ -675,6 +675,7 @@ class CompanionTest {
             assertEquals("her turn played back isn't given her again", "What would you like to keep in your blocks?", mind.talkHistories.last().single().second)
         }
         val t = app.asking.transcript()
+        assertTrue(t, t.contains("The app's line to her: The app: "))
         assertTrue(t, t.contains("Left out of her reply, as her turn played back: "))
         assertTrue(t, t.contains("Companion: What would you like to keep in your blocks?"))
     }

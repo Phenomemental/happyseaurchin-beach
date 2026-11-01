@@ -175,6 +175,8 @@ class Asking(private val app: PocketApp) {
         internal var pace: Pace? = null
         internal var firstShown: Long? = null
         internal var shown: Stage.Shown? = null
+        /** 0.7: the app's line to her on this turn, for the saved conversation. */
+        internal var appLine: String? = null
         /** Her turn as the engine had it: his words and hers. */
         internal var talk: List<Pair<String, String>> = emptyList()
         /** How his last proposal ended, when he said this: told her, and the Write job. */
@@ -390,7 +392,8 @@ class Asking(private val app: PocketApp) {
                         // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
                         val seen = runCatching { copies.takeIf { it.isFile }?.readText() }.getOrNull()
                         val changes = runCatching { HerWindow.changes(app.pages, app.storage, seen) }.getOrNull()
-                        val message = HerWindow.turn(q, now, app.pages, app.storage, HerWindow.appLine(way, q), changes, e.told)
+                        e.appLine = HerWindow.appLine(way, q)
+                        val message = HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
@@ -923,6 +926,7 @@ class Asking(private val app: PocketApp) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            e.appLine?.let { appendLine("  The app's line to her: $it") }
             e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
