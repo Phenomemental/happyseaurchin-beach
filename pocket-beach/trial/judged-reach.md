@@ -204,6 +204,6 @@ conversation is kept within a turn.
     it threw from `sendMessage` ("Failed to parse tool calls from code
     block"), and the run stopped there. Her replies before it were recovered
     from the run's log.
-  - In the app every tool call must be ready for this. Catch the throw, and
-    ask her once more with no tools; or give the tools no list-typed
-    parameter (`fold` takes "blocks" as one text with commas).
+  - This was although `fold` takes "blocks" as one text with commas: she
+    wrote a list anyway. In the app every tool call must be ready for this:
+    catch the throw, and ask her once more with no tools.
