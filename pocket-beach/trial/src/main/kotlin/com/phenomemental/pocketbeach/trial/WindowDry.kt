@@ -31,6 +31,13 @@ fun main() {
         val (found, sees) = runLook(pages, ToolCall("look", args), at)
         println("== look $args  [$sees]\n$found\n")
     }
+    for ((said, args) in listOf(
+        "Tell David the pilot's rendering tonight." to mapOf("to" to "David", "message" to "The pilot's rendering tonight."),
+        "Tell David the pilot's rendering tonight." to mapOf("to" to "happyseaurchin", "message" to "Hi David, Matthew's pilot is rendering tonight!"),
+        "Can you send a message to happyseaurchin on the beach?" to mapOf("to" to "happyseaurchin", "message" to ""),
+        "What's in my films block?" to mapOf("to" to "David", "message" to "films"),
+        "Tell Jo the pilot's rendering tonight." to mapOf("to" to "Jo", "message" to "the pilot's rendering tonight"),
+    )) println("== send $args for \u201c$said\u201d\n" + runSend(pages, ToolCall("send", args), said, emptyList()) + "\n")
     val (fold, sees) = runFold(pages, ToolCall("fold", mapOf("blocks" to "now, telling")))
     println("== fold now, telling [$sees] (${fold.length} chars)\n$fold\n")
 }

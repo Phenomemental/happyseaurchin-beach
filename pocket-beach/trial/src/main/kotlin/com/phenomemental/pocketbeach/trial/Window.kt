@@ -85,6 +85,23 @@ internal val HIS_ASKS = listOf(
     WalkAsk(5, "Is there anything I said I'd do this week that isn't done?", listOf(listOf("sam", "garage")), "this week's cards: the pilot sent and the bulbs in (both told as done); ringing Sam about the garage not done"),
 )
 
+/** Asks to reach: a message into someone's room on the beach, offered whole for his tap, never sent from the laptop. */
+internal class ReachAsk(val n: Int, val said: String, val to: String?, val message: String?)
+
+internal val HIS_REACH = listOf(
+    ReachAsk(1, "Can you send a message to happyseaurchin on the beach?", "happyseaurchin", null),
+    ReachAsk(2, "Tell David the pilot's rendering tonight.", "happyseaurchin", "the pilot's rendering tonight"),
+)
+
+/** His people and where each is on the beach: the beach's knows:<handle>, a block he keeps. */
+internal val KNOWS_BLOCK = """
+{"_": "The people I know, and where they are on the beach.",
+ "1": "David: happyseaurchin on the beach; his room is pool:happyseaurchin",
+ "2": "Jo: doing the music for the pilot; not on the beach",
+ "3": "Sam: my neighbour, walks the dog with me; not on the beach",
+ "4": "weft: David's agent on the beach; its room is pool:weft"}
+""".trim()
+
 /** A telling of his day, in the evening: where each piece would go, having looked; nothing proposed. */
 internal const val HIS_DAY = "Rang Jo this morning about the music for the pilot, she's going to send me a few ideas by Wednesday. " +
     "Took the dog out with Sam this afternoon, lovely and crisp. The beds by the shed still need digging over and I need to buy more compost. " +
@@ -103,6 +120,7 @@ private const val SHE = HelloWorld.SHELL
 private const val HEART = "heart:pocket-companion"
 private const val WAYS = "ways:pocket-companion"
 private const val REVIEW = "review:pocket-companion"
+private const val KNOWS = "knows:Phenomemental"
 
 /** Her heart and his practice, in his words (Stage 2's heart, C changed, pia:Phenomemental 3.1), as a block he can change. */
 internal val HEART_BLOCK = """
@@ -126,6 +144,9 @@ internal fun waysBlock(walk: Boolean): String {
     if (walk) lines += listOf(
         "Before I answer about his things, I look where the answer is: one look a turn. I never guess at what I haven't seen.",
         "Each turn I see what he asks and what's missing. If he asks me to keep, change or make something, I propose one edit, in his own words, for his yes. If nothing is missing, I propose nothing and just talk.",
+        "What I can do: look in any of his blocks; propose one edit for his yes; and set out a message from him, in his words, into anyone's room on the beach (a person's room is pool: and their name there), shown whole and sent only when he taps. Nothing leaves the phone without his tap.",
+    ) else lines += listOf(
+        "What I can do: what he asks me to keep, change or make is set out beneath my reply, for his yes; when he asks me to post, a message to his own room on the beach is set out for his tap. I can't yet look in his blocks myself, or send into anyone else's room.",
     )
     val o = JsObj.of("_" to str("How I work in his pocket. Matthew's to change."))
     lines.forEachIndexed { i, l -> o["${i + 1}"] = str(l) }
@@ -138,6 +159,7 @@ internal val BUNDLE = JsObj.of(
     "1" to str("heart"),
     "2" to str("ways"),
     "3" to str("review"),
+    "4" to str(KNOWS),
 )
 
 /** His days as he told them, and today's cards on his clock. */
@@ -183,6 +205,7 @@ internal fun scratchPocket(shelf: Shelf, nowMs: Long, films: Boolean, hers: Bool
     if (beds) go(pages.planAdd("garden", "", "The beds by the shed need digging over"))
     go(pages.planWhole(Landing.NOW, clock()))
     go(pages.planWhole(Landing.TELLING, hand()))
+    go(pages.planWhole(KNOWS, parseJson(KNOWS_BLOCK) as JsObj))
     if (films) {
         go(pages.planNewBlock("films"))
         go(pages.planAdd("films", "", "I'm looking for fast ways to develop films"))
@@ -208,7 +231,7 @@ private fun Pages.read(name: String): Js? = stores[this]?.read(name)?.let(::pars
 
 /** His blocks: not hers, not the app's own, not a clock or his structure. */
 private fun hisBlocks(pages: Pages): List<String> = pages.shore().mine.map { it.name }
-    .filter { it != SHE && !it.endsWith(":pocket-companion") && it.lowercase() !in Keeping.OWN && it != Asks.LOG && !Talks.appOwn(it, pages) }
+    .filter { it != SHE && !it.endsWith(":pocket-companion") && it != KNOWS && it.lowercase() !in Keeping.OWN && it != Asks.LOG && !Talks.appOwn(it, pages) }
     .sorted()
 
 private fun linesOf(pages: Pages, name: String): List<Pair<String, String>> {
@@ -284,7 +307,7 @@ internal fun window(pages: Pages, storage: MemoryStorage, shelf: Shelf, now: Zon
     for (m in members) {
         val r = m.result ?: continue
         val block = m.name ?: continue
-        val heading = when (block) { HEART -> "My heart"; WAYS -> "How I work"; REVIEW -> "Since I last looked, and what's ahead"; else -> block }
+        val heading = when (block) { HEART -> "My heart"; WAYS -> "How I work"; REVIEW -> "Since I last looked, and what's ahead"; KNOWS -> "His people"; else -> block }
         out.appendLine()
         out.appendLine(heading + ":")
         for (l in plainLines(r, block)) out.appendLine(l)
@@ -352,6 +375,28 @@ internal fun plainLines(r: ReadResult, block: String): List<String> {
 private const val LOOK_TOOL = """{"name":"look","description":"Look in one of Matthew's blocks before you answer about it. One look a turn.","parameters":{"type":"object","properties":{"block":{"type":"string","description":"The block's name, as in his blocks"},"at":{"type":"string","description":"Which line, by its number (2, or 2.1); 'today' on his clock; empty for the block's top lines"},"how":{"type":"string","enum":["line","walk","beneath","all"],"description":"line: that one line; walk: that line with the lines above it; beneath: that line and the lines beneath it; all: the block's top lines"}},"required":["block"]}}"""
 private const val FOLD_TOOL = """{"name":"fold","description":"Lay two or three of his blocks side by side, scale by scale, to see them together (his clock and his hand, say). Counts as your one look this turn.","parameters":{"type":"object","properties":{"blocks":{"type":"string","description":"The blocks' names, with commas between"}},"required":["blocks"]}}"""
 private const val PROPOSE_TOOL = """{"name":"propose","description":"Propose one edit to his blocks, for his yes; at most one a turn, and only when he asks you to keep, change or make something. Nothing is written until he says yes.","parameters":{"type":"object","properties":{"kind":{"type":"string","enum":["keep","change","make"],"description":"keep: add a line of his words to a block; change: rewrite a line; make: a new block he named"},"block":{"type":"string","description":"The block's name"},"under":{"type":"string","description":"For keep: the words of the line it goes beneath, if any; for change: the words of the line to rewrite"},"words":{"type":"string","description":"The line, in his own words"}},"required":["kind","block","words"]}}"""
+
+private const val SEND_TOOL = """{"name":"send","description":"Set out a message from Matthew, in his own words, into someone's room on the beach, for his tap; nothing is sent until he taps. Only when he asks you to send, tell or message someone.","parameters":{"type":"object","properties":{"to":{"type":"string","description":"Who: a person's name from his people, or their name on the beach"},"message":{"type":"string","description":"The message, in his own words"}},"required":["to","message"]}}"""
+
+/** How an ask to send is heard: send, tell, message, let … know, pass on, post. */
+internal val SEND_ASK = Regex("""\b(?:send|tell|message|post|share|pass (?:it |this |that )?on|let [\p{L}]+ know)\b""", RegexOption.IGNORE_CASE)
+
+/** The app's answer to her send: resolve who from his people, check his words, and set out the message whole for his tap. Nothing is sent. */
+internal fun runSend(pages: Pages, call: ToolCall, said: String, before: List<String>): Pair<String, String> {
+    val to = call.arguments["to"]?.toString()?.trim().orEmpty()
+    val message = call.arguments["message"]?.toString()?.trim().orEmpty()
+    if (!SEND_ASK.containsMatchIn(said)) return "Not set out: he didn't ask to send anything. Just talk with him." to "She set out a message to $to; the gate stopped it: he didn't ask to send."
+    val people = linesOf(pages, KNOWS).map { it.second }
+    val handle = Regex("""(?:pool:)?([A-Za-z0-9_-]+)""").find(to.removePrefix("@"))?.groupValues?.get(1).orEmpty()
+    val line = people.firstOrNull { p -> p.substringBefore(':').trim().equals(to.removePrefix("pool:"), ignoreCase = true) || Regex("""\b${Regex.escape(handle)}\b""", RegexOption.IGNORE_CASE).containsMatchIn(p) }
+    val room = line?.let { Regex("""pool:([A-Za-z0-9_-]+)""").find(it)?.groupValues?.get(1) }
+        ?: handle.takeIf { h -> h.isNotEmpty() && people.isEmpty() }
+    if (room == null) return "Not set out: \u201c$to\u201d isn't anyone he knows on the beach. Ask him whose room it should go to." to "She asked to send to \u201c$to\u201d; no room found for them in his people."
+    if (message.isEmpty()) return "Not set out: there's no message yet. Ask him what he'd like to say." to "She asked to send to $room with no message."
+    if (!Keeping.hisWords(message, before + said)) return "Not set out: \u201c${message.take(80)}\u201d isn't his words. Ask him what he'd like to say, or use his own words." to "She drafted \u201c${message.take(80)}\u201d for pool:$room; not set out: not his words."
+    val shown = "To pool:$room on the beach, from Phenomemental: \u201c$message\u201d [Send]"
+    return "Set out beneath your reply, for his tap (nothing is sent until he taps): $shown" to "The app offers: $shown"
+}
 
 private class Tool(private val json: String) : OpenApiTool {
     override fun getToolDescriptionJsonString() = json
@@ -430,6 +475,7 @@ internal class Turn(
     val app: String,
     val secs: List<Double>,
     val tokens: String,
+    val offered: String? = null,
 )
 
 private fun took(since: Long) = (System.nanoTime() - since) / 1e9
@@ -510,11 +556,12 @@ private fun turnC(engine: Engine, said: String, earlier: List<Pair<String, Strin
     val times = mutableListOf<Double>()
     var reads = 0
     var proposed: String? = null
+    var offered: String? = null
     var app = ""
     var tok = ""
     val text = engine.createConversation(ConversationConfig(systemInstruction = Contents.of(win.text),
         initialMessages = earlier.flatMap { (h, s) -> listOf(Message.user(h), Message.model(s)) },
-        tools = listOf(tool(Tool(LOOK_TOOL)), tool(Tool(FOLD_TOOL)), tool(Tool(PROPOSE_TOOL))), automaticToolCalling = false,
+        tools = listOf(tool(Tool(LOOK_TOOL)), tool(Tool(FOLD_TOOL)), tool(Tool(PROPOSE_TOOL)), tool(Tool(SEND_TOOL))), automaticToolCalling = false,
         samplerConfig = TALK, maxOutputToken = 300, thinkingConfig = OFF)).use { c ->
         var start = System.nanoTime()
         var m = c.sendMessage(said)
@@ -545,6 +592,15 @@ private fun turnC(engine: Engine, said: String, earlier: List<Pair<String, Strin
                         steps += "propose ${call.arguments} → $desc"
                         msg
                     }
+                    "send" -> if (offered != null) {
+                        steps += "asked to send a second message: refused, one a turn"
+                        "One message a turn: answer him now."
+                    } else {
+                        val (msg, desc) = runSend(pages, call, said, earlier.map { it.first })
+                        offered = desc
+                        steps += "send ${call.arguments} \u2192 $desc"
+                        msg
+                    }
                     else -> "No such tool.".also { steps += "unknown tool ${call.name}" }
                 }
                 Content.ToolResponse(call.name, answer)
@@ -565,7 +621,7 @@ private fun turnC(engine: Engine, said: String, earlier: List<Pair<String, Strin
             else -> "She proposed nothing, though his words ask (${way::class.simpleName}): nothing is set out."
         }
     }
-    return Turn(said, text, steps, reads, seen, proposed, app, times, tok)
+    return Turn(said, text, steps, reads, seen, proposed, app, times, tok, offered)
 }
 
 /** Her one edit, through the same gate and guards as 0.6.4's writing check, checked by the phone's bsp on a copy. */
@@ -635,6 +691,7 @@ internal fun windowTrial(engine: Engine, label: String, shelf: Shelf, out: File,
             if (t.seen.isNotEmpty()) say("\nWhile she looks he sees: ${t.seen.joinToString(" then ")}")
             if (t.steps.size > 1 || t.reads > 0 || t.proposed != null) say("\nHer steps: ${t.steps.joinToString("; ")}")
             say("\nThe app: ${t.app}")
+            if (t.offered != null) say("\nHer reach: ${t.offered}")
             say("\nReads this turn: ${t.reads}. Seconds: ${t.secs.joinToString(" + ") { "%.1f".format(it) }} = ${"%.1f".format(t.secs.sum())} s. Tokens of the last step: ${t.tokens}.")
             say("\nMarks: " + marks(t))
         }
@@ -652,6 +709,13 @@ internal fun windowTrial(engine: Engine, label: String, shelf: Shelf, out: File,
             val found = ask.finds.count { alts -> alts.all { it in t.reply.lowercase() } }
             say("\nFound: $found of ${ask.finds.size} (${ask.note}).")
         }
+        say("\n### Asks to reach (each its own conversation, 08:40): nothing is sent from the laptop; the message the app would offer is judged")
+        for (ask in HIS_REACH) {
+            val t = turn(ask.said, emptyList(), asksAt, films = true, seen = seenMorning, looked = convoAt.plusMinutes(4))
+            report(t, "R${ask.n}.")
+            val cant = CANT_SEND.find(t.reply)?.value
+            say("\nSays she can: ${if (cant != null) "no (\u201c$cant\u201d)" else "not refused"}. Offered whole for his tap: ${t.offered?.takeIf { it.startsWith("The app offers") } ?: "nothing"}.")
+        }
         say("\n### A telling of his day (21:00): where each piece would go, having looked; nothing proposed")
         val t = turn("Here's my day. Where would each bit of it go? $HIS_DAY", emptyList(), dayAt, films = true, seen = seenEvening, looked = asksAt)
         report(t, "T.")
@@ -663,6 +727,7 @@ internal fun windowTrial(engine: Engine, label: String, shelf: Shelf, out: File,
 }
 
 private val MACHINERY = Regex("""\b(block|blocks|line \d|lines? \d|address|pscale|spindle|bsp|tool|the app|scale \d|\d\.\d)\b""", RegexOption.IGNORE_CASE)
+private val CANT_SEND = Regex("""(?:can't|cannot|can not|don't have the ability|do not have the ability|unable|not able|no way)[^.]{0,60}\b(?:send|message|contact|reach)""", RegexOption.IGNORE_CASE)
 private val READS_HIM = Regex("""it sounds like|you might be|you seem|you're feeling|you are feeling|you feel|that must|it seems like you|sounds like you""", RegexOption.IGNORE_CASE)
 private val SAYS_DONE = Regex("""i've (put|added|made|kept|saved|noted|created|changed|updated|stored|written)|i have (put|added|made|kept|saved|noted|created|changed|updated|stored|written)|(is|are) (now )?(saved|kept|stored|noted)|i'll (keep|save|note|remember)|got it (saved|noted)|done[.!]""", RegexOption.IGNORE_CASE)
 
