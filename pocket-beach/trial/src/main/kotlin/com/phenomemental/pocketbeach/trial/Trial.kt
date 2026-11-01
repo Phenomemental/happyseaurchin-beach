@@ -113,7 +113,7 @@ fun main(args: Array<String>) {
     if ("window" in flags) {
         val label = File(model).name.substringBefore("-it").removePrefix("gemma-4-")
         val ways = (System.getProperty("window.ways") ?: "a,b,c").split(",").map { it.trim() }.toSet()
-        windowTrial(engine, label, shelf, File(System.getProperty("pocket.out") ?: "trial/replies-window-$label.md"), ways)
+        windowTrial(engine, label, shelf, File(System.getProperty("pocket.out") ?: "trial/replies-window-$label${System.getProperty("window.seed")?.let { "-seed$it" } ?: ""}.md"), ways)
         engine.close()
         return
     }

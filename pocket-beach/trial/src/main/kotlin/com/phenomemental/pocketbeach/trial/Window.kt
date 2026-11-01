@@ -437,7 +437,7 @@ private fun took(since: Long) = (System.nanoTime() - since) / 1e9
 @OptIn(ExperimentalApi::class)
 private fun tokens(c: Conversation): String = runCatching { c.getBenchmarkInfo().let { "read ${it.lastPrefillTokenCount}, wrote ${it.lastDecodeTokenCount}" } }.getOrDefault("")
 
-private val TALK = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = 0)
+private val TALK = SamplerConfig(topK = 64, topP = 0.95, temperature = 1.0, seed = System.getProperty("window.seed")?.toInt() ?: 0)
 private val OFF = ThinkingConfig(enableThinking = false)
 
 /** The writing check as 0.6.4 runs it after her reply, when the gate says so. */
@@ -608,7 +608,7 @@ internal fun windowTrial(engine: Engine, label: String, shelf: Shelf, out: File,
         return Triple(storage, pages, window(pages, storage, shelf, at))
     }
 
-    say("# $label")
+    say("# $label" + (System.getProperty("window.seed")?.let { ", seed $it" } ?: ""))
     for (way in listOf("a", "b", "c").filter { it in ways }) {
         val title = mapOf("a" to "a. 0.6.4 as it is", "b" to "b. her window and orbit", "c" to "c. her window and orbit, with the walk and the loop")[way]!!
         say("\n## $label, $title")
