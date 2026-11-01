@@ -151,7 +151,7 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
                         show("${i + 1}.", k7.say(said, t), keep = i == 1)
                     }
                     val c = k8.say(said, t)
-                    if (i == 0) say("\nThe turn as 0.8 gives it:\n\n```\n${c.turn}\n```")
+                    if (i == 0) say("\nThe turn as $LABEL8 gives it:\n\n```\n${c.turn}\n```")
                     show("${i + 1}.", c, keep = i == 1)
                 }
             }
