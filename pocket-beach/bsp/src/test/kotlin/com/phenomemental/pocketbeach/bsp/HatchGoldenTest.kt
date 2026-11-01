@@ -59,9 +59,26 @@ class HatchGoldenTest {
         return JsObj.of("name" to str(name), "seed" to seed, "calls" to JsArr(calls))
     }
 
+    /** 0.8.1: a shell 0.8 hatched, corrected: its opening said truly, his third line as he changed it. */
+    private fun corrected(): JsObj {
+        val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
+        check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW.copy(met = Hatch.MATTHEW_MET_08), pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
+        val opening = collectUnderscore(parseJson(storage.read(Hatch.shellOf(h))!!))!!
+        check(pages.carryOut(pages.planChange(Hatch.shellOf(h), "", opening.replace(Hatch.UNLOCKED_LINE, Hatch.lockedLine(h)))).ok)
+        val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
+        val calls = mutableListOf<Js?>()
+        for (plan in Hatch.corrections(pages, storage)) {
+            calls += parseJson(stringify(plan.call!!)!!)
+            assertTrue(pages.carryOut(plan).ok)
+        }
+        assertTrue(calls.size == 2)
+        calls += JsObj.of("agent_id" to str("pocket"), "block" to str(Hatch.shellOf(h)))
+        return JsObj.of("name" to str("the hatch of 0.8, corrected"), "seed" to seed, "calls" to JsArr(calls))
+    }
+
     @Test
     fun theHatchCasesAreWhatTheHatchMakes() {
-        val made = stringifyPretty(JsArr(mutableListOf<Js?>(case("the hatch, adopted, her name changed", true), case("the hatch, her name added", false)))) + "\n"
+        val made = stringifyPretty(JsArr(mutableListOf<Js?>(case("the hatch, adopted, her name changed", true), case("the hatch, her name added", false), corrected()))) + "\n"
         if (System.getenv("HATCH_WRITE") == "1") file.writeText(made)
         assertTrue(file.isFile, "no $file: run with HATCH_WRITE=1, then conformance/generate.sh")
         assertEquals(file.readText(), made, "conformance/hatch-case.json lags the hatch: run with HATCH_WRITE=1, then conformance/generate.sh")

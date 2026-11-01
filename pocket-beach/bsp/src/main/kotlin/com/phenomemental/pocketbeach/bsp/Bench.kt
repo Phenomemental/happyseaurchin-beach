@@ -526,14 +526,18 @@ object Bench {
     }
 
     /** What the app proposes by itself for [way] (her name line), as Ask does; null for any other way. */
-    fun byApp(way: Keeping.Way, storage: MemoryStorage, shelf: Shelf, nowMs: Long): Acts.Planned? = (way as? Keeping.Way.Name)?.let {
-        Acts.propose("", listOf(Acts.Action.Add(HelloWorld.SHELL, null, it.line)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
+    fun byApp(way: Keeping.Way, storage: MemoryStorage, shelf: Shelf, nowMs: Long): Acts.Planned? = when (way) {
+        is Keeping.Way.Name -> Acts.propose("", listOf(Acts.Action.Add(HelloWorld.SHELL, null, way.line)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
+        // 0.8.1: his own words, set out as a post by code.
+        is Keeping.Way.Post -> way.words?.let { Acts.propose("", listOf(Acts.Action.Post(it)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs) }
+        else -> null
     }
 
     private fun wayName(way: Keeping.Way): String = when (way) {
         is Keeping.Way.Talk -> "she only talks"
         is Keeping.Way.Where -> "the app asks where \u201c${way.words.take(80)}\u201d goes"
         is Keeping.Way.Name -> "her name, \u201c${way.line}\u201d, by code"
+        is Keeping.Way.Post -> way.words?.let { "his words set out as a post, by code: \u201c${it.take(80)}\u201d" } ?: "a post asked for with no words of his: she asks what to say"
         is Keeping.Way.Write -> if (way.asks.isEmpty()) "the writing check runs, though he didn't ask" else "the writing check runs (${way.asks.joinToString(", ") { it.name.lowercase() }})"
     }
 

@@ -54,8 +54,22 @@ object Hatch {
     val MATTHEW = Three(
         heart = "One axis with two ends, and nowhere outside it to be sent.",
         who = "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-        met = "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions; bring your best reading and let me correct it.",
+        met = "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
     )
+
+    /**
+     * His third line as 0.8 drafted it. He changed it on 1 November, 16:30:
+     * "bring your best reading and let me correct it" was written for people
+     * meeting him, and in her window it invited readings of him (spine
+     * 1.11117871323). A shell still holding it is corrected (see [corrections]).
+     */
+    const val MATTHEW_MET_08 = "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions; bring your best reading and let me correct it."
+
+    /** What the shell template says of its lock, filled; the phone keeps no locks yet (his third answer, 1.1111787131). */
+    fun lockedLine(handle: String) = "Locked with $handle's passphrase."
+
+    /** 0.8.1: the shell's opening said truly, in place of the template's lock (spine 1.1111787136 (b)). */
+    const val UNLOCKED_LINE = "Not locked: on this phone only the app writes to it, never the model."
 
     /** The handle Matthew's three were drafted for. */
     const val MATTHEW_HANDLE = "Phenomemental"
@@ -156,6 +170,7 @@ object Hatch {
      */
     fun shellBlock(handle: String, three: Three, nameLine: String?, names: List<String>, floorOf: (String) -> Int, nowMs: Long, how: String): JsObj {
         val shell = filled(Templates.SHELL, handle, nowMs)
+        shell["_"] = str(trueOpening(collectUnderscore(shell).orEmpty(), handle))
         val manifest = shell["3"] as JsObj
         for ((at, g) in groups(names, floorOf, handle)) {
             manifest[at] = JsObj.of("_" to str(g.opening), *g.names.mapIndexed { i, n -> "${i + 1}" to str(n) }.toTypedArray())
@@ -182,6 +197,27 @@ object Hatch {
     }
 
     private val CALLS = Regex("""\bcalls me\b""", RegexOption.IGNORE_CASE)
+
+    /** The shell's opening with the template's lock said truly. */
+    fun trueOpening(opening: String, handle: String): String = opening.replace(lockedLine(handle), UNLOCKED_LINE)
+
+    /**
+     * 0.8.1: what a shell hatched by 0.8 needs corrected, as plans for the
+     * app to carry out (a whole copy saved first): its opening line, if it
+     * still says it is locked; his third line, if it still holds the draft
+     * he changed. Empty when there is nothing to correct, as for a shell he
+     * corrected himself.
+     */
+    fun corrections(pages: Pages, storage: BlockStorage): List<Plan> {
+        val h = hatched(storage) ?: return emptyList()
+        val shell = shellOf(h)
+        val out = mutableListOf<Plan>()
+        val opening = pages.position(Region.POCKET, shell)?.text
+        if (opening != null && opening.contains(lockedLine(h))) out += pages.planChange(shell, "", trueOpening(opening, h))
+        val met = pages.position(Region.POCKET, shell, "$PLACES.3")?.text
+        if (h == MATTHEW_HANDLE && met == MATTHEW_MET_08) out += pages.planChange(shell, "$PLACES.3", MATTHEW.met)
+        return out.filter { it.refusal == null }
+    }
 
     // ── the hatch, planned ──
 
