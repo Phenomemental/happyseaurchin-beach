@@ -785,7 +785,8 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.asking.settled }
             val (first, second) = app.asking.history
             assertTrue("the proposal waits on the first exchange", first.waiting is Asking.Stage.Shown)
-            assertEquals("She talked.", second.note)
+            // 0.8.1: he asked, and nothing was set out for the second: why, beneath her reply.
+            assertEquals("Nothing was set out: the app found nothing in your words it could keep, make or change. Say it again, naming the block, or the words to keep.", second.note)
             assertEquals("stopped once, then asked again, then the second", 3, mind.writeMessages)
             compose.waitFor("writes")
             // 0.6.3: where it goes, in words; the bsp line only with Details on.
