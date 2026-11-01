@@ -165,3 +165,45 @@ conversation is kept within a turn.
 - **Invented:**
   - E2B (b) gave the clock's card as the line under the pilot;
   - E4B (a) said "nothing set for the day".
+
+## Seed 2, read whole: the same, with one new fault
+
+- **E2B.**
+  - (a) still says "I can't send messages directly".
+  - (b) parrots the window ("Matthew is happy with that.", "films at
+    pocket.", "Matthew is not saying yes."). It got today half right (the
+    morning card only), and listed this week with "Finish the script for the
+    second film", a month card, while dropping the pilot sent off.
+  - (c) asked "What is the message you would like to send to
+    happyseaurchin?". Her own send again drafted a card from his hand
+    ("Ring Jo about the music for the pilot"), refused as not his words,
+    then an empty reply. She looked in the right block for films and
+    garden, in a garbled one ("tellimg") for the line under the pilot, and in
+    his structure block for today. She said "I've created a new block", when
+    nothing was made.
+- **E4B.**
+  - (a) "I'm sorry, I can't directly send messages to other people or
+    accounts", "You have a free day today" (**invented**), "I don't have a
+    memory of previous conversations like that".
+  - (b) got today right with no read, and asked "What would you like the
+    message to say for your tap?". But for "Tell David…" she offered
+    "David: 'Send the pilot off to render tonight.'", which mixes his words
+    with a card. "I will keep that for you" said it was kept.
+  - (c):
+    - she looked in the right place for films, garden and today (2/2), and
+      in his notes for the line under the pilot (wrong; "Buy stamps" again);
+    - she proposed compost into garden unasked, and the gate stopped it;
+    - "Can you send…?": "What would you like the message to say, and do you
+      want to send it to David or weft?";
+    - "Tell David…": she drafted a card, which was refused. Then she asked
+      him for "your own words", though he had given them.
+- **New: the engine can throw on her tool call.**
+  - Telling his day, E4B called `fold{blocks:"now","films"}`, a list
+    without its brackets.
+  - LiteRT-LM 0.18.1's own parser didn't hand back an empty or failed call:
+    it threw from `sendMessage` ("Failed to parse tool calls from code
+    block"), and the run stopped there. Her replies before it were recovered
+    from the run's log.
+  - In the app every tool call must be ready for this. Catch the throw, and
+    ask her once more with no tools; or give the tools no list-typed
+    parameter (`fold` takes "blocks" as one text with commas).
