@@ -47,7 +47,7 @@ class SmallReleaseTest {
     fun hisThirdLineIsAsHeChangedIt() {
         assertEquals("I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.", Hatch.MATTHEW.met)
         val (storage, pages) = hatched()
-        assertTrue(HerWindow.window(h, pages, storage, shelf, now).contains("3. How he'd be met: “${Hatch.MATTHEW.met}”"))
+        assertTrue(HerWindow.window(h, pages, storage, shelf, now).contains("3. How he'd be met (his words, to you): “${Hatch.MATTHEW.met}”"))
         assertFalse(HerWindow.window(h, pages, storage, shelf, now).contains("bring your best reading"))
     }
 

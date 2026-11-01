@@ -45,7 +45,8 @@ data class JobSettings(
 
         fun of(job: Job): JobSettings = when (job) {
             // Edge's for Gemma 4 E2B: temperature 1.0, top-k 64, top-p 0.95; the context the pocket has run on since 0.3.
-            Job.TALK -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 1.0, topK = 64, topP = 0.95, longestReply = 1024)
+            // Rockpool: her context 8,192 by default (his first evening on 0.8: 4,096 against the 32,000 she holds), his to change.
+            Job.TALK -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 1.0, topK = 64, topP = 0.95, longestReply = 1024)
             // 0.4's: the likeliest word each time, so the same words propose the same lines.
             Job.WRITE -> JobSettings(GEMMA_E2B, "GPU", 4096, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 1024)
             // As the laptop ran Stage 4: the likeliest word, a word or two a piece (the rungs, asked once after, may run to 256).

@@ -7,6 +7,8 @@
         <item name="android:windowBackground">@color/pocket_window</item>
     </style>
     <color name="pocket_paper">#F6F1E7</color>
+    <!-- Rockpool: the ink behind the Nine stones mark. -->
+    <color name="rock_ink">#16130F</color>
     <color name="pocket_crimson">#9B1B30</color>
     <color name="pocket_window">#F4EEE3</color>
 </resources>

@@ -73,7 +73,9 @@ object HerWindow {
      * line he changes: it says what this version does.
      */
     const val CAN_DO = "What you can do: when he asks to keep, change or make something, or to post his own words to his own room on the beach, the app can set it out " +
-        "beneath your reply for his yes, and each turn the app's line tells you whether it has; when his words name one of his blocks, the app reads it to you. " +
+        "beneath your reply for his yes, and each turn the app's line tells you whether it has; when he asks what one of his blocks holds, the app reads it to you. " +
+        "You can't keep anything yourself: only what the app sets out beneath your reply and he says yes to is kept. " +
+        "You can't look anything up: when he names a thing you don't know, say so and ask him; never guess what it stands for. " +
         "You can't yet look in his blocks yourself, or send into anyone else's room."
 
     /** 0.7's line of what she can do, as 0.8 shipped it: it said a post was set out whenever he asked (spine:pocket-beach 1.11117871361). */
@@ -417,6 +419,24 @@ object HerWindow {
         }
         if (unsafe) appendLine("(${Talking.SAFETY})")
         appendLine("($appLine)")
+        append(said.trim())
+    }
+
+    /**
+     * Rockpool: her turn as his cook hands it: the day and the time, what has
+     * changed, how his last proposal ended, what was read for her (only when
+     * READ read it), the safety line when his words say he isn't safe, the
+     * lines the walker handed her, then his words.
+     */
+    fun turnHanded(said: String, now: ZonedDateTime, pages: Pages, handed: List<Cook.Handed>, changes: String? = null, told: String? = null): String = buildString {
+        appendLine("(It is ${WHEN.format(now)}.)")
+        changes?.let { appendLine("($it)") }
+        told?.let { appendLine("(How his last proposal ended: $it)") }
+        val unsafe = Talking.unsafe(said, pages)
+        if (!unsafe) for (h in handed) for (m in h.material) appendLine(m)
+        if (unsafe) appendLine("(${Talking.SAFETY})")
+        for (h in handed) appendLine("(${h.line})")
+        if (handed.isEmpty()) appendLine("($TALK_LINE)")
         append(said.trim())
     }
 

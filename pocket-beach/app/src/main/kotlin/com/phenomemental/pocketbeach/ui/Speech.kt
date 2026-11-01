@@ -282,7 +282,7 @@ fun rememberVoice(onWords: (String) -> Unit): Voice {
     }
 
     val askMicrophone = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) begin() else voice.note = "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings, then try again."
+        if (granted) begin() else voice.note = "Speaking needs the microphone. Allow it for Rockpool in the phone's settings, then try again."
     }
 
     // Leaving the screen, or the app going to the background, lets the recogniser go.
@@ -326,7 +326,7 @@ fun Speak(onWords: (String) -> Unit) {
     }
 }
 
-const val NO_SPEECH = "This phone can't recognise speech on the device, so speaking is off. Pocket beach never sends your voice to a server."
+const val NO_SPEECH = "This phone can't recognise speech on the device, so speaking is off. Rockpool never sends your voice to a server."
 
 /** 0.7: shown while the one try more waits, after the phone first says its speech is busy. */
 const val WAITING = "Waiting for the keyboard's voice typing to let go\u2026"
@@ -346,7 +346,7 @@ private fun speechTrouble(error: Int): String = when (error) {
         "The phone has no on-device speech model for ${Locale.getDefault().displayLanguage} yet. " +
             "It can be added in the phone's settings, under offline speech recognition."
     SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Nothing was heard. Tap to speak again."
-    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Speaking needs the microphone. Allow it for Pocket beach in the phone's settings."
+    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Speaking needs the microphone. Allow it for Rockpool in the phone's settings."
     SpeechRecognizer.ERROR_AUDIO -> "The microphone couldn't be used just now."
     else -> "Speaking stopped (the recogniser's error $error)."
 }

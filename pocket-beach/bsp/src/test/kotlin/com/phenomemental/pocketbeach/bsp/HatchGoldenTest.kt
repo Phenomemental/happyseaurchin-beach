@@ -83,7 +83,7 @@ class HatchGoldenTest {
      * then a day told and landed, and a keeping the walker set out.
      */
     private fun rockpool(): JsObj {
-        val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../procedures")))
+        val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../assets/procedures")))
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
         check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)

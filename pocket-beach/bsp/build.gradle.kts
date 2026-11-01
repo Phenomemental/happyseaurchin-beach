@@ -24,7 +24,7 @@ tasks.test {
 tasks.test {
     systemProperty("pocket.golden", (findProperty("golden") as String?) ?: rootProject.file("conformance/golden/golden.json").path)
     systemProperty("pocket.shelf", rootProject.file("shelf").path)
-    systemProperty("pocket.procedures", rootProject.file("procedures").path)
+    systemProperty("pocket.procedures", rootProject.file("assets/procedures").path)
     testLogging {
         events("failed")
         showStandardStreams = true

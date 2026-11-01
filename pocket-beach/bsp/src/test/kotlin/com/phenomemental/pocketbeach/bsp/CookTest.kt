@@ -20,7 +20,7 @@ class CookTest {
     private fun jsGet(v: Js?, vararg keys: String): Js? = keys.fold(v) { n, k -> com.phenomemental.pocketbeach.bsp.jsGet(n, k) }
 
     private val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
-    private val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../procedures")))
+    private val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../assets/procedures")))
     private val now = ZonedDateTime.of(2026, 11, 1, 17, 30, 0, 0, ZoneId.of("Europe/London"))
     private val nowMs = now.toInstant().toEpochMilli()
     private val h = Hatch.MATTHEW_HANDLE

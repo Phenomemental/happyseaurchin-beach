@@ -32,11 +32,15 @@ object Hatch {
     /** His places in her window: a short line each, in his own words. */
     const val PLACES = "6"
 
+    /** His shell's manifest: the four, then his blocks by meaning. */
+    const val MANIFEST = "3"
+
     /** Her, his companion on this phone: her name (1) and the way she talks (2). */
     const val HER = "7"
 
     /** What his three places are called in her window. */
-    val LABELS = listOf("His heart", "Who he is", "How he'd be met")
+    // Rockpool (his first evening on 0.8, 1.1111787149): each place says whose it is, so his lines never become hers.
+    val LABELS = listOf("His heart (his words, about him, not you)", "Who he is (his words, about him, not you)", "How he'd be met (his words, to you)")
 
     /** 8 in her window: the way she talks, as the findings tried it (FINDINGS-hatch.md, piece 2, "index+way"). */
     const val WAY = "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up."
@@ -208,6 +212,27 @@ object Hatch {
      * he changed. Empty when there is nothing to correct, as for a shell he
      * corrected himself.
      */
+    /**
+     * Rockpool: [names] listed in his shell's manifest when they aren't yet:
+     * his ahead and his P6 with his day (3.5), his cook and kernel with his own
+     * blocks (3.7), else at the manifest itself. Each add is planned on the
+     * pocket as the one before left it, and handed to [go] to carry out.
+     */
+    fun listInManifest(handle: String, names: List<String>, pages: Pages, go: (Plan) -> Boolean) {
+        val shell = shellOf(handle)
+        for (n in names) {
+            val listed = pages.position(Region.POCKET, shell, MANIFEST)?.let { root ->
+                fun all(p: PositionView?): List<String> = p?.lines.orEmpty().flatMap { l -> listOfNotNull(l.text) + (if (l.beneath > 0) all(pages.position(Region.POCKET, shell, l.address)) else emptyList()) }
+                all(root)
+            }.orEmpty().map { it.substringBefore(" —").trim() }
+            if (n in listed) continue
+            val group = if (n.startsWith("ahead:") || n.startsWith("p6:")) "$MANIFEST.5" else "$MANIFEST.7"
+            val at = if (pages.position(Region.POCKET, shell, group) != null) group else MANIFEST
+            val plan = pages.planAdd(shell, at, n)
+            if (plan.refusal == null) go(plan)
+        }
+    }
+
     /** Her window's place for his hand as 0.8 made it: the hand in the telling block. */
     const val OLD_HAND = "telling:2:-1"
 

@@ -4,7 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.phenomemental.pocketbeach.PocketApp
+import com.phenomemental.pocketbeach.bsp.Cook
 import com.phenomemental.pocketbeach.bsp.Copies
+import com.phenomemental.pocketbeach.bsp.Days
+import com.phenomemental.pocketbeach.bsp.Landing
+import com.phenomemental.pocketbeach.bsp.Plan
+import com.phenomemental.pocketbeach.bsp.stringify
 import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.isoString
@@ -76,16 +81,46 @@ class Hatching(private val app: PocketApp) {
      * A whole copy of the pocket is saved first. Called off the main thread.
      */
     private fun correct() {
+        val h = runCatching { Hatch.hatched(app.storage) }.getOrNull() ?: return
         val plans = runCatching { Hatch.corrections(app.pages, app.storage) }.getOrDefault(emptyList())
-        if (plans.isEmpty()) return
-        val copy = runCatching { saveCopy(System.currentTimeMillis()) }.getOrNull() ?: return
-        val done = plans.map { app.pages.carryOut(it) }
-        corrected = if (done.all { it.ok })
-            "Your shell is corrected: " + plans.joinToString("; ") { if (it.address.isEmpty()) "its opening now says truly that it isn't locked" else "her window's third place now reads as you changed it" } +
-                ". A whole copy of the pocket was saved first (${copy.name})."
-        else "Your shell couldn't all be corrected: " + done.filter { !it.ok }.joinToString("; ") { it.problem ?: it.reply } + ". A whole copy was saved first (${copy.name})."
+        // Rockpool: his cook and kernel brought in (or up to date while he hasn't changed them), and his days moved out of telling, once.
+        val bring = runCatching { Cook.bringIn(h, app.pages, app.storage, app.procedures) { name -> shipped(name).takeIf { it.isFile }?.readText() } }.getOrDefault(emptyList())
+        val move = runCatching { Days.toMove(app.storage) }.getOrDefault(false)
+        if (plans.isEmpty() && bring.isEmpty() && !move) return
+        val now = System.currentTimeMillis()
+        val copy = runCatching { saveCopy(now) }.getOrNull() ?: return
+        val said = mutableListOf<String>()
+        val problems = mutableListOf<String>()
+        fun go(plan: Plan): Boolean = app.pages.carryOut(plan).let { if (!it.ok) problems += "${plan.block}: ${it.problem ?: it.reply}"; it.ok }
+        if (plans.isNotEmpty() && plans.map(::go).all { it }) said += plans.joinToString("; ") {
+            when (it.address) {
+                "" -> "its opening now says truly that it isn't locked"
+                "${Hatch.WINDOW}.5" -> "her window reads your hand from your ahead"
+                else -> "her window's third place now reads as you changed it"
+            }
+        }.let { "your shell: $it" }
+        if (bring.isNotEmpty() && bring.map(::go).all { it }) {
+            for (name in listOf(Cook.SHIPPED_COOK, Cook.SHIPPED_KERNEL)) runCatching { app.procedures.load(name)?.let { shipped(name).writeText(stringify(it)!!) } }
+            Hatch.listInManifest(h, listOf(Cook.cookOf(h), Cook.kernelOf(h)), app.pages, ::go)
+            said += "your cook and kernel are in your pocket, the app's procedures as blocks, yours to read and change on the Write screen"
+        }
+        if (move) runCatching { Days.moveOut(h, app.storage, now) }.getOrNull()?.let { m ->
+            val ok = listOfNotNull(m.now?.let { Days.NOW to it }, m.ahead?.let { Days.aheadOf(h) to it }, m.p6?.let { Days.p6Of(h) to it }).all { (n, b) -> go(app.pages.planWhole(n, b)) }
+            if (ok) {
+                if (app.storage.read(Landing.TELLING) != null) app.pages.rename(Landing.TELLING, Days.RETIRED_TELLING).let { if (!it.ok) problems += "telling: ${it.problem}" }
+                Hatch.listInManifest(h, listOf(Days.aheadOf(h), Days.p6Of(h)), app.pages, ::go)
+                said += "your days moved the beach's way: ${m.pieces} pieces to your P6, ${m.cards} cards to your ahead, ${m.rungs} rungs to your now; your old telling kept, retired" +
+                    (if (m.over.isEmpty()) "" else "; ${m.over.size} didn't fit, a place holding nine")
+            }
+        }
+        corrected = (if (said.isNotEmpty()) "Brought up to this version: " + said.joinToString("; ") + "." else "") +
+            (if (problems.isNotEmpty()) " Not all of it went: " + problems.joinToString("; ") + "." else "") +
+            " A whole copy of the pocket was saved first (${copy.name})."
         app.asking.hatchedNow()
     }
+
+    /** What the app shipped of [name] last, kept in its own files: his cook is brought up to date only while it still stands as that. */
+    private fun shipped(name: String) = File(app.filesDir, "shipped-$name.json")
 
     /** The question the welcome asks now, in the app's own words. */
     val question: String?

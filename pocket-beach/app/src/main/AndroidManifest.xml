@@ -26,7 +26,7 @@
 
     <application
         android:name=".PocketApp"
-        android:label="Pocket beach"
+        android:label="Rockpool"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
