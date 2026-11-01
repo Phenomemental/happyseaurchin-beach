@@ -15,6 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.phenomemental.pocketbeach.ui.busy
+import com.phenomemental.pocketbeach.ui.WAITING
 import com.phenomemental.pocketbeach.ui.Heard
 import com.phenomemental.pocketbeach.ui.Recogniser
 import com.phenomemental.pocketbeach.ui.Speech
@@ -143,27 +144,34 @@ class SpeechTest {
     }
 
     @Test
-    fun busySpeechIsSaidPlainlyAndNothingIsTriedAgainUntilItsTime() {
+    fun busySpeechIsTriedOnceMoreWhereHeSeesItThenSaidPlainly() {
         Fresh.open().use {
             openALine()
             listen()
             main { made[0].heard!!.failed(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS) }
-            // Which error, by its number, so Matthew's test says which.
+            // 0.7: busy once, one try more, and he sees it waiting.
+            compose.waitFor("speech-note", WAITING)
+            assertTrue(made[0].destroyed)
+            compose.waitUntil(5_000) { made.size == 2 }
+            oneAtMost()
+            // Busy again: which error, by its number, so Matthew's test says which; nothing more is tried by itself.
+            main { made[1].heard!!.failed(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS) }
             compose.waitFor("speech-note", busy(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS))
             compose.waitFor("speech-note", "the phone's error 10")
-            assertTrue(made[0].destroyed)
-            oneAtMost()
+            assertTrue(made[1].destroyed)
+            Thread.sleep(Speech.RETRY_MS + 500)
+            assertEquals("busy twice: nothing more tried by itself", 2, made.size)
 
-            // A tap while it's busy makes nothing, and nothing is tried by itself.
+            // A tap while it's busy makes nothing.
             compose.tap("speak")
             compose.waitFor("speech-note", busy(SpeechRecognizer.ERROR_TOO_MANY_REQUESTS))
             Thread.sleep(1_500)
-            assertEquals("no recogniser made while speech is busy", 1, made.size)
+            assertEquals("no recogniser made while speech is busy", 2, made.size)
 
             // After the wait, a tap listens again.
             Thread.sleep(Speech.BUSY_MS)
             listen()
-            assertEquals(2, made.size)
+            assertEquals(3, made.size)
             oneAtMost()
         }
     }

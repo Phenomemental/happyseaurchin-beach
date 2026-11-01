@@ -280,16 +280,21 @@ object Talking {
      * in a row; when he said fewer, a line that is his words and nothing
      * else, so "Good morning, Matthew" to his "Good morning" is no copy).
      */
-    fun copied(reply: String, said: String, shellOpening: String): List<String> {
+    fun copied(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): List<String> {
         val his = Telling.plain(said).split(' ').filter { it.isNotEmpty() }
         val runs = if (his.size < 8) emptySet() else (0..his.size - 8).map { his.subList(it, it + 8).joinToString(" ") }.toSet()
         val whole = his.joinToString(" ")
         val shell = Telling.plain(shellOpening)
         val own = shell.split(' ').filter { it.isNotEmpty() }
         val shellRuns = if (own.size < 6) emptySet() else (0..own.size - 6).map { own.subList(it, it + 6).joinToString(" ") }.toSet()
+        // 0.7: a line of the app's in her turn (the time, what has changed, the app's line), played back.
+        val appRuns = appLines.flatMap { l -> Telling.plain(l).split(' ').filter { it.isNotEmpty() }.let { w -> if (w.size < 6) listOf(w.joinToString(" ")).filter { it.isNotEmpty() } else (0..w.size - 6).map { w.subList(it, it + 6).joinToString(" ") } } }.toSet()
         return reply.lines().filter { line ->
             val p = Telling.plain(line)
             if (p.isEmpty()) return@filter false
+            if (line.trimStart().startsWith("(") && line.trimEnd().endsWith(")") && appLines.isNotEmpty()) return@filter true
+            if (p.startsWith("the app ")) return@filter true
+            if (appRuns.any { " $p ".contains(" $it ") }) return@filter true
             p.startsWith("shell ") || p.startsWith("your shell") || (shell.isNotEmpty() && p.contains(shell)) ||
                 line.trimStart().trimStart('*', '_', '"').startsWith("Matthew:") ||
                 (YEAR.containsMatchIn(line) && CLOCK.containsMatchIn(line)) ||
@@ -299,8 +304,8 @@ object Talking {
     }
 
     /** Her [reply] with every line that plays her turn back left out: what Ask shows of her. */
-    fun unechoed(reply: String, said: String, shellOpening: String): String {
-        val copies = copied(reply, said, shellOpening).toSet()
+    fun unechoed(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): String {
+        val copies = copied(reply, said, shellOpening, appLines).toSet()
         return reply.lines().filter { it !in copies }.joinToString("\n").trim().replace(Regex("\n{3,}"), "\n\n")
     }
 

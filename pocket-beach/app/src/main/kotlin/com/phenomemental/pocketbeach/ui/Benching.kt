@@ -12,6 +12,7 @@ import com.phenomemental.pocketbeach.bsp.Acts
 import com.phenomemental.pocketbeach.bsp.Bench
 import com.phenomemental.pocketbeach.bsp.Keeping
 import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.HerWindow
 import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.bsp.Talks
@@ -229,8 +230,11 @@ class Benching(private val app: PocketApp) {
             val (storage, pages) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
             // 0.6.2: ask 23, her shell already saying the name: nothing is proposed.
             if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
-            val a = mind.ask(Talking.instruction(HelloWorld.SHELL, pages, now, ask.question), Talking.said(ask.question), talk)
-            val proposal = when (val way = Keeping.way(ask.question, emptyList(), pages)) {
+            // 0.7: as Ask asks her now: her window, then the turn with the time and the app's line.
+            HerWindow.ensure(pages)
+            val way = Keeping.way(ask.question, emptyList(), pages)
+            val a = mind.ask(HerWindow.instruction(HelloWorld.SHELL, pages, storage, app.shelf, now), HerWindow.turn(ask.question, now, pages, storage, HerWindow.appLine(way, ask.question)), talk)
+            val proposal = when (way) {
                 is Keeping.Way.Write -> mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList()), settings = write).use { t ->
                     Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false, guard = Acts.Guard(listOf(ask.question), ask.question)).planned?.proposal
                 }
