@@ -179,6 +179,9 @@ class Asking(private val app: PocketApp) {
         internal var shown: Stage.Shown? = null
         /** 0.7: the app's line to her on this turn, for the saved conversation. */
         internal var appLine: String? = null
+        /** 0.8.1: his words asked for something (to keep, change, make, post, or a name): when nothing is set out, why shows beneath her reply, always. */
+        var asked by mutableStateOf(false)
+            internal set
         /** Her turn as the engine had it: his words and hers. */
         internal var talk: List<Pair<String, String>> = emptyList()
         /** How his last proposal ended, when he said this: told her, and the Write job. */
@@ -435,6 +438,7 @@ class Asking(private val app: PocketApp) {
             val gate = withContext(Dispatchers.IO) { runCatching { if (h != null) Keeping.way(q, earlier, app.pages, Hatch.shellOf(h), Hatch.HER) else Keeping.way(q, earlier, app.pages) } }
             gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
             val way = gate.getOrDefault(Keeping.Way.Talk)
+            e.asked = way !is Keeping.Way.Talk
             // Her reply, streamed as she writes it.
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
@@ -511,6 +515,12 @@ class Asking(private val app: PocketApp) {
                 is Keeping.Way.Name ->
                     if (h != null) byApp(e, listOf(Hatch.nameAction(h, app.pages, way.name)), "Her name couldn't be kept")
                     else byApp(e, listOf(Acts.Action.Add(HelloWorld.SHELL, null, way.line)), "Her name couldn't be kept")
+                // 0.8.1: a post of his own words is set out by code, with no model call; with none, nothing is, and why shows beneath her reply.
+                is Keeping.Way.Post -> {
+                    val words = way.words
+                    if (words != null) postOut(e, words)
+                    else finish(e, null, "Nothing was set out: your words held no message of your own. Say what you'd like to post after a colon, or in quotes.", proposed = true)
+                }
                 // 0.8: "Keep that" with no block named is a write to his stash, set out for his yes.
                 is Keeping.Way.Where ->
                     if (h != null) byApp(e, listOf(Acts.Action.Add(Hatch.stashOf(h), null, way.words)), "It couldn't be kept in your stash")
@@ -755,6 +765,8 @@ class Asking(private val app: PocketApp) {
             writeFailed != null -> finish(e, shown, "She talked. The Write job couldn't answer: ${writeFailed.message ?: writeFailed::class.simpleName}.")
             // 0.6.4: he asked, and the guards let nothing by: why, under her reply.
             a.route == Talks.Route.TALK && planned?.dropped?.isNotEmpty() == true -> finish(e, shown, "Nothing proposed: ${planned.dropped.joinToString("; ")}.", proposed = true)
+            // 0.8.1: he asked, and the writing check found nothing to set out: why, in plain words, beneath her reply.
+            a.route == Talks.Route.TALK && e.asked -> finish(e, shown, "Nothing was set out: the app found nothing in your words it could keep, make or change. Say it again, naming the block, or the words to keep.", proposed = true)
             a.route == Talks.Route.TALK -> {
                 // What he told her names one of his blocks, and nothing was proposed: the app offers to keep it there, while it's the last thing said.
                 if (e === history.lastOrNull()) e.keepIn = Talks.keepIn(e.question, app.pages)
@@ -765,6 +777,31 @@ class Asking(private val app: PocketApp) {
             planned?.choose != null -> e.waiting = Stage.Choosing(a, chosen, e.took ?: 0, e.pace)
             planned?.proposal?.asks != true -> finish(e, shown, planned?.proposal?.refusal?.let { "It couldn't go ahead: $it" } ?: "Nothing to say yes to.")
             else -> e.waiting = shown
+        }
+    }
+
+    /**
+     * 0.8.1 (spine:pocket-beach 1.11117871362): his own words, lifted by code,
+     * set out as the post to his own room with no model call: the Post it
+     * card beneath her reply, nothing sent until he taps.
+     */
+    private fun postOut(e: Exchange, words: String) {
+        scope.launch {
+            val done = withContext(Dispatchers.IO) {
+                runCatching {
+                    val planned = Acts.propose("", listOf(Acts.Action.Post(words)), app.storage, app.shelf, shellOpening(), HelloWorld.seal(), System.currentTimeMillis())
+                    val p = planned.proposal
+                    planned to p?.takeIf { it.asks && it.writes.isEmpty() && it.post != null }?.let { Asks.carryOut(it, app.pages, app.storage, shellOpening()) }
+                }
+            }
+            val (planned, carried) = done.getOrElse { finish(e, null, "Nothing was set out: the post couldn't be made ready (${it.message ?: it::class.simpleName}).", proposed = true); return@launch }
+            val a = Talks.Answered(Talks.Route.ACT, "", emptyList(), planned, planned.problem, e.talk, listOf(Acts.Action.Post(words)))
+            val shown = Stage.Shown(asAsked(a), e.took ?: 0, e.pace, e.firstShown)
+            e.shown = shown
+            when {
+                carried?.post != null -> e.waiting = Stage.Written(shown, carried)
+                else -> finish(e, shown, "Nothing was set out: " + (planned.proposal?.postRefusal ?: planned.problem ?: planned.proposal?.refusal ?: "the post couldn't be made ready") + ".", proposed = true)
+            }
         }
     }
 
@@ -949,6 +986,32 @@ class Asking(private val app: PocketApp) {
     fun dontPost(e: Exchange? = waitingOn<Stage.Written>()) {
         val w = e?.waiting as? Stage.Written ?: return
         finish(e, w.shown, "Matthew said yes; " + landed(w.carried) + " He said not now to the post.", w.carried)
+    }
+
+    /**
+     * 0.8.1: a new conversation, as a chat app starts one: the one in hand
+     * closes into his history, and the thread begins empty. Nothing waiting
+     * on his answer is written.
+     */
+    fun newConversation() {
+        if (stage is Stage.Thinking || benchRunning) return
+        writer?.cancel()
+        writes.clear()
+        writingNow = null
+        yielded = false
+        question = ""
+        live = ""
+        stage = Stage.Writing
+        history.clear()
+        context.values.forEach { it.clear() }
+        unseen.clear()
+        told = null
+        scope.launch(Dispatchers.IO) {
+            talking.withLock {
+                closeConversation()
+                closeAll()
+            }
+        }
     }
 
     /** Forget the Ask in hand and the conversation without logging them, as the device tests begin. */

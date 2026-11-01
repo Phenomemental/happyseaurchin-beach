@@ -32,6 +32,13 @@ object Keeping {
         class Where(val words: String) : Way()
         /** The writing check runs, for what his words ask. */
         class Write(val asks: Set<Ask>) : Way()
+        /**
+         * 0.8.1 (spine:pocket-beach 1.11117871361-2): he asks to post to his
+         * own room. [words] are his message as he wrote it, lifted by code
+         * (after the colon, or in quotes), set out with no model call; null
+         * when his words hold none, and she asks him what he'd like to say.
+         */
+        class Post(val words: String?) : Way()
     }
 
     /**
@@ -48,6 +55,7 @@ object Keeping {
             }
         }
         if (asks.isEmpty()) return Way.Talk
+        if (asks == setOf(Ask.POST)) return Way.Post(postWords(said))
         if (asks == setOf(Ask.KEEP) && named(said, pages).isEmpty()) {
             val words = keptWords(said, before)
             return if (words.isBlank()) Way.Talk else Way.Where(words)
@@ -73,7 +81,12 @@ object Keeping {
     private val CHANGE_ANYWHERE = Regex("""\bchange (?:the|my|your|that|this)\b[^.?!]*\b(?:line|opening|name)\b""")
     private val MAKE = Regex("""\b(?:make|create|start|add)\s+(?:me\s+)?(?:a\s+)?(?:new\s+)?block\b|\bnew block\b""")
     private val POST_START = Regex("""^(?:post|share)\b""")
-    private val POST_ANYWHERE = Regex("""\bpost (?:this|that|it|to)\b|\bpost:""")
+    // 0.8.1: sending, messaging or telling his own room is a post too ("Send a post to my room", "tell my room").
+    private val POST_ANYWHERE = Regex(
+        """\bpost (?:this|that|it|to)\b|\bpost:|""" +
+            """\b(?:send|post|share|put|write|leave|drop)\b[^.?!:\n]{0,40}?\b(?:to|in|into|on|for)\s+my\s+(?:own\s+)?(?:room|pool)\b|""" +
+            """\b(?:tell|message|update)\s+(?:to\s+)?my\s+(?:own\s+)?(?:room|pool)\b""",
+    )
     private val HELLO = Regex("""hello[\s-]*world""")
 
     /** His words as clauses, each lowercased and with its leading words of asking ("could you", "please") taken off. */
@@ -91,6 +104,26 @@ object Keeping {
         if (parts.any { POST_START.containsMatchIn(it) } || POST_ANYWHERE.containsMatchIn(lower)) out += Ask.POST
         if (Ask.MAKE !in out && (parts.any { KEEP_START.containsMatchIn(it) } || KEEP_ANYWHERE.containsMatchIn(lower))) out += Ask.KEEP
         return out
+    }
+
+    private val QUOTED = Regex("""[\u201c"]([^\u201c\u201d"]+)[\u201d"]""")
+
+    /**
+     * 0.8.1: his message, as he wrote it, when his words ask to post one:
+     * what follows the colon of "Post this message to my room:", or what he
+     * put in quotes, trimmed and nothing else changed. Null when they hold
+     * no message ("Send a post to my room.").
+     */
+    fun postWords(said: String): String? {
+        val text = said.trim()
+        val colon = text.indexOf(':')
+        if (colon > 0 && Ask.POST in asks(text.substring(0, colon) + ".")) {
+            val after = text.substring(colon + 1).trim()
+            val inner = QUOTED.matchEntire(after)?.groupValues?.get(1)?.trim() ?: after.removeSurrounding("'").trim()
+            if (tokens(inner).isNotEmpty()) return inner
+        }
+        QUOTED.find(text)?.groupValues?.get(1)?.trim()?.takeIf { tokens(it).isNotEmpty() }?.let { return it }
+        return null
     }
 
     /** Whether his words ask for a post, or the hello world (whose shell offers one). */

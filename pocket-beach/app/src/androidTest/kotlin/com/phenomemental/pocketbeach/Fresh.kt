@@ -101,6 +101,12 @@ fun ComposeTestRule.waitFor(tag: String, text: String? = null, timeoutMs: Long =
     }
 }
 
+/** 0.8.1: Ask's menu, top left in the chat's bar: open it, then tap [item]. */
+fun ComposeTestRule.menu(item: String) {
+    tap("menu")
+    tap(item)
+}
+
 /** Make a block by tapping "Make a new block" and typing its name. */
 fun ComposeTestRule.makeBlock(name: String) {
     tap("new-block")

@@ -4,6 +4,25 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach 0.8.1, the small release after the hatch (1 November,
+spine:pocket-beach 1.1111787136; his days, 1.11117871363, wait for a
+release of their own).**
+- **Her talk:** a sentence or two again, with his third line as he changed
+  it.
+- **His shell:** its opening says truly that it is not locked.
+- **His passport:** "Read my passport" gives her its places, and the place
+  his words point to is read whole.
+- **His posts:** his own words, after a colon or in quotes, are set out as
+  the Post it card by code, with no model call. With none, she asks what
+  he'd like to say, and why nothing was set out shows beneath her reply,
+  always.
+- **Ask is a standard chat,** opened on once he has hatched.
+
+Every check of 1.1111787135 passed on E4B, and the four Matthew added
+passed too. Her replies are 32.6 tokens against 0.7's 34.5 on 0.8's asks.
+See "0.8.1: the small release after the hatch" and
+`trial/judged-0.8.1.md`.
+
 **pocket-beach 0.8 is released (1 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/pocket-beach-v0.8
 - **Install:** `pocket-beach-v0.8.apk` over 0.6.4; his blocks stay.
@@ -1342,6 +1361,107 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
+## 0.8.1: the small release after the hatch
+
+Built on Sunday 1 November 2026, from spine:pocket-beach 1.1111787136 and
+the points beneath it. The spine was read from 1.11117871 down and not
+written. 1.11117871363, his days, is a later release of its own. The branch
+is `ccr-4c84d736-pvgv13`, begun again from main at `fe15787`, as point 5
+asks.
+
+### What changed, in plain words
+
+1. **His third line, as he changed it:** "I think in conversation, so
+   speak to me in your own words, and come as yourself. Don't send me a
+   volley of questions."
+2. **His shell's opening, said truly:** "Not locked: on this phone only
+   the app writes to it, never the model." That replaces the template's
+   "Locked with Phenomemental's passphrase". "The pocket on this phone"
+   stays, since it is true.
+
+   A shell 0.8 adopted is put right once, when the app opens. A whole copy
+   of the pocket is saved first. Then it puts right:
+   - the opening;
+   - his third line, only if it is still 0.8's draft. A line he changed
+     himself is left alone.
+3. **Her length:** the app's line each turn ends "in a sentence or two",
+   or "Then a sentence or two." after the words it gives her, and her
+   name's line adds "A sentence or two is enough." The way line and his
+   three lines are as they stand.
+4. **"My passport", "my stash", "my shell", "my history"** name his own
+   four, and the app reads the one named to her.
+   - **A block too long** (over 1,500 characters) is given as a ring of
+     its places, each by its opening line.
+   - **The place his words point to** ("…about where things go?") is read
+     whole beneath the ring, up to 3,000 characters.
+5. **Posts:**
+   - **Heard:** the gate hears sending, messaging, telling or leaving a
+     note in his room (or pool) as a post.
+   - **His words lifted by code:** what follows the colon, or what is in
+     quotes, exactly as he wrote it. They are set out as the Post it card
+     straight away, with no model call. She is given "It's below, for your
+     tap."
+   - **With no words of his,** nothing is set out. She is told to ask him
+     what he'd like to say, and never to write it for him or in his voice.
+   - **What she can do** no longer says a thing is set out whenever he
+     asks. Each turn the app's line says whether it has. A write the
+     writing check looks at after her reply is never said to be set out.
+6. **Why nothing was set out shows beneath her reply, always**, whenever
+   he asked and nothing was, not only with Details on. That is "Nothing was
+   set out: your words held no message of your own…", or "…the app found
+   nothing in your words it could keep, make or change…".
+7. **Ask is a standard chat:**
+   - **A slim top bar:**
+     - on the left, the menu: Your blocks (the Shore), Teaching blocks,
+       Bench, Save this conversation, Details, Settings, About;
+     - in the middle, her name and "wearing your shell";
+     - on the right, a new conversation, which closes the one before into
+       his history.
+   - **The thread:** his messages as bubbles on the right, hers as plain
+     text on the left. Each card sits beneath its reply, with one strong
+     button and Not now.
+   - **One input bar:** a growing text box, with the mic and a send arrow
+     inside it.
+   - **Details:** adds working lines beneath each reply.
+   - **Opening:** once he has hatched, the app opens on the chat.
+
+### Checked
+
+- **Golden cases:** one more for the correction of a shell 0.8 adopted,
+  matched against the pinned handler. In all: 264 cases, 890 calls, no
+  mismatch.
+- **Core tests:** 186, on Linux and on Windows. `SmallReleaseTest` has one
+  for each fix.
+- **Device tests,** on the emulator: the whole suite, with four new ones in
+  `SmallReleaseDeviceTest`:
+  - his own words set out with no model call;
+  - with no words of his, nothing set out, and why shown with Details off;
+  - "Read my passport" giving her its places;
+  - the standard chat on the screen, opened on once he has hatched.
+
+### The laptop judge (`trial/judged-0.8.1.md`)
+
+E4B and E2B, seeds 0 to 3 (seed 1 draws what seed 0 draws). The baselines
+are the released 0.8 build's.
+
+| The check (E4B) | 0.8.1 | 0.8 | 0.7 |
+|---|---|---|---|
+| Safety passes | every time | every time | every time |
+| "Keep that" says it is below, in his four messages / on its own | 4 of 4 / 4 of 4 | 4 of 4 / 4 of 4 | 2 of 4 / 2 of 4 |
+| His four messages beside 0.7's, by hand (seeds 0, 2, 3) | better 3, worse 0, level 9 | better 3, worse 3, level 6 | |
+| His words set out as a post with no model call | every seed | no | no |
+| "Read my passport" gives her its places | every seed | "I can't read your passport" | the same |
+| Mean tokens a reply, 0.8's asks | 32.6 | 61.2 | 34.5 |
+| The bench's talk asks (three draws) | 11 of 12 | 12 of 12 | 10 of 12 |
+
+**Still to try:**
+- **His passport in the third person:** on one seed of three she called it
+  "Matthew's passport", and on another she named only two of its places.
+- **His post played back:** after "It's below, for your tap." she wrote
+  his message out again. The app leaves it out, but it costs a few seconds.
+- **On E2B she is longer than 0.7:** 34.7 tokens against 25.0. 0.8 wrote
+  50.1.
+
 ## 0.8: the hatch
 
 Released on Sunday 1 November 2026 as `pocket-beach-v0.8`, from main at
@@ -1489,9 +1609,9 @@ As 1.1111787134 orders it:
 5. files and pictures.
 
 **Open, for Matthew:**
-- **The shell template's opening line** says "Locked with Phenomemental's
-  passphrase". The phone keeps no locks yet (his third answer). It is left
-  as the template has it, and his to change on the Write screen.
+- **The shell template's opening line** said "Locked with Phenomemental's
+  passphrase". The phone keeps no locks yet (his third answer). 0.8.1 says
+  it truly.
 - **What fills {{BEACH_URL}}.** It is filled with "the pocket on this
   phone".
 

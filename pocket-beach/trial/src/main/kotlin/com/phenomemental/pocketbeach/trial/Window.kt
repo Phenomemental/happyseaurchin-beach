@@ -521,6 +521,7 @@ private fun writingCheck(engine: Engine, said: String, before: List<String>, pag
         is Keeping.Way.Talk -> "The gate: she only talks; the writing check doesn't run."
         is Keeping.Way.Where -> "The gate: he asks to keep “${way.words.take(80)}” and names no block of his; the app asks him “Where shall this go?” (his blocks as buttons, his day, not now)."
         is Keeping.Way.Name -> "The gate: a name; the app proposes “${way.line}” on her shell."
+        is Keeping.Way.Post -> "The gate: a post; " + (way.words?.let { "the app sets out his words “${it.take(80)}” with no model call." } ?: "no words of his, so she asks what he'd like to say.")
         is Keeping.Way.Write -> engine.createConversation(ConversationConfig(systemInstruction = Contents.of(Talks.lean(SHE, pages)),
             samplerConfig = SamplerConfig(topK = 1, topP = 1.0, temperature = 0.0, seed = 0), maxOutputToken = 1024, thinkingConfig = OFF)).use { c ->
             val stream = Talks.Stream { message, piece -> c.sendMessage(message).toString().also(piece) }

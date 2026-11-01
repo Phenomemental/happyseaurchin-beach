@@ -125,7 +125,7 @@ class HatchDeviceTest {
             compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your yes."))
             // Leaving Ask closes the conversation: one history entry, by the app.
-            compose.tap("back")
+            compose.menu("menu-blocks")
             compose.waitUntil(20_000) { block("history:Phenomemental").has("1") }
             val entry = block("history:Phenomemental")["1"] as JsObj
             assertTrue(stringify(entry)!!, collectUnderscore(entry)!!.startsWith("Talked with him: 2 messages, from “I've been making huge progress"))

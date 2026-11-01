@@ -62,6 +62,29 @@ class Hatching(private val app: PocketApp) {
     fun refresh() {
         hatched = runCatching { Hatch.hatched(app.storage) }.getOrNull()
         known = true
+        if (hatched != null) correct()
+    }
+
+    /** 0.8.1: what was corrected in a shell 0.8 adopted, said once in the thread; null when nothing was. */
+    var corrected by mutableStateOf<String?>(null)
+        private set
+
+    /**
+     * 0.8.1 (spine:pocket-beach 1.1111787136 (a), (b)): a shell 0.8 adopted
+     * is corrected once: its opening, which the template filled as locked,
+     * said truly; his third line, if it still holds the draft he changed.
+     * A whole copy of the pocket is saved first. Called off the main thread.
+     */
+    private fun correct() {
+        val plans = runCatching { Hatch.corrections(app.pages, app.storage) }.getOrDefault(emptyList())
+        if (plans.isEmpty()) return
+        val copy = runCatching { saveCopy(System.currentTimeMillis()) }.getOrNull() ?: return
+        val done = plans.map { app.pages.carryOut(it) }
+        corrected = if (done.all { it.ok })
+            "Your shell is corrected: " + plans.joinToString("; ") { if (it.address.isEmpty()) "its opening now says truly that it isn't locked" else "her window's third place now reads as you changed it" } +
+                ". A whole copy of the pocket was saved first (${copy.name})."
+        else "Your shell couldn't all be corrected: " + done.filter { !it.ok }.joinToString("; ") { it.problem ?: it.reply } + ". A whole copy was saved first (${copy.name})."
+        app.asking.hatchedNow()
     }
 
     /** The question the welcome asks now, in the app's own words. */
@@ -172,6 +195,7 @@ class Hatching(private val app: PocketApp) {
     fun reset() {
         step = Step.Opening
         note = null
+        corrected = null
         hatched = null
         known = false
     }

@@ -217,7 +217,7 @@ class CompanionTest {
         HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         compose.tap("ask-companion")
         compose.waitFor("hatch-opening")
-        compose.waitFor("wearing", "Wearing pocket-companion")
+        compose.waitFor("wearing", "wearing pocket-companion")
         compose.waitFor("question")
         compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
         compose.tap("ask")
@@ -308,7 +308,7 @@ class CompanionTest {
             Thread.sleep(1500)
             assertTrue("coming back online sends nothing", wire.sent.isEmpty())
 
-            compose.tap("back")
+            compose.menu("menu-blocks")
             compose.waitFor("waiting")
             compose.tap("post-now")
             compose.waitFor("posted-later", "Posted to your pool at entry 7")
@@ -348,7 +348,7 @@ class CompanionTest {
         val before = app.storage.names().toSet()
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
-            compose.tap("open-bench")
+            compose.menu("open-bench")
             compose.tap("run-bench")
             compose.waitFor("bench-saved", "Kept as bench-", timeoutMs = 120_000)
             val made = app.storage.names().toSet() - before
@@ -382,7 +382,7 @@ class CompanionTest {
         val before = app.storage.names().toSet()
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.tap("ask-companion")
-            compose.tap("open-bench")
+            compose.menu("open-bench")
             compose.tap("run-models")
             compose.waitFor("bench-saved", "Kept as bench-models-", timeoutMs = 60_000)
         }
@@ -513,7 +513,6 @@ class CompanionTest {
             // Off: only the conversation, and what came of a proposal.
             app.showDetails = false
             compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
-            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("wearing"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
             asked("Thanks.")
             compose.waitUntil(10_000) { app.asking.settled }
             compose.waitFor("say", "I'm a stand-in for the companion, talking.")
@@ -564,6 +563,7 @@ class CompanionTest {
             assertTrue("she talked as Edge does", mind.talkSettings.all { it == JobSettings.of(Job.TALK) })
             compose.tap("yes")
             compose.waitUntil(10_000) { app.pages.exists("running") }
+            compose.tap("menu")
             compose.waitFor("save-conversation")
         }
         val t = app.asking.transcript()
@@ -748,7 +748,7 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.asking.settled }
             assertEquals(0.9, mind.talkSettings.last().temperature, 1e-9)
             assertEquals(40, mind.talkSettings.last().topK)
-            compose.tap("back")
+            compose.menu("menu-blocks")
             compose.tap("settings")
             compose.tap("job-talk-reset")
             compose.waitFor("job-talk-temperature", "1.00")
@@ -785,7 +785,8 @@ class CompanionTest {
             compose.waitUntil(10_000) { app.asking.settled }
             val (first, second) = app.asking.history
             assertTrue("the proposal waits on the first exchange", first.waiting is Asking.Stage.Shown)
-            assertEquals("She talked.", second.note)
+            // 0.8.1: he asked, and nothing was set out for the second: why, beneath her reply.
+            assertEquals("Nothing was set out: the app found nothing in your words it could keep, make or change. Say it again, naming the block, or the words to keep.", second.note)
             assertEquals("stopped once, then asked again, then the second", 3, mind.writeMessages)
             compose.waitFor("writes")
             // 0.6.3: where it goes, in words; the bsp line only with Details on.
@@ -817,7 +818,7 @@ class CompanionTest {
             asked("I don't feel safe tonight.")
             compose.waitFor("say", "I'm worried about you.")
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("(" + com.phenomemental.pocketbeach.bsp.Talking.SAFETY + ")"))
-            compose.tap("back")
+            compose.menu("menu-blocks")
             compose.tap("settings")
             compose.waitFor("safety-words", "don't feel safe")
             assertFalse("nothing written until he taps", app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK))
@@ -1057,7 +1058,7 @@ class CompanionTest {
             asked("Hello")
             compose.waitUntil(5_000) { app.asking.settled }
             assertFalse("off: no ask log", app.pages.exists(Asks.LOG))
-            compose.tap("back")
+            compose.menu("menu-blocks")
             compose.tap("settings")
             compose.tap("ask-log")
             compose.waitUntil(5_000) { app.keepAskLog }

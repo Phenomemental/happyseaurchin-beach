@@ -8,6 +8,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Checkbox
@@ -124,37 +127,25 @@ fun AskScreen(model: Model, nav: Nav) {
         scroll.animateScrollTo(scroll.maxValue)
     }
 
-    Page(
-        onBack = { nav.back() },
-        top = { Text("Ask", style = Type.name, color = ink.ink, maxLines = 1) },
-        end = {
-            if (asking.history.isNotEmpty()) TextLink("Save", { saveTo.launch(asking.fileName()) }, tag = "save-conversation")
-            TextLink(if (asking.benchRunning) "See the bench" else "Bench", { nav.go(Screen.Bench) }, tag = "open-bench")
-            Text("Details", style = Type.small, color = ink.ink)
-            Switch(
-                checked = details,
-                onCheckedChange = { model.app.showDetails = it },
-                colors = SwitchDefaults.colors(checkedTrackColor = ink.crimson),
-                modifier = Modifier.testTag("details"),
-            )
-        },
-        bottom = if (!ready && !hatching.takesTheBox) null else ({ Composer(asking, hatching.takesTheBox) }),
+    // 0.8.1, a standard chat (spine:pocket-beach 1.11117871364): a slim top bar, the thread, one input bar at the foot.
+    val herName by produceState<String?>(null, model.version, hatching.hatched) {
+        value = withContext(Dispatchers.IO) {
+            runCatching { hatching.hatched?.let { com.phenomemental.pocketbeach.bsp.HerWindow.herName(it, model.pages) } ?: com.phenomemental.pocketbeach.bsp.Talking.name(HelloWorld.SHELL, model.pages) }.getOrNull()
+        }
+    }
+    val wearing = when {
+        hatching.hatched != null -> "wearing your shell"
+        shell != null -> "wearing ${HelloWorld.SHELL}"
+        else -> "no shell yet"
+    }
+    ChatFrame(
+        model, nav, title = herName ?: "Your companion", wearing = wearing, details = details,
+        onSave = if (asking.history.isNotEmpty()) ({ saveTo.launch(asking.fileName()) }) else null,
+        input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(asking, hatching.takesTheBox) }),
         scroll = scroll,
     ) {
-        if (details) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Label("The companion")
-            Text(
-                hatching.hatched?.let { "Wearing ${Hatch.shellOf(it)}: her window is its nine places." }
-                    ?: if (shell != null) "Wearing ${HelloWorld.SHELL}: ${Words.quoted(shell, 120)}" else "The companion wears a shell, a block of yours that says how it behaves.",
-                style = Type.heading.copy(fontSize = Type.body.fontSize, lineHeight = Type.body.lineHeight), color = ink.ink,
-                modifier = Modifier.testTag("wearing"),
-            )
-            Text(
-                "She talks as Settings' Talk job says. Then, behind the chat, when your words may ask for a write, the Write job sets out the lines beneath her reply.",
-                style = Type.small, color = ink.soft,
-            )
-            Stroke()
-        }
+        // 0.8.1: a shell 0.8 adopted, corrected once, said in the thread.
+        hatching.corrected?.let { Done(it, tag = "corrected") }
         // 0.8: before the hatch, the opening; the hatch is how a new person comes in, so her own shell is no longer offered.
         if (hatching.known && (hatching.hatched == null || hatching.step is Hatching.Step.Done)) HatchCard(model)
         if (false && shell == null && shellChecked) {
@@ -196,24 +187,35 @@ fun AskScreen(model: Model, nav: Nav) {
     }
 }
 
-/** The box, pinned at the foot: his words, his voice, and Ask (Stop while her reply comes). It empties when he sends. */
+/**
+ * 0.8.1: the input bar at the foot, as a chat app lays it out: a text box
+ * that grows with his words, the microphone and a send arrow inside it (a
+ * stop square while her reply comes). It empties when he sends.
+ */
 @Composable
-private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking, welcome: Boolean = false) {
+private fun InputBar(asking: Asking, welcome: Boolean = false) {
     val ink = LocalInk.current
     val voice = rememberVoice { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
-    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (voice.heard.isNotEmpty()) Text(voice.heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
         voice.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
-        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PaperField(
-                asking.question, { asking.question = it }, if (welcome) "Write your answer" else "Say something to the companion",
-                modifier = Modifier.weight(1f), tag = "question", minLines = 3, maxLines = 6,
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
-                Action(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, Modifier.width(96.dp), tag = "speak")
-                if (asking.stage is Asking.Stage.Thinking) Action("Stop", { asking.stop() }, Modifier.width(96.dp), tag = "stop")
-                else Action(if (welcome) "Answer" else "Ask", { asking.ask() }, Modifier.width(96.dp), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
+        Row(
+            Modifier.fillMaxWidth().background(ink.sheet, RoundedCornerShape(24.dp)).border(1.dp, ink.soft.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
+                .padding(start = 16.dp, end = 6.dp, top = 4.dp, bottom = 4.dp).testTag("input-bar"),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Box(Modifier.weight(1f).padding(vertical = 10.dp), contentAlignment = Alignment.CenterStart) {
+                if (asking.question.isEmpty()) Text(if (welcome) "Write your answer" else "Message", style = Type.body, color = ink.soft)
+                androidx.compose.foundation.text.BasicTextField(
+                    value = asking.question, onValueChange = { asking.question = it },
+                    textStyle = Type.body.copy(color = ink.ink), maxLines = 6,
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(ink.crimson),
+                    modifier = Modifier.fillMaxWidth().testTag("question"),
+                )
             }
+            RoundMark(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, tag = "speak", lit = voice.listening) { c -> drawMic(c) }
+            if (asking.stage is Asking.Stage.Thinking) RoundMark("Stop", { asking.stop() }, tag = "stop", strong = true) { c -> drawStop(c) }
+            else RoundMark(if (welcome) "Answer" else "Send", { asking.ask() }, tag = "ask", enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true) { c -> drawSend(c) }
         }
     }
 }
@@ -461,7 +463,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             if (e.sortable) TextLink("Sort as my day", { asking.sortAsDay(e) }, tag = "sort-as-day")
         }
         // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
-        if (e.note.isNotEmpty() && (details || e.outcome != null || e.over?.shown == null)) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+        // 0.8.1: when he asked and nothing was set out, why shows always, not only with Details on.
+        if (e.note.isNotEmpty() && (details || e.outcome != null || e.over?.shown == null || (e.asked && e.over?.carried == null && e.over?.posted == null))) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
@@ -501,10 +504,12 @@ private fun Ended(model: Model, over: Asking.Stage.Over, details: Boolean) {
 @Composable
 private fun His(words: String) {
     val ink = LocalInk.current
-    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+    // 0.8.1: his words as a bubble on the right, hers plain text on the left, as a chat app has them.
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
         Text(
-            words, style = Type.body, color = ink.soft, textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth(0.85f).background(ink.sheet).padding(horizontal = 12.dp, vertical = 6.dp).testTag("his"),
+            words, style = Type.body, color = ink.ink,
+            modifier = Modifier.widthIn(max = 300.dp).background(ink.wash, RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp, bottomStart = 18.dp, bottomEnd = 4.dp))
+                .padding(horizontal = 14.dp, vertical = 9.dp).testTag("his"),
         )
     }
 }

@@ -124,8 +124,11 @@ class HerWindowTest {
         assertTrue(make.contains("for his yes. Nothing is kept, made or changed until he says yes, so never say it is"), make)
         val opening = line("Change your opening line to: I'm Gemma")
         assertTrue(opening.contains("your opening line is his to change himself, on the Write screen") && opening.contains("don't take it on as said"), opening)
+        // 0.8.1: a post with no words of his sets nothing out, and she asks what he'd like to say; his words are set out by code.
         val post = line("Can you post a message to my room on the beach?")
-        assertTrue(post.contains("he asks you to post: yes, you can.") && post.contains("nothing is sent until he taps"), post)
+        assertTrue(post.contains("gives no words of his own, so nothing is set out") && post.contains("never write the message for him"), post)
+        val posted = line("Post this to my room: back on Tuesday")
+        assertTrue(posted.contains("sets out his own words beneath your reply") && posted.contains("nothing is sent until he taps"), posted)
         val name = line("I'd like to call you Robin")
         assertTrue(name.contains("he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201cRobin it is.\u201d), then talk with him.") && name.contains("a line for your name on your shell, for his yes"), name)
         val held = HerWindow.appLine(Keeping.Way.Talk, "I'd like to call you Gemma")
