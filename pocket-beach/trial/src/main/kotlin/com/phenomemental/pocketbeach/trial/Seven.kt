@@ -112,8 +112,9 @@ internal fun seven(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
     }
     say("# $label, seed $seed: 0.6.4 beside 0.7")
 
+    val only = System.getProperty("seven.only")
     // His four messages of 1 November, one conversation.
-    run {
+    if (only == null || only == "his") run {
         val now = at(0, 12)
         val (storage, pages) = scratchPocket(shelf, ms(now), films = false, hers = false, walk = false)
         HerWindow.ensure(pages)
@@ -137,7 +138,7 @@ internal fun seven(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
     // The bench's talk asks, each an Ask of its own.
     say("\n## The bench's talk asks, each its own Ask (21:00, 31 October)")
     val benchNow = ZonedDateTime.of(2026, 10, 31, 21, 0, 0, 0, LONDON)
-    for (ask in Bench.TALK_ASKS) {
+    for (ask in Bench.TALK_ASKS.filter { only == null || only == "bench" }) {
         val (storage, pages) = Bench.fixture(shelf, ms(benchNow), Talks.SHELL_RECIPE)
         if (ask.named) check(pages.carryOut(pages.planAdd(SHELL, "", "Matthew calls me ${ask.name}.")).ok)
         HerWindow.ensure(pages)
@@ -152,7 +153,7 @@ internal fun seven(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
 
     // The window's gains: his day with no read; asked to post to his own room, she says she can.
     say("\n## The window's gains (08:40), each its own Ask")
-    for (said in listOf(TODAY_ASK, POST_ASK)) {
+    for (said in listOf(TODAY_ASK, POST_ASK).filter { only == null || only == "gains" }) {
         val now = at(8, 40)
         val (storage, pages) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
         HerWindow.ensure(pages)
