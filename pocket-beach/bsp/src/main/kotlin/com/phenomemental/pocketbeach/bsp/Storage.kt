@@ -190,6 +190,11 @@ class RoutedStorage(private val pocket: BlockStorage, private val hidden: BlockS
         pocket.replaceAll(part(blocks, false), Stamps(part(stamps.touched, false), part(stamps.born, false)))
     }
 
+    /** Shut the hidden region again, as an emptied pocket is (the device tests begin so): every block is read from the pocket. */
+    fun shut() {
+        isOpen = false
+    }
+
     /** Open the hidden region: every block it routes moves there from the pocket, its stamps with it. The names moved. */
     fun open(): List<String> = synchronized(this) {
         val stamps = stamps()

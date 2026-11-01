@@ -213,9 +213,10 @@ class CompanionTest {
     }
 
     private fun askTheCompanion() {
+        // 0.8: her own shell is no longer offered in Ask (the hatch is how a new person comes in); made here as a 0.7 pocket has it.
+        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         compose.tap("ask-companion")
-        compose.waitFor("make-shell")
-        compose.tap("Make the companion's shell")
+        compose.waitFor("hatch-opening")
         compose.waitFor("wearing", "Wearing pocket-companion")
         compose.waitFor("question")
         compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")

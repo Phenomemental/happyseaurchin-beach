@@ -10,6 +10,8 @@ import com.phenomemental.pocketbeach.bsp.Answer
 import com.phenomemental.pocketbeach.bsp.Asked
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
+import com.phenomemental.pocketbeach.bsp.Close
+import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.HerWindow
 import com.phenomemental.pocketbeach.bsp.Js
@@ -218,6 +220,44 @@ class Asking(private val app: PocketApp) {
     private var windowDay: java.time.LocalDate? = null
     private var talkTurns = 0
 
+    /**
+     * 0.8, the close (spine:pocket-beach 1.1111787133): what this conversation
+     * was, for the one history entry the app appends when it closes (a new
+     * day, six messages, a write, as 0.7 reopens it, or Ask left).
+     */
+    private class Conversation {
+        val said = mutableListOf<String>()
+        val read = mutableListOf("her window")
+        val written = mutableListOf<String>()
+    }
+    private var conversation = Conversation()
+
+    /** 0.8: the handle his shell on this phone is of, once he has hatched; null before. */
+    fun hatched(): String? = runCatching { Hatch.hatched(app.storage) }.getOrNull()
+
+    /**
+     * 0.8: the conversation closes: one entry in his history, its opening a
+     * plain concern line, what was read and written beneath, written by the
+     * app. Nothing when nothing was said, or before the hatch.
+     */
+    private fun closeConversation() {
+        val c = conversation
+        conversation = Conversation()
+        if (c.said.isEmpty()) return
+        runCatching {
+            Close.plan(Close.Talk(c.said.toList(), c.read.toList(), c.written.toList()), app.pages, app.storage)?.let { plan ->
+                val done = app.pages.carryOut(plan)
+                if (!done.ok) android.util.Log.w("Asking", "The close's history entry didn't land: ${done.problem}")
+            }
+        }.onFailure { android.util.Log.w("Asking", "The close's history entry couldn't be written.", it) }
+    }
+
+    /** 0.8: he has just hatched: both conversations are opened afresh, hers wearing his shell. */
+    fun hatchedNow() {
+        conversation = Conversation()
+        stale += MindJob.values()
+    }
+
     /** The app's copies of his blocks as she last saw them: what tells her what's changed since. The app's own file, never a block. */
     private val copies get() = java.io.File(app.filesDir, COPIES)
 
@@ -298,6 +338,8 @@ class Asking(private val app: PocketApp) {
         scope.launch(Dispatchers.IO) {
             talking.withLock {
                 if (openings != at) return@withLock
+                // 0.8: Ask left: the conversation closes into his history.
+                closeConversation()
                 closeAll()
             }
         }
@@ -323,12 +365,19 @@ class Asking(private val app: PocketApp) {
                 // 0.6.1: the date, the time and her shell in her instruction, opened afresh for each message; the earlier exchanges his words and hers.
                 // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line; how his last proposal ended waits.
                 // 0.7: her window, read once an Ask; the day, the time, what's changed and the app's line ride in each turn.
+                // 0.8: once he has hatched, her window is the nine places of his shell; the conversation before it closes into his history.
                 MindJob.TALK -> {
-                    runCatching { HerWindow.ensure(app.pages) }
+                    closeConversation()
                     val now = ZonedDateTime.now()
                     windowDay = now.toLocalDate()
                     talkTurns = 0
-                    app.mind.talker(HerWindow.instruction(HelloWorld.SHELL, app.pages, app.storage, app.shelf, now), context.getValue(job).toList(), settings = settings)
+                    val h = hatched()
+                    val window = if (h != null) HerWindow.window(h, app.pages, app.storage, app.shelf, now)
+                    else {
+                        runCatching { HerWindow.ensure(app.pages) }
+                        HerWindow.instruction(HelloWorld.SHELL, app.pages, app.storage, app.shelf, now)
+                    }
+                    app.mind.talker(window, context.getValue(job).toList(), settings = settings)
                 }
                 // 0.6.2: what the Write job needs, about 1,000 tokens; her name in its examples as her shell gives it.
                 MindJob.WRITE -> app.mind.talker(
@@ -360,6 +409,11 @@ class Asking(private val app: PocketApp) {
     fun ask() {
         val q = question.trim()
         if (q.isEmpty() || benchRunning || stage is Stage.Thinking) return
+        // 0.8: the welcome asks in the chat's own box; his answer is the hatch's, not hers.
+        if (app.hatching.takesTheBox) {
+            if (app.hatching.answer(q)) question = ""
+            return
+        }
         question = ""
         history.lastOrNull()?.let { it.sortable = false; it.keepIn = null }
         yieldWrite()
@@ -376,7 +430,9 @@ class Asking(private val app: PocketApp) {
             var firstShown: Long? = null
             // 0.7, the gate before her reply: what the app does with his words, told her in her turn.
             val earlier = history.takeWhile { it !== e }.map { it.question }
-            val gate = withContext(Dispatchers.IO) { runCatching { Keeping.way(q, earlier, app.pages) } }
+            val h = withContext(Dispatchers.IO) { hatched() }
+            // 0.8: her name is a line at her place in his shell.
+            val gate = withContext(Dispatchers.IO) { runCatching { if (h != null) Keeping.way(q, earlier, app.pages, Hatch.shellOf(h), Hatch.HER) else Keeping.way(q, earlier, app.pages) } }
             gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
             val way = gate.getOrDefault(Keeping.Way.Talk)
             // Her reply, streamed as she writes it.
@@ -392,7 +448,9 @@ class Asking(private val app: PocketApp) {
                         // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
                         val seen = runCatching { copies.takeIf { it.isFile }?.readText() }.getOrNull()
                         val changes = runCatching { HerWindow.changes(app.pages, app.storage, seen) }.getOrNull()
-                        e.appLine = HerWindow.appLine(way, q)
+                        e.appLine = if (h != null) HerWindow.appLine8(way, q) else HerWindow.appLine(way, q)
+                        conversation.said += q
+                        runCatching { Talking.named(q, app.pages, all = true) }.getOrNull()?.let { names -> conversation.read += names.map { "his $it" } }
                         val message = HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
@@ -450,8 +508,13 @@ class Asking(private val app: PocketApp) {
                     e.checking = true
                     writes.addLast(e)
                 }
-                is Keeping.Way.Name -> byApp(e, listOf(Acts.Action.Add(HelloWorld.SHELL, null, way.line)), "Her name couldn't be kept")
-                is Keeping.Way.Where -> e.waiting = Stage.Where(way.words, hisBlocks())
+                is Keeping.Way.Name ->
+                    if (h != null) byApp(e, listOf(Hatch.nameAction(h, app.pages, way.name)), "Her name couldn't be kept")
+                    else byApp(e, listOf(Acts.Action.Add(HelloWorld.SHELL, null, way.line)), "Her name couldn't be kept")
+                // 0.8: "Keep that" with no block named is a write to his stash, set out for his yes.
+                is Keeping.Way.Where ->
+                    if (h != null) byApp(e, listOf(Acts.Action.Add(Hatch.stashOf(h), null, way.words)), "It couldn't be kept in your stash")
+                    else e.waiting = Stage.Where(way.words, hisBlocks())
                 Keeping.Way.Talk -> answered(e, talkOnly(e), emptyMap())
             }
             runWrites()
@@ -858,6 +921,7 @@ class Asking(private val app: PocketApp) {
             val carried = withContext(Dispatchers.IO) { Asks.carryOut(proposal, app.pages, app.storage, shellOpening()) }
             // Her instructions show the pocket as it stood; the next ask opens the conversations afresh.
             if (carried.landed.isNotEmpty()) stale += MindJob.values()
+            for (w in carried.landed) conversation.written += "${w.plan.block}${w.plan.landsAt?.takeIf { it.isNotEmpty() }?.let { " at $it" }.orEmpty()}: \u201c${(w.text ?: w.plan.text).take(120)}\u201d"
             changed()
             when {
                 carried.problem != null -> finish(e, s, "Matthew said yes. ${carried.problem}", carried)
@@ -901,6 +965,7 @@ class Asking(private val app: PocketApp) {
         context.values.forEach { it.clear() }
         unseen.clear()
         told = null
+        conversation = Conversation()
         together = true
         val all = kept.values.map { it.talker }
         kept.clear()
@@ -920,7 +985,8 @@ class Asking(private val app: PocketApp) {
         val time = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.UK)
         fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
         appendLine("Pocket beach: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
-        appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
+        val h = hatched()
+        if (h != null) appendLine("Wearing ${Hatch.shellOf(h)}: her window is its nine places.") else appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
         for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty())
         for (e in history) {
             appendLine()

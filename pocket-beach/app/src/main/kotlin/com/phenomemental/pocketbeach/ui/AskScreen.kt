@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Landing
 import com.phenomemental.pocketbeach.bsp.Telling
@@ -85,6 +86,9 @@ fun AskScreen(model: Model, nav: Nav) {
     }
     var shellChecked by remember { mutableStateOf(false) }
     LaunchedEffect(shell, model.version) { shellChecked = true }
+    // 0.8: whether he has hatched; until he has, the app's own words ask how he comes in.
+    val hatching = model.app.hatching
+    LaunchedEffect(model.version) { withContext(Dispatchers.IO) { hatching.refresh() } }
     val modelState by produceState<ModelStore.State?>(null) {
         while (true) {
             val s = withContext(Dispatchers.IO) { model.app.mind.state() }
@@ -93,7 +97,7 @@ fun AskScreen(model: Model, nav: Nav) {
         }
     }
     // The model stays loaded, and the conversation open, while Ask is.
-    val ready = modelState is ModelStore.State.Ready && shell != null
+    val ready = modelState is ModelStore.State.Ready && (shell != null || hatching.hatched != null)
     DisposableEffect(ready) {
         if (ready) asking.opened()
         // Only a visit that opened the conversation lets it go: not the wait for the model and the shell, ended as they come ready.
@@ -134,13 +138,14 @@ fun AskScreen(model: Model, nav: Nav) {
                 modifier = Modifier.testTag("details"),
             )
         },
-        bottom = if (!ready) null else ({ Composer(asking) }),
+        bottom = if (!ready && !hatching.takesTheBox) null else ({ Composer(asking, hatching.takesTheBox) }),
         scroll = scroll,
     ) {
         if (details) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label("The companion")
             Text(
-                if (shell != null) "Wearing ${HelloWorld.SHELL}: ${Words.quoted(shell, 120)}" else "The companion wears a shell, a block of yours that says how it behaves.",
+                hatching.hatched?.let { "Wearing ${Hatch.shellOf(it)}: her window is its nine places." }
+                    ?: if (shell != null) "Wearing ${HelloWorld.SHELL}: ${Words.quoted(shell, 120)}" else "The companion wears a shell, a block of yours that says how it behaves.",
                 style = Type.heading.copy(fontSize = Type.body.fontSize, lineHeight = Type.body.lineHeight), color = ink.ink,
                 modifier = Modifier.testTag("wearing"),
             )
@@ -150,7 +155,9 @@ fun AskScreen(model: Model, nav: Nav) {
             )
             Stroke()
         }
-        if (shell == null && shellChecked) {
+        // 0.8: before the hatch, the opening; the hatch is how a new person comes in, so her own shell is no longer offered.
+        if (hatching.known && (hatching.hatched == null || hatching.step is Hatching.Step.Done)) HatchCard(model)
+        if (false && shell == null && shellChecked) {
             Notice(
                 "Its shell, ${HelloWorld.SHELL}, isn't in the pocket yet. Making it writes one new block, which opens " +
                     "${Words.quoted(HelloWorld.SHELL_OPENING, 60)} and holds the line that says how to do the hello world.",
@@ -191,7 +198,7 @@ fun AskScreen(model: Model, nav: Nav) {
 
 /** The box, pinned at the foot: his words, his voice, and Ask (Stop while her reply comes). It empties when he sends. */
 @Composable
-private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking) {
+private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking, welcome: Boolean = false) {
     val ink = LocalInk.current
     val voice = rememberVoice { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -199,15 +206,127 @@ private fun androidx.compose.foundation.layout.RowScope.Composer(asking: Asking)
         voice.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             PaperField(
-                asking.question, { asking.question = it }, "Say something to the companion",
+                asking.question, { asking.question = it }, if (welcome) "Write your answer" else "Say something to the companion",
                 modifier = Modifier.weight(1f), tag = "question", minLines = 3, maxLines = 6,
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 Action(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, Modifier.width(96.dp), tag = "speak")
                 if (asking.stage is Asking.Stage.Thinking) Action("Stop", { asking.stop() }, Modifier.width(96.dp), tag = "stop")
-                else Action("Ask", { asking.ask() }, Modifier.width(96.dp), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
+                else Action(if (welcome) "Answer" else "Ask", { asking.ask() }, Modifier.width(96.dp), enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true, tag = "ask")
             }
         }
+    }
+}
+
+/**
+ * 0.8, the hatch: the app's own words ask how he comes in; the welcome's
+ * questions; his passport set out whole for his yes, then Make my shell; or
+ * his passport from a file, his places in lines with when it was read, then
+ * Adopt this as my shell on this phone. A whole copy is saved first.
+ */
+@Composable
+private fun HatchCard(model: Model) {
+    val ink = LocalInk.current
+    val hatching = model.app.hatching
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                val name = runCatching {
+                    context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+                }.getOrNull() ?: uri.lastPathSegment
+                val text = runCatching { context.contentResolver.openInputStream(uri)!!.use { it.readBytes().take(200_001).toByteArray().toString(Charsets.UTF_8) } }
+                text.fold({ hatching.read(it, name) }, { hatching.read("", name) })
+            }
+        }
+    }
+    fun make() = scope.launch {
+        val done = withContext(Dispatchers.IO) { hatching.make() }
+        model.changed()
+        if (done is Hatching.Step.Done) model.say(Screen.Ask, "Your shell is made: ${Hatch.shellOf(done.handle)}.")
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().testTag("hatch")) {
+        when (val s = hatching.step) {
+            Hatching.Step.Opening -> {
+                Text(Hatching.OPENING, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hatch-opening"))
+                Action("I'm new", { hatching.new() }, Modifier.fillMaxWidth(), tag = "hatch-new")
+                Action("I have a passport", { pick.launch(arrayOf("application/json", "text/plain", "*/*")) }, Modifier.fillMaxWidth(), tag = "hatch-passport")
+                Text(
+                    "Either way your shell is four blocks on this phone: your passport, your shell, your history and your stash. Every block you have now is kept, " +
+                        "and a whole copy of the pocket is saved before anything changes. A passport by your handle on the beach waits for Reach the beach.",
+                    style = Type.small, color = ink.soft,
+                )
+            }
+            is Hatching.Step.Welcome -> {
+                Text(Hatching.QUESTIONS[s.asked], style = Type.body, color = ink.ink, modifier = Modifier.testTag("hatch-question"))
+                hatching.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("hatch-note")) }
+                s.answers.forEachIndexed { i, a -> Text("${if (s.adopting != null && i == 0) "Handle" else listOf("Handle", "Who you are", "Your heart", "How you'd be met")[i]}: ${Words.quoted(a, 200)}", style = Type.small, color = ink.soft) }
+                Text("Write it in the box below and tap Answer.", style = Type.small, color = ink.soft)
+                TextLink("Back", { hatching.back() }, tag = "hatch-back")
+            }
+            is Hatching.Step.Born -> {
+                Label("Your passport, set out whole")
+                Places(listOf("" to (com.phenomemental.pocketbeach.bsp.collectUnderscore(s.passport) ?: "")) + com.phenomemental.pocketbeach.bsp.HerWindow.linesOf(s.passport))
+                Three(s.three)
+                if (!s.yes) Action("Yes, this is my passport", { hatching.yesToPassport() }, Modifier.fillMaxWidth(), strong = true, tag = "hatch-yes-passport")
+                else {
+                    Text("Make my shell writes four new blocks: ${Hatch.fourOf(s.handle).joinToString(", ")}.", style = Type.small, color = ink.soft)
+                    Action("Make my shell", { make() }, Modifier.fillMaxWidth(), strong = true, tag = "hatch-make")
+                }
+                TextLink("Back", { hatching.back() }, tag = "hatch-back")
+            }
+            is Hatching.Step.Adopting -> {
+                Label("Your passport, as read")
+                Text("From ${s.from}, read ${Words.at(s.at)}.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("hatch-read-at"))
+                Places(s.read.places)
+                PaperField(s.handle, { hatching.handle(it) }, "Your handle", modifier = Modifier.fillMaxWidth(), tag = "hatch-handle")
+                hatching.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("hatch-note")) }
+                val three = s.three
+                if (three != null) {
+                    Text(
+                        if (s.handle == Hatch.MATTHEW_HANDLE && three == Hatch.MATTHEW) "Her window's first three places, drafted with Claude from your passport, in your words only:" else "Her window's first three places, in your words:",
+                        style = Type.small, color = ink.soft,
+                    )
+                    Three(three)
+                    TextLink("Write my own three lines", { hatching.ownLines() }, tag = "hatch-own-lines")
+                    Text("Adopting writes four new blocks: ${Hatch.fourOf(s.handle.ifBlank { "…" }).joinToString(", ")}.", style = Type.small, color = ink.soft)
+                    Action("Adopt this as my shell on this phone", { make() }, Modifier.fillMaxWidth(), enabled = Hatch.handleRefusal(s.handle) == null, strong = true, tag = "hatch-adopt")
+                } else Action("Write her window's three lines", { hatching.ownLines() }, Modifier.fillMaxWidth(), tag = "hatch-own-lines")
+                TextLink("Back", { hatching.back() }, tag = "hatch-back")
+            }
+            Hatching.Step.Working -> Text("Making your shell…", style = Type.body, color = ink.soft, modifier = Modifier.testTag("hatch-working"))
+            is Hatching.Step.Done -> Done(
+                "Your shell is made: ${Hatch.shellOf(s.handle)}.",
+                detail = "She wakes holding its nine places now. A whole copy of the pocket was saved first (${s.copy}); the Shore can bring it back." +
+                    (if (s.hidden.isEmpty()) "" else " The app's own blocks moved where she never sees them: ${s.hidden.joinToString(", ")}."),
+                tag = "hatch-done",
+            )
+            is Hatching.Step.Failed -> Notice(s.why, link = "Back" to { hatching.again() }, tag = "hatch-failed")
+        }
+        Stroke()
+    }
+}
+
+/** His places, as lines: the opening first, a line beneath another set in. */
+@Composable
+private fun Places(places: List<Pair<String, String>>) {
+    val ink = LocalInk.current
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("hatch-places")) {
+        for ((a, t) in places.take(40)) Text(
+            Words.quoted(t, 240), style = Type.small, color = ink.ink,
+            modifier = Modifier.padding(start = (12 * a.count { it == '.' } + if (a.isEmpty()) 0 else 12).dp),
+        )
+    }
+}
+
+/** His three lines for her window, each beside its place. */
+@Composable
+private fun Three(three: Hatch.Three) {
+    val ink = LocalInk.current
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("hatch-three")) {
+        for ((label, line) in Hatch.LABELS.zip(three.lines)) Text("$label: ${Words.quoted(line, 400)}", style = Type.small, color = ink.ink)
     }
 }
 

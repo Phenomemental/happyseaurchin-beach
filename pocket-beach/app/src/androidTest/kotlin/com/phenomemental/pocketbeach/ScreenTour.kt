@@ -134,10 +134,16 @@ class ScreenTour {
                 "Again, then: the same block with your new secret, and the post after it.",
             )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                // 0.8: before the hatch, the app's own words ask how he comes in, above a 0.7 pocket's chat.
+                com.phenomemental.pocketbeach.bsp.HelloWorld.makeShell(app.pages, com.phenomemental.pocketbeach.bsp.Talks.SHELL_RECIPE)
                 compose.tap("ask-companion")
-                compose.waitFor("make-shell")
-                shot("$theme-14-ask-no-shell")
-                compose.tap("Make the companion's shell")
+                compose.waitFor("hatch-opening")
+                shot("$theme-14-ask-hatch")
+                compose.tap("hatch-new")
+                compose.waitFor("hatch-question")
+                shot("$theme-14b-ask-welcome")
+                compose.tap("hatch-back")
+                compose.waitFor("hatch-opening")
                 compose.waitFor("question")
                 compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
                 shot("$theme-15-ask-ready")

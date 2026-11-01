@@ -124,8 +124,28 @@ fun ShoreScreen(model: Model, nav: Nav) {
             }
         }
 
+        // 0.8: once he has hatched, the app's own blocks are in a region of their own, which she never sees; his to look at here.
+        if (loaded.hidden.isNotEmpty()) {
+            Label("The app's own, which she never sees", Modifier.padding(top = 6.dp))
+            Sheet {
+                loaded.hidden.forEachIndexed { i, b ->
+                    if (i > 0) Rule()
+                    BlockRow(b) { nav.go(Screen.Block(Region.POCKET, b.name, "")) }
+                }
+            }
+        }
+
         Column(Modifier.padding(top = 4.dp)) {
             TextLink("Save a copy", { saveTo.launch("pocket-beach-copy-${LocalDate.now()}.json") }, tag = "save-copy")
+            // 0.8: the whole copy saved before his shell was made, in the app's own files.
+            model.app.hatching.copies().firstOrNull()?.let { before ->
+                TextLink("Restore the copy saved before your shell was made", {
+                    scope.launch {
+                        val read = withContext(Dispatchers.IO) { runCatching { Copies.read(before.readText(Charsets.UTF_8)) } }
+                        read.onSuccess { restoring = it }.onFailure { model.say(Screen.Shore, it.message ?: "That copy couldn't be read.") }
+                    }
+                }, tag = "restore-before-hatch")
+            }
             TextLink("Restore a copy", { openCopy.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }, tag = "restore-copy")
             TextLink("Settings", { nav.go(Screen.Settings) }, tag = "settings")
             TextLink("About", { nav.go(Screen.About) }, tag = "about")
@@ -168,6 +188,8 @@ fun ShoreScreen(model: Model, nav: Nav) {
                 val outcome = withContext(Dispatchers.IO) { runCatching { model.pages.restore(copy) } }
                 outcome.onSuccess {
                     parseIsoMs(copy.saved)?.let { saved -> if (saved > (model.lastSavedMs ?: 0)) model.saved(saved) }
+                    // 0.8: the shell in the copy, or none: the hatch is looked for again.
+                    model.app.hatching.reset()
                     model.changed()
                     model.say(Screen.Shore, "Restored ${Words.count(copy.blocks.size, "block")} from the copy saved ${Words.at(copy.saved)}.")
                 }.onFailure { model.say(Screen.Shore, "Nothing was restored: ${it.message ?: "the blocks couldn't be written"}.") }

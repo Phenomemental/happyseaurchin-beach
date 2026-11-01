@@ -144,6 +144,25 @@ fun ReceivedScreen(model: Model, nav: Nav) {
                 )
             }
         }
+        // 0.8, the hatch: a passport shared in, before he has a shell on this phone, can be adopted as his.
+        val hatching = model.app.hatching
+        val passport by produceState(false, received, model.version) {
+            value = withContext(Dispatchers.IO) {
+                hatching.refresh()
+                hatching.hatched == null && runCatching { com.phenomemental.pocketbeach.bsp.Hatch.readPassport(received.text, received.subject) }.isSuccess
+            }
+        }
+        if (passport) Notice(
+            "This reads as a passport. It can become your shell on this phone, as it stands: Ask shows it first.",
+            link = "Adopt this as my shell on this phone" to {
+                scope.launch {
+                    withContext(Dispatchers.IO) { hatching.read(received.text, received.subject?.let { if (it.endsWith(".json")) it else "$it.json" }) }
+                    model.app.inbox = null
+                    nav.replace(Screen.Ask)
+                }
+            },
+            tag = "received-passport",
+        )
         Label("Keep it as")
         PaperField(name, { name = it; done = null }, "A name for the block", singleLine = true, tag = "keep-name")
         refusal?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("keep-refusal")) }
