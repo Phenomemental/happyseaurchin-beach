@@ -160,7 +160,7 @@ class ScreenTour {
                 compose.tap("post")
                 compose.waitFor("posted")
                 shot("$theme-19-ask-posted")
-                compose.tap("back")
+                compose.menu("menu-blocks")
                 compose.tap("about")
                 compose.tap("calls")
                 // The companion's post is this same message, so it shows as posted, and goes again only on purpose.
@@ -179,7 +179,7 @@ class ScreenTour {
                 compose.tap("ask")
                 compose.waitFor("by-app")
                 shot("$theme-23-ask-again")
-                compose.tap("back")
+                compose.menu("menu-blocks")
                 compose.tap("tidy")
                 compose.waitFor("tidy:hello-world")
                 shot("$theme-24-shore-tidy")
@@ -213,7 +213,7 @@ class ScreenTour {
             app.showDetails = true
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
-                compose.tap("open-bench")
+                compose.menu("open-bench")
                 compose.waitFor("run-bench")
                 shot("$theme-29-bench")
                 compose.tap("run-bench")

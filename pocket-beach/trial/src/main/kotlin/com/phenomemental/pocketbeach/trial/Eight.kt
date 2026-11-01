@@ -18,6 +18,7 @@ import com.phenomemental.pocketbeach.bsp.Shelf
 import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.bsp.isoString
+import com.phenomemental.pocketbeach.bsp.parseJson
 import com.phenomemental.pocketbeach.bsp.str
 import java.io.File
 import java.time.ZonedDateTime
@@ -38,6 +39,17 @@ import java.time.ZonedDateTime
  */
 
 private val H = Hatch.MATTHEW_HANDLE
+
+/** What the hatched column is called: the version the core in this build is (-Deight.label). */
+private val LABEL8 = System.getProperty("eight.label") ?: "0.8"
+
+/** 0.8.1's new asks (spine:pocket-beach 1.1111787136 (d), (e), (f)): his posts and his passport. */
+internal val NEW_ASKS = listOf(
+    "Send a post to my room.",
+    "Post this message to my room: \"I've had a relaxing weekend, a visit from my para-trooper nephew, halloween parties for the girls\u2026\"",
+    "Read my passport",
+    "What does my passport say about where things go?",
+)
 private val LONDON8 = java.time.ZoneId.of("Europe/London")
 private fun at(h: Int, m: Int) = ZonedDateTime.of(2026, 11, 1, h, m, 0, 0, LONDON8)
 private fun ms(t: ZonedDateTime) = t.toInstant().toEpochMilli()
@@ -55,8 +67,8 @@ private val PASSPORT = JsObj.of(
 )
 
 /** A pocket hatched as 0.8 hatches it: his passport adopted, his three lines, her shell retired into his. */
-internal fun hatched(storage: MemoryStorage, pages: Pages, nowMs: Long) {
-    val planned = Hatch.plan(H, PASSPORT, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone from passport-$H.json, read at ${isoString(nowMs)}.")
+internal fun hatched(storage: MemoryStorage, pages: Pages, nowMs: Long, passport: JsObj = PASSPORT) {
+    val planned = Hatch.plan(H, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone from passport-$H.json, read at ${isoString(nowMs)}.")
     val done = Hatch.carryOut(planned, pages, storage)
     check(done.problem == null) { "the bench's pocket couldn't be hatched: ${done.problem}" }
 }
@@ -77,7 +89,7 @@ internal class Kept8(engine: Engine, private val pages: Pages, private val stora
         val secs = (System.nanoTime() - start) / 1e9
         seen = HerWindow.copies(pages, storage)
         before += said
-        return Said("0.8", said, reply, Talking.unechoed(reply, said, HelloWorld.SHELL_OPENING, HerWindow.echoLines(turn)), secs, tokens(c), turn, way::class.simpleName ?: "")
+        return Said(LABEL8, said, reply, Talking.unechoed(reply, said, HelloWorld.SHELL_OPENING, HerWindow.echoLines(turn)), secs, tokens(c), turn, way::class.simpleName ?: "")
     }
 
     override fun close() = c.close()
@@ -110,7 +122,7 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         say("\nMarks: $below${marks(s)}")
     }
     fun window(k: Kept8) = say("\nHer window (0.8), read once at the first message (${k.window.length} characters):\n\n```\n${k.window}\n```")
-    say("# $label, seed $seed: 0.6.4 and 0.7 beside 0.8")
+    say("# $label, seed $seed: 0.6.4 and 0.7 beside $LABEL8")
     val onlies = System.getProperty("eight.only")?.split(",")?.map { it.trim() }
     // For trying a wording: 0.8 alone (-Deight.just8=1), the earlier versions left out.
     val just8 = System.getProperty("eight.just8") == "1"
@@ -207,6 +219,32 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         HerWindow.ensure(p8)
         hatched(s8, p8, ms(now))
         show("", Kept8(engine, p8, s8, shelf, now, seed).use { k -> if (said == TODAY_ASK) window(k); k.say(said, now) })
+    }
+    // 0.8.1: his posts and his passport, each its own Ask (17:30), his passport in every pocket.
+    if (on("new")) run {
+        val now = at(17, 30)
+        val passport = System.getProperty("eight.passport")?.let { parseJson(File(it).readText()) as JsObj } ?: PASSPORT
+        say("\n## His posts and his passport, each its own Ask (17:30)")
+        for (said in NEW_ASKS) {
+            say("\n### Matthew: $said")
+            if (!just8) {
+                val (storage, pages) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
+                HerWindow.ensure(pages)
+                check(pages.carryOut(pages.planKeep("passport:$H", passport)).ok)
+                show("", old(engine, said, emptyList(), pages, now, seed))
+                show("", Kept(engine, pages, storage, shelf, now, seed).use { it.say(said, now) })
+            }
+            val (s8, p8) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
+            HerWindow.ensure(p8)
+            hatched(s8, p8, ms(now), passport)
+            val c = Kept8(engine, p8, s8, shelf, now, seed).use { it.say(said, now) }
+            if (said.contains("passport")) say("\nThe turn as $LABEL8 gives it:\n\n```\n${c.turn}\n```")
+            show("", c)
+            // What the app set out by code before her reply, with no model call.
+            val way = Keeping.way(said, emptyList(), p8, Hatch.shellOf(H), Hatch.HER)
+            val set = Bench.byApp(way, s8, shelf, ms(now))?.proposal?.post?.message
+            say("\nSet out by code ($LABEL8), with no model call: " + (set?.let { "a post of his own words, \u201c$it\u201d" } ?: "nothing") + " (the gate: ${way::class.simpleName})")
+        }
     }
     out.parentFile?.mkdirs()
     out.writeText(w.toString())

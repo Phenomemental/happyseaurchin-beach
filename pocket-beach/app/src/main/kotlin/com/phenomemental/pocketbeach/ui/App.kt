@@ -101,7 +101,10 @@ class Model(val app: PocketApp) {
 
 @Composable
 fun PocketScreens(app: PocketApp) {
-    val nav = rememberSaveable(saver = Nav.saver) { Nav(listOf(Screen.Shore)) }
+    // 0.8.1: once he has hatched, the app opens on the chat; the Shore stays beneath it, a tap away in the menu.
+    val nav = rememberSaveable(saver = Nav.saver) {
+        Nav(if (runCatching { com.phenomemental.pocketbeach.bsp.Hatch.hatched(app.storage) }.getOrNull() != null) listOf(Screen.Shore, Screen.Ask) else listOf(Screen.Shore))
+    }
     val model = remember { Model(app) }
     BackHandler(enabled = nav.stack.size > 1) { nav.back() }
     val slip = model.slip?.takeIf { it.first == nav.top }?.let { SlipNote(it.second) { model.slip = null } }
