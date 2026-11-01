@@ -232,12 +232,12 @@ object HerWindow {
      * own room for his tap; leaving her opening line to him; or nothing.
      */
     fun appLine(way: Keeping.Way, said: String): String = "The app: " + when (way) {
-        is Keeping.Way.Talk -> Keeping.name(said)?.let { n -> "he is calling you $n, the name you already have: take it gladly as yours. Nothing is being kept or set out from this." }
+        is Keeping.Way.Talk -> Keeping.name(said)?.let { n -> "he is calling you $n, the name you already have. Take it as yours, gladly, as you would from a friend (\u201c$n it is.\u201d), then talk with him. Nothing is being kept or set out from this." }
             ?: "nothing is being kept or set out from this. Just talk with him."
         is Keeping.Way.Where -> "he asks to keep something and names no place, so the app asks him beneath your reply where it should go. " +
             "Nothing is kept yet, so never say it is: a few words are enough (\"It's below.\"), then talk with him about what he said."
-        is Keeping.Way.Name -> "he is calling you ${way.name}: that is your name now, so take it gladly as yours. " +
-            "The app sets out a line for it on your shell beneath your reply, for his yes."
+        is Keeping.Way.Name -> "he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201c${way.name} it is.\u201d), then talk with him. " +
+            "The app sets out a line for your name on your shell, for his yes."
         is Keeping.Way.Write -> when {
             Keeping.Ask.CHANGE in way.asks && asksHerOpening(said) && way.asks.none { it == Keeping.Ask.KEEP || it == Keeping.Ask.MAKE } ->
                 "your opening line is his to change himself, on the Write screen, so nothing is set out for it and nothing changes now. " +

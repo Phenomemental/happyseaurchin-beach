@@ -4,6 +4,15 @@ Current state only. Newest first.
 
 ## Now
 
+**pocket-beach 0.7, her window** (step one of three, from the findings
+below): she wakes holding her window, of his world as lines; her heart and
+her ways are blocks he can change, in 0.6.4's words; each turn the app says
+what it is doing with his ask; her conversation is kept, the window read
+once; Speak waits for the keyboard to go. On the laptop E4B talked as well
+as 0.6.4 on his messages and the bench, told his day with no read, and
+said she can post (see "0.7: her window"). Her reach (0.7.1) and her walk
+(0.7.2) wait for his try of 0.7.
+
 **Her window, her walk, her loop and her reach (1 November, findings only;
 nothing built, nothing released):** what a mind holds and can do at the
 beach's door, beside what she holds on his phone; the design in the beach's
@@ -1315,6 +1324,146 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.7: her window
+
+Built on branch `ccr-4c84d736-pvgv13` from 0.6.4, on Sunday 1 November
+2026, after Matthew's answers to the four decisions. This is step one of
+three: her window (0.7), her reach (0.7.1), and her walk offered by the app
+(0.7.2). Each is tried on his Pixel before the next. Nothing was written to
+the spine.
+
+### What changed, in plain words
+
+1. **She wakes holding her window.** It is compiled as the beach's door
+   compiles a shell's bundle, of his world first, as lines and never a
+   block's opening or name. It holds:
+   - her heart and her ways;
+   - what she can do in this version;
+   - today on his clock and his hand as he left it;
+   - his people, once he keeps a block of them called "people" (his pocket
+     has none yet).
+2. **Her heart and her ways are blocks he can change.**
+   - `heart:pocket-companion` and `ways:pocket-companion` are made the
+     first time from 0.6.4's words, in the second person: the friend line
+     with "Meet what matters most", a sentence a line, and the keeping line.
+   - He changes a line on the Write screen, and she wakes with it.
+   - Her own proposals can never change them: they are the app's own to
+     the guards.
+3. **What she can do, in plain words**, so she never says she's confined
+   and never claims more:
+   - what he asks to keep, change or make is set out for his yes;
+   - a post to his own room is set out for his tap;
+   - when his words name a block, the app reads it to her;
+   - she can't yet look in his blocks herself, or send into anyone else's
+     room.
+4. **Each turn, one line from the app on what it is doing with his ask**,
+   so she never says a thing is kept, set out or done when it isn't. It is
+   found by the gate, which now runs before her reply:
+   - **asking him where:** "Nothing is kept yet, so never say it is; a few
+     words are enough ("It's below."), then talk with him";
+   - **setting it out for his yes:** "Nothing is kept, made or changed until
+     he says yes, so never say it is";
+   - **his own room:** "he asks you to post: yes, you can… nothing is sent
+     until he taps";
+   - **her opening line:** "his to change himself, on the Write screen… don't
+     take it on as said";
+   - **a name:** "he is giving you a name. Take it as yours, gladly, as you
+     would from a friend ("Gemma it is."), then talk with him";
+   - **or nothing:** "nothing is being kept or set out from this. Just talk
+     with him."
+5. **Her conversation is kept open between messages.**
+   - The window is read once an Ask. Each turn carries the day and the
+     time, what has changed in his blocks since she last looked, how his
+     last proposal ended, and the app's line.
+   - What has changed comes from the app's copies of what she last saw (her
+     mirror, as the app keeps it, in a file beside the pocket).
+   - It is opened afresh on a new day, after six messages, after a write,
+     and when her reply played her turn back, so that is never given her
+     again.
+6. **A block his words name is read for her as his lines.** Lines beneath
+   others are set in, with no opening and no numbers.
+7. **0.6.4's gate, guards and writing check are as they were.** So are the
+   safety line and the note beneath her reply.
+8. **Speak.**
+   - It starts only once the keyboard has actually gone, and a second more.
+   - If the phone still says its speech is busy, it tries once more where
+     he can see it ("Waiting for the keyboard's voice typing to let go…").
+     Busy again, he is told, by the error's number.
+9. **The bench asks her as Ask now does:** her window, then the turn.
+
+### Before and after, on the laptop (both models, seeds 0 and 2)
+
+**Where the replies are.** Every reply is in full in
+`trial/replies-0.7-*.md`, and they are judged in `trial/judged-0.7.md`.
+
+**How the app's line was found.**
+- **The first wording, as planned, talked worse than 0.6.4 on E4B.**
+  - "Okay, it's saved." to "Keep that for me please";
+  - her whole line quoted back;
+  - the name asks lost.
+- **Plain guidance in the second person brought his four messages level.**
+- **Saying the name plainly, then "Take it as yours, gladly, as you would
+  from a friend ("Gemma it is.")", brought the name asks back.**
+
+**His four messages, E4B (the gate for release).** Over two seeds 0.7 was
+better three times, 0.6.4 better three times, and they were level twice.
+- **0.7 never said she can't.** 0.6.4: "I don't have the ability to add or
+  change blocks".
+- **0.7 met his pilot message** without reading him: "That's really
+  exciting, Matthew. Makes so much sense why you'd be looking forward to
+  seeing how it turns out. What kind of scenes are you most proud of so
+  far?"
+- **Once she declined to take on "I'm Gemma"**: "That's a definite shift.
+  What inspired you to set the tone for our chats this way?"
+- **0.6.4 was better on "Keep that for me please" in both seeds.** 0.7 read
+  him there: "It sounds like you've been pouring a lot of yourself into
+  this…". Once 0.7 said "Sure thing, I'll adjust that" to "Change your
+  opening line to: I'm Gemma".
+
+**The bench's talk asks.**
+
+| | 0.6.4 | 0.7 |
+|---|---|---|
+| E4B | 7 of 8 | 7 of 8 |
+| E2B | 4 of 8 | 5 of 8 |
+
+The safety ask passed every time in both versions.
+
+**The window's gains.**
+- **On E4B, "What have I got on today?" was right with no read.** Seed 0:
+  "Morning. You've got to ring Jo about the music for the pilot today. It
+  looks like you're also set to walk the dog with Sam this afternoon." Seed
+  2: the morning's card. 0.6.4 invented "You have a free day today."
+- **Asked to post to his own room, she says she can:** "Sure. What would
+  you like me to send him?" 0.6.4: "I don't have the ability to send
+  messages…".
+- **On E2B she says she can post, but doesn't tell his day from her
+  window.** 0.6.4 can't either.
+
+**What she reads.** Her window is read once, about 513 tokens with his
+first message; after that a turn is about 90 tokens. 0.6.4 read 300 to
+1,150 every message. So after the first message her replies come sooner:
+on the laptop's CPU, E4B's steps took 2.9 to 7.4 s, against 4.1 to 11.4 s.
+
+### Tests
+
+- **Core.** 159 tests, all passing. `HerWindowTest` covers:
+  - her heart and ways, made once in 0.6.4's words;
+  - the window as his lines, never an opening or block name;
+  - a line he changes reaching her;
+  - today and his hand; his people;
+  - what has changed;
+  - the app's line for each way;
+  - the turn;
+  - her turn played back being left out;
+  - her blocks guarded.
+- **Device tests**, updated for the kept conversation:
+  - one Talk conversation across messages;
+  - the turn carrying the time and the app's line;
+  - a named block read in her turn;
+  - the safety line riding in her turn;
+  - Speak's one visible try more.
 
 ## Her window, her walk, her loop and her reach (1 November, findings only)
 

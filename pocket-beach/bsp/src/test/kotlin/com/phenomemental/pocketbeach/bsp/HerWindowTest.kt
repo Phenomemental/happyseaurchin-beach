@@ -127,7 +127,9 @@ class HerWindowTest {
         val post = line("Can you post a message to my room on the beach?")
         assertTrue(post.contains("he asks you to post: yes, you can.") && post.contains("nothing is sent until he taps"), post)
         val name = line("I'd like to call you Robin")
-        assertTrue(name.contains("he is calling you Robin: that is your name now, so take it gladly as yours") && name.contains("on your shell beneath your reply, for his yes"), name)
+        assertTrue(name.contains("he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201cRobin it is.\u201d), then talk with him.") && name.contains("a line for your name on your shell, for his yes"), name)
+        val held = HerWindow.appLine(Keeping.Way.Talk, "I'd like to call you Gemma")
+        assertTrue(held.contains("the name you already have") && held.contains("\u201cGemma it is.\u201d") && held.contains("Nothing is being kept"), held)
         assertFalse(name.contains("Matthew calls me"), "never the shell's line: she took its \u201cme\u201d as him")
     }
 

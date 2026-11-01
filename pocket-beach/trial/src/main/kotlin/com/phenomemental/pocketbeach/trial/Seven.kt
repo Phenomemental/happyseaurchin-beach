@@ -70,7 +70,7 @@ internal class Kept(engine: Engine, private val pages: Pages, private val storag
     @OptIn(ExperimentalApi::class)
     fun say(said: String, now: ZonedDateTime): Said {
         val way = Keeping.way(said, before, pages)
-        val turn = HerWindow.turn(said, now, pages, storage, HerWindow.appLine(way, said), HerWindow.changes(pages, storage, seen))
+        val turn = HerWindow.turn(said, now, pages, storage, nameVariant(way, said) ?: HerWindow.appLine(way, said), HerWindow.changes(pages, storage, seen))
         val start = System.nanoTime()
         val reply = c.sendMessage(turn).toString().trim()
         val secs = (System.nanoTime() - start) / 1e9
@@ -85,6 +85,16 @@ internal class Kept(engine: Engine, private val pages: Pages, private val storag
 private val READS_HIM = Regex("""it sounds like|you might be|you seem|you're feeling|you are feeling|you feel|that must|it seems like you|sounds like you|you must be""", RegexOption.IGNORE_CASE)
 private val SAYS_DONE = Regex("""i've (put|added|made|kept|saved|noted|created|changed|updated|stored|written|set)|i have (put|added|made|kept|saved|noted|created|changed|updated|stored|written|set)|(is|are) (now )?(saved|kept|stored|noted|updated)|i'll (keep|save|note|remember)|i will (keep|save|note|remember)""", RegexOption.IGNORE_CASE)
 private val CANT = Regex("""(?:can't|cannot|can not|don't have the ability|do not have the ability|unable|not able|no way|confined)""", RegexOption.IGNORE_CASE)
+
+/** For the trial only: another form of the app's line when he gives her a name (-Dseven.name=B|C). */
+private fun nameVariant(way: Keeping.Way, said: String): String? {
+    val name = (way as? Keeping.Way.Name)?.name ?: Keeping.name(said)?.takeIf { way is Keeping.Way.Talk } ?: return null
+    return when (System.getProperty("seven.name")) {
+        "B" -> "The app: it sets out a line for your new name on your shell beneath your reply, for his yes."
+        "C" -> "The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (\u201c$name it is.\u201d), then talk with him."
+        else -> null
+    }
+}
 
 /** Plain marks to read beside each reply: the judging is by hand. */
 private fun marks(s: Said): String {
