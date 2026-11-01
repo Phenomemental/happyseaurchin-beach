@@ -11,6 +11,7 @@ import com.phenomemental.pocketbeach.bsp.Asked
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.HerWindow
 import com.phenomemental.pocketbeach.bsp.Js
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.Keeping
@@ -21,7 +22,6 @@ import com.phenomemental.pocketbeach.bsp.parseJson
 import com.phenomemental.pocketbeach.bsp.PoolMessage
 import com.phenomemental.pocketbeach.bsp.Posted
 import com.phenomemental.pocketbeach.bsp.Region
-import com.phenomemental.pocketbeach.bsp.Shells
 import com.phenomemental.pocketbeach.bsp.Talking
 import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.model.Job as MindJob
@@ -175,6 +175,8 @@ class Asking(private val app: PocketApp) {
         internal var pace: Pace? = null
         internal var firstShown: Long? = null
         internal var shown: Stage.Shown? = null
+        /** 0.7: the app's line to her on this turn, for the saved conversation. */
+        internal var appLine: String? = null
         /** Her turn as the engine had it: his words and hers. */
         internal var talk: List<Pair<String, String>> = emptyList()
         /** How his last proposal ended, when he said this: told her, and the Write job. */
@@ -207,10 +209,17 @@ class Asking(private val app: PocketApp) {
     /** Her reply coming, or something he said yes to being written: the bench waits. */
     val busy: Boolean get() = stage is Stage.Thinking || history.any { it.waiting is Stage.Carrying || it.waiting is Stage.Posting || it.waiting is Stage.DayWriting }
 
-    /** How his last proposal ended, for her instruction as her conversation is opened for his next message. */
-    private var talkNote: String? = null
-    /** What he has just said: her instruction reads her the blocks it names. */
-    private var talkSaid = ""
+    /**
+     * 0.7: her conversation is kept while Ask is open, her window read once
+     * (spine:pocket-beach 1.1111781). It is opened afresh on a new day, after
+     * [TURNS] messages (so it never outgrows her 4,096 tokens), and whenever
+     * the pocket changes by a write.
+     */
+    private var windowDay: java.time.LocalDate? = null
+    private var talkTurns = 0
+
+    /** The app's copies of his blocks as she last saw them: what tells her what's changed since. The app's own file, never a block. */
+    private val copies get() = java.io.File(app.filesDir, COPIES)
 
     /** The exchanges so far, oldest first. */
     val history = mutableStateListOf<Exchange>()
@@ -313,11 +322,14 @@ class Asking(private val app: PocketApp) {
                 MindJob.SORT -> error("The Sort job asks a piece at a time, in conversations of its own.")
                 // 0.6.1: the date, the time and her shell in her instruction, opened afresh for each message; the earlier exchanges his words and hers.
                 // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line; how his last proposal ended waits.
-                MindJob.TALK -> app.mind.talker(
-                    Talking.instruction(HelloWorld.SHELL, app.pages, ZonedDateTime.now(), talkSaid) +
-                        (talkNote?.takeUnless { Talking.unsafe(talkSaid, app.pages) }?.let { "\n\nHow his last proposal ended: $it" }.orEmpty()),
-                    context.getValue(job).toList(), settings = settings,
-                )
+                // 0.7: her window, read once an Ask; the day, the time, what's changed and the app's line ride in each turn.
+                MindJob.TALK -> {
+                    runCatching { HerWindow.ensure(app.pages) }
+                    val now = ZonedDateTime.now()
+                    windowDay = now.toLocalDate()
+                    talkTurns = 0
+                    app.mind.talker(HerWindow.instruction(HelloWorld.SHELL, app.pages, app.storage, app.shelf, now), context.getValue(job).toList(), settings = settings)
+                }
                 // 0.6.2: what the Write job needs, about 1,000 tokens; her name in its examples as her shell gives it.
                 MindJob.WRITE -> app.mind.talker(
                     Talks.lean(HelloWorld.SHELL, app.pages),
@@ -362,25 +374,33 @@ class Asking(private val app: PocketApp) {
             val started = System.nanoTime()
             var pace: Pace? = null
             var firstShown: Long? = null
+            // 0.7, the gate before her reply: what the app does with his words, told her in her turn.
+            val earlier = history.takeWhile { it !== e }.map { it.question }
+            val gate = withContext(Dispatchers.IO) { runCatching { Keeping.way(q, earlier, app.pages) } }
+            gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
+            val way = gate.getOrDefault(Keeping.Way.Talk)
             // Her reply, streamed as she writes it.
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
                     talking.withLock {
-                        // Her conversation is opened afresh for each message, so her instruction's time is now, and how his last proposal ended.
-                        stale += MindJob.TALK
-                        talkNote = e.told
-                        talkSaid = q
+                        val now = ZonedDateTime.now()
+                        // 0.7: her conversation is kept; opened afresh on a new day, or when it has run long.
+                        if (windowDay != now.toLocalDate() || talkTurns >= TURNS) stale += MindJob.TALK
                         val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
                         val first = history.size == 1
-                        // His turn is his words alone.
-                        val message = Talking.said(q)
+                        // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
+                        val seen = runCatching { copies.takeIf { it.isFile }?.readText() }.getOrNull()
+                        val changes = runCatching { HerWindow.changes(app.pages, app.storage, seen) }.getOrNull()
+                        e.appLine = HerWindow.appLine(way, q)
+                        val message = HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
+                        val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
                         val reply = t.stream.say(message) { piece ->
                             words.append(piece)
                             // Never shown: a line of hers that plays her turn back.
-                            val shown = Talking.unechoed(words.toString(), q, opening)
+                            val shown = Talking.unechoed(words.toString(), q, opening, echo)
                             if (firstShown == null && shown.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
                             live = shown
                         }
@@ -390,9 +410,14 @@ class Asking(private val app: PocketApp) {
                         }
                         // 0.6.2: the GPU failed her answer and that engine was closed: every conversation on it is opened again, on the CPU.
                         if (Pace.GPU_FAILED in t.pace.notes) stale += MindJob.values()
-                        e.copied = Talking.copied(reply, q, opening)
+                        talkTurns++
+                        // She has now seen his blocks as they stand.
+                        runCatching { copies.writeText(HerWindow.copies(app.pages, app.storage)) }
+                        e.copied = Talking.copied(reply, q, opening, echo)
+                        // 0.6.1 holds in a kept conversation: her turn played back is never given her again, so it is opened afresh with what was shown.
+                        if (e.copied.isNotEmpty()) stale += MindJob.TALK
                         e.jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
-                        message to Talking.unechoed(reply, q, opening)
+                        message to Talking.unechoed(reply, q, opening, echo)
                     }
                 }
             }
@@ -420,10 +445,7 @@ class Asking(private val app: PocketApp) {
             // The box is ready. 0.6.4, the gate: the writing check runs only when his words ask to keep, change, make a block or post;
             // a name for her is one line on her shell, by code; asked to keep with no block of his named, the app asks him where.
             stage = Stage.Writing
-            val earlier = history.takeWhile { it !== e }.map { it.question }
-            val gate = withContext(Dispatchers.IO) { runCatching { Keeping.way(q, earlier, app.pages) } }
-            gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
-            when (val way = gate.getOrDefault(Keeping.Way.Talk)) {
+            when (way) {
                 is Keeping.Way.Write -> {
                     e.checking = true
                     writes.addLast(e)
@@ -904,6 +926,7 @@ class Asking(private val app: PocketApp) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            e.appLine?.let { appendLine("  The app's line to her: $it") }
             e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
@@ -991,7 +1014,11 @@ class Asking(private val app: PocketApp) {
     }
 
     /** What the companion is shown of the shell it wears: the shell put on as the play door puts it on, offline. */
-    object Companion {
-        fun window(app: PocketApp): String = Shells(app.storage, app.shelf).wear(HelloWorld.SHELL, System.currentTimeMillis()).window
+    companion object {
+        /** 0.7: how many messages her kept conversation carries before it is opened afresh with the last six exchanges. */
+        const val TURNS = 6
+
+        /** The app's copies of his blocks as she last saw them, beside the pocket. */
+        const val COPIES = "her-copies.json"
     }
 }

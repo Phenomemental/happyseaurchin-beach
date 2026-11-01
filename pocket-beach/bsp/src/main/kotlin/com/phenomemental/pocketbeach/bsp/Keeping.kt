@@ -130,8 +130,14 @@ object Keeping {
     /** The name he gives a new block ("make a block called sailing"); null when he names none. */
     fun made(said: String): String? = MADE.firstNotNullOfOrNull { it.find(said)?.groupValues?.get(1)?.trim()?.takeIf(String::isNotEmpty) }
 
-    /** The blocks the app keeps itself, by name: written only by the app, on his taps. */
-    val OWN: Set<String> = setOf(com.phenomemental.pocketbeach.bsp.Asks.LOG, Landing.NOW, Landing.TELLING, Landing.EXAMPLES, Talking.SAFETY_BLOCK, Whens.BLOCK)
+    /**
+     * The blocks the app keeps itself, by name: written only by the app, on his
+     * taps. 0.7: and her heart and her ways, his to change on the Write
+     * screen, never by a proposal of hers (in the trial of 1 November the
+     * writing check aimed "Change your opening line to: I'm Gemma" at her
+     * heart block, and only "not his words" stopped it).
+     */
+    val OWN: Set<String> = setOf(com.phenomemental.pocketbeach.bsp.Asks.LOG, Landing.NOW, Landing.TELLING, Landing.EXAMPLES, Talking.SAFETY_BLOCK, Whens.BLOCK) + HerWindow.HERS
 
     /** Whether [name] is one of the app's own blocks: by name, whether or not it stands yet, or a clock. */
     fun own(name: String, pages: Pages): Boolean = name.lowercase() in OWN || Talks.appOwn(name, pages)
