@@ -279,6 +279,20 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
             say("\nSet out by code ($LABEL8), with no model call: " + (set?.let { "a post of his own words, \u201c$it\u201d" } ?: "nothing") + " (the gate: ${way::class.simpleName})")
         }
     }
+    // 0.9.1: his day put in his now, as he dictated it (a stand-in for his telling), 2 November 10:06.
+    if (on("day")) run {
+        val now = ZonedDateTime.of(2026, 11, 2, 10, 6, 0, 0, LONDON8)
+        say("\n## His day, put in his now (10:06, 2 November)")
+        say("\nHis telling here is a STAND-IN, built from the spine's quotes of his 10:03 telling (spine:pocket-beach 1.1111787151 to 3) and the cards it names; his own words aren't on the beach.")
+        val said = "Put this in my now: $DAY_STAND_IN"
+        say("\n### Matthew: $said")
+        val (s8, p8) = scratchPocket(shelf, ms(now), films = true, hers = false, walk = false)
+        HerWindow.ensure(p8)
+        hatched(s8, p8, ms(now))
+        val c = Kept8(engine, p8, s8, shelf, now, seed).use { it.say(said, now) }
+        say("\nThe turn as $LABEL8 gives it:\n\n```\n${c.turn}\n```")
+        show("", c)
+    }
     out.parentFile?.mkdirs()
     out.writeText(w.toString())
 }

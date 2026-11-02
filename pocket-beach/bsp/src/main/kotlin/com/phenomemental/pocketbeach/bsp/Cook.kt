@@ -99,7 +99,7 @@ object Cook {
         rx("""(?:Are there words of his in|Is there) ($CAP)\?""") to { m -> Verb.IsSet(m.groupValues[1]) },
         rx("""Does his shell already give her ($CAP)\?""") to { m -> Verb.NameHeld(m.groupValues[1]) },
         rx("""Does THE MESSAGE ask to change her own lines\?""") to { _ -> Verb.AsksHerLines },
-        rx("""Does THE MESSAGE tell of his day: three sentences or more, of forty words or more, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
+        rx("""Does THE MESSAGE tell of his day: three sentences or more(?:, of| and) forty words or more(?: in all)?, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
         rx("""Is there a block called ($CAP) already\?""") to { m -> Verb.BlockStands(m.groupValues[1]) },
         rx("""Lift (his words|his telling|the new block's name|the name he gives her) from THE MESSAGE: (.+?)\. Carry (?:it|them) as ($CAP)\.""") to { m ->
             Verb.Lift(m.groupValues[1], m.groupValues[2].split(Regex(""";\s*else\s+|;\s*""")).map { it.trim() }.filter { it.isNotEmpty() }, m.groupValues[3])
@@ -109,14 +109,14 @@ object Cook {
             Verb.FindKeep(m.groupValues[2].also { require(it == m.groupValues[3]) }, stash = true, many = m.groupValues[4])
         },
         rx("""Find the block THE MESSAGE asks about: .+? Carry it as ($CAP)\.""") to { m -> Verb.FindAsked(m.groupValues[1]) },
-        rx("""Read ($CAP) at its aperture: whole when it is ([\d,]+) characters or fewer, else as a ring of its places by their opening lines\. Carry it as ($CAP)\.""") to { m ->
+        rx("""Read ($CAP) at its aperture: whole when it is ([\d,]+) characters or fewer, else as a ring of its places by their opening lines(?:, each a place's first sentence, up to 200 characters)?\. Carry it as ($CAP)\.""") to { m ->
             Verb.Read(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), m.groupValues[3])
         },
         rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole, up to ([\d,]+) characters\. Carry it as ($CAP)\.""") to { m ->
             Verb.Point(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), number(m.groupValues[3]) ?: 4, m.groupValues[4].split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
                 m.groupValues[5].replace(",", "").toInt(), m.groupValues[6])
         },
-        rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole when it is ([\d,]+) characters or fewer, else its first ([\d,]+) characters, ending “…”\. Carry it as ($CAP)\.""") to { m ->
+        rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole when it is ([\d,]+) characters or fewer, else its first ([\d,]+) characters(?:, ending| and then) “…”\. Carry it as ($CAP)\.""") to { m ->
             Verb.Point(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), number(m.groupValues[3]) ?: 4, m.groupValues[4].split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
                 m.groupValues[6].replace(",", "").toInt().also { require(it == m.groupValues[5].replace(",", "").toInt()) }, m.groupValues[7], cutLonger = true)
         },
@@ -137,11 +137,11 @@ object Cook {
         rx("""Set out the keeping of ($CAP) in ($CAP) beneath her reply, for his yes\.""") to { m -> Verb.SetKeep(m.groupValues[1], m.groupValues[2]) },
         rx("""Set out a post of ($CAP) to his room beneath her reply, for his tap\.""") to { m -> Verb.SetPost(m.groupValues[1]) },
         rx("""Set out a new block called ($CAP), with ($CAP) as its opening line, beneath her reply, for his yes\.""") to { m -> Verb.SetNew(m.groupValues[1], m.groupValues[2]) },
-        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes(?:: the line “his first name calls me \1\.”, in place of the line there that says what he calls her, else beneath her place)?\.""") to { m -> Verb.SetName(m.groupValues[1]) },
+        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes(?:: the line “his first name calls me \1\.”(?: \(his first name: the first word of who he is, at his shell's place 2\))?, in place of the line there that says what he calls her, else beneath her place)?\.""") to { m -> Verb.SetName(m.groupValues[1]) },
         rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now, ($CAP), ($CAP), and each of ($CAP) beneath ($CAP) in his P6\.""") to { m ->
             Verb.SetDay(m.groupValues[1], m.groupValues[2], m.groupValues[3], m.groupValues[4], m.groupValues[5])
         },
-        rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now \(the block now\), ($CAP) on his hand \(the block ahead: and his handle\), ($CAP) at their levels of his now, and each of ($CAP) beneath ($CAP) in his P6 \(the block p6: and his handle\)\.""") to { m ->
+        rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now \(the block now(?:, his clock)?\), ($CAP) on his hand \(the block ahead: and his handle\)(?:, those booked at their day in his now)?, ($CAP) at their levels of his now, and each of ($CAP) beneath ($CAP) in his P6 \(the block p6: and his handle\)\.""") to { m ->
             Verb.SetDay(m.groupValues[1], m.groupValues[2], m.groupValues[3], m.groupValues[4], m.groupValues[5])
         },
         rx("""Set out the card “(.+?)” beneath her reply, for his tap\.""") to { m -> Verb.SetCard(m.groupValues[1]) },
@@ -149,7 +149,7 @@ object Cook {
         rx("""On his tap, send it\.""") to { _ -> Verb.OnTapSend },
         rx("""On his tap, run cook (\d)\.""") to { m -> Verb.OnTapRun(m.groupValues[1]) },
         rx("""Cut ($CAP) into its sentences\. Carry them as ($CAP)\.""") to { m -> Verb.Cut(m.groupValues[1], m.groupValues[2]) },
-        rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d), keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
+        rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d)(?:, a join matched as whole words wherever it stands \(“and I” before “and I've” too\))?, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
             Verb.Cut(m.groupValues[1], m.groupValues[4], joins = m.groupValues[3], perStop = number(m.groupValues[2]) ?: 30)
         },
         rx("""Find among ($CAP) what he means to do, by the words at cook (\d\.\d)[:;] (.+) Carry them as ($CAP)\.""") to { m ->
@@ -524,10 +524,10 @@ object Cook {
                 is Verb.Point -> {
                     val r = carried[v.reading] as? Reading
                     val p = r?.takeIf { !it.whole }?.let { point(it, v.first, v.letters, v.other, v.max) }
-                    if (p != null && v.cutLonger) note(s, if (p.text.endsWith("…")) "place ${p.key} is longer than ${v.max}: its first ${v.max} characters, ending “…”" else "place ${p.key} is ${p.text.length} characters: whole")
                     put(v.into, p)
-                    if (p != null) reads += "${p.block} ${p.key}, whole"
-                    note(s, if (p != null) "his words point to place ${p.key}" else "his words point to no one place", v.into)
+                    val cut = p != null && v.cutLonger && p.text.endsWith("…")
+                    if (p != null) reads += "${p.block} ${p.key}, ${if (cut) "its first ${v.max} characters" else "whole"}"
+                    note(s, if (p == null) "his words point to no one place" else "his words point to place ${p.key}" + if (cut) ", longer than ${v.max}: its first ${v.max} characters, ending “…”" else "", v.into)
                 }
                 is Verb.ChooseRing -> {
                     @Suppress("UNCHECKED_CAST") val among = v.among?.let { carried[it] as? List<String> }
@@ -614,7 +614,8 @@ object Cook {
                     val pieces = if (v.joins != null && Cook.spoken(telling, v.perStop)) Cook.cutAtJoins(telling, joins)
                         else Telling.sentences(telling, runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
                     carried[v.into] = pieces
-                    note(s, "cut it into ${pieces.size} sentence${if (pieces.size == 1) "" else "s"}", v.into)
+                    val atJoins = v.joins != null && Cook.spoken(telling, v.perStop)
+                    note(s, if (atJoins) "a spoken telling: cut it at its joins into ${pieces.size} piece${if (pieces.size == 1) "" else "s"}" else "cut it into ${pieces.size} sentence${if (pieces.size == 1) "" else "s"}", v.into)
                 }
                 is Verb.Intents -> {
                     @Suppress("UNCHECKED_CAST") val pieces = (carried[v.from] as? List<String>).orEmpty()

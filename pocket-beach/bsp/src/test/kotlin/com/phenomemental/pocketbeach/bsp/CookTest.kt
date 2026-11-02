@@ -249,8 +249,9 @@ class CookTest {
         val handed = k.handed.single()
         assertEquals(1, handed.material.size, handed.material.toString())
         assertTrue(handed.material.single().contains("6. WHERE THINGS GO"), handed.material.toString())
-        assertTrue(handed.line.contains("in a sentence or two what his block holds, never its lines"), handed.line)
-        assertTrue(handed.line.endsWith(you.trim()), handed.line)
+        assertTrue(handed.line.contains("Begin your reply with the word “Your”, and answer in two sentences at most"), handed.line)
+        assertTrue(handed.line.contains("what kinds of thing his block holds, never its lines"), handed.line)
+        assertTrue(handed.line.contains(you.trim().removeSuffix(".")), handed.line)
     }
 
     @Test
@@ -389,7 +390,8 @@ class CookTest {
         val k = walk(World(storage, pages), "What does my passport say about where things go?")
         val place = k.handed.single().material.last()
         assertTrue(place.endsWith("…"), place.takeLast(80))
-        assertTrue(k.trace.any { it.did.contains("its first 3000 characters") }, k.trace.joinToString("\n"))
+        assertEquals(1, k.trace.count { it.at == "5.4" }, "one step, one line")
+        assertTrue(k.trace.any { it.at == "5.4" && it.did.contains("its first 3000 characters") }, k.trace.joinToString("\n"))
     }
 
     // ── 0.9.1: his cook is his (spine:pocket-beach 1.1111787162) ──
