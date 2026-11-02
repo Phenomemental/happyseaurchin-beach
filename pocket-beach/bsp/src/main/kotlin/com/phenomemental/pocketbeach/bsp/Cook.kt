@@ -79,7 +79,7 @@ object Cook {
         /** [joins]: where the joins live (cook 9.4.1) when a spoken telling is cut at them (0.9.1); null, by its sentences only. */
         class Cut(val from: String, val into: String, val joins: String? = null, val perStop: Int = 30) : Verb()
         /** [carriesOn]: a piece cut at a join, with no I of its own, carries on the one before; [appointments]: what a booking names whatever he means (0.9.1). */
-        class Intents(val from: String, val cues: String, val into: String, val carriesOn: Boolean = false, val appointments: List<String> = emptyList()) : Verb()
+        class Intents(val from: String, val cues: String, val into: String, val carriesOn: Boolean = false, val appointments: List<String> = emptyList(), val naming: Boolean = false) : Verb()
         class Rungs(val from: String, val into: String) : Verb()
         class Run(val place: String) : Verb()
         class WritingCheck(val what: String) : Verb()
@@ -137,7 +137,7 @@ object Cook {
         rx("""Set out the keeping of ($CAP) in ($CAP) beneath her reply, for his yes\.""") to { m -> Verb.SetKeep(m.groupValues[1], m.groupValues[2]) },
         rx("""Set out a post of ($CAP) to his room beneath her reply, for his tap\.""") to { m -> Verb.SetPost(m.groupValues[1]) },
         rx("""Set out a new block called ($CAP), with ($CAP) as its opening line, beneath her reply, for his yes\.""") to { m -> Verb.SetNew(m.groupValues[1], m.groupValues[2]) },
-        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes(?:: the line “his first name calls me \1\.”(?: \(his first name: the first word of who he is, at his shell's place 2\))?, in place of the line there that says what he calls her, else beneath her place)?\.""") to { m -> Verb.SetName(m.groupValues[1]) },
+        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes(?:: the line “his first name calls me \1\.”(?: \(his first name: the first word of who he is, at (?:his shell's place 2|6\.2 of his shell)\))?, in place of the line there that says what he calls her, else beneath her place)?\.""") to { m -> Verb.SetName(m.groupValues[1]) },
         rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now, ($CAP), ($CAP), and each of ($CAP) beneath ($CAP) in his P6\.""") to { m ->
             Verb.SetDay(m.groupValues[1], m.groupValues[2], m.groupValues[3], m.groupValues[4], m.groupValues[5])
         },
@@ -149,15 +149,16 @@ object Cook {
         rx("""On his tap, send it\.""") to { _ -> Verb.OnTapSend },
         rx("""On his tap, run cook (\d)\.""") to { m -> Verb.OnTapRun(m.groupValues[1]) },
         rx("""Cut ($CAP) into its sentences\. Carry them as ($CAP)\.""") to { m -> Verb.Cut(m.groupValues[1], m.groupValues[2]) },
-        rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d)(?:, a join matched as whole words wherever it stands \(“and I” before “and I've” too\))?, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
+        rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d)(?:, a join matched as whole words wherever it stands \(“and I” before “and I've” too\)|, a join matched wherever its words begin, so “and I” cuts before “and I also” and “and I've” too)?, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
             Verb.Cut(m.groupValues[1], m.groupValues[4], joins = m.groupValues[3], perStop = number(m.groupValues[2]) ?: 30)
         },
-        rx("""Find among ($CAP) what he means to do, by the words at cook (\d\.\d)[:;] (.+) Carry them as ($CAP)\.""") to { m ->
+        rx("""Find among ($CAP) what he means to do, by the words at cook (\d\.\d)[:;,] (.+) Carry them as ($CAP)\.""") to { m ->
             val body = m.groupValues[3]
             val appointments = Regex("""every piece naming (.+?) of his with its day""").find(body)?.groupValues?.get(1)?.let { list ->
                 list.split(Regex(""",\s*(?:or\s+)?|\s+or\s+""")).map { it.trim().removePrefix("a ").removePrefix("an ").trim() }.filter { it.isNotEmpty() }
             }.orEmpty()
-            Verb.Intents(m.groupValues[1], m.groupValues[2], m.groupValues[4], carriesOn = "a piece cut at a join, with no I of its own, carries on the piece before it" in body, appointments = appointments)
+            Verb.Intents(m.groupValues[1], m.groupValues[2], m.groupValues[4], carriesOn = "a piece cut at a join, with no I of its own, carries on the piece before it" in body, appointments = appointments,
+                naming = body.startsWith("when what follows them names something to do"))
         },
         rx("""Find among ($CAP) those that name this week, this month, this season or this year\. Carry them as ($CAP), each at its level of his now\.""") to { m -> Verb.Rungs(m.groupValues[1], m.groupValues[2]) },
         rx("""Run cook (\d)\.""") to { m -> Verb.Run(m.groupValues[1]) },
@@ -620,7 +621,7 @@ object Cook {
                 is Verb.Intents -> {
                     @Suppress("UNCHECKED_CAST") val pieces = (carried[v.from] as? List<String>).orEmpty()
                     val intents = Days.intents(pieces, parsed.cues.intent, world.now.toLocalDate(), Days.timeWords(world.storage),
-                        joins = if (v.carriesOn) parsed.cues.joins else emptyList(), appointments = v.appointments)
+                        joins = if (v.carriesOn) parsed.cues.joins else emptyList(), appointments = v.appointments, naming = v.naming)
                     carried[v.into] = intents
                     note(s, "found ${intents.size} thing${if (intents.size == 1) "" else "s"} he means to do", v.into)
                 }

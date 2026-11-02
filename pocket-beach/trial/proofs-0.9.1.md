@@ -67,11 +67,11 @@ His words: “Post this message to my room: "Back on Tuesday"”. Cook 3.3, the 
 
 ## (e) His cook as he changed it, brought up place by place
 
-His cook as 0.9 left it, with STAND-INS for the two places he changed on his Pixel (5.6 and 6.1; his own words for them aren't on the beach), and 0.9's kernel; brought up to 0.9.1 against 0.9's copy on the shelf.
+His cook as 0.9 left it, with the two places he changed on his Pixel in his own words (5.6 and 6.1), and 0.9's kernel; brought up to 0.9.1 against 0.9's copy on the shelf. His 6.1 is word for word 0.9.1's: true.
 
 - His 5.6 kept as his: true. His 6.1 kept as his: true.
 - Every other place of 0.9.1's cook is its new sentence: true (130 places), and no place beyond them: true.
-- Offered beside his, once: 5.6, “Hand her THE READING and THE PLACE with this line: “The app: he asks what his block holds…”; 6.1, “LIFT. Lift his telling from THE MESSAGE: after the colon; else his sentences, each that a…”
+- Offered beside his, once: 5.6, “Hand her THE READING and THE PLACE with this line: “The app: he asks what his block holds…”
 - Opened again, offered again: nothing; to write: nothing.
 
 The trace of the bring-up:
@@ -114,5 +114,4 @@ The trace of the bring-up:
     cook:Phenomemental 1.1.4.3: gone from this version
     cook:Phenomemental 5.5.2.1: gone from this version
     cook:Phenomemental 5.6: yours, kept (the new one offered beside it)
-    cook:Phenomemental 6.1: yours, kept (the new one offered beside it)
     kernel:Phenomemental 2: the new sentence

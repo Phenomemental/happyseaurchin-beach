@@ -105,22 +105,28 @@ object Days {
      * is. A piece naming one of [appointments] (a meeting, a call) with its day
      * is a booking at that day, whether or not he says he means to.
      */
-    fun intents(pieces: List<String>, words: List<String>, today: LocalDate, timeWords: JsObj?, joins: List<String>, appointments: List<String>): List<Intent> {
+    fun intents(pieces: List<String>, words: List<String>, today: LocalDate, timeWords: JsObj?, joins: List<String>, appointments: List<String>, naming: Boolean = false): List<Intent> {
         val out = mutableListOf<Intent>()
         var before = false
         for (p in pieces) {
             val said = " ${plain(p)} "
-            val own = words.any { w -> said.contains(" ${plain(w)} ") }
+            // The words of cook 9.9 it holds, the first of them; 0.9.1: a card only when what follows them names something to do.
+            val at = words.map { w -> " ${plain(w)} " }.filter { said.contains(it) }.minByOrNull { said.indexOf(it) }
+            val holds = at != null
+            val names = at != null && (!naming || said.substring(said.indexOf(at) + at.length).split(' ').any { it.isNotBlank() && it !in NOT_A_THING })
             val carried = before && joins.any { j -> said.startsWith(" ${plain(j)} ") } && !Regex("""\b(?:i|i'm|i've|i'll|i'd|we|we're|we've|we'll)\b""").containsMatchIn(plain(p))
             val day = if (appointments.any { a -> said.contains(" ${plain(a)} ") }) dayOf(p, today, timeWords) else null
             when {
                 day != null -> out += Intent(p.trim(), null, day.first, day.second)
-                own || carried -> out += size(p, today, timeWords).let { (pile, date, by) -> Intent(p.trim(), pile, date, by) }
+                names || carried -> out += size(p, today, timeWords).let { (pile, date, by) -> Intent(p.trim(), pile, date, by) }
             }
-            before = day == null && (own || carried)
+            before = day == null && (holds || carried)
         }
         return out
     }
+
+    /** What names nothing to do, after "I need to": "do", "do it", "do that", and the like. */
+    private val NOT_A_THING = setOf("do", "it", "that", "this", "them", "those", "these", "too", "as", "well", "so", "then", "now", "today", "tonight", "also", "and")
 
     /** The day a piece names, and the words that name it: today for today's words and the next hours, else the date its words give; null when it names none. */
     private fun dayOf(piece: String, today: LocalDate, timeWords: JsObj?): Pair<LocalDate, String>? {
