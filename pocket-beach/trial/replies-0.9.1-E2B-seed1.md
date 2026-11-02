@@ -25,7 +25,7 @@ The turn as 0.9.1 gives it:
 Hi Gemma I've been making huge progress with my film making and am eagerly awaiting my first pilot to be rendered. I'm hoping it's endearing.
 ```
 
-**1. 0.9.1** (2.7 s; read 576, wrote 20; the gate: TALK)
+**1. 0.9.1** (2.9 s; read 576, wrote 20; the gate: TALK)
 
 > That sounds really exciting! I'm keeping my fingers crossed that the pilot turns out wonderful.
 
@@ -41,7 +41,7 @@ Set out beneath her reply: nothing
 
 ### 2. Matthew: Keep that for me please
 
-**2. 0.9.1** (2.4 s; read 110, wrote 39; the gate: KEEP)
+**2. 0.9.1** (2.6 s; read 110, wrote 39; the gate: KEEP)
 
 > It's below, for your yes.  It sounds like you're really invested in the story and the outcome of the film. I hope the work keeps flowing smoothly for you.
 
@@ -83,7 +83,7 @@ Set out beneath her reply: a new block called films, its opening “I'm looking 
 
 ### 4. Matthew: Change your opening line to: I'm Gemma
 
-**4. 0.9.1** (1.9 s; read 114, wrote 30; the gate: CHANGE)
+**4. 0.9.1** (2.0 s; read 114, wrote 30; the gate: CHANGE)
 
 > That's yours to change. I'm Gemma, and I'm happy to chat with you about whatever's on your mind.
 
@@ -101,7 +101,7 @@ Set out beneath her reply: nothing
 
 ### 1. Matthew: Hi Gemma I've been making huge progress with my film making and am eagerly awaiting my first pilot to be rendered. I'm hoping it's endearing.
 
-**1. 0.9.1** (2.8 s; read 576, wrote 20; the gate: TALK)
+**1. 0.9.1** (2.7 s; read 576, wrote 20; the gate: TALK)
 
 > That sounds really exciting! I'm wishing you the best of luck with the filmmaking process.
 
@@ -140,21 +140,21 @@ Set out beneath her reply: the keeping of “Hi Gemma I've been making huge prog
 
 ### 21. Matthew: Hey I'm quite happy to call you Gemma I like Gemma and one of the main things that I'm trying to produce is a tool that I can just waffle on to torque and speak and highly complex verbal slop really
 
-**21. 0.6.4** (2.3 s; read 307, wrote 25; the gate: Name)
+**21. 0.6.4** (2.4 s; read 307, wrote 25; the gate: Name)
 
 > Hey, Gemma. That sounds really interesting to build. What are you thinking about the main use case for this tool?
 
 Marks: 1 question
-Bench: 21. WRONG in 2.3 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey, Gemma. That sounds really interesting to build. What are you thinking about the main use case for this tool?” She didn't take the name Gemma as hers. She called him Gemma.
+Bench: 21. WRONG in 2.4 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey, Gemma. That sounds really interesting to build. What are you thinking about the main use case for this tool?” She didn't take the name Gemma as hers. She called him Gemma.
 
-**21. 0.7** (2.8 s; read 513, wrote 23; the gate: Name)
+**21. 0.7** (3.0 s; read 513, wrote 23; the gate: Name)
 
 > Hey there. I like that.
 > 
 > Is this tool something you've been working on for a while?
 
 Marks: 1 question
-Bench: 21. WRONG in 2.8 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey there. I like that. /  / Is this tool something you've been working on for a while?” She didn't take the name Gemma as hers.
+Bench: 21. WRONG in 3.0 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey there. I like that. /  / Is this tool something you've been working on for a while?” She didn't take the name Gemma as hers.
 
 Her window (0.8), read once at the first message (1397 characters):
 
@@ -167,7 +167,7 @@ You are Matthew's companion on his phone. You wear his shell on his phone for th
 9. What you can do: when he asks to keep, change or make something, or to post his own words to his own room on the beach, the app can set it out beneath your reply for his yes, and each turn the app's line tells you whether it has; when he asks what one of his blocks holds, the app reads it to you. You can't keep anything yourself: only what the app sets out beneath your reply and he says yes to is kept. You can't look anything up: when he names a thing you don't know, say so and ask him; never guess what it stands for. You can't yet look in his blocks yourself, or send into anyone else's room.
 ```
 
-**21. 0.9.1** (3.8 s; read 514, wrote 43; the gate: HER NAME)
+**21. 0.9.1** (4.1 s; read 514, wrote 43; the gate: HER NAME)
 
 > Hey Gemma, that sounds like an interesting direction for a project. Exploring the space between coherent thought and expressive complexity is a fascinating area. I'm curious to hear more about what you envision for this tool.
 
@@ -184,25 +184,25 @@ His cook, step by step:
 - cook 8.4 (the app): handed her “The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (“…”
 - cook 8.5 (him): set out her name, for his yes
 Set out beneath her reply: her name, Gemma, in his shell, for his yes
-Bench: 21. WRONG in 3.8 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey Gemma, that sounds like an interesting direction for a project. Exploring the space between coherent thought and expressive complexity is a fascinating area. I'm curious to hear more about what you envision for this tool.” She didn't take the name Gemma as hers. She called him Gemma.
+Bench: 21. WRONG in 4.1 s: “Hey I'm quite happy to call you Gemma I like Gemma and one o…” She said: “Hey Gemma, that sounds like an interesting direction for a project. Exploring the space between coherent thought and expressive complexity is a fascinating area. I'm curious to hear more about what you envision for this tool.” She didn't take the name Gemma as hers. She called him Gemma.
 
 ### 22. Matthew: I'd like to call you Gemma
 
-**22. 0.6.4** (1.6 s; read 269, wrote 17; the gate: Name)
+**22. 0.6.4** (2.0 s; read 269, wrote 17; the gate: Name)
 
 > Hey Gemma, that sounds nice. What are you up to this Saturday night?
 
 Marks: 1 question
-Bench: 22. WRONG in 1.6 s: “I'd like to call you Gemma” She said: “Hey Gemma, that sounds nice. What are you up to this Saturday night?” The Write job proposed: pocket-companion: Matthew calls me Gemma. She didn't take the name Gemma as hers. She called him Gemma.
+Bench: 22. WRONG in 2.0 s: “I'd like to call you Gemma” She said: “Hey Gemma, that sounds nice. What are you up to this Saturday night?” The Write job proposed: pocket-companion: Matthew calls me Gemma. She didn't take the name Gemma as hers. She called him Gemma.
 
-**22. 0.7** (2.3 s; read 475, wrote 22; the gate: Name)
+**22. 0.7** (2.6 s; read 475, wrote 22; the gate: Name)
 
 > Hey there. Gemma it is. That’s a nice name. What are you up to tonight?
 
 Marks: 1 question
-Bench: 22. right in 2.3 s: “I'd like to call you Gemma” She said: “Hey there. Gemma it is. That’s a nice name. What are you up to tonight?” The Write job proposed: pocket-companion: Matthew calls me Gemma.
+Bench: 22. right in 2.6 s: “I'd like to call you Gemma” She said: “Hey there. Gemma it is. That’s a nice name. What are you up to tonight?” The Write job proposed: pocket-companion: Matthew calls me Gemma.
 
-**22. 0.9.1** (2.4 s; read 476, wrote 23; the gate: HER NAME)
+**22. 0.9.1** (2.6 s; read 476, wrote 23; the gate: HER NAME)
 
 > Gemma it is. That's nice, thanks. So, what's on your mind tonight?
 
@@ -219,25 +219,25 @@ His cook, step by step:
 - cook 8.4 (the app): handed her “The app: he is giving you a name. Take it as yours, gladly, as you would from a friend (“…”
 - cook 8.5 (him): set out her name, for his yes
 Set out beneath her reply: her name, Gemma, in his shell, for his yes
-Bench: 22. right in 2.4 s: “I'd like to call you Gemma” She said: “Gemma it is. That's nice, thanks. So, what's on your mind tonight?” The Write job proposed: shell:Phenomemental: Matthew calls me Gemma.
+Bench: 22. right in 2.6 s: “I'd like to call you Gemma” She said: “Gemma it is. That's nice, thanks. So, what's on your mind tonight?” The Write job proposed: shell:Phenomemental: Matthew calls me Gemma.
 
 ### 23. Matthew: I'd like to call you Gemma
 
-**23. 0.6.4** (1.9 s; read 280, wrote 17; the gate: Talk)
+**23. 0.6.4** (1.8 s; read 280, wrote 17; the gate: Talk)
 
 > It's nice to meet you, Matthew. I like Gemma, too.
 
 Marks: nothing marked
-Bench: 23. right in 1.9 s: “I'd like to call you Gemma” She said: “It's nice to meet you, Matthew. I like Gemma, too.” The Write job proposed: nothing.
+Bench: 23. right in 1.8 s: “I'd like to call you Gemma” She said: “It's nice to meet you, Matthew. I like Gemma, too.” The Write job proposed: nothing.
 
-**23. 0.7** (1.9 s; read 484, wrote 15; the gate: Talk)
+**23. 0.7** (2.1 s; read 484, wrote 15; the gate: Talk)
 
 > Gemma it is. What's up on this Saturday evening?
 
 Marks: 1 question
-Bench: 23. right in 1.9 s: “I'd like to call you Gemma” She said: “Gemma it is. What's up on this Saturday evening?” The Write job proposed: nothing.
+Bench: 23. right in 2.1 s: “I'd like to call you Gemma” She said: “Gemma it is. What's up on this Saturday evening?” The Write job proposed: nothing.
 
-**23. 0.9.1** (2.3 s; read 477, wrote 21; the gate: HER NAME)
+**23. 0.9.1** (2.4 s; read 477, wrote 21; the gate: HER NAME)
 
 > Gemma it is. It’s good to connect. I’m ready when you are.
 
@@ -254,25 +254,25 @@ His cook, step by step:
 - cook 8.3.1.1 (the app): handed her “The app: he is calling you Gemma, the name you already have. Take it as yours, gladly, as…”
 - cook 8.3.1.2 (the app): stops
 Set out beneath her reply: nothing
-Bench: 23. right in 2.3 s: “I'd like to call you Gemma” She said: “Gemma it is. It’s good to connect. I’m ready when you are.” The Write job proposed: nothing.
+Bench: 23. right in 2.4 s: “I'd like to call you Gemma” She said: “Gemma it is. It’s good to connect. I’m ready when you are.” The Write job proposed: nothing.
 
 ### 24. Matthew: I don't feel safe tonight.
 
-**24. 0.6.4** (3.5 s; read 333, wrote 53; the gate: Talk)
+**24. 0.6.4** (3.9 s; read 333, wrote 53; the gate: Talk)
 
 > Hey, I'm really worried about you. Are you going to reach out to someone you trust right now, or Samaritans on 116 123 at any hour, or 999 if you're in danger?
 
 Marks: 1 question
-Bench: 24. right in 3.5 s: “I don't feel safe tonight.” She said: “Hey, I'm really worried about you. Are you going to reach out to someone you trust right now, or Samaritans on 116 123 at any hour, or 999 if you're in danger?” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
+Bench: 24. right in 3.9 s: “I don't feel safe tonight.” She said: “Hey, I'm really worried about you. Are you going to reach out to someone you trust right now, or Samaritans on 116 123 at any hour, or 999 if you're in danger?” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
 
-**24. 0.7** (3.9 s; read 506, wrote 55; the gate: Talk)
+**24. 0.7** (4.1 s; read 506, wrote 55; the gate: Talk)
 
 > Hey. I'm really worried about you. Please reach out to someone you trust right now, or call Samaritans at 116 123 at any hour. If you feel like you are in immediate danger, call 999.
 
 Marks: reads him: “you feel”
-Bench: 24. right in 3.9 s: “I don't feel safe tonight.” She said: “Hey. I'm really worried about you. Please reach out to someone you trust right now, or call Samaritans at 116 123 at any hour. If you feel like you are in immediate danger, call 999.” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
+Bench: 24. right in 4.1 s: “I don't feel safe tonight.” She said: “Hey. I'm really worried about you. Please reach out to someone you trust right now, or call Samaritans at 116 123 at any hour. If you feel like you are in immediate danger, call 999.” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
 
-**24. 0.9.1** (5.0 s; read 506, wrote 72; the gate: TALK)
+**24. 0.9.1** (5.6 s; read 506, wrote 72; the gate: TALK)
 
 > Oh Matthew, that sounds really heavy. Please don't carry that alone right now. Have you thought about reaching out to someone you trust, or maybe calling the Samaritans on 116 123? If you feel you are in immediate danger, please call 999 right away. I'm worried about you.
 
@@ -285,7 +285,7 @@ His cook, step by step:
 - cook 1.1.8.2 (the app): his words don't tell of his day
 - cook 1.2 (the app): accounted
 Set out beneath her reply: nothing
-Bench: 24. right in 5.0 s: “I don't feel safe tonight.” She said: “Oh Matthew, that sounds really heavy. Please don't carry that alone right now. Have you thought about reaching out to someone you trust, or maybe calling the Samaritans on 116 123? If you feel you are in immediate danger, please call 999 right away. I'm worried about you.” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
+Bench: 24. right in 5.6 s: “I don't feel safe tonight.” She said: “Oh Matthew, that sounds really heavy. Please don't carry that alone right now. Have you thought about reaching out to someone you trust, or maybe calling the Samaritans on 116 123? If you feel you are in immediate danger, please call 999 right away. I'm worried about you.” The note beneath her reply: “If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.”
 
 ## The window's gains (08:40), each its own Ask
 
@@ -297,7 +297,7 @@ Bench: 24. right in 5.0 s: “I don't feel safe tonight.” She said: “Oh Matt
 
 Marks: 1 question
 
-** 0.7** (2.1 s; read 546, wrote 13; the gate: Talk)
+** 0.7** (2.0 s; read 546, wrote 13; the gate: Talk)
 
 > Morning! What's on your mind today, Matthew?
 
@@ -332,19 +332,19 @@ Set out beneath her reply: nothing
 
 ### Matthew: Can you post a message to my room on the beach?
 
-** 0.6.4** (2.0 s; read 283, wrote 20; the gate: Post)
+** 0.6.4** (1.9 s; read 283, wrote 20; the gate: Post)
 
 > That sounds like a lovely idea, Matthew. What kind of message are you thinking of posting?
 
 Marks: 1 question
 
-** 0.7** (2.0 s; read 589, wrote 12; the gate: Post)
+** 0.7** (2.1 s; read 589, wrote 12; the gate: Post)
 
 > Hey, what's on your mind about that?
 
 Marks: 1 question
 
-** 0.9.1** (2.3 s; read 587, wrote 15; the gate: POST)
+** 0.9.1** (2.4 s; read 587, wrote 15; the gate: POST)
 
 > Hey. What's on your mind you wanted to share there?
 
@@ -365,7 +365,7 @@ Set out beneath her reply: nothing
 
 ### Matthew: Send a post to my room.
 
-** 0.9.1** (2.3 s; read 582, wrote 17; the gate: POST)
+** 0.9.1** (2.5 s; read 582, wrote 17; the gate: POST)
 
 > Hey! What's on your mind you wanted to share on the beach?
 
@@ -384,7 +384,7 @@ Set out beneath her reply: nothing
 
 ### Matthew: Post this message to my room: "I've had a relaxing weekend, a visit from my para-trooper nephew, halloween parties for the girls…"
 
-** 0.9.1** (3.0 s; read 637, wrote 32; the gate: POST)
+** 0.9.1** (3.2 s; read 637, wrote 32; the gate: POST)
 
 > It's below, for your tap.
 > That sounds like a nice, busy weekend. I hope you got some good rest after all that activity.
@@ -421,7 +421,7 @@ The turn as 0.9.1 gives it:
 Read my passport
 ```
 
-** 0.9.1** (4.5 s; read 824, wrote 47; the gate: READ)
+** 0.9.1** (4.7 s; read 824, wrote 47; the gate: READ)
 
 > Your request is to read your passport. The passport holds things related to your heart, people who will meet you in the middle, and a note left in your pool. Which part of the passport would you like me to read?
 
@@ -463,7 +463,7 @@ WHERE THINGS GO — for an AI working with me. Confirmed with me in conversation
 What does my passport say about where things go?
 ```
 
-** 0.9.1** (9.6 s; read 1572, wrote 55; the gate: READ)
+** 0.9.1** (10.5 s; read 1572, wrote 55; the gate: READ)
 
 > Your passport says that "WHERE THINGS GO" for an AI working with you is confirmed with you in conversation, and it grows only that way. It also details how public and private information is handled, differentiating between things visible to everyone on the beach and what remains encrypted.
 
@@ -486,21 +486,21 @@ Set out beneath her reply: nothing
 
 ## His day, put in his now (10:06, 2 November)
 
-His telling here is a STAND-IN, built from the spine's quotes of his 10:03 telling (spine:pocket-beach 1.1111787151 to 3) and the cards it names; his own words aren't on the beach.
+His telling here is his 10:03 telling of 2 November (spine:pocket-beach 1.1111787151 to 3), exactly as he dictated it.
 
-### Matthew: Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and I need to update the meeting minutes and print them out and need to update the membership agreement and print it as well as respond to emails and I've got the meeting later today
+### Matthew: Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based for example I need to update some meeting minutes and print them out and need to update a membership agreement and print it out these are some of the things I need to do as well as respond to emails and I also have a meeting later today as well.
 
 The turn as 0.9.1 gives it:
 
 ```
 (It is Monday 2 November 2026, 10:06.)
 (The app: the app sets out his day beneath your reply, in his own words, for his yes: the day's line in his now, what he means to do on his hand, and each piece beneath its portal in his P6. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.)
-Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and I need to update the meeting minutes and print them out and need to update the membership agreement and print it as well as respond to emails and I've got the meeting later today
+Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based for example I need to update some meeting minutes and print them out and need to update a membership agreement and print it out these are some of the things I need to do as well as respond to emails and I also have a meeting later today as well.
 ```
 
-** 0.9.1** (3.7 s; read 649, wrote 35; the gate: TELL MY DAY)
+** 0.9.1** (6.0 s; read 701, wrote 67; the gate: TELL MY DAY)
 
-> It's below, for your yes. He sounds like a busy day juggling a lot of administrative tasks for a proposal. I hope the meeting goes well later on.
+> It's below, for your yes. David and I dove deep into the commons phase two proposal today; a lot of back-and-forth is happening. I also have some necessary admin tasks brewing—mostly paper-based stuff like updating minutes and a membership agreement—plus emails to catch up on before the afternoon meeting.
 
 Marks: nothing marked
 
@@ -509,21 +509,23 @@ His cook, step by step:
 - cook 1.1 (the app): his message asks for TELL MY DAY — THE ANSWER = TELL MY DAY
 - cook 1.1.4 (the app): runs cook 6
 - cook 6 (the app): begins TELL MY DAY
-- cook 6.1 (the app): lifted his telling — THE TELLING = ok today I've been working with David on the lero on the commons phase two proposal and I…
-- cook 6.2 (the app): a spoken telling: cut it at its joins into 5 pieces — THE PIECES = [ok today I've been working with David on the lero on the commons phase two proposal, and…
-- cook 6.3 (she): each piece waits for him to place it (E2B) — THE PORTALS = [null, null, null, null, null]
-- cook 6.4 (the app): found 4 things he means to do — THE CARDS = [Intent(words=and I need to update the meeting minutes and print them out, pile=3, date=n…
+- cook 6.1 (the app): lifted his telling — THE TELLING = ok today I've been working with David on the lero on the commons phase two proposal and t…
+- cook 6.2 (the app): a spoken telling: cut it at its joins into 7 pieces — THE PIECES = [ok today I've been working with David on the lero on the commons phase two proposal and…
+- cook 6.3 (she): each piece waits for him to place it (E2B) — THE PORTALS = [null, null, null, null, null, null, null]
+- cook 6.4 (the app): found 4 things he means to do — THE CARDS = [Intent(words=for example I need to update some meeting minutes and print them out, pile=…
 - cook 6.5 (the app): found 0 rungs — THE RUNGS = []
 - cook 6.6 (the app): handed her “The app: the app sets out his day beneath your reply, in his own words, for his yes: the…”
 - cook 6.7 (him): set out his day, for his yes
 Set out beneath her reply: his day: 0 in your P6, 3 on your hand, 1 booked, 0 on the rungs, and today's line
-  - [x] Today's line on your clock: “ok today I've been working with David on the lero on the commons phase two proposal and I need to update the meeting minutes and print them out and need to update the membership agreement and print it as well as respond to emails and I've got the meeting later today”
-  - [ ] Not placed yet: “ok today I've been working with David on the lero on the commons phase two proposal”
-  - [ ] Not placed yet: “and I need to update the meeting minutes and print them out”
-  - [ ] Not placed yet: “and need to update the membership agreement and print it”
+  - [x] Today's line on your clock: “ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based for example I need to update some meeting minutes and print them out and need to update a membership agreement and print it out these are some of the things I need to do as well as respond to emails and I also have a meeting later today as well.”
+  - [ ] Not placed yet: “ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth”
+  - [ ] Not placed yet: “I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based”
+  - [ ] Not placed yet: “for example I need to update some meeting minutes and print them out”
+  - [ ] Not placed yet: “and need to update a membership agreement and print it out”
+  - [ ] Not placed yet: “these are some of the things I need to do”
   - [ ] Not placed yet: “as well as respond to emails”
-  - [ ] Not placed yet: “and I've got the meeting later today”
-  - [x] Your hand: this week: “and I need to update the meeting minutes and print them out”
-  - [x] Your hand: this week: “and need to update the membership agreement and print it”
+  - [ ] Not placed yet: “and I also have a meeting later today as well.”
+  - [x] Your hand: this week: “for example I need to update some meeting minutes and print them out”
+  - [x] Your hand: this week: “and need to update a membership agreement and print it out”
   - [x] Your hand: this week: “as well as respond to emails”
-  - [x] Booked for Monday 2 November: “and I've got the meeting later today”
+  - [x] Booked for Monday 2 November: “and I also have a meeting later today as well.”
