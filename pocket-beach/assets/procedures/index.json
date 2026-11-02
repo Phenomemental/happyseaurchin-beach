@@ -10,5 +10,13 @@
  {
   "name": "spine:p6",
   "file": "p6.json"
+ },
+ {
+  "name": "past-cook",
+  "file": "past-cook.json"
+ },
+ {
+  "name": "past-kernel",
+  "file": "past-kernel.json"
  }
 ]

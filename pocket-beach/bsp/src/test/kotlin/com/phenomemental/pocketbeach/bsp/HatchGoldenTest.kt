@@ -115,9 +115,35 @@ class HatchGoldenTest {
         return JsObj.of("name" to str("rockpool: his cook brought in, his days moved and told"), "seed" to seed, "calls" to JsArr(calls))
     }
 
+    /** 0.9.1 (spine:pocket-beach 1.1111787162): his cook as 0.9 left it, two places changed by him, brought up place by place; then the new sentence taken for one. */
+    private fun broughtUp(): JsObj {
+        val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../assets/procedures")))
+        val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
+        check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
+        check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
+        val past = parseJson(stringify(procedures.load("${Cook.PAST}${Cook.SHIPPED_COOK}"))!!) as JsObj
+        (past["5"] as JsObj)["6"] = str("Hand her THE READING and THE PLACE with this line: “The app: name its places for him in a sentence or two, never their lines.”")
+        (past["6"] as JsObj)["1"] = str("LIFT. Lift his telling from THE MESSAGE: after the colon first; else what he said before. Carry it as THE TELLING.")
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), past)).ok)
+        check(pages.carryOut(pages.planWhole(Cook.kernelOf(h), parseJson(stringify(procedures.load("${Cook.PAST}${Cook.SHIPPED_KERNEL}"))!!) as JsObj)).ok)
+        val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
+        val calls = mutableListOf<Js?>()
+        fun go(plan: Plan) {
+            assertTrue(plan.refusal == null, "${plan.block}: ${plan.refusal}")
+            calls += parseJson(stringify(plan.call!!)!!)
+            assertTrue(pages.carryOut(plan).ok, plan.block)
+        }
+        val ups = Cook.bringUp(h, pages, storage, procedures)
+        ups.mapNotNull { it.second }.forEach(::go)
+        val five = ups.flatMap { it.first.yours }.single { it.at == "5.6" }
+        go(pages.planChange(five.block, five.at, five.shipped!!))
+        for (b in listOf(Cook.cookOf(h), Cook.kernelOf(h))) calls += JsObj.of("agent_id" to str("pocket"), "block" to str(b))
+        return JsObj.of("name" to str("rockpool 0.9.1: his cook brought up place by place, his changes kept, one new sentence taken"), "seed" to seed, "calls" to JsArr(calls))
+    }
+
     @Test
     fun theHatchCasesAreWhatTheHatchMakes() {
-        val made = stringifyPretty(JsArr(mutableListOf<Js?>(case("the hatch, adopted, her name changed", true), case("the hatch, her name added", false), corrected(), rockpool()))) + "\n"
+        val made = stringifyPretty(JsArr(mutableListOf<Js?>(case("the hatch, adopted, her name changed", true), case("the hatch, her name added", false), corrected(), rockpool(), broughtUp()))) + "\n"
         if (System.getenv("HATCH_WRITE") == "1") file.writeText(made)
         assertTrue(file.isFile, "no $file: run with HATCH_WRITE=1, then conformance/generate.sh")
         assertEquals(file.readText(), made, "conformance/hatch-case.json lags the hatch: run with HATCH_WRITE=1, then conformance/generate.sh")

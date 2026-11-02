@@ -145,7 +145,9 @@ fun AskScreen(model: Model, nav: Nav) {
         scroll = scroll,
     ) {
         // 0.8.1: a shell 0.8 adopted, corrected once, said in the thread.
-        hatching.corrected?.let { Done(it, tag = "corrected") }
+        hatching.corrected?.let { Done(it, tag = "corrected", detail = hatching.broughtUp.takeIf { details && it.isNotEmpty() }?.joinToString("\n")) }
+        // 0.9.1: a place of his cook he changed, its new sentence shown beside his once.
+        hatching.offers.forEach { y -> Offer(model, y) }
         // 0.8: before the hatch, the opening; the hatch is how a new person comes in, so her own shell is no longer offered.
         if (hatching.known && (hatching.hatched == null || hatching.step is Hatching.Step.Done)) HatchCard(model)
         if (false && shell == null && shellChecked) {
@@ -899,3 +901,35 @@ private fun Bar(fraction: Float) {
         Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).height(6.dp).background(ink.crimson))
     }
 }
+
+/**
+ * 0.9.1 (spine:pocket-beach 1.1111787162): a place of his cook he changed,
+ * kept his; this version's sentence for it shown beside his, once, with Use
+ * the new one and Keep mine.
+ */
+@Composable
+private fun Offer(model: Model, y: com.phenomemental.pocketbeach.bsp.Cook.Yours) {
+    val ink = LocalInk.current
+    val scope = rememberCoroutineScope()
+    var why by remember(y) { mutableStateOf<String?>(null) }
+    val which = if (y.block.startsWith("kernel:")) "kernel" else "cook"
+    Sheet(Modifier.testTag("offer-${y.at}")) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Your $which's ${y.at} is yours, as you changed it, and is kept:", style = Type.small, color = ink.soft)
+            Text(Words.quoted(y.his ?: "(taken out)", 400), style = Type.body, color = ink.ink, modifier = Modifier.testTag("offer-his-${y.at}"))
+            Text("This version's ${y.at}:", style = Type.small, color = ink.soft)
+            Text(Words.quoted(y.shipped ?: "", 400), style = Type.body, color = ink.ink, modifier = Modifier.testTag("offer-new-${y.at}"))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Action("Use the new one", {
+                    scope.launch {
+                        why = withContext(Dispatchers.IO) { runCatching { model.app.hatching.useTheNewOne(y) }.getOrElse { it.message ?: "It couldn't be written." } }
+                        model.changed()
+                    }
+                }, tag = "use-new-${y.at}")
+                Action("Keep mine", { model.app.hatching.keepMine(y) }, tag = "keep-mine-${y.at}")
+            }
+            why?.let { Text(it, style = Type.small, color = ink.crimson) }
+        }
+    }
+}
+

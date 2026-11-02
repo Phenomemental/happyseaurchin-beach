@@ -96,10 +96,41 @@ object Days {
     fun timeWords(storage: BlockStorage): JsObj? = storage.read(Whens.BLOCK)?.let { runCatching { parseJson(it) }.getOrNull() } as? JsObj
 
     /** The pieces that say what he means to do (cook 9.9's words), each sized: a date is a booking, else the pile its time words name, else this week. */
-    fun intents(pieces: List<String>, words: List<String>, today: LocalDate, timeWords: JsObj?): List<Intent> = pieces.mapNotNull { p ->
-        val said = " ${plain(p)} "
-        if (words.none { w -> said.contains(" ${plain(w)} ") }) return@mapNotNull null
-        size(p, today, timeWords).let { (pile, date, by) -> Intent(p.trim(), pile, date, by) }
+    fun intents(pieces: List<String>, words: List<String>, today: LocalDate, timeWords: JsObj?): List<Intent> = intents(pieces, words, today, timeWords, emptyList(), emptyList())
+
+    /**
+     * 0.9.1 (spine:pocket-beach 1.1111787163): as above, and a piece cut at
+     * one of [joins] ("and need to", "as well as"), with no I of its own,
+     * carries on the piece before it: it is what he means to do when that one
+     * is. A piece naming one of [appointments] (a meeting, a call) with its day
+     * is a booking at that day, whether or not he says he means to.
+     */
+    fun intents(pieces: List<String>, words: List<String>, today: LocalDate, timeWords: JsObj?, joins: List<String>, appointments: List<String>): List<Intent> {
+        val out = mutableListOf<Intent>()
+        var before = false
+        for (p in pieces) {
+            val said = " ${plain(p)} "
+            val own = words.any { w -> said.contains(" ${plain(w)} ") }
+            val carried = before && joins.any { j -> said.startsWith(" ${plain(j)} ") } && !Regex("""\b(?:i|i'm|i've|i'll|i'd|we|we're|we've|we'll)\b""").containsMatchIn(plain(p))
+            val day = if (appointments.any { a -> said.contains(" ${plain(a)} ") }) dayOf(p, today, timeWords) else null
+            when {
+                day != null -> out += Intent(p.trim(), null, day.first, day.second)
+                own || carried -> out += size(p, today, timeWords).let { (pile, date, by) -> Intent(p.trim(), pile, date, by) }
+            }
+            before = day == null && (own || carried)
+        }
+        return out
+    }
+
+    /** The day a piece names, and the words that name it: today for today's words and the next hours, else the date its words give; null when it names none. */
+    private fun dayOf(piece: String, today: LocalDate, timeWords: JsObj?): Pair<LocalDate, String>? {
+        val (pile, date, by) = size(piece, today, timeWords)
+        if (by == null) return null
+        return when {
+            date != null -> date to by
+            pile == 1 || pile == 2 -> today to by
+            else -> null
+        }
     }
 
     /** A piece's size: a date it names (a booking), or a pile; and the words that said so. */

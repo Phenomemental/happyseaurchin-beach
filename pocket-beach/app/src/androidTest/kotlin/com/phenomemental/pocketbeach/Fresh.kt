@@ -43,6 +43,9 @@ object Fresh {
         app.storage.shut()
         app.hatching.reset()
         File(app.filesDir, com.phenomemental.pocketbeach.ui.Hatching.COPIES).deleteRecursively()
+        // 0.9.1: what the app shipped last, and the new sentences shown him beside his: a fresh phone has neither.
+        app.filesDir.listFiles()?.filter { it.name.startsWith("shipped-") }?.forEach { it.delete() }
+        File(app.filesDir, com.phenomemental.pocketbeach.ui.Hatching.OFFERED).delete()
         // 0.7: the app's copies of what she last saw.
         File(app.filesDir, com.phenomemental.pocketbeach.ui.Asking.COPIES).delete()
         app.lastSavedMs = null

@@ -113,13 +113,12 @@ class RockpoolDeviceTest {
             say("I've been making huge progress with my film making.")
             compose.waitFor("say", timeoutMs = 20_000)
             say("Keep that for me please")
-            // E2B: the ring of his places goes to him, his stash first.
-            compose.waitFor("where:stash:$h", timeoutMs = 20_000)
-            compose.tap("where:stash:$h")
+            // 0.9.1: no block named, so his stash, set out for his yes with no ring.
             compose.waitFor("yes", timeoutMs = 20_000)
             compose.tap("yes")
             compose.waitUntil(20_000) { stringify(block("stash:$h"))!!.contains("huge progress") }
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("cook 2.7 (the app): wrote it", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(10_000) { compose.onAllNodes(hasText("so his stash", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your yes."))
         }
     }
