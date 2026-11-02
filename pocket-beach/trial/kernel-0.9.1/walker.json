@@ -734,9 +734,9 @@
  {
   "name": "put in my now, spoken",
   "event": "his message (kernel 1: run cook 1)",
-  "message": "Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and I need to update the meeting minutes and print them out and need to update the membership agreement and print it as well as respond to emails and I've got the meeting later today",
+  "message": "Put this in my now: ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based for example I need to update some meeting minutes and print them out and need to update a membership agreement and print it out these are some of the things I need to do as well as respond to emails and I also have a meeting later today as well.",
   "before": [],
-  "her choices": "1, 4, 4, 4, 1",
+  "her choices": "1, 1, 4, 4, 4, 4, 1",
   "his answer": "yes, or tap, to whatever is set out (not to “Sort as my day”)",
   "walker": [
    {
@@ -770,23 +770,23 @@
     "reader": "walker",
     "did": "lifted his telling",
     "carried": {
-     "THE TELLING": "ok today I've been working with David on the lero on the commons phase two proposal and I need to update the meeting minutes and print them out and need to update the membership agreement and print it…"
+     "THE TELLING": "ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based for example I need to update some meeting minutes and print them out and need to update a membership agreement and print it out these are some of the things I need to do as well as respond to emails and I also have a meeting later today as well."
     }
    },
    {
     "at": "6.2",
     "reader": "walker",
-    "did": "a spoken telling: cut it at its joins into 5 pieces",
+    "did": "a spoken telling: cut it at its joins into 7 pieces",
     "carried": {
-     "THE PIECES": "[ok today I've been working with David on the lero on the commons phase two proposal, and I need to update the meeting minutes and print them out, and need to update the membership agreement and print…"
+     "THE PIECES": "[ok today I've been working with David on the lero on the commons phase two proposal and there's lots of messages back and forth, I'm also going to need two actually do a bit of administration which is more arduous because it's going to be paper-based, for example I need to update some meeting minutes and print them out, and need to update a membership agreement and print it out, these are some of the things I need to do, as well as respond to emails, and I also have a meeting later today as well.]"
     }
    },
    {
     "at": "6.3",
     "reader": "she",
-    "did": "she chose 5 of 5 portals",
+    "did": "she chose 7 of 7 portals",
     "carried": {
-     "THE PORTALS": "[1.1, 2.1, 2.1, 2.1, 1.1]"
+     "THE PORTALS": "[1.1, 1.1, 2.1, 2.1, 2.1, 2.1, 1.1]"
     }
    },
    {
@@ -794,7 +794,7 @@
     "reader": "walker",
     "did": "found 4 things he means to do",
     "carried": {
-     "THE CARDS": "[Intent(words=and I need to update the meeting minutes and print them out, pile=3, date=null, by=null), Intent(words=and need to update the membership agreement and print it, pile=3, date=null, by=nul…"
+     "THE CARDS": "[Intent(words=for example I need to update some meeting minutes and print them out, pile=3, date=null, by=null), Intent(words=and need to update a membership agreement and print it out, pile=3, date=null, by=null), Intent(words=as well as respond to emails, pile=3, date=null, by=null), Intent(words=and I also have a meeting later today as well., pile=null, date=2026-11-01, by=today)]"
     }
    },
    {

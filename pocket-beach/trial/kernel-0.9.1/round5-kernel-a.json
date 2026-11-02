@@ -1,0 +1,416 @@
+[
+ {
+  "name": "keep",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACE": "stash:Phenomemental"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": []
+ },
+ {
+  "name": "keep, two named",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACES": "stash:Phenomemental, films"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2.1",
+    "reader": "she",
+    "carried": {
+     "THE PLACE": "films"
+    }
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "2.1 “what follows an asking verb when it says more than this, that, it, for me, please or the blocks it is to go in”: after “Keep” comes “that in my stash or in films”. The sentence does not say whether the small words around the block names (“in”, “my”, “or”) count as part of “the blocks it is to go in”; read word by word they are not in the list. I took “in my stash or in films” as the blocks it is to go in, so the sentence said nothing more, and fell to “else what he said before”. Read strictly by words, THE WORDS would have been some of “in my stash or in films” instead.",
+   "2.5.2.1 “She chooses where THE WORDS belong among THE PLACES, in the order of the ring beneath”, with the ring beneath being 1 “his stash”, 2 “his other blocks, in his manifest's order”: the sentence does not say whether value 2 is one value or one position per block, or whether it covers only THE PLACES or all his other blocks. I built the ring from THE PLACES in the ring's order (1 stash:Phenomemental, 2 films), so her 2 is films. If value 2 were spread over every other block in his manifest, her 2 would be Million instead.",
+   "2.5.2.1: the step gives no line to hand her for the ring (her words are never shown, but what she is shown is not written), so I handed her nothing new and took her given digit 2. Her answer is whole and the model is E4B, so the ring did not go to him."
+  ]
+ },
+ {
+  "name": "post",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "Back on Tuesday"
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.4",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "3.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.6",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent, and never write his message out again in your reply: it stands beneath. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two. Speak to him as you, never by his name."
+  ],
+  "could not": []
+ },
+ {
+  "name": "post, no words",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": ""
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: he asks to post to his own room on the beach but gives no words of his own, so nothing is set out. Ask him, in a few words, what he'd like to say; never write the message for him, or in his voice. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1 by cook 9 (“with the asking at 9.8 taken off”; 9.8 “taken off his words before they are matched or kept”): 9.8's list includes “to”. 9.8 does not say whether the asking comes off only the ends of a clause or wherever it appears. Taken out everywhere, “Send a post to my room.” would become “Send a post my room.”, would match neither “send … to my room” nor “post to”, and would fall to TALK (the last answer). I took “taken off” as off the clause's ends, as cook 2.1 and 6.1 say, and matched the phrases on the message as it stands. “send … to my room” (… = “a post”, two words) and “post to” both match, so the answer is POST."
+  ]
+ },
+ {
+  "name": "make",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "MAKE"
+    }
+   },
+   {
+    "at": "1.1.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.1",
+    "reader": "walker",
+    "carried": {
+     "THE NAME": "sailing"
+    }
+   },
+   {
+    "at": "4.2",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "knots I'm learning"
+    }
+   },
+   {
+    "at": "4.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.3.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "4.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": []
+ }
+]
