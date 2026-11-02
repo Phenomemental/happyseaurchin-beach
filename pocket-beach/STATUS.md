@@ -4,15 +4,31 @@ Current state only. Newest first.
 
 ## Now
 
-**Rockpool 0.9.1 is built and judged, and every check passes (2 November,
-spine:pocket-beach 1.111178716).** Checks (a), (b) and (e) ran on his own
-words, as he sent them: his 10:03 telling as dictated, and his 5.6 and 6.1
-as he wrote them on his Pixel. Cook 8.5 and 6.2 were put right first, and
-6.4 so that a piece naming nothing to do is never a card. It is released
-from main once this branch is merged, as `rockpool-v0.9.1`.
+**Rockpool 0.9.1 is released (2 November):**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9.1
+- **Install:** `rockpool-v0.9.1.apk` over Rockpool 0.9; his blocks stay.
+  At first opening the app saves a whole copy of the pocket, then brings
+  his cook and kernel up place by place. The places he changed stay his;
+  his 5.6 is shown once beside the new one, with Use the new one and Keep
+  mine. His 6.1 is word for word 0.9.1's, so it needs no card.
+- **Signed** with the same key as every release (certificate SHA-256
+  `217887a6…`). The package id is unchanged, so it installs over 0.9.
+- **Version** 0.9.1 (22), from main at `30e1d24` (PR #232). APK SHA-256
+  `3da85324…`. The procedures it carries are byte for byte
+  `assets/procedures`. The beach and the model's hosts are its only
+  trusted hosts, with no cleartext.
+- **To try:**
+  - "Put this in my now: " and a day as he speaks it: today's line, what
+    he means to do on his hand, a meeting booked, for his yes.
+  - "Read my passport", with his 5.6 or the new one: the card at opening
+    lets him choose. With his own it runs longer (`trial/judged-0.9.1.md`).
+  - His now on the Block screen: it opens at today.
 
-See "0.9.1: what his Pixel found, built, and judged" and
-`trial/judged-0.9.1.md`.
+**Rockpool 0.9.1, what his Pixel found (2 November, spine:pocket-beach
+1.111178716):** every check of point 5 passed on E4B. Checks (a), (b) and
+(e) ran on his own words as he sent them: his 10:03 telling, and his 5.6
+and 6.1. Cook 8.5, 6.2 and 6.4 were put right first. See "0.9.1: what his
+Pixel found, built, and released" and `trial/judged-0.9.1.md`.
 
 **Rockpool 0.9 is released (1 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9
@@ -1412,7 +1428,7 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
 
-## 0.9.1: what his Pixel found, built, and judged
+## 0.9.1: what his Pixel found, built, and released
 
 Built on Monday 2 November 2026 from spine:pocket-beach 1.111178716 and
 the points beneath it, carrying 1.111178715 and beneath (read from
