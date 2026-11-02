@@ -1,0 +1,427 @@
+[
+ {
+  "name": "keep",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACE": "stash:Phenomemental"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "2.1 “else what he said before”: the sentence doesn't say whether the asking at cook 9.8 comes off what he said before, or which of his earlier messages is meant when there are several. There was one, with no asking at its ends, so I lifted it whole, as he wrote it, full stop kept. (“Keep that for me please” has no colon, and after the asking verb “Keep” it says only that, for me and please, so his sentence gives no words.)",
+   "2.8 “ACCOUNT. Account what was kept, and where.” and 1.2 “ACCOUNT. Account the answer taken.”: the sentences carry no formula for where the account is written or in what words (cook:keel's ACCOUNT names a call; these name none, and cook 7.1 later appends what was done to his history at the close). I walked each as an account step that sets no capitalised value and wrote nothing of my own."
+  ]
+ },
+ {
+  "name": "keep, two named",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "KEEP"
+    }
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACES": "stash:Phenomemental, films"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2.1",
+    "reader": "she",
+    "carried": {
+     "THE PLACE": "films"
+    }
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "2.1 “what follows an asking verb when it says more than this, that, it, for me, please or the blocks it is to go in”: after “Keep” comes “that in my stash or in films”. The list doesn't name the joining words around the blocks (in, my, or). I counted “in my stash or in films” as the blocks it is to go in, so the sentence said nothing more, and I lifted what he said before.",
+   "2.5.2.1 “She chooses where THE WORDS belong among THE PLACES, in the order of the ring beneath”: place 2 of the ring is “his other blocks, in his manifest's order”, which describes a group of blocks rather than naming one. I read the ring as THE PLACES in that order: 1 his stash (stash:Phenomemental), then the rest in his manifest's order, which leaves only films at 2. Her digit 2 is whole and the model is E4B, so the ring stayed with her and THE PLACE is films. If THE PLACES held three or more blocks, the ring would need more positions than the two places beneath it.",
+   "2.5.2.1: the sentence gives no line to hand her for the ring, so I handed her none and took her given digit (2). Only the “Hand her this line” steps appear under “handed her”.",
+   "2.8 “ACCOUNT. Account what was kept, and where.” and 1.2 “ACCOUNT. Account the answer taken.”: the sentences carry no formula for where the account is written or in what words (cook:keel's ACCOUNT names a call; these name none, and cook 7.1 later appends what was done to his history at the close). I walked each as an account step that sets no capitalised value and wrote nothing of my own."
+  ]
+ },
+ {
+  "name": "post",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "Back on Tuesday"
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.4",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "3.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.6",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent, and never write his message out again in your reply: it stands beneath. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "3.1 “after the colon, its quote marks taken off”: what follows the colon is a space and then \"Back on Tuesday\" in quotes. The formula names only the quote marks, so I also took off the space before them and kept every word in order: Back on Tuesday.",
+   "3.6 “ACCOUNT. Account what was posted.” and 1.2 “ACCOUNT. Account the answer taken.”: the sentences carry no formula for where the account is written or in what words (cook:keel's ACCOUNT names a call; these name none, and cook 7.1 later appends what was done to his history at the close). I walked each as an account step that sets no capitalised value and wrote nothing of my own."
+  ]
+ },
+ {
+  "name": "post, no words",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "POST"
+    }
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": ""
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: he asks to post to his own room on the beach but gives no words of his own, so nothing is set out. Ask him, in a few words, what he'd like to say; never write the message for him, or in his voice. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1 via cook 9 “a clause of it, with the asking at 9.8 taken off”: neither 9 nor 9.8 says to take the asking off only at the ends (2.1 and 6.1 do), and 9.8's list includes “to”. Taken off everywhere, “Send a post to my room.” would lose its “to”, and neither “post to” nor “send … to my room” would match, so it would fall to TALK. I took the asking off the ends only (there was none to take) and matched the phrases against the message as he wrote it. It holds “post to” and “send … to my room” (… = “a post”), so the answer is POST, the second answer beneath 1.1 and the first that matched.",
+   "3.2.2.2 “Stop.” against the opening line's “Every procedure ends with ACCOUNT”: “Stop.” ends the whole walk, so I walked neither 3.6 ACCOUNT nor 1.2 ACCOUNT, and the answer taken goes unaccounted. No yes or tap was asked for, so his answer (none given) was never needed."
+  ]
+ },
+ {
+  "name": "make",
+  "trace": [
+   {
+    "at": "1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {
+     "THE ANSWER": "MAKE"
+    }
+   },
+   {
+    "at": "1.1.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.1",
+    "reader": "walker",
+    "carried": {
+     "THE NAME": "sailing"
+    }
+   },
+   {
+    "at": "4.2",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "knots I'm learning"
+    }
+   },
+   {
+    "at": "4.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.3.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "4.7",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "4.5 “Is there a block called THE NAME already?”: the sentence doesn't say where to look. I looked at his blocks in his manifest's order (Million, book, films, garden, history:Phenomemental, notes, passport:Phenomemental, shell:Phenomemental, stash:Phenomemental) and at the pocket's blocks. None is called sailing, so I took 4.5.2.",
+   "4.8 “ACCOUNT. Account the block made.” and 1.2 “ACCOUNT. Account the answer taken.”: the sentences carry no formula for where the account is written or in what words (cook:keel's ACCOUNT names a call; these name none, and cook 7.1 later appends what was done to his history at the close). I walked each as an account step that sets no capitalised value and wrote nothing of my own."
+  ]
+ }
+]

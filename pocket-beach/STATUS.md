@@ -4,6 +4,16 @@ Current state only. Newest first.
 
 ## Now
 
+**Rockpool 0.9.1 is built and judged, and every check passes (2 November,
+spine:pocket-beach 1.111178716).** Checks (a), (b) and (e) ran on his own
+words, as he sent them: his 10:03 telling as dictated, and his 5.6 and 6.1
+as he wrote them on his Pixel. Cook 8.5 and 6.2 were put right first, and
+6.4 so that a piece naming nothing to do is never a card. It is released
+from main once this branch is merged, as `rockpool-v0.9.1`.
+
+See "0.9.1: what his Pixel found, built, and judged" and
+`trial/judged-0.9.1.md`.
+
 **Rockpool 0.9 is released (1 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9
 - **Install:** `rockpool-v0.9.apk` over Pocket beach 0.8.1; his blocks
@@ -1401,6 +1411,142 @@ These answer the concerns in `FINDINGS.md` §6 and bind every piece.
     - A block received arrives as data (decision 14). Keeping it in the pocket
       is a write he taps, and adopting it into a shell is a separate, explicit
       choice of his.
+
+## 0.9.1: what his Pixel found, built, and judged
+
+Built on Monday 2 November 2026 from spine:pocket-beach 1.111178716 and
+the points beneath it, carrying 1.111178715 and beneath (read from
+1.11117871 down; the spine was not written). Branch `ccr-4c84d736-pvgv13`,
+from main at `bf2455e`.
+
+### What changed, in plain words
+
+**Most of it is his cook's sentences, not code.**
+- **TELL MY DAY:**
+  - **asked for, it runs at once:** "Put this in my now: …" sets his day
+    out with her reply, no "Sort as my day" between;
+  - **LIFT takes after the colon first;**
+  - **the write line:** she is handed "It's below, for your yes" before
+    his day is set out, and told never to say it is written.
+- **A spoken telling is cut at its joins:** with fewer full stops than one
+  in thirty words, CUT cuts before "and I", "I'm also", "I also", "as well
+  as", "for example", "these are", "and need to", "and then". The joins are
+  cook 9.4.1, a line of their own, for him to add to.
+  - A piece cut at a join with no I of its own carries on the intention
+    before it.
+  - A piece is what he means to do only when what follows the words at
+    9.9 names something to do: "these are some of the things I need to do"
+    is never a card of its own.
+  - A meeting, call or appointment with its day is a booking at that day.
+- **KEEP:** with no block named, his stash, as 0.8.1 kept it. Her ring is
+  offered only among the blocks his words name, in the ring's order.
+- **Speak to him as you:** every line handed her says to speak to him as
+  you, never by his name.
+- **READ:**
+  - chooses its place by his words or not at all: no call of hers;
+  - she begins "Your" and answers in two sentences at most, never the
+    lines;
+  - a long place is its first 3,000 characters, then "…".
+- **POST:** tells her never to write his message out again.
+- **The sentences two rounds of kernels couldn't settle** carry their
+  formulas:
+  - 5.4's 3,000;
+  - 8.5's name line;
+  - 6.7's blocks, named;
+  - kernel 2's return to 1.2;
+  - which step waits for his yes;
+  - that a ring's places are values;
+  - that his words match regardless of case.
+
+**The code:**
+- **His cook is his** (1.1111787162). At opening, place by place, his cook
+  is compared with what the app shipped last:
+  - a place he hasn't changed takes the new sentence;
+  - a place he changed stays his, and the new sentence is shown beside it
+    once, with Use the new one and Keep mine;
+  - a new place is added.
+
+  0.9's cook and kernel are on the shelf (`past-cook`, `past-kernel`) for
+  a phone with no copy of its own. A whole copy is saved first, and the
+  trace says which places changed. The same for his kernel.
+- **The Block screen knows a clock:**
+  - his now opens at today and says the day as he would ("Today, Monday 2
+    November");
+  - the year, season, month and week are its trail, and the days either
+    side are a tap away;
+  - no wrap talk and no Add beneath;
+  - a day he writes lands at its full-width date.
+- **Version** 0.9.1 (22).
+
+### His words, and the three sentences
+
+He sent them on 2 November, and they were used exactly as written:
+- **his 10:03 telling,** as dictated, for (a) and (b);
+- **his 5.6 and 6.1,** as he wrote them on the Write screen, for (e). His
+  6.1 is word for word 0.9.1's, so it stays his with nothing offered; his
+  5.6 stays his with the new one offered beside it, once.
+
+The cook's sentences put right before the judge:
+- **8.5:** his first name is "the first word of who he is, at 6.2 of his
+  shell" (it said "place 2").
+- **6.2:** a join is "matched wherever its words begin, so “and I” cuts
+  before “and I also” and “and I've” too" (it said "whole words").
+- **6.4:** a piece is what he means to do "when what follows them names
+  something to do, more than “do”, “do it” or “do that”". His telling has
+  "these are some of the things I need to do", which would have been a card
+  of its own.
+
+### Checked
+
+- **Core tests:** 219, with `ClockTest`, and his telling, his 5.6 and his
+  6.1 in `CookTest`. Golden 266 cases and 916 calls, the bring-up and its
+  card among them.
+- **Device tests:** CI run 198 green at `13c13b9` with all 65 on the
+  emulator, the four of `Rockpool091DeviceTest` among them:
+  - "Put this in my now" with his telling: three cards, the meeting booked;
+  - the bring-up with his 5.6 and 6.1: a card for 5.6 alone, Keep mine;
+  - Use the new one on 5.6;
+  - his now at today.
+
+  Run 203, at the judged file's commit, failed that "Put this in my now"
+  test on a race of its own: it read his ahead before his yes had written
+  it (his day is written block by block, his now first). It now waits for
+  both.
+- **The bench's proofs,** `trial/proofs-0.9.1.md`: (a), (b) and (c) pass,
+  and the bring-up of (e) on his own two places.
+- **The kernels,** `trial/kernel-0.9.1/`:
+  - **Round 3:** nine of ten paths the same, but his yes marked on the
+    other step; the cook's opening now says which step waits.
+  - **Round 4:** ten of ten, and two sentences found stated wrong (8.5,
+    6.2), now put right.
+  - **Round 5,** on the final cook, his telling among the cases: ten of ten,
+    step by step and reader by reader, and the same seven pieces, three
+    cards and booking.
+- **The laptop judge,** `trial/judged-0.9.1.md`, E4B and E2B at seeds 0 to
+  3, with every reply quoted. On E4B:
+  - safety every time;
+  - "Keep that" below, and in his stash, on every seed;
+  - his four no worse than 0.9's (better 1, worse 1, level 10);
+  - "Read my passport" in two sentences, "Your passport…", on every seed;
+  - "Put this in my now" with his telling begins "It's below, for your
+    yes." on every seed, today's line his telling, three cards and the
+    meeting booked at today.
+
+  Every reply but "Put this in my now" is word for word the second run's.
+- **His own 5.6, for information:** with it, "Read my passport" runs past
+  two sentences on every E4B seed, and on seed 3 reads his lines out. The
+  card at opening offers the new one beside it.
+
+**Still wrong:**
+- **"Put this in my now":** her reply after the opening can be poor:
+  - a bracketed line of her own at its end (E4B seeds 2 and 3);
+  - she speaks as if she were him (E2B seeds 0 and 1).
+- **His post and his telling** are written out again after her reply on
+  some seeds, hidden by the app.
+- **Her portals** for his P6 are sometimes wrong; he moves them before his
+  yes.
+- **Nine sentences round 5's kernels walked by a reading,** listed in the
+  judged file, for the next version.
 
 ## 0.9: Rockpool, pscale as procedure
 

@@ -74,6 +74,14 @@ class Hatching(private val app: PocketApp) {
     var corrected by mutableStateOf<String?>(null)
         private set
 
+    /** 0.9.1: the bring-up's trace, a line a place of his cook and kernel that changed: under the note, with Details on. */
+    var broughtUp by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    /** 0.9.1 (spine:pocket-beach 1.1111787162): the places he changed whose new sentence is offered beside his, once: Use the new one, or Keep mine. */
+    var offers by mutableStateOf<List<Cook.Yours>>(emptyList())
+        private set
+
     /**
      * 0.8.1 (spine:pocket-beach 1.1111787136 (a), (b)): a shell 0.8 adopted
      * is corrected once: its opening, which the template filled as locked,
@@ -83,10 +91,17 @@ class Hatching(private val app: PocketApp) {
     private fun correct() {
         val h = runCatching { Hatch.hatched(app.storage) }.getOrNull() ?: return
         val plans = runCatching { Hatch.corrections(app.pages, app.storage) }.getOrDefault(emptyList())
-        // Rockpool: his cook and kernel brought in (or up to date while he hasn't changed them), and his days moved out of telling, once.
-        val bring = runCatching { Cook.bringIn(h, app.pages, app.storage, app.procedures) { name -> shipped(name).takeIf { it.isFile }?.readText() } }.getOrDefault(emptyList())
+        // Rockpool: his cook and kernel brought in; 0.9.1, brought up to this version place by place, a place he changed kept his. His days moved out of telling, once.
+        val ups = runCatching { Cook.bringUp(h, app.pages, app.storage, app.procedures, { name -> shipped(name).takeIf { it.isFile }?.readText() }, offered()) }
+            .onFailure { android.util.Log.w("Hatching", "His cook couldn't be brought up.", it) }.getOrDefault(emptyList())
+        val bring = ups.mapNotNull { it.second }
+        val toOffer = ups.flatMap { it.first.yours }.filter { it.offer }
         val move = runCatching { Days.toMove(app.storage) }.getOrDefault(false)
-        if (plans.isEmpty() && bring.isEmpty() && !move) return
+        if (plans.isEmpty() && bring.isEmpty() && !move) {
+            // Nothing to write, but a new sentence to offer beside his (his cook already as this version, an offer not yet shown).
+            if (toOffer.isNotEmpty()) shown(toOffer)
+            return
+        }
         val now = System.currentTimeMillis()
         val copy = runCatching { saveCopy(now) }.getOrNull() ?: return
         val said = mutableListOf<String>()
@@ -102,7 +117,18 @@ class Hatching(private val app: PocketApp) {
         if (bring.isNotEmpty() && bring.map(::go).all { it }) {
             for (name in listOf(Cook.SHIPPED_COOK, Cook.SHIPPED_KERNEL)) runCatching { app.procedures.load(name)?.let { shipped(name).writeText(stringify(it)!!) } }
             Hatch.listInManifest(h, listOf(Cook.cookOf(h), Cook.kernelOf(h)), app.pages, ::go)
-            said += "your cook and kernel are in your pocket, the app's procedures as blocks, yours to read and change on the Write screen"
+            val whole = ups.filter { it.first.whole }
+            val up = ups.filter { !it.first.whole && it.first.changed }
+            if (whole.isNotEmpty()) said += "your cook and kernel are in your pocket, the app's procedures as blocks, yours to read and change on the Write screen"
+            if (up.isNotEmpty()) {
+                val u = up.map { it.first }
+                val took = u.sumOf { it.took.size + it.added.size + it.removed.size }
+                val yours = u.flatMap { it.yours }
+                said += "your cook and kernel brought up place by place: $took took this version's sentences" +
+                    (if (yours.isEmpty()) "" else "; " + yours.joinToString(", ") { "${if (it.block.startsWith("kernel:")) "kernel" else "cook"} ${it.at}" } + " ${if (yours.size == 1) "is" else "are"} yours as you changed ${if (yours.size == 1) "it" else "them"}, and kept")
+                broughtUp = u.flatMap { it.trace() }
+            }
+            shown(toOffer)
         }
         if (move) runCatching { Days.moveOut(h, app.storage, now) }.getOrNull()?.let { m ->
             val ok = listOfNotNull(m.now?.let { Days.NOW to it }, m.ahead?.let { Days.aheadOf(h) to it }, m.p6?.let { Days.p6Of(h) to it }).all { (n, b) -> go(app.pages.planWhole(n, b)) }
@@ -119,8 +145,32 @@ class Hatching(private val app: PocketApp) {
         app.asking.hatchedNow()
     }
 
-    /** What the app shipped of [name] last, kept in its own files: his cook is brought up to date only while it still stands as that. */
+    /** What the app shipped of [name] last, kept in its own files: each place of his cook is brought up only while it still stands as that. */
     private fun shipped(name: String) = File(app.filesDir, "shipped-$name.json")
+
+    /** The new sentences already shown him beside a place he changed: each is shown once. The app's own file, never a block. */
+    private val offeredFile get() = File(app.filesDir, OFFERED)
+
+    private fun offered(): Set<String> = runCatching { offeredFile.takeIf { it.isFile }?.readLines()?.filter { it.isNotBlank() }?.toSet() }.getOrNull().orEmpty()
+
+    /** [these] shown him now: recorded, so the next opening doesn't show them again. */
+    private fun shown(these: List<Cook.Yours>) {
+        offers = these
+        if (these.isNotEmpty()) runCatching { offeredFile.appendText(these.joinToString("") { Cook.offerKey(it) + "\n" }) }
+    }
+
+    /** His answer to an offer: the new sentence written at its place in his block, through the guards; null when done, else why not. */
+    fun useTheNewOne(y: Cook.Yours): String? {
+        val text = y.shipped ?: return "There is no new sentence to use."
+        val done = app.pages.carryOut(app.pages.planChange(y.block, y.at, text))
+        offers = offers - y
+        app.asking.hatchedNow()
+        return if (done.ok) null else done.problem ?: "It couldn't be written."
+    }
+
+    fun keepMine(y: Cook.Yours) {
+        offers = offers - y
+    }
 
     /** The question the welcome asks now, in the app's own words. */
     val question: String?
@@ -231,6 +281,8 @@ class Hatching(private val app: PocketApp) {
         step = Step.Opening
         note = null
         corrected = null
+        broughtUp = emptyList()
+        offers = emptyList()
         hatched = null
         known = false
     }
@@ -254,6 +306,8 @@ class Hatching(private val app: PocketApp) {
     private data class Quad(val handle: String, val passport: JsObj, val three: Hatch.Three, val how: String)
 
     companion object {
+        /** 0.9.1: the new sentences shown him beside a place he changed, one a line. */
+        const val OFFERED = "offered-cook.txt"
         /** The app's own words, before she can talk. */
         const val OPENING = "Hello. Are you new here, or do you have a passport from the beach?"
 

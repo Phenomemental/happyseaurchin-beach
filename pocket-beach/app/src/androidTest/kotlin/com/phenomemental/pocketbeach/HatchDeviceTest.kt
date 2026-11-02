@@ -120,9 +120,7 @@ class HatchDeviceTest {
             compose.waitFor("say")
             assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart (his words, about him, not you): “${Hatch.MATTHEW.heart}”"))
             answer("Keep that for me please")
-            // Rockpool: KEEP, from his cook. On E2B the ring of his places goes to him, his stash first.
-            compose.waitFor("where:stash:Phenomemental", timeoutMs = 20_000)
-            compose.tap("where:stash:Phenomemental")
+            // Rockpool 0.9.1: KEEP, from his cook: no block named, so his stash, for his yes.
             compose.waitFor("yes", timeoutMs = 20_000)
             compose.tap("yes")
             compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }

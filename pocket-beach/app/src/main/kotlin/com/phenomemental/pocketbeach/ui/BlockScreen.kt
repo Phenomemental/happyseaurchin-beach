@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.bsp.Clock
 import com.phenomemental.pocketbeach.bsp.Kind
 import com.phenomemental.pocketbeach.bsp.Line
 import com.phenomemental.pocketbeach.bsp.PositionView
@@ -48,6 +49,17 @@ fun BlockScreen(model: Model, nav: Nav, screen: Screen.Block) {
     }
     fun standAt(address: String) = nav.replace(screen.copy(address = address))
     val v = view
+    // 0.9.1 (spine:pocket-beach 1.1111787164): a clock opens at today, its rungs above as words, the days either side to step to.
+    val clock by produceState<Boolean?>(null, screen.region, screen.name, model.version) {
+        value = withContext(Dispatchers.IO) {
+            runCatching { screen.region == Region.POCKET && model.pages.position(screen.region, screen.name)?.let { Clock.isClock(screen.name, it.floor, it.text) } == true }.getOrDefault(false)
+        }
+    }
+    if (clock == null) return
+    if (clock == true) {
+        ClockScreen(model, nav, screen, v)
+        return
+    }
     BackHandler(enabled = screen.address.isNotEmpty()) { standAt(v?.up() ?: "") }
 
     val mine = screen.region == Region.POCKET
@@ -214,3 +226,64 @@ private fun Break() {
     Text("·   ·   ·", style = Type.small, color = LocalInk.current.soft, textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), maxLines = 1, overflow = TextOverflow.Clip)
 }
+
+/**
+ * 0.9.1: a clock, his now. It opens at today and says the day as he would
+ * ("Today, Monday 2 November") above the day's line; the year, season, month
+ * and week are its trail; the days either side are a tap away. It never says
+ * a clock has wrapped and never offers Add beneath: Write this line on a day
+ * writes that day's line, at its date.
+ */
+@Composable
+private fun ClockScreen(model: Model, nav: Nav, screen: Screen.Block, v: PositionView?) {
+    val ink = LocalInk.current
+    val today = java.time.LocalDate.now()
+    fun standAt(address: String) = nav.replace(screen.copy(address = address))
+    LaunchedEffect(screen.address) { if (screen.address.isEmpty()) standAt(Clock.dayOf(today)) }
+    if (screen.address.isEmpty()) return
+    val date = Clock.dateOf(screen.address)
+    Page(
+        onBack = { nav.back() },
+        top = {
+            Text(screen.name, style = Type.name, color = ink.crimson, maxLines = 1,
+                modifier = Modifier.clickable { standAt(Clock.dayOf(today)) }.padding(vertical = 8.dp).testTag("trail:"))
+            Clock.trail(screen.address).forEach { at ->
+                Text("  ›  ", style = Type.small, color = ink.soft)
+                Text(Clock.rungSaid(at, today), style = Type.small, color = ink.crimson, maxLines = 1,
+                    modifier = Modifier.clickable { standAt(at) }.padding(vertical = 8.dp).testTag("clock-trail:$at"))
+            }
+        },
+        bottom = {
+            Action(if (v?.text == null) "Write this line" else "Change this line", {
+                nav.go(Screen.Write(Kind.CHANGE, screen.name, screen.address))
+            }, Modifier.weight(1f), tag = "change")
+        },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(Clock.rungSaid(screen.address, today), style = Type.heading.copy(fontSize = Type.body.fontSize), color = ink.crimson, modifier = Modifier.testTag("clock-day"))
+            val text = v?.text
+            Text(
+                text ?: "Nothing is written here yet.",
+                style = when {
+                    text == null -> Type.aside
+                    text.length <= 90 -> Type.heading
+                    else -> Type.body
+                },
+                color = if (text == null) ink.soft else ink.ink,
+                modifier = Modifier.testTag("standing"),
+            )
+            Stroke()
+        }
+        if (date != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            TextLink("‹ " + Clock.said(date.minusDays(1), today), { standAt(Clock.dayOf(date.minusDays(1))) }, tag = "clock-prev")
+            TextLink(Clock.said(date.plusDays(1), today) + " ›", { standAt(Clock.dayOf(date.plusDays(1))) }, tag = "clock-next")
+        }
+        val lines = v?.lines.orEmpty()
+        if (lines.isNotEmpty()) Sheet(Modifier.testTag("lines")) {
+            lines.forEach { line ->
+                LineRow(line, highlighted = model.landed == screen.name to line.address) { standAt(line.address) }
+            }
+        }
+    }
+}
+

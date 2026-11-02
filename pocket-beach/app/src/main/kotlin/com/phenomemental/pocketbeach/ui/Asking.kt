@@ -645,7 +645,12 @@ class Asking(private val app: PocketApp) {
                 is Cook.Card.Post -> postOut(e, c.words)
                 is Cook.Card.Ring -> e.waiting = Stage.Where(c.words, c.places)
                 is Cook.Card.Offer -> answered(e, talkOnly(e), emptyMap())
-                is Cook.Card.Day -> answered(e, talkOnly(e), emptyMap())
+                // 0.9.1: his message asked for his day ("Put this in my now: …"): his cook set it out with her reply, for his yes.
+                is Cook.Card.Day -> {
+                    val shown = Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown)
+                    e.shown = shown
+                    e.waiting = Stage.Told(shown, c.landing)
+                }
             }
             else -> when {
                 w.writingCheck -> {

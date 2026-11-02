@@ -1,0 +1,386 @@
+[
+ {
+  "name": "keep",
+  "trace": [
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACE": "stash:Phenomemental"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1, by cook 9: “His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words.” The words at cook 9 are written in lower case; his message begins “Keep”, and the sentence does not say whether case counts. I matched without regard to case, so the clause begins with “keep” (9.5, and holds “keep that”) and the walk took 1.1.5 KEEP. Matched with case counting, neither “keep” nor “keep that” is in it, no answer matches, and the walk would take the last, 1.1.8 TALK.",
+   "2.1: “LIFT. Lift his words from THE MESSAGE: after the colon; else his sentences, each that asks cut at its ask (the words at cook 9.5): what comes before the ask, and what follows an asking verb when it says more than this, that, it, for me, please or the blocks it is to go in, with the asking at cook 9.8 taken off its ends; else what he said before. Carry them as THE WORDS.” He has no colon. His one sentence, cut at its ask “Keep”, has nothing before the ask, and after the asking verb only “that for me please”, which says no more than that, for me and please; so his sentences gave no words. I read the last “else” as applying when his sentences give none (not only when there are none), and lifted what he said before, his one earlier message, whole and as he wrote it, its full stop kept.",
+   "2.3: “Hand her this line: “The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name.”” The line handed to her names “his yes”, and the cook’s opening line says a step that names “his yes” or “his tap” waits for him; it does not say whether words inside a line that is handed count. I took the quoted line as what is handed and the step as the app’s (it names “her”, not “she”), so it did not wait for him.",
+   "2.6 and 2.7: “Set out the keeping of THE WORDS in THE PLACE beneath her reply, for his yes.” and “On his yes, write it.” Both name “his yes”, so by the opening line both wait for him, though he gives one yes to what is set out. I took 2.6 as the step that sets out the keeping and waits (kernel 2 carries a tap on “from the step after the one that waits for him”), took his given yes there, and walked 2.7 on that same yes, not a second wait; reader “him” on both.",
+   "2.7: “On his yes, write it.” It does not say at which place in the block it is written. I wrote it as the next entry of stash:Phenomemental, appended, the place left to the substrate, with no slot computed.",
+   "2.8 “ACCOUNT. Account what was kept, and where.” and 1.2 “ACCOUNT. Account the answer taken.” These say what to account but not where the account goes or in what form. I recorded each account as its trace step and nowhere else: 2.8, “I've been making huge progress with my film making.” kept in stash:Phenomemental; 1.2, the answer taken, 1.1.5 KEEP."
+  ]
+ },
+ {
+  "name": "keep, two named",
+  "trace": [
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "I've been making huge progress with my film making."
+    }
+   },
+   {
+    "at": "2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.4",
+    "reader": "walker",
+    "carried": {
+     "THE PLACES": "stash:Phenomemental, films"
+    }
+   },
+   {
+    "at": "2.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "2.5.2.1",
+    "reader": "she",
+    "carried": {
+     "THE PLACE": "films"
+    }
+   },
+   {
+    "at": "2.5.2.1.2",
+    "reader": "she",
+    "carried": {}
+   },
+   {
+    "at": "2.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.7",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "2.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1, by cook 9: “His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words.” The words at cook 9 are written in lower case; his message begins “Keep”, and the sentence does not say whether case counts. I matched without regard to case, so the clause begins with “keep” (9.5, and holds “keep that”) and the walk took 1.1.5 KEEP. Matched with case counting, neither “keep” nor “keep that” is in it, no answer matches, and the walk would take the last, 1.1.8 TALK.",
+   "2.1: “LIFT. Lift his words from THE MESSAGE: after the colon; else his sentences, each that asks cut at its ask (the words at cook 9.5): what comes before the ask, and what follows an asking verb when it says more than this, that, it, for me, please or the blocks it is to go in, with the asking at cook 9.8 taken off its ends; else what he said before. Carry them as THE WORDS.” After the asking verb “Keep” comes “that in my stash or in films”. The sentence does not say whether the joining words “in my” and “or in” belong to “the blocks it is to go in”. I took them as part of naming the blocks, so it says no more than that and its blocks, his sentences gave no words, and (reading the last “else” as applying when they give none) I lifted what he said before, his one earlier message, whole, its full stop kept.",
+   "2.3: “Hand her this line: “The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name.”” The line handed to her names “his yes”, and the cook’s opening line says a step that names “his yes” or “his tap” waits for him; it does not say whether words inside a line that is handed count. I took the quoted line as what is handed and the step as the app’s (it names “her”, not “she”), so it did not wait for him.",
+   "2.5.2.1: “She chooses where THE WORDS belong among THE PLACES, in the order of the ring beneath; on E2B, or when her answer isn't whole, the ring goes to him. Carry the choice as THE PLACE.” Its ring is 1 “his stash” and 2 “his other blocks, in his manifest's order”; the second is a group, not one place, so the ring she is shown is not fixed by the sentence. I offered her THE PLACES in the ring’s order, 1 stash:Phenomemental and 2 films (the only other of THE PLACES), took her whole digit 2 (the model is E4B, so the ring is hers) as films, and recorded the walk into 2.5.2.1.2. Read instead as his whole manifest, his stash then his other blocks in manifest order, her 2 would be Million, which is not one of THE PLACES.",
+   "2.6 and 2.7: “Set out the keeping of THE WORDS in THE PLACE beneath her reply, for his yes.” and “On his yes, write it.” Both name “his yes”, so by the opening line both wait for him, though he gives one yes to what is set out. I took 2.6 as the step that sets out the keeping and waits (kernel 2 carries a tap on “from the step after the one that waits for him”), took his given yes there, and walked 2.7 on that same yes, not a second wait; reader “him” on both.",
+   "2.7: “On his yes, write it.” It does not say at which place in the block it is written. films already holds one entry; I wrote it as its next entry, appended, the place left to the substrate, with no slot computed.",
+   "2.8 “ACCOUNT. Account what was kept, and where.” and 1.2 “ACCOUNT. Account the answer taken.” These say what to account but not where the account goes or in what form. I recorded each account as its trace step and nowhere else: 2.8, “I've been making huge progress with my film making.” kept in films, by her choice 2 of stash:Phenomemental and films; 1.2, the answer taken, 1.1.5 KEEP."
+  ]
+ },
+ {
+  "name": "post",
+  "trace": [
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "Back on Tuesday"
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.4",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "3.5",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "3.6",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent, and never write his message out again in your reply: it stands beneath. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1, by cook 9: “His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words.” The words at cook 9 are written in lower case; his message begins “Post”, and the sentence does not say whether case counts. I matched without regard to case, so the clause begins with “post” (9.2, and holds “post this”) and the walk took 1.1.2 POST. Matched with case counting, neither “post” at its start nor “post this” matches, no other phrase is held, and the walk would take the last, 1.1.8 TALK.",
+   "3.3: “Hand her this line: “The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent, and never write his message out again in your reply: it stands beneath. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two. Speak to him as you, never by his name.”” The line handed to her names “his tap” (and “he taps”), and the cook’s opening line says a step that names “his yes” or “his tap” waits for him; it does not say whether words inside a line that is handed count. I took the quoted line as what is handed and the step as the app’s (it names “her”, not “she”), so it did not wait for him.",
+   "3.4 and 3.5: “Set out a post of THE WORDS to his room beneath her reply, for his tap.” and “On his tap, send it.” Both name “his tap”, so by the opening line both wait for him, though he gives one tap to what is set out. I took 3.4 as the step that sets out the post and waits (kernel 2 carries a tap on “from the step after the one that waits for him”), took his given tap there, and walked 3.5 on that same tap, not a second wait; reader “him” on both.",
+   "3.4 and 3.5: “Set out a post of THE WORDS to his room beneath her reply, for his tap.” and “On his tap, send it.” Neither names his room’s address on the beach, or how it is sent. I set out and sent “Back on Tuesday” to his own room as cook 3’s opening line says, naming no address.",
+   "3.6 “ACCOUNT. Account what was posted.” and 1.2 “ACCOUNT. Account the answer taken.” These say what to account but not where the account goes or in what form. I recorded each account as its trace step and nowhere else: 3.6, “Back on Tuesday” posted to his room on his tap; 1.2, the answer taken, 1.1.2 POST."
+  ]
+ },
+ {
+  "name": "post, no words",
+  "trace": [
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.1",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": ""
+    }
+   },
+   {
+    "at": "3.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "3.2.2.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: he asks to post to his own room on the beach but gives no words of his own, so nothing is set out. Ask him, in a few words, what he'd like to say; never write the message for him, or in his voice. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1, by cook 9 and 9.8: “His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words.” and “THE ASKING, taken off his words before they are matched or kept: …” 9.8 lists “to” but neither sentence says where the asking is taken off. I took it off the ends of the clause only, so “Send a post to my room.” keeps its “to” and holds “post to” and “send … to my room” (9.2): the walk took 1.1.2 POST. Taken off wherever it stands, the clause would be “Send a post my room.”, it would hold no phrase of any answer, and the walk would take the last, 1.1.8 TALK. (Case does not decide this one: “post to” stands in lower case in his message.)",
+   "3.1: “LIFT. Lift his words from THE MESSAGE: after the colon, its quote marks taken off; else in quotes. Carry them as THE WORDS.” His message has no colon and no quotes, and the sentence does not say what is carried then. I carried THE WORDS empty, and 3.2 answered no.",
+   "3.2.2.2: “Stop.” The cook’s opening line says both “Every procedure ends with ACCOUNT” and ““Stop.” ends the whole walk.”; here cook 3 stops before its ACCOUNT at 3.6, and cook 1’s 1.2 is never reached. I stopped: no account was taken of what he asked or of the line handed her. His answer is none given, and nothing was set out to wait for it."
+  ]
+ },
+ {
+  "name": "make",
+  "trace": [
+   {
+    "at": "1.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.1.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.1",
+    "reader": "walker",
+    "carried": {
+     "THE NAME": "sailing"
+    }
+   },
+   {
+    "at": "4.2",
+    "reader": "walker",
+    "carried": {
+     "THE WORDS": "knots I'm learning"
+    }
+   },
+   {
+    "at": "4.3",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.3.1",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.4",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.5.2",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "4.6",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "4.7",
+    "reader": "him",
+    "carried": {}
+   },
+   {
+    "at": "4.8",
+    "reader": "walker",
+    "carried": {}
+   },
+   {
+    "at": "1.2",
+    "reader": "walker",
+    "carried": {}
+   }
+  ],
+  "handed her": [
+   "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name."
+  ],
+  "could not": [
+   "1.1, by cook 9: “His message asks for the answer when a clause of it, with the asking at 9.8 taken off, begins with one of the words before the dash, or when it holds one of the phrases after the dash, where … stands for up to five of his words.” The words at cook 9 are written in lower case; his message begins “Make”, and the sentence does not say whether case counts. I matched without regard to case, so it holds “make a block” (9.3) and the walk took 1.1.3 MAKE (nothing of HER NAME, POST, before it: “called” stands alone, not as “you're called” or “you are called”). Matched with case counting, “make a block” is not in it, no other phrase is held, and the walk would take the last, 1.1.8 TALK.",
+   "4.4: “Hand her this line: “The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said. Speak to him as you, never by his name.”” The line handed to her names “his yes”, and the cook’s opening line says a step that names “his yes” or “his tap” waits for him; it does not say whether words inside a line that is handed count. I took the quoted line as what is handed and the step as the app’s (it names “her”, not “she”), so it did not wait for him.",
+   "4.6 and 4.7: “Set out a new block called THE NAME, with THE WORDS as its opening line, beneath her reply, for his yes.” and “On his yes, write it.” Both name “his yes”, so by the opening line both wait for him, though he gives one yes to what is set out. I took 4.6 as the step that sets out the new block and waits (kernel 2 carries a tap on “from the step after the one that waits for him”), took his given yes there, and walked 4.7 on that same yes, not a second wait; reader “him” on both.",
+   "4.7: “On his yes, write it.” It does not say where the new block is written or whether it joins his manifest of blocks. I wrote a block called sailing in his pocket with “knots I'm learning” as its opening line, and added it to no manifest, since no step says to.",
+   "4.8 “ACCOUNT. Account the block made.” and 1.2 “ACCOUNT. Account the answer taken.” These say what to account but not where the account goes or in what form. I recorded each account as its trace step and nowhere else: 4.8, the block sailing made, its opening line “knots I'm learning”; 1.2, the answer taken, 1.1.3 MAKE."
+  ]
+ }
+]

@@ -41,7 +41,7 @@ object Cook {
     /** One line of cook 9: an answer's words, the words a clause begins with and the phrases it may hold. */
     class Cue(val label: String, val starts: List<String>, val phrases: List<String>)
 
-    class Cues(val answers: Map<String, Cue>, val asking: List<String>, val intent: List<String>) {
+    class Cues(val answers: Map<String, Cue>, val asking: List<String>, val intent: List<String>, val joins: List<String> = emptyList()) {
         fun cue(label: String): Cue? = answers[label.uppercase()]
     }
 
@@ -57,11 +57,13 @@ object Cook {
         object TellsDay : Verb()
         class BlockStands(val name: String) : Verb()
         class Lift(val what: String, val sources: List<String>, val into: String) : Verb()
-        class FindKeep(val into: String) : Verb()
+        /** [many]: where two or more named blocks are carried (0.9.1); null in the 0.9 sentence, which carries the first named only. */
+        class FindKeep(val into: String, val stash: Boolean = false, val many: String? = null) : Verb()
         class FindAsked(val into: String) : Verb()
         class Read(val block: String, val whole: Int, val into: String) : Verb()
-        class Point(val reading: String, val first: Int, val letters: Int, val other: Set<String>, val max: Int, val into: String) : Verb()
-        class ChooseRing(val what: String, val toHim: Boolean, val into: String) : Verb(Reader.SHE)
+        class Point(val reading: String, val first: Int, val letters: Int, val other: Set<String>, val max: Int, val into: String, val cutLonger: Boolean = false) : Verb()
+        /** [among]: the ring is only these places, in the ring's order (0.9.1's KEEP). */
+        class ChooseRing(val what: String, val toHim: Boolean, val into: String, val among: String? = null) : Verb(Reader.SHE)
         class ChooseFrom(val from: String, val toHim: Boolean, val into: String) : Verb(Reader.SHE)
         class ChooseEach(val each: String, val source: String, val into: String) : Verb(Reader.SHE)
         class Hand(val line: String, val with: List<String>) : Verb()
@@ -74,8 +76,10 @@ object Cook {
         object OnYes : Verb()
         object OnTapSend : Verb()
         class OnTapRun(val place: String) : Verb()
-        class Cut(val from: String, val into: String) : Verb()
-        class Intents(val from: String, val cues: String, val into: String) : Verb()
+        /** [joins]: where the joins live (cook 9.4.1) when a spoken telling is cut at them (0.9.1); null, by its sentences only. */
+        class Cut(val from: String, val into: String, val joins: String? = null, val perStop: Int = 30) : Verb()
+        /** [carriesOn]: a piece cut at a join, with no I of its own, carries on the one before; [appointments]: what a booking names whatever he means (0.9.1). */
+        class Intents(val from: String, val cues: String, val into: String, val carriesOn: Boolean = false, val appointments: List<String> = emptyList(), val naming: Boolean = false) : Verb()
         class Rungs(val from: String, val into: String) : Verb()
         class Run(val place: String) : Verb()
         class WritingCheck(val what: String) : Verb()
@@ -95,22 +99,32 @@ object Cook {
         rx("""(?:Are there words of his in|Is there) ($CAP)\?""") to { m -> Verb.IsSet(m.groupValues[1]) },
         rx("""Does his shell already give her ($CAP)\?""") to { m -> Verb.NameHeld(m.groupValues[1]) },
         rx("""Does THE MESSAGE ask to change her own lines\?""") to { _ -> Verb.AsksHerLines },
-        rx("""Does THE MESSAGE tell of his day: three sentences or more, of forty words or more, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
+        rx("""Does THE MESSAGE tell of his day: three sentences or more(?:, of| and) forty words or more(?: in all)?, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
         rx("""Is there a block called ($CAP) already\?""") to { m -> Verb.BlockStands(m.groupValues[1]) },
         rx("""Lift (his words|his telling|the new block's name|the name he gives her) from THE MESSAGE: (.+?)\. Carry (?:it|them) as ($CAP)\.""") to { m ->
             Verb.Lift(m.groupValues[1], m.groupValues[2].split(Regex(""";\s*else\s+|;\s*""")).map { it.trim() }.filter { it.isNotEmpty() }, m.groupValues[3])
         },
         rx("""Find the block THE MESSAGE names to keep ($CAP) in: one of his own, never his passport, shell or history\. Carry it as ($CAP)\.""") to { m -> Verb.FindKeep(m.groupValues[2]) },
+        rx("""Find the blocks THE MESSAGE names to keep ($CAP) in: his own, never his passport, shell or history; with one named, carry it as ($CAP); with none, carry his stash as ($CAP); with two or more, carry them as ($CAP)\.""") to { m ->
+            Verb.FindKeep(m.groupValues[2].also { require(it == m.groupValues[3]) }, stash = true, many = m.groupValues[4])
+        },
         rx("""Find the block THE MESSAGE asks about: .+? Carry it as ($CAP)\.""") to { m -> Verb.FindAsked(m.groupValues[1]) },
-        rx("""Read ($CAP) at its aperture: whole when it is ([\d,]+) characters or fewer, else as a ring of its places by their opening lines\. Carry it as ($CAP)\.""") to { m ->
+        rx("""Read ($CAP) at its aperture: whole when it is ([\d,]+) characters or fewer, else as a ring of its places by their opening lines(?:, each a place's first sentence, up to 200 characters)?\. Carry it as ($CAP)\.""") to { m ->
             Verb.Read(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), m.groupValues[3])
         },
         rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole, up to ([\d,]+) characters\. Carry it as ($CAP)\.""") to { m ->
             Verb.Point(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), number(m.groupValues[3]) ?: 4, m.groupValues[4].split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
                 m.groupValues[5].replace(",", "").toInt(), m.groupValues[6])
         },
+        rx("""Find the place of ($CAP) his words point to: the one whose first ([\d,]+) characters share the most of his words of (\w+) letters or more, other than (.+?), the first if two share as many, and read it whole when it is ([\d,]+) characters or fewer, else its first ([\d,]+) characters(?:, ending| and then) “…”\. Carry it as ($CAP)\.""") to { m ->
+            Verb.Point(m.groupValues[1], m.groupValues[2].replace(",", "").toInt(), number(m.groupValues[3]) ?: 4, m.groupValues[4].split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet(),
+                m.groupValues[6].replace(",", "").toInt().also { require(it == m.groupValues[5].replace(",", "").toInt()) }, m.groupValues[7], cutLonger = true)
+        },
         rx("""She chooses (.+?), from the ring beneath; on E2B, or when her answer isn't whole, (the ring goes to him|nothing is chosen)\. Carry the choice as ($CAP)\.""") to { m ->
             Verb.ChooseRing(m.groupValues[1], m.groupValues[2] == "the ring goes to him", m.groupValues[3])
+        },
+        rx("""She chooses (.+?) among ($CAP), in the order of the ring beneath; on E2B, or when her answer isn't whole, (the ring goes to him|nothing is chosen)\. Carry the choice as ($CAP)\.""") to { m ->
+            Verb.ChooseRing(m.groupValues[1], m.groupValues[3] == "the ring goes to him", m.groupValues[4], among = m.groupValues[2])
         },
         rx("""She chooses from ($CAP) .+?; on E2B, or when her answer isn't whole, (the ring goes to him|nothing is chosen)\. Carry the choice as ($CAP)\.""") to { m ->
             Verb.ChooseFrom(m.groupValues[1], m.groupValues[2] == "the ring goes to him", m.groupValues[3])
@@ -123,8 +137,11 @@ object Cook {
         rx("""Set out the keeping of ($CAP) in ($CAP) beneath her reply, for his yes\.""") to { m -> Verb.SetKeep(m.groupValues[1], m.groupValues[2]) },
         rx("""Set out a post of ($CAP) to his room beneath her reply, for his tap\.""") to { m -> Verb.SetPost(m.groupValues[1]) },
         rx("""Set out a new block called ($CAP), with ($CAP) as its opening line, beneath her reply, for his yes\.""") to { m -> Verb.SetNew(m.groupValues[1], m.groupValues[2]) },
-        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes\.""") to { m -> Verb.SetName(m.groupValues[1]) },
+        rx("""Set out her name, ($CAP), at her place in his shell beneath her reply, for his yes(?:: the line “his first name calls me \1\.”(?: \(his first name: the first word of who he is, at (?:his shell's place 2|6\.2 of his shell)\))?, in place of the line there that says what he calls her, else beneath her place)?\.""") to { m -> Verb.SetName(m.groupValues[1]) },
         rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now, ($CAP), ($CAP), and each of ($CAP) beneath ($CAP) in his P6\.""") to { m ->
+            Verb.SetDay(m.groupValues[1], m.groupValues[2], m.groupValues[3], m.groupValues[4], m.groupValues[5])
+        },
+        rx("""Set out his day beneath her reply, for his yes: ($CAP) as the day's line at today's date in his now \(the block now(?:, his clock)?\), ($CAP) on his hand \(the block ahead: and his handle\)(?:, those booked at their day in his now)?, ($CAP) at their levels of his now, and each of ($CAP) beneath ($CAP) in his P6 \(the block p6: and his handle\)\.""") to { m ->
             Verb.SetDay(m.groupValues[1], m.groupValues[2], m.groupValues[3], m.groupValues[4], m.groupValues[5])
         },
         rx("""Set out the card “(.+?)” beneath her reply, for his tap\.""") to { m -> Verb.SetCard(m.groupValues[1]) },
@@ -132,7 +149,17 @@ object Cook {
         rx("""On his tap, send it\.""") to { _ -> Verb.OnTapSend },
         rx("""On his tap, run cook (\d)\.""") to { m -> Verb.OnTapRun(m.groupValues[1]) },
         rx("""Cut ($CAP) into its sentences\. Carry them as ($CAP)\.""") to { m -> Verb.Cut(m.groupValues[1], m.groupValues[2]) },
-        rx("""Find among ($CAP) what he means to do, by the words at cook (\d\.\d): .+ Carry them as ($CAP)\.""") to { m -> Verb.Intents(m.groupValues[1], m.groupValues[2], m.groupValues[3]) },
+        rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d)(?:, a join matched as whole words wherever it stands \(“and I” before “and I've” too\)|, a join matched wherever its words begin, so “and I” cuts before “and I also” and “and I've” too)?, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
+            Verb.Cut(m.groupValues[1], m.groupValues[4], joins = m.groupValues[3], perStop = number(m.groupValues[2]) ?: 30)
+        },
+        rx("""Find among ($CAP) what he means to do, by the words at cook (\d\.\d)[:;,] (.+) Carry them as ($CAP)\.""") to { m ->
+            val body = m.groupValues[3]
+            val appointments = Regex("""every piece naming (.+?) of his with its day""").find(body)?.groupValues?.get(1)?.let { list ->
+                list.split(Regex(""",\s*(?:or\s+)?|\s+or\s+""")).map { it.trim().removePrefix("a ").removePrefix("an ").trim() }.filter { it.isNotEmpty() }
+            }.orEmpty()
+            Verb.Intents(m.groupValues[1], m.groupValues[2], m.groupValues[4], carriesOn = "a piece cut at a join, with no I of its own, carries on the piece before it" in body, appointments = appointments,
+                naming = body.startsWith("when what follows them names something to do"))
+        },
         rx("""Find among ($CAP) those that name this week, this month, this season or this year\. Carry them as ($CAP), each at its level of his now\.""") to { m -> Verb.Rungs(m.groupValues[1], m.groupValues[2]) },
         rx("""Run cook (\d)\.""") to { m -> Verb.Run(m.groupValues[1]) },
         rx("""Hand ($CAP) to the writing check\.""") to { m -> Verb.WritingCheck(m.groupValues[1]) },
@@ -209,12 +236,22 @@ object Cook {
         val answers = LinkedHashMap<String, Cue>()
         var asking = emptyList<String>()
         var intent = emptyList<String>()
+        var joins = emptyList<String>()
+        fun list(s: String) = s.split(',').map { it.trim().lowercase().replace('’', '\'') }.filter { it.isNotEmpty() }
         for (k in digits(node)) {
-            val line = (node[k] as? JsStr)?.value ?: collectUnderscore(node[k]!!) ?: continue
+            val n = node[k]!!
+            val line = (n as? JsStr)?.value ?: (n as? JsObj)?.let { (it["_"] as? JsStr)?.value } ?: collectUnderscore(n) ?: continue
+            // 0.9.1: a line of its own beneath one of cook 9's, as the joins beneath TELL MY DAY's words (9.4.1).
+            (n as? JsObj)?.let { o ->
+                for (j in digits(o)) {
+                    val inner = (o[j] as? JsStr)?.value ?: continue
+                    if (inner.trim().startsWith("THE JOINS")) joins = list(inner.substringAfter(':', ""))
+                }
+            }
             val label = line.substringBefore(':').trim().substringBefore(',').trim()
             val body = line.substringAfter(':', "").trim()
-            fun list(s: String) = s.split(',').map { it.trim().lowercase().replace('’', '\'') }.filter { it.isNotEmpty() }
             when {
+                label.startsWith("THE JOINS") -> joins = list(body)
                 label.startsWith("THE ASKING") -> asking = list(body)
                 label.startsWith("WHAT HE MEANS TO DO") -> intent = list(body)
                 else -> {
@@ -224,7 +261,7 @@ object Cook {
                 }
             }
         }
-        return Cues(answers, asking, intent)
+        return Cues(answers, asking, intent, joins)
     }
 
     /** The kernel read: which procedure his message runs, and which the close runs. */
@@ -450,10 +487,28 @@ object Cook {
                 }
                 is Verb.FindKeep -> {
                     val said = str("THE MESSAGE")
-                    val found = Keeping.named(said, world.pages).firstOrNull { !Keeping.own(it, world.pages) && it !in HerWindow.HERS }
-                        ?: Regex("""\bmy\s+stash\b""", RegexOption.IGNORE_CASE).find(said)?.let { Hatch.stashOf(world.handle) }
-                    put(v.into, found)
-                    note(s, if (found != null) "his words name where to keep it" else "his words name no block of his to keep it in", v.into)
+                    val stash = Hatch.stashOf(world.handle)
+                    val named = (listOfNotNull(Regex("""\bmy\s+stash\b""", RegexOption.IGNORE_CASE).find(said)?.let { it.range.first to stash }) +
+                        Keeping.named(said, world.pages).filter { !Keeping.own(it, world.pages) && it !in HerWindow.HERS }
+                            .map { n -> (Regex("""(?<![\p{L}\p{N}])${Regex.escape(n.lowercase())}(?![\p{L}\p{N}])""").find(said.lowercase())?.range?.first ?: 0) to n })
+                        .sortedBy { it.first }.map { it.second }.distinct()
+                    when {
+                        v.many == null -> {
+                            val found = named.firstOrNull { it != stash } ?: named.firstOrNull()
+                            put(v.into, found)
+                            note(s, if (found != null) "his words name where to keep it" else "his words name no block of his to keep it in", v.into)
+                        }
+                        named.size >= 2 -> {
+                            put(v.into, null)
+                            carried[v.many] = named
+                            note(s, "his words name ${named.size} of his blocks to keep it in", v.many)
+                        }
+                        else -> {
+                            val found = named.firstOrNull() ?: stash.takeIf { v.stash }
+                            put(v.into, found)
+                            note(s, if (named.isNotEmpty()) "his words name where to keep it" else "his words name no block of his, so his stash", v.into)
+                        }
+                    }
                 }
                 is Verb.FindAsked -> {
                     val said = str("THE MESSAGE")
@@ -471,11 +526,13 @@ object Cook {
                     val r = carried[v.reading] as? Reading
                     val p = r?.takeIf { !it.whole }?.let { point(it, v.first, v.letters, v.other, v.max) }
                     put(v.into, p)
-                    if (p != null) reads += "${p.block} ${p.key}, whole"
-                    note(s, if (p != null) "his words point to place ${p.key}" else "his words point to no one place", v.into)
+                    val cut = p != null && v.cutLonger && p.text.endsWith("…")
+                    if (p != null) reads += "${p.block} ${p.key}, ${if (cut) "its first ${v.max} characters" else "whole"}"
+                    note(s, if (p == null) "his words point to no one place" else "his words point to place ${p.key}" + if (cut) ", longer than ${v.max}: its first ${v.max} characters, ending “…”" else "", v.into)
                 }
                 is Verb.ChooseRing -> {
-                    val places = ringPlaces(s.ring)
+                    @Suppress("UNCHECKED_CAST") val among = v.among?.let { carried[it] as? List<String> }
+                    val places = ringPlaces(s.ring, among)
                     if (places.isEmpty()) {
                         note(s, "no ring to offer")
                     } else if (!world.big) {
@@ -553,13 +610,18 @@ object Cook {
                     run(v.place)
                 }
                 is Verb.Cut -> {
-                    val pieces = Telling.sentences(str(v.from), runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
+                    val telling = str(v.from)
+                    val joins = parsed.cues.joins
+                    val pieces = if (v.joins != null && Cook.spoken(telling, v.perStop)) Cook.cutAtJoins(telling, joins)
+                        else Telling.sentences(telling, runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
                     carried[v.into] = pieces
-                    note(s, "cut it into ${pieces.size} sentence${if (pieces.size == 1) "" else "s"}", v.into)
+                    val atJoins = v.joins != null && Cook.spoken(telling, v.perStop)
+                    note(s, if (atJoins) "a spoken telling: cut it at its joins into ${pieces.size} piece${if (pieces.size == 1) "" else "s"}" else "cut it into ${pieces.size} sentence${if (pieces.size == 1) "" else "s"}", v.into)
                 }
                 is Verb.Intents -> {
                     @Suppress("UNCHECKED_CAST") val pieces = (carried[v.from] as? List<String>).orEmpty()
-                    val intents = Days.intents(pieces, parsed.cues.intent, world.now.toLocalDate(), Days.timeWords(world.storage))
+                    val intents = Days.intents(pieces, parsed.cues.intent, world.now.toLocalDate(), Days.timeWords(world.storage),
+                        joins = if (v.carriesOn) parsed.cues.joins else emptyList(), appointments = v.appointments, naming = v.naming)
                     carried[v.into] = intents
                     note(s, "found ${intents.size} thing${if (intents.size == 1) "" else "s"} he means to do", v.into)
                 }
@@ -761,8 +823,10 @@ object Cook {
             val head = s.substring(0, at.first).let { h -> stripTrailing(h, asking) }
             // What follows a starting verb: "Note that the tulips came", "Remember to buy stamps".
             val verb = cue.starts.firstOrNull { w -> norm(s).substring(at.first).startsWith(w) }
+            // 0.9.1: and never the blocks it is to go in ("Keep that in my book or my films").
+            val places = runCatching { world.pages.shore().mine.map { it.name.lowercase() } }.getOrDefault(emptyList()).toSet() + setOf("stash", "my", "or", "and", "into", "to", "in", "with")
             val rest = if (verb != null) s.substring(at.first + verb.length).replace(Regex("""^\s*(?:in mind\s+)?(?:that|to)?\b""", RegexOption.IGNORE_CASE), "").trim()
-                .takeIf { r -> words(r).count { it !in OBJECT } >= 1 && words(r).size >= 2 } else null
+                .takeIf { r -> words(r).count { it !in OBJECT && it !in places } >= 1 && words(r).size >= 2 } else null
             return listOfNotNull(head.takeIf { words(it).isNotEmpty() }, rest).joinToString(" ").takeIf { it.isNotBlank() }
         }
 
@@ -803,8 +867,8 @@ object Cook {
         }
 
         /** The ring a she-step offers, as its lines say: block names, "his stash", "his other blocks …"; nine at most. */
-        private fun ringPlaces(ring: List<String>): List<String> {
-            val his = runCatching { hisBlocks() }.getOrDefault(emptyList())
+        private fun ringPlaces(ring: List<String>, among: List<String>? = null): List<String> {
+            val his = runCatching { hisBlocks() }.getOrDefault(emptyList()).let { h -> if (among == null) h else h + among.filter { it !in h } }
             val out = mutableListOf<String>()
             for (line in ring) {
                 val l = line.trim().lowercase()
@@ -814,7 +878,7 @@ object Cook {
                     else -> line.trim().trimEnd('.').let { n -> if (world.pages.exists(n) && !Keeping.own(n, world.pages)) out += n }
                 }
             }
-            return out.distinct().filter { world.storage.read(it) != null || it == Hatch.stashOf(world.handle) }.take(9)
+            return out.distinct().filter { among == null || it in among }.filter { world.storage.read(it) != null || it == Hatch.stashOf(world.handle) }.take(9)
         }
 
         /** His own blocks in his manifest's order, never the app's own, her shell or the four his hatch made. */
@@ -837,6 +901,33 @@ object Cook {
         "when", "if", "by", "for", "to", "and", "my", "your", "his", "her", "please", "then", "today", "tonight", "i",
     )
     private val OBJECT = setOf("this", "that", "it", "these", "those", "all", "of", "some", "for", "me", "please", "down", "safe", "too", "as", "well", "in", "mind")
+
+    /** 0.9.1: a spoken telling, as dictation gives it: fewer full stops than one in [perStop] words, its last aside. */
+    fun spoken(telling: String, perStop: Int): Boolean {
+        val t = telling.trim().trimEnd('.', '!', '?', ' ')
+        val words = t.split(Regex("""\s+""")).count { it.isNotBlank() }
+        val stops = Regex("""[.!?](?=\s|$)""").findAll(t).count()
+        return words >= perStop && stops * perStop < words
+    }
+
+    /** 0.9.1: a spoken telling cut before each join he speaks with (cook 9.4.1), every word his and in order. */
+    fun cutAtJoins(telling: String, joins: List<String>): List<String> {
+        val t = telling.trim()
+        if (joins.isEmpty()) return listOf(t).filter { it.isNotEmpty() }
+        fun pattern(join: String) = join.trim().split(Regex("""\s+""")).joinToString("""\s+""") { w ->
+            w.map { ch -> when { ch == '\'' || ch == '’' -> "['’]"; ch.isLetterOrDigit() -> ch.toString(); else -> "\\$ch" } }.joinToString("")
+        }
+        val rx = Regex("""(?<![\p{L}\p{N}'’])(?:${joins.sortedByDescending { it.length }.joinToString("|", transform = ::pattern)})(?![\p{L}\p{N}])""", RegexOption.IGNORE_CASE)
+        val cuts = rx.findAll(t).map { it.range.first }.filter { it > 0 }.toList()
+        val pieces = mutableListOf<String>()
+        var from = 0
+        for (c in cuts) {
+            pieces += t.substring(from, c).trim()
+            from = c
+        }
+        pieces += t.substring(from).trim()
+        return pieces.filter { it.isNotEmpty() }
+    }
 
     private fun words(text: String): List<String> = Regex("""[\p{L}\p{N}']+""").findAll(norm(text)).map { it.value.trim('\'') }.filter { it.isNotEmpty() }.toList()
     private fun clean(words: String): String = words.trim().trim(',', ';', ':', '-', '—').trim()
@@ -866,21 +957,132 @@ object Cook {
 
     // ── bringing them into his pocket ──
 
-    /** The plans that bring the shipped cook and kernel into his pocket, or up to date when he hasn't changed them ([lastShipped] is what was shipped before). Empty when nothing is to do. */
-    fun bringIn(handle: String, pages: Pages, storage: BlockStorage, procedures: Shelf, lastShipped: (String) -> String? = { null }): List<Plan> {
-        val plans = mutableListOf<Plan>()
-        for ((shipped, mine) in listOf(SHIPPED_COOK to cookOf(handle), SHIPPED_KERNEL to kernelOf(handle))) {
-            val block = procedures.load(shipped) as? JsObj ?: continue
-            val now = storage.read(mine)
-            val up = when {
-                now == null -> true
-                deepEqual(parseJson(now), block) -> false
-                else -> lastShipped(shipped)?.let { last -> runCatching { deepEqual(parseJson(now), parseJson(last)) }.getOrDefault(false) } == true
-            }
-            if (up) plans += pages.planWhole(mine, parseJson(stringify(block)!!) as JsObj)
-        }
-        return plans
+    /**
+     * 0.9.1 (spine:pocket-beach 1.1111787162): one of his two blocks brought
+     * up to this version, place by place. [took]: places he hadn't changed,
+     * now the new shipped sentence; [added] and [removed]: places new in the
+     * shipped copy, or gone from it; [yours]: places he changed, kept as he
+     * has them, each with the new shipped sentence where that changed too.
+     */
+    class Up(val shipped: String, val block: String, val whole: Boolean, val merged: JsObj?, val took: List<String>, val added: List<String>, val removed: List<String>, val yours: List<Yours>) {
+        /** Brought in whole, or brought up: anything to write. */
+        val changed: Boolean get() = whole || merged != null
+        /** The trace of it, a line a place. */
+        fun trace(): List<String> = took.map { "$block $it: the new sentence" } + added.map { "$block $it: added" } + removed.map { "$block $it: gone from this version" } +
+            yours.map { y -> "$block ${y.at}: yours, kept" + if (y.shipped != null) " (the new one offered beside it)" else "" }
     }
+
+    /** A place he changed: his sentence, and the new shipped one where it changed too (null when it didn't, or was taken out). */
+    data class Yours(val block: String, val at: String, val his: String?, val shipped: String?, val offer: Boolean)
+
+    /** Every place of a block by its address ("" its opening, "2.5.2"): the text standing there. */
+    fun places(n: Js?): Map<String, String> {
+        val out = LinkedHashMap<String, String>()
+        fun walk(x: Js?, at: String) {
+            when (x) {
+                is JsStr -> out[at] = x.value
+                is JsObj -> {
+                    (x["_"] as? JsStr)?.let { out[at] = it.value }
+                    for (k in x.keys().filter { it != "_" }.sortedWith(compareBy({ it.length }, { it }))) walk(x[k], if (at.isEmpty()) k else "$at.$k")
+                }
+                else -> {}
+            }
+        }
+        walk(n, "")
+        return out
+    }
+
+    /** A block from its places: a place with places beneath is an object, its own text at "_"; one with none is its text. */
+    fun fromPlaces(places: Map<String, String>): JsObj {
+        val kids = places.keys.filter { it.isNotEmpty() }.groupBy { it.substringBeforeLast('.', "") }
+        fun node(at: String): Js {
+            val beneath = kids[at].orEmpty().sortedWith(compareBy({ it.length }, { it }))
+            if (beneath.isEmpty() && at.isNotEmpty()) return str(places[at] ?: "")
+            val o = JsObj()
+            places[at]?.let { o["_"] = str(it) }
+            for (k in beneath) o[k.substringAfterLast('.')] = node(k)
+            return o
+        }
+        return node("") as JsObj
+    }
+
+    /** [mine] brought up to [shipped], place by place, against [last], what was shipped before; null [mine], brought in whole. */
+    fun up(name: String, block: String, mine: Js?, shipped: JsObj, last: Js?, offered: Set<String> = emptySet()): Up {
+        if (mine == null) return Up(name, block, true, null, emptyList(), places(shipped).keys.toList(), emptyList(), emptyList())
+        val his = places(mine)
+        val new = places(shipped)
+        val old = last?.let(::places)
+        val at = (his.keys + new.keys + (old?.keys ?: emptySet())).distinct().sortedWith(compareBy<String>({ a -> a.split('.').size }).thenBy { it })
+        val out = LinkedHashMap<String, String>()
+        val took = mutableListOf<String>()
+        val added = mutableListOf<String>()
+        val removed = mutableListOf<String>()
+        val yours = mutableListOf<Yours>()
+        for (a in at) {
+            val h = his[a]
+            val n = new[a]
+            // With no copy of what was shipped before, every place that differs is taken as his.
+            val o = if (old == null) if (h == n) h else Any() else old[a]
+            when {
+                h == n -> h?.let { out[a] = it }
+                h == o -> {
+                    if (n != null) out[a] = n
+                    when {
+                        h == null -> added += a
+                        n == null -> removed += a
+                        else -> took += a
+                    }
+                }
+                else -> {
+                    h?.let { out[a] = it }
+                    val offer = n != o && n != null
+                    val key = "$block $a ${n.hashCode()}"
+                    yours += Yours(block, a, h, n.takeIf { offer }, offer && key !in offered)
+                }
+            }
+        }
+        // A place kept as his beneath one taken out stays; its parents stand with it.
+        for (a in out.keys.toList()) {
+            var p = a.substringBeforeLast('.', "")
+            while (p.isNotEmpty() || a.isNotEmpty()) {
+                if (p !in out && p.isNotEmpty()) out[p] = new[p] ?: his[p] ?: ""
+                if (p.isEmpty()) break
+                p = p.substringBeforeLast('.', "")
+            }
+        }
+        val merged = fromPlaces(out)
+        return Up(name, block, false, merged.takeIf { !deepEqual(it, mine) }, took, added, removed, yours)
+    }
+
+    /** The key a place's offer is recorded by, once shown. */
+    fun offerKey(y: Yours): String = "${y.block} ${y.at} ${y.shipped.hashCode()}"
+
+    /**
+     * His cook and kernel brought into his pocket, or up to this version place
+     * by place ([lastShipped]: what was shipped before, the app's own copy, else
+     * the past copy on the shelf; [offered]: the places whose new sentence was
+     * already shown him). Each with the plan that writes it, when anything is to do.
+     */
+    fun bringUp(handle: String, pages: Pages, storage: BlockStorage, procedures: Shelf, lastShipped: (String) -> String? = { null }, offered: Set<String> = emptySet()): List<Pair<Up, Plan?>> =
+        listOf(SHIPPED_COOK to cookOf(handle), SHIPPED_KERNEL to kernelOf(handle)).mapNotNull { (name, mine) ->
+            val shipped = procedures.load(name) as? JsObj ?: return@mapNotNull null
+            val now = storage.read(mine)?.let { runCatching { parseJson(it) }.getOrNull() }
+            val last = (lastShipped(name) ?: (procedures.load("$PAST$name") as? JsObj)?.let { stringify(it) })?.let { runCatching { parseJson(it) }.getOrNull() }
+            val u = up(name, mine, now, shipped, last, offered)
+            val plan = when {
+                u.whole -> pages.planWhole(mine, parseJson(stringify(shipped)!!) as JsObj)
+                u.merged != null -> pages.planWhole(mine, u.merged)
+                else -> null
+            }
+            u to plan
+        }
+
+    /** The shelf's copy of what the version before shipped, against which an app with no copy of its own compares his blocks. */
+    const val PAST = "past-"
+
+    /** The plans that bring the shipped cook and kernel into his pocket, or up to this version place by place. Empty when nothing is to do. */
+    fun bringIn(handle: String, pages: Pages, storage: BlockStorage, procedures: Shelf, lastShipped: (String) -> String? = { null }): List<Plan> =
+        bringUp(handle, pages, storage, procedures, lastShipped).mapNotNull { it.second }
 }
 
 /**
