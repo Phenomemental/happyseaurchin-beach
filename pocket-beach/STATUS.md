@@ -1507,6 +1507,11 @@ The cook's sentences put right before the judge:
   - the bring-up with his 5.6 and 6.1: a card for 5.6 alone, Keep mine;
   - Use the new one on 5.6;
   - his now at today.
+
+  Run 203, at the judged file's commit, failed that "Put this in my now"
+  test on a race of its own: it read his ahead before his yes had written
+  it (his day is written block by block, his now first). It now waits for
+  both.
 - **The bench's proofs,** `trial/proofs-0.9.1.md`: (a), (b) and (c) pass,
   and the bring-up of (e) on his own two places.
 - **The kernels,** `trial/kernel-0.9.1/`:

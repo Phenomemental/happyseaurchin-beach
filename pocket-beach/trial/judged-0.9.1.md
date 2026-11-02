@@ -46,7 +46,14 @@ wrong were put right first: 8.5 and 6.2.
 | **(d)** "Read my passport": a sentence or two, to him as you, no opening lines, no name | **every seed**: two sentences, "Your passport…" | 165 tokens, "Matthew's passport tells me:" |
 | **(e)** his 5.6 and 6.1 kept, every other new sentence taken, the card once | **passes**: both kept, 130 places taken; his 6.1 is word for word 0.9.1's, so the card is shown for 5.6 alone, once; on the bench and on the emulator | |
 | **(f)** his now opens at today, on the emulator | **passes**: CI run 198, "Today, …" above the day's line, no wrap talk, no Add beneath | |
-| CI, the emulator included | green, run 198 at `13c13b9`, all 65 device tests | |
+| CI, the emulator included | green, run 198 at `13c13b9`, all 65 device tests (and see below) | |
+
+**CI at the judged file's commit.** Run 203, at `deb01da`, failed one device
+test: `putThisInMyNowSetsHisDayOutWithHerReply` found his ahead empty. The
+race was the test's own. His yes writes his day block by block, his now
+first, and the test read his ahead as soon as his now held the telling. On
+run 198 the ahead write happened to land in time, on the same code. The test
+now waits for both, and the release waits on CI green with it.
 
 **His words, as he sent them:**
 - **His 10:03 telling:** "ok today I've been working with David on the

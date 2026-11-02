@@ -96,9 +96,14 @@ class Rockpool091DeviceTest {
             compose.waitUntil(5_000) { compose.onAllNodes(hasText("and need to update a membership agreement and print it out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             assertTrue("no Sort as my day: he asked", none("sort-as-day"))
             compose.tap("day-yes")
-            compose.waitUntil(20_000) { app.storage.read(Days.NOW)?.contains("phase two proposal") == true }
+            // His yes writes his day block by block (his now, then his ahead, then his P6): wait for both he is shown.
+            val cards = listOf("for example I need to update some meeting minutes and print them out", "and need to update a membership agreement and print it out", "as well as respond to emails")
+            compose.waitUntil(20_000) {
+                app.storage.read(Days.NOW)?.contains("phase two proposal") == true &&
+                    app.storage.read(Days.aheadOf(h)).orEmpty().let { a -> cards.all { a.contains(it) } }
+            }
             val ahead = app.storage.read(Days.aheadOf(h)).orEmpty()
-            for (card in listOf("for example I need to update some meeting minutes and print them out", "and need to update a membership agreement and print it out", "as well as respond to emails")) assertTrue(ahead, ahead.contains(card))
+            for (card in cards) assertTrue(ahead, ahead.contains(card))
             assertTrue("one intention a card: $ahead", !ahead.contains("these are some of the things") && !ahead.contains("phase two proposal") && !ahead.contains("later today"))
             assertTrue("the meeting a booking at today", app.storage.read(Days.NOW)!!.contains("and I also have a meeting later today as well."))
         }
