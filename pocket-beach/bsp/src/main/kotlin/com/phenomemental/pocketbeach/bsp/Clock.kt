@@ -19,11 +19,22 @@ object Clock {
     /** A day's full-width address: yyyy s m w d, then 00. */
     fun dayOf(date: LocalDate): String = Days.dayAddress(date)
 
-    /** The rung an address stands at, by its digits that aren't zero: year (4), season (5), month (6), week (7), day (8). */
-    fun level(address: String): Int = address.trimEnd('0').length.coerceIn(0, 10)
+    /**
+     * The rung an address stands at, by its digits that aren't zero: year (4),
+     * season (5), month (6), week (7), day (8); Sundial 0.10, the gathering
+     * (9), the beat (10), and past the point the minute (11), the breath (12)
+     * and the second (13).
+     */
+    fun level(address: String): Int {
+        val fine = address.substringAfter('.', "")
+        if (fine.isNotEmpty()) return 10 + fine.length.coerceAtMost(3)
+        return address.trimEnd('0').length.coerceIn(0, 10)
+    }
 
     /** The date a day's address names, or null when it names no day. */
     fun dateOf(address: String): LocalDate? {
+        // Sundial 0.10: a gathering, beat or moment names its day too.
+        if (level(address) > 8) return dateOf(address.take(8) + "00")
         if (address.length != TEMPORAL_FLOOR || level(address) != 8 || address.any { !it.isDigit() }) return null
         val d = address.map { it - '0' }
         val year = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3]
@@ -48,7 +59,22 @@ object Clock {
     private val SEASONS = listOf("January to March", "April to June", "July to September", "October to December")
 
     /** A rung as words: "2026", "October to December 2026", "November 2026", "1 to 7 November", or the day. */
-    fun rungSaid(address: String, today: LocalDate): String {
+    fun rungSaid(address: String, today: LocalDate, zone: java.time.ZoneId = java.time.ZoneOffset.UTC): String {
+        // Sundial 0.10: the gathering by its name, a beat or a moment by the time it began on the phone's clock.
+        val lv = level(address)
+        if (lv >= 9) {
+            val day = dateOf(address)?.let { said(it, today) } ?: address
+            val part = DAY_PARTS.getOrNull(address[8] - '1') ?: return address
+            if (lv == 9) return "$day, $part"
+            val start = runCatching { addressToSpan(if (lv == 10) address.take(10) else address) }.getOrNull() ?: return "$day, $part"
+            val t = java.time.Instant.ofEpochMilli(start.startMs).atZone(zone).toLocalTime()
+            val hm = "%02d:%02d".format(t.hour, t.minute)
+            return when (lv) {
+                10 -> "$day, $part, from $hm"
+                11 -> "$day, $hm"
+                else -> "$day, $hm:%02d".format(t.second)
+            }
+        }
         val d = address.padEnd(TEMPORAL_FLOOR, '0').map { it - '0' }
         val year = d[0] * 1000 + d[1] * 100 + d[2] * 10 + d[3]
         val month0 = (d[4] - 1) * 3 + (d[5] - 1)
@@ -66,5 +92,10 @@ object Clock {
     }
 
     /** The rungs above a day or rung, coarsest first: the year, the season, the month, the week, each at its full-width address. */
-    fun trail(address: String): List<String> = (4..7).filter { it < level(address) }.map { address.take(it).padEnd(TEMPORAL_FLOOR, '0') }
+    fun trail(address: String): List<String> {
+        val lv = level(address)
+        val coarse = (4..10).filter { it < lv }.map { address.take(it).padEnd(TEMPORAL_FLOOR, '0') }
+        val fine = (11 until lv).map { address.take(10) + "." + address.substringAfter('.').take(it - 10) }
+        return coarse + fine
+    }
 }

@@ -92,7 +92,7 @@ class KeepingTest {
         assertIs<Keeping.Way.Where>(Keeping.way("Keep this in sailing: learn to sail.", emptyList(), pages))
         assertIs<Keeping.Way.Write>(Keeping.way("Make a block called sailing: learn to sail next summer.", emptyList(), pages))
         val name = assertIs<Keeping.Way.Name>(Keeping.way("I'd like to call you Gemma", emptyList(), pages))
-        assertEquals("Matthew calls me Gemma.", name.line)
+        assertEquals("He calls me Gemma.", name.line)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
         assertIs<Keeping.Way.Talk>(Keeping.way("I'd like to call you Gemma", emptyList(), pages), "her shell already holds it")
         // The app's own blocks are never his to name for keeping.

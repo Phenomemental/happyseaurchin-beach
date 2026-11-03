@@ -15,12 +15,13 @@ object Copies {
     /** A reminder to save is due this long after the last copy, when something has changed since. */
     const val REMIND_AFTER_MS = 3L * 24 * 60 * 60 * 1000
 
-    class Copy(val saved: String, val blocks: Map<String, String>, val stamps: Stamps)
+    /** [waiting]: Sundial 0.10, the moments file's text when the copy holds one (spine:pocket-beach 1.111178719915 (c)). */
+    class Copy(val saved: String, val blocks: Map<String, String>, val stamps: Stamps, val waiting: String? = null)
 
     /** A file that is not a copy the pocket can restore, and why, in plain words. */
     class Unreadable(message: String) : Exception(message)
 
-    fun make(storage: BlockStorage, nowMs: Long): String {
+    fun make(storage: BlockStorage, nowMs: Long, waiting: String? = null): String {
         val blocks = JsObj()
         for (name in storage.names().distinct().sorted()) {
             val block = storage.read(name)?.let(::parseJson)?.takeUnless { it == JsNull } ?: continue
@@ -36,6 +37,8 @@ object Copies {
                 "blocks" to blocks,
                 "touched" to obj(stamps.touched),
                 "born" to obj(stamps.born),
+                // Sundial 0.10: today's words, not yet kept, travel with the copy; an older app reading it leaves them.
+                *(waiting?.let { runCatching { parseJson(it) }.getOrNull() as? JsObj }?.let { arrayOf("waiting" to it) } ?: emptyArray()),
             ),
         ) + "\n"
     }
@@ -62,7 +65,7 @@ object Copies {
             val o = doc[key] as? JsObj ?: return emptyMap()
             return o.keys().filter { it in out && o[it] is JsStr }.associateWith { jsString(o[it]) }
         }
-        return Copy(saved, out, Stamps(map("touched"), map("born")))
+        return Copy(saved, out, Stamps(map("touched"), map("born")), (doc["waiting"] as? JsObj)?.let { stringifyPretty(it) + "\n" })
     }
 
     /** Put a copy in place of every block on the phone, whole or not at all. */

@@ -87,7 +87,8 @@ object Bench {
      * `hello-world`, so the hello world is made fresh.
      */
     fun fixture(shelf: Shelf, nowMs: Long, recipe: String = HelloWorld.SHELL_RECIPE): Pair<MemoryStorage, Pages> {
-        val storage = MemoryStorage()
+        // Sundial 0.10: the bench's scratch pocket has no hatched shell, so it names a stand-in room for the posts it judges; it never sends.
+        val storage = MemoryStorage().also { it.standInRoom = Room(Hatch.MATTHEW_HANDLE, HelloWorld.POOL) }
         val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { nowMs }) { nowMs }
         HelloWorld.makeShell(pages, recipe)
         fun go(plan: Plan) = check(pages.carryOut(plan).ok) { "The bench's pocket couldn't be made: ${plan.refusal}" }
@@ -511,7 +512,7 @@ object Bench {
         KeepAsk(7, "In garden, under the autumn line, note that the tulips came from Holland.", Comes.WRITES, listOf(Keeps("garden", Kind.ADD, "1.1", "tulips came from Holland"))),
         KeepAsk(8, "Change the winter line in garden to: Winter: prune the roses and the apple tree.", Comes.WRITES, listOf(Keeps("garden", Kind.CHANGE, "2", "prune the roses and the apple tree"))),
         KeepAsk(9, "Keep this in notes: Buy stamps.", Comes.QUIET),
-        KeepAsk(10, "I'd like to call you Gemma.", Comes.NAME, line = "Matthew calls me Gemma."),
+        KeepAsk(10, "I'd like to call you Gemma.", Comes.NAME, line = "He calls me Gemma."),
         KeepAsk(11, "I'd like to call you Gemma.", Comes.NOTHING, named = true),
         KeepAsk(12, "Change your opening line to: I am Gemma, and I keep his words.", Comes.QUIET),
         KeepAsk(13, "Post to my pool: the garden is planted.", Comes.POST),

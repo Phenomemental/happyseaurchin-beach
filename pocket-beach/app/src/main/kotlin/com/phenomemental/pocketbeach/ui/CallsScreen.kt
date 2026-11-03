@@ -217,7 +217,7 @@ private fun HelloByHand(model: Model) {
     val stored by produceState<String?>(null, model.version) {
         value = withContext(Dispatchers.IO) { model.app.storage.read(HelloWorld.BLOCK) }
     }
-    val message = stored?.let(HelloWorld::messageFor)?.let { runCatching { PoolPost.prepare(HelloWorld.POOL, it) }.getOrNull() }
+    val message = stored?.let(HelloWorld::messageFor)?.let { runCatching { PoolPost.room(model.app.storage).let { r -> PoolPost.prepare(r?.pool ?: HelloWorld.POOL, it, r) } }.getOrNull() }
     val landed = remember(message?.message, posts) { message?.let(model.app.posts::landed) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

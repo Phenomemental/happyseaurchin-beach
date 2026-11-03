@@ -350,7 +350,7 @@ class Pages(
     // ── copies ──
 
     /** Every block as one copy file's text (see [Copies]), taken between writes. */
-    fun saveCopy(): String = synchronized(bsp) { Copies.make(storage, clock()) }
+    fun saveCopy(waiting: String? = null): String = synchronized(bsp) { Copies.make(storage, clock(), waiting) }
 
     /** Put a copy in place of every block, between writes. */
     fun restore(copy: Copies.Copy) = synchronized(bsp) { Copies.restore(storage, copy) }

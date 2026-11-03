@@ -20,7 +20,7 @@ import java.security.MessageDigest
  * on the phone until he posts them with "Post now" or discards them. Nothing
  * here sends anything: a kept message goes only on his tap.
  */
-class Unsent(context: Context) {
+class Unsent(context: Context, private val storage: com.phenomemental.pocketbeach.bsp.BlockStorage) {
     /** A kept message, when it last failed and why; [mayHaveLanded] when it went but no answer came back. */
     class Kept(val message: PoolMessage, val atMs: Long, val why: String, val mayHaveLanded: Boolean)
 
@@ -63,7 +63,7 @@ class Unsent(context: Context) {
 
     private fun load(): List<Kept> = prefs.all.values.mapNotNull { v ->
         val o = (v as? String)?.let { runCatching { parseJson(it) as? JsObj }.getOrNull() } ?: return@mapNotNull null
-        val message = runCatching { PoolPost.prepare((o["pool"] as JsStr).value, (o["message"] as JsStr).value) }.getOrNull() ?: return@mapNotNull null
+        val message = runCatching { PoolPost.prepare((o["pool"] as JsStr).value, (o["message"] as JsStr).value, PoolPost.room(storage)) }.getOrNull() ?: return@mapNotNull null
         Kept(message, ((o["at"] as? JsNum)?.value ?: 0.0).toLong(), (o["why"] as? JsStr)?.value.orEmpty(), (o["may"] as? JsBool)?.value == true)
     }.sortedBy { it.atMs }
 

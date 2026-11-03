@@ -162,7 +162,7 @@ class Hatching(private val app: PocketApp) {
     /** His answer to an offer: the new sentence written at its place in his block, through the guards; null when done, else why not. */
     fun useTheNewOne(y: Cook.Yours): String? {
         val text = y.shipped ?: return "There is no new sentence to use."
-        val done = app.pages.carryOut(app.pages.planChange(y.block, y.at, text))
+        val done = app.pages.carryOut(app.pages.planChange(y.block, Cook.spindleOf(y.at), text))
         offers = offers - y
         app.asking.hatchedNow()
         return if (done.ok) null else done.problem ?: "It couldn't be written."

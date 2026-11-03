@@ -224,6 +224,7 @@ object Acts {
         val trial = MemoryStorage()
         for (name in storage.names()) storage.read(name)?.let { trial.write(name, it) }
         trial.setStamps(storage.stamps())
+        trial.standInRoom = (storage as? MemoryStorage)?.standInRoom
         val pages = Pages(trial, shelf, PocketBsp(trial, shelf), clock = { nowMs })
         val run = Asks.Run(pages, trial, shellOpening, seal)
         val steps = mutableListOf<Step>()
@@ -231,7 +232,7 @@ object Acts {
         val dropped = mutableListOf<String>()
         val helloAsked = guard != null && Keeping.Ask.HELLO in Keeping.asks(guard.said)
         // 0.6.4: a post only when he asks for one.
-        val post = actions.filterIsInstance<Action.Post>().lastOrNull()?.let { Offer(HelloWorld.POOL, it.message) }
+        val post = actions.filterIsInstance<Action.Post>().lastOrNull()?.let { Offer(PoolPost.room(storage)?.pool ?: HelloWorld.POOL, it.message) }
             ?.takeIf { guard == null || Keeping.asksToPost(guard.said) || run { dropped += "he didn't ask to post"; false } }
 
         fun address(i: Int, block: String, quote: String): Pair<String?, Planned?> {

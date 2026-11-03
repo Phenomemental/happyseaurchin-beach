@@ -1,0 +1,152 @@
+{
+ "_": "SUNDIAL'S OWN WORDS — what Sundial says, as against how it is drawn, shipped beside the procedures, read only, changed by release (spine:pocket-beach 1.111178719917). 1 the six places; 5 the words on screen; 6 About; 7 the safety line; 9 where each was copied from. Sundial 0.11 adds the ways of listening and the turn's questions (beneath 1) and the turn's words (2); 0.12 adds the films (3) and the road (4).",
+ "1": {
+  "_": "THE SIX PLACES, in pool order: each its phrase, then its name at 1, its hue at 2, and at 3 the question an empty place asks (mark.js:11-24).",
+  "1": {
+   "_": "what happened",
+   "1": "Facts",
+   "2": "#4A6B8A",
+   "3": "What could you have pointed to today?"
+  },
+  "2": {
+   "_": "what you felt",
+   "1": "Feelings",
+   "2": "#B0413E",
+   "3": "What did your body know today?"
+  },
+  "3": {
+   "_": "what you made of it",
+   "1": "Fictions",
+   "2": "#7A5C99",
+   "3": "What did you make of it, that might not be so?"
+  },
+  "4": {
+   "_": "what matters",
+   "1": "Purpose",
+   "2": "#2E7D6B",
+   "3": "What mattered, underneath?"
+  },
+  "5": {
+   "_": "a choice",
+   "1": "Decision",
+   "2": "#B8860B",
+   "3": "What did you choose, or let be chosen?"
+  },
+  "6": {
+   "_": "what’s ahead",
+   "1": "Outcomes",
+   "2": "#6FA8DC",
+   "3": "What are you expecting, or fearing?"
+  }
+ },
+ "5": {
+  "_": "THE WORDS ON SCREEN, as Sundial says them (sundial.html), and the app's own where Sundial has none.",
+  "1": {
+   "_": "TODAY.",
+   "1": "tap the sundial for your days · hold it for where they rest",
+   "2": "What’s with you {part}?",
+   "3": "Your day turns at 1 am in summer.",
+   "4": "You said: “Tomorrow, {line}.”",
+   "5": "That’s enough for today. Come back tomorrow.",
+   "6": "Your phone hears you. Nothing leaves it.",
+   "7": "{n} days"
+  },
+  "2": {
+   "_": "THE KEEP CARD.",
+   "1": "Keep today",
+   "2": "Keep it",
+   "3": "Not now",
+   "4": "Today already holds your own words; Keep it adds your moments.",
+   "5": "You spoke yesterday and didn't keep it.",
+   "6": "Kept.",
+   "7": "Tap a colour to take it off, or on.",
+   "8": "Nothing is kept until you tap Keep it."
+  },
+  "3": {
+   "_": "YOUR PLACES: the menu, a name with its line beneath (sundial.html:6214-6226).",
+   "1": "Today — the sundial, as it is now",
+   "2": "Your days — every day you have kept, the newest first",
+   "3": "Your room — where people leave you a note",
+   "4": "Your hand — what you’re holding",
+   "5": "Your pocket — your blocks, in plain groups",
+   "6": "Your recipes — your cook and kernel: change a line and she behaves differently",
+   "7": "Settings — her voice, where you are, your name and your room",
+   "8": "About — what this is, and who made it"
+  },
+  "4": {
+   "_": "YOUR DAYS AND WHERE THEY REST.",
+   "1": "Nothing has come to rest at {phrase}.",
+   "2": "where your days have come to rest",
+   "3": "No days kept yet. Keep today, and the first comes to rest here."
+  },
+  "5": {
+   "_": "YOUR ROOM.",
+   "1": "Write a note and tap Post. Or tell her any time, 'post this to my room', and she'll set it ready for you to send.",
+   "2": "Posted to your room, entry {n}.",
+   "3": "Soon, the notes others leave you will be here too, with a dot when one is new.",
+   "4": "Your room waits for your shell: once you have a name and a room, the box is here.",
+   "5": "Notes you have sent"
+  }
+ },
+ "6": {
+  "_": "ABOUT, Sundial's as the base, reformed for the app (spine:pocket-beach 1.1111787197).",
+  "1": "Most AI that people turn to for support is an open conversation with no shape and no end, its memory held inside someone else's product. This is the other kind: a daily practice, bounded, and the person's days are theirs.",
+  "2": {
+   "_": "ABOUT",
+   "1": "This was made by Matthew Bushell, a therapeutic coach and Emotional Fitness practitioner with 5th Place, who lives with bipolar and serves on the Lived Experience Council of the International Society for Bipolar Disorders, with David Pinto, who created the beach it stands on, and with Claude; the companion is Gemma, an open model made by Google, running on your phone. It grew from lived experience, from Emotional Fitness, and from Presence in Action, Louie Gardiner's practice."
+  },
+  "3": {
+   "_": "WHY IT EXISTS",
+   "1": "More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. It is bounded: each day has a limit, and when it's reached, it rests until tomorrow. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI."
+  },
+  "4": {
+   "_": "WHY A SUNDIAL",
+   "1": "Our days move with the light. Sundial keeps your practice in rhythm with it: the dial follows the real sun where you are, and there are no scores and no streaks, only the day's light and, over time, the hours you tend to come to it."
+  },
+  "5": {
+   "_": "HOW IT HOLDS YOU",
+   "1": "It reflects. It doesn't advise, interpret, diagnose or praise. Those are the instructions she is given here; they guide it but can't guarantee it, so you remain the judge of what's true for you. It isn't a friend or a therapist, and it won't pretend to be."
+  },
+  "6": {
+   "_": "WHERE YOUR WORDS GO",
+   "1": "Everything you say and keep stays on this phone. The phone turns your voice into text itself, and Gemma, the companion, runs here too, so nothing you tell her is sent anywhere. Two things can leave, and only when you choose: a note you post to your room, sent when you tap Post; and, if you choose your own Claude as her voice, your words go to Anthropic each time she answers. Your days are kept in an open form, so you can save them, take them with you, and later, if you choose, bring them to the beach."
+  },
+  "7": {
+   "_": "WHAT IT DRAWS ON",
+   "1": "Emotional Fitness (5th Place) · The P6 Constellation and Presence in Action (Louie Gardiner) · Natural Inclusionality (Alan Rayner) · peer support and lived-experience recovery.",
+   "2": {
+    "_": "IF YOU WANT MORE",
+    "1": "This is a practice you keep by yourself. If you would like to work with a person, Matthew offers one-to-one therapeutic coaching through 5th Place, in Northampton and online."
+   }
+  },
+  "8": {
+   "_": "WHAT IT IS NOT",
+   "1": "It isn't therapy, a clinical service, or a way to diagnose anything. The colours are ways of looking, offered lightly, never labels.",
+   "2": {
+    "_": "IF YOU NEED HELP NOW",
+    "1": "Call your local emergency number. In the UK and Ireland, Samaritans on 116 123, any time. In the UK, NHS 111 for urgent mental health help."
+   }
+  },
+  "9": {
+   "_": "LINKS, as Sundial's About gives them (sundial.html:2518-2527).",
+   "1": "Emotional Fitness and Matthew's coaching at 5th Place — https://5th.place/matthew-bushell/",
+   "2": "Presence in Action and the P6 Constellation — https://potent6.co.uk",
+   "3": "Natural Inclusionality — https://occurrity.com/publications/natural-inclusionality-fromself-recovery-to-self-discovery/",
+   "4": "the International Society for Bipolar Disorders — https://www.isbd.org",
+   "5": "Bipolar UK — https://www.bipolaruk.org",
+   "6": "Samaritans — https://www.samaritans.org",
+   "7": "With thanks to David Pinto, who built the ground these pages stand on — https://beach.happyseaurchin.com"
+  }
+ },
+ "7": {
+  "_": "THE SAFETY LINE, at the foot of Today, always (sundial.html:2488).",
+  "1": "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland)."
+ },
+ "9": {
+  "_": "WHERE EACH WAS COPIED FROM, AND WHEN: by Claude Code for Sundial 0.10, 3 November 2026.",
+  "1": "1: mark.js:11-24 (the six places' phrases, names, hues and empty-place questions), at main 4d8f5a8.",
+  "2": "5: sundial.html (Sundial M4.18, 25 October 2026) where Sundial says it; the keep card's notes, the summer line and the room's lines from spine:pocket-beach 1.1111787197 and 1.111178719915-18.",
+  "3": "6: sundial.html:2492-2530, reformed as spine:pocket-beach 1.1111787197 says (redrafted 07:47, 3 November 2026): the credits made true, WHERE YOUR WORDS GO rewritten, WHY A SUNDIAL added, Keep Sundial on your phone removed, How it holds you's \"Claude\" made \"she\".",
+  "4": "7: sundial.html:2488."
+ }
+}

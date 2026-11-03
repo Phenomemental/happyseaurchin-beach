@@ -87,7 +87,7 @@ class PocketApp : Application() {
     val posts by lazy { Posts(this) }
 
     /** What the beach couldn't be reached for, kept for "Post now". */
-    val unsent by lazy { Unsent(this) }
+    val unsent by lazy { Unsent(this, storage) }
 
     /** Whether the phone has a connection, as Android says: only so "Post now" waits for one. */
     private var connected by mutableStateOf(false)
