@@ -15,7 +15,15 @@ not been run.
 ## The verdict
 
 **Every test named in the findings passes: the core's, the app's, and on
-the emulator.** CI_LINE
+the emulator.** CI run 217, at `f85265d`, is green on all of it:
+- the core on Linux and on Windows;
+- the golden calls, regenerated and compared;
+- the app's own tests;
+- all 71 device tests on the emulator, and the screen tour after them.
+
+Runs 215 and 216 failed first, on 7 and then 1 of the 71. What they caught
+is under "What the emulator caught" below. The commit that adds this line
+changes only this file.
 
 What no test here can show: **her tool calls with a real model.** The new
 calls (the places his words touch, the day's sheet, and her reply in two
@@ -33,9 +41,9 @@ new risk (section 9); it is still the one to watch.
 | the minute, breath and second rule | core, `SundialTest` | passes |
 | a 0.9.1 cook with his TALK line changed, brought up | core, `CookTest`, `HatchGoldenTest` | passes: his line kept, the shipped one offered beside it at 1.1.8.1 |
 | the walker on every new form | core, `CookTest`, `SundialTest` | passes: KEEP TODAY, PLACE, GREET and LISTEN walked whole |
-| Keep today end to end, on the stand-in mind | emulator, `SundialDeviceTest` | DEVICE_KEEP |
-| the old P6 counted by address | emulator, `SundialDeviceTest` | DEVICE_P6 |
-| a second handle posting to its own room | emulator, `SundialDeviceTest` | DEVICE_ROOM |
+| Keep today end to end, on the stand-in mind | emulator, `SundialDeviceTest` | passes, run 217: the moment waits, the card sets it out, his yes keeps it in his now, no P6, the waiting room empty |
+| the old P6 counted by address | emulator, `SundialDeviceTest` | passes, run 217: one day, counted by its address; what happened and what he felt, one day each; his P6 untouched |
+| a second handle posting to its own room | emulator, `SundialDeviceTest` | passes, run 217: pool:ada-lovelace, under ada-lovelace, "Posted to your room, entry 7" |
 | the golden calls, at their two pinned commits | CI `test` | passes, regenerated and compared |
 
 **Beyond those:**
@@ -52,6 +60,19 @@ new risk (section 9); it is still the one to watch.
 - **The screen tour** photographs Sundial's screens, light and dark: Today,
   her reply, the keep card, Kept, Your places, Your days, the pools, Your
   room, Your hand, Settings and About. They are in CI's `screens` artifact.
+
+**What the emulator caught** (runs 215 and 216; the six new tests passed
+from the first):
+- **A post kept for Post now was dropped on reloading, before a hatch.**
+  It was re-read against his room, and before a hatch there is none. A
+  real fault, now fixed: each kept post keeps its author (under Your room,
+  below).
+- **Five older tests waited for the companion's post to be offered**
+  before a hatch. It now says it waits for his shell.
+- **Two expected "Matthew calls me Gemma."** Her name line is now "He calls
+  me Gemma." (918).
+- **The screen tour tapped Try a call by hand** with the workings hidden.
+  On About it now shows only under Show the workings.
 
 **Changed device tests, and why:**
 - **Rockpool's day card** (day-move, day-to, a P6 written) is now the keep
