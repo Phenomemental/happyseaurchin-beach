@@ -419,8 +419,8 @@ object Talking {
      * first sentence that asks; null when she asked nothing, and Sundial's
      * own question stands.
      */
-    fun oneQuestion(reply: String, handed: List<String> = emptyList()): String? {
-        val checked = hers(reply, handed = handed)
+    fun oneQuestion(reply: String, appLines: List<String> = emptyList(), handed: List<String> = emptyList()): String? {
+        val checked = hers(reply, appLines = appLines, handed = handed)
         return checked.lines().flatMap(::piecesOf).map { it.trim() }.firstOrNull { it.trimEnd('”', '"', '’', ')').endsWith("?") }
             ?.let { q -> if (wrapsWhole(q)) q.drop(1).dropLast(1).trim() else q }?.takeIf { it.isNotBlank() }
     }

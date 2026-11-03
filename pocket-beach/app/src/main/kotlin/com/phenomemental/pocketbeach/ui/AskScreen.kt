@@ -369,13 +369,14 @@ private fun Three(three: Hatch.Three) {
 
 /** 0.6.4: he asked to keep something and named no block of his: where it goes, his to say. The model doesn't choose. */
 @Composable
-private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where) {
+private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where, hatched: Boolean) {
     val ink = LocalInk.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().testTag("where")) {
         Text("Where shall this go?", style = Type.body, color = ink.ink)
         Text(Words.quoted(w.words, 300), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("where-words"))
         for (b in w.blocks.take(9)) Action("In ${if (b.startsWith("stash:")) "your stash" else b}", { asking.putIn(b, e) }, Modifier.fillMaxWidth(), tag = "where:$b")
-        Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
+        // Sundial 0.10.1 (item 11): once he has hatched, Keep today is the one way his words become his day.
+        if (!hatched) Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
         Action("Not now", { asking.notNowWhere(e) }, Modifier.fillMaxWidth(), tag = "where-not-now")
         Text(
             if (w.blocks.isEmpty()) "You have no blocks of your own yet. To make one, say \u201cmake a block called \u2026\u201d."
@@ -456,7 +457,7 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
                     TextLink("Back to the proposal", { asking.back(e) }, tag = "back-to-proposal")
                 }
             }
-            is Asking.Stage.Where -> WhereGoes(asking, e, w)
+            is Asking.Stage.Where -> WhereGoes(asking, e, w, hatched = model.app.hatching.hatched != null)
             // Sundial 0.10: his day as Sundial's keep card, beneath her reply ("Sort as my day", "Put this in my now").
             is Asking.Stage.Told -> KeepCardView(model, w.card, writing = false, onPlace = { asking.placeTold(it, e) }, onTick = { asking.tickTold(it, e) }, onKeep = { asking.yesToTold(e) }, onNotNow = { asking.notNowToTold(e) })
             is Asking.Stage.ToldWriting -> KeepCardView(model, w.told.card, writing = true, onPlace = {}, onTick = {}, onKeep = {}, onNotNow = {})
@@ -506,6 +507,7 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
         // Offered under her reply while it's the last thing said: keeping his words in the block they name, and sorting them as his day.
         if (latest && !thinking) {
             e.keepIn?.let { block -> TextLink("Keep this in $block?", { asking.keep(e) }, tag = "keep-in") }
+            // Sundial 0.10.1 (item 11): never once he has hatched (Asking sets it only before): Keep today is the one way.
             if (e.sortable) TextLink("Sort as my day", { asking.sortAsDay(e) }, tag = "sort-as-day")
         }
         // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.

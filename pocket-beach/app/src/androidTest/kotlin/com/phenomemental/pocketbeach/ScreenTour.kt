@@ -118,11 +118,17 @@ class ScreenTour {
             com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(1), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("Phase two", listOf("You worked with David on the proposal."), "ring Jo about the music", listOf(1, 4))), System.currentTimeMillis() - 86_400_000)
             com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(3), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("By the river", listOf("You walked the dog with Sam.", "You felt calm."), "", listOf(1, 2))), System.currentTimeMillis() - 3 * 86_400_000)
             check(app.pages.carryOut(app.pages.planWhole(com.phenomemental.pocketbeach.bsp.Days.NOW, clock)).ok)
-            standIn.talkScript += listOf("A walk in the cold, and the ideas coming as you went. What stayed with you?")
+            // Sundial 0.10.1 (item 10): her greeting as his phone had it: his passport line as the app's, her question in quote marks, "Kept.".
+            Fresh.ungreeted()
+            standIn.talkScript += listOf(
+                "(The app: ${com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW.who})\n\u201cWhat came of ringing Jo about the music?\u201d\nKept.",
+                "A walk in the cold, and the ideas coming as you went. What stayed with you?",
+            )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.waitFor("dial")
-                compose.waitFor("own-question")
-                shot("$theme-50-today", keyboard = false)
+                // A new conversation on a day not kept: his tomorrow line, then her one question.
+                compose.waitFor("greet-question", "What came of ringing Jo about the music?", timeoutMs = 20_000)
+                shot("$theme-50-today-greeting-unkept", keyboard = false)
                 compose.onNodeWithTag("question").performTextInput("Walked along the canal to the river this morning. Cold, but the ideas for the film kept coming.")
                 compose.tap("ask")
                 compose.waitUntil(15_000) { app.asking.settled && app.asking.history.isNotEmpty() }
@@ -161,6 +167,10 @@ class ScreenTour {
                 // A tap at the heart gathers the pools back.
                 if (compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithTag("dial").performTouchInput { click(center) }
                 compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+                // Sundial 0.10.1 (item 10): a new conversation on the day just kept: the greeting alone, no "Kept.", no shell.
+                compose.tap("new-conversation")
+                compose.waitFor("greet-question", "What came of ringing Jo about the music?", timeoutMs = 20_000)
+                shot("$theme-53c-greeting-kept", keyboard = false)
                 compose.tap("menu")
                 compose.waitFor("places")
                 shot("$theme-54-places")

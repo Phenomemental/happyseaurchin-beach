@@ -384,6 +384,10 @@ class CookTest {
         val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
         assertEquals(Cook.places(procedures.load(Cook.SHIPPED_COOK)), now, "TALK as 0.10.1 has it, and nothing else changed")
         assertTrue(ups.flatMap { it.first.yours }.isEmpty(), "nothing of his to keep or offer")
+        // Item 11: his phone's cook from 0.10 set out "Sort as my day" at 1.1.8.7; brought up, nothing does.
+        assertTrue(Cook.places(cook010).values.any { it.contains("Sort as my day") })
+        assertTrue(now.values.none { it.contains("Sort as my day") }, now.filterValues { it.contains("Sort") }.toString())
+        assertTrue(now.keys.none { it.startsWith("1.1.8.6") || it.startsWith("1.1.8.7") })
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
     }

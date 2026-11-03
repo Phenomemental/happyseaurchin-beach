@@ -271,18 +271,23 @@ class SundialDeviceTest {
 
     private fun shows(tag: String, text: String) = compose.onAllNodes(hasTestTag(tag) and hasText(text, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
 
-    /** Fix 3 and 2: on E2B her one-line reply stays in view with "Sort as my day" beneath it; no help line, no danger line for her. */
+    /**
+     * Fix 3 and 2: on E2B her one-line reply stays in view; no help line, no danger line for her. Item 11: the day message
+     * gives her reply and no card: Keep today is the one way his words become his day.
+     */
     @Test
-    fun onE2BHerReplyToTheTestMessageStaysWithItsCardAndNoHelpLine() {
+    fun onE2BHerReplyToTheTestMessageStaysWithNoCardAndNoHelpLine() {
         Fresh.hatched()
         hisHand()
         mind.talkScript += "$reflection All that's left is to evaluate sundial. $question"
         ActivityScenario.launch(MainActivity::class.java).use {
             say(idChecks)
-            compose.waitFor("sort-as-day", timeoutMs = 20_000)
-            compose.waitFor("say", "You've done some of the id checks today")
+            compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
             Thread.sleep(1500)
             assertTrue("her reply is never taken out of view", shows("say", "You've done some of the id checks today") && shows("say", question))
+            assertTrue("no card after her reply", none("sort-as-day") && none("keep-card") && none("where-day"))
+            assertTrue("Keep today, the one way", !none("keep-today"))
             assertTrue("no help line beneath an ordinary day", none("help-line"))
             // Fix 9: every step timed, in the workings.
             compose.waitFor("step", "his cook walked (TALK)")
@@ -395,6 +400,83 @@ class SundialDeviceTest {
             assertTrue("the way to the larger model, or why there is none", !none("smaller-model-get") || !none("smaller-model-use") || shows("smaller-model-why", "memory") || shows("smaller-model-why", "room") || shows("smaller-model-why", "coming"))
             app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
             compose.waitUntil(10_000) { none("smaller-model") }
+        }
+    }
+
+    // ── Sundial 0.10.1, item 10: the greeting, from his Pixel on 3 November ──
+
+    /** Her greeting as his phone showed it: his passport line as the app's, her question in quote marks, then "Kept.". */
+    private fun asOnHisPhone(q: String) = "(The app: ${Hatch.MATTHEW.who})\n\u201c$q\u201d\nKept."
+
+    private fun nothingNotHers() {
+        for (text in listOf("The app", "philosopher", "Kept", "\u201c", "\u201d")) {
+            val found = compose.onAllNodes(hasTestTag("greet-question") and hasText(text, substring = true), useUnmergedTree = true).fetchSemanticsNodes()
+            assertTrue("the greeting shows no \"$text\"", found.isEmpty())
+        }
+        assertTrue("no keep status anywhere", compose.onAllNodes(hasText("Kept.", substring = false), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        assertTrue(none("keep-note"))
+    }
+
+    /** A new conversation, on a day not kept and then on the same day kept: his tomorrow line, then her one question, and nothing else. */
+    @Test
+    fun theGreetingIsHisTomorrowLineThenHerOneQuestionOnADayKeptOrNot() {
+        Fresh.hatched()
+        val today = Keep.dayOf(System.currentTimeMillis())
+        val clock = Landing.emptyClock(Days.NOW_OPENING)
+        Keep.dayLine(clock, today.minusDays(1), Mark.write(Mark.Sheet("Phase two", listOf("You worked with David."), "ring Jo about the music", listOf(1, 4))), System.currentTimeMillis() - 86_400_000)
+        check(app.pages.carryOut(app.pages.planWhole(Days.NOW, clock)).ok)
+        Fresh.ungreeted()
+        mind.talkScript += asOnHisPhone("What has this day held for you?")
+        mind.talkScript += "You walked the dog with Sam. What came of the call with Jo?"
+        ActivityScenario.launch(MainActivity::class.java).use {
+            // A day not kept.
+            compose.waitFor("greet-said", "You said: \u201cTomorrow, ring Jo about the music.\u201d", timeoutMs = 20_000)
+            compose.waitFor("greet-question", "What has this day held for you?", timeoutMs = 20_000)
+            assertEquals("What has this day held for you?", app.asking.greeting?.question)
+            nothingNotHers()
+            // She was never handed his passport for it; her talk, after, still holds who he is.
+            val greetingWindow = mind.talkAsked.single { it.second.contains("he has opened his sundial") }.first
+            assertFalse(greetingWindow, greetingWindow.contains(Hatch.MATTHEW.who))
+            assertTrue(greetingWindow, greetingWindow.contains("1. His heart"))
+            say("Took the dog out with Sam by the river. I felt calm.")
+            compose.waitFor("say", timeoutMs = 20_000)
+            assertTrue(mind.talkInstructions.last().contains(Hatch.MATTHEW.who))
+            // His answer follows her question in her conversation.
+            assertTrue(mind.talkHistories.last().any { it.second == "What has this day held for you?" })
+            compose.waitUntil(20_000) { app.asking.settled }
+            compose.tap("keep-today")
+            compose.waitFor("keep-card", timeoutMs = 20_000)
+            compose.tap("day-yes")
+            compose.waitFor("kept-shell", timeoutMs = 20_000)
+            // The same day, kept: a new conversation opens with the greeting alone.
+            compose.tap("new-conversation")
+            compose.waitFor("greet-question", "What has this day held for you?", timeoutMs = 20_000)
+            compose.waitFor("greet-said", "You said: \u201cTomorrow, ring Jo about the music.\u201d")
+            assertTrue("nothing else: no shell, no card", none("kept-shell") && none("keep-card") && none("turn"))
+            nothingNotHers()
+        }
+        // The kept day, the greeting asked afresh (the app opened again): checked as any reply of hers.
+        app.asking.reset()
+        Fresh.ungreeted()
+        mind.talkScript += "Kept.\n(The app: he has opened his sundial and hasn't spoken to you yet today.)\n\"What came of the walk by the river?\""
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("greet-question", "What came of the walk by the river?", timeoutMs = 20_000)
+            assertEquals("What came of the walk by the river?", app.asking.greeting?.question)
+            nothingNotHers()
+        }
+    }
+
+    /** Item 10: the check runs on every reply, not the greeting alone: an app line and his passport line in her talk are never shown as hers. */
+    @Test
+    fun noReplyOfHersShowsTheAppsLineOrHisPassport() {
+        Fresh.hatched()
+        mind.talkScript += "(The app: nothing is being kept or set out from this.)\n${Hatch.MATTHEW.who}\nYou just want to talk. What's on today?\nKept."
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(justTalk)
+            compose.waitFor("say", "You just want to talk.", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
+            assertEquals("You just want to talk. What's on today?", app.asking.history.last().said)
+            for (text in listOf("The app", "philosopher", "Kept.")) assertFalse(text, shows("say", text))
         }
     }
 }

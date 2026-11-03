@@ -92,9 +92,10 @@ class Rockpool091DeviceTest {
             compose.waitFor("top-bar")
             say("Put this in my now: $telling")
             // His day set out with her reply, no "Sort as my day" between; on E2B each piece waits for him to place it.
-            // Sundial 0.10: on the keep card.
+            // Sundial 0.10: on the keep card. 0.10.1 (item 11): his words asking for it do what Keep today does: the one keep card, where it sets it out.
             compose.waitFor("keep-card", timeoutMs = 20_000)
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Begin your reply with these words: “It's below, for your yes.”"))
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Begin your reply with these words: “It's set out for your yes.”"))
+            assertTrue("the one keep card, Keep today's", app.asking.keepCard != null)
             compose.waitUntil(5_000) { compose.onAllNodes(hasText("and need to update a membership agreement and print it out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             assertTrue("no Sort as my day: he asked", none("sort-as-day"))
             compose.tap("day-yes")

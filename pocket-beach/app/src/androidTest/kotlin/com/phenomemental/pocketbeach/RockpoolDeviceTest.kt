@@ -158,15 +158,20 @@ class RockpoolDeviceTest {
         }
     }
 
-    /** Sundial 0.10: Sort as my day sets his day out on the keep card, and his yes keeps it in Sundial's form, in his now, with no P6. */
+    /**
+     * Sundial 0.10: Keep today sets his day out on the keep card, and his yes keeps it in Sundial's form, in his now, with no P6.
+     * Sundial 0.10.1 (item 11): Keep today is the one way: no Sort as my day after her reply.
+     */
     @Test
     fun hisDayIsKeptInSundialsForm() {
         hatched()
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("top-bar")
             say("Took the dog out with Sam this afternoon by the river and it was lovely and crisp. I felt calm for the first time in a while, which surprised me. I need to ring Jo tomorrow about the music for the pilot.")
-            compose.waitFor("sort-as-day", timeoutMs = 20_000)
-            compose.tap("sort-as-day")
+            compose.waitFor("say", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
+            assertTrue("no card after her reply", compose.onAllNodes(hasTestTag("sort-as-day"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            compose.tap("keep-today")
             compose.waitFor("keep-card", timeoutMs = 20_000)
             compose.waitFor("keep-title", "A walk by the river")
             compose.tap("day-yes")

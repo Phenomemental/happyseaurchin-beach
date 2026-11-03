@@ -151,9 +151,14 @@ fun TodayDial(model: Model, nav: Nav) {
         Text(g?.question ?: ownQuestion(model, tick), style = if (g?.question != null) Type.body.copy(fontSize = Type.heading.fontSize) else Type.heading.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag(if (g?.question != null) "greet-question" else "own-question"))
     }
 
+    // Sundial 0.10.1 (item 11): the one keep card, from his tap of Keep today or his words asking for it, brought into view as it is set out.
+    val cardInView = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
+    LaunchedEffect(card?.walk) { if (card != null) { delay(300); runCatching { cardInView.bringIntoView() } } }
     card?.let { k ->
-        KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
-        k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
+        Column(Modifier.fillMaxWidth().bringIntoViewRequester(cardInView), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
+            k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
+        }
     }
     if (asking.keeping && card == null) Text("Setting out your day…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keeping"))
     // Sundial 0.10.1: a day kept shows as its shell, its title beneath; only what went wrong is said in words.
@@ -183,10 +188,12 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
  * from them only when it can be, else plain (Talking.splitQuestion).
  */
 fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
+    // Sundial 0.10.1 (item 10): checked once more as it is shown, whatever way it came: no app line, no keep status, no quote marks wrapping it.
+    val hers = { t: String -> com.phenomemental.pocketbeach.bsp.Talking.hers(t) }
     // Sundial 0.10.1: ANSWER, her answer as she gave it, plain.
-    parts?.get("THE ANSWER")?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
-    val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
-    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(said)
+    parts?.get("THE ANSWER")?.let(hers)?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
+    val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.mapValues { hers(it.value) }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
+    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(hers(said))
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {
         if (reflection.isNotBlank()) append("\n")

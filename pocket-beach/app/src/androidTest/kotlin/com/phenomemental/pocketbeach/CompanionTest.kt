@@ -75,6 +75,10 @@ class StandIn : Mind {
     var instruction = ""
     /** The Talk job's instruction. */
     var talkInstruction = ""
+    /** Sundial 0.10.1: every instruction a Talk conversation was opened with, the greeting's among them. */
+    val talkInstructions = mutableListOf<String>()
+    /** Sundial 0.10.1: each Talk message with the instruction of the conversation it was given in. */
+    val talkAsked = mutableListOf<Pair<String, String>>()
     /** The earlier exchanges each Write conversation (0.4's) was opened with. */
     val histories = mutableListOf<List<Pair<String, String>>>()
     /** The earlier exchanges each Talk conversation was opened with, and the settings it was drawn by. */
@@ -92,6 +96,7 @@ class StandIn : Mind {
         val talking = !instruction.contains("Answer in one of")
         if (talking) {
             talkInstruction = instruction
+            talkInstructions += instruction
             talkHistories += history
             talkSettings += settings
         } else {
@@ -112,6 +117,7 @@ class StandIn : Mind {
                 if (talking) failAfter?.let { f -> failAfter = null; talkMessages += message; f.chunked(4).forEach(piece); throw RuntimeException("The engine stopped part way.") }
                 val reply = if (talking) {
                     talkMessages += message
+                    talkAsked += instruction to message
                     talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
                 } else {
                     writeMessages++
