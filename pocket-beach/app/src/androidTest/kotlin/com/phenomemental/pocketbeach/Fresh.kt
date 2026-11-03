@@ -63,6 +63,34 @@ object Fresh {
         // A download kept part way, or a failure recorded, but never the model itself.
         File(app.getExternalFilesDir(null), "models/${com.phenomemental.pocketbeach.model.ModelStore.FILE}.part").delete()
         app.getSharedPreferences("model", 0).edit().remove("failed").commit()
+        // Sundial 0.10: the app's own files and settings: his words waiting, the notes he sent, where he stands.
+        app.waiting.clear()
+        app.notesSent.clear()
+        app.where.set(null)
+        app.where.asked = false
+        // The dial asks her its one question once a day as it opens; here today counts as asked, so a test's
+        // first words are the first she is given. The greeting's own test clears it (ungreeted).
+        app.getSharedPreferences("sundial", 0).edit().clear().putString("day", com.phenomemental.pocketbeach.bsp.Keep.dayOf(System.currentTimeMillis()).toString()).commit()
+    }
+
+    /** Sundial 0.10: the dial's question not yet asked today. */
+    fun ungreeted() {
+        app.getSharedPreferences("sundial", 0).edit().clear().commit()
+    }
+
+    /** A pocket hatched as [handle] with [passport] adopted, her shell named Gemma, before the app opens. */
+    fun hatched(
+        handle: String = com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE,
+        passport: com.phenomemental.pocketbeach.bsp.JsObj = com.phenomemental.pocketbeach.bsp.JsObj.of(
+            "_" to com.phenomemental.pocketbeach.bsp.str("Matthew Bushell — digital social innovator."),
+            "1" to com.phenomemental.pocketbeach.bsp.str("The heart."),
+        ),
+    ) {
+        clear()
+        com.phenomemental.pocketbeach.bsp.HelloWorld.makeShell(app.pages, com.phenomemental.pocketbeach.bsp.Talks.SHELL_RECIPE)
+        check(app.pages.carryOut(app.pages.planAdd(com.phenomemental.pocketbeach.bsp.HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
+        val planned = com.phenomemental.pocketbeach.bsp.Hatch.plan(handle, passport, com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
+        com.phenomemental.pocketbeach.bsp.Hatch.carryOut(planned, app.pages, app.storage).problem?.let { error("The hatch: $it") }
     }
 }
 

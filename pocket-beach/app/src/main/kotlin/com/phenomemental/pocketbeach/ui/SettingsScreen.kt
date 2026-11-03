@@ -120,7 +120,7 @@ private fun WhereYouAre(model: Model) {
         for (t in found) TextLink("${t.name}, ${t.country}", {
             app.where.set(com.phenomemental.pocketbeach.WhereHeStands.Place(t.name, t.lat, t.lon, "town"))
             typed = ""; found = emptyList(); note = null
-        }, style = Type.body, tag = "where-town:${t.name}")
+        }, style = Type.body, tag = "where-town:${t.name}, ${t.country}")
         if (p != null) TextLink("Forget where I am", { app.where.set(null); note = null }, tag = "where-forget")
         note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("where-note")) }
         Text(

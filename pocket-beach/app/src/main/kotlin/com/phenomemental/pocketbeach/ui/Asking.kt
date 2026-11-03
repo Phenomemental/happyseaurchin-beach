@@ -1473,6 +1473,11 @@ class Asking(private val app: PocketApp) {
         context.values.forEach { it.clear() }
         unseen.clear()
         told = null
+        // Sundial 0.10: the keep card, and the dial's question as this app run last had it.
+        keepCard = null
+        keepNote = null
+        lastKept = null
+        greeting = null
         conversation = Conversation()
         together = true
         val all = kept.values.map { it.talker }

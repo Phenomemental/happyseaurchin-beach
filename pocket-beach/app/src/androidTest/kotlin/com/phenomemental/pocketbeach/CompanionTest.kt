@@ -141,6 +141,9 @@ class StandIn : Mind {
     /** 0.6: what the Sort job was asked, a piece at a time, and the instruction each piece came with. */
     val sortAsks = mutableListOf<Pair<String?, String>>()
 
+    /** Sundial 0.10: the day's sheet she draws for the keep card, in plain lines. */
+    var sheet = "A walk by the river\nYou took the dog out with Sam by the river.\nYou felt calm.\nTomorrow: ring Jo about the music"
+
     /** Her word for each piece of his day; "happened" for a piece not here. A card is about a piece when [about] says so. */
     val sortWords = mutableMapOf<String, String>()
     var about: (String) -> Boolean = { false }
@@ -148,6 +151,8 @@ class StandIn : Mind {
     override suspend fun ask(instruction: String?, message: String, settings: JobSettings): Mind.Answer {
         sortAsks += instruction to message
         val text = when {
+            // Sundial 0.10: the day's sheet, in plain lines (cook 6.1.5 on E2B).
+            instruction?.contains("draw the day's sheet") == true -> sheet
             message.startsWith("A card on Matthew's hand says") -> if (about(message)) "yes" else "no"
             // 0.6.1: a rung takes one of his pieces, by its number, or none.
             message.startsWith("Matthew's rungs above") -> "3.1: 1\n3.4: none"
@@ -227,34 +232,35 @@ class CompanionTest {
 
     private fun log() = app.pages.position(Region.POCKET, Asks.LOG)
 
+    /**
+     * Sundial 0.10: a post goes from the shell he hatched as, to his own room
+     * (spine:pocket-beach 1.111178719918). Before a hatch the companion's
+     * hello world is written and checks out, and its post waits for his shell:
+     * nothing is sent.
+     */
     @Test
-    fun theHelloWorldWithTheCompanionEndsInOnePost() {
+    fun theHelloWorldWithTheCompanionIsWrittenAndItsPostWaitsForHisShell() {
         Fresh.open().use {
             askTheCompanion()
             assertTrue(mind.instruction.contains(HelloWorld.SHELL_OPENING))
             assertEquals(5, compose.onAllNodes(hasTestTag("write"), useUnmergedTree = true).fetchSemanticsNodes().size)
             assertFalse("showing writes nothing", app.pages.exists(HelloWorld.BLOCK))
+            compose.waitFor("post-refusal", "Posting waits for your shell")
             compose.tap("yes")
             compose.waitFor("hello-checks", "checks out")
-            compose.waitFor("post-message", "Secret: purple walrus")
-            assertTrue("nothing goes until the post is confirmed", wire.sent.isEmpty())
             assertEquals(emptyList<String>(), HelloWorld.check(app.storage.read(HelloWorld.BLOCK), HelloWorld.SHELL_OPENING, sealOf()))
-            compose.tap("post")
-            compose.waitFor("posted", "Posted to your pool at entry 7")
-            assertEquals(1, wire.sent.size)
-            val (url, body) = wire.sent.single()
-            assertEquals("${PoolPost.BEACH}/.well-known/pscale-beach?block=pool:Phenomemental", url)
-            assertTrue(body.contains("Secret: purple walrus") && body.contains(sealOf()) && body.contains("pocket/hello-world") && body.contains("\"1\":\"Phenomemental\""))
-            assertTrue("the post carries the shell's opening line", body.contains(HelloWorld.SHELL_OPENING))
+            compose.waitUntil(10_000) { app.asking.settled }
+            assertTrue("no post set out", compose.onAllNodes(hasTestTag("post-message")).fetchSemanticsNodes().isEmpty())
+            assertTrue("nothing sent", wire.sent.isEmpty())
             compose.waitUntil(10_000) { log()?.lines?.isNotEmpty() == true }
             val entry = app.pages.position(Region.POCKET, Asks.LOG, log()!!.lines.first().address)!!
             assertEquals("Asked: Do the hello world. My secret is purple walrus.", entry.text)
-            assertTrue(entry.lines[1].text!!.contains("it landed at entry 7 of pool:Phenomemental"))
+            assertTrue(entry.lines[1].text!!, entry.lines[1].text!!.contains("Posting waits for your shell"))
         }
     }
 
     @Test
-    fun anOldHelloWorldIsPostedWithTheSealAndFingerprintOfThisAsk() {
+    fun anOldHelloWorldIsRewrittenWithTheSealAndFingerprintOfThisAsk() {
         Fresh.clear()
         val old = HelloWorld.makeByHand(app.pages, app.storage, HelloWorld.SHELL_OPENING, "an old secret")
         ActivityScenario.launch(MainActivity::class.java).use {
@@ -271,30 +277,32 @@ class CompanionTest {
             val stored = app.storage.read(HelloWorld.BLOCK)!!
             val seal = sealOf()
             assertTrue(seal != old.seal)
-            compose.waitFor("post-message", "Secret: purple walrus")
-            compose.tap("post")
-            compose.waitFor("posted", "Posted to your pool at entry 7")
-            val body = wire.sent.single().second
-            assertTrue("the post is the block's own, as written", body.contains(HelloWorld.messageFor(stored)!!))
-            assertTrue(body.contains(seal))
-            assertFalse("never the earlier run's seal or fingerprint", body.contains(old.seal) || body.contains(old.fingerprint))
+            // What a post would carry is the block's own, as written: this ask's seal and fingerprint, never the earlier run's.
+            val message = HelloWorld.messageFor(stored)!!
+            assertTrue(message, message.contains("Secret: purple walrus") && message.contains(seal))
+            assertFalse(message.contains(old.seal) || message.contains(old.fingerprint))
+            assertTrue("nothing sent before a hatch", wire.sent.isEmpty())
         }
     }
 
+    /** Hatched: a post to his room the beach couldn't receive is kept, and goes only on a tap. */
     @Test
     fun aPostTheBeachCouldntReceiveIsKeptAndGoesOnlyOnATap() {
         val away = UnreachableWire()
+        Fresh.hatched()
         app.wire = away
-        Fresh.open().use {
-            askTheCompanion()
-            compose.tap("yes")
-            compose.waitFor("post-message", "Secret: purple walrus")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("question")
+            compose.onNodeWithTag("question").performTextInput("Post this message to my room: \"Back on Tuesday\"")
+            compose.tap("ask")
+            compose.waitFor("post-message", "Back on Tuesday", timeoutMs = 20_000)
             compose.tap("post")
             compose.waitFor("not-posted", "couldn't be reached")
             compose.waitFor("waiting")
             assertEquals(1, away.tries)
             val kept = app.unsent.all.single()
-            assertTrue(kept.message.message.contains("Secret: purple walrus"))
+            assertTrue(kept.message.message.contains("Back on Tuesday"))
+            assertEquals("Phenomemental", kept.message.author)
             assertFalse(kept.mayHaveLanded)
 
             // Offline, Post now waits; back online, still nothing goes until the tap.
@@ -307,13 +315,13 @@ class CompanionTest {
             compose.waitForIdle()
             Thread.sleep(1500)
             assertTrue("coming back online sends nothing", wire.sent.isEmpty())
-
             compose.menu("menu-blocks")
             compose.waitFor("waiting")
             compose.tap("post-now")
             compose.waitFor("posted-later", "Posted to your pool at entry 7")
             assertEquals(1, wire.sent.size)
-            assertTrue(wire.sent.single().second.contains(HelloWorld.messageFor(app.storage.read(HelloWorld.BLOCK))!!))
+            assertEquals("${PoolPost.BEACH}/.well-known/pscale-beach?block=pool:Phenomemental", wire.sent.single().first)
+            assertTrue(wire.sent.single().second.contains("Back on Tuesday"))
             assertTrue("no longer kept", app.unsent.all.isEmpty())
             assertEquals("7", app.posts.landed(kept.message))
             compose.waitUntil(10_000) { log()?.lines?.isNotEmpty() == true }
@@ -1086,8 +1094,10 @@ class CompanionTest {
 
     @Test
     fun theHelloWorldByHandOnTheTestScreen() {
-        Fresh.open().use {
-            compose.tap("about")
+        // Sundial 0.10: posted from the shell he hatched as, to his room.
+        Fresh.hatched()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.menu("menu-about")
             compose.tap("calls")
             compose.waitFor("hello-secret")
             compose.onNodeWithTag("hello-secret").performTextInput("otters hold hands")

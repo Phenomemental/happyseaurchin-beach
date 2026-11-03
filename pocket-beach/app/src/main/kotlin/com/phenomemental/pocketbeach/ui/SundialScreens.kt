@@ -156,7 +156,7 @@ fun DaysScreen(model: Model, nav: Nav) {
     var picked by rememberSaveable { mutableStateOf<Int?>(null) }
     var open by rememberSaveable { mutableStateOf<String?>(null) }
     Page(onBack = { nav.back() }, top = { Text("Your days", style = Type.name, color = ink.ink) }) {
-        Text(Words.sundial(model.app, "1.7", "{n} days", "n" to "${days.size}").uppercase(), style = Type.label, color = ink.soft, modifier = Modifier.testTag("days-count"))
+        Text(Words.sundial(model.app, "1.7", "{n} days", "n" to "${days.size}").let { if (days.size == 1) it.replace(" days", " day") else it }.uppercase(), style = Type.label, color = ink.soft, modifier = Modifier.testTag("days-count"))
         Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
             TextLink("Newest first", { resting = false }, tag = "days-strand")
             TextLink(Words.sundial(model.app, "4.2", "where your days have come to rest"), { resting = true }, tag = "days-resting")

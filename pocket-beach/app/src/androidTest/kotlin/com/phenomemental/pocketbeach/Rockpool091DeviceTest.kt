@@ -91,12 +91,13 @@ class Rockpool091DeviceTest {
             compose.waitFor("top-bar")
             say("Put this in my now: $telling")
             // His day set out with her reply, no "Sort as my day" between; on E2B each piece waits for him to place it.
-            compose.waitFor("day-group", timeoutMs = 20_000)
+            // Sundial 0.10: on the keep card.
+            compose.waitFor("keep-card", timeoutMs = 20_000)
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Begin your reply with these words: “It's below, for your yes.”"))
             compose.waitUntil(5_000) { compose.onAllNodes(hasText("and need to update a membership agreement and print it out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             assertTrue("no Sort as my day: he asked", none("sort-as-day"))
             compose.tap("day-yes")
-            // His yes writes his day block by block (his now, then his ahead, then his P6): wait for both he is shown.
+            // His yes writes his day block by block (his now, then his ahead; no P6 from Sundial on): wait for both he is shown.
             val cards = listOf("for example I need to update some meeting minutes and print them out", "and need to update a membership agreement and print it out", "as well as respond to emails")
             compose.waitUntil(20_000) {
                 app.storage.read(Days.NOW)?.contains("phase two proposal") == true &&
