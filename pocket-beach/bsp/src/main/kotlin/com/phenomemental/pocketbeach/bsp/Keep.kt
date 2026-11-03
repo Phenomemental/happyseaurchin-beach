@@ -41,7 +41,7 @@ object Keep {
      * "its day" are the day; "this gathering" or "its gathering", the beat,
      * the minute, the breath and the second likewise. Null for any other word.
      */
-    fun grainOf(words: String): Grain? = when (words.trim().lowercase().removePrefix("this ").removePrefix("its ").removePrefix("at ")) {
+    fun grainOf(words: String): Grain? = when (words.trim().lowercase().replace(Regex("""^(?:(?:at|this|its)\s+)+"""), "")) {
         "today", "tomorrow", "day" -> Grain.DAY
         "gathering" -> Grain.GATHERING
         "beat" -> Grain.BEAT
