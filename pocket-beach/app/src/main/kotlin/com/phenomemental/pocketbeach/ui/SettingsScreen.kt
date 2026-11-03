@@ -47,8 +47,14 @@ fun SettingsScreen(model: Model, nav: Nav) {
     val ink = LocalInk.current
     val app = model.app
     Page(onBack = { nav.back() }, top = { Text("Settings", style = Type.name, color = ink.ink, maxLines = 1) }) {
+        WhereYouAre(model)
+        NameAndRoom(model)
+        SaveAndRestore(nav)
+        Workings(model)
+        Rule()
+        Text("Her voice", style = Type.heading, color = ink.ink, modifier = Modifier.testTag("her-voice"))
         Text(
-            "Each of the companion's jobs has Edge's settings of its own. Jobs set to the same model, processor and context share one engine; " +
+            "She is Gemma, running on this phone. Each of the companion's jobs has Edge's settings of its own. Jobs set to the same model, processor and context share one engine; " +
                 "a job set apart loads an engine of its own beside it, and both stay in the phone's memory while Ask is open. " +
                 "The phone runs one engine on its GPU at a time: Talk's. A job set to the GPU on another model or context runs on the CPU. " +
                 "A change is used from the next thing you say in Ask.",
@@ -70,6 +76,124 @@ fun SettingsScreen(model: Model, nav: Nav) {
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
+    }
+}
+
+/**
+ * Sundial 0.10, where you are (spine:pocket-beach 1.111178719914): roughly,
+ * for the sun. The phone's rough location, asked once and rounded to a tenth
+ * of a degree; or a town from the list shipped with the app, which asks
+ * nothing. Kept on this phone; the passport isn't consulted.
+ */
+@Composable
+private fun WhereYouAre(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var typed by remember { mutableStateOf("") }
+    var found by remember { mutableStateOf<List<com.phenomemental.pocketbeach.Towns.Town>>(emptyList()) }
+    var note by remember { mutableStateOf<String?>(null) }
+    val noFix = "The phone hasn't a rough location to give yet. Choose your town below, or try again in a moment."
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        app.where.asked = true
+        note = if (!granted) "The phone's location stays unasked. Choose your town below." else if (roughly(context, app.where)) null else noFix
+    }
+    Column(Modifier.fillMaxWidth().testTag("settings-where"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Where you are", style = Type.heading, color = ink.ink)
+        val p = app.where.place
+        Text(
+            if (p == null) "Not set yet. The dial follows the real sun where you are; roughly where is enough."
+            else "${p.name.replaceFirstChar { it.uppercase() }}, ${if (p.from == "phone") "from this phone's rough location" else "chosen from the town list"}. The dial follows the sun there.",
+            style = Type.body, color = ink.ink, modifier = Modifier.testTag("where-now"),
+        )
+        TextLink("Use this phone's rough location", {
+            if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                app.where.asked = true
+                note = if (roughly(context, app.where)) null else noFix
+            } else ask.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }, tag = "where-use-phone")
+        PaperField(typed, { t ->
+            typed = t
+            scope.launch { found = withContext(Dispatchers.IO) { runCatching { com.phenomemental.pocketbeach.Towns.find(context, t) }.getOrDefault(emptyList()) } }
+        }, "Or type your town", singleLine = true, tag = "where-search")
+        for (t in found) TextLink("${t.name}, ${t.country}", {
+            app.where.set(com.phenomemental.pocketbeach.WhereHeStands.Place(t.name, t.lat, t.lon, "town"))
+            typed = ""; found = emptyList(); note = null
+        }, style = Type.body, tag = "where-town:${t.name}")
+        if (p != null) TextLink("Forget where I am", { app.where.set(null); note = null }, tag = "where-forget")
+        note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("where-note")) }
+        Text(
+            "Where you are is kept on this phone and never sent. The phone's location service may ask its maker to work out where the phone is; " +
+                "the town list is on this phone and asks nothing. Towns from GeoNames, under CC BY 4.0.",
+            style = Type.small, color = ink.soft,
+        )
+    }
+}
+
+/** Sundial 0.10: his name and his room (1.111178719918), read from his shell and passport; the box is on Your room. */
+@Composable
+private fun NameAndRoom(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    val room by produceState<com.phenomemental.pocketbeach.bsp.Room?>(null, model.version) {
+        value = withContext(Dispatchers.IO) { runCatching { com.phenomemental.pocketbeach.bsp.PoolPost.room(app.storage) }.getOrNull() }
+    }
+    Column(Modifier.fillMaxWidth().testTag("settings-room"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Text("Your name and your room", style = Type.heading, color = ink.ink)
+        val r = room
+        if (r == null || com.phenomemental.pocketbeach.bsp.Hatch.hatched(app.storage) == null) {
+            Text(Words.sundial(app, "5.4", "Your room waits for your shell: once you have a name and a room, the box is here."), style = Type.body, color = ink.ink)
+        } else {
+            Text("Your name is ${r.author}, and your room is pool:${r.pool}.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("room-said"))
+            Text("Notes you post go there, under your name. Your room is the first pool in your passport, else the one your shell names, else your own.", style = Type.small, color = ink.soft)
+        }
+    }
+}
+
+/** Sundial 0.10: save a whole copy, or restore one, on Your pocket. */
+@Composable
+private fun SaveAndRestore(nav: Nav) {
+    val ink = LocalInk.current
+    Column(Modifier.fillMaxWidth().testTag("settings-save"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Text("Save and restore", style = Type.heading, color = ink.ink)
+        Text("A whole copy of your pocket, as one file you keep where you choose; and a copy put back.", style = Type.small, color = ink.soft)
+        TextLink("Save or restore, on Your pocket", { nav.toPlace(Screen.Shore) }, tag = "settings-to-pocket")
+    }
+}
+
+/**
+ * Sundial 0.10: Show the workings. On, Ask shows its workings beneath the
+ * conversation; and here, today's words not yet kept (1.111178719915 (c)).
+ */
+@Composable
+private fun Workings(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    Column(Modifier.fillMaxWidth().testTag("settings-workings"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Show the workings", style = Type.heading, color = ink.ink, modifier = Modifier.weight(1f))
+            androidx.compose.material3.Switch(
+                checked = app.showDetails,
+                onCheckedChange = { app.showDetails = it },
+                colors = androidx.compose.material3.SwitchDefaults.colors(checkedTrackColor = ink.crimson),
+                modifier = Modifier.testTag("workings-switch"),
+            )
+        }
+        Text("Her instruction, the times, and what each thing you said came to, beneath the conversation; and here, your words waiting to be kept.", style = Type.small, color = ink.soft)
+        if (app.showDetails) {
+            Text(com.phenomemental.pocketbeach.bsp.Waiting.SAID, style = Type.body, color = ink.ink, modifier = Modifier.testTag("waiting-said"))
+            val waiting = app.waiting.all
+            if (waiting.isEmpty()) Text("None: what you said is kept, or you haven't spoken today.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("waiting-none"))
+            for (m in waiting) Column(Modifier.testTag("waiting-moment")) {
+                Text(Words.quoted(m.words, 600), style = Type.body, color = ink.ink)
+                Text(Words.at(m.atMs).replaceFirstChar { it.uppercase() }, style = Type.small, color = ink.soft)
+            }
+            if (waiting.isNotEmpty()) Text("They are kept in the app's own file, moments.json, till you tap Keep today; a whole copy carries them.", style = Type.small, color = ink.soft)
+        }
     }
 }
 

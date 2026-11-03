@@ -196,6 +196,7 @@ class ScreenTour {
             val kept = com.phenomemental.pocketbeach.bsp.PoolPost.prepare(
                 com.phenomemental.pocketbeach.bsp.HelloWorld.POOL,
                 com.phenomemental.pocketbeach.bsp.HelloWorld.messageFor(app.storage.read(com.phenomemental.pocketbeach.bsp.HelloWorld.BLOCK)) ?: "Hello world from the pocket.",
+                com.phenomemental.pocketbeach.bsp.Room(com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE, com.phenomemental.pocketbeach.bsp.HelloWorld.POOL),
             )
             app.unsent.keep(kept, "The beach couldn't be reached, so nothing was posted (Unable to resolve host \"beach.happyseaurchin.com\").", false, System.currentTimeMillis())
             app.connectedForTests = false

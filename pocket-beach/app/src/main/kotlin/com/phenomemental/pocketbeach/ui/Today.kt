@@ -1,0 +1,231 @@
+package com.phenomemental.pocketbeach.ui
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import com.phenomemental.pocketbeach.Towns
+import com.phenomemental.pocketbeach.WhereHeStands
+import com.phenomemental.pocketbeach.bsp.Keep
+import com.phenomemental.pocketbeach.bsp.Mark
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneId
+
+/*
+ * Sundial 0.10, Today (spine:pocket-beach 1.1111787192, 1.1111787193 and the
+ * decisions at 1.11117871991): the dial, live on the real sun; tap it for
+ * your days, hold it for where they rest; the day before offered first
+ * when its words still wait; her one question, or Sundial's own while she
+ * isn't ready; the keep card. Her conversation follows beneath, in the
+ * thread AskScreen draws.
+ */
+
+/** The beach's day (UTC): one today, everywhere a day is meant (1.111178719915). */
+fun beachToday(): LocalDate = Keep.dayOf(System.currentTimeMillis())
+
+/** Sundial's own question for the part of the day, by the phone's clock: "What’s with you this morning?" (sundial.html:2783-2791). */
+fun ownQuestion(model: Model, nowMs: Long = System.currentTimeMillis()): String {
+    val t = java.time.Instant.ofEpochMilli(nowMs).atZone(ZoneId.systemDefault()).toLocalTime()
+    val part = minOf(8, (t.toSecondOfDay() / 9600))
+    val words = listOf("tonight", "this dawn", "this early morning", "this morning", "at midday", "this afternoon", "this late afternoon", "this evening", "tonight")[part]
+    return Words.sundial(model.app, "1.2", "What’s with you {part}?", "part" to words)
+}
+
+@Composable
+fun TodayDial(model: Model, nav: Nav) {
+    val ink = LocalInk.current
+    val app = model.app
+    val asking = app.asking
+    val context = LocalContext.current
+
+    // The tick: every 30 s the light and shadow move, eased (sundial.html:2787-2800).
+    var tick by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) { while (true) { delay(30_000); tick = System.currentTimeMillis() } }
+    val today = Keep.dayOf(tick)
+    // (b) A new day: older words let go; yesterday's offered first.
+    LaunchedEffect(today) { withContext(Dispatchers.IO) { runCatching { app.waiting.letGo(today) } } }
+
+    val place = app.where.place
+    val days by produceState<List<Keep.KeptDay>>(emptyList(), model.version, today, asking.lastKept) {
+        value = withContext(Dispatchers.IO) { runCatching { keptDays(model) }.getOrDefault(emptyList()) }
+    }
+    val moments by produceState<List<Long>>(emptyList(), model.version, today, app.waiting.all) {
+        value = withContext(Dispatchers.IO) { runCatching { asking.momentsOf(today).map { it.atMs } }.getOrDefault(emptyList()) }
+    }
+    val state = DialState(days, moments, place?.lat, place?.lon, ZoneId.systemDefault(), tick, asking.lastKept?.let { Keep.dayAddress(it) })
+    var pooled by rememberSaveable { mutableStateOf(false) }
+    var picked by rememberSaveable { mutableStateOf<Int?>(null) }
+
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Dial(
+            state, answering = asking.stage is Asking.Stage.Thinking || asking.keeping,
+            onTap = { if (pooled) { pooled = false; picked = null } else nav.go(Screen.Days) },
+            onHold = { pooled = !pooled; picked = null },
+            modifier = Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f),
+            pooled = pooled, picked = picked, onPool = { picked = if (picked == it) null else it },
+        )
+    }
+    if (pooled) {
+        val i = picked
+        if (i == null) Text(Words.sundial(app, "4.2", "where your days have come to rest"), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("pools-said"))
+        else {
+            val pool = Mark.POOLS[i]
+            val resting = Keep.restingIn(days, i + 1, n = 9)
+            Text(pool.phrase, style = Type.heading.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag("pool-phrase"))
+            if (resting.isEmpty()) {
+                Text(Words.sundial(app, "4.1", "Nothing has come to rest at {phrase}.", "phrase" to pool.phrase), style = Type.aside, color = ink.soft)
+                Text(pool.question, style = Type.body, color = ink.ink)
+            } else for ((d, body) in resting.asReversed().take(3)) Text("${d.title}\n${Words.quoted(body, 240)}", style = Type.small, color = ink.ink)
+        }
+    } else if (days.isNotEmpty() || moments.isNotEmpty()) {
+        Text(Words.sundial(app, "1.1", "tap the sundial for your days · hold it for where they rest"), style = Type.aside, color = ink.soft, modifier = Modifier.fillMaxWidth().testTag("dial-invite"))
+    }
+
+    // In summer, between midnight and one, the beach's day hasn't turned: said gently, in summer only.
+    val localToday = LocalDate.now()
+    if (localToday != today && ZoneId.systemDefault().rules.isDaylightSavings(java.time.Instant.ofEpochMilli(tick))) {
+        Text(Words.sundial(app, "1.3", "Your day turns at 1 am in summer."), style = Type.small, color = ink.soft, modifier = Modifier.testTag("summer"))
+    }
+
+    // Where he stands: asked once, the phone's rough location; else a town in Settings.
+    WhereAsk(model, nav)
+
+    // (b) The day before, offered first, before today's question.
+    val yesterday = app.waiting.yesterday(today)
+    val card = asking.keepCard
+    if (yesterday != null && card == null && !asking.keeping) {
+        Column(Modifier.fillMaxWidth().testTag("yesterday-offer"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(Words.sundial(app, "2.5", "You spoke yesterday and didn't keep it."), style = Type.body.copy(fontStyle = FontStyle.Italic), color = ink.ink)
+            Action("Keep yesterday", { asking.keepToday(yesterday) }, Modifier.fillMaxWidth(), tag = "keep-yesterday")
+        }
+    } else if (asking.history.none { Keep.dayOf(it.at) == today } && card == null) {
+        // Her one question, with his tomorrow line before it; Sundial's own while she isn't ready.
+        val g = asking.greeting?.takeIf { it.day == today }
+        g?.tomorrow?.let { Text("You said: “Tomorrow, $it.”", style = Type.body.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag("greet-said")) }
+        Text(g?.question ?: ownQuestion(model, tick), style = if (g?.question != null) Type.body.copy(fontSize = Type.heading.fontSize) else Type.heading.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag(if (g?.question != null) "greet-question" else "own-question"))
+    }
+
+    card?.let { k ->
+        KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
+        k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
+    }
+    if (asking.keeping && card == null) Text("Setting out your day…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keeping"))
+    asking.keepNote?.let { Text(it, style = if (it == "Kept.") Type.title.copy(fontSize = Type.heading.fontSize) else Type.small, color = if (it == "Kept.") ink.ink else ink.crimson, modifier = Modifier.testTag("keep-note")) }
+}
+
+/** The Keep today button, beside Send: Sundial's small heart and its words (sundial.html:2479-2482). */
+@Composable
+fun KeepTodayButton(model: Model, enabled: Boolean) {
+    val ink = LocalInk.current
+    Row(
+        Modifier.border(1.dp, ink.crimson, RoundedCornerShape(2.dp))
+            .clickable(enabled = enabled, role = Role.Button) { model.app.asking.keepToday() }
+            .padding(horizontal = 10.dp, vertical = 8.dp).testTag("keep-today"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        SmallHeart(Modifier.size(22.dp, 18.dp))
+        Text(Words.sundial(model.app, "2.1", "Keep today"), style = Type.action.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium), color = if (enabled) ink.crimson else ink.soft)
+    }
+}
+
+/** Her reply in Sundial's shape: the reflection upright, the question in italic beneath (sundial.html:2294-2301). */
+fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
+    val (reflection, question) = if (parts != null) (parts["THE REFLECTION"].orEmpty() to parts["THE QUESTION"].orEmpty()) else splitQuestion(said)
+    if (reflection.isNotBlank()) append(reflection.trim())
+    if (question.isNotBlank()) {
+        if (reflection.isNotBlank()) append("\n")
+        withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(question.trim()) }
+    }
+}
+
+/**
+ * On E2B (or when her parts weren't whole), her free reply read as Sundial
+ * sets it out: its last sentence ending in a question mark, at the end, is
+ * the question (1.111178719916); the rest the reflection.
+ */
+fun splitQuestion(said: String): Pair<String, String> {
+    val t = said.trim()
+    if (!t.endsWith("?")) return t to ""
+    val m = Regex("""(?s)^(.*[.!?…]["”’)]?)\s+([^.!?…]*\?)$""").find(t) ?: return "" to t
+    return m.groupValues[1].trim() to m.groupValues[2].trim()
+}
+
+/** Where he stands, for the sun: asked once with his permission; declined or unknown, a town chosen in Settings. */
+@Composable
+private fun WhereAsk(model: Model, nav: Nav) {
+    val ink = LocalInk.current
+    val app = model.app
+    val context = LocalContext.current
+    var note by remember { mutableStateOf<String?>(null) }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        app.where.asked = true
+        if (granted && !roughly(context, app.where)) note = "The phone hasn't a fix yet. Choose your town in Settings, or come back in a moment."
+    }
+    if (app.where.place != null) return
+    Column(Modifier.fillMaxWidth().testTag("where-ask"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("The dial follows the real sun where you are. Roughly where is enough: a town.", style = Type.small, color = ink.soft)
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (!app.where.asked) TextLink("Use this phone's rough location", {
+                if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    app.where.asked = true
+                    if (!roughly(context, app.where)) note = "The phone hasn't a fix yet. Choose your town in Settings."
+                } else ask.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }, tag = "where-phone")
+            TextLink("Choose a town", { nav.go(Screen.Settings) }, tag = "where-town")
+        }
+        note?.let { Text(it, style = Type.small, color = ink.crimson) }
+    }
+}
+
+/**
+ * The phone's last known rough fix, rounded to a tenth of a degree, named by
+ * the nearest town on the list; kept on the phone, never sent. False when the
+ * phone has none to give.
+ */
+fun roughly(context: android.content.Context, where: WhereHeStands): Boolean {
+    if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return false
+    val lm = context.getSystemService(LocationManager::class.java) ?: return false
+    val fix: Location = listOf(LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER, LocationManager.FUSED_PROVIDER, LocationManager.GPS_PROVIDER)
+        .mapNotNull { p -> runCatching { lm.getLastKnownLocation(p) }.getOrNull() }.maxByOrNull { it.time } ?: return false
+    val (lat, lon) = WhereHeStands.rounded(fix.latitude, fix.longitude)
+    val near = runCatching { Towns.all(context).take(20_000).minByOrNull { t -> (t.lat - lat) * (t.lat - lat) + (t.lon - lon) * (t.lon - lon) * Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(lat)) } }.getOrNull()
+    where.set(WhereHeStands.Place(near?.let { "near ${it.name}" } ?: "where the phone said", lat, lon, "phone"))
+    return true
+}

@@ -200,6 +200,11 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
         override val stream = com.phenomemental.pocketbeach.bsp.Talks.Stream { message, piece ->
             kotlinx.coroutines.runBlocking(thread) {
+                if (afresh) {
+                    runCatching { conversation.close() }
+                    conversation = conversation(engine, instruction, history + done, held, settings)
+                    afresh = false
+                }
                 val started = System.nanoTime()
                 var first: Double? = null
                 val whole = StringBuilder()
@@ -253,6 +258,57 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
 
         override fun stop() { runCatching { conversation.cancelProcess() } }
+
+        /** Sundial 0.10: after a reply given in parts, the kept conversation is opened afresh with it before the next free reply. */
+        private var afresh = false
+
+        /**
+         * Sundial 0.10: her reply in its named [parts], through the engine's
+         * tool call ("reply"): asked in a conversation of its own that holds
+         * her window and every exchange so far, as `choose` asks hers, so a
+         * tool call never sits unanswered in her kept conversation; that is
+         * opened afresh, with this exchange in it, before her next free reply.
+         * Null when the call isn't whole: she is asked free.
+         */
+        override fun parts(message: String, parts: List<String>): Map<String, String>? = kotlinx.coroutines.runBlocking(thread) {
+            val fields = parts.map { Mind.field(it) }
+            val props = fields.joinToString(",") { f -> "\"$f\":{\"type\":\"string\",\"description\":\"${describe(f)}\"}" }
+            val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
+                override fun getToolDescriptionJsonString() = """{"name":"reply","description":"Your reply, in its parts.","parameters":{"type":"object","properties":{$props},"required":[${fields.joinToString(",") { "\"$it\"" }}]}}"""
+                override fun execute(p0: String): String = "unused"
+            }
+            val started = System.nanoTime()
+            val got = runCatching {
+                engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of("$instruction\n\nGive each reply by calling reply with its parts."),
+                        initialMessages = (history + done).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
+                        tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
+                        samplerConfig = sampler(settings), maxOutputToken = settings.longestReply,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { c ->
+                    val a = c.sendMessage(message).toolCalls.firstOrNull { it.name == "reply" }?.arguments ?: return@use null
+                    counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, (System.nanoTime() - started) / 1e9)) }
+                    parts.zip(fields).associate { (p, f) -> p to (a[f]?.let { v -> (v as? List<*>)?.joinToString("\n") { it.toString() } ?: v.toString() }?.trim().orEmpty()) }
+                        .takeIf { m -> m.values.any { it.isNotEmpty() } }
+                }
+            }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
+            if (got != null) {
+                done += message to parts.mapNotNull { got[it]?.takeIf(String::isNotEmpty) }.joinToString("\n")
+                afresh = true
+            }
+            got
+        }
+
+        private fun describe(field: String): String = when (field) {
+            "reflection" -> "Part one: what he said, given back in his own words, beginning with You"
+            "question" -> "Part two: one question, ending with a question mark"
+            "way" -> "A, B or C"
+            "heard" -> "One to four short passages copied exactly from his days or whispers, one to a line"
+            "noticing" -> "One or two whole, plain sentences"
+            else -> field
+        }
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
@@ -333,6 +389,86 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         } finally {
             done()
         }
+    }
+
+    /** Sundial 0.10: her placing, through the engine's tool call ("places", a list of 1 to [places]); her words beside it never kept. */
+    override suspend fun chooseMany(instruction: String, message: String, places: Int, settings: JobSettings): List<Int>? = withContext(thread) {
+        main.removeCallbacks(letGo)
+        val (l, _) = engineNow(key(settings))
+        synchronized(this@Gemma) { open++ }
+        val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
+            override fun getToolDescriptionJsonString() = """{"name":"places","description":"Name every place of the ring his words touch.","parameters":{"type":"object","properties":{"places":{"type":"array","items":{"type":"integer"},"description":"The places' numbers in the ring, 1 to $places, one or more"}},"required":["places"]}}"""
+            override fun execute(p0: String): String = "unused"
+        }
+        try {
+            runCatching {
+                l.engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of("$instruction Call places with every place his words touch."),
+                        tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
+                        samplerConfig = sampler(settings), maxOutputToken = 80,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { c ->
+                    val m = c.sendMessage(message)
+                    val raw = m.toolCalls.firstOrNull { it.name == "places" }?.arguments?.get("places")
+                    numbers(raw).filter { it in 1..places }.distinct().takeIf { it.isNotEmpty() }
+                }
+            }.onFailure { Log.w("Gemma", "Her placing's tool call failed; nothing is named.", it) }.getOrNull()
+        } finally {
+            done()
+        }
+    }
+
+    /** Sundial 0.10: the day's sheet through the tool call on E4B ("sheet": title, lines, tomorrow); else, or when it isn't whole, written free. */
+    override suspend fun sheet(instruction: String, material: String, settings: JobSettings, tool: Boolean): com.phenomemental.pocketbeach.bsp.Mark.Sheet? {
+        if (tool) {
+            val got = withContext(thread) {
+                main.removeCallbacks(letGo)
+                val (l, _) = engineNow(key(settings))
+                synchronized(this@Gemma) { open++ }
+                val t = object : com.google.ai.edge.litertlm.OpenApiTool {
+                    override fun getToolDescriptionJsonString() = """{"name":"sheet","description":"The day's sheet.","parameters":{"type":"object","properties":{"title":{"type":"string","description":"A short title, from his own words"},"lines":{"type":"array","items":{"type":"string"},"description":"Two to four lines, in the second person, drawn only from what he said"},"tomorrow":{"type":"string","description":"His intention for tomorrow if he voiced one, else empty"}},"required":["title","lines","tomorrow"]}}"""
+                    override fun execute(p0: String): String = "unused"
+                }
+                try {
+                    runCatching {
+                        l.engine.createConversation(
+                            ConversationConfig(
+                                systemInstruction = Contents.of("$instruction Call sheet with it."),
+                                tools = listOf(com.google.ai.edge.litertlm.tool(t)), automaticToolCalling = false,
+                                samplerConfig = sampler(settings), maxOutputToken = 400,
+                                thinkingConfig = ThinkingConfig(enableThinking = false),
+                            ),
+                        ).use { c ->
+                            val a = c.sendMessage(material).toolCalls.firstOrNull { it.name == "sheet" }?.arguments ?: return@use null
+                            val title = a["title"]?.toString()?.trim().orEmpty()
+                            val lines = strings(a["lines"]).take(4)
+                            if (title.isEmpty() || lines.isEmpty()) null
+                            else com.phenomemental.pocketbeach.bsp.Mark.Sheet(title, lines, a["tomorrow"]?.toString()?.trim().orEmpty().removePrefix("Tomorrow:").trim())
+                        }
+                    }.onFailure { Log.w("Gemma", "Her sheet's tool call failed; she is asked free.", it) }.getOrNull()
+                } finally {
+                    done()
+                }
+            }
+            if (got != null) return got
+        }
+        return super.sheet(instruction, material, settings, tool = false)
+    }
+
+    /** A tool argument read as numbers, however the engine hands a list over. */
+    private fun numbers(raw: Any?): List<Int> = when (raw) {
+        is List<*> -> raw.mapNotNull { it?.toString()?.toDoubleOrNull()?.toInt() }
+        null -> emptyList()
+        else -> Regex("""\d+""").findAll(raw.toString()).map { it.value.toInt() }.toList()
+    }
+
+    /** A tool argument read as strings. */
+    private fun strings(raw: Any?): List<String> = when (raw) {
+        is List<*> -> raw.mapNotNull { it?.toString()?.trim()?.takeIf(String::isNotEmpty) }
+        null -> emptyList()
+        else -> raw.toString().trim().removeSurrounding("[", "]").split(Regex("""",\s*"|\n""")).map { it.trim().trim('"').trim() }.filter { it.isNotEmpty() }
     }
 
     override suspend fun chat(instruction: String): Mind.Chat = withContext(thread) {

@@ -29,6 +29,14 @@ sealed interface Screen {
     data object Received : Screen
     data object Bench : Screen
     data object Settings : Screen
+    /** Sundial 0.10: Your days (the strandline, newest first; held, where they have come to rest). */
+    data object Days : Screen
+    /** Sundial 0.10: Your room, a box and Post. */
+    data object Room : Screen
+    /** Sundial 0.10: Your hand, from his ahead. */
+    data object Hand : Screen
+    /** Sundial 0.10: Your recipes, his cook and kernel. */
+    data object Recipes : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -53,6 +61,10 @@ class Nav(initial: List<Screen>) {
             Screen.Received -> "received"
             Screen.Bench -> "bench"
             Screen.Settings -> "settings"
+            Screen.Days -> "days"
+            Screen.Room -> "room"
+            Screen.Hand -> "hand"
+            Screen.Recipes -> "recipes"
         }
 
         private fun decode(text: String): Screen? {
@@ -67,6 +79,10 @@ class Nav(initial: List<Screen>) {
                 "received" -> Screen.Received
                 "bench" -> Screen.Bench
                 "settings" -> Screen.Settings
+                "days" -> Screen.Days
+                "room" -> Screen.Room
+                "hand" -> Screen.Hand
+                "recipes" -> Screen.Recipes
                 else -> null
             }
         }
@@ -86,6 +102,8 @@ class Model(val app: PocketApp) {
     var slip by mutableStateOf<Pair<Screen, String>?>(null)
     var landed by mutableStateOf<Pair<String, String>?>(null)
     var lastSavedMs by mutableStateOf(app.lastSavedMs)
+    /** Sundial 0.10: Your places asked for the conversation saved as a file; Today hears it and asks where. */
+    var saveConversation by mutableIntStateOf(0)
 
     fun changed() { version++ }
 
@@ -106,9 +124,12 @@ fun PocketScreens(app: PocketApp) {
         Nav(if (runCatching { com.phenomemental.pocketbeach.bsp.Hatch.hatched(app.storage) }.getOrNull() != null) listOf(Screen.Shore, Screen.Ask) else listOf(Screen.Shore))
     }
     val model = remember { Model(app) }
-    BackHandler(enabled = nav.stack.size > 1) { nav.back() }
+    // Sundial 0.10: the three lines on every screen open Your places, Sundial's own menu.
+    var places by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = places) { places = false }
+    BackHandler(enabled = !places && nav.stack.size > 1) { nav.back() }
     val slip = model.slip?.takeIf { it.first == nav.top }?.let { SlipNote(it.second) { model.slip = null } }
-    CompositionLocalProvider(LocalSlip provides slip) {
+    CompositionLocalProvider(LocalSlip provides slip, LocalPlaces provides { places = true }) {
         when (val s = nav.top) {
             Screen.Shore -> ShoreScreen(model, nav)
             is Screen.Block -> BlockScreen(model, nav, s)
@@ -119,7 +140,12 @@ fun PocketScreens(app: PocketApp) {
             Screen.Received -> ReceivedScreen(model, nav)
             Screen.Bench -> BenchScreen(model, nav)
             Screen.Settings -> SettingsScreen(model, nav)
+            Screen.Days -> DaysScreen(model, nav)
+            Screen.Room -> RoomScreen(model, nav)
+            Screen.Hand -> HandScreen(model, nav)
+            Screen.Recipes -> RecipesScreen(model, nav)
         }
+        if (places) PlacesSheet(model, nav) { places = false }
     }
     // A block shared in from another app is shown as soon as it arrives.
     LaunchedEffect(app.inbox) {

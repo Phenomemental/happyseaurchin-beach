@@ -59,7 +59,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
             val now = System.currentTimeMillis()
             val outcome = withContext(Dispatchers.IO) {
                 runCatching {
-                    val text = model.pages.saveCopy()
+                    val text = model.pages.saveCopy(model.app.waiting.text())
                     context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray(Charsets.UTF_8)) }
                     Copies.read(text).blocks.size
                 }
@@ -82,7 +82,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
 
     Page(onBack = null) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 18.dp)) {
-            Text("Rockpool", style = Type.title, color = ink.ink)
+            Text("Your pocket", style = Type.title, color = ink.ink)
             Stroke()
         }
         CopyLine(model.lastSavedMs, Copies.reminderDue(model.lastSavedMs, stamps, System.currentTimeMillis()), Copies.changedSince(model.lastSavedMs, stamps)) {
@@ -185,7 +185,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
         RestoreDialog(copy, mine = shore?.mine?.size ?: 0, onCancel = { restoring = null }) {
             restoring = null
             scope.launch {
-                val outcome = withContext(Dispatchers.IO) { runCatching { model.pages.restore(copy) } }
+                val outcome = withContext(Dispatchers.IO) { runCatching { model.pages.restore(copy); copy.waiting?.let { model.app.waiting.restore(it) } } }
                 outcome.onSuccess {
                     parseIsoMs(copy.saved)?.let { saved -> if (saved > (model.lastSavedMs ?: 0)) model.saved(saved) }
                     // 0.8: the shell in the copy, or none: the hatch is looked for again.

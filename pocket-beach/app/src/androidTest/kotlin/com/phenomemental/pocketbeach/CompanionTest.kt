@@ -325,7 +325,7 @@ class CompanionTest {
     @Test
     fun aPostThatMayHaveLandedSaysSoAndCanBeDiscarded() {
         Fresh.clear()
-        val message = PoolPost.prepare(HelloWorld.POOL, "A message whose answer never came.")
+        val message = PoolPost.prepare(HelloWorld.POOL, "A message whose answer never came.", com.phenomemental.pocketbeach.bsp.Room(com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE, HelloWorld.POOL))
         app.wire = Wire { _, _ -> throw com.phenomemental.pocketbeach.bsp.NoAnswer("Read timed out") }
         app.post(message)
         assertTrue(app.unsent.all.single().mayHaveLanded)

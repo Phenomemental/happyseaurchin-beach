@@ -16,6 +16,22 @@ import java.util.Locale
 object Words {
     private val zone get() = ZoneId.systemDefault()
 
+    /**
+     * Sundial 0.10: a line of Sundial's own words on screen (words:sundial
+     * place 5, at [at] beneath it: "1.3" is the summer line), its {gaps}
+     * filled from [fill]; [fallback] when the block can't be read.
+     */
+    fun sundial(app: com.phenomemental.pocketbeach.PocketApp, at: String, fallback: String, vararg fill: Pair<String, String>): String {
+        val block = runCatching { app.procedures.load("words:sundial") }.getOrNull()
+        val node = ("5.$at").split('.').fold<String, com.phenomemental.pocketbeach.bsp.Js?>(block) { n, k -> com.phenomemental.pocketbeach.bsp.jsGet(n, k) }
+        var text = (node as? com.phenomemental.pocketbeach.bsp.JsStr)?.value ?: node?.let { com.phenomemental.pocketbeach.bsp.collectUnderscore(it) } ?: fallback
+        for ((k, v) in fill) text = text.replace("{$k}", v)
+        return text
+    }
+
+    /** Sundial 0.10: a place of words:sundial, read whole (About, the places). */
+    fun sundialBlock(app: com.phenomemental.pocketbeach.PocketApp): com.phenomemental.pocketbeach.bsp.Js? = runCatching { app.procedures.load("words:sundial") }.getOrNull()
+
     /** "today at 10:04", "yesterday at 18:30", "on 25 October", "on 3 March 2025". */
     fun at(ms: Long, nowMs: Long = System.currentTimeMillis()): String {
         val d = Instant.ofEpochMilli(ms).atZone(zone)

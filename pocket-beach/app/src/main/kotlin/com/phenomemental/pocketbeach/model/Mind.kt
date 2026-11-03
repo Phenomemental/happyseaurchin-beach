@@ -30,6 +30,22 @@ interface Mind {
     suspend fun choose(instruction: String, message: String, places: Int, settings: JobSettings): Int? =
         Regex("""^\D{0,3}([1-9])""").find(ask("$instruction Answer with the place's digit first.", message, settings).text.trim())?.groupValues?.get(1)?.toInt()?.takeIf { it in 1..places }
 
+    /**
+     * Sundial 0.10: her placing, every place of a ring of [places] his words
+     * touch (pool numbers 1 to [places]), through the engine's tool call; null
+     * when her answer isn't whole. The free mind names none.
+     */
+    suspend fun chooseMany(instruction: String, message: String, places: Int, settings: JobSettings): List<Int>? = null
+
+    /**
+     * Sundial 0.10: the day's sheet, drawn from [material] as [instruction]
+     * says: through the tool call when [tool] (E4B), else written in plain
+     * lines, the title first and tomorrow last after "Tomorrow:", and read as
+     * Sundial reads a day (mark.js:101-126). Null when she gave no title.
+     */
+    suspend fun sheet(instruction: String, material: String, settings: JobSettings, tool: Boolean): com.phenomemental.pocketbeach.bsp.Mark.Sheet? =
+        sheetOf(ask("$instruction Write it in plain lines: the title first, then two to four lines, then “Tomorrow: …” if he voiced one, and nothing else.", material, settings).text)
+
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 
@@ -75,6 +91,27 @@ interface Mind {
 
         /** Stop the reply under way; the conversation can't be asked again after, so it is let go. */
         fun stop()
+
+        /**
+         * Sundial 0.10: her reply to [message] in its named [parts] ("THE
+         * REFLECTION", "THE QUESTION"), through the engine's tool call; null
+         * when her answer isn't whole, and the caller asks her free.
+         */
+        fun parts(message: String, parts: List<String>): Map<String, String>? = null
+    }
+
+    companion object {
+        /** A sheet written in plain lines, read as Sundial reads a day: the title, the lines, "Tomorrow: …"; a places line or the own line dropped. */
+        fun sheetOf(text: String): com.phenomemental.pocketbeach.bsp.Mark.Sheet? {
+            val cleaned = text.lines().map { it.trim().trimStart('-', '*', '•', ' ').trim() }.filter { it.isNotEmpty() }
+                .map { it.removePrefix("Title:").removePrefix("title:").trim() }.joinToString("\n")
+            val d = com.phenomemental.pocketbeach.bsp.Mark.read(cleaned)
+            if (d.title.isBlank()) return null
+            return com.phenomemental.pocketbeach.bsp.Mark.Sheet(d.title, d.lines.take(4), d.tomorrow)
+        }
+
+        /** A part's field name in a tool, from its name in his cook: "THE REFLECTION" is "reflection". */
+        fun field(part: String): String = part.removePrefix("THE ").trim().lowercase().replace(' ', '_')
     }
 
     interface Chat : Closeable {

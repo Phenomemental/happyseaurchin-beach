@@ -19,6 +19,7 @@ import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.HerWindow
 import com.phenomemental.pocketbeach.bsp.Js
 import com.phenomemental.pocketbeach.bsp.JsObj
+import com.phenomemental.pocketbeach.bsp.Keep
 import com.phenomemental.pocketbeach.bsp.Keeping
 import com.phenomemental.pocketbeach.bsp.Landing
 import com.phenomemental.pocketbeach.bsp.Telling
@@ -190,6 +191,9 @@ class Asking(private val app: PocketApp) {
             internal set
         /** Her turn as the engine had it: his words and hers. */
         internal var talk: List<Pair<String, String>> = emptyList()
+        /** Sundial 0.10: her reply in its parts, through the tool call on E4B ("THE REFLECTION", "THE QUESTION"); null for a free reply. */
+        var parts by mutableStateOf<Map<String, String>?>(null)
+            internal set
         /** Rockpool: the walk his cook ran for this message, waiting on him or done; its trace, step by step (the film strip, in Details). */
         internal var walk: Cook.Walk? = null
         var trace by mutableStateOf<List<Cook.Trace>>(emptyList())
@@ -256,20 +260,35 @@ class Asking(private val app: PocketApp) {
      * is carried out by the app's own path, through the guards; the walk's
      * next step reports what came of it. His day is written whole.
      */
-    private inner class AppWorld(val e: Exchange?, override val handle: String, override val before: List<String>) : Cook.World {
+    private inner class AppWorld(val e: Exchange?, override val handle: String, override val before: List<String>, private val day: java.time.LocalDate? = null) : Cook.World {
         override val pages get() = app.pages
         override val storage get() = app.storage
         override val shelf get() = app.procedures
         override val now: ZonedDateTime get() = ZonedDateTime.now()
         override val big: Boolean get() = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
+        /** Sundial 0.10: the beach's day (UTC), one today everywhere a day is meant (spine:pocket-beach 1.111178719915); yesterday's when the card offers it first. */
+        override val keepDay: java.time.LocalDate get() = day ?: Keep.dayOf(System.currentTimeMillis())
+        override fun moments(): List<Keep.Moment> = momentsOf(keepDay)
         override fun cards(): Map<String, String> = aheadCards(handle)
         override fun write(card: Cook.Card): String? =
-            if (card is Cook.Card.Day) CookActs.carryOut(card, handle, app.pages, app.storage, app.shelf, System.currentTimeMillis()) else e?.walkProblem
+            if (card is Cook.Card.Day || card is Cook.Card.Whisper) CookActs.carryOut(card, handle, app.pages, app.storage, app.shelf, System.currentTimeMillis()) else e?.walkProblem
         override fun send(words: String): String? = e?.postProblem
         override fun close(): String? = closing?.let { t ->
             runCatching { Close.plan(t, app.pages, app.storage)?.let { plan -> app.pages.carryOut(plan).let { if (it.ok) null else it.problem ?: "it didn't land" } } }.getOrElse { it.message }
         }
         var closing: Close.Talk? = null
+    }
+
+    /**
+     * Sundial 0.10: his moments of [day], each with its instant: those kept
+     * in his now and those waiting for Keep today, each once.
+     */
+    fun momentsOf(day: java.time.LocalDate): List<Keep.Moment> {
+        val kept = runCatching {
+            val clock = app.storage.read(Days.NOW)?.let(::parseJson)
+            Keep.days(clock, null, day).lastOrNull { it.date == day }?.moments.orEmpty().mapNotNull { k -> k.atMs?.let { Keep.Moment(k.words, it) } }
+        }.getOrDefault(emptyList())
+        return (kept + app.waiting.of(day)).distinctBy { it.atMs to it.words }.sortedBy { it.atMs }
     }
 
     /** His cards on his ahead, by pile and place, for "news of a card". */
@@ -281,6 +300,23 @@ class Asking(private val app: PocketApp) {
     /** Rockpool: her choices for the rings the walk waits on, each a short call through the engine's tool call, under the same lock as her talk. */
     private suspend fun serveHer(w: Cook.Walk, e: Exchange?) {
         while (true) {
+            // Sundial 0.10: her placing, a list through the tool call; her sheet for the day, through the tool call on E4B, else free.
+            when (val wait = w.waiting) {
+                is Cook.Wait.HerMany -> {
+                    val ring = wait.places.mapIndexed { i, p -> "${i + 1} $p" }.joinToString("\n")
+                    val instruction = "Name every place of this ring his words plainly touch, one or more, never ranked: ${wait.question}.\n$ring"
+                    val chosen = runCatching { talking.withLock { app.mind.chooseMany(instruction, wait.about, wait.places.size, app.running(MindJob.TALK)) } }.getOrNull()
+                    w.herMany(chosen)
+                    continue
+                }
+                is Cook.Wait.HerSheet -> {
+                    val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
+                    val sheet = runCatching { talking.withLock { app.mind.sheet(wait.line, wait.material, app.running(MindJob.TALK), tool = big) } }.getOrNull()
+                    w.sheet(sheet)
+                    continue
+                }
+                else -> {}
+            }
             val her = w.waiting as? Cook.Wait.Her ?: return
             var placed = 0
             if (her.rings.size > 1) e?.sorting = 0 to her.rings.size
@@ -514,6 +550,8 @@ class Asking(private val app: PocketApp) {
             // 0.7, the gate before her reply: what the app does with his words, told her in her turn.
             val earlier = history.takeWhile { it !== e }.map { it.question }
             val h = withContext(Dispatchers.IO) { hatched() }
+            // Sundial 0.10: his words and their instant wait for Keep today, before his cook walks them (spine:pocket-beach 1.111178719915).
+            if (h != null) runCatching { app.waiting.add(q, e.at) }
             // 0.8: her name is a line at her place in his shell.
             // Rockpool: once he has hatched, his message runs his cook as his kernel names it; before, the gate as 0.8.1 has it.
             val walk = if (h == null) null else withContext(Dispatchers.IO) {
@@ -551,7 +589,15 @@ class Asking(private val app: PocketApp) {
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
-                        val reply = t.stream.say(message) { piece ->
+                        // Sundial 0.10: on E4B, her reply in the parts his cook names, through the tool call; else, or when it isn't whole, free and streamed.
+                        val asked = walk?.parts.orEmpty()
+                        val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
+                        val got = if (big && asked.isNotEmpty()) runCatching { t.parts(message, asked) }.getOrNull() else null
+                        val reply = if (got != null) {
+                            e.parts = got.mapValues { (_, v) -> Talking.unechoed(v, q, opening, echo) }
+                            firstShown = (System.nanoTime() - started) / 1_000_000
+                            asked.mapNotNull { e.parts?.get(it)?.takeIf(String::isNotBlank) }.joinToString("\n")
+                        } else t.stream.say(message) { piece ->
                             words.append(piece)
                             // Never shown: a line of hers that plays her turn back.
                             val shown = Talking.unechoed(words.toString(), q, opening, echo)
@@ -645,6 +691,8 @@ class Asking(private val app: PocketApp) {
                 is Cook.Card.Post -> postOut(e, c.words)
                 is Cook.Card.Ring -> e.waiting = Stage.Where(c.words, c.places)
                 is Cook.Card.Offer -> answered(e, talkOnly(e), emptyMap())
+                // Sundial 0.11 sets a whisper out beneath the shell; nothing in a message walk does.
+                is Cook.Card.Whisper -> answered(e, talkOnly(e), emptyMap())
                 // 0.9.1: his message asked for his day ("Put this in my now: …"): his cook set it out with her reply, for his yes.
                 is Cook.Card.Day -> {
                     val shown = Stage.Shown(asAsked(talkOnly(e)), e.took ?: 0, e.pace, e.firstShown)
@@ -822,7 +870,7 @@ class Asking(private val app: PocketApp) {
                 Cook.Walk(loaded.parsed, AppWorld(e, h, history.takeWhile { it !== e }.map { it.question }), words).also { e.walk = it }
             }
         val done = runCatching {
-            withContext(Dispatchers.IO) { if (w.trace.isEmpty()) w.start("6") else w.yes() }
+            withContext(Dispatchers.IO) { if (w.trace.isEmpty()) w.start(Cook.load(h, app.storage, app.procedures).kernel.keep ?: "6.1") else w.yes() }
             serveHer(w, e)
         }
         e.trace = w.trace.toList()
@@ -861,7 +909,12 @@ class Asking(private val app: PocketApp) {
             val wrote = w?.trace?.lastOrNull { it.did.startsWith("wrote it") || it.did.startsWith("couldn't write it") }?.did
             val note = if (wrote == null || wrote.startsWith("wrote it")) "Matthew said yes to his day: ${t.card.describe()}."
                 else "Matthew said yes to his day, but it couldn't be written: ${wrote.removePrefix("couldn't write it: ")}."
-            if (wrote == null || wrote.startsWith("wrote it")) conversation.written += "his day: ${t.card.describe()}"
+            if (wrote == null || wrote.startsWith("wrote it")) {
+                conversation.written += "his day: ${t.card.describe()}"
+                // Sundial 0.10 (a): his moments of that day are in his now; they leave the waiting room.
+                app.waiting.kept(t.card.day)
+                lastKept = t.card.day
+            }
             finish(e, t.shown, note, proposed = true, proposal = describeTold(t.card) + "\n  His answer: Yes")
         }
     }
@@ -872,7 +925,158 @@ class Asking(private val app: PocketApp) {
         finish(e, t.shown, "Matthew said not now to his day.", proposed = true, proposal = describeTold(t.card) + "\n  His answer: Not now")
     }
 
-    private fun describeTold(c: Days.DayCard): String = c.lines.joinToString("\n") { l -> "  ${if (l.ticked) "[x]" else "[ ]"} ${Days.name(l.where)}: \u201c${l.words}\u201d" }
+    /** Sundial 0.10: a place's dot tapped on his day's card beneath her reply: off if it was on, on if it was off. */
+    fun placeTold(n: Int, e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        e.waiting = Stage.Told(t.shown, t.card.place(n))
+    }
+
+    // ── Sundial 0.10: Keep today, the greeting, and the day before ──
+
+    /** The keep card Keep today set out (kernel KEEP), waiting on Keep it or Not now: its walk and the card as he has changed it. */
+    class KeepCard(val walk: Cook.Walk, val card: Days.DayCard, val fellBack: String? = null)
+
+    /** The keep card set out on Today, if one waits. */
+    var keepCard by mutableStateOf<KeepCard?>(null)
+        private set
+
+    /** Keep today's walk is drafting the card, or Keep it is writing it. */
+    var keeping by mutableStateOf(false)
+        private set
+
+    /** What came of the last keep, in plain words ("Kept."), or why nothing was set out. */
+    var keepNote by mutableStateOf<String?>(null)
+        private set
+
+    /** The beach's day last kept in this run of the app: the dial blooms it. */
+    var lastKept by mutableStateOf<java.time.LocalDate?>(null)
+        private set
+
+    /**
+     * Sundial 0.10: his tap of Keep today (or of the day before, offered
+     * first): his kernel's KEEP TODAY event runs his cook's 6.1, her placing
+     * and her sheet served as she is asked, and the keep card set out for
+     * his yes. Nothing is written until Keep it.
+     */
+    fun keepToday(day: java.time.LocalDate = Keep.dayOf(System.currentTimeMillis())) {
+        if (keeping || benchRunning || stage is Stage.Thinking) return
+        val h = hatched() ?: return
+        keeping = true
+        keepNote = null
+        keepCard = null
+        scope.launch {
+            val made = withContext(Dispatchers.IO) {
+                runCatching {
+                    val loaded = Cook.load(h, app.storage, app.procedures)
+                    val (parsed, place) = loaded.walkFor(Cook.KEEP) ?: (loaded.parsed to "6.1")
+                    val w = Cook.Walk(parsed, AppWorld(null, h, emptyList(), day), "")
+                    w.start(place)
+                    serveHer(w, null)
+                    w to (loaded.refusal ?: loaded.fellBack[Cook.KEEP])
+                }
+            }
+            made.onSuccess { (w, why) ->
+                val card = ((w.waiting as? Cook.Wait.Him)?.card as? Cook.Card.Day)?.landing
+                if (card == null) keepNote = "Nothing is set out: you haven't said anything of this day yet."
+                else keepCard = KeepCard(w, card, why)
+            }.onFailure { keepNote = "Your day couldn't be set out: ${it.message ?: it::class.simpleName}." }
+            keeping = false
+        }
+    }
+
+    /** A place's dot tapped on the keep card. */
+    fun placeKeep(n: Int) { keepCard?.let { k -> keepCard = KeepCard(k.walk, k.card.place(n), k.fellBack) } }
+
+    /** A line of his hand, a booking or a rung, ticked or unticked on the keep card. */
+    fun tickKeep(i: Int) { keepCard?.let { k -> keepCard = KeepCard(k.walk, k.card.tick(i), k.fellBack) } }
+
+    /** Keep it: the walk goes on from the card, "On his yes, write it."; his moments of that day leave the waiting room (a). */
+    fun keepIt() {
+        val k = keepCard ?: return
+        if (keeping) return
+        keeping = true
+        scope.launch {
+            val wrote = withContext(Dispatchers.IO) {
+                runCatching { k.walk.changed(Cook.Card.Day(k.card)); k.walk.yes() }
+                k.walk.trace.lastOrNull { it.did.startsWith("wrote it") || it.did.startsWith("couldn't write it") }?.did
+            }
+            if (wrote == null || wrote.startsWith("wrote it")) {
+                app.waiting.kept(k.card.day)
+                lastKept = k.card.day
+                keepNote = Words.sundial(app, "2.6", "Kept.")
+                conversation.written += "his day: ${k.card.describe()}"
+                stale += MindJob.values()
+            } else keepNote = "Your day couldn't be written: ${wrote.removePrefix("couldn't write it: ")}."
+            keepCard = null
+            keeping = false
+            changed()
+        }
+    }
+
+    /** Not now: nothing is written; his moments still wait. */
+    fun notNowKeep() {
+        keepCard?.walk?.let { w -> runCatching { w.notNow() } }
+        keepCard = null
+    }
+
+    /** Sundial 0.10: her one question as the dial opens (kernel THE DIAL OPENED, his cook's 6.3), with his tomorrow line before it. */
+    data class Greeting(val day: java.time.LocalDate, val tomorrow: String?, val question: String?)
+
+    var greeting by mutableStateOf<Greeting?>(null)
+        private set
+
+    @Volatile private var greetingNow = false
+
+    private val greeted get() = app.getSharedPreferences("sundial", android.content.Context.MODE_PRIVATE)
+
+    /**
+     * The dial opened: when he has said nothing today and no day before waits
+     * to be kept, she asks her one question about today, in her kept
+     * conversation, so his answer follows it. Asked once a day; until she is
+     * ready Sundial's own question stands.
+     */
+    fun greet() {
+        val today = Keep.dayOf(System.currentTimeMillis())
+        val day = today.toString()
+        if (greeting?.day == today) return
+        greeted.getString("day", null)?.takeIf { it == day }?.let {
+            greeting = Greeting(today, greeted.getString("tomorrow", null), greeted.getString("question", null))
+            return
+        }
+        if (greetingNow || benchRunning || stage is Stage.Thinking) return
+        val h = hatched() ?: return
+        if (momentsOf(today).isNotEmpty() || app.waiting.yesterday(today) != null || history.any { Keep.dayOf(it.at) == today }) return
+        greetingNow = true
+        scope.launch {
+            val got = withContext(Dispatchers.IO) {
+                runCatching {
+                    val loaded = Cook.load(h, app.storage, app.procedures)
+                    val (parsed, place) = loaded.walkFor(Cook.GREET) ?: return@runCatching null
+                    val world = AppWorld(null, h, emptyList(), today)
+                    val w = Cook.Walk(parsed, world, "")
+                    w.start(place)
+                    val tomorrow = Keep.tomorrowOf(Keep.lastDay(world.kept(), today))
+                    val question = talking.withLock {
+                        val t = talker(MindJob.TALK)
+                        val message = HerWindow.turnHanded("", ZonedDateTime.now(), app.pages, w.handed)
+                        val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
+                        val parts = if (big && w.parts.isNotEmpty()) runCatching { t.parts(message, w.parts) }.getOrNull() else null
+                        (parts?.get("THE QUESTION") ?: t.stream.say(message) { }).trim()
+                    }
+                    Greeting(today, tomorrow, question.takeIf { it.isNotBlank() })
+                }.getOrNull()
+            }
+            greetingNow = false
+            if (got != null) {
+                greeting = got
+                greeted.edit().putString("day", day).putString("tomorrow", got.tomorrow).putString("question", got.question).apply()
+            }
+        }
+    }
+
+    private fun describeTold(c: Days.DayCard): String = (listOfNotNull(c.text?.let { "  The day's line: \u201c${it.replace("\n", " / ")}\u201d" }) +
+        c.moments.map { "  A moment: \u201c${it.words}\u201d" } +
+        c.lines.map { l -> "  ${if (l.ticked) "[x]" else "[ ]"} ${Days.name(l.where)}: \u201c${l.words}\u201d" }).joinToString("\n")
 
     /** The exchange whose day waits on his answer, the newest. */
     private fun dayOf(): Exchange? = history.lastOrNull { it.waiting is Stage.Day }
@@ -1288,7 +1492,7 @@ class Asking(private val app: PocketApp) {
         val day = java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", java.util.Locale.UK)
         val time = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.UK)
         fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
-        appendLine("Rockpool: a conversation in Ask, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
+        appendLine("Sundial: a conversation in Today, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
         val h = hatched()
         if (h != null) appendLine("Wearing ${Hatch.shellOf(h)}: her window is its nine places.") else appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
         for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty())
