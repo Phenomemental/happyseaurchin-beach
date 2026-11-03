@@ -4,10 +4,17 @@ Current state only. Newest first.
 
 ## Now
 
-**Sundial 0.10, Today and keeping, is built and held (3 November,
-spine:pocket-beach 1.111178719 and the decisions at 1.11117871991):**
-merged to main, not released. `trial/judged-0.10.md` is for Claude to read
-first.
+**Sundial 0.10, Today and keeping, is released (3 November):**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
+- **Install:** `sundial-v0.10.apk` over Rockpool 0.9.1; his blocks stay.
+  At first opening the app saves a whole copy of the pocket, then brings
+  his cook and kernel up place by place. Cook 6 becomes Sundial's ways, and
+  his old one is kept as `retired-cook-6`.
+- **Signed** with the same key as every release (certificate SHA-256
+  `217887a6…`). The package id is unchanged, so it installs over Rockpool.
+- **Version** 0.10 (23), from main at `c564ec8` (PR #236), release run
+  222. APK SHA-256 `a1908891…`. The procedures and the town list it
+  carries are byte for byte main's.
 - **What it is:** Rockpool renamed Sundial, in Sundial's tokens and mark.
   - The dial is live on the real sun where he stands.
   - His words wait as moments until Keep today keeps them in his now, in
@@ -16,8 +23,12 @@ first.
     counted.
   - Your room has a box; Your hand and Your recipes are new places.
   - Cook 6 is Sundial's ways; the TALK line is shipped; About is Sundial's.
-- **Version** 0.10 (23), the same package and key; the release job tags
-  `sundial-v0.10`.
+- **After Claude's read, before the release:**
+  - About claims no daily limit.
+  - Where your words go names one thing that leaves, a note to his room;
+    her own-Claude voice is held for 0.12.
+  - No scratch pocket ever posts: only the phone's own hatched pocket,
+    under its own handle, to its own room.
 - **Untried with a real model:** her tool calls for the places, the day's
   sheet and her reply in two parts on E4B. Each falls back to her plain
   words.

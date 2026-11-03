@@ -378,6 +378,19 @@ before the release. All three are done.
        before a hatch, a bench post, and one made as another handle, are
        refused, the wire untouched, and his own goes.
 
+**Tested and released.** CI run 220, at `3a3040a`, was green on all of it:
+the core (264 tests) on Linux and Windows, the golden calls, the app's
+tests, and all 71 device tests on the emulator. PR #236 merged it to main at
+`c564ec8`. Release run 222 ran every test again there, then built and
+published `sundial-v0.10`:
+- the APK is signed with the same key (certificate SHA-256 `217887a6…`);
+- `com.phenomemental.pocketbeach`, versionCode 23, versionName 0.10;
+- APK SHA-256 `a1908891…`;
+- its procedures and town list are byte for byte main's, About's two
+  changes among them.
+
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
+
 ## What to try on his Pixel
 
 1. **Open it over Rockpool.** The opening note should say his cook was
