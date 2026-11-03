@@ -217,6 +217,8 @@ class MemoryStorage : BlockStorage {
      * shell (the bench's, the tests'), so a post can be offered and judged
      * there. The phone's own pocket is never a MemoryStorage, so it posts only
      * to the room its hatched shell names (spine:pocket-beach 1.1111787171).
+     * Every room read from a MemoryStorage is marked scratch, and a post made
+     * for it is refused by PoolPost.send before the wire is touched.
      */
     var standInRoom: Room? = null
 

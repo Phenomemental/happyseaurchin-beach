@@ -47,7 +47,7 @@ new risk (section 9); it is still the one to watch.
 | the golden calls, at their two pinned commits | CI `test` | passes, regenerated and compared |
 
 **Beyond those:**
-- **Core:** 262 tests, none skipped, on Linux and in CI on Windows.
+- **Core:** 264 tests, none skipped, on Linux and in CI on Windows.
 - **App unit tests:** 14, one skipped as before (the real fetch).
 - **On the emulator:** 71 device tests, Rockpool's among them. Six are new
   in `SundialDeviceTest`:
@@ -276,9 +276,10 @@ from the first):
   keeps its author. One kept by Rockpool, with no author kept, goes as
   Rockpool made it: Phenomemental, to pool:Phenomemental.
 - **Scratch pockets carry a stand-in room.** A scratch pocket is the
-  bench's, or a trial's; it has no hatch. It posts as Matthew's
-  (pool:Phenomemental), only ever into a scratch pocket, never the phone's
-  own.
+  bench's, or a trial's; it has no hatch. Its stand-in room is Matthew's
+  (pool:Phenomemental), so a post can be offered and judged there. Every
+  post made there is marked scratch and never sent (see "After Claude's
+  read", 3, below).
 
 ### Your places, the menu (911, 917)
 
@@ -323,18 +324,59 @@ from the first):
   Show the workings, with "Try a call by hand". It now says "Sundial keeps
   pscale blocks…".
 
-## What in the plan's words looks wrong for 0.10
+## After Claude's read (3 November)
 
-These are shipped as the plan words them; none was changed.
-- **Why it exists says "It is bounded: each day has a limit, and when it's
-  reached, it rests until tomorrow."** The app sets no daily limit. 1.1111787197
-  keeps Why it exists as it is, so it is shipped so. Either the sentence
-  goes, or a limit is built (0.11?).
-- **Where your words go says a second thing can leave, "if you choose your
-  own Claude as her voice".** That choice arrives in 0.12. Until then the
-  sentence speaks of a choice not yet there. It isn't untrue ("if you
-  choose"), but he may want it held back to 0.12, as 918 holds back the
-  rewording of "the only thing the pocket sends".
+Claude read this file whole and asked for two changes and one check
+before the release. All three are done.
+
+1. **Why it exists claims no daily limit.** "It is bounded: each day has a
+   limit, and when it's reached, it rests until tomorrow." is gone from
+   `words:sundial` 6.3. The app sets no daily limit, and none is planned.
+
+2. **Where your words go names one thing that leaves.** It now says: "One
+   thing can leave, and only when you choose: a note you post to your
+   room, sent when you tap Post." The sentence about her own-Claude voice
+   is held at `words:sundial` 6.6.9, for 0.12. About doesn't read 6.6.9:
+   it shows each part's heading, its line 1, and a part at 2.
+
+3. **No scratch pocket can send a post to the online beach.** It was so
+   already, and now it is enforced.
+   - **The one way out.** A post reaches the network only through
+     `PoolPost.send`'s `wire.post` (`bsp/…/PoolPost.kt:109`). The app calls
+     it only from `PocketApp.post` (`app/…/PocketApp.kt:119`), on the app's
+     `wire` (`PocketApp.kt:84`, HttpsWire).
+   - **Its four callers each build the post from the phone's own pocket**
+     (`app.storage`), never from a scratch one:
+     - Your room (`ui/SundialScreens.kt:275`);
+     - the hello world by hand (`ui/CallsScreen.kt:305`);
+     - Ask's Post, from `Asks.carryOut` on `app.storage` (`ui/Asking.kt:1213`,
+       `1392`, sent at `1415`);
+     - Post now, for a kept post (`ui/Waiting.kt:61`).
+   - **The scratch pockets reach no wire:**
+     - the bench's pocket (`bsp/…/Bench.kt:91`, run from `ui/Benching.kt:230`);
+     - the trials' copies (`Asks.kt:277-280`, `Acts.kt:224-227`,
+       `Pages.kt:380`);
+     - the walker's `send`, which sends nothing (`Cook.kt:416`; Ask's,
+       `ui/Asking.kt:275`, only reports what Post did);
+     - the laptop trials, which use neither Wire nor PoolPost (`trial/src`).
+   - **The block, so no later path can open one:**
+     - **Every room read from a pocket held in memory is marked scratch.**
+       Hatched or stood in, it carries the mark (`PoolPost.kt:77-78`,
+       `89`), and so does the post made for it (`PoolPost.kt:102`).
+       `PoolPost.send` refuses a scratch post before the wire is touched
+       (`PoolPost.kt:107`).
+     - **The app posts only from its own hatched pocket, under its own
+       handle, to its own room.** Before a hatch it refuses; a post made
+       as another handle, or for another room, it refuses; a scratch post
+       it refuses (`PocketApp.kt:136-143`). Nothing refused touches the
+       wire.
+   - **Tested:**
+     - core, `SundialTest.aScratchPocketsPostNeverTouchesTheWire`: the
+       bench's, a hatched scratch pocket's and a trial copy's posts never
+       touch the wire, and the phone's own goes;
+     - on the emulator, `CompanionTest.aPostThatMayHaveLandedSaysSoAndCanBeDiscarded`:
+       before a hatch, a bench post, and one made as another handle, are
+       refused, the wire untouched, and his own goes.
 
 ## What to try on his Pixel
 

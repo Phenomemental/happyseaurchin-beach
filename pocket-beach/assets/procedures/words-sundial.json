@@ -97,7 +97,7 @@
   },
   "3": {
    "_": "WHY IT EXISTS",
-   "1": "More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. It is bounded: each day has a limit, and when it's reached, it rests until tomorrow. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI."
+   "1": "More and more people talk to AI about how they are. Those conversations are open-ended: no shape, no end, and a memory kept inside the company's product. They can turn a person in on themselves: more analysing, more self-watching, less living. This is made the other way, around a practice. Each day you say where you are; it gives your day back in your own words and turns you back to today. Done day after day, this can grow something. A clearer sense of what actually happened, what you felt, and the story you are telling about it. The steadiness to notice without being swept along. Over weeks, your days showing you where you tend to come to rest, and where you might step next. That is the hope in it: not to be fixed, but to be more present in your own life, and more free to choose. Nothing here can promise that; it is a practice, and the practice is yours. And your days are yours: a plain record under your name in an open system, not locked inside any one company, so you can read them, leave, or bring them to another AI."
   },
   "4": {
    "_": "WHY A SUNDIAL",
@@ -109,7 +109,11 @@
   },
   "6": {
    "_": "WHERE YOUR WORDS GO",
-   "1": "Everything you say and keep stays on this phone. The phone turns your voice into text itself, and Gemma, the companion, runs here too, so nothing you tell her is sent anywhere. Two things can leave, and only when you choose: a note you post to your room, sent when you tap Post; and, if you choose your own Claude as her voice, your words go to Anthropic each time she answers. Your days are kept in an open form, so you can save them, take them with you, and later, if you choose, bring them to the beach."
+   "1": "Everything you say and keep stays on this phone. The phone turns your voice into text itself, and Gemma, the companion, runs here too, so nothing you tell her is sent anywhere. One thing can leave, and only when you choose: a note you post to your room, sent when you tap Post. Your days are kept in an open form, so you can save them, take them with you, and later, if you choose, bring them to the beach.",
+   "9": {
+    "_": "HELD FOR 0.12, when choosing your own Claude as her voice arrives (spine:pocket-beach 1.111178719919): this sentence then takes the place of the one beginning “One thing can leave”. Not shown in 0.10.",
+    "1": "Two things can leave, and only when you choose: a note you post to your room, sent when you tap Post; and, if you choose your own Claude as her voice, your words go to Anthropic each time she answers."
+   }
   },
   "7": {
    "_": "WHAT IT DRAWS ON",
@@ -147,6 +151,7 @@
   "1": "1: mark.js:11-24 (the six places' phrases, names, hues and empty-place questions), at main 4d8f5a8.",
   "2": "5: sundial.html (Sundial M4.18, 25 October 2026) where Sundial says it; the keep card's notes, the summer line and the room's lines from spine:pocket-beach 1.1111787197 and 1.111178719915-18.",
   "3": "6: sundial.html:2492-2530, reformed as spine:pocket-beach 1.1111787197 says (redrafted 07:47, 3 November 2026): the credits made true, WHERE YOUR WORDS GO rewritten, WHY A SUNDIAL added, Keep Sundial on your phone removed, How it holds you's \"Claude\" made \"she\".",
-  "4": "7: sundial.html:2488."
+  "4": "7: sundial.html:2488.",
+  "5": "6, after Claude read trial/judged-0.10.md (3 November 2026): Why it exists without “It is bounded: each day has a limit, and when it's reached, it rests until tomorrow.” (the app sets no daily limit, and none is planned); Where your words go says only that a note posted to your room leaves the phone, its sentence for her own-Claude voice held at 6.6.9 for 0.12."
  }
 }

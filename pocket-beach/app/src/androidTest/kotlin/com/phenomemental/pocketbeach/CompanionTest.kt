@@ -335,11 +335,28 @@ class CompanionTest {
     fun aPostThatMayHaveLandedSaysSoAndCanBeDiscarded() {
         Fresh.clear()
         val message = PoolPost.prepare(HelloWorld.POOL, "A message whose answer never came.", com.phenomemental.pocketbeach.bsp.Room(com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE, HelloWorld.POOL))
-        app.wire = Wire { _, _ -> throw com.phenomemental.pocketbeach.bsp.NoAnswer("Read timed out") }
+        var touched = 0
+        app.wire = Wire { _, _ -> touched++; throw com.phenomemental.pocketbeach.bsp.NoAnswer("Read timed out") }
+        // Sundial 0.10: before a hatch nothing is posted, and the wire isn't touched.
+        assertTrue(app.post(message) is com.phenomemental.pocketbeach.bsp.Posted.Refused)
+        assertEquals(0, touched)
+        assertTrue(app.unsent.all.isEmpty())
+        Fresh.hatched()
+        // Hatched: a post made in a scratch pocket (the bench's) never leaves, nor one made as another handle for another room.
+        val (bench, _) = Bench.fixture(app.shelf, System.currentTimeMillis(), Talks.SHELL_RECIPE)
+        val scratch = PoolPost.prepare(HelloWorld.POOL, "From the bench.", PoolPost.room(bench))
+        assertEquals(PoolPost.SCRATCH, (app.post(scratch) as com.phenomemental.pocketbeach.bsp.Posted.Refused).why)
+        val another = PoolPost.prepare("pool:ada-lovelace", "As someone else.", com.phenomemental.pocketbeach.bsp.Room("ada-lovelace", "ada-lovelace"))
+        assertTrue(app.post(another) is com.phenomemental.pocketbeach.bsp.Posted.Refused)
+        assertEquals(0, touched)
+        // His own, from his own room: it goes, and no answer comes back.
         app.post(message)
+        assertEquals(1, touched)
         assertTrue(app.unsent.all.single().mayHaveLanded)
         app.wire = wire
         ActivityScenario.launch(MainActivity::class.java).use {
+            // Hatched, the app opens on Today; kept posts wait on Your pocket.
+            compose.menu("menu-blocks")
             compose.waitFor("waiting")
             compose.waitFor("may-have-landed", "may be on the beach already")
             compose.tap("discard-waiting")
