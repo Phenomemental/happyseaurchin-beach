@@ -5,6 +5,9 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -128,8 +131,36 @@ class ScreenTour {
                 compose.waitFor("keep-title", timeoutMs = 20_000)
                 shot("$theme-52-keep-card", keyboard = false)
                 compose.tap("day-yes")
-                compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
+                compose.waitFor("kept-shell", timeoutMs = 20_000)
                 shot("$theme-53-kept", keyboard = false)
+                // Sundial 0.10.1: the shell's tap opens the kept day's page.
+                compose.tap("kept-shell")
+                compose.waitFor("day-page-title")
+                shot("$theme-53b-day-page", keyboard = false)
+                androidx.test.espresso.Espresso.pressBack()
+                compose.waitFor("dial")
+                // Sundial 0.10.1: the dial held, its captions clear of every line, dot and edge: as the emulator is, at his Pixel 9 Pro XL's width, and on a narrow phone.
+                for ((size, density, name) in listOf(Triple(null, null, "54a-dial-held"), Triple("1344x2992", "480", "54b-dial-held-pixel9proxl"), Triple("640x1386", "320", "54c-dial-held-narrow"))) {
+                    if (size != null) {
+                        instrumentation.uiAutomation.executeShellCommand("wm size $size").close()
+                        instrumentation.uiAutomation.executeShellCommand("wm density $density").close()
+                        Thread.sleep(2500)
+                    }
+                    compose.waitFor("dial")
+                    compose.onNodeWithTag("dial").performScrollTo()
+                    if (compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+                        compose.onNodeWithTag("dial").performTouchInput { longClick(durationMillis = 1200) }
+                    compose.waitFor("pools-said")
+                    Thread.sleep(800)
+                    shot("$theme-$name", keyboard = false)
+                }
+                instrumentation.uiAutomation.executeShellCommand("wm size reset").close()
+                instrumentation.uiAutomation.executeShellCommand("wm density reset").close()
+                Thread.sleep(2500)
+                compose.waitFor("dial")
+                // A tap at the heart gathers the pools back.
+                if (compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithTag("dial").performTouchInput { click(center) }
+                compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
                 compose.tap("menu")
                 compose.waitFor("places")
                 shot("$theme-54-places")

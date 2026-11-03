@@ -133,3 +133,48 @@ class SundialFixesTest {
         assertTrue(Talking.unsafe("I don't feel safe tonight.", Talking.SAFETY_WORDS))
     }
 }
+
+/** Sundial 0.10.1, fix 5: the captions on hold, clear of every line, dot and edge, however his days rest. */
+class DialLabelsTest {
+    /** A serif italic at 19 of the dial's units runs about half its size a letter; a generous ten, to be safe. */
+    private fun widths(lines: List<String>) = lines.map { it.length * 10.0 }
+
+    private fun check(counts: List<Int>, what: String) {
+        val pools = DialMath.poolsAt(counts)
+        val lines = Mark.POOLS.map { DialMath.captionLines(it.phrase) }
+        val caps = DialLabels.place(pools, lines, lines.map(::widths))
+        caps.forEachIndexed { i, c ->
+            val name = "${Mark.POOLS[i].phrase} ($what)"
+            assertTrue(c.box.inside(DialLabels.BOUNDS), "$name is within the dial: ${c.box}")
+            assertFalse(DialLabels.onInk(c.box), "$name crosses no line of ink: ${c.box}")
+            pools.forEachIndexed { j, p -> assertFalse(DialLabels.onCircle(c.box, DialMath.Pt(p.x, p.y), p.r), "$name clear of ${Mark.POOLS[j].phrase}'s pool") }
+            caps.forEachIndexed { j, o -> if (j != i) assertFalse(c.box.overlaps(o.box), "$name clear of ${Mark.POOLS[j].phrase}'s caption") }
+        }
+    }
+
+    @Test
+    fun captionsAreClearHoweverHisDaysRest() {
+        check(listOf(0, 0, 0, 0, 0, 0), "no days")
+        check(listOf(1, 1, 1, 1, 1, 1), "evenly")
+        check(listOf(9, 0, 0, 0, 0, 0), "all in what happened")
+        check(listOf(0, 9, 0, 0, 0, 0), "all in what you felt")
+        check(listOf(0, 0, 0, 9, 0, 0), "all in what matters")
+        check(listOf(0, 0, 0, 0, 0, 9), "all in what's ahead")
+        check(listOf(5, 4, 3, 2, 1, 0), "a slope")
+        check(listOf(3, 3, 0, 1, 0, 6), "as on his phone")
+    }
+
+    @Test
+    fun theOldPlaceBeneathEachPoolRanIntoTheHeart() {
+        // As 0.10 drew them: each caption beneath its pool, 20 below its edge.
+        val pools = DialMath.poolsAt(listOf(1, 1, 1, 1, 1, 1))
+        val crossed = Mark.POOLS.indices.filter { i ->
+            val p = pools[i]
+            val lines = DialMath.captionLines(Mark.POOLS[i].phrase)
+            val w = (lines.map { it.length * 10.0 }.maxOrNull() ?: 0.0)
+            val top = p.y + p.r + 20 - 19 * 0.78
+            DialLabels.onInk(DialLabels.Box(p.x - w / 2, top, p.x + w / 2, top + 19 * 1.04 + 21.0 * (lines.size - 1)))
+        }
+        assertTrue(crossed.isNotEmpty(), "some caption crossed the heart, as on his phone")
+    }
+}

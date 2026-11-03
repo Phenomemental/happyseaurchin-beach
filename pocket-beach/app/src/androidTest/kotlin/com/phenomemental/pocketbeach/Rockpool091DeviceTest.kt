@@ -168,6 +168,30 @@ class Rockpool091DeviceTest {
         }
     }
 
+    /** Sundial 0.10.1, fix 5: the bring-up says one plain line, gone on a tap, never again for this version; the full account only under Show the workings. */
+    @Test
+    fun theBringUpSaysOnePlainLineOnce() {
+        hisPocketAsNinePointOneLeftIt()
+        app.showDetails = false
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("brought-up", "Brought up to this version. Everything you changed is kept.", timeoutMs = 20_000)
+            assertTrue("no account in the thread", none("corrected"))
+            for (word in listOf("cook 6", "kernel", "retired-cook-6", ".json")) assertTrue(word, compose.onAllNodes(hasText(word, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            app.showDetails = true
+            compose.waitFor("corrected", "your old cook 6 is kept whole as ${Cook.RETIRED_COOK_6}")
+            compose.tap("brought-up")
+            compose.waitUntil(5_000) { none("brought-up") }
+        }
+        app.hatching.reset()
+        app.getSharedPreferences("hatching", 0).edit().putLong("noticed", app.packageManager.getPackageInfo(app.packageName, 0).longVersionCode).commit()
+        // Opened again in this version: no line.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("top-bar", timeoutMs = 20_000)
+            compose.waitUntil(5_000) { app.hatching.known }
+            assertTrue(none("brought-up"))
+        }
+    }
+
     /** Use the new one at a place three deep: the shipped TALK line takes his place (read through Cook.spindleOf). */
     @Test
     fun useTheNewOneTakesThisVersionsTalkLine() {

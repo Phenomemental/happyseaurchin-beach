@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.phenomemental.pocketbeach.ui
 
 import android.Manifest
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -92,13 +95,16 @@ fun TodayDial(model: Model, nav: Nav) {
     val state = DialState(days, moments, place?.lat, place?.lon, ZoneId.systemDefault(), tick, asking.lastKept?.let { Keep.dayAddress(it) })
     var pooled by rememberSaveable { mutableStateOf(false) }
     var picked by rememberSaveable { mutableStateOf<Int?>(null) }
+    // Sundial 0.10.1: held, the whole dial comes into view, clear of the bar beneath, so no caption is under it.
+    val whole = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
+    LaunchedEffect(pooled) { if (pooled) runCatching { whole.bringIntoView() } }
 
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Dial(
             state, answering = asking.stage is Asking.Stage.Thinking || asking.keeping,
             onTap = { if (pooled) { pooled = false; picked = null } else nav.go(Screen.Days) },
             onHold = { pooled = !pooled; picked = null },
-            modifier = Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f),
+            modifier = Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f).bringIntoViewRequester(whole),
             pooled = pooled, picked = picked, onPool = { picked = if (picked == it) null else it },
         )
     }
@@ -150,7 +156,9 @@ fun TodayDial(model: Model, nav: Nav) {
         k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
     }
     if (asking.keeping && card == null) Text("Setting out your day…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keeping"))
-    asking.keepNote?.let { Text(it, style = if (it == "Kept.") Type.title.copy(fontSize = Type.heading.fontSize) else Type.small, color = if (it == "Kept.") ink.ink else ink.crimson, modifier = Modifier.testTag("keep-note")) }
+    // Sundial 0.10.1: a day kept shows as its shell, its title beneath; only what went wrong is said in words.
+    asking.keptShell?.takeIf { card == null && !asking.keeping }?.let { KeptShellView(model, nav, it) }
+    asking.keepNote?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("keep-note")) }
 }
 
 /** The Keep today button, beside Send: Sundial's small heart and its words (sundial.html:2479-2482). */
@@ -175,7 +183,9 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
  * from them only when it can be, else plain (Talking.splitQuestion).
  */
 fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
-    val whole = parts?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
+    // Sundial 0.10.1: ANSWER, her answer as she gave it, plain.
+    parts?.get("THE ANSWER")?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
+    val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
     val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(said)
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {

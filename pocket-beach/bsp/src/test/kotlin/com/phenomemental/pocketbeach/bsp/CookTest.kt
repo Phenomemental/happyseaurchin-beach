@@ -307,11 +307,13 @@ class CookTest {
     /** His test message of 3 November, exactly as he sent it. */
     private val idChecks = "I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial."
 
-    private fun talked(said: String): Cook.Walk {
+    /** His hand as on his phone on 3 November: the membership agreement from his 10:03 telling. */
+    private val hisHand = mapOf("3.1" to "and need to update a membership agreement and print it out")
+
+    private fun talked(said: String, hand: Map<String, String> = hisHand): Cook.Walk {
         val (storage, pages) = hatched()
-        val k = walk(World(storage, pages), said)
-        (k.waiting as? Cook.Wait.HerMany)?.let { k.herMany(listOf(1, 3, 4, 6)) }
-        return k
+        val w = object : Cook.World by World(storage, pages) { override fun cards() = hand }
+        return Cook.Walk(cook, w, said).start("1")
     }
 
     @Test
@@ -320,8 +322,6 @@ class CookTest {
         assertEquals("TALK", day.answer)
         assertTrue(day.handed.none { it.line.contains("in danger") || it.line.contains("where help is") }, day.handed.joinToString("\n") { it.line })
         assertTrue(day.trace.any { it.did == "his words hold none of his safety words" }, day.trace.joinToString("\n"))
-        // Her untouched places still come to her (what he felt; a choice), as on his phone.
-        assertTrue(day.handed.any { h -> h.line.contains("haven't touched") && h.material.joinToString().contains("what he felt") && h.material.joinToString().contains("a choice") }, day.handed.joinToString("\n") { "${it.line} ${it.material}" })
         val unsafe = talked("I don't feel safe tonight.")
         assertTrue(unsafe.handed.any { it.line.startsWith("The app: his words say he may be in danger.") && it.line.contains("where help is") }, unsafe.handed.joinToString("\n") { it.line })
         assertTrue(unsafe.trace.any { it.did == "his words say he may be in danger, by his safety words" })
@@ -329,22 +329,78 @@ class CookTest {
         for (k in listOf(day, unsafe)) assertTrue(k.handed.none { it.line.contains("if he may be in danger") })
     }
 
+    /** The question and the no-day messages of 3 November, exactly as he sent them. */
+    private val whitehead = "ok, so you'll never believe it, have you heard of Alfred North Whitehead?"
+    private val justTalk = "I just want to talk"
+
     @Test
-    fun hisCookFromSundial010TakesTheNewDangerBranch() {
+    fun theDayIsJudgedFirstAndAMessageWithNoDayGetsTheNoDayLineAndNoPlaces() {
+        val noDay = "The app: his words hold no day yet; if you reflect, ask what's on today."
+        for (said in listOf(whitehead, justTalk)) {
+            val k = talked(said)
+            assertEquals("TALK", k.answer, said)
+            assertNull(k.waiting, "no places call: $said")
+            assertTrue(k.handed.any { it.line == noDay }, k.handed.joinToString("\n") { it.line })
+            assertTrue(k.trace.any { it.did == "his words don't tell of his day" })
+            assertNull(k.card, "no Sort as my day")
+        }
+        // His day message, news of the card on his hand: a day; no no-day line; Sort as my day after her reply.
+        val day = talked(idChecks)
+        assertTrue(day.handed.none { it.line == noDay })
+        assertTrue(day.trace.any { it.did == "his words tell of his day" })
+        assertEquals(Cook.Card.Offer("Sort as my day"), (day.waiting as Cook.Wait.Him).card)
+        // Her reply's two shapes, hers to choose: REFLECT with her places, ANSWER when he asks her something.
+        assertEquals(listOf(HerReply.Shape("REFLECT", listOf(HerReply.PLACES, "THE REFLECTION", "THE QUESTION")), HerReply.Shape("ANSWER", listOf("THE ANSWER"))), day.shapes)
+        assertTrue(day.handed.single { it.line.startsWith("The app: nothing is being kept") }.line.contains("Your reply has two parts, unless he asks you something"))
+    }
+
+    @Test
+    fun allSixPlacesNamedCountAsNone() {
         val (storage, pages) = hatched()
-        val old = "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”"
-        val ten = parseJson(stringify(procedures.load(Cook.SHIPPED_COOK))!!) as JsObj
-        (jsGet(jsGet(jsGet(ten, "1"), "1"), "8") as JsObj)["5"] = str(old)
-        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), ten)).ok)
+        val w = World(storage, pages)
+        w.moments += Keep.Moment(justTalk, nowMs - 60_000)
+        val k = Cook.Walk(cook, w, "").start("6.1")
+        k.herMany(listOf(1, 2, 3, 4, 5, 6))
+        assertTrue(k.trace.any { it.did == "she named all 6: unreliable, counted as none" }, k.trace.joinToString("\n"))
+        val sheet = k.waiting as Cook.Wait.HerSheet
+        k.sheet(Mark.Sheet("Talking", listOf("You wanted to talk."), ""))
+        assertEquals(emptyList(), ((k.waiting as Cook.Wait.Him).card as Cook.Card.Day).landing.places, "no places on his day: ${sheet.line.take(20)}")
+    }
+
+    /** Sundial 0.10's cook exactly as it shipped (main at 44e8153), as his phone keeps it. */
+    private val cook010: JsObj get() = parseJson(javaClass.getResource("/cook-0.10.json")!!.readText()) as JsObj
+
+    @Test
+    fun hisCookFrom010IsBroughtUpTo0101PlaceByPlace() {
+        val (storage, pages) = hatched()
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), cook010)).ok)
         check(pages.carryOut(pages.planWhole(Cook.kernelOf(h), parseJson(stringify(procedures.load(Cook.SHIPPED_KERNEL))!!) as JsObj)).ok)
-        // What the phone kept of what 0.10 shipped: 0.10's cook, his 1.1.8.5 as it shipped.
-        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(ten) else stringify(procedures.load(name)) })
+        // What the phone kept of what 0.10 shipped: 0.10's cook.
+        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(cook010) else stringify(procedures.load(name)) })
         for ((_, plan) in ups) plan?.let { check(pages.carryOut(it).ok) }
         val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
-        assertEquals(Cook.places(procedures.load(Cook.SHIPPED_COOK)), now, "1.1.8.5 is 0.10.1's branch, and nothing else changed")
+        assertEquals(Cook.places(procedures.load(Cook.SHIPPED_COOK)), now, "TALK as 0.10.1 has it, and nothing else changed")
         assertTrue(ups.flatMap { it.first.yours }.isEmpty(), "nothing of his to keep or offer")
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
+    }
+
+    @Test
+    fun hisOwnTalkLineIsKeptWhenTalkIsBroughtUpTo0101() {
+        val (storage, pages) = hatched()
+        val his = parseJson(stringify(cook010)!!) as JsObj
+        val mine = "Hand her this line: “The app: just talk with him, warmly. Speak to him as you, never by his name.”"
+        (jsGet(jsGet(jsGet(his, "1"), "1"), "8") as JsObj)["1"] = str(mine)
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), his)).ok)
+        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(cook010) else stringify(procedures.load(name)) })
+        for ((_, plan) in ups) plan?.let { check(pages.carryOut(it).ok) }
+        val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
+        val shipped = Cook.places(procedures.load(Cook.SHIPPED_COOK))
+        assertEquals(mine, now["1.1.8.1"], "his own line, kept")
+        val y = ups.flatMap { it.first.yours }.single { it.at == "1.1.8.1" }
+        assertTrue(y.offer)
+        assertTrue(y.shipped!!.contains("Your reply has two parts, unless he asks you something"))
+        for ((a, t) in shipped) if (a != "1.1.8.1") assertEquals(t, now[a], "cook $a")
     }
 
     // ── TELL MY DAY ──
@@ -507,7 +563,7 @@ class CookTest {
     }
 
     @Test
-    fun linesHeChangedInHisOldCook6AreNamedAndHisDayQuestionMovesTo7() {
+    fun linesHeChangedInHisOldCook6AreNamedAndHisDayQuestionMovesToWhereTalkAsksIt() {
         val (storage, pages) = hatched()
         val hisSix1 = "LIFT. Lift his telling from THE MESSAGE: after the colon; else what he said before. Carry it as THE TELLING."
         val hisQuestion = "Does THE MESSAGE tell of his day: three sentences or more, of forty words or more, or news of a card on his hand?"
@@ -520,10 +576,13 @@ class CookTest {
         val su = ups.single { it.first.shipped == Cook.SHIPPED_COOK }.first.sundial!!
         assertEquals(listOf("6.1"), su.changed)
         assertTrue(su.talkMoved)
+        // Sundial 0.10.1: TALK asks it first, before her places, at 1.1.8.3; the card it sets out is at 1.1.8.6.
+        assertEquals("1.1.8.3", su.movedTo)
         assertEquals(hisSix1, jsString(su.retired!!["1"]), "his old cook 6 kept whole")
         val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
-        assertEquals(hisQuestion, now["1.1.8.7"], "his day question, his, at 1.1.8.7")
-        assertEquals("On his tap, run cook 6.1.", now["1.1.8.7.1.2"], "and it runs KEEP TODAY")
+        assertEquals(hisQuestion, now["1.1.8.3"], "his day question, his, where TALK asks it")
+        assertEquals("Carry THE MESSAGE as THE DAY.", now["1.1.8.3.1.1"])
+        assertEquals("On his tap, run cook 6.1.", now["1.1.8.6.1.2"], "and its card runs KEEP TODAY")
         assertEquals("Carry THE MESSAGE as THE WORDS.", now["1.1.8.2"])
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
@@ -550,9 +609,7 @@ class CookTest {
         val without = edited { b -> ((b["9"] as JsObj))["2"] = str(jsString(jsGet(b, "9", "2")).replace("send … to my room, ", "")) }
         val talk = walk(World(storage, pages), said, without)
         assertEquals("TALK", talk.answer)
-        // Sundial 0.10: TALK places his words first (cook 6.2), her choice on E4B; then nothing waits.
-        assertTrue(talk.waiting is Cook.Wait.HerMany)
-        talk.herMany(listOf(1))
+        // Sundial 0.10.1: TALK makes no places call of its own (her places come in her reply's own call); nothing waits.
         assertNull(talk.waiting)
         val with = walk(World(storage, pages), said, cook)
         assertEquals("POST", with.answer)

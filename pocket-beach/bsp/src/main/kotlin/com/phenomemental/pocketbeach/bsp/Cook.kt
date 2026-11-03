@@ -82,8 +82,8 @@ object Cook {
         /** Her placing: every place [of] touches, from the ring beneath ([how] is what she is told). */
         class NameMany(val of: String, val how: String, val toHim: Boolean, val into: String) : Verb(Reader.SHE)
         class Untouched(val touched: String, val into: String) : Verb()
-        /** Her reply in named parts, through the tool call on E4B. */
-        class Parts(val names: List<String>) : Verb(Reader.SHE)
+        /** Her reply in named parts, through the tool call on E4B; Sundial 0.10.1: or in one of [shapes], hers to choose. */
+        class Parts(val names: List<String>, val shapes: List<HerReply.Shape> = emptyList()) : Verb(Reader.SHE)
         class Sheet(val from: String, val withToday: Boolean, val line: String, val into: String) : Verb(Reader.SHE)
         class LastDay(val into: String) : Verb()
         class DaysIn(val n: Int, val place: String, val into: String) : Verb()
@@ -179,6 +179,12 @@ object Cook {
         rx("""Find the places of that ring ($CAP) leaves out\. Carry them as ($CAP)\.""") to { m -> Verb.Untouched(m.groupValues[1], m.groupValues[2]) },
         rx("""She gives her reply as ($CAP(?:, $CAP)*(?:,? and $CAP)?) through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it\.""") to { m ->
             Verb.Parts(Regex(CAP).findAll(m.groupValues[1]).map { it.value }.toList())
+        },
+        // Sundial 0.10.1: two shapes, hers to choose (REFLECT or ANSWER), each its parts and when it is for.
+        rx("""She gives her reply through the tool call in one of two shapes: ([A-Z]+), as ($CAP(?:(?:, |,? and )$CAP)*)(?:, [^;]+)?; or ([A-Z]+), as ($CAP(?:(?:, |,? and )$CAP)*)(?:, [^.]+)?\. On E2B, or when her answer isn't whole, her reply stands as she writes it\.""") to { m ->
+            val one = HerReply.Shape(m.groupValues[1], Regex(CAP).findAll(m.groupValues[2]).map { it.value }.toList())
+            val two = HerReply.Shape(m.groupValues[3], Regex(CAP).findAll(m.groupValues[4]).map { it.value }.toList())
+            Verb.Parts(one.required, listOf(one, two))
         },
         rx("""She draws the day's sheet from ($CAP)( and today's line in his now)?, with this line: “(.+)” On E2B, or when her answer isn't whole, she writes it in plain lines, the title first and tomorrow last after “Tomorrow:”\. Carry it as ($CAP)\.""") to { m ->
             Verb.Sheet(m.groupValues[1], m.groupValues[2].isNotEmpty(), m.groupValues[3], m.groupValues[4])
@@ -508,6 +514,9 @@ object Cook {
         /** Sundial: the named parts her reply comes in, on E4B through the tool call ("THE REFLECTION", "THE QUESTION"); empty for a free reply. */
         var parts: List<String> = emptyList()
             private set
+        /** Sundial 0.10.1: the shapes her reply may take, hers to choose; empty when it has one. */
+        var shapes: List<HerReply.Shape> = emptyList()
+            private set
         private val stack = ArrayDeque<Frame>()
         /** The last placing ring's words by pool number, as the cook writes them ("what he felt"). */
         private val ringWords = LinkedHashMap<Int, String>()
@@ -752,7 +761,9 @@ object Cook {
                 }
                 is Verb.Parts -> {
                     parts = v.names
-                    note(s, "her reply in ${v.names.size} part${if (v.names.size == 1) "" else "s"}" + if (world.big) ", through the tool call" else ", as she writes it (E2B)")
+                    shapes = v.shapes
+                    note(s, (if (v.shapes.isNotEmpty()) "her reply in one of ${v.shapes.size} shapes, hers to choose (${v.shapes.joinToString(" or ") { it.name }})"
+                        else "her reply in ${v.names.size} part${if (v.names.size == 1) "" else "s"}") + if (world.big) ", through the tool call" else ", as she writes it (E2B)")
                 }
                 is Verb.Sheet -> {
                     if (!has(v.from)) {
@@ -929,6 +940,10 @@ object Cook {
             if (named.isNullOrEmpty()) {
                 carried.remove(v.into)
                 note(s, "her answer wasn't whole: nothing is named")
+            } else if (s.ring.size > 1 && named.size >= s.ring.size) {
+                // Sundial 0.10.1: every place named tells nothing (his "I just want to talk" was placed in all six): counted as none.
+                carried.remove(v.into)
+                note(s, "she named all ${s.ring.size}: unreliable, counted as none")
             } else {
                 carried[v.into] = named
                 note(s, "she named ${named.size} place${if (named.size == 1) "" else "s"}", v.into)
@@ -1320,8 +1335,8 @@ object Cook {
     /** The block his old cook 6 is kept in once cook 6 becomes Sundial's ways: the hidden region holds it. */
     const val RETIRED_COOK_6 = "retired-cook-6"
 
-    /** Sundial 0.10's one-time move: [mine] with cook 6 the shipped one and his 1.1.8.2 where it now goes; his old cook 6; what he had changed. */
-    class ToSundial(val mine: JsObj, val retired: JsObj?, val changed: List<String>, val talkMoved: Boolean)
+    /** Sundial 0.10's one-time move: [mine] with cook 6 the shipped one and his 1.1.8.2 where it now goes ([movedTo]); his old cook 6; what he had changed. */
+    class ToSundial(val mine: JsObj, val retired: JsObj?, val changed: List<String>, val talkMoved: Boolean, val movedTo: String? = null) 
 
     /**
      * His cook brought to Sundial's shape before it is merged place by place:
@@ -1340,15 +1355,19 @@ object Cook {
         val lastSix = places((last as? JsObj)?.get("6"))
         val changed = places(six).filter { (a, t) -> lastSix[a] != t }.keys.map { if (it.isEmpty()) "6" else "6.$it" }
         copy["6"] = parseJson(stringify(shipped["6"])!!)
-        // 1.1.8.2: where he changed it, his moves to 1.1.8.7.
+        // 1.1.8.2, his day question: where he changed it, his question goes to where TALK now asks it (1.1.8.7 in 0.10; 1.1.8.3 from 0.10.1, before her places), its steps the shipped ones.
         val talk = jsGet(jsGet(jsGet(copy, "1"), "1"), "8") as? JsObj
         val lastTalk = jsGet(jsGet(jsGet(last, "1"), "1"), "8")
         val shippedTalk = jsGet(jsGet(jsGet(shipped, "1"), "1"), "8") as? JsObj
-        var moved = false
-        if (talk != null && shippedTalk != null && talk["2"] != null && !deepEqual(talk["2"], jsGet(lastTalk, "2"))) {
-            talk["7"] = parseJson(stringify(talk["2"])!!)
+        var moved: String? = null
+        val asksDay = shippedTalk?.keys()?.firstOrNull { k -> k != "_" && (shippedTalk[k] as? JsObj)?.let { collectUnderscore(it) }?.startsWith("Does THE MESSAGE tell of his day") == true }
+        if (talk != null && shippedTalk != null && asksDay != null && talk["2"] != null && !deepEqual(talk["2"], jsGet(lastTalk, "2"))) {
+            val his = (talk["2"] as? JsObj)?.let { collectUnderscore(it) } ?: (talk["2"] as? JsStr)?.value
+            val node = parseJson(stringify(shippedTalk[asksDay])!!) as JsObj
+            if (his != null) node["_"] = str(his)
+            talk[asksDay] = node
             talk["2"] = parseJson(stringify(shippedTalk["2"])!!)
-            moved = true
+            moved = "1.1.8.$asksDay"
         }
         // A step he changed that runs cook 6 (TELL MY DAY) runs its successor, 6.1 KEEP TODAY; a step he left as shipped takes the new sentence in the merge.
         val shippedBefore = places(last)
@@ -1361,7 +1380,7 @@ object Cook {
         for (k in copy.keys()) if (k != "6" && k != "_") copy[k] = onto61(copy[k], k)
         val retired = parseJson(stringify(six)!!) as JsObj
         retired["_"] = str("His cook 6 as it stood before Sundial (TELL MY DAY), kept whole when cook 6 became Sundial's ways: " + opening)
-        return ToSundial(copy, retired, changed, moved)
+        return ToSundial(copy, retired, changed, moved != null, moved)
     }
 
     /**

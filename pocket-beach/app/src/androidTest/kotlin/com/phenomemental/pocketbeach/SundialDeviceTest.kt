@@ -94,7 +94,9 @@ class SundialDeviceTest {
             compose.waitFor("keep-places")
             assertTrue("nothing written before his yes", app.storage.read(Days.NOW)?.contains("Took the dog out") != true)
             compose.tap("day-yes")
-            compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
+            // Sundial 0.10.1: the day kept shows as its shell, its title beneath; nothing of the record is pasted in.
+            compose.waitFor("kept-shell", "A walk by the river", timeoutMs = 20_000)
+            assertTrue("no heading, no record", none("keep-note") && none("keep-card"))
             val now = app.storage.read(Days.NOW)!!
             // The day's line in Sundial's form at today, his moment at its minute.
             val line = Keep.dayText(com.phenomemental.pocketbeach.bsp.parseJson(now), today)!!
@@ -104,10 +106,17 @@ class SundialDeviceTest {
             assertTrue("no P6", app.storage.read(Days.p6Of(h))?.contains("Took the dog out") != true)
             // (a) Kept: they go from the waiting room.
             assertTrue(app.waiting.all.isEmpty())
-            // The day is on the strandline.
+            // A tap on the shell opens the day's page: its title, its lines, Tomorrow, its places line.
+            compose.tap("kept-shell")
+            compose.waitFor("day-page-title", "A walk by the river")
+            compose.waitFor("day-page-line", "You took the dog out with Sam by the river.")
+            compose.waitFor("day-page-tomorrow", "Tomorrow: ring Jo about the music")
+            compose.waitFor("day-page-places")
+            // The same page from Your days.
             compose.menu("places-days")
             compose.waitFor("days-count", "1 DAY")
-            compose.waitFor("strand:${Keep.dayAddress(today)}")
+            compose.tap("strand:${Keep.dayAddress(today)}")
+            compose.waitFor("day-page-title", "A walk by the river")
         }
     }
 
@@ -129,7 +138,7 @@ class SundialDeviceTest {
             compose.waitFor("keep-card", timeoutMs = 20_000)
             compose.waitFor("keep-card-yesterday", "You spoke yesterday")
             compose.tap("day-yes")
-            compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
+            compose.waitFor("kept-shell", "A walk by the river", timeoutMs = 20_000)
             val clock = com.phenomemental.pocketbeach.bsp.parseJson(app.storage.read(Days.NOW)!!)
             // At yesterday's address, not today's.
             assertTrue(Keep.dayText(clock, yesterday)!!.startsWith("A walk by the river"))
@@ -249,6 +258,8 @@ class SundialDeviceTest {
     // ── Sundial 0.10.1, from his Pixel 9 Pro XL on 3 November, with his test message exactly as he sent it ──
 
     private val idChecks = "I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial."
+    private val whitehead = "ok, so you'll never believe it, have you heard of Alfred North Whitehead?"
+    private val justTalk = "I just want to talk"
     private val reflection = "You've done some of the id checks today, furthered the membership form planning, and responded to a fraud report, and interacted with David."
     private val question = "What will evaluating sundial ask of you?"
 
@@ -273,6 +284,9 @@ class SundialDeviceTest {
             Thread.sleep(1500)
             assertTrue("her reply is never taken out of view", shows("say", "You've done some of the id checks today") && shows("say", question))
             assertTrue("no help line beneath an ordinary day", none("help-line"))
+            // Fix 9: every step timed, in the workings.
+            compose.waitFor("step", "his cook walked (TALK)")
+            compose.waitFor("step", "her first words on screen, from his message")
             assertTrue(none("unfinished"))
             val turn = mind.talkMessages.last()
             assertFalse("cook 1.1.8.5 isn't handed her: $turn", turn.contains("in danger") || turn.contains("where help is"))
@@ -281,6 +295,10 @@ class SundialDeviceTest {
             compose.waitFor("help-line", "116 123", timeoutMs = 20_000)
             assertTrue(mind.talkMessages.last().contains("The app: his words say he may be in danger."))
             assertEquals("beneath that reply only", 1, compose.onAllNodes(hasTestTag("help-line"), useUnmergedTree = true).fetchSemanticsNodes().size)
+            // Fix 8: words with no day: no places, and her one line says so.
+            say(justTalk)
+            compose.waitUntil(20_000) { mind.talkMessages.size >= 3 && app.asking.settled }
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
         }
         // The help line lives in Your places and About.
         ActivityScenario.launch(MainActivity::class.java).use {
@@ -289,22 +307,30 @@ class SundialDeviceTest {
         }
     }
 
-    /** Fix 4: on E4B, part one came back empty: she is asked once more; both calls are in the workings, exactly as she returned them. */
+    private fun reflect(r: String, q: String, places: String = "what happened; what he made of it") =
+        "reflect" to mapOf(HerReply.PLACES to places, "THE REFLECTION" to r, "THE QUESTION" to q)
+
+    /** Fix 4 and 7: on E4B she chose REFLECT, part one empty: she is asked once more; both calls, her shape and her places are in the workings. */
     @Test
     fun onE4BAnEmptyPartOneIsAskedForOnceMore() {
         Fresh.hatched()
+        hisHand()
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
         app.showDetails = true
-        mind.partsScript += mapOf("THE REFLECTION" to "", "THE QUESTION" to question)
-        mind.partsScript += mapOf("THE REFLECTION" to reflection, "THE QUESTION" to question)
+        mind.shapedScript += reflect("", question)
+        mind.shapedScript += reflect(reflection, question)
         ActivityScenario.launch(MainActivity::class.java).use {
             say(idChecks)
             compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
             assertTrue(shows("say", question))
-            assertEquals(2, mind.partsAsked.size)
-            assertTrue(mind.partsAsked[1].contains(HerReply.AGAIN))
-            compose.waitFor("parts-tried", "THE REFLECTION “”; THE QUESTION “$question”")
-            compose.waitFor("parts-tried", "asked once more for part one: THE REFLECTION “$reflection”")
+            assertEquals(2, mind.shapedAsked.size)
+            assertEquals(listOf("REFLECT", "ANSWER"), mind.shapesOffered.take(2))
+            assertTrue(mind.shapedAsked[1].contains(HerReply.AGAIN))
+            compose.waitFor("shape", "She chose REFLECT.")
+            compose.waitFor("parts-tried", "REFLECT: THE PLACES TOUCHED “what happened; what he made of it”; THE REFLECTION “”")
+            compose.waitFor("parts-tried", "asked once more for part one: REFLECT: THE PLACES TOUCHED")
+            compose.waitFor("placed", "She named what happened, what you made of it.")
+            compose.waitFor("step", "her first words on screen, from his message")
             assertEquals("$reflection\n$question", mind.keptParts.single().second)
         }
     }
@@ -313,14 +339,35 @@ class SundialDeviceTest {
     @Test
     fun onE4BAReplyStillMissingPartOneIsNeverShownAsWhole() {
         Fresh.hatched()
+        hisHand()
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
-        repeat(2) { mind.partsScript += mapOf("THE REFLECTION" to "", "THE QUESTION" to question) }
+        repeat(2) { mind.shapedScript += reflect("", question) }
         mind.talkScript += "$reflection $question"
         ActivityScenario.launch(MainActivity::class.java).use {
             say(idChecks)
             compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
-            assertEquals(2, mind.partsAsked.size)
-            assertTrue("nothing kept from the parts calls", mind.keptParts.isEmpty())
+            assertEquals(2, mind.shapedAsked.size)
+            assertTrue("nothing kept from the shaped calls", mind.keptParts.isEmpty())
+        }
+    }
+
+    /** Fix 7 and 8: his question gets ANSWER, shown plain and named in the workings; no day, so no Sort as my day, and the no-day line is hers. */
+    @Test
+    fun onE4BHisQuestionIsAnsweredNotMirrored() {
+        Fresh.hatched()
+        hisHand()
+        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+        app.showDetails = true
+        val answer = "Yes, the philosopher of process: he held that the world is made of events rather than things. What brought him to mind?"
+        mind.shapedScript += "answer" to mapOf("THE ANSWER" to answer)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(whitehead)
+            compose.waitFor("say", "the philosopher of process", timeoutMs = 20_000)
+            compose.waitFor("shape", "She chose ANSWER.")
+            assertTrue("no part two in italic, no mirror", !shows("say", "You've heard of"))
+            assertTrue(mind.shapedAsked.single().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            compose.waitUntil(10_000) { app.asking.settled }
+            assertTrue("no Sort as my day", none("sort-as-day"))
         }
     }
 

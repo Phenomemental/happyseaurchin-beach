@@ -37,6 +37,8 @@ sealed interface Screen {
     data object Hand : Screen
     /** Sundial 0.10: Your recipes, his cook and kernel. */
     data object Recipes : Screen
+    /** Sundial 0.10.1: a kept day as its page (its title, lines, Tomorrow and its places line): from its shell, and from Your days. */
+    data class Day(val address: String) : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -65,6 +67,7 @@ class Nav(initial: List<Screen>) {
             Screen.Room -> "room"
             Screen.Hand -> "hand"
             Screen.Recipes -> "recipes"
+            is Screen.Day -> listOf("day", s.address).joinToString(SEP)
         }
 
         private fun decode(text: String): Screen? {
@@ -83,6 +86,7 @@ class Nav(initial: List<Screen>) {
                 "room" -> Screen.Room
                 "hand" -> Screen.Hand
                 "recipes" -> Screen.Recipes
+                "day" -> Screen.Day(p[1])
                 else -> null
             }
         }
@@ -141,6 +145,7 @@ fun PocketScreens(app: PocketApp) {
             Screen.Bench -> BenchScreen(model, nav)
             Screen.Settings -> SettingsScreen(model, nav)
             Screen.Days -> DaysScreen(model, nav)
+            is Screen.Day -> DayScreen(model, nav, s.address)
             Screen.Room -> RoomScreen(model, nav)
             Screen.Hand -> HandScreen(model, nav)
             Screen.Recipes -> RecipesScreen(model, nav)

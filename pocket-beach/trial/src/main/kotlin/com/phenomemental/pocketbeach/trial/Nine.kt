@@ -92,6 +92,7 @@ internal fun walkNote(w: Cook.Walk): String = buildString {
         is Cook.Card.Day -> "his day: " + card.landing.describe() + card.landing.lines.joinToString("") { l ->
             "\n  - ${if (l.ticked) "[x]" else "[ ]"} ${com.phenomemental.pocketbeach.bsp.Days.name(l.where)}: “${l.words}”"
         }
+        is Cook.Card.Whisper -> "a whisper to his stash, for his tap"
     })
 }
 

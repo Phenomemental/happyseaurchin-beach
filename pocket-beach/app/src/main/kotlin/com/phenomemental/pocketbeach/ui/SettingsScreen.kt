@@ -71,7 +71,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         // The models a job can be set to: those on this phone.
         val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelStore.State.Ready }
         BiggerModel(app, e4b)
-        for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job)) { app.set(job, it) }
+        for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job), follows = if (app.followsTalk(job)) app.settings(Job.TALK).model else null) { app.set(job, it) }
         SafetyWords(model, nav)
         AskLog(model)
         Rule()
@@ -269,13 +269,15 @@ private fun AskLog(model: Model) {
 }
 
 @Composable
-private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: String?, set: (JobSettings) -> Unit) {
+private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: String?, follows: String? = null, set: (JobSettings) -> Unit) {
     val ink = LocalInk.current
     val tag = "job-${job.name.lowercase()}"
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
         Text(job.title, style = Type.heading, color = ink.ink)
         Text(job.about, style = Type.small, color = ink.soft)
+        // Sundial 0.10.1: a job never set apart runs on her talk's model, with its own drawing, so no second model loads.
+        follows?.let { Text("Runs on her talk's model, $it, with its own settings below, so no second model loads. Set a model here to set it apart.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("$tag-follows")) }
         val choices = (models + s.model).distinct().sortedBy { JobSettings.MODELS.indexOf(it) }
         Setting(
             "Model", s.model, tag = "$tag-model",
