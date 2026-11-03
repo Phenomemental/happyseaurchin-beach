@@ -63,6 +63,14 @@ new risk (section 9); it is still the one to watch.
   and its post waits for his shell. That is the room rule (918). The tests
   of a post the beach couldn't receive, and of the hello world by hand, now
   hatch first and post to his room.
+- **0.9.1's upgrade tests** offered his 5.6 against 0.9's cook. Over
+  0.9.1, 5.6 hasn't changed, so nothing is offered for it. They now bring
+  up a 0.9.1 pocket with his 5.6, his own TALK line and a line of his old
+  cook 6 he rewrote:
+  - cook 6 becomes Sundial's;
+  - his old one is kept as `retired-cook-6`, the changed line named;
+  - his TALK line is kept and the shipped one offered once;
+  - Use the new one takes it, three deep.
 - **The test pocket marks today as greeted** (`Fresh.clear`). The dial
   asks her its question once a day as it opens. Every test's first words
   are its own, and the greeting has its own test.
