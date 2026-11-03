@@ -148,8 +148,11 @@ fun AskScreen(model: Model, nav: Nav) {
         input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(asking, hatching.takesTheBox, keep = if (hatching.hatched != null) model else null) }),
         scroll = scroll,
     ) {
-        // 0.8.1: a shell 0.8 adopted, corrected once, said in the thread.
-        hatching.corrected?.let { Done(it, tag = "corrected", detail = hatching.broughtUp.takeIf { details && it.isNotEmpty() }?.joinToString("\n")) }
+        // Sundial 0.10.1: the bring-up says one plain line, gone on a tap or a message; the full account is under Show the workings.
+        hatching.notice?.let { line ->
+            Text(line, style = Type.small, color = ink.soft, modifier = Modifier.fillMaxWidth().clickable { hatching.dismissNotice() }.testTag("brought-up"))
+        }
+        if (details) hatching.corrected?.let { Done(it, tag = "corrected", detail = hatching.broughtUp.takeIf { it.isNotEmpty() }?.joinToString("\n")) }
         // 0.9.1: a place of his cook he changed, its new sentence shown beside his once.
         hatching.offers.forEach { y -> Offer(model, y) }
         // 0.8: before the hatch, the opening; the hatch is how a new person comes in, so her own shell is no longer offered.
@@ -189,19 +192,30 @@ fun AskScreen(model: Model, nav: Nav) {
         if (hatching.hatched != null) TodayDial(model, nav)
 
         ModelPart(model, modelState)
+        // Sundial 0.10.1: under Show the workings, when she talks on the smaller model, said plainly, with the way to the larger.
+        if (details && ready) SmallerModel(model)
 
         // The thread: each thing he said, her reply, and what waits on his answer beneath it.
-        asking.history.forEach { e -> Turn(model, e, latest = e === asking.history.lastOrNull(), details = details) }
+        asking.history.forEach { e -> Turn(model, nav, e, latest = e === asking.history.lastOrNull(), details = details) }
         if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
-        // Sundial's safety line, at the foot always (sundial.html:2488).
-        Text(
-            (Words.sundialBlock(model.app)?.let { com.phenomemental.pocketbeach.bsp.jsGet(com.phenomemental.pocketbeach.bsp.jsGet(it, "7"), "1") } as? com.phenomemental.pocketbeach.bsp.JsStr)?.value
-                ?: "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).",
-            style = Type.small.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic), color = ink.soft,
-            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag("safe-line"),
-        )
+        // Sundial 0.10.1: the help line is beneath a reply only when his words show danger (Turn); else it is in About and Your places.
     }
 }
+
+/** Sundial's help line (words:sundial 7.1, sundial.html:2488), centred. */
+@Composable
+fun HelpLine(model: Model, tag: String = "help-line") {
+    val ink = LocalInk.current
+    Text(
+        helpLine(model), style = Type.small.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic), color = ink.soft,
+        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag(tag),
+    )
+}
+
+/** The help line's words: words:sundial 7.1, else Sundial's own. */
+fun helpLine(model: Model): String =
+    (Words.sundialBlock(model.app)?.let { com.phenomemental.pocketbeach.bsp.jsGet(com.phenomemental.pocketbeach.bsp.jsGet(it, "7"), "1") } as? com.phenomemental.pocketbeach.bsp.JsStr)?.value
+        ?: "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland)."
 
 /**
  * 0.8.1: the input bar at the foot, as a chat app lays it out: a text box
@@ -355,13 +369,14 @@ private fun Three(three: Hatch.Three) {
 
 /** 0.6.4: he asked to keep something and named no block of his: where it goes, his to say. The model doesn't choose. */
 @Composable
-private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where) {
+private fun WhereGoes(asking: Asking, e: Asking.Exchange, w: Asking.Stage.Where, hatched: Boolean) {
     val ink = LocalInk.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().testTag("where")) {
         Text("Where shall this go?", style = Type.body, color = ink.ink)
         Text(Words.quoted(w.words, 300), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("where-words"))
         for (b in w.blocks.take(9)) Action("In ${if (b.startsWith("stash:")) "your stash" else b}", { asking.putIn(b, e) }, Modifier.fillMaxWidth(), tag = "where:$b")
-        Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
+        // Sundial 0.10.1 (item 11): once he has hatched, Keep today is the one way his words become his day.
+        if (!hatched) Action("Sort as my day", { asking.whereDay(e) }, Modifier.fillMaxWidth(), tag = "where-day")
         Action("Not now", { asking.notNowWhere(e) }, Modifier.fillMaxWidth(), tag = "where-not-now")
         Text(
             if (w.blocks.isEmpty()) "You have no blocks of your own yet. To make one, say \u201cmake a block called \u2026\u201d."
@@ -384,7 +399,7 @@ private fun dayWrites(names: List<String>): String {
 
 /** One exchange of the thread: his words, her reply, what waits on his answer beneath it, and how it ended. */
 @Composable
-private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boolean) {
+private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, details: Boolean) {
     val ink = LocalInk.current
     val asking = model.app.asking
     val thinking = latest && asking.stage is Asking.Stage.Thinking
@@ -395,6 +410,10 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             // Her words as she writes them.
             thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
         }
+        // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
+        e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
+        // Sundial 0.10.1: the help line, centred beneath her reply, only when his words show danger (the app's check, Talking.unsafe).
+        if (e.safety != null && !thinking) HelpLine(model)
         if (thinking) {
             val since = (asking.stage as Asking.Stage.Thinking).since
             var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -438,7 +457,7 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
                     TextLink("Back to the proposal", { asking.back(e) }, tag = "back-to-proposal")
                 }
             }
-            is Asking.Stage.Where -> WhereGoes(asking, e, w)
+            is Asking.Stage.Where -> WhereGoes(asking, e, w, hatched = model.app.hatching.hatched != null)
             // Sundial 0.10: his day as Sundial's keep card, beneath her reply ("Sort as my day", "Put this in my now").
             is Asking.Stage.Told -> KeepCardView(model, w.card, writing = false, onPlace = { asking.placeTold(it, e) }, onTick = { asking.tickTold(it, e) }, onKeep = { asking.yesToTold(e) }, onNotNow = { asking.notNowToTold(e) })
             is Asking.Stage.ToldWriting -> KeepCardView(model, w.told.card, writing = true, onPlace = {}, onTick = {}, onKeep = {}, onNotNow = {})
@@ -483,17 +502,29 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             else -> {}
         }
         e.over?.let { over -> Ended(model, over, details) }
+        // Sundial 0.10.1: his day kept from here shows as its shell; the record is never pasted into the conversation.
+        e.kept?.let { KeptShellView(model, nav, it) }
         // Offered under her reply while it's the last thing said: keeping his words in the block they name, and sorting them as his day.
         if (latest && !thinking) {
             e.keepIn?.let { block -> TextLink("Keep this in $block?", { asking.keep(e) }, tag = "keep-in") }
+            // Sundial 0.10.1 (item 11): never once he has hatched (Asking sets it only before): Keep today is the one way.
             if (e.sortable) TextLink("Sort as my day", { asking.sortAsDay(e) }, tag = "sort-as-day")
         }
         // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
         // 0.8.1: when he asked and nothing was set out, why shows always, not only with Details on.
-        if (e.note.isNotEmpty() && (details || e.outcome != null || e.over?.shown == null || (e.asked && e.over?.carried == null && e.over?.posted == null))) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+        if (e.note.isNotEmpty() && (details || (e.unfinished == null && e.kept == null)) && (details || e.outcome != null || e.over?.shown == null || (e.asked && e.over?.carried == null && e.over?.posted == null))) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
+            // Sundial 0.10.1: her reply in parts, each tool call exactly as she returned it; the shape she chose; her places; every step timed.
+            e.shape?.let { Text("She chose $it.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("shape")) }
+            e.partsTried.forEachIndexed { i, p ->
+                Text("Her tool call${if (i > 0) ", asked once more for part one" else ""}: $p", style = Type.small, color = ink.soft, modifier = Modifier.testTag("parts-tried"))
+            }
+            e.placed?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("placed")) }
+            if (e.steps.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.testTag("steps")) {
+                for (st in e.steps) Text(st, style = Type.call, color = ink.soft, modifier = Modifier.testTag("step"))
+            }
             // Rockpool: the film strip, his cook's walk step by step.
             if (e.trace.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.testTag("trace")) {
                 for (t in e.trace) Text(t.toString(), style = Type.call, color = ink.soft)

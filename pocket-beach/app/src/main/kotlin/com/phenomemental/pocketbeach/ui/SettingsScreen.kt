@@ -53,6 +53,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         Workings(model)
         Rule()
         Text("Her voice", style = Type.heading, color = ink.ink, modifier = Modifier.testTag("her-voice"))
+        SmallerModel(model)
         Text(
             "She is Gemma, running on this phone. Each of the companion's jobs has Edge's settings of its own. Jobs set to the same model, processor and context share one engine; " +
                 "a job set apart loads an engine of its own beside it, and both stay in the phone's memory while Ask is open. " +
@@ -70,7 +71,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         // The models a job can be set to: those on this phone.
         val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelStore.State.Ready }
         BiggerModel(app, e4b)
-        for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job)) { app.set(job, it) }
+        for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job), follows = if (app.followsTalk(job)) app.settings(Job.TALK).model else null) { app.set(job, it) }
         SafetyWords(model, nav)
         AskLog(model)
         Rule()
@@ -268,13 +269,15 @@ private fun AskLog(model: Model) {
 }
 
 @Composable
-private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: String?, set: (JobSettings) -> Unit) {
+private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: String?, follows: String? = null, set: (JobSettings) -> Unit) {
     val ink = LocalInk.current
     val tag = "job-${job.name.lowercase()}"
     Column(Modifier.fillMaxWidth().testTag(tag), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
         Text(job.title, style = Type.heading, color = ink.ink)
         Text(job.about, style = Type.small, color = ink.soft)
+        // Sundial 0.10.1: a job never set apart runs on her talk's model, with its own drawing, so no second model loads.
+        follows?.let { Text("Runs on her talk's model, $it, with its own settings below, so no second model loads. Set a model here to set it apart.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("$tag-follows")) }
         val choices = (models + s.model).distinct().sortedBy { JobSettings.MODELS.indexOf(it) }
         Setting(
             "Model", s.model, tag = "$tag-model",
@@ -332,22 +335,92 @@ private fun JobPart(job: Job, s: JobSettings, models: List<String>, cpuWhy: Stri
     }
 }
 
-/** Gemma 4 E4B: offered when the phone has the memory, fetched on a tap, checked byte for byte, then a choice for each job. */
+/** Fetch Gemma 4 E4B, asking first to show its progress as a notification where Android asks for that. */
 @Composable
-private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: ModelStore.State?) {
-    val ink = LocalInk.current
+fun rememberE4bFetch(): () -> Unit {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val size = ModelStore.gb(ModelStore.E4B.size)
-    fun act(block: () -> Unit) { scope.launch(Dispatchers.IO) { block() } }
     val asked = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { FetchService.start(context, ModelStore.E4B) }
-    fun fetch() {
+    return {
         if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             asked.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             FetchService.start(context, ModelStore.E4B)
         }
     }
+}
+
+/** Gemma 4 E4B's state on this phone, looked at every few seconds (each second while it comes). */
+@Composable
+fun e4bState(app: com.phenomemental.pocketbeach.PocketApp): ModelStore.State? {
+    val st by produceState<ModelStore.State?>(null) {
+        while (true) {
+            val now = withContext(Dispatchers.IO) { runCatching { app.e4b.state() }.getOrNull() }
+            value = now
+            delay(if (now is ModelStore.State.Fetching) 1000 else 3000)
+        }
+    }
+    return st
+}
+
+/**
+ * Sundial 0.10.1: when she talks on the smaller model, E2B, said plainly,
+ * and why, with the way to the larger one right there: get it, or use it
+ * for her talk when it is on the phone. Nothing when she talks on E4B.
+ */
+@Composable
+fun SmallerModel(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    val talk = app.settings(Job.TALK)
+    if (talk.model != JobSettings.GEMMA_E2B) return
+    val state = e4bState(app)
+    val fetch = rememberE4bFetch()
+    val scope = rememberCoroutineScope()
+    val size = ModelStore.gb(ModelStore.E4B.size)
+    Column(Modifier.fillMaxWidth().testTag("smaller-model"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        when (state) {
+            null -> {}
+            ModelStore.State.Ready -> {
+                Text("She's using the smaller model, as her talk is set below. The larger one is on your phone.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"))
+                Action("Use the larger model for her talk", { app.set(Job.TALK, talk.copy(model = JobSettings.GEMMA_E4B)) }, Modifier.fillMaxWidth(), tag = "smaller-model-use")
+            }
+            is ModelStore.State.TooLittleMemory -> Text(
+                "She's using the smaller model because this phone hasn't the memory for the larger one: it has ${ModelStore.gb(state.has)}, and the larger one needs a phone with 12 GB.",
+                style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
+            )
+            is ModelStore.State.Fetching -> Text(
+                "She's using the smaller model because the larger one isn't on your phone yet. It's coming: ${ModelStore.gb(state.done)} of $size.",
+                style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
+            )
+            ModelStore.State.Checking -> Text(
+                "She's using the smaller model because the larger one isn't on your phone yet. It has come, and is being checked.",
+                style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
+            )
+            is ModelStore.State.TooLittleRoom -> Text(
+                "She's using the smaller model because the larger one isn't on your phone yet. It needs ${ModelStore.gb(state.needs)} of room, and the phone has ${ModelStore.gb(state.free)} free.",
+                style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
+            )
+            else -> {
+                Text("She's using the smaller model because the larger one isn't on your phone yet.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"))
+                Action(
+                    if (state is ModelStore.State.Paused) "Carry on getting the larger model" else "Get the larger model, $size over Wi-Fi",
+                    { if (state is ModelStore.State.Failed) scope.launch(Dispatchers.IO) { app.e4b.dismissFailure() }; fetch() },
+                    Modifier.fillMaxWidth(), tag = "smaller-model-get",
+                )
+                Text("Once it's on your phone, set her talk to it here.", style = Type.small, color = ink.soft)
+            }
+        }
+    }
+}
+
+/** Gemma 4 E4B: offered when the phone has the memory, fetched on a tap, checked byte for byte, then a choice for each job. */
+@Composable
+private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: ModelStore.State?) {
+    val ink = LocalInk.current
+    val scope = rememberCoroutineScope()
+    val size = ModelStore.gb(ModelStore.E4B.size)
+    fun act(block: () -> Unit) { scope.launch(Dispatchers.IO) { block() } }
+    val fetch = rememberE4bFetch()
     Column(Modifier.fillMaxWidth().testTag("e4b"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
         Text("Gemma 4 E4B", style = Type.heading, color = ink.ink)

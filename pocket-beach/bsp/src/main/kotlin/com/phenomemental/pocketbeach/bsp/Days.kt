@@ -109,8 +109,13 @@ object Days {
         cards: List<Intent>, rungs: List<Rung>, now: ZonedDateTime, his: String? = null, grain: Keep.Grain = Keep.Grain.MINUTE, yesterday: Boolean = false,
     ): DayCard {
         val lines = mutableListOf<Line>()
-        for (c in cards) lines += Line(c.words, c.date?.let { Where.Booking(it) } ?: Where.Pile(c.pile ?: 3))
-        for (r in rungs) lines += Line(r.words, Where.Rung(r.level))
+        // Sundial 0.10.1: each line once, its words without a quote mark left open (his Pixel, 3 November: "I'm also going to need to do
+        // ID checks this week." was on his hand and on this week's rung both, once with a stray opening quote). A piece he means to do,
+        // sized for this week, is on his hand; it isn't a rung as well.
+        val seen = HashSet<String>()
+        fun once(words: String): String? = Telling.unquoted(words).takeIf { it.isNotBlank() && seen.add(Telling.plain(it)) }
+        for (c in cards) once(c.words)?.let { lines += Line(it, c.date?.let { d -> Where.Booking(d) } ?: Where.Pile(c.pile ?: 3)) }
+        for (r in rungs) once(r.words)?.let { lines += Line(it, Where.Rung(r.level)) }
         return DayCard(handle, day, sheet, Mark.inOrder(places), moments, lines, now.toInstant().toEpochMilli(), grain, his, yesterday)
     }
 

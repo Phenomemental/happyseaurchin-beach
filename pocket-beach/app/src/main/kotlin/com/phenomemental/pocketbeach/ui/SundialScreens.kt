@@ -24,6 +24,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.style.TextAlign
+import com.phenomemental.pocketbeach.bsp.Telling
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -125,6 +127,9 @@ fun PlacesSheet(model: Model, nav: Nav, close: () -> Unit) {
                 if (asking.history.isNotEmpty()) TextLink("Save this conversation", { close(); nav.toPlace(Screen.Ask); model.saveConversation++ }, tag = "save-conversation")
                 TextLink(if (app.showDetails) "Show the workings: on" else "Show the workings: off", { app.showDetails = !app.showDetails }, tag = "details")
             }
+            // Sundial 0.10.1: the help line lives here and in About; beneath her reply only when his words show danger.
+            Rule()
+            HelpLine(model, tag = "places-help-line")
         }
     }
 }
@@ -163,7 +168,8 @@ fun DaysScreen(model: Model, nav: Nav) {
         }
         if (days.isEmpty()) Text(Words.sundial(model.app, "4.3", "No days kept yet. Keep today, and the first comes to rest here."), style = Type.aside, color = ink.soft)
         if (!resting) {
-            for (d in days.asReversed()) StrandRow(d, open == d.address) { open = if (open == d.address) null else d.address }
+            // Sundial 0.10.1: a tap opens the day's page, the same page its shell opens.
+            for (d in days.asReversed()) StrandRow(d, false) { nav.go(Screen.Day(d.address)) }
         } else {
             Pools(model, days, picked) { picked = it }
         }
@@ -190,6 +196,52 @@ private fun StrandRow(d: Keep.KeptDay, open: Boolean, onClick: () -> Unit) {
                 if (d.places.isNotEmpty()) Text(Mark.placesWords(d.places).replaceFirstChar { it.uppercase() } + ".", style = Type.aside, color = ink.soft)
             }
         }
+    }
+}
+
+/**
+ * Sundial 0.10.1: a kept day as its page: its date, its shell, its title,
+ * its lines, Tomorrow, and the places line. The same page from its shell in
+ * the conversation and from Your days.
+ */
+@Composable
+fun DayScreen(model: Model, nav: Nav, address: String) {
+    val ink = LocalInk.current
+    val day by produceState<Keep.KeptDay?>(null, model.version, address) {
+        value = withContext(Dispatchers.IO) { runCatching { keptDays(model).firstOrNull { it.address == address } }.getOrNull() }
+    }
+    Page(onBack = { nav.back() }, top = { Text("Your day", style = Type.name, color = ink.ink) }) {
+        val d = day
+        if (d == null) {
+            Text("This day isn't kept.", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("day-page-none"))
+            return@Page
+        }
+        val read = Mark.read(d.text.orEmpty())
+        Column(Modifier.fillMaxWidth().testTag("day-page"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text((d.date?.format(DAY_SAID) ?: d.address).uppercase(), style = Type.label, color = ink.soft)
+            Coil(d.places, Modifier.size(96.dp))
+            Text(Telling.unquoted(read.title.ifBlank { d.title }), style = Type.title.copy(fontStyle = FontStyle.Italic), color = ink.ink, textAlign = TextAlign.Center, modifier = Modifier.testTag("day-page-title"))
+        }
+        for (l in read.lines) Text(Telling.unquoted(l), style = Type.body, color = ink.ink, modifier = Modifier.testTag("day-page-line"))
+        if (read.tomorrow.isNotBlank()) Text("Tomorrow: ${Telling.unquoted(read.tomorrow)}", style = Type.aside, color = ink.ink, modifier = Modifier.testTag("day-page-tomorrow"))
+        Text(
+            if (d.places.isEmpty()) Mark.OWN else Mark.placesWords(d.places).replaceFirstChar { it.uppercase() } + ".",
+            style = Type.aside, color = ink.soft, modifier = Modifier.testTag("day-page-places"),
+        )
+    }
+}
+
+/** Sundial 0.10.1: a day just kept, in the conversation: its small shell, its title beneath; a tap opens its page. Nothing of the record is pasted in. */
+@Composable
+fun KeptShellView(model: Model, nav: Nav, shell: Asking.KeptShell) {
+    val ink = LocalInk.current
+    Column(
+        Modifier.fillMaxWidth().clickable { nav.go(Screen.Day(shell.address)) }.padding(vertical = 6.dp).testTag("kept-shell")
+            .semantics(mergeDescendants = true) { contentDescription = "Your day, kept: ${shell.title}. Open it." },
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Coil(shell.places, Modifier.size(48.dp))
+        Text(Telling.unquoted(shell.title), style = Type.body.copy(fontStyle = FontStyle.Italic), color = ink.ink, textAlign = TextAlign.Center, modifier = Modifier.testTag("kept-shell-title"))
     }
 }
 
@@ -407,7 +459,7 @@ fun KeepCardView(
                 Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
                     Checkbox(checked = l.ticked, onCheckedChange = { onTick(i) }, enabled = !writing, colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft), modifier = Modifier.testTag("day-tick:$i"))
                     Column(Modifier.weight(1f).padding(top = 10.dp, start = 4.dp)) {
-                        Text(l.words, style = Type.body, color = if (l.ticked) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
+                        Text(Telling.unquoted(l.words), style = Type.body, color = if (l.ticked) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
                         Text(Days.name(l.where), style = Type.small, color = ink.soft)
                     }
                 }

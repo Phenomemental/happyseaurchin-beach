@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 package com.phenomemental.pocketbeach.ui
 
 import android.Manifest
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -92,13 +95,16 @@ fun TodayDial(model: Model, nav: Nav) {
     val state = DialState(days, moments, place?.lat, place?.lon, ZoneId.systemDefault(), tick, asking.lastKept?.let { Keep.dayAddress(it) })
     var pooled by rememberSaveable { mutableStateOf(false) }
     var picked by rememberSaveable { mutableStateOf<Int?>(null) }
+    // Sundial 0.10.1: held, the whole dial comes into view, clear of the bar beneath, so no caption is under it.
+    val whole = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
+    LaunchedEffect(pooled) { if (pooled) runCatching { whole.bringIntoView() } }
 
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Dial(
             state, answering = asking.stage is Asking.Stage.Thinking || asking.keeping,
             onTap = { if (pooled) { pooled = false; picked = null } else nav.go(Screen.Days) },
             onHold = { pooled = !pooled; picked = null },
-            modifier = Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f),
+            modifier = Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f).bringIntoViewRequester(whole),
             pooled = pooled, picked = picked, onPool = { picked = if (picked == it) null else it },
         )
     }
@@ -145,12 +151,19 @@ fun TodayDial(model: Model, nav: Nav) {
         Text(g?.question ?: ownQuestion(model, tick), style = if (g?.question != null) Type.body.copy(fontSize = Type.heading.fontSize) else Type.heading.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag(if (g?.question != null) "greet-question" else "own-question"))
     }
 
+    // Sundial 0.10.1 (item 11): the one keep card, from his tap of Keep today or his words asking for it, brought into view as it is set out.
+    val cardInView = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
+    LaunchedEffect(card?.walk) { if (card != null) { delay(300); runCatching { cardInView.bringIntoView() } } }
     card?.let { k ->
-        KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
-        k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
+        Column(Modifier.fillMaxWidth().bringIntoViewRequester(cardInView), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
+            k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
+        }
     }
     if (asking.keeping && card == null) Text("Setting out your day…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keeping"))
-    asking.keepNote?.let { Text(it, style = if (it == "Kept.") Type.title.copy(fontSize = Type.heading.fontSize) else Type.small, color = if (it == "Kept.") ink.ink else ink.crimson, modifier = Modifier.testTag("keep-note")) }
+    // Sundial 0.10.1: a day kept shows as its shell, its title beneath; only what went wrong is said in words.
+    asking.keptShell?.takeIf { card == null && !asking.keeping }?.let { KeptShellView(model, nav, it) }
+    asking.keepNote?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("keep-note")) }
 }
 
 /** The Keep today button, beside Send: Sundial's small heart and its words (sundial.html:2479-2482). */
@@ -168,26 +181,24 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
     }
 }
 
-/** Her reply in Sundial's shape: the reflection upright, the question in italic beneath (sundial.html:2294-2301). */
+/**
+ * Her reply in Sundial's shape: the reflection upright, the question in
+ * italic beneath (sundial.html:2294-2301). Sundial 0.10.1: parts only when
+ * every one holds words; else her words as she said them, the question read
+ * from them only when it can be, else plain (Talking.splitQuestion).
+ */
 fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
-    val (reflection, question) = if (parts != null) (parts["THE REFLECTION"].orEmpty() to parts["THE QUESTION"].orEmpty()) else splitQuestion(said)
+    // Sundial 0.10.1 (item 10): checked once more as it is shown, whatever way it came: no app line, no keep status, no quote marks wrapping it.
+    val hers = { t: String -> com.phenomemental.pocketbeach.bsp.Talking.hers(t) }
+    // Sundial 0.10.1: ANSWER, her answer as she gave it, plain.
+    parts?.get("THE ANSWER")?.let(hers)?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
+    val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.mapValues { hers(it.value) }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
+    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(hers(said))
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {
         if (reflection.isNotBlank()) append("\n")
         withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(question.trim()) }
     }
-}
-
-/**
- * On E2B (or when her parts weren't whole), her free reply read as Sundial
- * sets it out: its last sentence ending in a question mark, at the end, is
- * the question (1.111178719916); the rest the reflection.
- */
-fun splitQuestion(said: String): Pair<String, String> {
-    val t = said.trim()
-    if (!t.endsWith("?")) return t to ""
-    val m = Regex("""(?s)^(.*[.!?…]["”’)]?)\s+([^.!?…]*\?)$""").find(t) ?: return "" to t
-    return m.groupValues[1].trim() to m.groupValues[2].trim()
 }
 
 /** Where he stands, for the sun: asked once with his permission; declined or unknown, a town chosen in Settings. */

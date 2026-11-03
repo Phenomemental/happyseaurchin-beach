@@ -159,6 +159,35 @@ object Telling {
     /** Words as compared for "copied exactly": the same words in the same order, whatever the capitals and the punctuation. */
     fun plain(s: String): String = s.lowercase().replace(Regex("[‘’`]"), "'").replace(Regex("[^\\p{L}\\p{N}']+"), " ").trim()
 
+    /**
+     * Sundial 0.10.1: [s] without a quote mark left open at either end: a
+     * piece cut from his words keeps its quotes only when both ends are in it.
+     */
+    fun unquoted(s: String): String {
+        var t = s.trim()
+        val pairs = mapOf('“' to '”', '"' to '"', '«' to '»', '‘' to '’')
+        // An opening mark whose closing mark isn't after it.
+        while (t.isNotEmpty()) {
+            val c = t.first()
+            val close = pairs[c] ?: break
+            val rest = t.drop(1)
+            val closed = if (close == c) rest.count { it == c } % 2 == 1 else rest.contains(close)
+            if (closed) break
+            t = rest.trimStart()
+        }
+        // A closing mark whose opening mark isn't before it (never ’, an apostrophe as often as not).
+        val opens = mapOf('”' to '“', '"' to '"', '»' to '«')
+        while (t.isNotEmpty()) {
+            val c = t.last()
+            val open = opens[c] ?: break
+            val rest = t.dropLast(1)
+            val opened = if (open == c) rest.count { it == c } % 2 == 1 else rest.contains(open)
+            if (opened) break
+            t = rest.trimEnd()
+        }
+        return t
+    }
+
     /** Whether [part] is found, word for word, in [whole]. */
     fun foundIn(part: String, whole: String): Boolean {
         val p = plain(part)

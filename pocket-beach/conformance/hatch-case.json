@@ -704,7 +704,7 @@
               "2": "POST. Run cook 3.",
               "3": "MAKE. Run cook 4.",
               "4": {
-                "1": "Hand her this line: “The app: the app sets out his day beneath your reply, on Sundial's keep card, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
+                "1": "Hand her this line: “The app: the app sets out his day on Sundial's keep card, as Keep today does, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's set out for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
                 "2": "Run cook 6.1.",
                 "_": "TELL MY DAY."
               },
@@ -726,28 +726,25 @@
                 "_": "CHANGE."
               },
               "8": {
-                "1": "Hand her this line: “The app: nothing is being kept or set out from this. Your reply always has two parts, and always ends with a question mark. Part one: give back what he said in this message, in his own words, beginning with You, adding nothing. Part two: one question about that same thing, from a place his words haven't touched, so he sees the day slightly differently. The places are: what happened, what he felt, what he made of it, what matters, a choice, what's ahead. If his words are mostly what happened, ask from another place; if mostly what he made of it, ask about what happened; and so on. The question stays on his day, something he can answer from the day itself; use what you hold about his day to shape it, but never read it out to him. Never ask how he is, what he's like, or why. Never advise, interpret, praise, cheer or wish him well. For example, he says: Just back from the shop, kettle's on. You say: You're back from the shop and the kettle's on. Once the tea's made, what comes first? Or he says: Today's going to be a write-off. You say: You think today's going to be a write-off. What's actually on for today? When he asks you something, answer it in a sentence or two instead. Only when he asks you what he has in front of him, name back today's line and the cards on his hand and ask which first. If he seems to be struggling, ask gently whether he'd like to just sit with it a moment. Speak to him as you, never by his name.”",
+                "1": "Hand her this line: “The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something, and always ends with a question mark. Part one: give back what he said in this message, in his own words, beginning with You, adding nothing. Part two: one question about that same thing, from a place his words haven't touched, so he sees the day slightly differently. The places are: what happened, what he felt, what he made of it, what matters, a choice, what's ahead. If his words are mostly what happened, ask from another place; if mostly what he made of it, ask about what happened; and so on. The question stays on his day, something he can answer from the day itself; use what you hold about his day to shape it, but never read it out to him. Never ask how he is, what he's like, or why. Never advise, interpret, praise, cheer or wish him well. For example, he says: Just back from the shop, kettle's on. You say: You're back from the shop and the kettle's on. Once the tea's made, what comes first? Or he says: Today's going to be a write-off. You say: You think today's going to be a write-off. What's actually on for today? When he asks you something, answer it in a sentence or two instead. Only when he asks you what he has in front of him, name back today's line and the cards on his hand and ask which first. If he seems to be struggling, ask gently whether he'd like to just sit with it a moment. Speak to him as you, never by his name.”",
                 "2": "Carry THE MESSAGE as THE WORDS.",
-                "3": "PLACES. Run cook 6.2.",
-                "4": {
-                  "1": {
-                    "1": "Hand her THE UNTOUCHED with this line: “The app: the places above are the ones his words haven't touched; your question comes from one of them.”",
-                    "_": "Yes:"
+                "3": {
+                  "1": "Yes: walk on.",
+                  "2": {
+                    "1": "Hand her this line: “The app: his words hold no day yet; if you reflect, ask what's on today.”",
+                    "_": "No:"
                   },
-                  "2": "No: walk on.",
-                  "_": "Is there THE UNTOUCHED?"
-                },
-                "5": "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
-                "6": "She gives her reply as THE REFLECTION and THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
-                "7": {
-                  "1": {
-                    "1": "Set out the card “Sort as my day” beneath her reply, for his tap.",
-                    "2": "On his tap, run cook 6.1.",
-                    "_": "Yes:"
-                  },
-                  "2": "No: walk on.",
                   "_": "Does THE MESSAGE tell of his day: three sentences or more and forty words or more in all, or news of a card on his hand?"
                 },
+                "4": {
+                  "1": {
+                    "1": "Hand her this line: “The app: his words say he may be in danger. Your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                    "_": "Yes:"
+                  },
+                  "2": "No: walk on.",
+                  "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
+                },
+                "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "_": "TALK."
               },
               "_": "Which does THE MESSAGE ask for, by the words at cook 9? Take the first answer beneath whose words match, in order; else the last."
@@ -877,7 +874,7 @@
               "7": "Set out his day on the keep card, for his yes: THE SHEET as the day's line at today in his now, in Sundial's form, THE PLACES TOUCHED named last in plain words; each of THE MOMENTS at its minute; THE CARDS on his hand (the block ahead: and his handle), those booked at their day in his now; and THE RUNGS at their levels of his now.",
               "8": "On his yes, write it.",
               "9": "ACCOUNT. Account what landed, and where.",
-              "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: on his tap of Keep today, on Sort as my day beneath her reply, or when his words ask for it (cook 9.4). Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2."
+              "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: his tap of Keep today, or his words asking for it (cook 9.4), which do what that tap does. Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2."
             },
             "2": {
               "1": {
@@ -1597,7 +1594,7 @@
               "2": "POST. Run cook 3.",
               "3": "MAKE. Run cook 4.",
               "4": {
-                "1": "Hand her this line: “The app: the app sets out his day beneath your reply, on Sundial's keep card, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
+                "1": "Hand her this line: “The app: the app sets out his day on Sundial's keep card, as Keep today does, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's set out for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
                 "2": "Run cook 6.1.",
                 "_": "TELL MY DAY."
               },
@@ -1621,26 +1618,23 @@
               "8": {
                 "1": "Hand her this line: “The app: nothing is being kept or set out from this. Talk with him warmly, in a sentence or two, and ask one thing. Speak to him as you, never by his name.”",
                 "2": "Carry THE MESSAGE as THE WORDS.",
-                "3": "PLACES. Run cook 6.2.",
-                "4": {
-                  "1": {
-                    "1": "Hand her THE UNTOUCHED with this line: “The app: the places above are the ones his words haven't touched; your question comes from one of them.”",
-                    "_": "Yes:"
+                "3": {
+                  "1": "Yes: walk on.",
+                  "2": {
+                    "1": "Hand her this line: “The app: his words hold no day yet; if you reflect, ask what's on today.”",
+                    "_": "No:"
                   },
-                  "2": "No: walk on.",
-                  "_": "Is there THE UNTOUCHED?"
-                },
-                "5": "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
-                "6": "She gives her reply as THE REFLECTION and THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
-                "7": {
-                  "1": {
-                    "1": "Set out the card “Sort as my day” beneath her reply, for his tap.",
-                    "2": "On his tap, run cook 6.1.",
-                    "_": "Yes:"
-                  },
-                  "2": "No: walk on.",
                   "_": "Does THE MESSAGE tell of his day: three sentences or more and forty words or more in all, or news of a card on his hand?"
                 },
+                "4": {
+                  "1": {
+                    "1": "Hand her this line: “The app: his words say he may be in danger. Your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                    "_": "Yes:"
+                  },
+                  "2": "No: walk on.",
+                  "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
+                },
+                "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "_": "TALK."
               },
               "_": "Which does THE MESSAGE ask for, by the words at cook 9? Take the first answer beneath whose words match, in order; else the last."
@@ -1770,7 +1764,7 @@
               "7": "Set out his day on the keep card, for his yes: THE SHEET as the day's line at today in his now, in Sundial's form, THE PLACES TOUCHED named last in plain words; each of THE MOMENTS at its minute; THE CARDS on his hand (the block ahead: and his handle), those booked at their day in his now; and THE RUNGS at their levels of his now.",
               "8": "On his yes, write it.",
               "9": "ACCOUNT. Account what landed, and where.",
-              "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: on his tap of Keep today, on Sort as my day beneath her reply, or when his words ask for it (cook 9.4). Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2."
+              "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: his tap of Keep today, or his words asking for it (cook 9.4), which do what that tap does. Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2."
             },
             "2": {
               "1": {
@@ -1907,7 +1901,7 @@
         "agent_id": "pocket",
         "block": "cook:Phenomemental",
         "spindle": "1.181",
-        "content": "Hand her this line: “The app: nothing is being kept or set out from this. Your reply always has two parts, and always ends with a question mark. Part one: give back what he said in this message, in his own words, beginning with You, adding nothing. Part two: one question about that same thing, from a place his words haven't touched, so he sees the day slightly differently. The places are: what happened, what he felt, what he made of it, what matters, a choice, what's ahead. If his words are mostly what happened, ask from another place; if mostly what he made of it, ask about what happened; and so on. The question stays on his day, something he can answer from the day itself; use what you hold about his day to shape it, but never read it out to him. Never ask how he is, what he's like, or why. Never advise, interpret, praise, cheer or wish him well. For example, he says: Just back from the shop, kettle's on. You say: You're back from the shop and the kettle's on. Once the tea's made, what comes first? Or he says: Today's going to be a write-off. You say: You think today's going to be a write-off. What's actually on for today? When he asks you something, answer it in a sentence or two instead. Only when he asks you what he has in front of him, name back today's line and the cards on his hand and ask which first. If he seems to be struggling, ask gently whether he'd like to just sit with it a moment. Speak to him as you, never by his name.”"
+        "content": "Hand her this line: “The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something, and always ends with a question mark. Part one: give back what he said in this message, in his own words, beginning with You, adding nothing. Part two: one question about that same thing, from a place his words haven't touched, so he sees the day slightly differently. The places are: what happened, what he felt, what he made of it, what matters, a choice, what's ahead. If his words are mostly what happened, ask from another place; if mostly what he made of it, ask about what happened; and so on. The question stays on his day, something he can answer from the day itself; use what you hold about his day to shape it, but never read it out to him. Never ask how he is, what he's like, or why. Never advise, interpret, praise, cheer or wish him well. For example, he says: Just back from the shop, kettle's on. You say: You're back from the shop and the kettle's on. Once the tea's made, what comes first? Or he says: Today's going to be a write-off. You say: You think today's going to be a write-off. What's actually on for today? When he asks you something, answer it in a sentence or two instead. Only when he asks you what he has in front of him, name back today's line and the cards on his hand and ask which first. If he seems to be struggling, ask gently whether he'd like to just sit with it a moment. Speak to him as you, never by his name.”"
       },
       {
         "agent_id": "pocket",

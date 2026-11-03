@@ -57,6 +57,8 @@ fun AboutScreen(model: Model, nav: Nav) {
             // A part within a part: If you want more, beneath What it draws on; If you need help now, beneath What it is not.
             (part["2"] as? JsObj)?.let { AboutPart(it, "about-$k-2") }
         }
+        // Sundial 0.10.1: the help line lives here and in Your places; beneath her reply only when his words show danger.
+        HelpLine(model, tag = "about-help-line")
         val links = (jsGet(about, "9") as? JsObj)?.let { l -> (1..9).mapNotNull { textAt(l, "$it")?.split(" — ", limit = 2)?.takeIf { it.size == 2 } } }.orEmpty()
         val thanks = links.firstOrNull { it[1] == BEACH_URL }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.testTag("about-links")) {

@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.phenomemental.pocketbeach.bsp.DialMath
+import com.phenomemental.pocketbeach.bsp.DialLabels
 import com.phenomemental.pocketbeach.bsp.Keep
 import com.phenomemental.pocketbeach.bsp.Mark
 import com.phenomemental.pocketbeach.bsp.Sun
@@ -141,6 +142,12 @@ fun Dial(
     }
 
     val n = state.days.size
+    // Sundial 0.10.1: the captions on hold, each set clear of the heart's lines, the centre, the pools and the dial's edge; worked out once for these counts.
+    val captions = remember(state.counts) {
+        val paint = captionPaint(ink)
+        val lines = Mark.POOLS.map { DialMath.captionLines(it.phrase) }
+        DialLabels.place(DialMath.poolsAt(state.counts), lines, lines.map { ls -> ls.map { paint.measureText(it).toDouble() } })
+    }
     val described = if (n == 0) "A sundial: a heart drawn in ink, casting its shadow at this hour, no days kept yet"
         else "A sundial: a heart drawn in ink, casting its shadow at this hour, $n ${if (n == 1) "day" else "days"} kept along a spiral"
 
@@ -227,7 +234,7 @@ fun Dial(
                             drawOval(ink.crimson, topLeft = Offset(Heart.CENTRE_X - rx, Heart.CENTRE_Y - ry), size = Size(2 * rx, 2 * ry), alpha = cen.opacity.toFloat())
                         }
                     }
-                    if (pooled) drawPools(state, picked, ink) else {
+                    if (pooled) drawPools(state, picked, ink, captions) else {
                         drawMoments(state, ink)
                         drawSpiral(state, bloomed.value, ink)
                     }
@@ -309,22 +316,26 @@ private fun DrawScope.drawSpiral(state: DialState, bloom: Float, inks: Ink) {
 }
 
 /** Hold: where his days have come to rest, six pools round the centre in P6's order, each sized by its share (mark.js:428-457, 924-934). */
-private fun DrawScope.drawPools(state: DialState, picked: Int?, inks: Ink) {
+private fun DrawScope.drawPools(state: DialState, picked: Int?, inks: Ink, captions: List<DialLabels.Caption>) {
     val frame = inks.rule
+    val paint = captionPaint(inks)
     DialMath.poolsAt(state.counts).forEachIndexed { i, p ->
         val c = Offset(p.x.toFloat(), p.y.toFloat())
         val hue = Color(Mark.POOLS[i].hue.toInt())
         if (p.days > 0) drawCircle(hue, radius = p.r.toFloat(), center = c, alpha = if (picked == null || picked == i) 0.9f else 0.35f)
         else drawCircle(frame, radius = p.r.toFloat(), center = c, style = Stroke(2f))
-        val words = DialMath.captionLines(Mark.POOLS[i].phrase)
-        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            textAlign = android.graphics.Paint.Align.CENTER
-            textSize = 19f
-            typeface = android.graphics.Typeface.create(android.graphics.Typeface.SERIF, android.graphics.Typeface.ITALIC)
-            color = android.graphics.Color.argb(255, (inks.soft.red * 255).toInt(), (inks.soft.green * 255).toInt(), (inks.soft.blue * 255).toInt())
-        }
-        words.forEachIndexed { k, w -> drawContext.canvas.nativeCanvas.drawText(w, c.x, c.y + p.r.toFloat() + 20f + 21f * k, paint) }
+        // Sundial 0.10.1: beside its pool, where no line, dot or edge is (DialLabels).
+        val cap = captions[i]
+        cap.lines.forEachIndexed { k, w -> drawContext.canvas.nativeCanvas.drawText(w, cap.x.toFloat(), cap.y.toFloat() + 21f * k, paint) }
     }
+}
+
+/** The captions' type: Sundial's serif italic at 19 of the dial's units, in the soft ink. */
+private fun captionPaint(inks: Ink) = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+    textAlign = android.graphics.Paint.Align.CENTER
+    textSize = 19f
+    typeface = android.graphics.Typeface.create(android.graphics.Typeface.SERIF, android.graphics.Typeface.ITALIC)
+    color = android.graphics.Color.argb(255, (inks.soft.red * 255).toInt(), (inks.soft.green * 255).toInt(), (inks.soft.blue * 255).toInt())
 }
 
 /** A blurred draw on the native canvas, for the heart's shadow. */

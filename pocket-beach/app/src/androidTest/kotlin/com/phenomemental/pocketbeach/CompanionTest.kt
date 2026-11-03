@@ -75,6 +75,10 @@ class StandIn : Mind {
     var instruction = ""
     /** The Talk job's instruction. */
     var talkInstruction = ""
+    /** Sundial 0.10.1: every instruction a Talk conversation was opened with, the greeting's among them. */
+    val talkInstructions = mutableListOf<String>()
+    /** Sundial 0.10.1: each Talk message with the instruction of the conversation it was given in. */
+    val talkAsked = mutableListOf<Pair<String, String>>()
     /** The earlier exchanges each Write conversation (0.4's) was opened with. */
     val histories = mutableListOf<List<Pair<String, String>>>()
     /** The earlier exchanges each Talk conversation was opened with, and the settings it was drawn by. */
@@ -92,6 +96,7 @@ class StandIn : Mind {
         val talking = !instruction.contains("Answer in one of")
         if (talking) {
             talkInstruction = instruction
+            talkInstructions += instruction
             talkHistories += history
             talkSettings += settings
         } else {
@@ -108,8 +113,11 @@ class StandIn : Mind {
             override val stream = Talks.Stream { message, piece ->
                 // 0.6.2: as Gemma does when an answer fails on the GPU and she answers on the CPU.
                 if (gpuFails) paced.gpuFailed()
+                // Sundial 0.10.1: an answer that stops part way, her words so far given first.
+                if (talking) failAfter?.let { f -> failAfter = null; talkMessages += message; f.chunked(4).forEach(piece); throw RuntimeException("The engine stopped part way.") }
                 val reply = if (talking) {
                     talkMessages += message
+                    talkAsked += instruction to message
                     talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
                 } else {
                     writeMessages++
@@ -123,8 +131,33 @@ class StandIn : Mind {
             override val pace = paced
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
+            // Sundial 0.10.1: her reply in parts on E4B, as scripted; none left, no whole tool call.
+            override fun parts(message: String, parts: List<String>): Map<String, String>? {
+                partsAsked += message
+                return partsScript.removeFirstOrNull()
+            }
+            override fun keep(message: String, reply: String) { keptParts += message to reply }
+            // Sundial 0.10.1: her reply in one of two shapes on E4B, as scripted; none left, no whole tool call.
+            override fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? {
+                shapedAsked += message
+                shapesOffered += shapes.map { it.name }
+                return shapedScript.removeFirstOrNull()
+            }
         }
     }
+
+    /** Sundial 0.10.1: her replies in a shape (E4B): the tool she called and its parts; null, or none left, is no whole tool call. */
+    val shapedScript = ArrayDeque<Pair<String, Map<String, String>>?>()
+    val shapedAsked = mutableListOf<String>()
+    val shapesOffered = mutableListOf<String>()
+
+    /** Sundial 0.10.1: her replies in parts (E4B), in order; null, or none left, is no whole tool call. */
+    val partsScript = ArrayDeque<Map<String, String>?>()
+    /** Every message a parts call was given, and what Ask kept of her reply in parts. */
+    val partsAsked = mutableListOf<String>()
+    val keptParts = mutableListOf<Pair<String, String>>()
+    /** Sundial 0.10.1: the next Talk answer gives these words, then stops part way. */
+    @Volatile var failAfter: String? = null
 
     /** 0.6.3: the next Write answer is held back until it is stopped. */
     @Volatile var writeHold: java.util.concurrent.CountDownLatch? = null
@@ -917,7 +950,10 @@ class CompanionTest {
         assertEquals(talking.SAFETY_WORDS, talking.safetyWords(app.pages))
     }
 
-    /** 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so. */
+    /**
+     * 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so.
+     * Sundial 0.10.1 (fix 9): a job he never set apart runs on Talk's own engine, so no second model loads; one he set apart is as 0.6.2 has it.
+     */
     @Test
     fun oneEngineOnTheGpuAndAJobMovedOffItSaysSo() {
         Fresh.clear()
@@ -925,13 +961,24 @@ class CompanionTest {
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
         try {
             assertEquals("GPU", app.running(Job.TALK).processor)
+            // Never set apart: on Talk's engine, E4B on the GPU, with nothing to say.
+            for (job in listOf(Job.WRITE, Job.SORT)) {
+                assertEquals(JobSettings.GEMMA_E4B, app.running(job).model)
+                assertEquals("GPU", app.running(job).processor)
+                assertEquals(null, app.cpuWhy(job))
+            }
+            ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("settings")
+                compose.waitFor("job-write-follows", "Runs on her talk's model, Gemma 4 E4B")
+            }
+            // Write set apart (its own context): on E2B, which can't share the GPU with Talk's E4B, so on the CPU, and said.
+            app.set(Job.WRITE, JobSettings.of(Job.WRITE).copy(context = 4096))
             assertEquals("CPU", app.running(Job.WRITE).processor)
-            assertEquals("CPU", app.running(Job.SORT).processor)
             assertEquals("Talk's Gemma 4 E4B holds the GPU, and the phone runs one engine on it at a time", app.cpuWhy(Job.WRITE))
+            assertEquals("GPU", app.running(Job.SORT).processor)
             ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("settings")
                 compose.waitFor("job-write-processor-hint", "Runs on the CPU: Talk's Gemma 4 E4B holds the GPU")
-                compose.waitFor("job-sort-processor-hint", "Runs on the CPU")
                 assertTrue("Talk runs as set", compose.onAllNodes(androidx.compose.ui.test.hasTestTag("job-talk-processor-hint")).fetchSemanticsNodes().isEmpty())
                 compose.tap("back")
                 compose.tap("ask-companion")

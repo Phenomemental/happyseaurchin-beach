@@ -5,6 +5,9 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -115,11 +118,17 @@ class ScreenTour {
             com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(1), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("Phase two", listOf("You worked with David on the proposal."), "ring Jo about the music", listOf(1, 4))), System.currentTimeMillis() - 86_400_000)
             com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(3), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("By the river", listOf("You walked the dog with Sam.", "You felt calm."), "", listOf(1, 2))), System.currentTimeMillis() - 3 * 86_400_000)
             check(app.pages.carryOut(app.pages.planWhole(com.phenomemental.pocketbeach.bsp.Days.NOW, clock)).ok)
-            standIn.talkScript += listOf("A walk in the cold, and the ideas coming as you went. What stayed with you?")
+            // Sundial 0.10.1 (item 10): her greeting as his phone had it: his passport line as the app's, her question in quote marks, "Kept.".
+            Fresh.ungreeted()
+            standIn.talkScript += listOf(
+                "(The app: ${com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW.who})\n\u201cWhat came of ringing Jo about the music?\u201d\nKept.",
+                "A walk in the cold, and the ideas coming as you went. What stayed with you?",
+            )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.waitFor("dial")
-                compose.waitFor("own-question")
-                shot("$theme-50-today", keyboard = false)
+                // A new conversation on a day not kept: his tomorrow line, then her one question.
+                compose.waitFor("greet-question", "What came of ringing Jo about the music?", timeoutMs = 20_000)
+                shot("$theme-50-today-greeting-unkept", keyboard = false)
                 compose.onNodeWithTag("question").performTextInput("Walked along the canal to the river this morning. Cold, but the ideas for the film kept coming.")
                 compose.tap("ask")
                 compose.waitUntil(15_000) { app.asking.settled && app.asking.history.isNotEmpty() }
@@ -128,8 +137,40 @@ class ScreenTour {
                 compose.waitFor("keep-title", timeoutMs = 20_000)
                 shot("$theme-52-keep-card", keyboard = false)
                 compose.tap("day-yes")
-                compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
+                compose.waitFor("kept-shell", timeoutMs = 20_000)
                 shot("$theme-53-kept", keyboard = false)
+                // Sundial 0.10.1: the shell's tap opens the kept day's page.
+                compose.tap("kept-shell")
+                compose.waitFor("day-page-title")
+                shot("$theme-53b-day-page", keyboard = false)
+                androidx.test.espresso.Espresso.pressBack()
+                compose.waitFor("dial")
+                // Sundial 0.10.1: the dial held, its captions clear of every line, dot and edge: as the emulator is, at his Pixel 9 Pro XL's width, and on a narrow phone.
+                for ((size, density, name) in listOf(Triple(null, null, "54a-dial-held"), Triple("1344x2992", "480", "54b-dial-held-pixel9proxl"), Triple("640x1386", "320", "54c-dial-held-narrow"))) {
+                    if (size != null) {
+                        instrumentation.uiAutomation.executeShellCommand("wm size $size").close()
+                        instrumentation.uiAutomation.executeShellCommand("wm density $density").close()
+                        Thread.sleep(2500)
+                    }
+                    compose.waitFor("dial")
+                    compose.onNodeWithTag("dial").performScrollTo()
+                    if (compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+                        compose.onNodeWithTag("dial").performTouchInput { longClick(durationMillis = 1200) }
+                    compose.waitFor("pools-said")
+                    Thread.sleep(800)
+                    shot("$theme-$name", keyboard = false)
+                }
+                instrumentation.uiAutomation.executeShellCommand("wm size reset").close()
+                instrumentation.uiAutomation.executeShellCommand("wm density reset").close()
+                Thread.sleep(2500)
+                compose.waitFor("dial")
+                // A tap at the heart gathers the pools back.
+                if (compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithTag("dial").performTouchInput { click(center) }
+                compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("pools-said"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
+                // Sundial 0.10.1 (item 10): a new conversation on the day just kept: the greeting alone, no "Kept.", no shell.
+                compose.tap("new-conversation")
+                compose.waitFor("greet-question", "What came of ringing Jo about the music?", timeoutMs = 20_000)
+                shot("$theme-53c-greeting-kept", keyboard = false)
                 compose.tap("menu")
                 compose.waitFor("places")
                 shot("$theme-54-places")

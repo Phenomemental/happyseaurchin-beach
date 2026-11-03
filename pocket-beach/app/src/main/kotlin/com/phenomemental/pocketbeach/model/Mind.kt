@@ -49,6 +49,9 @@ interface Mind {
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 
+    /** Sundial 0.10.1: each step of the answers under way, timed (a model loaded, a conversation opened, a call made); null when not kept. */
+    val steps: Steps? get() = null
+
     /** Which of the phone's processors runs it, once loaded. */
     val processor: String?
 
@@ -98,6 +101,20 @@ interface Mind {
          * when her answer isn't whole, and the caller asks her free.
          */
         fun parts(message: String, parts: List<String>): Map<String, String>? = null
+
+        /**
+         * Sundial 0.10.1: her reply in one of [shapes] (REFLECT or ANSWER),
+         * through the engine's tool call: the shape she chose, by its tool's
+         * name, and each part as she returned it; null when no whole call came.
+         */
+        fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? = null
+
+        /**
+         * Sundial 0.10.1: the reply shown for [message] when it came in parts,
+         * kept in her conversation so her next turn follows it. A parts call
+         * keeps nothing itself: the app keeps only the reply it shows.
+         */
+        fun keep(message: String, reply: String) {}
     }
 
     companion object {
@@ -122,5 +139,27 @@ interface Mind {
         val pace: Pace
 
         fun stop()
+    }
+}
+
+/**
+ * Sundial 0.10.1: each step of an answer, timed, for Show the workings: the
+ * model loaded, a conversation opened, the places call, the reply call, her
+ * first words. On his Pixel on 3 November "I just want to talk" took 60.3 s
+ * with 52 s of it accounted for nowhere.
+ */
+class Steps {
+    private val list = mutableListOf<String>()
+
+    @Synchronized fun add(what: String, ms: Long) { list += "$what: ${secs(ms)}" }
+
+    @Synchronized fun note(what: String) { list += what }
+
+    /** Every step since the last take, oldest first; then none. */
+    @Synchronized fun take(): List<String> = list.toList().also { list.clear() }
+
+    companion object {
+        fun secs(ms: Long): String = String.format(java.util.Locale.UK, "%.1f s", ms / 1000.0)
+        fun since(startedNs: Long): Long = (System.nanoTime() - startedNs) / 1_000_000
     }
 }

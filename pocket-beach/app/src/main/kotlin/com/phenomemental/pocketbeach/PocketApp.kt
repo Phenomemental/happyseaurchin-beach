@@ -145,8 +145,15 @@ class PocketApp : Application() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        // Decision 13: when Android asks for memory back, the model goes first.
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) gemma.release()
+        // Decision 13: when Android asks for memory back, the model goes first. Sundial 0.10.1: only when it is really short
+        // (TRIM_MEMORY_COMPLETE), never because he looked at another app: the model is loaded once and kept.
+        @Suppress("DEPRECATION")
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE) gemma.release()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        gemma.release()
     }
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
@@ -156,11 +163,23 @@ class PocketApp : Application() {
     /** Each job's settings (Settings): Edge's for talking, 0.4's for writing, until he changes them. */
     fun settings(job: Job): JobSettings = jobs.value.getValue(job)
 
-    /** [job]'s settings as it runs: on the CPU when it asks for the GPU and another job's engine holds it (0.6.2). */
-    fun running(job: Job): JobSettings = Gpu.running(jobs.value, job)
+    /**
+     * Sundial 0.10.1: a job he never set apart (its settings the app's own)
+     * runs on Talk's engine, Talk's model, processor and context, with its own
+     * drawing: Write and Sort never load a second model beside her talk's.
+     */
+    fun followsTalk(job: Job): Boolean = job != Job.TALK && settings(job) == JobSettings.of(job) && settings(Job.TALK).engine != settings(job).engine
+
+    private fun effective(): Map<Job, JobSettings> {
+        val talk = settings(Job.TALK)
+        return jobs.value.mapValues { (job, s) -> if (followsTalk(job)) s.copy(model = talk.model, processor = talk.processor, context = talk.context) else s }
+    }
+
+    /** [job]'s settings as it runs: on the CPU when it asks for the GPU and another job's engine holds it (0.6.2); on Talk's engine when he never set it apart (0.10.1). */
+    fun running(job: Job): JobSettings = Gpu.running(effective(), job)
 
     /** Why [job] runs on the CPU though set to the GPU: another job's engine holds it, or the GPU failed on one of its answers. Null when it runs as set. */
-    fun cpuWhy(job: Job): String? = Gpu.why(jobs.value, job)
+    fun cpuWhy(job: Job): String? = Gpu.why(effective(), job)
         ?: running(job).takeIf { it.processor == "GPU" && mind.gpuFailed(it) }?.let { "the GPU failed on one of its answers, so it stays on the CPU until the app starts again" }
 
     fun set(job: Job, s: JobSettings) {

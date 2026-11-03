@@ -70,9 +70,32 @@ class Hatching(private val app: PocketApp) {
         if (hatched != null) correct()
     }
 
-    /** 0.8.1: what was corrected in a shell 0.8 adopted, said once in the thread; null when nothing was. */
+    /** 0.8.1: what was corrected in a shell 0.8 adopted, said once in the thread; null when nothing was. Sundial 0.10.1: the full account, under Show the workings. */
     var corrected by mutableStateOf<String?>(null)
         private set
+
+    /**
+     * Sundial 0.10.1: the one plain line the bring-up says in the thread
+     * ("Brought up to this version. Everything you changed is kept."): gone
+     * once he taps it or sends a message, and never shown again for this
+     * version. The full account ([corrected]) is under Show the workings.
+     */
+    var notice by mutableStateOf<String?>(null)
+        private set
+
+    private val seen get() = app.getSharedPreferences("hatching", android.content.Context.MODE_PRIVATE)
+
+    private val version: Long get() = runCatching {
+        val info = app.packageManager.getPackageInfo(app.packageName, 0)
+        if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else @Suppress("DEPRECATION") info.versionCode.toLong()
+    }.getOrDefault(0L)
+
+    /** The bring-up's line goes, for this version. */
+    fun dismissNotice() {
+        if (notice == null) return
+        notice = null
+        seen.edit().putLong("noticed", version).apply()
+    }
 
     /** 0.9.1: the bring-up's trace, a line a place of his cook and kernel that changed: under the note, with Details on. */
     var broughtUp by mutableStateOf<List<String>>(emptyList())
@@ -120,7 +143,7 @@ class Hatching(private val app: PocketApp) {
                 su.retired?.let { r -> if (!app.storage.names().contains(Cook.RETIRED_COOK_6)) go(app.pages.planWhole(Cook.RETIRED_COOK_6, r)) }
                 said += "cook 6 is now Sundial's ways (keeping today, placing, the greeting, listening); your old cook 6 is kept whole as ${Cook.RETIRED_COOK_6}" +
                     (if (su.changed.isEmpty()) "" else ", with the lines you had changed there: " + su.changed.joinToString(", ")) +
-                    (if (su.talkMoved) "; your day question moved from 1.1.8.2 to 1.1.8.7, yours as you wrote it" else "")
+                    (if (su.talkMoved) "; your day question moved from 1.1.8.2 to ${su.movedTo ?: "where TALK asks it"}, yours as you wrote it" else "")
             }
             for (name in listOf(Cook.SHIPPED_COOK, Cook.SHIPPED_KERNEL)) runCatching { app.procedures.load(name)?.let { shipped(name).writeText(stringify(it)!!) } }
             Hatch.listInManifest(h, listOf(Cook.cookOf(h), Cook.kernelOf(h)), app.pages, ::go)
@@ -149,6 +172,8 @@ class Hatching(private val app: PocketApp) {
         corrected = (if (said.isNotEmpty()) "Brought up to this version: " + said.joinToString("; ") + "." else "") +
             (if (problems.isNotEmpty()) " Not all of it went: " + problems.joinToString("; ") + "." else "") +
             " A whole copy of the pocket was saved first (${copy.name})."
+        // Sundial 0.10.1: in the thread, one plain line, once a version.
+        if (seen.getLong("noticed", -1L) != version) notice = if (problems.isEmpty()) PLAIN else NOT_ALL
         app.asking.hatchedNow()
     }
 
@@ -288,8 +313,10 @@ class Hatching(private val app: PocketApp) {
         step = Step.Opening
         note = null
         corrected = null
+        notice = null
         broughtUp = emptyList()
         offers = emptyList()
+        seen.edit().clear().apply()
         hatched = null
         known = false
     }
@@ -313,6 +340,12 @@ class Hatching(private val app: PocketApp) {
     private data class Quad(val handle: String, val passport: JsObj, val three: Hatch.Three, val how: String)
 
     companion object {
+        /** Sundial 0.10.1: the bring-up's one plain line in the thread. */
+        const val PLAIN = "Brought up to this version. Everything you changed is kept."
+
+        /** Sundial 0.10.1: the line when not all of it went; what didn't is under Show the workings. */
+        const val NOT_ALL = "Brought up to this version, but not all of it went. Show the workings says what."
+
         /** 0.9.1: the new sentences shown him beside a place he changed, one a line. */
         const val OFFERED = "offered-cook.txt"
         /** The app's own words, before she can talk. */

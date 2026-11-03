@@ -27,8 +27,9 @@ import kotlinx.coroutines.withContext
 
 /**
  * The companion's mind: Gemma 4 E2B, run on this phone by LiteRT-LM. It is
- * loaded only when Matthew asks something, and let go after a few idle
- * minutes or whenever Android asks for memory back (decision 13). Its GPU is
+ * loaded when Matthew first asks something and kept (Sundial 0.10.1: never
+ * let go after idle minutes), until Android is really short of memory
+ * (decision 13). Its GPU is
  * tried first, the CPU if the GPU can't take it, and why the GPU couldn't is
  * kept to be shown. Each Ask's [Pace] says where it ran and how fast.
  *
@@ -47,7 +48,6 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
     private val store: ModelStore get() = stores(ModelStore.E2B.name)
 
     companion object {
-        const val IDLE_MS = 3 * 60_000L
 
         /**
          * Speculative decoding: off. On Matthew's Pixel 9 Pro XL (Tensor G4,
@@ -105,6 +105,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
     override val loaded: Boolean get() = engines.isNotEmpty()
 
+    /** Sundial 0.10.1: each step of the answers under way, timed. */
+    override val steps = Steps()
+
     /** Whether the engine [settings] run on is in memory now. */
     override fun loaded(settings: JobSettings): Boolean = engines.containsKey(key(settings))
 
@@ -136,13 +139,16 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
         engines[key] = l
         processor = l.processor
-        return l to (System.nanoTime() - started) / 1_000_000
+        val ms = (System.nanoTime() - started) / 1_000_000
+        steps.add("${key.model} loaded on the ${l.processor}", ms)
+        return l to ms
     }
 
     override suspend fun talker(instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Mind.Talker = withContext(thread) {
         main.removeCallbacks(letGo)
         val key = key(settings)
         val (l, loadMs) = engineNow(key)
+        if (loadMs == null) steps.note("${key.model} already in memory, on the ${l.processor}")
         val holding = held && whyNotHeld == null
         val c = conversation(l.engine, instruction, history, holding, settings)
         synchronized(this@Gemma) { open++ }
@@ -161,16 +167,19 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
     }
 
     /** A conversation: the instruction and the earlier exchanges given, drawn as [settings] say, her replies held to begin with the route word if [held]. */
-    private fun conversation(e: Engine, instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Conversation = e.createConversation(
-        ConversationConfig(
-            systemInstruction = Contents.of(instruction),
-            initialMessages = history.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
-            samplerConfig = sampler(settings),
-            maxOutputToken = settings.longestReply,
-            thinkingConfig = ThinkingConfig(enableThinking = false),
-            enableResponseFormat = held,
-        ),
-    )
+    private fun conversation(e: Engine, instruction: String, history: List<Pair<String, String>>, held: Boolean, settings: JobSettings): Conversation {
+        val started = System.nanoTime()
+        return e.createConversation(
+            ConversationConfig(
+                systemInstruction = Contents.of(instruction),
+                initialMessages = history.flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
+                samplerConfig = sampler(settings),
+                maxOutputToken = settings.longestReply,
+                thinkingConfig = ThinkingConfig(enableThinking = false),
+                enableResponseFormat = held,
+            ),
+        ).also { steps.add("her conversation opened, with ${history.size} exchange${if (history.size == 1) "" else "s"} before", Steps.since(started)) }
+    }
 
     /** As Edge draws: the seed left at 0, as Edge leaves it. */
     private fun sampler(s: JobSettings) =
@@ -253,6 +262,8 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                     }
                 }
                 counted(conversation)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
+                first?.let { steps.add("her reply's first words", (it * 1000).toLong()) }
+                steps.add("her whole reply, written free" + (counted(conversation)?.let { t -> " (read ${t.read} tokens, wrote ${t.wrote})" } ?: ""), Steps.since(started))
                 whole.toString().also { done += message to it }
             }
         }
@@ -267,8 +278,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
          * tool call ("reply"): asked in a conversation of its own that holds
          * her window and every exchange so far, as `choose` asks hers, so a
          * tool call never sits unanswered in her kept conversation; that is
-         * opened afresh, with this exchange in it, before her next free reply.
-         * Null when the call isn't whole: she is asked free.
+         * opened afresh, with this exchange in it, before her next free reply
+         * (Sundial 0.10.1: once Ask keeps the reply it shows, [keep]). Null
+         * when the call isn't whole: she is asked free.
          */
         override fun parts(message: String, parts: List<String>): Map<String, String>? = kotlinx.coroutines.runBlocking(thread) {
             val fields = parts.map { Mind.field(it) }
@@ -288,17 +300,61 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                         thinkingConfig = ThinkingConfig(enableThinking = false),
                     ),
                 ).use { c ->
-                    val a = c.sendMessage(message).toolCalls.firstOrNull { it.name == "reply" }?.arguments ?: return@use null
+                    steps.add("a conversation opened for her reply in parts", Steps.since(started))
+                    val asked = System.nanoTime()
+                    val a = c.sendMessage(message).toolCalls.firstOrNull { it.name == "reply" }?.arguments.also { steps.add("her reply in parts, through the tool call", Steps.since(asked)) } ?: return@use null
                     counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, (System.nanoTime() - started) / 1e9)) }
                     parts.zip(fields).associate { (p, f) -> p to (a[f]?.let { v -> (v as? List<*>)?.joinToString("\n") { it.toString() } ?: v.toString() }?.trim().orEmpty()) }
                         .takeIf { m -> m.values.any { it.isNotEmpty() } }
                 }
             }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
-            if (got != null) {
-                done += message to parts.mapNotNull { got[it]?.takeIf(String::isNotEmpty) }.joinToString("\n")
+            got
+        }
+
+        /**
+         * Sundial 0.10.1: her reply in one of [shapes], each its own tool
+         * (reflect, answer): she calls the one she chooses. Asked as [parts]
+         * is, in a conversation of its own; one call, her places inside it.
+         */
+        override fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? = kotlinx.coroutines.runBlocking(thread) {
+            val tools = shapes.map { sh ->
+                com.google.ai.edge.litertlm.tool(object : com.google.ai.edge.litertlm.OpenApiTool {
+                    override fun getToolDescriptionJsonString() = com.phenomemental.pocketbeach.bsp.HerReply.toolJson(sh)
+                    override fun execute(p0: String): String = "unused"
+                })
+            }
+            val started = System.nanoTime()
+            runCatching {
+                engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of("$instruction\n\n" + com.phenomemental.pocketbeach.bsp.HerReply.choosing(shapes)),
+                        initialMessages = (history + done).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
+                        tools = tools, automaticToolCalling = false,
+                        samplerConfig = sampler(settings), maxOutputToken = settings.longestReply,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { c ->
+                    steps.add("a conversation opened for her reply's tool call, with ${history.size + done.size} exchanges before", Steps.since(started))
+                    val asked = System.nanoTime()
+                    val call = c.sendMessage(message).toolCalls.firstOrNull { tc -> shapes.any { it.tool == tc.name } }
+                    val t = counted(c)
+                    t?.let { pace.turns.add(Pace.Turn(it.read, it.readPerSecond, it.wrote, it.writePerSecond, (System.nanoTime() - started) / 1e9)) }
+                    steps.add("her reply through the tool call" + (t?.let { " (read ${it.read} tokens, wrote ${it.wrote})" } ?: ""), Steps.since(asked))
+                    val a = call?.arguments ?: return@use null
+                    val sh = shapes.first { it.tool == call.name }
+                    sh.name to sh.parts.associateWith { p ->
+                        a[com.phenomemental.pocketbeach.bsp.HerReply.field(p)]?.let { v -> (v as? List<*>)?.joinToString("; ") { it.toString() } ?: v.toString() }?.trim().orEmpty()
+                    }
+                }
+            }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
+        }
+
+        /** Sundial 0.10.1: the reply Ask showed for [message], given in parts, kept so her kept conversation is opened afresh with it. */
+        override fun keep(message: String, reply: String) {
+            kotlinx.coroutines.runBlocking(thread) {
+                done += message to reply
                 afresh = true
             }
-            got
         }
 
         private fun describe(field: String): String = when (field) {
@@ -316,13 +372,18 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
     }
 
-    /** A conversation has closed: the model goes now if it was asked to go, else after a few idle minutes. */
+    /**
+     * A conversation has closed: the model goes now only if it was asked to
+     * go. Sundial 0.10.1: never after idle minutes. On his Pixel the first
+     * message after a few minutes away took 60 s, 52 s of it loading E4B
+     * again; the model is loaded once and kept.
+     */
     private fun done() {
         val now = synchronized(this@Gemma) {
             open--
             letGoWhenDone && open == 0
         }
-        if (now) release() else main.postDelayed(letGo, IDLE_MS)
+        if (now) release()
     }
 
     /**
@@ -410,7 +471,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                         thinkingConfig = ThinkingConfig(enableThinking = false),
                     ),
                 ).use { c ->
+                    val started = System.nanoTime()
                     val m = c.sendMessage(message)
+                    steps.add("the places call", Steps.since(started))
                     val raw = m.toolCalls.firstOrNull { it.name == "places" }?.arguments?.get("places")
                     numbers(raw).filter { it in 1..places }.distinct().takeIf { it.isNotEmpty() }
                 }
