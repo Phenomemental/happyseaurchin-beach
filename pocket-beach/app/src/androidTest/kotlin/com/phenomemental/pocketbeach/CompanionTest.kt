@@ -950,7 +950,10 @@ class CompanionTest {
         assertEquals(talking.SAFETY_WORDS, talking.safetyWords(app.pages))
     }
 
-    /** 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so. */
+    /**
+     * 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so.
+     * Sundial 0.10.1 (fix 9): a job he never set apart runs on Talk's own engine, so no second model loads; one he set apart is as 0.6.2 has it.
+     */
     @Test
     fun oneEngineOnTheGpuAndAJobMovedOffItSaysSo() {
         Fresh.clear()
@@ -958,13 +961,24 @@ class CompanionTest {
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
         try {
             assertEquals("GPU", app.running(Job.TALK).processor)
+            // Never set apart: on Talk's engine, E4B on the GPU, with nothing to say.
+            for (job in listOf(Job.WRITE, Job.SORT)) {
+                assertEquals(JobSettings.GEMMA_E4B, app.running(job).model)
+                assertEquals("GPU", app.running(job).processor)
+                assertEquals(null, app.cpuWhy(job))
+            }
+            ActivityScenario.launch(MainActivity::class.java).use {
+                compose.tap("settings")
+                compose.waitFor("job-write-follows", "Runs on her talk's model, Gemma 4 E4B")
+            }
+            // Write set apart (its own context): on E2B, which can't share the GPU with Talk's E4B, so on the CPU, and said.
+            app.set(Job.WRITE, JobSettings.of(Job.WRITE).copy(context = 4096))
             assertEquals("CPU", app.running(Job.WRITE).processor)
-            assertEquals("CPU", app.running(Job.SORT).processor)
             assertEquals("Talk's Gemma 4 E4B holds the GPU, and the phone runs one engine on it at a time", app.cpuWhy(Job.WRITE))
+            assertEquals("GPU", app.running(Job.SORT).processor)
             ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("settings")
                 compose.waitFor("job-write-processor-hint", "Runs on the CPU: Talk's Gemma 4 E4B holds the GPU")
-                compose.waitFor("job-sort-processor-hint", "Runs on the CPU")
                 assertTrue("Talk runs as set", compose.onAllNodes(androidx.compose.ui.test.hasTestTag("job-talk-processor-hint")).fetchSemanticsNodes().isEmpty())
                 compose.tap("back")
                 compose.tap("ask-companion")

@@ -455,14 +455,19 @@ class SundialDeviceTest {
             assertTrue("nothing else: no shell, no card", none("kept-shell") && none("keep-card") && none("turn"))
             nothingNotHers()
         }
-        // The kept day, the greeting asked afresh (the app opened again): checked as any reply of hers.
+        // The kept day, the app opened again, as his phone will open 0.10.1: today's greeting as 0.10 kept it (his passport line as
+        // the app's, her question in quote marks, "Kept.") is checked as any reply of hers before it is shown again. Nothing new is asked:
+        // his kernel asks her greeting only while nothing is said today.
         app.asking.reset()
-        Fresh.ungreeted()
-        mind.talkScript += "Kept.\n(The app: he has opened his sundial and hasn't spoken to you yet today.)\n\"What came of the walk by the river?\""
+        app.getSharedPreferences("sundial", 0).edit().clear().putString("day", today.toString())
+            .putString("tomorrow", "ring Jo about the music").putString("question", asOnHisPhone("What came of the walk by the river?")).commit()
+        val asked = mind.talkMessages.size
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("greet-question", "What came of the walk by the river?", timeoutMs = 20_000)
+            compose.waitFor("greet-said", "You said: \u201cTomorrow, ring Jo about the music.\u201d")
             assertEquals("What came of the walk by the river?", app.asking.greeting?.question)
             nothingNotHers()
+            assertEquals("nothing asked of her again", asked, mind.talkMessages.size)
         }
     }
 
