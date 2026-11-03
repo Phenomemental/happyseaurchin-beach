@@ -116,3 +116,61 @@ He said: “ok, so you'll never believe it, have you heard of Alfred North White
 - **She chose ANSWER.**
   - THE ANSWER: “Yes, I am aware of his work as a philosopher and mathematician, particularly his contributions to process philosophy. I wonder what aspect of his thought you find most relevant today?”
 
+## Day, seed 3
+
+He said: “I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial.”
+
+- His cook: TALK; begins ANSWER; his message asks for TALK; handed her “The app: nothing is being kept or set out from this. Your reply has two parts, unless he…”; carried THE MESSAGE as THE WORDS; his words tell of his day; carried THE MESSAGE as THE DAY; his words hold none of his safety words; her reply in one of 2 shapes, hers to choose (REFLECT or ANSWER), through the tool call; THE DAY holds something; set out the card “Sort as my day”, for his tap
+- Handed her: The app: nothing is being kept or set out from this. Your reply has two parts, unless he a…
+- Steps: his cook walked 0.0 s; her conversation opened 0.0 s; her reply 22.0 s (read 1209 tokens at 115/s, wrote 94 at 8.2/s)
+- **She chose REFLECT.**
+  - THE PLACES TOUCHED: “what happened”
+  - THE REFLECTION: “You've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David, and all that's left today is to evaluate sundial.”
+  - THE QUESTION: “Since the id checks and form planning are underway, what makes the evaluation of sundial the final piece of the day?”
+
+## No day, seed 3
+
+He said: “I just want to talk”
+
+- His cook: TALK; begins ANSWER; his message asks for TALK; handed her “The app: nothing is being kept or set out from this. Your reply has two parts, unless he…”; carried THE MESSAGE as THE WORDS; his words don't tell of his day; handed her “The app: his words hold no day yet; if you reflect, ask what's on today.”; his words hold none of his safety words; her reply in one of 2 shapes, hers to choose (REFLECT or ANSWER), through the tool call; THE DAY holds nothing; accounted
+- Handed her: The app: nothing is being kept or set out from this. Your reply has two parts, unless he a… / The app: his words hold no day yet; if you reflect, ask what's on today.
+- Steps: his cook walked 0.0 s; her conversation opened 0.0 s; her reply 14.4 s (read 1195 tokens at 112/s, wrote 29 at 7.8/s)
+- **She chose REFLECT.**
+  - THE PLACES TOUCHED: “”
+  - THE REFLECTION: “You just want to talk.”
+  - THE QUESTION: “What's on today?”
+
+## Question, seed 4
+
+He said: “ok, so you'll never believe it, have you heard of Alfred North Whitehead?”
+
+- His cook: TALK; begins ANSWER; his message asks for TALK; handed her “The app: nothing is being kept or set out from this. Your reply has two parts, unless he…”; carried THE MESSAGE as THE WORDS; his words don't tell of his day; handed her “The app: his words hold no day yet; if you reflect, ask what's on today.”; his words hold none of his safety words; her reply in one of 2 shapes, hers to choose (REFLECT or ANSWER), through the tool call; THE DAY holds nothing; accounted
+- Handed her: The app: nothing is being kept or set out from this. Your reply has two parts, unless he a… / The app: his words hold no day yet; if you reflect, ask what's on today.
+- Steps: his cook walked 0.0 s; her conversation opened 0.0 s; her reply 17.2 s (read 1208 tokens at 113/s, wrote 50 at 7.7/s)
+- **She chose ANSWER.**
+  - THE ANSWER: “Yes, I have encountered his work in discussions about process philosophy. He's a major figure in 20th-century thought, often linked to Whitehead and his emphasis on becoming.”
+
+## Day, seed 4
+
+He said: “I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial.”
+
+- His cook: TALK; begins ANSWER; his message asks for TALK; handed her “The app: nothing is being kept or set out from this. Your reply has two parts, unless he…”; carried THE MESSAGE as THE WORDS; his words tell of his day; carried THE MESSAGE as THE DAY; his words hold none of his safety words; her reply in one of 2 shapes, hers to choose (REFLECT or ANSWER), through the tool call; THE DAY holds something; set out the card “Sort as my day”, for his tap
+- Handed her: The app: nothing is being kept or set out from this. Your reply has two parts, unless he a…
+- Steps: his cook walked 0.0 s; her conversation opened 0.0 s; her reply 22.8 s (read 1209 tokens at 117/s, wrote 100 at 8.0/s)
+- **She chose REFLECT.**
+  - THE PLACES TOUCHED: “what happened; what's ahead”
+  - THE REFLECTION: “You've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial.”
+  - THE QUESTION: “Regarding the fraud report and David, what's one thing you learned about your process that you might adjust next time?”
+
+## No day, seed 4
+
+He said: “I just want to talk”
+
+- His cook: TALK; begins ANSWER; his message asks for TALK; handed her “The app: nothing is being kept or set out from this. Your reply has two parts, unless he…”; carried THE MESSAGE as THE WORDS; his words don't tell of his day; handed her “The app: his words hold no day yet; if you reflect, ask what's on today.”; his words hold none of his safety words; her reply in one of 2 shapes, hers to choose (REFLECT or ANSWER), through the tool call; THE DAY holds nothing; accounted
+- Handed her: The app: nothing is being kept or set out from this. Your reply has two parts, unless he a… / The app: his words hold no day yet; if you reflect, ask what's on today.
+- Steps: his cook walked 0.0 s; her conversation opened 0.0 s; her reply 16.1 s (read 1195 tokens at 113/s, wrote 43 at 7.8/s)
+- **She chose REFLECT.**
+  - THE PLACES TOUCHED: “what's ahead”
+  - THE REFLECTION: “”
+  - THE QUESTION: “Since you've set aside time just to chat, what's the current headspace like?”
+
