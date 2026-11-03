@@ -66,6 +66,10 @@ class SundialDeviceTest {
 
     private fun none(tag: String) = compose.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
 
+    /** Words on the screen, wherever they stand. */
+    private fun sees(text: String, timeoutMs: Long = 10_000) =
+        compose.waitUntil(timeoutMs) { compose.onAllNodes(hasText(text, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+
     @Test
     fun hisWordsWaitAndKeepTodayKeepsThemInSundialsForm() {
         Fresh.hatched()
@@ -78,6 +82,8 @@ class SundialDeviceTest {
             // (d) His words and their instant wait in the app's own file, never a block, until he keeps today.
             compose.waitUntil(10_000) { app.waiting.of(today).map { it.words } == listOf("Took the dog out with Sam by the river. I felt calm.") }
             assertTrue("nothing written to his now yet", app.storage.read(Days.NOW)?.contains("Took the dog out") != true)
+            // Keep today waits while she answers.
+            compose.waitUntil(20_000) { app.asking.settled }
             compose.tap("keep-today")
             compose.waitFor("keep-card", timeoutMs = 20_000)
             compose.waitFor("keep-title", "A walk by the river")
@@ -111,12 +117,13 @@ class SundialDeviceTest {
         // Older words are let go as the day turns.
         app.waiting.add("A word from three days ago.", noon - 2 * 86_400_000L)
         ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("yesterday-offer", "You spoke yesterday and didn't keep it")
+            compose.waitFor("yesterday-offer")
+            sees("You spoke yesterday and didn't keep it")
             assertTrue("before today's question", none("own-question") && none("greet-question"))
             compose.waitUntil(10_000) { app.waiting.all.map { it.words } == listOf("Walked the dog in the rain.") }
             compose.tap("keep-yesterday")
             compose.waitFor("keep-card", timeoutMs = 20_000)
-            compose.waitFor("keep-yesterday", "You spoke yesterday")
+            compose.waitFor("keep-card-yesterday", "You spoke yesterday")
             compose.tap("day-yes")
             compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
             val clock = com.phenomemental.pocketbeach.bsp.parseJson(app.storage.read(Days.NOW)!!)
@@ -152,7 +159,7 @@ class SundialDeviceTest {
             compose.waitFor("pool:3", "no days")
             compose.tap("pool:1")
             compose.waitFor("resting:$then")
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("I felt calm", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+            sees("I felt calm")
         }
         // Read, never moved: his P6 stands as it was.
         assertTrue(app.storage.read(Days.p6Of(h))!!.contains("I felt calm."))
@@ -171,7 +178,8 @@ class SundialDeviceTest {
             val (url, body) = wire.sent.single()
             assertEquals("${PoolPost.BEACH}/.well-known/pscale-beach?block=pool:ada-lovelace", url)
             assertEquals("""{"append":true,"content":{"1":"ada-lovelace","_":"Hello from the phone."}}""", body)
-            compose.waitFor("sent-note", "Hello from the phone.")
+            compose.waitFor("sent-note")
+            sees("Hello from the phone.")
             assertEquals("7", app.notesSent.all.single().entry)
         }
     }
@@ -223,7 +231,8 @@ class SundialDeviceTest {
             assertEquals(52.2, p.lat, 0.1)
             assertEquals(-0.9, p.lon, 0.1)
             compose.waitFor("waiting-said", Waiting.SAID)
-            compose.waitFor("waiting-moment", "Walked to the river.")
+            compose.waitFor("waiting-moment")
+            sees("Walked to the river.")
         }
         // Set once: the dial asks no more.
         ActivityScenario.launch(MainActivity::class.java).use {

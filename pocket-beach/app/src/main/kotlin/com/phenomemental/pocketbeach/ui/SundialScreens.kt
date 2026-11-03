@@ -366,7 +366,7 @@ fun KeepCardView(
     val app = model.app
     val today = Keep.dayOf(System.currentTimeMillis())
     Column(Modifier.fillMaxWidth().testTag("keep-card"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (card.yesterday) Text(Words.sundial(app, "2.5", "You spoke yesterday and didn't keep it."), style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("keep-yesterday"))
+        if (card.yesterday) Text(Words.sundial(app, "2.5", "You spoke yesterday and didn't keep it."), style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("keep-card-yesterday"))
         Text(((if (card.day == today) "Today, " else if (card.day == today.minusDays(1)) "Yesterday, " else "") + card.day.format(DAY_SAID)).uppercase(), style = Type.label, color = ink.soft)
         card.sheet?.let { s ->
             if (card.his == null) {

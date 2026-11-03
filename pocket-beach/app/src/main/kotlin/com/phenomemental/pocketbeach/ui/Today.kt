@@ -119,8 +119,11 @@ fun TodayDial(model: Model, nav: Nav) {
     }
 
     // In summer, between midnight and one, the beach's day hasn't turned: said gently, in summer only.
+    // True where summer time is an hour ahead of the beach's clock (Britain, Ireland, Portugal); elsewhere the day turns at another hour, and nothing is said.
     val localToday = LocalDate.now()
-    if (localToday != today && ZoneId.systemDefault().rules.isDaylightSavings(java.time.Instant.ofEpochMilli(tick))) {
+    val instant = java.time.Instant.ofEpochMilli(tick)
+    val rules = ZoneId.systemDefault().rules
+    if (localToday != today && rules.isDaylightSavings(instant) && rules.getOffset(instant).totalSeconds == 3600) {
         Text(Words.sundial(app, "1.3", "Your day turns at 1 am in summer."), style = Type.small, color = ink.soft, modifier = Modifier.testTag("summer"))
     }
 
