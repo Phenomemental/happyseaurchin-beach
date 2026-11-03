@@ -28,8 +28,12 @@ class NoAnswer(message: String, cause: Throwable? = null) : java.io.IOException(
 
 class WireReply(val status: Int, val text: String)
 
-/** A message ready to post, shown whole to Matthew before he confirms. */
-class PoolMessage internal constructor(val pool: String, val author: String, val message: String, val url: String, val body: String)
+/**
+ * A message ready to post, shown whole to Matthew before he confirms.
+ * [scratch]: made in a scratch pocket (the bench's, a trial's, any pocket
+ * held only in memory), so [PoolPost.send] never lets it leave the phone.
+ */
+class PoolMessage internal constructor(val pool: String, val author: String, val message: String, val url: String, val body: String, val scratch: Boolean = false)
 
 sealed class Posted {
     /** The beach took it, at [slot] of the pool. */
@@ -52,19 +56,26 @@ sealed class Posted {
  * hatched as, never hard-coded and never from his words. [author] is the
  * hatched handle; [pool] is the first pool his passport's place 3 names
  * ("Meet me in the pool: … (pool:Phenomemental)"), else the first his
- * shell's manifest names, else pool:<handle>.
+ * shell's manifest names, else pool:<handle>. [scratch]: the room of a
+ * scratch pocket (one held only in memory: the bench's, a trial's, a test's);
+ * a post made for it never leaves the phone.
  */
-class Room(val author: String, val pool: String)
+class Room(val author: String, val pool: String, val scratch: Boolean = false)
 
 object PoolPost {
     const val BEACH = "https://beach.happyseaurchin.com"
     const val MAX_CHARS = 2000
 
+    /** Why a scratch pocket's post is refused: it never leaves the phone. */
+    const val SCRATCH = "This post was made in a scratch pocket (the bench's or a trial's), so it never leaves the phone."
+
     private val POOL = Regex("""\bpool:([A-Za-z0-9][A-Za-z0-9_-]*)""")
 
     /** The room of the shell this pocket was hatched as; null before a hatch. */
     fun room(storage: BlockStorage): Room? {
-        val h = Hatch.hatched(storage) ?: return (storage as? MemoryStorage)?.standInRoom
+        // A pocket held only in memory is a scratch pocket, never the phone's own (a FileStorage): its room, hatched or stood in, is marked so.
+        val scratch = storage is MemoryStorage
+        val h = Hatch.hatched(storage) ?: return (storage as? MemoryStorage)?.standInRoom?.let { Room(it.author, it.pool, scratch = true) }
         fun named(block: String, at: String): String? {
             val b = storage.read(block)?.let { runCatching { parseJson(it) }.getOrNull() } ?: return null
             val node = jsGet(b, at) ?: return null
@@ -75,7 +86,7 @@ object PoolPost {
             return POOL.find(text)?.groupValues?.get(1)
         }
         val pool = named("passport:$h", "3") ?: named(Hatch.shellOf(h), "3") ?: h
-        return Room(h, pool)
+        return Room(h, pool, scratch)
     }
 
     /** The message as it will go to [room], the hatched shell's own, or a plain reason it can't. */
@@ -88,11 +99,12 @@ object PoolPost {
         require(text.isNotEmpty()) { "The message is empty." }
         require(text.length <= MAX_CHARS) { "The message is ${text.length} characters; the pocket posts at most $MAX_CHARS." }
         val body = stringify(JsObj.of("append" to JsBool(true), "content" to JsObj.of("_" to str(text), "1" to str(author))))!!
-        return PoolMessage(name, author, text, "$BEACH/.well-known/pscale-beach?block=pool:$name", body)
+        return PoolMessage(name, author, text, "$BEACH/.well-known/pscale-beach?block=pool:$name", body, scratch = room.scratch)
     }
 
-    /** Send it, once. */
+    /** Send it, once. A message made in a scratch pocket is refused here, before the wire is touched. */
     fun send(m: PoolMessage, wire: Wire): Posted {
+        if (m.scratch) return Posted.Refused(SCRATCH)
         val reply = try {
             wire.post(m.url, m.body)
         } catch (e: NoAnswer) {

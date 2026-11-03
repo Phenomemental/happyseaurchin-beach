@@ -309,4 +309,45 @@ class SundialTest {
         for (k in 1..6) assertEquals(Mark.POOLS[k - 1].phrase, jsString(jsGet(words, "1", "$k", "_")), "place $k as mark.js names it")
         assertNotNull(jsGet(words, "6", "6", "1"))
     }
+
+    /** About, as Claude asked after reading judged-0.10.md: no daily limit claimed; one thing leaves, her own-Claude voice held for 0.12. */
+    @Test
+    fun aboutClaimsNoDailyLimitAndOnlyTheRoomNoteLeaves() {
+        val words = procedures.load("words:sundial") as JsObj
+        val why = jsString(jsGet(words, "6", "3", "1"))!!
+        assertFalse(why.contains("each day has a limit") || why.contains("It is bounded"), why)
+        val where = jsString(jsGet(words, "6", "6", "1"))!!
+        assertTrue(where.contains("One thing can leave, and only when you choose: a note you post to your room, sent when you tap Post."), where)
+        assertFalse(where.contains("Claude") || where.contains("Anthropic") || where.contains("Two things"), where)
+        // Held for 0.12, beneath the part, where About doesn't read it.
+        assertTrue(jsString(jsGet(words, "6", "6", "9", "1"))!!.contains("if you choose your own Claude as her voice"))
+        assertNull(jsGet(words, "6", "6", "2"), "nothing at 6.6.2, which About would show as a part of its own")
+    }
+
+    /** Only the phone's own pocket posts: a room read from a pocket held in memory is scratch, and its post never touches the wire. */
+    @Test
+    fun aScratchPocketsPostNeverTouchesTheWire() {
+        val sent = mutableListOf<String>()
+        val wire = Wire { url, _ -> sent += url; WireReply(200, """{"slot":"7"}""") }
+        // The bench's scratch pocket: its stand-in room is marked scratch.
+        val (bench, _) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
+        val standIn = PoolPost.room(bench)!!
+        assertTrue(standIn.scratch)
+        val fromBench = PoolPost.prepare("pool:${standIn.pool}", "From the bench.", standIn)
+        assertTrue(fromBench.scratch)
+        val refused = PoolPost.send(fromBench, wire)
+        assertTrue(refused is Posted.Refused && refused.why == PoolPost.SCRATCH)
+        // A scratch pocket hatched (as a trial's copy of a hatched pocket is): still scratch.
+        val (hatched, _) = hatchedAs("ada-lovelace", JsObj.of("_" to str("Ada"), "1" to str("Her heart.")))
+        val room = PoolPost.room(hatched)!!
+        assertTrue(room.scratch)
+        assertTrue(PoolPost.send(PoolPost.prepare("pool:ada-lovelace", "From a trial.", room), wire) is Posted.Refused)
+        // A trial's copy of a scratch pocket keeps its stand-in room, and it stays scratch.
+        val planned = Acts.propose("", listOf(Acts.Action.Post("From a trial's copy.")), bench, shelf, HelloWorld.SHELL_OPENING, "seal", nowMs)
+        planned.proposal?.post?.let { assertTrue(it.scratch); assertTrue(PoolPost.send(it, wire) is Posted.Refused) }
+        assertTrue(sent.isEmpty(), "the wire was never touched: $sent")
+        // The phone's own room (never held in memory) goes.
+        assertTrue(PoolPost.send(PoolPost.prepare("pool:Phenomemental", "From the phone.", Room("Phenomemental", "Phenomemental")), wire) is Posted.Landed)
+        assertEquals(1, sent.size)
+    }
 }

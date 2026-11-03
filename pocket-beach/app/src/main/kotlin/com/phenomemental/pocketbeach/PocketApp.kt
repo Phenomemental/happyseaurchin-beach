@@ -116,7 +116,7 @@ class PocketApp : Application() {
      * and if the beach couldn't be reached the message is kept instead, to go
      * only when he taps "Post now". Blocking: call it off the main thread.
      */
-    fun post(message: PoolMessage): Posted = PoolPost.send(message, wire).also { p ->
+    fun post(message: PoolMessage): Posted = (ownRoomRefuses(message)?.let { Posted.Refused(it) } ?: PoolPost.send(message, wire)).also { p ->
         val now = System.currentTimeMillis()
         when (p) {
             is Posted.Landed -> {
@@ -126,6 +126,21 @@ class PocketApp : Application() {
             is Posted.Unreached -> unsent.keep(message, p.why, p.mayHaveLanded, now)
             is Posted.Refused -> unsent.note(message, p.why, now)
         }
+    }
+
+    /**
+     * Sundial 0.10: only this phone's own pocket, once hatched, posts, under
+     * its own handle, to its own room. Why [message] may not go, or null when
+     * it may. Nothing refused here touches the wire.
+     */
+    private fun ownRoomRefuses(message: PoolMessage): String? {
+        if (message.scratch) return PoolPost.SCRATCH
+        val own = runCatching { PoolPost.room(storage) }.getOrNull()
+            ?: return "Posting waits for your shell: nothing is posted until this phone's pocket is hatched."
+        if (own.scratch) return PoolPost.SCRATCH
+        if (message.author != own.author || message.pool != own.pool)
+            return "This post was made as ${message.author} for pool:${message.pool}; this phone posts only as ${own.author}, to pool:${own.pool}."
+        return null
     }
 
     override fun onTrimMemory(level: Int) {
