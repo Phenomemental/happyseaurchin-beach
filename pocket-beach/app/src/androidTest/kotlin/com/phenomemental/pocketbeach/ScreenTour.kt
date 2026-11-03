@@ -211,7 +211,7 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
                 shot("$theme-15-ask-ready")
                 compose.tap("ask")
-                compose.waitFor("offered-post")
+                compose.waitFor("post-refusal")
                 shot("$theme-16-ask-proposal")
                 compose.tap("not-now")
                 compose.waitFor("wrong-place")

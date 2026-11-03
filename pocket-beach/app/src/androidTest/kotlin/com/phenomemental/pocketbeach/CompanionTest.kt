@@ -227,7 +227,8 @@ class CompanionTest {
         compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
         compose.tap("ask")
         compose.waitFor("writes")
-        compose.waitFor("offered-post")
+        // Sundial 0.10: before a hatch, the post she offers waits for his shell, and says so beneath her proposal.
+        compose.waitFor("post-refusal", "Posting waits for your shell")
     }
 
     private fun log() = app.pages.position(Region.POCKET, Asks.LOG)
@@ -376,7 +377,7 @@ class CompanionTest {
             assertEquals(Bench.KEEP_ASKS.size, asks.size)
             assertTrue(asks.joinToString("\n"), asks.first().startsWith("Keep 1. right") && asks.first().contains("She only talks"))
             assertTrue(asks.joinToString("\n"), asks.single { it.startsWith("Keep 3.") }.let { it.startsWith("Keep 3. right") && it.contains("The app asks where") })
-            assertTrue(asks.joinToString("\n"), asks.single { it.startsWith("Keep 10.") }.let { it.startsWith("Keep 10. right") && it.contains("Matthew calls me Gemma.") })
+            assertTrue(asks.joinToString("\n"), asks.single { it.startsWith("Keep 10.") }.let { it.startsWith("Keep 10. right") && it.contains("He calls me Gemma.") })
             compose.tap("open-bench-block")
             compose.waitFor("standing", "Bench, ")
         }
@@ -1019,13 +1020,14 @@ class CompanionTest {
             compose.waitFor("writes")
             assertEquals("no writing check", 0, mind.writeMessages)
             compose.tap("yes")
-            compose.waitUntil(10_000) { app.pages.position(Region.POCKET, HelloWorld.SHELL)!!.lines.any { it.text == "Matthew calls me Gemma." } }
+            // Sundial 0.10: the name line names no one (spine:pocket-beach 1.111178719918).
+            compose.waitUntil(10_000) { app.pages.position(Region.POCKET, HelloWorld.SHELL)!!.lines.any { it.text == "He calls me Gemma." } }
             asked("I'd like to call you Gemma")
             compose.waitFor("say", "Still Gemma.")
             compose.waitUntil(5_000) { app.asking.settled }
             assertTrue("one home: nothing proposed again", app.asking.history.last().waiting == null)
         }
-        assertEquals(1, app.pages.position(Region.POCKET, HelloWorld.SHELL)!!.lines.count { it.text == "Matthew calls me Gemma." })
+        assertEquals(1, app.pages.position(Region.POCKET, HelloWorld.SHELL)!!.lines.count { it.text == "He calls me Gemma." })
     }
 
     /** 0.6.4, the guards in code: her shell's opening line, the app's own blocks, a block he didn't name, words not his, a post he didn't ask for: never proposed. */

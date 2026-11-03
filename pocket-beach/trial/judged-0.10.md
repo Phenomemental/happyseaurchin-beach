@@ -249,6 +249,11 @@ new risk (section 9); it is still the one to watch.
   and no room. So the companion's hello world before a hatch is written,
   and its post waits for his shell; the hello world by hand says the same.
   Rockpool posted these as "Phenomemental", the name 918 retires.
+- **A post kept for later goes as it was made.** The room rule first
+  re-read his room for every post kept for Post now. Before a hatch that
+  dropped the post, and the emulator caught it (run 215). Now each kept post
+  keeps its author. One kept by Rockpool, with no author kept, goes as
+  Rockpool made it: Phenomemental, to pool:Phenomemental.
 - **Scratch pockets carry a stand-in room.** A scratch pocket is the
   bench's, or a trial's; it has no hatch. It posts as Matthew's
   (pool:Phenomemental), only ever into a scratch pocket, never the phone's
