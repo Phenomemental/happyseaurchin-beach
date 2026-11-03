@@ -428,7 +428,7 @@ object Cook {
             Keep.days(storage.read(Days.NOW)?.let(::parseJson), storage.read(Days.p6Of(handle))?.let(::parseJson), keepDay)
         }.getOrDefault(emptyList())
         /** Sundial 0.10.1: whether [words] say he may be in danger, by his safety words (Talking.unsafe), the one check the app makes. */
-        fun inDanger(words: String): Boolean = runCatching { Talking.unsafe(words, pages) }.getOrDefault(false)
+        fun inDanger(words: String): Boolean = runCatching { Talking.unsafe(words, pages) }.getOrElse { Talking.unsafe(words, Talking.SAFETY_WORDS) }
         /** What he whispered at a place (pool order), each with its date and the question it answered: Sundial 0.11. */
         fun whispers(pool: Int): String? = null
         /** A place's three ways of listening, which was used last, and the questions asked there: Sundial 0.11. */
