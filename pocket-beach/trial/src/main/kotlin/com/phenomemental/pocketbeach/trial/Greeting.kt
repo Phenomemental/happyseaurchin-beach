@@ -70,6 +70,8 @@ fun main(args: Array<String>) {
             val shown = Talking.oneQuestion(said, HerWindow.echoLines(turn), handed)
             report.append("## Seed $seed, her window as $version hands it\n\n")
             report.append("- Who he is in her window: ${if (window.contains(com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW.who)) "yes" else "no"}\n")
+            report.append("- His cook: " + w.trace.joinToString("; ") { it.did } + "\n")
+            if (seed == seeds.first()) report.append("- Her turn:\n\n```\n$turn\n```\n\n")
             report.append("- She wrote:\n\n```\n$said\n```\n\n")
             report.append("- Shown, after his tomorrow line: ${shown?.let { "“$it”" } ?: "nothing of hers: Sundial's own question stands"}\n\n")
             out.writeText(report.toString())
