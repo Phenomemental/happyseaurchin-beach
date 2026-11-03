@@ -178,3 +178,29 @@ class DialLabelsTest {
         assertTrue(crossed.isNotEmpty(), "some caption crossed the heart, as on his phone")
     }
 }
+
+/** Sundial 0.10.1, fix 6: a line of his kept day once, with no quote mark left open. */
+class KeptLinesTest {
+    private val line = "I'm also going to need to do ID checks this week."
+
+    @Test
+    fun aQuoteMarkLeftOpenIsTakenOff() {
+        assertEquals(line, Telling.unquoted("“$line"))
+        assertEquals(line, Telling.unquoted("\"$line"))
+        assertEquals(line, Telling.unquoted("$line”"))
+        assertEquals("“$line”", Telling.unquoted("“$line”"), "both ends: his quote, kept")
+        assertEquals("the dogs’", Telling.unquoted("the dogs’"), "an apostrophe at the end stays")
+        assertEquals("He said “go” to it.", Telling.unquoted("He said “go” to it."))
+    }
+
+    @Test
+    fun aPieceOnHisHandIsNotARungAsWell() {
+        val now = java.time.ZonedDateTime.of(2026, 11, 3, 16, 0, 0, 0, java.time.ZoneOffset.UTC)
+        val card = Days.landing(
+            Hatch.MATTHEW_HANDLE, now.toLocalDate(), null, emptyList(), emptyList(),
+            listOf(Days.Intent(line, 3, null, null)), listOf(Days.Rung("week", "“$line")), now,
+        )
+        assertEquals(listOf(line), card.lines.map { it.words }, "once, on his hand, with no stray quote")
+        assertTrue(card.lines.single().where is Days.Where.Pile)
+    }
+}
