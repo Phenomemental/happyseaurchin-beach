@@ -221,11 +221,14 @@ class ScreenTour {
                 // Sundial 0.10: before a hatch the hello world is written, and its post waits for his shell.
                 compose.waitFor("hello-checks")
                 shot("$theme-18-ask-post-waits")
+                // Try a call by hand is on About under Show the workings (Sundial 0.10).
+                app.showDetails = true
                 compose.menu("menu-blocks")
                 compose.tap("about")
                 compose.tap("calls")
                 compose.waitFor("hello-no-room")
                 shot("$theme-20-calls-hello")
+                app.showDetails = false
             }
             // The hello world again, with the block there: the app's own seal and fingerprint shown with the companion's step.
             app.asking.reset()
