@@ -18,5 +18,9 @@
  {
   "name": "past-kernel",
   "file": "past-kernel.json"
+ },
+ {
+  "name": "words:sundial",
+  "file": "words-sundial.json"
  }
 ]

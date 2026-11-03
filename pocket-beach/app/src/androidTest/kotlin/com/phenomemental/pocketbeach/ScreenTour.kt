@@ -93,6 +93,69 @@ class ScreenTour {
             shot("$theme-12-about")
         }
         companion(theme)
+        sundial(theme)
+    }
+
+    /** Sundial 0.10's own screens, hatched, with a stand-in for her: Today's dial, the keep card, Your places, days, pools, room, Settings, About. */
+    private fun sundial(theme: String) {
+        val app = Fresh.app
+        val wire = NowhereWire()
+        val standIn = StandIn()
+        try {
+            Fresh.hatched()
+            app.mind = standIn
+            app.wire = wire
+            app.showDetails = false
+            // Where he stands: Northampton, chosen from the town list.
+            app.where.set(WhereHeStands.Place("Northampton", 52.25, -0.88, "town"))
+            // Two days kept, one by Sundial and one before it, so the dial and the pools have something to show.
+            val h = com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE
+            val today = com.phenomemental.pocketbeach.bsp.Keep.dayOf(System.currentTimeMillis())
+            val clock = com.phenomemental.pocketbeach.bsp.Landing.emptyClock(com.phenomemental.pocketbeach.bsp.Days.NOW_OPENING)
+            com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(1), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("Phase two", listOf("You worked with David on the proposal."), "ring Jo about the music", listOf(1, 4))), System.currentTimeMillis() - 86_400_000)
+            com.phenomemental.pocketbeach.bsp.Keep.dayLine(clock, today.minusDays(3), com.phenomemental.pocketbeach.bsp.Mark.write(com.phenomemental.pocketbeach.bsp.Mark.Sheet("By the river", listOf("You walked the dog with Sam.", "You felt calm."), "", listOf(1, 2))), System.currentTimeMillis() - 3 * 86_400_000)
+            check(app.pages.carryOut(app.pages.planWhole(com.phenomemental.pocketbeach.bsp.Days.NOW, clock)).ok)
+            standIn.talkScript += listOf("A walk in the cold, and the ideas coming as you went. What stayed with you?")
+            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
+                compose.waitFor("dial")
+                compose.waitFor("own-question")
+                shot("$theme-50-today", keyboard = false)
+                compose.onNodeWithTag("question").performTextInput("Walked along the canal to the river this morning. Cold, but the ideas for the film kept coming.")
+                compose.tap("ask")
+                compose.waitUntil(15_000) { app.asking.settled && app.asking.history.isNotEmpty() }
+                shot("$theme-51-today-reply", keyboard = false)
+                compose.tap("keep-today")
+                compose.waitFor("keep-title", timeoutMs = 20_000)
+                shot("$theme-52-keep-card", keyboard = false)
+                compose.tap("day-yes")
+                compose.waitFor("keep-note", "Kept.", timeoutMs = 20_000)
+                shot("$theme-53-kept", keyboard = false)
+                compose.tap("menu")
+                compose.waitFor("places")
+                shot("$theme-54-places")
+                compose.tap("places-days")
+                compose.waitFor("days-count")
+                shot("$theme-55-days")
+                compose.tap("days-resting")
+                compose.waitFor("pool:0")
+                shot("$theme-56-pools")
+                compose.menu("places-room")
+                compose.waitFor("room-box")
+                shot("$theme-57-room")
+                compose.menu("places-hand")
+                shot("$theme-58-hand")
+                compose.menu("menu-settings")
+                compose.waitFor("settings-where")
+                shot("$theme-59-settings")
+                compose.menu("menu-about")
+                compose.waitFor("about-opening")
+                shot("$theme-60-about")
+            }
+        } finally {
+            app.wire = com.phenomemental.pocketbeach.net.HttpsWire
+            app.mind = app.gemma
+            Fresh.clear()
+        }
     }
 
     /** Piece 3's screens, with a stand-in for the companion and a wire that goes nowhere. */
@@ -148,27 +211,24 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
                 shot("$theme-15-ask-ready")
                 compose.tap("ask")
-                compose.waitFor("offered-post")
+                compose.waitFor("post-refusal")
                 shot("$theme-16-ask-proposal")
                 compose.tap("not-now")
                 compose.waitFor("wrong-place")
                 shot("$theme-17-ask-not-now")
                 compose.tap("back-to-proposal")
                 compose.tap("yes")
-                compose.waitFor("post-message")
-                shot("$theme-18-ask-post")
-                compose.tap("post")
-                compose.waitFor("posted")
-                shot("$theme-19-ask-posted")
+                // Sundial 0.10: before a hatch the hello world is written, and its post waits for his shell.
+                compose.waitFor("hello-checks")
+                shot("$theme-18-ask-post-waits")
+                // Try a call by hand is on About under Show the workings (Sundial 0.10).
+                app.showDetails = true
                 compose.menu("menu-blocks")
                 compose.tap("about")
                 compose.tap("calls")
-                // The companion's post is this same message, so it shows as posted, and goes again only on purpose.
-                compose.waitFor("hello-said")
+                compose.waitFor("hello-no-room")
                 shot("$theme-20-calls-hello")
-                compose.tap("hello-post-again")
-                compose.waitFor("hello-message")
-                shot("$theme-21-calls-confirm")
+                app.showDetails = false
             }
             // The hello world again, with the block there: the app's own seal and fingerprint shown with the companion's step.
             app.asking.reset()
@@ -196,6 +256,7 @@ class ScreenTour {
             val kept = com.phenomemental.pocketbeach.bsp.PoolPost.prepare(
                 com.phenomemental.pocketbeach.bsp.HelloWorld.POOL,
                 com.phenomemental.pocketbeach.bsp.HelloWorld.messageFor(app.storage.read(com.phenomemental.pocketbeach.bsp.HelloWorld.BLOCK)) ?: "Hello world from the pocket.",
+                com.phenomemental.pocketbeach.bsp.Room(com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW_HANDLE, com.phenomemental.pocketbeach.bsp.HelloWorld.POOL),
             )
             app.unsent.keep(kept, "The beach couldn't be reached, so nothing was posted (Unable to resolve host \"beach.happyseaurchin.com\").", false, System.currentTimeMillis())
             app.connectedForTests = false

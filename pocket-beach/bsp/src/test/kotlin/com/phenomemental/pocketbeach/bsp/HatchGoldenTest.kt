@@ -106,13 +106,15 @@ class HatchGoldenTest {
         val moved = Days.moveOut(h, storage, nowMs)!!
         listOfNotNull(moved.now?.let { Days.NOW to it }, moved.ahead?.let { Days.aheadOf(h) to it }, moved.p6?.let { Days.p6Of(h) to it }).forEach { (n, b) -> go(pages.planWhole(n, b)) }
         Hatch.listInManifest(h, listOf(Days.aheadOf(h), Days.p6Of(h)), pages) { go(it); true }
-        val day = Days.landing(h, "Rang Jo about the music. I need to send the pilot this week.", listOf("Rang Jo about the music.", "I need to send the pilot this week."), listOf("1.1", "2.2"),
-            Days.intents(listOf("I need to send the pilot this week."), listOf("i need to"), now.toLocalDate(), null), emptyList(), now)
+        // Sundial 0.10: his day kept the one way, in Sundial's form, each moment at its minute, no P6.
+        val day = Days.landing(h, Keep.dayOf(nowMs), Mark.Sheet("Jo and the pilot", listOf("You rang Jo about the music.", "You mean to send the pilot this week.")), listOf(1, 5),
+            listOf(Keep.Moment("Rang Jo about the music. I need to send the pilot this week.", nowMs - 120_000)),
+            Days.intents(listOf("I need to send the pilot this week."), listOf("i need to"), Keep.dayOf(nowMs), null), emptyList(), now)
         Days.blocks(day, { n -> storage.read(n)?.let(::parseJson) }, nowMs).blocks.forEach { (n, b) -> go(pages.planWhole(n, b)) }
         go(Acts.propose("", CookActs.actions(Cook.Card.Keep(Hatch.stashOf(h), "Jo's doing the music for the pilot."), h, pages), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs).proposal!!.writes.single().plan)
         for (b in listOf(Cook.cookOf(h), Cook.kernelOf(h), Days.NOW, Days.aheadOf(h), Days.p6Of(h), Hatch.stashOf(h))) calls += JsObj.of("agent_id" to str("pocket"), "block" to str(b))
         calls += JsObj.of("agent_id" to str("pocket"), "block" to str(Hatch.shellOf(h)), "spindle" to str(Hatch.WINDOW))
-        return JsObj.of("name" to str("rockpool: his cook brought in, his days moved and told"), "seed" to seed, "calls" to JsArr(calls))
+        return JsObj.of("name" to str("sundial: his cook brought in, his days moved, a day kept"), "seed" to seed, "calls" to JsArr(calls))
     }
 
     /** 0.9.1 (spine:pocket-beach 1.1111787162): his cook as 0.9 left it, two places changed by him, brought up place by place; then the new sentence taken for one. */
@@ -124,6 +126,8 @@ class HatchGoldenTest {
         val past = parseJson(stringify(procedures.load("${Cook.PAST}${Cook.SHIPPED_COOK}"))!!) as JsObj
         (past["5"] as JsObj)["6"] = str("Hand her THE READING and THE PLACE with this line: “The app: name its places for him in a sentence or two, never their lines.”")
         (past["6"] as JsObj)["1"] = str("LIFT. Lift his telling from THE MESSAGE: after the colon first; else what he said before. Carry it as THE TELLING.")
+        // Sundial 0.10: a TALK line of his own, kept, the shipped one offered beside it.
+        (jsGet(jsGet(jsGet(past, "1"), "1"), "8") as JsObj)["1"] = str("Hand her this line: “The app: nothing is being kept or set out from this. Talk with him warmly, in a sentence or two, and ask one thing. Speak to him as you, never by his name.”")
         check(pages.carryOut(pages.planWhole(Cook.cookOf(h), past)).ok)
         check(pages.carryOut(pages.planWhole(Cook.kernelOf(h), parseJson(stringify(procedures.load("${Cook.PAST}${Cook.SHIPPED_KERNEL}"))!!) as JsObj)).ok)
         val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
@@ -135,10 +139,12 @@ class HatchGoldenTest {
         }
         val ups = Cook.bringUp(h, pages, storage, procedures)
         ups.mapNotNull { it.second }.forEach(::go)
-        val five = ups.flatMap { it.first.yours }.single { it.at == "5.6" }
-        go(pages.planChange(five.block, five.at, five.shipped!!))
-        for (b in listOf(Cook.cookOf(h), Cook.kernelOf(h))) calls += JsObj.of("agent_id" to str("pocket"), "block" to str(b))
-        return JsObj.of("name" to str("rockpool 0.9.1: his cook brought up place by place, his changes kept, one new sentence taken"), "seed" to seed, "calls" to JsArr(calls))
+        // As the app does at opening: his old cook 6 kept whole, retired.
+        ups.firstNotNullOf { it.first.sundial?.retired }.let { go(pages.planWhole(Cook.RETIRED_COOK_6, it)) }
+        val talk = ups.flatMap { it.first.yours }.single { it.at == "1.1.8.1" }
+        go(pages.planChange(talk.block, Cook.spindleOf(talk.at), talk.shipped!!))
+        for (b in listOf(Cook.cookOf(h), Cook.kernelOf(h), Cook.RETIRED_COOK_6)) calls += JsObj.of("agent_id" to str("pocket"), "block" to str(b))
+        return JsObj.of("name" to str("sundial 0.10: his cook brought up to Sundial's ways, his changes kept, his old cook 6 retired, the new TALK line taken"), "seed" to seed, "calls" to JsArr(calls))
     }
 
     @Test

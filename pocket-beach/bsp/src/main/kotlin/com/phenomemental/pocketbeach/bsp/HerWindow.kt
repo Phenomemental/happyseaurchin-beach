@@ -36,7 +36,7 @@ object HerWindow {
     const val WAYS = "ways:pocket-companion"
 
     /** The blocks of his people she reads, the first that stands: his own name for it, or the beach's. */
-    val PEOPLE = listOf("people", "knows:Phenomemental")
+    val PEOPLE = listOf("people", "knows")
 
     /** Her blocks, made by the app the first time, his to change on the Write screen; never her proposals' to change. */
     val HERS = setOf(HEART, WAYS)
@@ -218,7 +218,7 @@ object HerWindow {
         val node = storage.read(shell)?.let(::parseJson)?.let { jsGet(it, Hatch.WINDOW) }
         val members = runCatching { compileBundle(node, BundleContext(Shells(storage, shelf).loader(), handle, now.toInstant().toEpochMilli())) }.getOrNull().orEmpty()
         val bySlot = members.associateBy { it.slot }
-        val his = Hatch.hisName(point(bySlot["2"]).orEmpty()) ?: "Matthew"
+        val his = Hatch.hisName(point(bySlot["2"]).orEmpty()) ?: "He"
         val name = herName(handle, pages)
         append(if (name != null) "$his calls you $name: that is your name, just $name. " else "You are $his's companion on his phone. ")
         append("You wear his shell on his phone for this conversation; it is his, and these are its places.")

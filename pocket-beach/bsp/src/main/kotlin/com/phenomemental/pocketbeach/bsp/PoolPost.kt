@@ -46,18 +46,44 @@ sealed class Posted {
     class Unreached(val why: String, val mayHaveLanded: Boolean = false) : Posted()
 }
 
+/**
+ * Sundial 0.10 (spine:pocket-beach 1.1111787171, 1.111178719918): who a post is
+ * from, and the one room it may go to, read from the shell the pocket was
+ * hatched as, never hard-coded and never from his words. [author] is the
+ * hatched handle; [pool] is the first pool his passport's place 3 names
+ * ("Meet me in the pool: … (pool:Phenomemental)"), else the first his
+ * shell's manifest names, else pool:<handle>.
+ */
+class Room(val author: String, val pool: String)
+
 object PoolPost {
     const val BEACH = "https://beach.happyseaurchin.com"
-    const val AUTHOR = "Phenomemental"
     const val MAX_CHARS = 2000
 
-    /** The pools the pocket may post to: Matthew's own, and no other, until he says otherwise. */
-    val POOLS = setOf("Phenomemental")
+    private val POOL = Regex("""\bpool:([A-Za-z0-9][A-Za-z0-9_-]*)""")
 
-    /** The message as it will go, or a plain reason it can't. */
-    fun prepare(pool: String, message: String, author: String = AUTHOR): PoolMessage {
+    /** The room of the shell this pocket was hatched as; null before a hatch. */
+    fun room(storage: BlockStorage): Room? {
+        val h = Hatch.hatched(storage) ?: return (storage as? MemoryStorage)?.standInRoom
+        fun named(block: String, at: String): String? {
+            val b = storage.read(block)?.let { runCatching { parseJson(it) }.getOrNull() } ?: return null
+            val node = jsGet(b, at) ?: return null
+            val text = buildString {
+                append((node as? JsStr)?.value ?: collectUnderscore(node).orEmpty())
+                HerWindow.linesOf(node).forEach { append("\n").append(it.second) }
+            }
+            return POOL.find(text)?.groupValues?.get(1)
+        }
+        val pool = named("passport:$h", "3") ?: named(Hatch.shellOf(h), "3") ?: h
+        return Room(h, pool)
+    }
+
+    /** The message as it will go to [room], the hatched shell's own, or a plain reason it can't. */
+    fun prepare(pool: String, message: String, room: Room?): PoolMessage {
+        require(room != null) { "Posting waits for your shell: the room a post goes to is the one your shell names." }
+        val author = room.author
         val name = pool.trim().removePrefix("pool:")
-        require(name in POOLS) { "The pocket posts only to ${POOLS.joinToString { "pool:$it" }}, so not to \"$pool\"." }
+        require(name == room.pool) { "The pocket posts only to your own room, pool:${room.pool}, so not to \"$pool\"." }
         val text = message.trim()
         require(text.isNotEmpty()) { "The message is empty." }
         require(text.length <= MAX_CHARS) { "The message is ${text.length} characters; the pocket posts at most $MAX_CHARS." }

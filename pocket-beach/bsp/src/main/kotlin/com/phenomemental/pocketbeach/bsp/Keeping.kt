@@ -24,9 +24,9 @@ object Keeping {
     sealed class Way {
         /** She only talks: no writing check. */
         object Talk : Way()
-        /** A name he gives her: "Matthew calls me <name>." on her shell, by code. */
-        class Name(val name: String) : Way() {
-            val line: String get() = "Matthew calls me $name."
+        /** A name he gives her: "<his first name> calls me <name>." on her shell, by code; "He" when no shell gives his name (Sundial 0.10: never a fixed name). */
+        class Name(val name: String, val his: String = "He") : Way() {
+            val line: String get() = "$his calls me $name."
         }
         /** He asks to keep [words] and names no block of his: the app asks him where. */
         class Where(val words: String) : Way()

@@ -9,6 +9,10 @@
   No backup: Android's cloud backup and device-to-device transfer are both off;
   "Save a copy" is the only copy of the blocks.
   RECORD_AUDIO is for speaking a line, recognised on the device only.
+  ACCESS_COARSE_LOCATION (Sundial 0.10) is asked once, for where he stands
+  roughly, so the dial follows the real sun; the app keeps it to a tenth of a
+  degree, on the phone, and sends it nowhere. Declined, a town from the list
+  shipped with the app does instead.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,6 +21,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <queries>
         <intent>
@@ -26,7 +31,7 @@
 
     <application
         android:name=".PocketApp"
-        android:label="Rockpool"
+        android:label="Sundial"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"

@@ -217,7 +217,11 @@ private fun HelloByHand(model: Model) {
     val stored by produceState<String?>(null, model.version) {
         value = withContext(Dispatchers.IO) { model.app.storage.read(HelloWorld.BLOCK) }
     }
-    val message = stored?.let(HelloWorld::messageFor)?.let { runCatching { PoolPost.prepare(HelloWorld.POOL, it) }.getOrNull() }
+    // Sundial 0.10: posted from the shell he hatched as, to his own room (spine:pocket-beach 1.111178719918); before a hatch, nothing is posted.
+    val room by produceState<com.phenomemental.pocketbeach.bsp.Room?>(null, model.version) { value = withContext(Dispatchers.IO) { runCatching { PoolPost.room(model.app.storage) }.getOrNull() } }
+    val words = stored?.let(HelloWorld::messageFor)
+    val message = words?.let { w -> room?.let { r -> runCatching { PoolPost.prepare(r.pool, w, r) }.getOrNull() } }
+    val roomName = room?.let { "pool:${it.pool}" } ?: "your room"
     val landed = remember(message?.message, posts) { message?.let(model.app.posts::landed) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -226,7 +230,7 @@ private fun HelloByHand(model: Model) {
         Stroke()
     }
     Text(
-        "Step 1 makes the block ${HelloWorld.BLOCK}. Step 2 posts one message to pool:${HelloWorld.POOL} on the beach, after you confirm it.",
+        "Step 1 makes the block ${HelloWorld.BLOCK}. Step 2 posts one message to $roomName on the beach, after you confirm it.",
         style = Type.body, color = ink.ink,
     )
 
@@ -259,7 +263,7 @@ private fun HelloByHand(model: Model) {
         made != null -> Done("${HelloWorld.BLOCK} made.", detail = made, tag = "hello-made")
         stored != null -> Done(
             "${HelloWorld.BLOCK} is made.",
-            detail = if (message != null) "Its fingerprint matches it." else "But it has no fingerprint that matches it, so there's nothing to post from it.",
+            detail = if (words != null) "Its fingerprint matches it." else "But it has no fingerprint that matches it, so there's nothing to post from it.",
             tag = "hello-made",
         )
     }
@@ -267,13 +271,14 @@ private fun HelloByHand(model: Model) {
 
     // Step 2
     Label("Step 2", Modifier.padding(top = 12.dp))
-    if (message != null) {
-        Sheet { Text(message.message, style = Type.body, color = ink.ink, modifier = Modifier.padding(vertical = 8.dp).testTag("hello-preview")) }
+    if (words != null) {
+        Sheet { Text(words, style = Type.body, color = ink.ink, modifier = Modifier.padding(vertical = 8.dp).testTag("hello-preview")) }
+        if (room == null) Notice("Posting waits for your shell: the room a post goes to is the one your shell names.", tag = "hello-no-room")
     } else {
         Text("Make ${HelloWorld.BLOCK} first; its message shows here.", style = Type.aside, color = ink.soft)
     }
     Action(
-        if (landed != null) "Posted at entry $landed" else "Post it to pool:${HelloWorld.POOL}…",
+        if (landed != null) "Posted at entry $landed" else "Post it to $roomName…",
         { again = false; confirming = message },
         Modifier.fillMaxWidth(),
         enabled = !busy && message != null && landed == null,
@@ -281,7 +286,7 @@ private fun HelloByHand(model: Model) {
         tag = "hello-post",
     )
     if (landed != null) {
-        Done("Posted to your pool at entry $landed.", detail = "pool:${HelloWorld.POOL} on beach.happyseaurchin.com", tag = "hello-said")
+        Done("Posted to your pool at entry $landed.", detail = "$roomName on beach.happyseaurchin.com", tag = "hello-said")
         TextLink("Post again?", { again = true; confirming = message }, tag = "hello-post-again")
     }
     refused?.let { Notice(it, tag = "hello-refused") }

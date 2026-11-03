@@ -20,7 +20,7 @@ import java.security.MessageDigest
  * on the phone until he posts them with "Post now" or discards them. Nothing
  * here sends anything: a kept message goes only on his tap.
  */
-class Unsent(context: Context) {
+class Unsent(context: Context, private val storage: com.phenomemental.pocketbeach.bsp.BlockStorage) {
     /** A kept message, when it last failed and why; [mayHaveLanded] when it went but no answer came back. */
     class Kept(val message: PoolMessage, val atMs: Long, val why: String, val mayHaveLanded: Boolean)
 
@@ -34,6 +34,7 @@ class Unsent(context: Context) {
     fun keep(message: PoolMessage, why: String, mayHaveLanded: Boolean, atMs: Long) {
         val entry = JsObj.of(
             "pool" to str(message.pool),
+            "author" to str(message.author),
             "message" to str(message.message),
             "why" to str(why),
             "may" to JsBool(mayHaveLanded),
@@ -63,7 +64,11 @@ class Unsent(context: Context) {
 
     private fun load(): List<Kept> = prefs.all.values.mapNotNull { v ->
         val o = (v as? String)?.let { runCatching { parseJson(it) as? JsObj }.getOrNull() } ?: return@mapNotNull null
-        val message = runCatching { PoolPost.prepare((o["pool"] as JsStr).value, (o["message"] as JsStr).value) }.getOrNull() ?: return@mapNotNull null
+        // Sundial 0.10: a kept message goes as it was made, from the room it was made for, under the name it was made with.
+        // One kept by Rockpool has no author kept with it; Rockpool posted only as Phenomemental, to pool:Phenomemental, so its pool is its name.
+        val pool = (o["pool"] as? JsStr)?.value ?: return@mapNotNull null
+        val author = (o["author"] as? JsStr)?.value ?: PoolPost.room(storage)?.takeIf { it.pool == pool }?.author ?: pool
+        val message = runCatching { PoolPost.prepare(pool, (o["message"] as JsStr).value, com.phenomemental.pocketbeach.bsp.Room(author, pool)) }.getOrNull() ?: return@mapNotNull null
         Kept(message, ((o["at"] as? JsNum)?.value ?: 0.0).toLong(), (o["why"] as? JsStr)?.value.orEmpty(), (o["may"] as? JsBool)?.value == true)
     }.sortedBy { it.atMs }
 

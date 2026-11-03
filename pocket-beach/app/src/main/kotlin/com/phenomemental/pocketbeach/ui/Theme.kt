@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.sp
 import com.phenomemental.pocketbeach.R
 
 /**
- * The book look: warm paper, near-black ink, a framed sheet for what a block
- * says, and one crimson accent. The dark version keeps the feel: dark paper,
- * warm light ink, the same crimson brightened to read on it.
+ * Sundial 0.10 (spine:pocket-beach 1.111178719913): Sundial's own tokens
+ * everywhere, light and dark (night-watchman.css:13-21, sundial.html:36-46):
+ * paper, page (the framed sheet and his words' ground), ink, muted, frame
+ * (the rules), crimson, and the wash, the dial's glow. Theme.kt's own and the
+ * hexes once written at 1.1111787191 are withdrawn.
  */
 @Immutable
 class Ink(
@@ -34,28 +36,32 @@ class Ink(
     val crimson: Color,
     val wash: Color,
     val dark: Boolean,
+    /** Sundial's wash: the night glow on the dial, and a lit mark. */
+    val glow: Color = wash,
 )
 
 val PaperInk = Ink(
-    paper = Color(0xFFF4EEE3),
-    sheet = Color(0xFFFBF8F1),
-    ink = Color(0xFF1C1A17),
-    soft = Color(0xFF6A6155),
-    rule = Color(0xFFD5C8B3),
-    crimson = Color(0xFF9B1B30),
-    wash = Color(0xFFF3E3E0),
+    paper = Color(0xFFEEE7D5),
+    sheet = Color(0xFFF6F1E6),
+    ink = Color(0xFF1D1A17),
+    soft = Color(0xFF5A5147),
+    rule = Color(0xFFB9AD9A),
+    crimson = Color(0xFFC21D4E),
+    wash = Color(0xFFF6F1E6),
     dark = false,
+    glow = Color(0xFFF5E95A),
 )
 
 val NightInk = Ink(
     paper = Color(0xFF16130F),
-    sheet = Color(0xFF1F1B16),
-    ink = Color(0xFFEAE2D4),
-    soft = Color(0xFFA89D8C),
-    rule = Color(0xFF4A4136),
-    crimson = Color(0xFFDB6474),
-    wash = Color(0xFF2E1B1C),
+    sheet = Color(0xFF1D1914),
+    ink = Color(0xFFEDE4D3),
+    soft = Color(0xFFA79C8B),
+    rule = Color(0xFF4A4237),
+    crimson = Color(0xFFEF5D85),
+    wash = Color(0xFF1D1914),
     dark = true,
+    glow = Color(0xFFB3A73C),
 )
 
 val LocalInk = staticCompositionLocalOf { PaperInk }

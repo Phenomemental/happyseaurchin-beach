@@ -277,6 +277,7 @@ object Asks {
         val trial = MemoryStorage()
         for (name in storage.names()) storage.read(name)?.let { trial.write(name, it) }
         trial.setStamps(storage.stamps())
+        trial.standInRoom = (storage as? MemoryStorage)?.standInRoom
         val run = Run(Pages(trial, shelf, PocketBsp(trial, shelf), clock = { nowMs }), trial, shellOpening, seal)
         for ((i, step) in expand(answer.writes).withIndex()) {
             when (val r = run.step(step, null)) {
@@ -397,7 +398,7 @@ object Asks {
                 val message = HelloWorld.messageFor(stored)
                     ?: return null to "${HelloWorld.BLOCK} doesn't hold a secret, a seal and, as its last line, a fingerprint that matches it, so there's no true message to post."
                 return try {
-                    PoolPost.prepare(offer.pool, message) to null
+                    PoolPost.prepare(offer.pool, message, PoolPost.room(storage)) to null
                 } catch (e: IllegalArgumentException) {
                     null to (e.message ?: "The message can't be posted.")
                 }
@@ -407,7 +408,7 @@ object Asks {
             } ?: return null to unknownGap(offer.message)
             if (GAP.containsMatchIn(message)) return null to "The message speaks of a block, but this Ask wrote none, so its gaps can't be filled."
             return try {
-                PoolPost.prepare(offer.pool, message) to null
+                PoolPost.prepare(offer.pool, message, PoolPost.room(storage)) to null
             } catch (e: IllegalArgumentException) {
                 null to (e.message ?: "The message can't be posted.")
             }

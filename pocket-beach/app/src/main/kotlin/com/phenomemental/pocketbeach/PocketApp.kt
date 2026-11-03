@@ -87,7 +87,16 @@ class PocketApp : Application() {
     val posts by lazy { Posts(this) }
 
     /** What the beach couldn't be reached for, kept for "Post now". */
-    val unsent by lazy { Unsent(this) }
+    val unsent by lazy { Unsent(this, storage) }
+
+    /** Sundial 0.10: today's words, not yet kept (spine:pocket-beach 1.111178719915). */
+    val waiting by lazy { WaitingRoom(filesDir) }
+
+    /** Sundial 0.10: where he stands, for the sun. */
+    val where by lazy { WhereHeStands(this) }
+
+    /** Sundial 0.10: the notes he has sent to his room. */
+    val notesSent by lazy { NotesSent(filesDir) }
 
     /** Whether the phone has a connection, as Android says: only so "Post now" waits for one. */
     private var connected by mutableStateOf(false)

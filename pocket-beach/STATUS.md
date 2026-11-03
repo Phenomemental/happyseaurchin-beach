@@ -4,6 +4,26 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10, Today and keeping, is built and held (3 November,
+spine:pocket-beach 1.111178719 and the decisions at 1.11117871991):**
+merged to main, not released. `trial/judged-0.10.md` is for Claude to read
+first.
+- **What it is:** Rockpool renamed Sundial, in Sundial's tokens and mark.
+  - The dial is live on the real sun where he stands.
+  - His words wait as moments until Keep today keeps them in his now, in
+    Sundial's form, with no P6.
+  - Your days and the six pools are read only, with his Rockpool days
+    counted.
+  - Your room has a box; Your hand and Your recipes are new places.
+  - Cook 6 is Sundial's ways; the TALK line is shipped; About is Sundial's.
+- **Version** 0.10 (23), the same package and key; the release job tags
+  `sundial-v0.10`.
+- **Untried with a real model:** her tool calls for the places, the day's
+  sheet and her reply in two parts on E4B. Each falls back to her plain
+  words.
+- **To try on his Pixel:** the list at the foot of `trial/judged-0.10.md`.
+- **Next:** 0.11, the shells (findings section 9).
+
 **Rockpool 0.9.1 is released (2 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9.1
 - **Install:** `rockpool-v0.9.1.apk` over Rockpool 0.9; his blocks stay.

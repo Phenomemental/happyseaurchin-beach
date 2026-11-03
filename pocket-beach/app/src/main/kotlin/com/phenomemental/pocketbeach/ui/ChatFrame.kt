@@ -47,11 +47,10 @@ import androidx.compose.ui.unit.dp
 
 /**
  * 0.8.1, a standard chat (spine:pocket-beach 1.11117871364, Matthew, 1
- * November: "I want a standard chat"). The app's look is kept: its ink,
- * paper and crimson, and its type. Laid out as chat apps are:
- * - a slim top bar: the menu on the left (Your blocks, Teaching blocks,
- *   Bench, Save this conversation, Details, Settings, About), her name and
- *   what she wears in the middle, and a new conversation on the right;
+ * November: "I want a standard chat"); Sundial 0.10, Today: Sundial's
+ * tokens and type. Laid out as chat apps are:
+ * - a slim top bar: the three lines on the left (Your places, Sundial's
+ *   menu), SUNDIAL and the date in the middle, a new conversation on the right;
  * - the thread, his words as bubbles on the right and hers plain on the
  *   left, each card beneath the reply it belongs to, notices as cards;
  * - one input bar at the foot.
@@ -70,37 +69,30 @@ fun ChatFrame(
 ) {
     val ink = LocalInk.current
     val asking = model.app.asking
-    var menu by remember { mutableStateOf(false) }
+    // Sundial 0.10 (spine:pocket-beach 1.1111787191, 1.1111787197): Sundial at the head, the date beneath it; the three lines open Your places.
+    val today = java.time.LocalDate.now()
+    val openPlaces = LocalPlaces.current
     Column(Modifier.fillMaxSize().background(ink.paper).windowInsetsPadding(WindowInsets.safeDrawing).imePadding()) {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 4.dp).testTag("top-bar"), verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                RoundMark("Menu", { menu = true }, tag = "menu") { c -> drawMenu(c) }
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, modifier = Modifier.background(ink.paper)) {
-                    fun item(text: String, tag: String, go: () -> Unit) = @Composable {
-                        DropdownMenuItem(text = { Text(text, style = Type.body, color = ink.ink) }, onClick = { menu = false; go() }, modifier = Modifier.testTag(tag))
-                    }
-                    item("Your blocks", "menu-blocks") { nav.back() }()
-                    item("Teaching blocks", "menu-teaching") { nav.back() }()
-                    item(if (asking.benchRunning) "See the bench" else "Bench", "open-bench") { nav.go(Screen.Bench) }()
-                    if (onSave != null) item("Save this conversation", "save-conversation", onSave)()
-                    item(if (details) "Details: on" else "Details: off", "details") { model.app.showDetails = !details }()
-                    item("Settings", "menu-settings") { nav.go(Screen.Settings) }()
-                    item("About", "menu-about") { nav.go(Screen.About) }()
-                }
-            }
+            RoundMark("Your places", { openPlaces?.invoke() }, tag = "menu") { c -> drawMenu(c) }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(title, style = Type.name, color = ink.ink, maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.testTag("her-name"))
-                Text(wearing, style = Type.small, color = ink.soft, maxLines = 1, modifier = Modifier.testTag("wearing"))
+                Text("SUNDIAL", style = Type.label.copy(letterSpacing = androidx.compose.ui.unit.TextUnit(0.5f, androidx.compose.ui.unit.TextUnitType.Em)), color = ink.soft, maxLines = 1, modifier = Modifier.testTag("wordmark"))
+                Text(today.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK)), style = Type.small.copy(fontFeatureSettings = "smcp, lnum"), color = ink.soft, maxLines = 1, modifier = Modifier.testTag("today-date"))
             }
             RoundMark("New conversation", { asking.newConversation() }, tag = "new-conversation", enabled = asking.stage !is Asking.Stage.Thinking && !asking.benchRunning) { c -> drawNew(c) }
         }
         Rule()
         LocalSlip.current?.let { Slip(it.text, it.dismiss) }
         Column(
-            Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 20.dp),
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             content = content,
         )
+        // Where she comes in: who answers, and what she wears (spine:pocket-beach 1.1111787193).
+        Row(Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = Type.small.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold), color = ink.ink, maxLines = 1, modifier = Modifier.testTag("her-name"))
+            Text(", $wearing", style = Type.small, color = ink.soft, maxLines = 1, modifier = Modifier.testTag("wearing"))
+        }
         if (input != null) input()
     }
 }

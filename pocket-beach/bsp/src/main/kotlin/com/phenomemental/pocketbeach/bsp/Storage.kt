@@ -212,6 +212,14 @@ class RoutedStorage(private val pocket: BlockStorage, private val hidden: BlockS
 
 /** Blocks held in memory only, gone when the process ends. For tests, and for any front end that keeps nothing. */
 class MemoryStorage : BlockStorage {
+    /**
+     * Sundial 0.10: a stand-in room for a scratch pocket that has no hatched
+     * shell (the bench's, the tests'), so a post can be offered and judged
+     * there. The phone's own pocket is never a MemoryStorage, so it posts only
+     * to the room its hatched shell names (spine:pocket-beach 1.1111787171).
+     */
+    var standInRoom: Room? = null
+
     private val blocks = HashMap<String, String>()
     private var stamps = Stamps()
 

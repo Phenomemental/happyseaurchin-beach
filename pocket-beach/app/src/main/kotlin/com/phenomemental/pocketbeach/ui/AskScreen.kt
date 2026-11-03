@@ -101,6 +101,8 @@ fun AskScreen(model: Model, nav: Nav) {
     }
     // The model stays loaded, and the conversation open, while Ask is.
     val ready = modelState is ModelStore.State.Ready && (shell != null || hatching.hatched != null)
+    // Sundial 0.10: the dial opened with nothing said today: her one question (kernel THE DIAL OPENED).
+    LaunchedEffect(ready, hatching.hatched) { if (ready && hatching.hatched != null) asking.greet() }
     DisposableEffect(ready) {
         if (ready) asking.opened()
         // Only a visit that opened the conversation lets it go: not the wait for the model and the shell, ended as they come ready.
@@ -120,6 +122,8 @@ fun AskScreen(model: Model, nav: Nav) {
                 .onFailure { model.say(Screen.Ask, "The conversation wasn't saved: ${it.message ?: "the file couldn't be written"}.") }
         }
     }
+    // Sundial 0.10: Your places asked for the conversation saved as a file.
+    LaunchedEffect(model.saveConversation) { if (model.saveConversation > 0 && asking.history.isNotEmpty()) saveTo.launch(asking.fileName()) }
     // The thread keeps its foot in view: her reply as it streams, what comes beneath it.
     val scroll = rememberScrollState()
     val last = asking.history.lastOrNull()
@@ -141,7 +145,7 @@ fun AskScreen(model: Model, nav: Nav) {
     ChatFrame(
         model, nav, title = herName ?: "Your companion", wearing = wearing, details = details,
         onSave = if (asking.history.isNotEmpty()) ({ saveTo.launch(asking.fileName()) }) else null,
-        input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(asking, hatching.takesTheBox) }),
+        input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(asking, hatching.takesTheBox, keep = if (hatching.hatched != null) model else null) }),
         scroll = scroll,
     ) {
         // 0.8.1: a shell 0.8 adopted, corrected once, said in the thread.
@@ -181,11 +185,21 @@ fun AskScreen(model: Model, nav: Nav) {
             )
         }
 
+        // Sundial 0.10, Today: the dial, the day before offered first, her one question, the keep card.
+        if (hatching.hatched != null) TodayDial(model, nav)
+
         ModelPart(model, modelState)
 
         // The thread: each thing he said, her reply, and what waits on his answer beneath it.
         asking.history.forEach { e -> Turn(model, e, latest = e === asking.history.lastOrNull(), details = details) }
         if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
+        // Sundial's safety line, at the foot always (sundial.html:2488).
+        Text(
+            (Words.sundialBlock(model.app)?.let { com.phenomemental.pocketbeach.bsp.jsGet(com.phenomemental.pocketbeach.bsp.jsGet(it, "7"), "1") } as? com.phenomemental.pocketbeach.bsp.JsStr)?.value
+                ?: "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).",
+            style = Type.small.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic), color = ink.soft,
+            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag("safe-line"),
+        )
     }
 }
 
@@ -195,7 +209,7 @@ fun AskScreen(model: Model, nav: Nav) {
  * stop square while her reply comes). It empties when he sends.
  */
 @Composable
-private fun InputBar(asking: Asking, welcome: Boolean = false) {
+private fun InputBar(asking: Asking, welcome: Boolean = false, keep: Model? = null) {
     val ink = LocalInk.current
     val voice = rememberVoice { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -218,6 +232,11 @@ private fun InputBar(asking: Asking, welcome: Boolean = false) {
             RoundMark(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, tag = "speak", lit = voice.listening) { c -> drawMic(c) }
             if (asking.stage is Asking.Stage.Thinking) RoundMark("Stop", { asking.stop() }, tag = "stop", strong = true) { c -> drawStop(c) }
             else RoundMark(if (welcome) "Answer" else "Send", { asking.ask() }, tag = "ask", enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true) { c -> drawSend(c) }
+        }
+        // Sundial 0.10: Keep today beside Send; and the note under Speak (spine:pocket-beach 1.1111787192).
+        if (keep != null) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(Words.sundial(keep.app, "1.6", "Your phone hears you. Nothing leaves it."), style = Type.small, color = ink.soft, modifier = Modifier.weight(1f).testTag("speak-note"))
+            KeepTodayButton(keep, enabled = !asking.keeping && asking.stage !is Asking.Stage.Thinking && !asking.benchRunning)
         }
     }
 }
@@ -372,7 +391,7 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
         His(e.question)
         when {
-            e.said.isNotEmpty() -> Text(e.said, style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
+            e.said.isNotEmpty() -> Text(replyShaped(e.parts, e.said), style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
             // Her words as she writes them.
             thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
         }
@@ -420,17 +439,9 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
                 }
             }
             is Asking.Stage.Where -> WhereGoes(asking, e, w)
-            is Asking.Stage.Told -> {
-                Told(asking, e, w.card, moving = true)
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Action("Not now", { asking.notNowToTold(e) }, Modifier.weight(1f), tag = "day-not-now")
-                    Action("Yes, keep my day", { asking.yesToTold(e) }, Modifier.weight(1f), strong = true, tag = "day-yes")
-                }
-            }
-            is Asking.Stage.ToldWriting -> {
-                Told(asking, e, w.told.card, moving = false)
-                Text("Writing your day…", style = Type.aside, color = ink.soft)
-            }
+            // Sundial 0.10: his day as Sundial's keep card, beneath her reply ("Sort as my day", "Put this in my now").
+            is Asking.Stage.Told -> KeepCardView(model, w.card, writing = false, onPlace = { asking.placeTold(it, e) }, onTick = { asking.tickTold(it, e) }, onKeep = { asking.yesToTold(e) }, onNotNow = { asking.notNowToTold(e) })
+            is Asking.Stage.ToldWriting -> KeepCardView(model, w.told.card, writing = true, onPlace = {}, onTick = {}, onKeep = {}, onNotNow = {})
             is Asking.Stage.Choosing -> {
                 Choosing(asking, e, w)
                 Action("Not now", { asking.dropChoice(e) }, Modifier.fillMaxWidth(), tag = "not-now")
@@ -627,58 +638,6 @@ private fun DayProposed(asking: Asking, e: Asking.Exchange, d: Asking.Stage.Day,
     }
 }
 
-/** Rockpool: his day as TELL MY DAY set it out: today's line, each sentence beneath its portal of his P6, his hand, his bookings and rungs; each to untick or move. */
-@Composable
-private fun Told(asking: Asking, e: Asking.Exchange, card: com.phenomemental.pocketbeach.bsp.Days.DayCard, moving: Boolean) {
-    val ink = LocalInk.current
-    Label("Your day, set out")
-    Text("Every line is your words. Untick a line to leave it out, or move it to another place.", style = Type.small, color = ink.soft)
-    var choosing by remember { mutableStateOf<Int?>(null) }
-    val groups = listOf<Pair<String, (com.phenomemental.pocketbeach.bsp.Days.Where) -> Boolean>>(
-        "Today, on your clock" to { it == com.phenomemental.pocketbeach.bsp.Days.Where.DayLine },
-        "Your P6" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Portal },
-        "Your hand" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Pile },
-        "Booked in your now" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Booking },
-        "The rungs above" to { it is com.phenomemental.pocketbeach.bsp.Days.Where.Rung },
-        "Not placed yet" to { it == com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced },
-    )
-    for ((title, holds) in groups) {
-        val here = card.lines.withIndex().filter { holds(it.value.where) }
-        if (here.isEmpty()) continue
-        Sheet(Modifier.testTag("day-group")) {
-            Label(title, Modifier.padding(top = 8.dp))
-            for ((i, line) in here) Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
-                if (line.where != com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced) Checkbox(
-                    checked = line.ticked, onCheckedChange = { asking.tickTold(i, e) }, enabled = moving,
-                    colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft), modifier = Modifier.testTag("day-tick:$i"),
-                )
-                Column(Modifier.weight(1f).padding(top = 10.dp, start = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(line.words, style = Type.body, color = if (line.ticked) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
-                    Text(com.phenomemental.pocketbeach.bsp.Days.name(line.where), style = Type.small, color = ink.soft)
-                    if (line.moved) Text("You moved it here.", style = Type.small, color = ink.crimson)
-                    if (moving && line.where != com.phenomemental.pocketbeach.bsp.Days.Where.DayLine) TextLink(if (line.where == com.phenomemental.pocketbeach.bsp.Days.Where.Unplaced) "Place it" else "Move", { choosing = i }, tag = "day-move:$i")
-                }
-            }
-        }
-    }
-    Text("Nothing is written until you say yes.", style = Type.small, color = ink.soft)
-    choosing?.let { i ->
-        PaperDialog("Where does it go?", onDismiss = { choosing = null }, actions = { TextLink("Not now", { choosing = null }, tag = "day-move-not-now") }) {
-            Text(Words.quoted(card.lines[i].words, 200), style = Type.body, color = ink.ink)
-            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
-                for (p in com.phenomemental.pocketbeach.bsp.Days.PORTALS) {
-                    val to = com.phenomemental.pocketbeach.bsp.Days.Where.Portal(p)
-                    TextLink("P6: " + com.phenomemental.pocketbeach.bsp.Days.name(to), { asking.moveTold(i, to, e); choosing = null }, style = Type.body, tag = "day-to:$p")
-                }
-                for (n in 1..7) {
-                    val to = com.phenomemental.pocketbeach.bsp.Days.Where.Pile(n)
-                    TextLink(com.phenomemental.pocketbeach.bsp.Days.name(to), { asking.moveTold(i, to, e); choosing = null }, style = Type.body, tag = "day-to:pile$n")
-                }
-            }
-        }
-    }
-}
-
 /** One line of the day: ticked or not, his words, and, if he moved it, from where. */
 @Composable
 private fun DayLine(i: Int, line: Landing.Line, movable: Boolean, tickable: Boolean, tick: () -> Unit, move: () -> Unit, correct: () -> Unit) {
@@ -852,7 +811,7 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
         )
         ModelStore.State.Absent -> {
             Text(
-                "The companion is Gemma 4 E2B, a model that runs on this phone. It comes as one download of $size from Hugging Face, " +
+                "The companion is ${model.app.running(com.phenomemental.pocketbeach.model.Job.TALK).model}, a model that runs on this phone. It comes as one download of $size from Hugging Face, " +
                     "over Wi-Fi only, checked byte for byte before it is used. After that it needs no connection.",
                 style = Type.body, color = ink.ink,
             )

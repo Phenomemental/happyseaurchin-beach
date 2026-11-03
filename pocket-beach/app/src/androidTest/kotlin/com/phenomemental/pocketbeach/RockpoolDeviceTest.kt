@@ -158,22 +158,24 @@ class RockpoolDeviceTest {
         }
     }
 
+    /** Sundial 0.10: Sort as my day sets his day out on the keep card, and his yes keeps it in Sundial's form, in his now, with no P6. */
     @Test
-    fun hisDayIsSetOutTheBeachsWay() {
+    fun hisDayIsKeptInSundialsForm() {
         hatched()
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("top-bar")
             say("Took the dog out with Sam this afternoon by the river and it was lovely and crisp. I felt calm for the first time in a while, which surprised me. I need to ring Jo tomorrow about the music for the pilot.")
             compose.waitFor("sort-as-day", timeoutMs = 20_000)
             compose.tap("sort-as-day")
-            // E2B: each sentence waits for him to place it in his P6.
-            compose.waitFor("day-line", timeoutMs = 20_000)
-            compose.waitFor("day-move:1")
-            compose.tap("day-move:1")
-            compose.tap("day-to:1.1")
+            compose.waitFor("keep-card", timeoutMs = 20_000)
+            compose.waitFor("keep-title", "A walk by the river")
             compose.tap("day-yes")
-            compose.waitUntil(20_000) { stringify(block(Days.p6Of(h)))?.contains("Took the dog out with Sam") == true }
-            assertTrue(app.storage.read(Days.NOW)!!.contains("I need to ring Jo tomorrow"))
+            compose.waitUntil(20_000) { app.storage.read(Days.NOW)?.contains("Took the dog out with Sam") == true }
+            val now = app.storage.read(Days.NOW)!!
+            assertTrue(now, now.contains("A walk by the river"))
+            assertTrue(now, now.contains("I need to ring Jo tomorrow"))
+            assertTrue("no P6 written", app.storage.read(Days.p6Of(h))?.contains("Took the dog out") != true)
+            compose.waitUntil(10_000) { app.waiting.all.isEmpty() }
         }
     }
 
@@ -181,11 +183,15 @@ class RockpoolDeviceTest {
     fun theNameAndTheMark() {
         hatched()
         ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("wordmark", "SUNDIAL")
             compose.menu("menu-about")
             compose.waitFor("mark")
-            // The label is set in capitals, as every label is; About's first sentence names it as written.
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("ROCKPOOL")).fetchSemanticsNodes().isNotEmpty() }
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("Rockpool keeps pscale blocks", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+            // The label is set in capitals, as every label is; About opens with Sundial's own first line.
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("SUNDIAL")).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitFor("about-opening", "Most AI that people turn to for support")
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("This was made by Matthew Bushell", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+            // How the pocket works, under Show the workings only.
+            compose.waitFor("about-workings", "Sundial keeps pscale blocks")
         }
     }
 }

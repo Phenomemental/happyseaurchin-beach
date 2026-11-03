@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 
 /** What the companion proposes, the hello world, and the one post, on a pocket held in memory and a wire that goes nowhere. */
 class AsksTest {
-    private val storage = MemoryStorage()
+    private val storage = MemoryStorage().also { it.standInRoom = Room(Hatch.MATTHEW_HANDLE, HelloWorld.POOL) }
     private val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
     private var now = 1_793_178_000_000
     private val bsp = PocketBsp(storage, shelf) { now }
@@ -158,7 +158,7 @@ class AsksTest {
 
         val elsewhere = Asks.propose(Asks.parse("""{"say":"x","steps":[],"post":{"pool":"someone-else","message":"hi"}}"""), storage, shelf, opening, seal, now)
         assertNull(elsewhere.post)
-        assertContains(elsewhere.postRefusal!!, "only to pool:Phenomemental")
+        assertContains(elsewhere.postRefusal!!, "only to your own room, pool:Phenomemental")
         val gaps = Asks.propose(Asks.parse("""{"say":"x","steps":[],"post":{"pool":"Phenomemental","message":"Block: {{address}}"}}"""), storage, shelf, opening, seal, now)
         assertNull(gaps.post)
         assertFalse(gaps.asks)
@@ -414,12 +414,15 @@ class AsksTest {
 
     @Test
     fun thePostIsOneAppendToTheFixedBeach() {
-        val m = PoolPost.prepare("pool:Phenomemental", "  Hello world.  ")
+        // Sundial 0.10: the room and its author are the hatched shell's, never fixed (spine:pocket-beach 1.1111787171).
+        val room = Room("Phenomemental", "Phenomemental")
+        val m = PoolPost.prepare("pool:Phenomemental", "  Hello world.  ", room)
         assertEquals("https://beach.happyseaurchin.com/.well-known/pscale-beach?block=pool:Phenomemental", m.url)
         assertEquals("""{"append":true,"content":{"1":"Phenomemental","_":"Hello world."}}""", m.body, "keyed as JavaScript keys it, digits first")
-        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Elsewhere", "hi") }
-        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Phenomemental", " ") }
-        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Phenomemental", "x".repeat(PoolPost.MAX_CHARS + 1)) }
+        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Elsewhere", "hi", room) }
+        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Phenomemental", " ", room) }
+        assertFailsWith<IllegalArgumentException> { PoolPost.prepare("Phenomemental", "x".repeat(PoolPost.MAX_CHARS + 1), room) }
+        assertFailsWith<IllegalArgumentException>("never before a hatch") { PoolPost.prepare("Phenomemental", "hi", null) }
 
         val sent = mutableListOf<Pair<String, String>>()
         fun wire(status: Int, text: String) = Wire { url, body -> sent += url to body; WireReply(status, text) }

@@ -36,24 +36,17 @@ object Days {
     val PORTAL_NAMES = mapOf("1.1" to "Facts", "1.2" to "Feelings", "1.3" to "Fictions", "2.1" to "Purpose", "2.2" to "Decision", "2.3" to "Outcomes")
     val RUNG_LEVELS = listOf("week", "month", "season", "year")
 
-    /** One line of his day, where it goes: a portal of his P6, a pile of his hand, a booking or a rung in his now, or the day's line. */
+    /** One line of his day beyond its sheet, where it goes: a pile of his hand, a booking at a later day, or a rung of his now. */
     sealed class Where {
-        data class Portal(val at: String) : Where()
         data class Pile(val n: Int) : Where()
         data class Booking(val date: LocalDate) : Where()
         data class Rung(val level: String) : Where()
-        object DayLine : Where()
-        /** A piece she couldn't place, waiting for him. */
-        object Unplaced : Where()
     }
 
     fun name(w: Where): String = when (w) {
-        is Where.Portal -> PORTAL_NAMES[w.at] ?: w.at
         is Where.Pile -> "Your hand: ${PILES.getOrElse(w.n - 1) { "pile ${w.n}" }}"
         is Where.Booking -> "Booked for " + w.date.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK))
         is Where.Rung -> "This ${w.level}, the rung above"
-        Where.DayLine -> "Today's line on your clock"
-        Where.Unplaced -> "Not placed yet"
     }
 
     data class Line(val words: String, val where: Where, val ticked: Boolean = true, val from: Where? = null) {
@@ -63,29 +56,62 @@ object Days {
     data class Intent(val words: String, val pile: Int?, val date: LocalDate?, val by: String?)
     data class Rung(val level: String, val words: String)
 
-    /** His day as it is set out for his yes. */
-    data class DayCard(val handle: String, val telling: String, val lines: List<Line>, val atMs: Long) {
+    /**
+     * Sundial 0.10, the keep card (spine:pocket-beach 1.1111787197, 1.111178719916):
+     * his day as it is set out for his yes. The [sheet] is hers, in Sundial's
+     * form and the second person (or his own words, for an old cook); the
+     * [places] are the coloured dots he can tap off or on; his [moments], each
+     * kept whole at its [momentGrain]; and his hand, bookings and rungs as
+     * [lines]. No P6 piece is made for a day. [day] is the beach's day kept
+     * (yesterday's, when the card offers the day before first); [his] is a
+     * line of his own already standing there, which Keep it leaves as it is.
+     */
+    data class DayCard(
+        val handle: String,
+        val day: LocalDate,
+        val sheet: Mark.Sheet?,
+        val places: List<Int>,
+        val moments: List<Keep.Moment>,
+        val lines: List<Line>,
+        val atMs: Long,
+        val momentGrain: Keep.Grain = Keep.Grain.MINUTE,
+        val his: String? = null,
+        val yesterday: Boolean = false,
+    ) {
+        /** The day's line as Keep it writes it: the sheet in Sundial's form, its places line last; "In your own words." with none. */
+        val text: String? get() = sheet?.let { s -> Mark.write(s.copy(places = Mark.inOrder(places), own = places.isEmpty())) }
+
         fun describe(): String = buildString {
             val kept = lines.filter { it.ticked }
-            append("${kept.count { it.where is Where.Portal }} in your P6")
-            append(", ${kept.count { it.where is Where.Pile }} on your hand")
-            append(", ${kept.count { it.where is Where.Booking }} booked")
-            append(", ${kept.count { it.where is Where.Rung }} on the rungs")
-            if (kept.any { it.where == Where.DayLine }) append(", and today's line")
+            val parts = mutableListOf<String>()
+            if (sheet != null && his == null) parts += "the day's line"
+            if (moments.isNotEmpty()) parts += "${moments.size} moment${if (moments.size == 1) "" else "s"}"
+            kept.count { it.where is Where.Pile }.takeIf { it > 0 }?.let { parts += "$it on your hand" }
+            kept.count { it.where is Where.Booking }.takeIf { it > 0 }?.let { parts += "$it booked" }
+            kept.count { it.where is Where.Rung }.takeIf { it > 0 }?.let { parts += "$it on the rungs" }
+            append(parts.joinToString(", ").ifEmpty { "nothing" })
         }
 
         fun tick(i: Int) = copy(lines = lines.mapIndexed { k, l -> if (k == i) l.copy(ticked = !l.ticked) else l })
         fun move(i: Int, to: Where) = copy(lines = lines.mapIndexed { k, l -> if (k == i) l.copy(where = to, from = l.from ?: l.where, ticked = true) else l })
+        /** A place's dot tapped: off if it was on, on if it was off. */
+        fun place(n: Int) = copy(places = Mark.inOrder(if (n in places) places - n else places + n))
     }
 
-    /** What his day sets out: the day's line, each piece beneath its portal (or waiting for him), his cards, his rungs. */
-    fun landing(handle: String, telling: String, pieces: List<String>, portals: List<String?>, cards: List<Intent>, rungs: List<Rung>, now: ZonedDateTime): DayCard {
+    /**
+     * What a keep sets out: [sheet] as the day's line at [day], [places] named
+     * last, [moments] each at [grain], his cards, bookings and rungs. A line of
+     * his own already at that day ([his]) stays as it is, and only the moments
+     * go beneath it.
+     */
+    fun landing(
+        handle: String, day: LocalDate, sheet: Mark.Sheet?, places: List<Int>, moments: List<Keep.Moment>,
+        cards: List<Intent>, rungs: List<Rung>, now: ZonedDateTime, his: String? = null, grain: Keep.Grain = Keep.Grain.MINUTE, yesterday: Boolean = false,
+    ): DayCard {
         val lines = mutableListOf<Line>()
-        if (telling.isNotBlank()) lines += Line(telling.trim(), Where.DayLine)
-        pieces.forEachIndexed { i, p -> lines += Line(p, portals.getOrNull(i)?.let { Where.Portal(it) } ?: Where.Unplaced, ticked = portals.getOrNull(i) != null) }
         for (c in cards) lines += Line(c.words, c.date?.let { Where.Booking(it) } ?: Where.Pile(c.pile ?: 3))
         for (r in rungs) lines += Line(r.words, Where.Rung(r.level))
-        return DayCard(handle, telling, lines, now.toInstant().toEpochMilli())
+        return DayCard(handle, day, sheet, Mark.inOrder(places), moments, lines, now.toInstant().toEpochMilli(), grain, his, yesterday)
     }
 
     // ── what he means to do, and the rungs ──
@@ -183,31 +209,29 @@ object Days {
 
     private fun rungDigits(level: String): Int = when (level) { "week" -> 7; "month" -> 6; "season" -> 5; else -> 4 }
 
-    /** What one yes writes: his now, his ahead, his P6, each whole; and what couldn't go (past nine). */
-    class Written(val blocks: List<Pair<String, JsObj>>, val over: List<String>)
+    /** What one yes writes: his now and his ahead, each whole; what couldn't go (past nine); and what became of the day's line. */
+    class Written(val blocks: List<Pair<String, JsObj>>, val over: List<String>, val dayLine: Keep.DayLine? = null, val moments: List<Keep.Landed> = emptyList())
 
     fun blocks(l: DayCard, read: (String) -> Js?, nowMs: Long = l.atMs): Written {
         val over = mutableListOf<String>()
         val stamp = isoString(nowMs)
-        val today = java.time.Instant.ofEpochMilli(l.atMs).atZone(ZoneOffset.UTC).toLocalDate()
         val kept = l.lines.filter { it.ticked }
         val out = mutableListOf<Pair<String, JsObj>>()
 
-        // His now: the day's line, bookings, rungs.
-        val nowLines = kept.filter { it.where == Where.DayLine || it.where is Where.Booking || it.where is Where.Rung }
-        if (nowLines.isNotEmpty()) {
-            var clock = (read(NOW) as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: Landing.emptyClock(NOW_OPENING)
-            for (line in nowLines) {
-                val digits = when (val w = line.where) {
-                    Where.DayLine -> dayAddress(today).take(8)
-                    is Where.Booking -> dayAddress(w.date).take(8)
-                    is Where.Rung -> dayAddress(today).take(rungDigits(w.level))
-                    else -> continue
-                }
-                clock = voiced(clock, digits, line.words)
+        // His now: the day's line in Sundial's form, each moment at its grain, bookings at their later day, rungs.
+        var clock = (read(NOW) as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: Landing.emptyClock(NOW_OPENING)
+        var dayLine: Keep.DayLine? = null
+        l.text?.let { text -> dayLine = Keep.dayLine(clock, l.day, text, nowMs) }
+        val landed = l.moments.sortedBy { it.atMs }.map { Keep.moment(clock, it, l.momentGrain) }
+        for (line in kept) {
+            when (val w = line.where) {
+                // A booking at the day kept is in its moments and its sheet already.
+                is Where.Booking -> if (w.date != l.day) Keep.booking(clock, w.date, line.words)
+                is Where.Rung -> clock = voiced(clock, dayAddress(l.day).take(rungDigits(w.level)), line.words)
+                else -> {}
             }
-            out += NOW to clock
         }
+        if (dayLine == Keep.DayLine.WRITTEN || landed.any { !it.already } || kept.any { it.where !is Where.Pile }) out += NOW to clock
 
         // His hand: each card at its pile, nine at most.
         val cards = kept.filter { it.where is Where.Pile }
@@ -223,24 +247,7 @@ object Days {
             }
             out += name to ahead
         }
-
-        // His P6: each piece beneath its portal, nine at most.
-        val pieces = kept.filter { it.where is Where.Portal }
-        if (pieces.isNotEmpty()) {
-            val name = p6Of(l.handle)
-            val p6 = (read(name) as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: emptyP6(l.handle)
-            for (p in pieces) {
-                val at = (p.where as Where.Portal).at
-                val (ring, k) = at.split('.')
-                val portal = node(node(p6, ring) { JsObj.of("_" to str(if (ring == "1") "THE SURFACE" else "THE DEEP")) }, k) { JsObj.of("_" to str(PORTAL_NAMES[at]!!.uppercase())) }
-                if ((1..9).any { j -> textOf(portal["$j"])?.let { plain(it) == plain(p.words) } == true }) continue
-                val free = (1..9).firstOrNull { !portal.has("$it") }
-                if (free == null) over += "“${p.words}” (${PORTAL_NAMES[at]} holds nine)"
-                else portal["$free"] = JsObj.of("_" to str(p.words), "2" to str(dayAddress(today)), "3" to str(stamp))
-            }
-            out += name to p6
-        }
-        return Written(out, over)
+        return Written(out, over, dayLine, landed)
     }
 
     const val NOW_OPENING = "My now, on the clock (spine:now): each day's line at its date, and the week, month, season and year above it, in my words."
@@ -306,7 +313,8 @@ object Days {
     fun toMove(storage: BlockStorage): Boolean {
         if (storage.read(Landing.TELLING) != null) return true
         val clock = storage.read(NOW)?.let { runCatching { parseJson(it) }.getOrNull() } as? JsObj ?: return false
-        return days(clock).any { (_, day) -> day["_"] is JsObj && OLD_TO_PORTAL.keys.any { (day["_"] as JsObj).has(it) } }
+        // Sundial 0.10: a day line's hidden directory holds its keep instant at 3, a string; the old six were places, objects (1.111178719915).
+        return days(clock).any { (_, day) -> (day["_"] as? JsObj)?.let { dir -> OLD_TO_PORTAL.keys.any { dir[it] is JsObj } } == true }
     }
 
     /** Each day node of the clock (eight digits deep), with its digits. */

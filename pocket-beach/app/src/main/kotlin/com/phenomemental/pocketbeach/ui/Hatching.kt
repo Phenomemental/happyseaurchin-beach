@@ -115,6 +115,13 @@ class Hatching(private val app: PocketApp) {
             }
         }.let { "your shell: $it" }
         if (bring.isNotEmpty() && bring.map(::go).all { it }) {
+            // Sundial 0.10 (spine:pocket-beach 1.111178719912): his old cook 6, TELL MY DAY, kept whole beside his cook as retired-cook-6, once.
+            ups.firstNotNullOfOrNull { it.first.sundial }?.let { su ->
+                su.retired?.let { r -> if (!app.storage.names().contains(Cook.RETIRED_COOK_6)) go(app.pages.planWhole(Cook.RETIRED_COOK_6, r)) }
+                said += "cook 6 is now Sundial's ways (keeping today, placing, the greeting, listening); your old cook 6 is kept whole as ${Cook.RETIRED_COOK_6}" +
+                    (if (su.changed.isEmpty()) "" else ", with the lines you had changed there: " + su.changed.joinToString(", ")) +
+                    (if (su.talkMoved) "; your day question moved from 1.1.8.2 to 1.1.8.7, yours as you wrote it" else "")
+            }
             for (name in listOf(Cook.SHIPPED_COOK, Cook.SHIPPED_KERNEL)) runCatching { app.procedures.load(name)?.let { shipped(name).writeText(stringify(it)!!) } }
             Hatch.listInManifest(h, listOf(Cook.cookOf(h), Cook.kernelOf(h)), app.pages, ::go)
             val whole = ups.filter { it.first.whole }
@@ -162,7 +169,7 @@ class Hatching(private val app: PocketApp) {
     /** His answer to an offer: the new sentence written at its place in his block, through the guards; null when done, else why not. */
     fun useTheNewOne(y: Cook.Yours): String? {
         val text = y.shipped ?: return "There is no new sentence to use."
-        val done = app.pages.carryOut(app.pages.planChange(y.block, y.at, text))
+        val done = app.pages.carryOut(app.pages.planChange(y.block, Cook.spindleOf(y.at), text))
         offers = offers - y
         app.asking.hatchedNow()
         return if (done.ok) null else done.problem ?: "It couldn't be written."
@@ -296,7 +303,7 @@ class Hatching(private val app: PocketApp) {
     private fun saveCopy(nowMs: Long): File {
         val dir = File(app.filesDir, COPIES).apply { mkdirs() }
         val file = File(dir, "before-the-hatch-${isoString(nowMs).replace(":", "-")}.json")
-        file.writeText(app.pages.saveCopy(), Charsets.UTF_8)
+        file.writeText(app.pages.saveCopy(app.waiting.text()), Charsets.UTF_8)
         return file
     }
 

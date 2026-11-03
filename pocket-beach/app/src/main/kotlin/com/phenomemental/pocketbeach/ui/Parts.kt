@@ -62,6 +62,9 @@ class SlipNote(val text: String, val dismiss: () -> Unit)
 
 val LocalSlip = staticCompositionLocalOf<SlipNote?> { null }
 
+/** Sundial 0.10: opens Your places, the menu, from any screen; null where there is none (a dialog). */
+val LocalPlaces = staticCompositionLocalOf<(() -> Unit)?> { null }
+
 /**
  * A page of the app: paper to the edges, the back mark and the trail at the
  * top, actions at the foot above the keyboard. [end] sits at the top's right,
@@ -81,6 +84,8 @@ fun Page(
     Column(Modifier.fillMaxSize().background(ink.paper).windowInsetsPadding(WindowInsets.safeDrawing)) {
         if (onBack != null || top != null) {
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(start = 4.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Sundial 0.10: the three lines on every screen, opening Your places.
+                LocalPlaces.current?.let { open -> RoundMark("Your places", open, tag = "menu") { c -> drawMenu(c) } }
                 if (onBack != null) BackMark(onBack) else Spacer(Modifier.width(18.dp))
                 if (top != null) Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically, content = top)
                 if (end != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), content = end)
