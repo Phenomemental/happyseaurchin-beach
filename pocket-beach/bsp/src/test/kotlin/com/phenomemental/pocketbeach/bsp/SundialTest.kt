@@ -248,8 +248,15 @@ class SundialTest {
 
     private val cook get() = Cook.parse(procedures.load(Cook.SHIPPED_COOK))
 
+    /**
+     * Sundial 0.10.2: GREET reads his tomorrow line and branches on it; she is
+     * handed short single sentences with no branch, speaking to him as you, and
+     * writes her question free (no tool call). On his Pixel's E4B the old line
+     * (one long sentence of ifs) asked "Where is he and what has today been
+     * like?", talking about him and passing over his tomorrow line.
+     */
     @Test
-    fun theGreetingIsHandedHisLastDayAndAsksOneQuestionThroughTheToolCall() {
+    fun theGreetingIsHandedHisTomorrowLineInShortSentencesWithNoBranch() {
         val (storage, pages) = hatchedAs(h, JsObj.of("_" to str("Matthew"), "1" to str("His heart.")))
         val clock = Landing.emptyClock(Days.NOW_OPENING)
         Keep.dayLine(clock, now.toLocalDate().minusDays(1), Mark.write(Mark.Sheet("Phase two", listOf("You worked with David."), "print the minutes", listOf(1))), nowMs - 86_400_000L)
@@ -257,13 +264,29 @@ class SundialTest {
         val w = World(storage, pages)
         val k = Cook.Walk(cook, w, "").start("6.3")
         assertTrue(k.done)
-        assertEquals(listOf("THE QUESTION"), k.parts)
+        assertEquals(emptyList(), k.parts, "her question free: no tool call")
         val handed = k.handed.single()
-        assertTrue(handed.line.startsWith("The app: he has opened his sundial and hasn't spoken to you yet today."), handed.line)
-        assertTrue(handed.material.single().contains("Tomorrow: print the minutes"), handed.material.toString())
-        assertEquals("print the minutes", Keep.tomorrowOf(Keep.lastDay(w.kept(), now.toLocalDate())))
-        // On E2B the same walk asks her reply free.
-        assertEquals(listOf("THE QUESTION"), Cook.Walk(cook, World(storage, pages, big = false), "").start("6.3").parts)
+        assertEquals(listOf("Yesterday he wrote this line for today: \u201cprint the minutes.\u201d"), handed.material, "his line for today")
+        assertTrue(handed.line.contains("Ask him one question about how it went today."), handed.line)
+        assertTrue(handed.line.contains("Speak to him as you."), handed.line)
+        assertNoBranch(handed.line)
+        assertTrue(k.trace.any { it.did == "read the tomorrow line he left" }, k.trace.joinToString("\n") { it.did })
+        // No tomorrow line: one question about today, the same short sentences.
+        val (s2, p2) = hatchedAs(h, JsObj.of("_" to str("Matthew"), "1" to str("His heart.")))
+        val none = Cook.Walk(cook, World(s2, p2), "").start("6.3")
+        val plain = none.handed.single()
+        assertEquals(emptyList(), plain.material)
+        assertTrue(plain.line.contains("Ask him one question about today."), plain.line)
+        assertTrue(plain.line.contains("Speak to him as you."), plain.line)
+        assertNoBranch(plain.line)
+        assertTrue(none.trace.any { it.did == "no tomorrow line left" })
+    }
+
+    /** Her greeting's line: single sentences, none of them a branch for her to take. */
+    private fun assertNoBranch(line: String) {
+        val words = Telling.plain(line).split(' ')
+        for (w in listOf("if", "else", "otherwise", "unless", "when")) assertFalse(w in words, "\"$w\" in \"$line\"")
+        for (sentence in line.removePrefix("The app: ").split(Regex("(?<=[.?!])\\s+"))) assertTrue(sentence.split(' ').size <= 16, "a short sentence: \"$sentence\"")
     }
 
     @Test

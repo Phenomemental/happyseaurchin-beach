@@ -341,6 +341,8 @@ object Talking {
      * copies what she was handed ([handed]: eight words of it in a row, not
      * his own words in this message), and a keep status ("Kept.") are never
      * shown as hers. A line wrapped whole in quote marks is shown without them.
+     * Sundial 0.10.2: her places line ("Places: …") is the app's to read, and
+     * is never shown.
      *
      * But a piece once shown is never taken out of view again, whatever
      * follows it (on his Pixel her reply showed, then went). So each piece
@@ -393,7 +395,7 @@ object Talking {
         private fun whole(piece: String): Int = Telling.plain(piece).split(' ').count { it.isNotEmpty() }.let { n -> if (piece.lastOrNull()?.isLetterOrDigit() == true) n - 1 else n }
 
         private fun notHers(piece: String): Boolean =
-            appLine(piece) || keepStatus(piece) || copied(piece, said, shellOpening, appLines, hisWords).isNotEmpty() ||
+            appLine(piece) || keepStatus(piece) || HerReply.placesLine(piece) != null || copied(piece, said, shellOpening, appLines, hisWords).isNotEmpty() ||
                 Telling.plain(piece).let { p -> handedRuns.any { " $p ".contains(" $it ") } }
     }
 

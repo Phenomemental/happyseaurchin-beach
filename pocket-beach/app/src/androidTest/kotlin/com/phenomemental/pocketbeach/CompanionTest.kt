@@ -131,31 +131,9 @@ class StandIn : Mind {
             override val pace = paced
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
-            // Sundial 0.10.1: her reply in parts on E4B, as scripted; none left, no whole tool call.
-            override fun parts(message: String, parts: List<String>): Map<String, String>? {
-                partsAsked += message
-                return partsScript.removeFirstOrNull()
-            }
-            override fun keep(message: String, reply: String) { keptParts += message to reply }
-            // Sundial 0.10.1: her reply in one of two shapes on E4B, as scripted; none left, no whole tool call.
-            override fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? {
-                shapedAsked += message
-                shapesOffered += shapes.map { it.name }
-                return shapedScript.removeFirstOrNull()
-            }
         }
     }
 
-    /** Sundial 0.10.1: her replies in a shape (E4B): the tool she called and its parts; null, or none left, is no whole tool call. */
-    val shapedScript = ArrayDeque<Pair<String, Map<String, String>>?>()
-    val shapedAsked = mutableListOf<String>()
-    val shapesOffered = mutableListOf<String>()
-
-    /** Sundial 0.10.1: her replies in parts (E4B), in order; null, or none left, is no whole tool call. */
-    val partsScript = ArrayDeque<Map<String, String>?>()
-    /** Every message a parts call was given, and what Ask kept of her reply in parts. */
-    val partsAsked = mutableListOf<String>()
-    val keptParts = mutableListOf<Pair<String, String>>()
     /** Sundial 0.10.1: the next Talk answer gives these words, then stops part way. */
     @Volatile var failAfter: String? = null
 

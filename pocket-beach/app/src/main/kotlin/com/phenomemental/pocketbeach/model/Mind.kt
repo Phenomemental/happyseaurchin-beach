@@ -96,25 +96,11 @@ interface Mind {
         fun stop()
 
         /**
-         * Sundial 0.10: her reply to [message] in its named [parts] ("THE
-         * REFLECTION", "THE QUESTION"), through the engine's tool call; null
-         * when her answer isn't whole, and the caller asks her free.
+         * Sundial 0.10.2: the tokens her kept conversation holds now (her
+         * instruction, every exchange, her last reply); null when the engine
+         * can't say. Ask opens it afresh as it nears its context.
          */
-        fun parts(message: String, parts: List<String>): Map<String, String>? = null
-
-        /**
-         * Sundial 0.10.1: her reply in one of [shapes] (REFLECT or ANSWER),
-         * through the engine's tool call: the shape she chose, by its tool's
-         * name, and each part as she returned it; null when no whole call came.
-         */
-        fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? = null
-
-        /**
-         * Sundial 0.10.1: the reply shown for [message] when it came in parts,
-         * kept in her conversation so her next turn follows it. A parts call
-         * keeps nothing itself: the app keeps only the reply it shows.
-         */
-        fun keep(message: String, reply: String) {}
+        fun tokens(): Int? = null
     }
 
     companion object {

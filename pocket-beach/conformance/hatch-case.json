@@ -729,7 +729,10 @@
                 "1": "Hand her this line: “The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something, and always ends with a question mark. Part one: give back what he said in this message, in his own words, beginning with You, adding nothing. Part two: one question about that same thing, from a place his words haven't touched, so he sees the day slightly differently. The places are: what happened, what he felt, what he made of it, what matters, a choice, what's ahead. If his words are mostly what happened, ask from another place; if mostly what he made of it, ask about what happened; and so on. The question stays on his day, something he can answer from the day itself; use what you hold about his day to shape it, but never read it out to him. Never ask how he is, what he's like, or why. Never advise, interpret, praise, cheer or wish him well. For example, he says: Just back from the shop, kettle's on. You say: You're back from the shop and the kettle's on. Once the tea's made, what comes first? Or he says: Today's going to be a write-off. You say: You think today's going to be a write-off. What's actually on for today? When he asks you something, answer it in a sentence or two instead. Only when he asks you what he has in front of him, name back today's line and the cards on his hand and ask which first. If he seems to be struggling, ask gently whether he'd like to just sit with it a moment. Speak to him as you, never by his name.”",
                 "2": "Carry THE MESSAGE as THE WORDS.",
                 "3": {
-                  "1": "Yes: walk on.",
+                  "1": {
+                    "1": "Hand her this line: “The app: his words tell of his day. After your question, end with one last line: Places: and the places his words touch, by name.”",
+                    "_": "Yes:"
+                  },
                   "2": {
                     "1": "Hand her this line: “The app: his words hold no day yet; if you reflect, ask what's on today.”",
                     "_": "No:"
@@ -744,7 +747,6 @@
                   "2": "No: walk on.",
                   "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
                 },
-                "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "_": "TALK."
               },
               "_": "Which does THE MESSAGE ask for, by the words at cook 9? Take the first answer beneath whose words match, in order; else the last."
@@ -891,12 +893,20 @@
               "_": "PLACE — the places his words touch, named by her, as Sundial's placing law has it. Inputs: THE WORDS. Walk 6.2.1 to 6.2.3 in order."
             },
             "3": {
-              "1": "GATHER. Gather what he said today, each moment with its instant, from the first after midnight on the beach's clock. Carry them as THE MOMENTS.",
-              "2": "LAST DAY. Read his last day kept before today, whole, with its tomorrow line. Carry it as THE LAST DAY.",
-              "3": "Hand her THE LAST DAY and THE MOMENTS with this line: “The app: he has opened his sundial and hasn't spoken to you yet today. Ask him one question about today, in plain words, as a host would ask it aloud: something he can answer from the day itself. If his last day kept has a tomorrow line, your question follows from it and asks it from the day (where it went, what came of it, what today held of it), so that his line and your question read as one thought; the app shows him his line just before your question, so never repeat it, paraphrase it or answer it, and never ask whether he did it. If today already holds moments, ask what has come since, in his own terms from those moments, never naming a title or a label. If no day is kept yet, ask where he is and what today has been like. Never ask how he is, what he's like, or why; never walk him inward; never ask two questions. Never advise, interpret, diagnose, praise or cheer, and never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision or Outcomes. Speak to him as you, never by his name.”",
-              "4": "She gives her reply as THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
-              "5": "ACCOUNT. Account the question asked.",
-              "_": "GREET — her one question about today as the dial opens, before he has said anything today, as Sundial's greeting law has it. Inputs: his last day kept, and what he has said today. Walk 6.3.1 to 6.3.5 in order."
+              "1": "TOMORROW. Read the tomorrow line of his last day kept before today. Carry it as THE TOMORROW.",
+              "2": {
+                "1": {
+                  "1": "Hand her THE TOMORROW with this line: “The app: The app shows him that line just before your question. Ask him one question about how it went today. Name what he wrote. Speak to him as you. Put the word you in your question. Never use his name. For example, for “ring Jo”: How did you get on with ringing Jo today? Ask about the day, not his feelings. One question only.”",
+                  "_": "Yes:"
+                },
+                "2": {
+                  "1": "Hand her this line: “The app: He has opened his sundial and hasn't spoken yet today. Ask him one question about today. Speak to him as you. Put the word you in your question. Never use his name. For example: What's on for you today? Ask about the day, not his feelings. One question only.”",
+                  "_": "No:"
+                },
+                "_": "Is there THE TOMORROW?"
+              },
+              "3": "ACCOUNT. Account the question asked.",
+              "_": "GREET — her one question as the dial opens, before he has said anything today, as Sundial's greeting law has it. Inputs: the tomorrow line of his last day kept. Walk 6.3.1 to 6.3.3 in order; branch at 6.3.2."
             },
             "4": {
               "1": "DAYS. Read the latest nine days resting in THE PLACE, each whole with its date: a day rests in a place when its last line names it, or, for a day kept before Sundial with no such line, when his P6 holds a piece of it beneath that place, those pieces read with it. Carry them as THE DAYS.",
@@ -1619,7 +1629,10 @@
                 "1": "Hand her this line: “The app: nothing is being kept or set out from this. Talk with him warmly, in a sentence or two, and ask one thing. Speak to him as you, never by his name.”",
                 "2": "Carry THE MESSAGE as THE WORDS.",
                 "3": {
-                  "1": "Yes: walk on.",
+                  "1": {
+                    "1": "Hand her this line: “The app: his words tell of his day. After your question, end with one last line: Places: and the places his words touch, by name.”",
+                    "_": "Yes:"
+                  },
                   "2": {
                     "1": "Hand her this line: “The app: his words hold no day yet; if you reflect, ask what's on today.”",
                     "_": "No:"
@@ -1634,7 +1647,6 @@
                   "2": "No: walk on.",
                   "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
                 },
-                "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "_": "TALK."
               },
               "_": "Which does THE MESSAGE ask for, by the words at cook 9? Take the first answer beneath whose words match, in order; else the last."
@@ -1781,12 +1793,20 @@
               "_": "PLACE — the places his words touch, named by her, as Sundial's placing law has it. Inputs: THE WORDS. Walk 6.2.1 to 6.2.3 in order."
             },
             "3": {
-              "1": "GATHER. Gather what he said today, each moment with its instant, from the first after midnight on the beach's clock. Carry them as THE MOMENTS.",
-              "2": "LAST DAY. Read his last day kept before today, whole, with its tomorrow line. Carry it as THE LAST DAY.",
-              "3": "Hand her THE LAST DAY and THE MOMENTS with this line: “The app: he has opened his sundial and hasn't spoken to you yet today. Ask him one question about today, in plain words, as a host would ask it aloud: something he can answer from the day itself. If his last day kept has a tomorrow line, your question follows from it and asks it from the day (where it went, what came of it, what today held of it), so that his line and your question read as one thought; the app shows him his line just before your question, so never repeat it, paraphrase it or answer it, and never ask whether he did it. If today already holds moments, ask what has come since, in his own terms from those moments, never naming a title or a label. If no day is kept yet, ask where he is and what today has been like. Never ask how he is, what he's like, or why; never walk him inward; never ask two questions. Never advise, interpret, diagnose, praise or cheer, and never use the words block, pool, passport, handle, beach, pscale, Being, Facts, Feelings, Fictions, Purpose, Decision or Outcomes. Speak to him as you, never by his name.”",
-              "4": "She gives her reply as THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
-              "5": "ACCOUNT. Account the question asked.",
-              "_": "GREET — her one question about today as the dial opens, before he has said anything today, as Sundial's greeting law has it. Inputs: his last day kept, and what he has said today. Walk 6.3.1 to 6.3.5 in order."
+              "1": "TOMORROW. Read the tomorrow line of his last day kept before today. Carry it as THE TOMORROW.",
+              "2": {
+                "1": {
+                  "1": "Hand her THE TOMORROW with this line: “The app: The app shows him that line just before your question. Ask him one question about how it went today. Name what he wrote. Speak to him as you. Put the word you in your question. Never use his name. For example, for “ring Jo”: How did you get on with ringing Jo today? Ask about the day, not his feelings. One question only.”",
+                  "_": "Yes:"
+                },
+                "2": {
+                  "1": "Hand her this line: “The app: He has opened his sundial and hasn't spoken yet today. Ask him one question about today. Speak to him as you. Put the word you in your question. Never use his name. For example: What's on for you today? Ask about the day, not his feelings. One question only.”",
+                  "_": "No:"
+                },
+                "_": "Is there THE TOMORROW?"
+              },
+              "3": "ACCOUNT. Account the question asked.",
+              "_": "GREET — her one question as the dial opens, before he has said anything today, as Sundial's greeting law has it. Inputs: the tomorrow line of his last day kept. Walk 6.3.1 to 6.3.3 in order; branch at 6.3.2."
             },
             "4": {
               "1": "DAYS. Read the latest nine days resting in THE PLACE, each whole with its date: a day rests in a place when its last line names it, or, for a day kept before Sundial with no such line, when his P6 holds a piece of it beneath that place, those pieces read with it. Carry them as THE DAYS.",

@@ -464,6 +464,32 @@ object HerWindow {
     }
 
     /**
+     * Sundial 0.10.2: her turn in her one kept conversation, which holds her
+     * window, the time it opened and her recipe for talk: his words and only
+     * what is new with them. How his last proposal ended; what was read for
+     * her (only when READ read it); the safety line when his words say he
+     * isn't safe; the lines the walker handed her other than her recipe
+     * ([recipe]); then his words.
+     */
+    fun turnKept(said: String, pages: Pages, handed: List<Cook.Handed>, recipe: String?, told: String? = null): String = buildString {
+        told?.let { appendLine("(How his last proposal ended: $it)") }
+        val unsafe = Talking.unsafe(said, pages)
+        if (!unsafe) for (h in handed) for (m in h.material) appendLine(m)
+        if (unsafe) appendLine("(${Talking.SAFETY})")
+        for (h in handed) if (h.line != recipe) appendLine("(${h.line})")
+        append(said.trim())
+    }
+
+    /** Sundial 0.10.2: the opening of her one kept conversation: her window, the day and time it opened, and her recipe for talk. */
+    fun opening(window: String, now: ZonedDateTime, recipe: String?): String = buildString {
+        append(window)
+        appendLine()
+        appendLine()
+        append("It is ${WHEN.format(now)} as this conversation opens.")
+        recipe?.let { appendLine(); appendLine(); append(it) }
+    }
+
+    /**
      * The lines of a turn she must never play back: the time, how his last
      * proposal ended, and the app's line. Not what has changed, nor what was
      * read for her, nor the safety line: those hold his words, or words she

@@ -183,9 +183,10 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
 
 /**
  * Her reply in Sundial's shape: the reflection upright, the question in
- * italic beneath (sundial.html:2294-2301). Sundial 0.10.1: parts only when
- * every one holds words; else her words as she said them, the question read
- * from them only when it can be, else plain (Talking.splitQuestion).
+ * italic beneath (sundial.html:2294-2301). Sundial 0.10.2: her words as she
+ * wrote them, once checked: a closing sentence ending in "?" is the question,
+ * in italic, and what comes before it part one; with no closing question,
+ * plain words (HerReply.split).
  */
 fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
     // Sundial 0.10.1 (item 10): checked once more as it is shown, whatever way it came: no app line, no keep status, no quote marks wrapping it.
@@ -193,7 +194,8 @@ fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.
     // Sundial 0.10.1: ANSWER, her answer as she gave it, plain.
     parts?.get("THE ANSWER")?.let(hers)?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
     val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.mapValues { hers(it.value) }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
-    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(hers(said))
+    // Sundial 0.10.2: of what is shown, a closing sentence ending in "?" is her question, in italic, and what comes before it part one; no closing question, plain words.
+    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.HerReply.split(hers(said))
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {
         if (reflection.isNotBlank()) append("\n")
