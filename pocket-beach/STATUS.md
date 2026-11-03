@@ -4,6 +4,46 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10.1 is released (3 November), eleven fixes from his Pixel:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.1
+- **Install:** `sundial-v0.10.1.apk` over 0.10; his blocks stay. At first
+  opening the app brings his cook up place by place, keeping what he
+  changed, and says so in one plain line.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.10.1 (24), from main at `987e931` (PR #238), release run
+  236. APK SHA-256 `c5375ac2…`. The procedures it carries are byte for
+  byte main's.
+- **Tests:** 286 core; all 80 device tests (CI run 234). The tour shoots
+  both greetings, the kept shell and its page, and the dial held at three
+  widths.
+- **What it fixes:**
+  1. On E2B, Settings and the workings say plainly that she is using the
+     smaller model, with the way to E4B.
+  2. The help line shows only when his words show danger.
+  3. Her reply never vanishes.
+  4. Part one is asked for again when it comes back empty, and a reply is
+     never shown as whole without it.
+  5. One plain bring-up line; the dial's captions sit clear.
+  6. A kept day shows as its shell, and its page opens on a tap.
+  7. Two shapes for her reply, REFLECT or ANSWER.
+  8. The day is judged first; a message with no day gets no places.
+  9. Every step is timed; the model is loaded once.
+  10. The greeting is never handed his passport. It shows his tomorrow
+      line, then her one question. Every reply passes one check before it
+      shows: no "The app:", nothing she was handed, no keep status, no
+      quote marks wrapping it.
+  11. Keep today is the one way to keep: no "Sort as my day".
+- **Untried with a real model on his phone:** her greeting on E2B. On the
+  laptop's E4B it never copied his passport (`trial/greeting-0.10.1.md`),
+  but two seeds of three asked "Where is he and what has today been
+  like?": GREET's one long line with branches, read by a small model. A
+  next look at cook 6.3.3.
+- **To try on his Pixel:** his three messages of 3 November (the day, the
+  question, no day); a new conversation on a day kept and on one not kept;
+  Keep today.
+- **Next:** 0.11, the shells (findings section 9).
+
 **Sundial 0.10, Today and keeping, is released (3 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
 - **Install:** `sundial-v0.10.apk` over Rockpool 0.9.1; his blocks stay.
@@ -33,7 +73,6 @@ https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
   sheet and her reply in two parts on E4B. Each falls back to her plain
   words.
 - **To try on his Pixel:** the list at the foot of `trial/judged-0.10.md`.
-- **Next:** 0.11, the shells (findings section 9).
 
 **Rockpool 0.9.1 is released (2 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/rockpool-v0.9.1
