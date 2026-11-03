@@ -69,11 +69,13 @@ class SundialFixesTest {
         val e2b = streamed(e2bLine, Talking.Shown(idChecks, opening, hisWords = false))
         assertNeverTakenBack(e2b)
         assertEquals(e2bLine, e2b.last())
-        // Even where his words count as played back (before a hatch): a line shown before eight of his words come stays.
-        val late = "Thank you for telling me all of that, really. I've done some of the id checks today, furthered the membership form planning."
+        // Even where his words count as played back (before a hatch): what was shown before eight of his words came stays;
+        // item 10, his words played back are a sentence of their own, judged on their own, and never shown.
+        val thanks = "Thank you for telling me all of that, really."
+        val late = "$thanks I've done some of the id checks today, furthered the membership form planning."
         val before = streamed(late, Talking.Shown(idChecks, opening, hisWords = true))
         assertNeverTakenBack(before)
-        assertEquals(late, before.last())
+        assertEquals(thanks, before.last())
         // A line that plays her turn back from its start is never shown at all.
         val played = streamed("Matthew: $idChecks\n$question", Talking.Shown(idChecks, opening, hisWords = true))
         assertNeverTakenBack(played)

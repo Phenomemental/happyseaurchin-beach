@@ -9,7 +9,7 @@
    "3": "MAKE. Run cook 4.",
    "4": {
     "_": "TELL MY DAY.",
-    "1": "Hand her this line: “The app: the app sets out his day beneath your reply, on Sundial's keep card, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
+    "1": "Hand her this line: “The app: the app sets out his day on Sundial's keep card, as Keep today does, for his yes: a short sheet of his day in your words, each moment as he said it, and what he means to do on his hand. Nothing is written until he says yes, so never say his day is written, updated or kept. Begin your reply with these words: “It's set out for your yes.” Then a sentence or two about his day. Speak to him as you, never by his name.”",
     "2": "Run cook 6.1."
    },
    "5": "KEEP. Run cook 2.",
@@ -35,10 +35,7 @@
     "2": "Carry THE MESSAGE as THE WORDS.",
     "3": {
      "_": "Does THE MESSAGE tell of his day: three sentences or more and forty words or more in all, or news of a card on his hand?",
-     "1": {
-      "_": "Yes:",
-      "1": "Carry THE MESSAGE as THE DAY."
-     },
+     "1": "Yes: walk on.",
      "2": {
       "_": "No:",
       "1": "Hand her this line: “The app: his words hold no day yet; if you reflect, ask what's on today.”"
@@ -52,16 +49,7 @@
      },
      "2": "No: walk on."
     },
-    "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it.",
-    "6": {
-     "_": "Is there THE DAY?",
-     "1": {
-      "_": "Yes:",
-      "1": "Set out the card “Sort as my day” beneath her reply, for his tap.",
-      "2": "On his tap, run cook 6.1."
-     },
-     "2": "No: walk on."
-    }
+    "5": "She gives her reply through the tool call in one of two shapes: REFLECT, as THE PLACES TOUCHED, THE REFLECTION and THE QUESTION, her question from a place his words haven't touched; or ANSWER, as THE ANSWER, when he asks her something. On E2B, or when her answer isn't whole, her reply stands as she writes it."
    }
   },
   "2": "ACCOUNT. Account the answer taken."
@@ -167,7 +155,7 @@
  "6": {
   "_": "YOUR DAY — Sundial's ways, each a procedure beneath, walked as the others are: 6.1 KEEP TODAY, 6.2 PLACE, 6.3 GREET, 6.4 LISTEN.",
   "1": {
-   "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: on his tap of Keep today, on Sort as my day beneath her reply, or when his words ask for it (cook 9.4). Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2.",
+   "_": "KEEP TODAY — his day kept in Sundial's form, the one way a day is kept: his tap of Keep today, or his words asking for it (cook 9.4), which do what that tap does. Inputs: what he said today. Walk 6.1.1 to 6.1.9 in order; branch at 6.1.2.",
    "1": "GATHER. Gather what he said today, each moment with its instant, from the first after midnight on the beach's clock. Carry them as THE MOMENTS.",
    "2": {
     "_": "Is there THE MOMENTS?",

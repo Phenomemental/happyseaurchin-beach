@@ -344,11 +344,14 @@ class CookTest {
             assertTrue(k.trace.any { it.did == "his words don't tell of his day" })
             assertNull(k.card, "no Sort as my day")
         }
-        // His day message, news of the card on his hand: a day; no no-day line; Sort as my day after her reply.
+        // His day message, news of the card on his hand: a day; no no-day line. Sundial 0.10.1 (item 11): her reply and no card;
+        // Keep today is the one way his words become his day.
         val day = talked(idChecks)
         assertTrue(day.handed.none { it.line == noDay })
         assertTrue(day.trace.any { it.did == "his words tell of his day" })
-        assertEquals(Cook.Card.Offer("Sort as my day"), (day.waiting as Cook.Wait.Him).card)
+        assertNull(day.waiting, "TALK waits on nothing: no card after her reply")
+        assertNull(day.card, "no Sort as my day")
+        assertTrue(day.trace.none { it.did.contains("Sort as my day") }, day.trace.joinToString("\n") { it.did })
         // Her reply's two shapes, hers to choose: REFLECT with her places, ANSWER when he asks her something.
         assertEquals(listOf(HerReply.Shape("REFLECT", listOf(HerReply.PLACES, "THE REFLECTION", "THE QUESTION")), HerReply.Shape("ANSWER", listOf("THE ANSWER"))), day.shapes)
         assertTrue(day.handed.single { it.line.startsWith("The app: nothing is being kept") }.line.contains("Your reply has two parts, unless he asks you something"))
@@ -468,7 +471,9 @@ class CookTest {
         val k = walk(w, "Put this in my now: $told1003")
         assertEquals("TELL MY DAY", k.answer)
         val line = k.handed.single().line
-        assertTrue(line.contains("Begin your reply with these words: “It's below, for your yes.”"), line)
+        // Sundial 0.10.1 (item 11): his words asking for it do what the tap of Keep today does: the one keep card, where Keep today sets it out.
+        assertTrue(line.contains("on Sundial's keep card, as Keep today does, for his yes"), line)
+        assertTrue(line.contains("Begin your reply with these words: “It's set out for your yes.”"), line)
         assertTrue(line.contains("never say his day is written, updated or kept"), line)
         @Suppress("UNCHECKED_CAST") val pieces = k.carried["THE PIECES"] as? List<String>
         assertNull(pieces, "his hand is read after her sheet")
@@ -576,13 +581,13 @@ class CookTest {
         val su = ups.single { it.first.shipped == Cook.SHIPPED_COOK }.first.sundial!!
         assertEquals(listOf("6.1"), su.changed)
         assertTrue(su.talkMoved)
-        // Sundial 0.10.1: TALK asks it first, before her places, at 1.1.8.3; the card it sets out is at 1.1.8.6.
+        // Sundial 0.10.1: TALK asks it first, at 1.1.8.3; it sets out no card (item 11: Keep today is the one way).
         assertEquals("1.1.8.3", su.movedTo)
         assertEquals(hisSix1, jsString(su.retired!!["1"]), "his old cook 6 kept whole")
         val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
         assertEquals(hisQuestion, now["1.1.8.3"], "his day question, his, where TALK asks it")
-        assertEquals("Carry THE MESSAGE as THE DAY.", now["1.1.8.3.1.1"])
-        assertEquals("On his tap, run cook 6.1.", now["1.1.8.6.1.2"], "and its card runs KEEP TODAY")
+        assertEquals("Yes: walk on.", now["1.1.8.3.1"])
+        assertTrue(now.keys.none { it.startsWith("1.1.8.6") }, "no Sort as my day after her reply")
         assertEquals("Carry THE MESSAGE as THE WORDS.", now["1.1.8.2"])
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")

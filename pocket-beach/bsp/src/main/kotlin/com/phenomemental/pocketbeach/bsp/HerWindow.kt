@@ -213,10 +213,8 @@ object HerWindow {
      * can do. Opened by her name, as his shell gives it. A place with nothing
      * in it is left out, its number kept.
      */
-    fun window(handle: String, pages: Pages, storage: BlockStorage, shelf: Shelf, now: ZonedDateTime): String = buildString {
-        val shell = Hatch.shellOf(handle)
-        val node = storage.read(shell)?.let(::parseJson)?.let { jsGet(it, Hatch.WINDOW) }
-        val members = runCatching { compileBundle(node, BundleContext(Shells(storage, shelf).loader(), handle, now.toInstant().toEpochMilli())) }.getOrNull().orEmpty()
+    fun window(handle: String, pages: Pages, storage: BlockStorage, shelf: Shelf, now: ZonedDateTime, leaveOut: Set<Int> = emptySet()): String = buildString {
+        val members = compiled(handle, storage, shelf, now)
         val bySlot = members.associateBy { it.slot }
         val his = Hatch.hisName(point(bySlot["2"]).orEmpty()) ?: "He"
         val name = herName(handle, pages)
@@ -231,9 +229,34 @@ object HerWindow {
         point(bySlot["8"])?.let { places += 8 to it }
         places += 9 to CAN_DO
         for ((n, line) in places) {
+            if (n in leaveOut) continue
             appendLine()
             append("$n. $line")
         }
+    }
+
+    /** Her window's places for [handle], as Bundle.kt compiles them. */
+    private fun compiled(handle: String, storage: BlockStorage, shelf: Shelf, now: ZonedDateTime): List<Member> {
+        val node = storage.read(Hatch.shellOf(handle))?.let(::parseJson)?.let { jsGet(it, Hatch.WINDOW) }
+        return runCatching { compileBundle(node, BundleContext(Shells(storage, shelf).loader(), handle, now.toInstant().toEpochMilli())) }.getOrNull().orEmpty()
+    }
+
+    /**
+     * Sundial 0.10.1: the greeting is never handed his passport: his place
+     * "who he is" (2) is left out of her window for it. On his Pixel on 3
+     * November she copied it out as her greeting's first line.
+     */
+    val GREETING_LEAVES_OUT = setOf(2)
+
+    /**
+     * Sundial 0.10.1: what her window hands her that is never hers to show:
+     * his heart, who he is (his passport line), how he'd be met (1 to 3), the
+     * way she talks (8) and what she can do (9). Not today on his clock, his
+     * hand, his people or what he keeps: those she may name back to him.
+     */
+    fun notHers(handle: String, storage: BlockStorage, shelf: Shelf, now: ZonedDateTime): List<String> {
+        val bySlot = compiled(handle, storage, shelf, now).associateBy { it.slot }
+        return listOfNotNull(point(bySlot["1"]), point(bySlot["2"]), point(bySlot["3"]), point(bySlot["8"]), CAN_DO)
     }
 
     /** Her name, as his shell gives it at her place ("Matthew calls me Gemma."). */
