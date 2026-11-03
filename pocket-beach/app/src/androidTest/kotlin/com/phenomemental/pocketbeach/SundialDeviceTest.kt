@@ -9,6 +9,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.phenomemental.pocketbeach.bsp.Days
 import com.phenomemental.pocketbeach.bsp.Hatch
+import org.junit.Assert.assertFalse
+import com.phenomemental.pocketbeach.model.JobSettings
+import com.phenomemental.pocketbeach.model.Job
+import com.phenomemental.pocketbeach.bsp.HerReply
 import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.Keep
 import com.phenomemental.pocketbeach.bsp.Landing
@@ -239,6 +243,111 @@ class SundialDeviceTest {
             compose.waitFor("dial")
             Thread.sleep(1000)
             assertTrue(none("where-ask"))
+        }
+    }
+
+    // ── Sundial 0.10.1, from his Pixel 9 Pro XL on 3 November, with his test message exactly as he sent it ──
+
+    private val idChecks = "I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial."
+    private val reflection = "You've done some of the id checks today, furthered the membership form planning, and responded to a fraud report, and interacted with David."
+    private val question = "What will evaluating sundial ask of you?"
+
+    /** His hand as on his phone: the membership agreement from his 10:03 telling, so the message is news of a card. */
+    private fun hisHand() {
+        val ahead = JsObj.of("_" to str("My hand."), "3" to JsObj.of("_" to str("This week"), "1" to str("and need to update a membership agreement and print it out")))
+        check(app.pages.carryOut(app.pages.planWhole(Days.aheadOf(h), ahead)).ok)
+    }
+
+    private fun shows(tag: String, text: String) = compose.onAllNodes(hasTestTag(tag) and hasText(text, substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+
+    /** Fix 3 and 2: on E2B her one-line reply stays in view with "Sort as my day" beneath it; no help line, no danger line for her. */
+    @Test
+    fun onE2BHerReplyToTheTestMessageStaysWithItsCardAndNoHelpLine() {
+        Fresh.hatched()
+        hisHand()
+        mind.talkScript += "$reflection All that's left is to evaluate sundial. $question"
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(idChecks)
+            compose.waitFor("sort-as-day", timeoutMs = 20_000)
+            compose.waitFor("say", "You've done some of the id checks today")
+            Thread.sleep(1500)
+            assertTrue("her reply is never taken out of view", shows("say", "You've done some of the id checks today") && shows("say", question))
+            assertTrue("no help line beneath an ordinary day", none("help-line"))
+            assertTrue(none("unfinished"))
+            val turn = mind.talkMessages.last()
+            assertFalse("cook 1.1.8.5 isn't handed her: $turn", turn.contains("in danger") || turn.contains("where help is"))
+            // His words showing danger: the help line, centred beneath her reply, and 1.1.8.5 handed her without an if.
+            say("I don't feel safe tonight.")
+            compose.waitFor("help-line", "116 123", timeoutMs = 20_000)
+            assertTrue(mind.talkMessages.last().contains("The app: his words say he may be in danger."))
+            assertEquals("beneath that reply only", 1, compose.onAllNodes(hasTestTag("help-line"), useUnmergedTree = true).fetchSemanticsNodes().size)
+        }
+        // The help line lives in Your places and About.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.tap("menu")
+            compose.waitFor("places-help-line", "116 123")
+        }
+    }
+
+    /** Fix 4: on E4B, part one came back empty: she is asked once more; both calls are in the workings, exactly as she returned them. */
+    @Test
+    fun onE4BAnEmptyPartOneIsAskedForOnceMore() {
+        Fresh.hatched()
+        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+        app.showDetails = true
+        mind.partsScript += mapOf("THE REFLECTION" to "", "THE QUESTION" to question)
+        mind.partsScript += mapOf("THE REFLECTION" to reflection, "THE QUESTION" to question)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(idChecks)
+            compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
+            assertTrue(shows("say", question))
+            assertEquals(2, mind.partsAsked.size)
+            assertTrue(mind.partsAsked[1].contains(HerReply.AGAIN))
+            compose.waitFor("parts-tried", "THE REFLECTION “”; THE QUESTION “$question”")
+            compose.waitFor("parts-tried", "asked once more for part one: THE REFLECTION “$reflection”")
+            assertEquals("$reflection\n$question", mind.keptParts.single().second)
+        }
+    }
+
+    /** Fix 4: part one empty both times: never shown as if whole; she is asked free, and her own words stand. */
+    @Test
+    fun onE4BAReplyStillMissingPartOneIsNeverShownAsWhole() {
+        Fresh.hatched()
+        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+        repeat(2) { mind.partsScript += mapOf("THE REFLECTION" to "", "THE QUESTION" to question) }
+        mind.talkScript += "$reflection $question"
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(idChecks)
+            compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
+            assertEquals(2, mind.partsAsked.size)
+            assertTrue("nothing kept from the parts calls", mind.keptParts.isEmpty())
+        }
+    }
+
+    /** Fix 3: her answer stops part way: what she showed stays, and a plain line says she couldn't finish. */
+    @Test
+    fun aReplyThatStopsPartWayKeepsHerWordsAndSaysSo() {
+        Fresh.hatched()
+        mind.failAfter = reflection
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(idChecks)
+            compose.waitFor("unfinished", "She couldn't finish her reply", timeoutMs = 20_000)
+            assertTrue(shows("say", "You've done some of the id checks today"))
+        }
+    }
+
+    /** Fix 1: on E2B, Settings and the workings say so plainly, with the way to the larger model; on E4B, nothing. */
+    @Test
+    fun theSmallerModelIsSaidPlainly() {
+        Fresh.hatched()
+        app.showDetails = true
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("smaller-model-why", "She's using the smaller model", timeoutMs = 20_000)
+            compose.menu("menu-settings")
+            compose.waitFor("smaller-model-why", "She's using the smaller model")
+            assertTrue("the way to the larger model, or why there is none", !none("smaller-model-get") || !none("smaller-model-use") || shows("smaller-model-why", "memory") || shows("smaller-model-why", "room") || shows("smaller-model-why", "coming"))
+            app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+            compose.waitUntil(10_000) { none("smaller-model") }
         }
     }
 }

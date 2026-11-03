@@ -265,6 +265,19 @@ object Talking {
         append(HIS + said.trim())
     }
 
+    /**
+     * On E2B (or when her parts weren't whole), her free reply read as Sundial
+     * sets it out: its last sentence ending in a question mark, at the end, is
+     * the question (1.111178719916); the rest the reflection. Sundial 0.10.1:
+     * when the two can't be told apart, her words stay plain, as she said them.
+     */
+    fun splitQuestion(said: String): Pair<String, String> {
+        val t = said.trim()
+        if (!t.endsWith("?")) return t to ""
+        val m = Regex("""(?s)^(.*[.!?…]["”’)]?)\s+([^.!?…]*\?)$""").find(t) ?: return t to ""
+        return m.groupValues[1].trim() to m.groupValues[2].trim()
+    }
+
     // ── her turn, never played back (0.6.1) ──
 
     private val YEAR = Regex("""\b(19|20)\d\d\b""")
@@ -279,8 +292,15 @@ object Talking {
      * "Matthew:" and his words, or his words whole ([said]: eight words of his
      * in a row; when he said fewer, a line that is his words and nothing
      * else, so "Good morning, Matthew" to his "Good morning" is no copy).
+     *
+     * Sundial 0.10.1 ([hisWords] false): where his cook asks her to give
+     * back what he said in his own words (TALK's part one), his words in her
+     * reply are hers to say, not her turn played back. On his Pixel on 3
+     * November her reflection of "I've done some of the id checks today, …"
+     * held eight of his words in a row, and was left out: on E4B part one
+     * was missing; on E2B, her one line, the whole reply.
      */
-    fun copied(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): List<String> {
+    fun copied(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList(), hisWords: Boolean = true): List<String> {
         val his = Telling.plain(said).split(' ').filter { it.isNotEmpty() }
         val runs = if (his.size < 8) emptySet() else (0..his.size - 8).map { his.subList(it, it + 8).joinToString(" ") }.toSet()
         val whole = his.joinToString(" ")
@@ -299,14 +319,45 @@ object Talking {
                 line.trimStart().trimStart('*', '_', '"').startsWith("Matthew:") ||
                 (YEAR.containsMatchIn(line) && CLOCK.containsMatchIn(line)) ||
                 ((p.startsWith("it is ") || p.startsWith("it's ")) && WEEKDAYS.any { p.contains(it) } && YEAR.containsMatchIn(line)) ||
-                runs.any { " $p ".contains(" $it ") } || (his.size < 8 && p == whole) || shellRuns.any { " $p ".contains(" $it ") }
+                (hisWords && (runs.any { " $p ".contains(" $it ") } || (his.size < 8 && p == whole))) || shellRuns.any { " $p ".contains(" $it ") }
         }
     }
 
     /** Her [reply] with every line that plays her turn back left out: what Ask shows of her. */
-    fun unechoed(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList()): String {
-        val copies = copied(reply, said, shellOpening, appLines).toSet()
+    fun unechoed(reply: String, said: String, shellOpening: String, appLines: List<String> = emptyList(), hisWords: Boolean = true): String {
+        val copies = copied(reply, said, shellOpening, appLines, hisWords).toSet()
         return reply.lines().filter { it !in copies }.joinToString("\n").trim().replace(Regex("\n{3,}"), "\n\n")
+    }
+
+    /**
+     * Sundial 0.10.1: her words as he is shown them while they come, and at
+     * the end. A line that plays her turn back is left out ([copied]); but a
+     * line once shown is never taken out of view again, whatever follows it
+     * (on his Pixel on 3 November her reply showed, then went). So a line is
+     * shown only once it can be judged: when the next has begun, when it
+     * holds eight words or more, or when her reply is over ([of] with
+     * `over`); from then it stays.
+     */
+    class Shown(private val said: String, private val shellOpening: String, private val appLines: List<String> = emptyList(), private val hisWords: Boolean = true) {
+        private val kept = HashSet<Int>()
+        private val dropped = HashSet<Int>()
+
+        /** What is shown of [text], her reply so far ([over]: all of it has come). */
+        fun of(text: String, over: Boolean = false): String {
+            val lines = text.lines()
+            val copies = copied(text, said, shellOpening, appLines, hisWords).toSet()
+            val out = mutableListOf<String>()
+            for ((i, line) in lines.withIndex()) {
+                if (i in kept) { out += line; continue }
+                if (i in dropped) continue
+                val judged = over || i < lines.lastIndex || Telling.plain(line).split(' ').count { it.isNotEmpty() } >= 8
+                if (!judged) continue
+                if (line in copies) { dropped += i; continue }
+                out += line
+                if (line.isNotBlank()) kept += i
+            }
+            return out.joinToString("\n").trim().replace(Regex("\n{3,}"), "\n\n")
+        }
     }
 
     /** 0.6.1: his turn as she is given it, his words alone; the date, the time and her shell are in her instruction. */

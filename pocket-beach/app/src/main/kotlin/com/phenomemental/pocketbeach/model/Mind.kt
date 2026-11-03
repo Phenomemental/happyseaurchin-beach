@@ -98,6 +98,13 @@ interface Mind {
          * when her answer isn't whole, and the caller asks her free.
          */
         fun parts(message: String, parts: List<String>): Map<String, String>? = null
+
+        /**
+         * Sundial 0.10.1: the reply shown for [message] when it came in parts,
+         * kept in her conversation so her next turn follows it. A parts call
+         * keeps nothing itself: the app keeps only the reply it shows.
+         */
+        fun keep(message: String, reply: String) {}
     }
 
     companion object {

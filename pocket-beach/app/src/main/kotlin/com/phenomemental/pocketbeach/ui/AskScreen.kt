@@ -189,19 +189,30 @@ fun AskScreen(model: Model, nav: Nav) {
         if (hatching.hatched != null) TodayDial(model, nav)
 
         ModelPart(model, modelState)
+        // Sundial 0.10.1: under Show the workings, when she talks on the smaller model, said plainly, with the way to the larger.
+        if (details && ready) SmallerModel(model)
 
         // The thread: each thing he said, her reply, and what waits on his answer beneath it.
         asking.history.forEach { e -> Turn(model, e, latest = e === asking.history.lastOrNull(), details = details) }
         if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
-        // Sundial's safety line, at the foot always (sundial.html:2488).
-        Text(
-            (Words.sundialBlock(model.app)?.let { com.phenomemental.pocketbeach.bsp.jsGet(com.phenomemental.pocketbeach.bsp.jsGet(it, "7"), "1") } as? com.phenomemental.pocketbeach.bsp.JsStr)?.value
-                ?: "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland).",
-            style = Type.small.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic), color = ink.soft,
-            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag("safe-line"),
-        )
+        // Sundial 0.10.1: the help line is beneath a reply only when his words show danger (Turn); else it is in About and Your places.
     }
 }
+
+/** Sundial's help line (words:sundial 7.1, sundial.html:2488), centred. */
+@Composable
+fun HelpLine(model: Model, tag: String = "help-line") {
+    val ink = LocalInk.current
+    Text(
+        helpLine(model), style = Type.small.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic), color = ink.soft,
+        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().testTag(tag),
+    )
+}
+
+/** The help line's words: words:sundial 7.1, else Sundial's own. */
+fun helpLine(model: Model): String =
+    (Words.sundialBlock(model.app)?.let { com.phenomemental.pocketbeach.bsp.jsGet(com.phenomemental.pocketbeach.bsp.jsGet(it, "7"), "1") } as? com.phenomemental.pocketbeach.bsp.JsStr)?.value
+        ?: "If you need help now: your local emergency number, or Samaritans on 116 123 (UK and Ireland)."
 
 /**
  * 0.8.1: the input bar at the foot, as a chat app lays it out: a text box
@@ -395,6 +406,10 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             // Her words as she writes them.
             thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
         }
+        // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
+        e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
+        // Sundial 0.10.1: the help line, centred beneath her reply, only when his words show danger (the app's check, Talking.unsafe).
+        if (e.safety != null && !thinking) HelpLine(model)
         if (thinking) {
             val since = (asking.stage as Asking.Stage.Thinking).since
             var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -490,10 +505,14 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
         }
         // How it ended: in Details always; else only what came of a proposal, or that she couldn't answer.
         // 0.8.1: when he asked and nothing was set out, why shows always, not only with Details on.
-        if (e.note.isNotEmpty() && (details || e.outcome != null || e.over?.shown == null || (e.asked && e.over?.carried == null && e.over?.posted == null))) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
+        if (e.note.isNotEmpty() && (details || e.unfinished == null) && (details || e.outcome != null || e.over?.shown == null || (e.asked && e.over?.carried == null && e.over?.posted == null))) Text(e.note, style = Type.small, color = ink.soft, modifier = Modifier.testTag("over"))
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
+            // Sundial 0.10.1: her reply in parts, each tool call exactly as she returned it.
+            e.partsTried.forEachIndexed { i, p ->
+                Text("Her tool call${if (i > 0) ", asked once more for part one" else ""}: $p", style = Type.small, color = ink.soft, modifier = Modifier.testTag("parts-tried"))
+            }
             // Rockpool: the film strip, his cook's walk step by step.
             if (e.trace.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.testTag("trace")) {
                 for (t in e.trace) Text(t.toString(), style = Type.call, color = ink.soft)

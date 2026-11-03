@@ -267,8 +267,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
          * tool call ("reply"): asked in a conversation of its own that holds
          * her window and every exchange so far, as `choose` asks hers, so a
          * tool call never sits unanswered in her kept conversation; that is
-         * opened afresh, with this exchange in it, before her next free reply.
-         * Null when the call isn't whole: she is asked free.
+         * opened afresh, with this exchange in it, before her next free reply
+         * (Sundial 0.10.1: once Ask keeps the reply it shows, [keep]). Null
+         * when the call isn't whole: she is asked free.
          */
         override fun parts(message: String, parts: List<String>): Map<String, String>? = kotlinx.coroutines.runBlocking(thread) {
             val fields = parts.map { Mind.field(it) }
@@ -294,11 +295,15 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                         .takeIf { m -> m.values.any { it.isNotEmpty() } }
                 }
             }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
-            if (got != null) {
-                done += message to parts.mapNotNull { got[it]?.takeIf(String::isNotEmpty) }.joinToString("\n")
+            got
+        }
+
+        /** Sundial 0.10.1: the reply Ask showed for [message], given in parts, kept so her kept conversation is opened afresh with it. */
+        override fun keep(message: String, reply: String) {
+            kotlinx.coroutines.runBlocking(thread) {
+                done += message to reply
                 afresh = true
             }
-            got
         }
 
         private fun describe(field: String): String = when (field) {

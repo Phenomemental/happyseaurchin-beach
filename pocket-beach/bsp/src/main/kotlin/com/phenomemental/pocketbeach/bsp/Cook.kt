@@ -55,6 +55,8 @@ object Cook {
         class NameHeld(val name: String) : Verb()
         object AsksHerLines : Verb()
         object TellsDay : Verb()
+        /** Sundial 0.10.1: whether [of]'s words say he may be in danger, by his safety words: the app's own check, never hers. */
+        class Danger(val of: String) : Verb()
         class BlockStands(val name: String) : Verb()
         class Lift(val what: String, val sources: List<String>, val into: String) : Verb()
         /** [many]: where two or more named blocks are carried (0.9.1); null in the 0.9 sentence, which carries the first named only. */
@@ -117,6 +119,7 @@ object Cook {
         rx("""Does THE MESSAGE ask to change her own lines\?""") to { _ -> Verb.AsksHerLines },
         rx("""Does THE MESSAGE tell of his day: three sentences or more(?:, of| and) forty words or more(?: in all)?, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
         rx("""Is there a block called ($CAP) already\?""") to { m -> Verb.BlockStands(m.groupValues[1]) },
+        rx("""Do the words of ($CAP) say he may be in danger, by his safety words \(the block safety-words, else the app's own\)\?""") to { m -> Verb.Danger(m.groupValues[1]) },
         rx("""Lift (his words|his telling|the new block's name|the name he gives her) from THE MESSAGE: (.+?)\. Carry (?:it|them) as ($CAP)\.""") to { m ->
             Verb.Lift(m.groupValues[1], m.groupValues[2].split(Regex(""";\s*else\s+|;\s*""")).map { it.trim() }.filter { it.isNotEmpty() }, m.groupValues[3])
         },
@@ -424,6 +427,8 @@ object Cook {
         fun kept(): List<Keep.KeptDay> = runCatching {
             Keep.days(storage.read(Days.NOW)?.let(::parseJson), storage.read(Days.p6Of(handle))?.let(::parseJson), keepDay)
         }.getOrDefault(emptyList())
+        /** Sundial 0.10.1: whether [words] say he may be in danger, by his safety words (Talking.unsafe), the one check the app makes. */
+        fun inDanger(words: String): Boolean = runCatching { Talking.unsafe(words, pages) }.getOrDefault(false)
         /** What he whispered at a place (pool order), each with its date and the question it answered: Sundial 0.11. */
         fun whispers(pool: Int): String? = null
         /** A place's three ways of listening, which was used last, and the questions asked there: Sundial 0.11. */
@@ -584,6 +589,8 @@ object Cook {
                 Verb.AsksHerLines -> HerWindow.asksHerOpening(str("THE MESSAGE")).let { yesNo(s, it, if (it) "he asks to change her lines" else "he asks to change a line of his") }
                 Verb.TellsDay -> Landing.isTelling(str("THE MESSAGE"), world.cards(), runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
                     .let { yesNo(s, it, if (it) "his words tell of his day" else "his words don't tell of his day") }
+                // Sundial 0.10.1: the app's danger check, the same that shows the help line beneath her reply; she is never handed an "if" to judge.
+                is Verb.Danger -> world.inDanger(str(v.of)).let { yesNo(s, it, if (it) "his words say he may be in danger, by his safety words" else "his words hold none of his safety words") }
                 is Verb.BlockStands -> world.pages.exists(str(v.name)).let { yesNo(s, it, if (it) "a block called ${str(v.name)} stands" else "no block called ${str(v.name)} stands") }
                 is Verb.Lift -> {
                     put(v.into, lift(v))

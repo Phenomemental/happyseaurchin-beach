@@ -16,6 +16,7 @@ import com.phenomemental.pocketbeach.bsp.CookActs
 import com.phenomemental.pocketbeach.bsp.Days
 import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
+import com.phenomemental.pocketbeach.bsp.HerReply
 import com.phenomemental.pocketbeach.bsp.HerWindow
 import com.phenomemental.pocketbeach.bsp.Js
 import com.phenomemental.pocketbeach.bsp.JsObj
@@ -193,6 +194,12 @@ class Asking(private val app: PocketApp) {
         internal var talk: List<Pair<String, String>> = emptyList()
         /** Sundial 0.10: her reply in its parts, through the tool call on E4B ("THE REFLECTION", "THE QUESTION"); null for a free reply. */
         var parts by mutableStateOf<Map<String, String>?>(null)
+
+        /** Sundial 0.10.1: each tool call for her reply in parts, exactly as she returned it, for the workings. */
+        var partsTried by mutableStateOf<List<String>>(emptyList())
+
+        /** Sundial 0.10.1: a plain line beneath her turn when her reply didn't come, or was stopped; never a blank. */
+        var unfinished by mutableStateOf<String?>(null)
             internal set
         /** Rockpool: the walk his cook ran for this message, waiting on him or done; its trace, step by step (the film strip, in Details). */
         internal var walk: Cook.Walk? = null
@@ -589,20 +596,28 @@ class Asking(private val app: PocketApp) {
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
+                        // Sundial 0.10.1: once he has hatched, his cook asks her to give back his words in his own words: those are hers to say, never her turn played back.
+                        val hisWords = walk == null
+                        // Never shown: a line of hers that plays her turn back. Never taken out of view: a line once shown (Sundial 0.10.1).
+                        val shown = Talking.Shown(q, opening, echo, hisWords)
                         // Sundial 0.10: on E4B, her reply in the parts his cook names, through the tool call; else, or when it isn't whole, free and streamed.
+                        // 0.10.1: each attempt kept as she returned it; part one asked for once more when it came back empty; never shown missing a part.
                         val asked = walk?.parts.orEmpty()
                         val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
-                        val got = if (big && asked.isNotEmpty()) runCatching { t.parts(message, asked) }.getOrNull() else null
+                        val inParts = if (big && asked.isNotEmpty()) runCatching {
+                            HerReply.inParts(asked, { again -> t.parts(if (again) message + "\n(${HerReply.AGAIN})" else message, asked) }, { Talking.unechoed(it, q, opening, echo, hisWords) })
+                        }.getOrNull() else null
+                        e.partsTried = inParts?.attempts?.map { HerReply.said(asked, it) }.orEmpty()
+                        val got = inParts?.parts
                         val reply = if (got != null) {
-                            e.parts = got.mapValues { (_, v) -> Talking.unechoed(v, q, opening, echo) }
+                            e.parts = got
                             firstShown = (System.nanoTime() - started) / 1_000_000
-                            asked.mapNotNull { e.parts?.get(it)?.takeIf(String::isNotBlank) }.joinToString("\n")
+                            asked.joinToString("\n") { got.getValue(it) }.also { runCatching { t.keep(message, it) } }
                         } else t.stream.say(message) { piece ->
                             words.append(piece)
-                            // Never shown: a line of hers that plays her turn back.
-                            val shown = Talking.unechoed(words.toString(), q, opening, echo)
-                            if (firstShown == null && shown.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
-                            live = shown
+                            val now = shown.of(words.toString())
+                            if (firstShown == null && now.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
+                            live = now
                         }
                         pace = t.pace.copy(if (first) t.pace.loadMs else null).also { p ->
                             p.turns.addAll(t.pace.turns.drop(before))
@@ -613,11 +628,11 @@ class Asking(private val app: PocketApp) {
                         talkTurns++
                         // She has now seen his blocks as they stand.
                         runCatching { copies.writeText(HerWindow.copies(app.pages, app.storage)) }
-                        e.copied = Talking.copied(reply, q, opening, echo)
+                        e.copied = Talking.copied(reply, q, opening, echo, hisWords)
                         // 0.6.1 holds in a kept conversation: her turn played back is never given her again, so it is opened afresh with what was shown.
                         if (e.copied.isNotEmpty()) stale += MindJob.TALK
                         e.jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
-                        message to Talking.unechoed(reply, q, opening, echo)
+                        message to (if (got != null) reply else shown.of(reply, over = true))
                     }
                 }
             }
@@ -626,13 +641,18 @@ class Asking(private val app: PocketApp) {
             e.pace = pace
             e.firstShown = firstShown
             val (message, said) = talked.getOrElse { ex ->
+                // Sundial 0.10.1: what she had shown stays in view, and a plain line says she couldn't finish: never a blank.
+                if (live.isNotBlank()) e.said = live
+                e.unfinished = UNFINISHED
                 live = ""
                 stage = Stage.Writing
                 finish(e, null, "The companion couldn't answer: ${ex.message ?: ex::class.simpleName}.")
                 runWrites()
                 return@launch
             }
-            e.said = said
+            // Sundial 0.10.1: never less than she showed while it came; and a reply with no words is said plainly, never a blank.
+            e.said = said.ifBlank { live }
+            if (e.said.isBlank()) e.unfinished = UNFINISHED
             e.talk = listOf(message to said)
             e.time = timeLine(e, pace, e.talk.size)
             live = ""
@@ -1061,7 +1081,9 @@ class Asking(private val app: PocketApp) {
                         val message = HerWindow.turnHanded("", ZonedDateTime.now(), app.pages, w.handed)
                         val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
                         val parts = if (big && w.parts.isNotEmpty()) runCatching { t.parts(message, w.parts) }.getOrNull() else null
-                        (parts?.get("THE QUESTION") ?: t.stream.say(message) { }).trim()
+                        // Sundial 0.10.1: the question kept in her conversation only when it is the one shown.
+                        parts?.get("THE QUESTION")?.trim()?.takeIf { it.isNotBlank() }?.also { runCatching { t.keep(message, it) } }
+                            ?: t.stream.say(message) { }.trim()
                     }
                     Greeting(today, tomorrow, question.takeIf { it.isNotBlank() })
                 }.getOrNull()
@@ -1357,6 +1379,8 @@ class Asking(private val app: PocketApp) {
         stale += MindJob.values()
         if (writingNow != null) yielded = true
         job?.cancel()
+        // Sundial 0.10.1: the words she had shown stay in view when he stops her.
+        history.lastOrNull()?.takeIf { it.said.isEmpty() && live.isNotBlank() }?.let { it.said = live; it.unfinished = STOPPED }
         live = ""
         stage = Stage.Writing
         history.lastOrNull()?.let { e ->
@@ -1509,6 +1533,9 @@ class Asking(private val app: PocketApp) {
             e.cookNote?.let { appendLine("  $it") }
             if (e.trace.isNotEmpty()) { appendLine("  His cook, step by step:"); e.trace.forEach { appendLine("    $it") } }
             e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
+            // Sundial 0.10.1: her reply in parts, each tool call exactly as she returned it.
+            e.partsTried.forEachIndexed { i, p -> appendLine("  Her tool call${if (i > 0) ", asked once more for part one" else ""}: $p") }
+            e.unfinished?.let { appendLine("  $it") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
@@ -1602,5 +1629,11 @@ class Asking(private val app: PocketApp) {
 
         /** The app's copies of his blocks as she last saw them, beside the pocket. */
         const val COPIES = "her-copies.json"
+
+        /** Sundial 0.10.1: said plainly beneath her turn when her reply didn't come, or came with no words; never a blank. */
+        const val UNFINISHED = "She couldn't finish her reply. Say it again, or carry on."
+
+        /** Sundial 0.10.1: said beneath what she had written when he stopped her. */
+        const val STOPPED = "You stopped her before she finished."
     }
 }

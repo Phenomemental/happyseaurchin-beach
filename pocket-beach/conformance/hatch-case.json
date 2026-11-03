@@ -737,7 +737,14 @@
                   "2": "No: walk on.",
                   "_": "Is there THE UNTOUCHED?"
                 },
-                "5": "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                "5": {
+                  "1": {
+                    "1": "Hand her this line: “The app: his words say he may be in danger. Your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                    "_": "Yes:"
+                  },
+                  "2": "No: walk on.",
+                  "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
+                },
                 "6": "She gives her reply as THE REFLECTION and THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "7": {
                   "1": {
@@ -1630,7 +1637,14 @@
                   "2": "No: walk on.",
                   "_": "Is there THE UNTOUCHED?"
                 },
-                "5": "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                "5": {
+                  "1": {
+                    "1": "Hand her this line: “The app: his words say he may be in danger. Your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”",
+                    "_": "Yes:"
+                  },
+                  "2": "No: walk on.",
+                  "_": "Do the words of THE MESSAGE say he may be in danger, by his safety words (the block safety-words, else the app's own)?"
+                },
                 "6": "She gives her reply as THE REFLECTION and THE QUESTION through the tool call; on E2B, or when her answer isn't whole, her reply stands as she writes it.",
                 "7": {
                   "1": {

@@ -168,26 +168,20 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
     }
 }
 
-/** Her reply in Sundial's shape: the reflection upright, the question in italic beneath (sundial.html:2294-2301). */
+/**
+ * Her reply in Sundial's shape: the reflection upright, the question in
+ * italic beneath (sundial.html:2294-2301). Sundial 0.10.1: parts only when
+ * every one holds words; else her words as she said them, the question read
+ * from them only when it can be, else plain (Talking.splitQuestion).
+ */
 fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
-    val (reflection, question) = if (parts != null) (parts["THE REFLECTION"].orEmpty() to parts["THE QUESTION"].orEmpty()) else splitQuestion(said)
+    val whole = parts?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
+    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.Talking.splitQuestion(said)
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {
         if (reflection.isNotBlank()) append("\n")
         withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(question.trim()) }
     }
-}
-
-/**
- * On E2B (or when her parts weren't whole), her free reply read as Sundial
- * sets it out: its last sentence ending in a question mark, at the end, is
- * the question (1.111178719916); the rest the reflection.
- */
-fun splitQuestion(said: String): Pair<String, String> {
-    val t = said.trim()
-    if (!t.endsWith("?")) return t to ""
-    val m = Regex("""(?s)^(.*[.!?…]["”’)]?)\s+([^.!?…]*\?)$""").find(t) ?: return "" to t
-    return m.groupValues[1].trim() to m.groupValues[2].trim()
 }
 
 /** Where he stands, for the sun: asked once with his permission; declined or unknown, a town chosen in Settings. */

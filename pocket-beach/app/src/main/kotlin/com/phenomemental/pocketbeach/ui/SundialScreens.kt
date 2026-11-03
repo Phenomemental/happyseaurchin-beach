@@ -125,6 +125,9 @@ fun PlacesSheet(model: Model, nav: Nav, close: () -> Unit) {
                 if (asking.history.isNotEmpty()) TextLink("Save this conversation", { close(); nav.toPlace(Screen.Ask); model.saveConversation++ }, tag = "save-conversation")
                 TextLink(if (app.showDetails) "Show the workings: on" else "Show the workings: off", { app.showDetails = !app.showDetails }, tag = "details")
             }
+            // Sundial 0.10.1: the help line lives here and in About; beneath her reply only when his words show danger.
+            Rule()
+            HelpLine(model, tag = "places-help-line")
         }
     }
 }

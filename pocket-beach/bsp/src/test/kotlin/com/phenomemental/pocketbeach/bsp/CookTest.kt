@@ -302,6 +302,51 @@ class CookTest {
         assertEquals(HerWindow.WRITE_JOB_LINE + you, his.handed.single().line)
     }
 
+    // ── Sundial 0.10.1: the danger line handed only on the app's danger check ──
+
+    /** His test message of 3 November, exactly as he sent it. */
+    private val idChecks = "I've done some of the id checks today, furthered the membership form planning, and have responded to a fraud report, interacted with David. All that's left today is to evaluate sundial."
+
+    private fun talked(said: String): Cook.Walk {
+        val (storage, pages) = hatched()
+        val k = walk(World(storage, pages), said)
+        (k.waiting as? Cook.Wait.HerMany)?.let { k.herMany(listOf(1, 3, 4, 6)) }
+        return k
+    }
+
+    @Test
+    fun theDangerLineIsHandedOnlyWhenHisWordsShowDanger() {
+        val day = talked(idChecks)
+        assertEquals("TALK", day.answer)
+        assertTrue(day.handed.none { it.line.contains("in danger") || it.line.contains("where help is") }, day.handed.joinToString("\n") { it.line })
+        assertTrue(day.trace.any { it.did == "his words hold none of his safety words" }, day.trace.joinToString("\n"))
+        // Her untouched places still come to her (what he felt; a choice), as on his phone.
+        assertTrue(day.handed.any { h -> h.line.contains("haven't touched") && h.material.joinToString().contains("what he felt") && h.material.joinToString().contains("a choice") }, day.handed.joinToString("\n") { "${it.line} ${it.material}" })
+        val unsafe = talked("I don't feel safe tonight.")
+        assertTrue(unsafe.handed.any { it.line.startsWith("The app: his words say he may be in danger.") && it.line.contains("where help is") }, unsafe.handed.joinToString("\n") { it.line })
+        assertTrue(unsafe.trace.any { it.did == "his words say he may be in danger, by his safety words" })
+        // Never an "if" for her to judge: E2B follows an if as a command.
+        for (k in listOf(day, unsafe)) assertTrue(k.handed.none { it.line.contains("if he may be in danger") })
+    }
+
+    @Test
+    fun hisCookFromSundial010TakesTheNewDangerBranch() {
+        val (storage, pages) = hatched()
+        val old = "Hand her this line: “The app: if he may be in danger, your question says plainly where help is (his local emergency number; Samaritans 116 123 in the UK and Ireland), and that you'll stay.”"
+        val ten = parseJson(stringify(procedures.load(Cook.SHIPPED_COOK))!!) as JsObj
+        (jsGet(jsGet(jsGet(ten, "1"), "1"), "8") as JsObj)["5"] = str(old)
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), ten)).ok)
+        check(pages.carryOut(pages.planWhole(Cook.kernelOf(h), parseJson(stringify(procedures.load(Cook.SHIPPED_KERNEL))!!) as JsObj)).ok)
+        // What the phone kept of what 0.10 shipped: 0.10's cook, his 1.1.8.5 as it shipped.
+        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(ten) else stringify(procedures.load(name)) })
+        for ((_, plan) in ups) plan?.let { check(pages.carryOut(it).ok) }
+        val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
+        assertEquals(Cook.places(procedures.load(Cook.SHIPPED_COOK)), now, "1.1.8.5 is 0.10.1's branch, and nothing else changed")
+        assertTrue(ups.flatMap { it.first.yours }.isEmpty(), "nothing of his to keep or offer")
+        val loaded = Cook.load(h, storage, procedures)
+        assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
+    }
+
     // ── TELL MY DAY ──
 
     @Test

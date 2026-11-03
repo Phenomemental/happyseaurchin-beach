@@ -108,6 +108,8 @@ class StandIn : Mind {
             override val stream = Talks.Stream { message, piece ->
                 // 0.6.2: as Gemma does when an answer fails on the GPU and she answers on the CPU.
                 if (gpuFails) paced.gpuFailed()
+                // Sundial 0.10.1: an answer that stops part way, her words so far given first.
+                if (talking) failAfter?.let { f -> failAfter = null; talkMessages += message; f.chunked(4).forEach(piece); throw RuntimeException("The engine stopped part way.") }
                 val reply = if (talking) {
                     talkMessages += message
                     talkScript.removeFirstOrNull() ?: "I'm a stand-in for the companion, talking."
@@ -123,8 +125,22 @@ class StandIn : Mind {
             override val pace = paced
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
+            // Sundial 0.10.1: her reply in parts on E4B, as scripted; none left, no whole tool call.
+            override fun parts(message: String, parts: List<String>): Map<String, String>? {
+                partsAsked += message
+                return partsScript.removeFirstOrNull()
+            }
+            override fun keep(message: String, reply: String) { keptParts += message to reply }
         }
     }
+
+    /** Sundial 0.10.1: her replies in parts (E4B), in order; null, or none left, is no whole tool call. */
+    val partsScript = ArrayDeque<Map<String, String>?>()
+    /** Every message a parts call was given, and what Ask kept of her reply in parts. */
+    val partsAsked = mutableListOf<String>()
+    val keptParts = mutableListOf<Pair<String, String>>()
+    /** Sundial 0.10.1: the next Talk answer gives these words, then stops part way. */
+    @Volatile var failAfter: String? = null
 
     /** 0.6.3: the next Write answer is held back until it is stopped. */
     @Volatile var writeHold: java.util.concurrent.CountDownLatch? = null
