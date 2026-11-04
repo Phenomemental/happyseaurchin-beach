@@ -4,6 +4,69 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10.3 is released (4 November): the line in the sand:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.3
+- **Install:** `sundial-v0.10.3.apk` over 0.10.2; his blocks stay. His cook
+  is brought up place by place. His edited TALK, no-day and SHEET lines
+  stay his, and nothing is offered over them. Three of the app's own steps
+  change: the day check (1.1.8.3), CUT (6.1.6.1) and HAND (6.1.6.2).
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.10.3 (26), from main at `22249a6` (PR #242), release run
+  254. APK SHA-256 `f3013f04…`. The procedures it carries are byte for
+  byte main's.
+- **Tests:**
+  - 311 core, among them `LineInTheSandTest`, the CODE part of each of the
+    nine tests (spine:pocket-beach 1.11117871992).
+  - All 84 device tests, among them `LineInTheSandDeviceTest`.
+  - The laptop's E4B ran the RECIPE parts with his own lines
+    (`trial/sand-0.10.3.md`).
+- **What it fixes, from his pocket copy and log of 4 November:**
+  1. **The keep card shows her places.**
+     - Each moment keeps the places from her reply's places line, but only
+       when its turn asked for them.
+     - At Keep today she is asked only about moments not yet placed, once,
+       in free text naming only the ring's six places.
+     - The card shows each moment with its colours: "She's marked where
+       each moment sits. Tap a colour only to change it."
+     - The sheet is written free.
+  2. **The day check is what 1.1.8.3 says.** Its numbers and clauses are
+     read from the sentence, so changing the sentence changes the check.
+  3. **No label goes into his words.** "In your own words." and "What's
+     ahead." are gone; who wrote a line is kept in its hidden directory.
+     With no place there is no places line.
+  4. **No keep fails whole.**
+     - A card already on his hand is skipped and said so.
+     - A block is written only when it changes, and each block on its own.
+     - If anything is refused, his moments stay waiting, and Keep today
+       again writes only what is missing.
+  5. **CUT and HAND.** Each moment is a piece of its own, and a line break
+     ends one. A card is only the piece holding cook 9.9's words.
+  6. **A history entry for every yes**, written as it lands. Keep it on the
+     dial wrote his ahead with no conversation to close, so no entry was
+     made before.
+  7. **His hand:** "Take it off" on each card, asked once more, with its
+     own history entry.
+  8. **Any wording inside a step's quotes is his.** Straight or curly
+     quotes, line breaks, curly apostrophes, spaces and a missing full stop
+     all read. A step that can't be read says which part, in plain words.
+- **Only his phone can confirm:**
+  - The times on his E4B. The laptop's estimate at his Pixel's rates: first
+    words about 4.9 s on the first exchange and 2.7–2.8 s after, whole
+    replies within about 7.4 s.
+  - The keep card on his own day.
+  - That his exact edited SHEET step now runs. His text wasn't to hand;
+    first-person edits like it are accepted in the tests.
+- **On the laptop with his lines (RECIPE, his to change):**
+  - Passed: tests 1 and 8, and 6(a).
+  - Failed: 2 and 4. She interprets, and she gives his words back on the
+    no-day line, which has no "struggling" clause or "never interpret".
+  - Failed: 3. She named today's line, not the cards on his hand.
+  - Failed: 5. She said she didn't know Whitehead.
+  - Failed: 6(b). She linked LERO to his day.
+  - Test 7's sheet, in his first-person edit written free: the whole day,
+    in the first person.
+
 **Sundial 0.10.2 is released (4 November): her reply free, in one kept conversation:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.2
 - **Install:** `sundial-v0.10.2.apk` over 0.10.1; his blocks stay. His cook
