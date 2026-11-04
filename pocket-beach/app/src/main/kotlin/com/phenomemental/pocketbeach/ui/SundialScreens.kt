@@ -359,25 +359,56 @@ fun RoomScreen(model: Model, nav: Nav) {
 @Composable
 fun HandScreen(model: Model, nav: Nav) {
     val ink = LocalInk.current
+    val app = model.app
     val h = Hatch.hatched(model.app.storage)
-    val piles by produceState<List<Pair<String, List<String>>>>(emptyList(), model.version) {
+    val scope = rememberCoroutineScope()
+    // Each pile with its cards, by their place on his hand ("3.1"), so a card can be taken off by where it stands.
+    val piles by produceState<List<Pair<String, List<Pair<String, String>>>>>(emptyList(), model.version) {
         value = withContext(Dispatchers.IO) {
             runCatching {
                 val a = h?.let { model.app.storage.read(Days.aheadOf(it)) }?.let { parseJson(it) as? JsObj } ?: return@runCatching emptyList()
+                val hand = Days.handOf(a)
                 (1..9).mapNotNull { k ->
                     val pile = a["$k"] as? JsObj ?: return@mapNotNull null
-                    val cards = (1..9).mapNotNull { c -> pile["$c"]?.let { (it as? com.phenomemental.pocketbeach.bsp.JsStr)?.value ?: collectUnderscore(it) }?.trim()?.takeIf { it.isNotEmpty() } }
+                    val cards = hand.filterKeys { it.substringBefore('.') == "$k" }.toList()
                     if (cards.isEmpty()) null else (collectUnderscore(pile)?.replaceFirstChar { it.uppercase() } ?: "Pile $k") to cards
                 }
             }.getOrDefault(emptyList())
         }
     }
+    // Sundial 0.10.3 (spine:pocket-beach 1.111178719929): a card is taken off only on his own tap, asked once more; the app never takes one off for him.
+    var asking by remember { mutableStateOf<String?>(null) }
+    var taking by remember { mutableStateOf(false) }
+    var note by remember { mutableStateOf<String?>(null) }
     Page(onBack = { nav.back() }, top = { Text("Your hand", style = Type.name, color = ink.ink) }) {
         if (piles.isEmpty()) Text("Nothing on your hand yet. When you tell her what you mean to do, it comes here.", style = Type.aside, color = ink.soft)
         for ((pile, cards) in piles) {
             Label(pile)
-            for (c in cards) Text(c, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hand-card"))
+            for ((at, c) in cards) {
+                Column(Modifier.fillMaxWidth().testTag("hand-card-row:$at"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(c, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hand-card"))
+                    if (asking == at) {
+                        Text(Words.sundial(app, "6.2", "Take this off your hand? Your history keeps a note that you did."), style = Type.small, color = ink.soft)
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Action(Words.sundial(app, "6.4", "Leave it"), { asking = null }, Modifier.weight(1f), tag = "hand-leave")
+                            Action(Words.sundial(app, "6.3", "Take it off"), {
+                                if (!taking && h != null) {
+                                    taking = true
+                                    scope.launch {
+                                        val why = withContext(Dispatchers.IO) { runCatching { Days.takeOff(h, at, app.pages, app.storage) }.getOrElse { it.message ?: "it couldn't be taken off" } }
+                                        note = why?.let { "It couldn't be taken off: $it." }
+                                        asking = null
+                                        taking = false
+                                        model.changed()
+                                    }
+                                }
+                            }, Modifier.weight(1f), strong = true, tag = "hand-take-off")
+                        }
+                    } else TextLink(Words.sundial(app, "6.1", "Take it off"), { asking = at; note = null }, style = Type.small, tag = "hand-off:$at")
+                }
+            }
         }
+        note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("hand-note")) }
         if (h != null) TextLink("Open it in your pocket", { nav.go(Screen.Block(Region.POCKET, Days.aheadOf(h), "")) }, tag = "hand-open")
     }
 }
@@ -413,6 +444,7 @@ fun KeepCardView(
     onTick: (Int) -> Unit,
     onKeep: () -> Unit,
     onNotNow: () -> Unit,
+    onPlaceMoment: (Int, Int) -> Unit = { _, _ -> },
 ) {
     val ink = LocalInk.current
     val app = model.app
@@ -428,26 +460,26 @@ fun KeepCardView(
             }
         }
         card.his?.let { Text(Words.sundial(app, "2.4", "Today already holds your own words; Keep it adds your moments."), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keep-his")) }
-        // The places as coloured dots, his to tap off or on.
+        // Sundial 0.10.3 (spine:pocket-beach 1.111178719927): every moment with the places she marked for it; he taps only to change one.
+        // The day's places are all of theirs, and the places line, last in the day's line, says them; with none, there is no places line.
         if (card.his == null && card.sheet != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                for (n in Mark.P6) {
-                    val on = n in card.places
-                    val hue = Color(Mark.POOLS[n - 1].hue.toInt())
-                    Box(
-                        Modifier.size(30.dp).clickable(enabled = !writing) { onPlace(n) }.testTag("keep-place:$n")
-                            .semantics { contentDescription = Mark.POOLS[n - 1].phrase + if (on) ", on" else ", off" },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Box(Modifier.size(18.dp).then(if (on) Modifier.background(hue, CircleShape) else Modifier.border(1.5.dp, hue.copy(alpha = 0.6f), CircleShape)))
+            if (card.moments.isNotEmpty()) {
+                Text(Words.sundial(app, "2.9", "She's marked where each moment sits. Tap a colour only to change it."), style = Type.small, color = ink.soft, modifier = Modifier.testTag("keep-marked"))
+                card.moments.forEachIndexed { i, m ->
+                    Column(Modifier.fillMaxWidth().testTag("keep-moment:$i"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(com.phenomemental.pocketbeach.bsp.Cook.shortly(m.words), style = Type.body, color = ink.ink, modifier = Modifier.testTag("keep-moment-words:$i"))
+                        PlaceDots(m.places, writing, tag = "keep-moment-place:$i:") { n -> onPlaceMoment(i, n) }
                     }
                 }
+            } else {
+                PlaceDots(card.places, writing, tag = "keep-place:") { n -> onPlace(n) }
+                Text(Words.sundial(app, "2.7", "Tap a colour to take it off, or on."), style = Type.small, color = ink.soft)
             }
             Text(
-                if (card.places.isEmpty()) Mark.OWN else Mark.placesWords(card.places).replaceFirstChar { it.uppercase() } + ".",
+                if (card.places.isEmpty()) "No place is marked, so the day's line ends with no places line."
+                else Mark.placesWords(card.places).replaceFirstChar { it.uppercase() } + ".",
                 style = Type.aside, color = ink.soft, modifier = Modifier.testTag("keep-places"),
             )
-            Text(Words.sundial(app, "2.7", "Tap a colour to take it off, or on."), style = Type.small, color = ink.soft)
         }
         if (card.moments.isNotEmpty()) Text(
             "${if (card.moments.size == 1) "One moment" else "${Words.number(card.moments.size).replaceFirstChar { it.uppercase() }} moments"} in your own words, each kept at its minute.",
@@ -457,10 +489,12 @@ fun KeepCardView(
             Label("Your hand, and what's booked")
             card.lines.forEachIndexed { i, l ->
                 Row(Modifier.fillMaxWidth().testTag("day-line"), verticalAlignment = Alignment.Top) {
-                    Checkbox(checked = l.ticked, onCheckedChange = { onTick(i) }, enabled = !writing, colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft), modifier = Modifier.testTag("day-tick:$i"))
+                    Checkbox(checked = l.ticked, onCheckedChange = { onTick(i) }, enabled = !writing && !l.already, colors = CheckboxDefaults.colors(checkedColor = ink.crimson, uncheckedColor = ink.soft), modifier = Modifier.testTag("day-tick:$i"))
                     Column(Modifier.weight(1f).padding(top = 10.dp, start = 4.dp)) {
                         Text(Telling.unquoted(l.words), style = Type.body, color = if (l.ticked) ink.ink else ink.soft, modifier = Modifier.testTag("day-words:$i"))
-                        Text(Days.name(l.where), style = Type.small, color = ink.soft)
+                        // Sundial 0.10.3: a card on his hand already is said so, and skipped; never a failure.
+                        if (l.already) Text(Words.sundial(app, "6.5", "already on your hand").replaceFirstChar { it.uppercase() } + ", so it isn't written again.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("day-already:$i"))
+                        else Text(Days.name(l.where), style = Type.small, color = ink.soft)
                     }
                 }
             }
@@ -470,6 +504,24 @@ fun KeepCardView(
         else Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Action(Words.sundial(app, "2.3", "Not now"), onNotNow, Modifier.weight(1f), tag = "day-not-now")
             Action(Words.sundial(app, "2.2", "Keep it"), onKeep, Modifier.weight(1f), strong = true, tag = "day-yes")
+        }
+    }
+}
+
+/** The six places as coloured dots, [on] filled; a tap of one ([onTap]) turns it off or on. */
+@Composable
+private fun PlaceDots(on: List<Int>, writing: Boolean, tag: String, onTap: (Int) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        for (n in Mark.P6) {
+            val lit = n in on
+            val hue = Color(Mark.POOLS[n - 1].hue.toInt())
+            Box(
+                Modifier.size(30.dp).clickable(enabled = !writing) { onTap(n) }.testTag("$tag$n")
+                    .semantics { contentDescription = Mark.POOLS[n - 1].phrase + if (lit) ", on" else ", off" },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(Modifier.size(16.dp).then(if (lit) Modifier.background(hue, CircleShape) else Modifier.border(1.5.dp, hue.copy(alpha = 0.6f), CircleShape)))
+            }
         }
     }
 }

@@ -197,7 +197,13 @@ class Hatching(private val app: PocketApp) {
         val done = app.pages.carryOut(app.pages.planChange(y.block, Cook.spindleOf(y.at), text))
         offers = offers - y
         app.asking.hatchedNow()
-        return if (done.ok) null else done.problem ?: "It couldn't be written."
+        val problem = if (done.ok) null else done.problem ?: "It couldn't be written."
+        // Sundial 0.10.3: every write on his yes has its own entry in his history.
+        runCatching { Hatch.hatched(app.storage) }.getOrNull()?.let { h ->
+            com.phenomemental.pocketbeach.bsp.Close.recordYes(h, "the new sentence used at ${y.block} ${y.at}",
+                if (problem == null) listOf("${y.block} at ${y.at}: “${Cook.shortly(text)}”") else emptyList(), listOfNotNull(problem), app.pages)
+        }
+        return problem
     }
 
     fun keepMine(y: Cook.Yours) {

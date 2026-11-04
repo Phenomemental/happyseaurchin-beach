@@ -337,6 +337,20 @@ class Asking(private val app: PocketApp) {
             // Sundial 0.10: her placing, a list through the tool call; her sheet for the day, through the tool call on E4B, else free.
             when (val wait = w.waiting) {
                 is Cook.Wait.HerMany -> {
+                    if (wait.moments.isNotEmpty()) {
+                        // Sundial 0.10.3: each moment keeps the places she named in her reply to it; only those she hasn't placed are
+                        // asked, all at once, in free text the app reads (on his Pixel on 4 November the places tool call took 10.4 s).
+                        val ask = wait.unplaced
+                        val placed = if (ask.isEmpty()) emptyMap() else runCatching {
+                            val started = System.nanoTime()
+                            val a = talking.withLock { app.mind.ask(com.phenomemental.pocketbeach.bsp.Placing.instruction(wait.question, wait.places), com.phenomemental.pocketbeach.bsp.Placing.material(ask), app.running(MindJob.TALK)) }
+                            com.phenomemental.pocketbeach.bsp.Placing.read(a.text, ask).also {
+                                app.mind.steps?.add("the places, ${Words.count(ask.size, "moment")} she hadn't placed asked in free text, ${it.size} placed", Steps.since(started))
+                            }
+                        }.getOrNull()
+                        w.herEach(placed)
+                        continue
+                    }
                     val ring = wait.places.mapIndexed { i, p -> "${i + 1} $p" }.joinToString("\n")
                     val instruction = "Name every place of this ring his words plainly touch, one or more, never ranked: ${wait.question}.\n$ring"
                     val chosen = runCatching { talking.withLock { app.mind.chooseMany(instruction, wait.about, wait.places.size, app.running(MindJob.TALK)) } }.getOrNull()
@@ -395,6 +409,16 @@ class Asking(private val app: PocketApp) {
                 if (!done.ok) android.util.Log.w("Asking", "The close's history entry didn't land: ${done.problem}")
             }
         }.onFailure { android.util.Log.w("Asking", "The close's history entry couldn't be written.", it) }
+    }
+
+    /**
+     * Sundial 0.10.3 (spine:pocket-beach 1.111178719929): one yes's own entry
+     * in his history, written as it lands, never left for a conversation to
+     * close. Off the main thread.
+     */
+    private fun recordYes(what: String, written: List<String>, refused: List<String>) {
+        val h = hatched() ?: return
+        Close.recordYes(h, what, written, refused, app.pages)?.let { android.util.Log.w("Asking", "A yes's history entry didn't land: $it") }
     }
 
     /** 0.8: he has just hatched: both conversations are opened afresh, hers wearing his shell. */
@@ -696,6 +720,8 @@ class Asking(private val app: PocketApp) {
                                 f.places.isEmpty() -> "She named no place."
                                 else -> "She named ${f.places.joinToString(", ") { com.phenomemental.pocketbeach.bsp.Mark.POOLS[it - 1].phrase }}."
                             }
+                            // Sundial 0.10.3: her places for this moment are kept with it, so Keep today shows them already marked (1.111178719927).
+                            if (h != null && f.places.isNotEmpty()) runCatching { app.waiting.place(e.at, f.places) }
                         }
                         // A short reply shows whole at its end: its first words are shown then.
                         if (firstShown == null && whole.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
@@ -1001,8 +1027,8 @@ class Asking(private val app: PocketApp) {
             pocketChanged()
             changed()
             val wrote = w?.trace?.lastOrNull { it.did.startsWith("wrote it") || it.did.startsWith("couldn't write it") }?.did
-            val note = if (wrote == null || wrote.startsWith("wrote it")) "Matthew said yes to his day: ${t.card.describe()}."
-                else "Matthew said yes to his day, but it couldn't be written: ${wrote.removePrefix("couldn't write it: ")}."
+            val note = if (wrote == null || wrote.startsWith("wrote it")) "Matthew said yes to his day: ${t.card.describe()}." + (alreadySaid(t.card)?.let { " $it" } ?: "")
+                else "Matthew said yes to his day, but not all of it could be written: ${wrote.removePrefix("couldn't write it: ")}. His moments are still waiting; Keep today again writes only what is missing."
             if (wrote == null || wrote.startsWith("wrote it")) {
                 conversation.written += "his day: ${t.card.describe()}"
                 // Sundial 0.10 (a): his moments of that day are in his now; they leave the waiting room.
@@ -1025,6 +1051,12 @@ class Asking(private val app: PocketApp) {
     fun placeTold(n: Int, e: Exchange? = toldOf()) {
         val t = e?.waiting as? Stage.Told ?: return
         e.waiting = Stage.Told(t.shown, t.card.place(n))
+    }
+
+    /** Sundial 0.10.3: a place's colour tapped beside his [i]th moment on his day's card beneath her reply. */
+    fun placeToldMoment(i: Int, n: Int, e: Exchange? = toldOf()) {
+        val t = e?.waiting as? Stage.Told ?: return
+        e.waiting = Stage.Told(t.shown, t.card.placeMoment(i, n))
     }
 
     // ── Sundial 0.10: Keep today, the greeting, and the day before ──
@@ -1107,6 +1139,14 @@ class Asking(private val app: PocketApp) {
         }
     }
 
+    /** Sundial 0.10.3: the cards a keep skipped as already on his hand, said plainly; null when none. */
+    private fun alreadySaid(card: Days.DayCard): String? = card.lines.filter { it.already }.map { "“${it.words}”" }.takeIf { it.isNotEmpty() }?.let {
+        "${it.joinToString(" and ")} ${if (it.size == 1) "was" else "were"} already on your hand, so not written again."
+    }
+
+    /** Sundial 0.10.3: his tap of a place's colour beside his [i]th moment on the keep card: off if it was on, on if it was off. */
+    fun placeKeepMoment(i: Int, n: Int) { keepCard?.let { k -> keepCard = KeepCard(k.walk, k.card.placeMoment(i, n), k.fellBack) } }
+
     /** A place's dot tapped on the keep card. */
     fun placeKeep(n: Int) { keepCard?.let { k -> keepCard = KeepCard(k.walk, k.card.place(n), k.fellBack) } }
 
@@ -1128,10 +1168,16 @@ class Asking(private val app: PocketApp) {
                 lastKept = k.card.day
                 // Sundial 0.10.1: the day's shell and its title, never the record or a heading.
                 keptShell = shellOf(k.card)
-                keepNote = null
+                // Sundial 0.10.3: a card on his hand already is said so, never a failure.
+                keepNote = alreadySaid(k.card)
                 conversation.written += "his day: ${k.card.describe()}"
                 pocketChanged()
-            } else keepNote = "Your day couldn't be written: ${wrote.removePrefix("couldn't write it: ")}."
+            } else {
+                // Sundial 0.10.3: what landed stands; his moments stay waiting, so Keep today again adds only what is missing.
+                keepNote = "Not all of your day could be written: ${wrote.removePrefix("couldn't write it: ")}. Your moments are still waiting; " +
+                    "Keep today again writes only what is missing."
+                pocketChanged()
+            }
             keepCard = null
             keeping = false
             changed()
@@ -1254,13 +1300,16 @@ class Asking(private val app: PocketApp) {
                 runCatching {
                     val landed = Landing.landed(d.lines, d.said, System.currentTimeMillis(), ::stored)
                     val problems = mutableListOf<String>()
+                    val wrote = mutableListOf<String>()
                     for (plan in Landing.plans(landed, app.pages)) {
                         val r = app.pages.carryOut(plan)
                         if (!r.ok) {
                             problems += "${plan.block}: ${r.problem ?: plan.refusal}"
                             break
                         }
+                        wrote += "${plan.block}: written whole"
                     }
+                    recordYes("his day, set out beneath her reply", wrote, problems)
                     landed to problems
                 }
             }
@@ -1533,7 +1582,13 @@ class Asking(private val app: PocketApp) {
         val proposal = s.asked.proposal ?: return
         e.waiting = Stage.Carrying(s)
         scope.launch {
-            val carried = withContext(Dispatchers.IO) { Asks.carryOut(proposal, app.pages, app.storage, shellOpening()) }
+            val carried = withContext(Dispatchers.IO) {
+                Asks.carryOut(proposal, app.pages, app.storage, shellOpening()).also { c ->
+                    recordYes("what was set out beneath her reply to “${Cook.shortly(e.question)}”",
+                        c.landed.map { w -> "${w.plan.block}${w.plan.landsAt?.takeIf { it.isNotEmpty() }?.let { " at $it" }.orEmpty()}: \u201c${Cook.shortly(w.text ?: w.plan.text)}\u201d" },
+                        listOfNotNull(c.problem))
+                }
+            }
             // Rockpool: the walk that set it out goes on from the step after the one that waited: "On his yes, write it."
             if ((e.walk?.waiting as? Cook.Wait.Him)?.card.let { it is Cook.Card.Keep || it is Cook.Card.New || it is Cook.Card.Name }) {
                 e.walkProblem = carried.problem

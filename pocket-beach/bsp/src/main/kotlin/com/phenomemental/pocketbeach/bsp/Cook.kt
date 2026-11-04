@@ -1678,13 +1678,19 @@ object CookActs {
      * his history saying what was written and what wasn't
      * (spine:pocket-beach 1.111178719927, 1.111178719929).
      */
-    fun keepDay(l: Days.DayCard, handle: String, pages: Pages, storage: BlockStorage, nowMs: Long): Kept {
+    fun keepDay(
+        l: Days.DayCard, handle: String, pages: Pages, storage: BlockStorage, nowMs: Long,
+        /** How one block is written whole: null when it landed, else why not (the tests make one refuse). */
+        writeBlock: (String, JsObj) -> String? = { name, block ->
+            runCatching { pages.carryOut(pages.planWhole(name, block)) }.fold({ if (it.ok) null else it.problem ?: "it couldn't be written" }, { it.message ?: "it couldn't be written" })
+        },
+    ): Kept {
         val written = Days.blocks(l, { name -> storage.read(name)?.let { runCatching { parseJson(it) }.getOrNull() } }, nowMs)
         val refused = mutableListOf<String>()
         val landed = mutableListOf<String>()
         for ((name, block) in written.blocks) {
-            val done = runCatching { pages.carryOut(pages.planWhole(name, block)) }.getOrNull()
-            if (done?.ok == true) landed += name else refused += "$name: ${done?.problem ?: "it couldn't be written"}"
+            val why = writeBlock(name, block)
+            if (why == null) landed += name else refused += "$name: $why"
         }
         val day = l.day.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK))
         val said = mutableListOf<String>()
