@@ -124,6 +124,60 @@ object HerReply {
             }
         } + "."
 
+    // ── Sundial 0.10.2: her reply written free, read by the app ──
+
+    /**
+     * Her reply as she wrote it, read as Sundial shows it. On his Pixel's E4B
+     * the reply's tool call came back with no call at all (she wrote her
+     * reply as plain words), so every turn ran her twice. Now she writes
+     * freely: [raw] as she wrote it; her last line, "Places:" and the places
+     * her words touch ([placesLine], [places], six named counting as none),
+     * taken off before showing; then of what is shown, a closing sentence
+     * ending in "?" is her [question], in italic, and what comes before it
+     * [partOne]. [shape]: REFLECT (part one, then her question), QUESTION
+     * (her question alone), ANSWER (no closing question: plain words).
+     */
+    class Free(val raw: String, val placesLine: String?, val places: List<Int>, val allSix: Boolean, val partOne: String, val question: String) {
+        val shape: String get() = when {
+            question.isEmpty() -> "ANSWER"
+            partOne.isEmpty() -> "QUESTION"
+            else -> "REFLECT"
+        }
+    }
+
+    /** What the places line opens with, as her line and the app's parse have it. */
+    const val PLACES_LINE = "Places:"
+
+    private val PLACES_AT = Regex("""^[\s*_"“(\[]*places?(?:\s+touched)?\s*:\s*(.*?)[\s*_"”)\].]*$""", RegexOption.IGNORE_CASE)
+
+    /** The places a piece of her reply names, when it is her places line ("Places: what happened, what matters"); null when it isn't one. */
+    fun placesLine(piece: String): String? = PLACES_AT.find(piece.trim())?.groupValues?.get(1)
+
+    /**
+     * Her free reply read: the places line her last line gives, if any, and
+     * the split of [shown] (what the app's checks leave of [raw], the places
+     * line among what they take off) into part one and her closing question.
+     */
+    fun free(raw: String, shown: String): Free {
+        val last = raw.trimEnd().lines().lastOrNull { it.isNotBlank() }?.let { Talking.piecesOf(it).lastOrNull { p -> p.isNotBlank() } }
+        val line = last?.let { placesLine(it) }
+        val named = line?.let { placesOf(it) }.orEmpty()
+        val allSix = named.size == Mark.POOLS.size
+        val (one, q) = split(shown)
+        return Free(raw, line?.let { last.trim() }, if (allSix) emptyList() else named, allSix, one, q)
+    }
+
+    /** [text] as part one and a closing question: the last sentence when it ends in "?", in italic; the question alone when nothing comes before it; else no question. */
+    fun split(text: String): Pair<String, String> {
+        val t = text.trim()
+        val lastLine = t.lines().lastOrNull { it.isNotBlank() } ?: return "" to ""
+        val q = Talking.piecesOf(lastLine).lastOrNull { it.isNotBlank() }?.trim() ?: return t to ""
+        val bare = q.trim('*', '_', ' ')
+        if (!bare.trimEnd('”', '"', '’', ')').endsWith("?")) return t to ""
+        val before = t.substring(0, t.lastIndexOf(q)).trim()
+        return before to bare
+    }
+
     /** A part's field in the tool call: "THE PLACES TOUCHED" is "places_touched". */
     fun field(part: String): String = part.removePrefix("THE ").trim().lowercase().replace(' ', '_')
 

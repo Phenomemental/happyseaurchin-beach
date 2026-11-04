@@ -209,11 +209,6 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
         override val stream = com.phenomemental.pocketbeach.bsp.Talks.Stream { message, piece ->
             kotlinx.coroutines.runBlocking(thread) {
-                if (afresh) {
-                    runCatching { conversation.close() }
-                    conversation = conversation(engine, instruction, history + done, held, settings)
-                    afresh = false
-                }
                 val started = System.nanoTime()
                 var first: Double? = null
                 val whole = StringBuilder()
@@ -270,101 +265,8 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
         override fun stop() { runCatching { conversation.cancelProcess() } }
 
-        /** Sundial 0.10: after a reply given in parts, the kept conversation is opened afresh with it before the next free reply. */
-        private var afresh = false
-
-        /**
-         * Sundial 0.10: her reply in its named [parts], through the engine's
-         * tool call ("reply"): asked in a conversation of its own that holds
-         * her window and every exchange so far, as `choose` asks hers, so a
-         * tool call never sits unanswered in her kept conversation; that is
-         * opened afresh, with this exchange in it, before her next free reply
-         * (Sundial 0.10.1: once Ask keeps the reply it shows, [keep]). Null
-         * when the call isn't whole: she is asked free.
-         */
-        override fun parts(message: String, parts: List<String>): Map<String, String>? = kotlinx.coroutines.runBlocking(thread) {
-            val fields = parts.map { Mind.field(it) }
-            val props = fields.joinToString(",") { f -> "\"$f\":{\"type\":\"string\",\"description\":\"${describe(f)}\"}" }
-            val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
-                override fun getToolDescriptionJsonString() = """{"name":"reply","description":"Your reply, in its parts.","parameters":{"type":"object","properties":{$props},"required":[${fields.joinToString(",") { "\"$it\"" }}]}}"""
-                override fun execute(p0: String): String = "unused"
-            }
-            val started = System.nanoTime()
-            val got = runCatching {
-                engine.createConversation(
-                    ConversationConfig(
-                        systemInstruction = Contents.of("$instruction\n\nGive each reply by calling reply with its parts."),
-                        initialMessages = (history + done).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
-                        tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
-                        samplerConfig = sampler(settings), maxOutputToken = settings.longestReply,
-                        thinkingConfig = ThinkingConfig(enableThinking = false),
-                    ),
-                ).use { c ->
-                    steps.add("a conversation opened for her reply in parts", Steps.since(started))
-                    val asked = System.nanoTime()
-                    val a = c.sendMessage(message).toolCalls.firstOrNull { it.name == "reply" }?.arguments.also { steps.add("her reply in parts, through the tool call", Steps.since(asked)) } ?: return@use null
-                    counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, (System.nanoTime() - started) / 1e9)) }
-                    parts.zip(fields).associate { (p, f) -> p to (a[f]?.let { v -> (v as? List<*>)?.joinToString("\n") { it.toString() } ?: v.toString() }?.trim().orEmpty()) }
-                        .takeIf { m -> m.values.any { it.isNotEmpty() } }
-                }
-            }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
-            got
-        }
-
-        /**
-         * Sundial 0.10.1: her reply in one of [shapes], each its own tool
-         * (reflect, answer): she calls the one she chooses. Asked as [parts]
-         * is, in a conversation of its own; one call, her places inside it.
-         */
-        override fun shaped(message: String, shapes: List<com.phenomemental.pocketbeach.bsp.HerReply.Shape>): Pair<String, Map<String, String>>? = kotlinx.coroutines.runBlocking(thread) {
-            val tools = shapes.map { sh ->
-                com.google.ai.edge.litertlm.tool(object : com.google.ai.edge.litertlm.OpenApiTool {
-                    override fun getToolDescriptionJsonString() = com.phenomemental.pocketbeach.bsp.HerReply.toolJson(sh)
-                    override fun execute(p0: String): String = "unused"
-                })
-            }
-            val started = System.nanoTime()
-            runCatching {
-                engine.createConversation(
-                    ConversationConfig(
-                        systemInstruction = Contents.of("$instruction\n\n" + com.phenomemental.pocketbeach.bsp.HerReply.choosing(shapes)),
-                        initialMessages = (history + done).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
-                        tools = tools, automaticToolCalling = false,
-                        samplerConfig = sampler(settings), maxOutputToken = settings.longestReply,
-                        thinkingConfig = ThinkingConfig(enableThinking = false),
-                    ),
-                ).use { c ->
-                    steps.add("a conversation opened for her reply's tool call, with ${history.size + done.size} exchanges before", Steps.since(started))
-                    val asked = System.nanoTime()
-                    val call = c.sendMessage(message).toolCalls.firstOrNull { tc -> shapes.any { it.tool == tc.name } }
-                    val t = counted(c)
-                    t?.let { pace.turns.add(Pace.Turn(it.read, it.readPerSecond, it.wrote, it.writePerSecond, (System.nanoTime() - started) / 1e9)) }
-                    steps.add("her reply through the tool call" + (t?.let { " (read ${it.read} tokens, wrote ${it.wrote})" } ?: ""), Steps.since(asked))
-                    val a = call?.arguments ?: return@use null
-                    val sh = shapes.first { it.tool == call.name }
-                    sh.name to sh.parts.associateWith { p ->
-                        a[com.phenomemental.pocketbeach.bsp.HerReply.field(p)]?.let { v -> (v as? List<*>)?.joinToString("; ") { it.toString() } ?: v.toString() }?.trim().orEmpty()
-                    }
-                }
-            }.onFailure { Log.w("Gemma", "Her reply's tool call failed; she is asked free.", it) }.getOrNull()
-        }
-
-        /** Sundial 0.10.1: the reply Ask showed for [message], given in parts, kept so her kept conversation is opened afresh with it. */
-        override fun keep(message: String, reply: String) {
-            kotlinx.coroutines.runBlocking(thread) {
-                done += message to reply
-                afresh = true
-            }
-        }
-
-        private fun describe(field: String): String = when (field) {
-            "reflection" -> "Part one: what he said, given back in his own words, beginning with You"
-            "question" -> "Part two: one question, ending with a question mark"
-            "way" -> "A, B or C"
-            "heard" -> "One to four short passages copied exactly from his days or whispers, one to a line"
-            "noticing" -> "One or two whole, plain sentences"
-            else -> field
-        }
+        /** Sundial 0.10.2: what her kept conversation holds now, in tokens. */
+        override fun tokens(): Int? = kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.getTokenCount() }.getOrNull() }
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) { runCatching { conversation.close() } }
@@ -473,9 +375,16 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                 ).use { c ->
                     val started = System.nanoTime()
                     val m = c.sendMessage(message)
-                    steps.add("the places call", Steps.since(started))
-                    val raw = m.toolCalls.firstOrNull { it.name == "places" }?.arguments?.get("places")
-                    numbers(raw).filter { it in 1..places }.distinct().takeIf { it.isNotEmpty() }
+                    val call = m.toolCalls.firstOrNull { it.name == "places" }
+                    // Sundial 0.10.2: a whole tool call is taken; else what she wrote in the same call is read for the ring's places, never asked again.
+                    if (call != null) {
+                        steps.add("the places call: a whole tool call", Steps.since(started))
+                        numbers(call.arguments["places"]).filter { it in 1..places }.distinct().takeIf { it.isNotEmpty() }
+                    } else {
+                        val text = m.toString()
+                        steps.add("the places call: no whole tool call; read from what she wrote, \u201c${text.trim().take(80)}\u201d", Steps.since(started))
+                        placesWritten(text, instruction, places)
+                    }
                 }
             }.onFailure { Log.w("Gemma", "Her placing's tool call failed; nothing is named.", it) }.getOrNull()
         } finally {
@@ -504,7 +413,16 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                                 thinkingConfig = ThinkingConfig(enableThinking = false),
                             ),
                         ).use { c ->
-                            val a = c.sendMessage(material).toolCalls.firstOrNull { it.name == "sheet" }?.arguments ?: return@use null
+                            val started = System.nanoTime()
+                            val m = c.sendMessage(material)
+                            val a = m.toolCalls.firstOrNull { it.name == "sheet" }?.arguments
+                            // Sundial 0.10.2: no whole tool call: what she wrote in the same call is read as plain lines, as her free sheet is.
+                            if (a == null) {
+                                val text = m.toString()
+                                steps.add("the card's sheet: no whole tool call; read from what she wrote", Steps.since(started))
+                                return@use Mind.sheetOf(text)
+                            }
+                            steps.add("the card's sheet: a whole tool call", Steps.since(started))
                             val title = a["title"]?.toString()?.trim().orEmpty()
                             val lines = strings(a["lines"]).take(4)
                             if (title.isEmpty() || lines.isEmpty()) null
@@ -518,6 +436,18 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
             if (got != null) return got
         }
         return super.sheet(instruction, material, settings, tool = false)
+    }
+
+    /**
+     * Sundial 0.10.2: the places she named in plain words when no whole tool
+     * call came back: each place of the ring ([instruction]'s "N name" lines)
+     * whose name her words hold; else the ring's numbers she wrote.
+     */
+    private fun placesWritten(text: String, instruction: String, places: Int): List<Int>? {
+        val plain = " " + com.phenomemental.pocketbeach.bsp.Telling.plain(text.replace('\u2019', '\'')) + " "
+        val ring = instruction.lines().mapNotNull { Regex("""^(\d+) (.+)$""").find(it.trim()) }.associate { it.groupValues[1].toInt() to com.phenomemental.pocketbeach.bsp.Telling.plain(it.groupValues[2].replace('\u2019', '\'')) }
+        val named = ring.filter { (_, name) -> name.isNotEmpty() && plain.contains(" $name ") }.keys.sorted()
+        return (named.ifEmpty { numbers(text).filter { it in 1..places }.distinct() }).takeIf { it.isNotEmpty() }
     }
 
     /** A tool argument read as numbers, however the engine hands a list over. */

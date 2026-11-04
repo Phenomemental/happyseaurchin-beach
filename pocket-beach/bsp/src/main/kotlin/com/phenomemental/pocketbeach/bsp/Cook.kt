@@ -86,6 +86,8 @@ object Cook {
         class Parts(val names: List<String>, val shapes: List<HerReply.Shape> = emptyList()) : Verb(Reader.SHE)
         class Sheet(val from: String, val withToday: Boolean, val line: String, val into: String) : Verb(Reader.SHE)
         class LastDay(val into: String) : Verb()
+        /** Sundial 0.10.2: the tomorrow line of his last day kept ("Yesterday he wrote this line for today: “…”"); none when it left none. */
+        class LastTomorrow(val into: String) : Verb()
         class DaysIn(val n: Int, val place: String, val into: String) : Verb()
         class Whispers(val place: String, val into: String) : Verb()
         class Ways(val place: String, val into: String) : Verb()
@@ -190,6 +192,7 @@ object Cook {
             Verb.Sheet(m.groupValues[1], m.groupValues[2].isNotEmpty(), m.groupValues[3], m.groupValues[4])
         },
         rx("""Read his last day kept before today, whole, with its tomorrow line\. Carry it as ($CAP)\.""") to { m -> Verb.LastDay(m.groupValues[1]) },
+        rx("""Read the tomorrow line of his last day kept before today\. Carry it as ($CAP)\.""") to { m -> Verb.LastTomorrow(m.groupValues[1]) },
         rx("""Read the latest (\w+) days resting in ($CAP), each whole with its date: .+?\. Carry them as ($CAP)\.""") to { m -> Verb.DaysIn(number(m.groupValues[1]) ?: 9, m.groupValues[2], m.groupValues[3]) },
         rx("""Read what he whispered at ($CAP), each with its date and the question it answered\. Carry them as ($CAP)\.""") to { m -> Verb.Whispers(m.groupValues[1], m.groupValues[2]) },
         rx("""Read ($CAP)'s three ways of listening from Sundial's block, and which was used there last, with the questions asked there before, each with its date\. Carry them as ($CAP)\.""") to { m -> Verb.Ways(m.groupValues[1], m.groupValues[2]) },
@@ -785,6 +788,11 @@ object Cook {
                     if (text.isNullOrBlank()) carried.remove(v.into) else carried[v.into] = text
                     note(s, if (d == null) "no day kept before today" else "read his last day kept, ${d.address}", v.into)
                 }
+                is Verb.LastTomorrow -> {
+                    val t = Keep.tomorrowOf(Keep.lastDay(world.kept(), world.keepDay))?.trim()?.trimEnd('.')
+                    if (t.isNullOrBlank()) carried.remove(v.into) else carried[v.into] = "Yesterday he wrote this line for today: \u201c$t.\u201d"
+                    note(s, if (t.isNullOrBlank()) "no tomorrow line left" else "read the tomorrow line he left", v.into)
+                }
                 is Verb.DaysIn -> {
                     val pool = Mark.poolByPhrase(str(v.place))
                     val got = if (pool == 0) emptyList() else Keep.restingIn(world.kept(), pool, v.n)
@@ -1330,6 +1338,24 @@ object Cook {
         }
         val merged = fromPlaces(out)
         return Up(name, block, false, merged.takeIf { !deepEqual(it, mine) }, took, added, removed, yours)
+    }
+
+    /**
+     * Sundial 0.10.2: her recipe for talk, the line TALK hands her first, as
+     * his cook gives it: read once as her one conversation opens and put in
+     * her instruction, never handed again each turn. Null when his cook has
+     * no TALK, or TALK's first step hands her no line of its own.
+     */
+    fun talkRecipe(parsed: Parsed): String? {
+        fun find(steps: List<Step>): Step? {
+            for (s in steps) {
+                if (s.label?.trim()?.trimEnd('.')?.uppercase() == "TALK") return s
+                find(s.kids)?.let { return it }
+            }
+            return null
+        }
+        val talk = parsed.procedures.values.firstNotNullOfOrNull { find(it.steps) } ?: return null
+        return (talk.kids.firstOrNull()?.verb as? Verb.Hand)?.takeIf { it.with.isEmpty() }?.line
     }
 
     /** The block his old cook 6 is kept in once cook 6 becomes Sundial's ways: the hidden region holds it. */

@@ -352,8 +352,10 @@ class CookTest {
         assertNull(day.waiting, "TALK waits on nothing: no card after her reply")
         assertNull(day.card, "no Sort as my day")
         assertTrue(day.trace.none { it.did.contains("Sort as my day") }, day.trace.joinToString("\n") { it.did })
-        // Her reply's two shapes, hers to choose: REFLECT with her places, ANSWER when he asks her something.
-        assertEquals(listOf(HerReply.Shape("REFLECT", listOf(HerReply.PLACES, "THE REFLECTION", "THE QUESTION")), HerReply.Shape("ANSWER", listOf("THE ANSWER"))), day.shapes)
+        // Sundial 0.10.2: her reply written free, no tool call; his day message asks her for her places line, the app's to read and take off.
+        assertEquals(emptyList(), day.shapes)
+        assertEquals(emptyList(), day.parts)
+        assertTrue(day.handed.any { it.line == "The app: his words tell of his day. After your question, end with one last line: Places: and the places his words touch, by name." }, day.handed.joinToString("\n") { it.line })
         assertTrue(day.handed.single { it.line.startsWith("The app: nothing is being kept") }.line.contains("Your reply has two parts, unless he asks you something"))
     }
 
@@ -390,6 +392,50 @@ class CookTest {
         assertTrue(now.keys.none { it.startsWith("1.1.8.6") || it.startsWith("1.1.8.7") })
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
+    }
+
+    /** Sundial 0.10.1's cook exactly as it shipped (main at 987e931), as his phone keeps it. */
+    private val cook0101: JsObj get() = parseJson(javaClass.getResource("/cook-0.10.1.json")!!.readText()) as JsObj
+
+    @Test
+    fun hisCookFrom0101IsBroughtUpTo0102PlaceByPlace() {
+        val (storage, pages) = hatched()
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), cook0101)).ok)
+        check(pages.carryOut(pages.planWhole(Cook.kernelOf(h), parseJson(stringify(procedures.load(Cook.SHIPPED_KERNEL))!!) as JsObj)).ok)
+        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(cook0101) else stringify(procedures.load(name)) })
+        for ((_, plan) in ups) plan?.let { check(pages.carryOut(it).ok) }
+        val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
+        assertEquals(Cook.places(procedures.load(Cook.SHIPPED_COOK)), now, "TALK and GREET as 0.10.2 has them, and nothing else changed")
+        assertTrue(ups.flatMap { it.first.yours }.isEmpty(), "nothing of his to keep or offer")
+        // The reply's tool call is gone from TALK; GREET reads his tomorrow line and branches on it.
+        assertTrue(Cook.places(cook0101).values.any { it.startsWith("She gives her reply through the tool call") })
+        assertTrue(now.values.none { it.contains("through the tool call in one of two shapes") })
+        assertEquals("TOMORROW. Read the tomorrow line of his last day kept before today. Carry it as THE TOMORROW.", now["6.3.1"])
+        val loaded = Cook.load(h, storage, procedures)
+        assertTrue(loaded.own && loaded.refusal == null, loaded.refusal ?: "")
+    }
+
+    @Test
+    fun hisOwnGreetingLineIsKeptWhenGreetIsBroughtUpTo0102() {
+        val (storage, pages) = hatched()
+        val his = parseJson(stringify(cook0101)!!) as JsObj
+        val mine = "TALK TO ME. Read his last day kept before today, whole, with its tomorrow line. Carry it as THE LAST DAY."
+        ((his["6"] as JsObj)["3"] as JsObj)["2"] = str(mine)
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), his)).ok)
+        val ups = Cook.bringUp(h, pages, storage, procedures, { name -> if (name == Cook.SHIPPED_COOK) stringify(cook0101) else stringify(procedures.load(name)) })
+        for ((_, plan) in ups) plan?.let { check(pages.carryOut(it).ok) }
+        val y = ups.flatMap { it.first.yours }.single { it.at == "6.3.2" }
+        assertEquals(mine, y.his)
+        assertTrue(y.offer)
+    }
+
+    @Test
+    fun herRecipeIsTheLineTalkHandsHerFirst() {
+        val parsed = Cook.parse(procedures.load(Cook.SHIPPED_COOK))
+        val recipe = Cook.talkRecipe(parsed)!!
+        assertTrue(recipe.startsWith("The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something"), recipe)
+        // The same line his walk hands her first: put in her instruction once, taken out of every turn.
+        assertEquals(recipe, talked(idChecks).handed.first().line)
     }
 
     @Test
@@ -590,7 +636,8 @@ class CookTest {
         assertEquals(hisSix1, jsString(su.retired!!["1"]), "his old cook 6 kept whole")
         val now = Cook.places(parseJson(storage.read(Cook.cookOf(h))!!))
         assertEquals(hisQuestion, now["1.1.8.3"], "his day question, his, where TALK asks it")
-        assertEquals("Yes: walk on.", now["1.1.8.3.1"])
+        assertEquals("Yes:", now["1.1.8.3.1"])
+        assertTrue(now["1.1.8.3.1.1"]!!.contains("Places:"))
         assertTrue(now.keys.none { it.startsWith("1.1.8.6") }, "no Sort as my day after her reply")
         assertEquals("Carry THE MESSAGE as THE WORDS.", now["1.1.8.2"])
         val loaded = Cook.load(h, storage, procedures)

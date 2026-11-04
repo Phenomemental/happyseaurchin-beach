@@ -209,9 +209,10 @@ class SundialDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("greet-said", "You said: “Tomorrow, ring Jo about the music.”", timeoutMs = 20_000)
             compose.waitFor("greet-question", "What came of the call with Jo?", timeoutMs = 20_000)
+            // Sundial 0.10.2: his tomorrow line, as the dial shows it him, then short sentences with no branch, speaking to him as you.
             val turn = mind.talkMessages.single()
-            assertTrue(turn, turn.contains("he has opened his sundial and hasn't spoken to you yet today"))
-            assertTrue(turn, turn.contains("ring Jo about the music"))
+            assertTrue(turn, turn.contains("Yesterday he wrote this line for today: \u201cring Jo about the music.\u201d"))
+            assertTrue(turn, turn.contains("Ask him one question about how it went today.") && turn.contains("Speak to him as you."))
             // His answer is his first words today: the question gives way to the conversation.
             say("Jo loved the music.")
             compose.waitFor("say", timeoutMs = 20_000)
@@ -312,65 +313,82 @@ class SundialDeviceTest {
         }
     }
 
-    private fun reflect(r: String, q: String, places: String = "what happened; what he made of it") =
-        "reflect" to mapOf(HerReply.PLACES to places, "THE REFLECTION" to r, "THE QUESTION" to q)
+    // ── Sundial 0.10.2, from his Pixel's E4B on 3 November: 29.0 s, her reply's tool call came back with no call at all ──
 
-    /** Fix 4 and 7: on E4B she chose REFLECT, part one empty: she is asked once more; both calls, her shape and her places are in the workings. */
+    private val glum = "no I'm not focused at all. I'm feeling glum"
+
+    /** Item 1: on E4B her reply is written free; her places line is the app's, taken off before showing; the workings say what she wrote and the shape the split found. */
     @Test
-    fun onE4BAnEmptyPartOneIsAskedForOnceMore() {
+    fun onE4BHerReplyIsWrittenFreeAndHerPlacesLineIsTakenOff() {
         Fresh.hatched()
         hisHand()
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
         app.showDetails = true
-        mind.shapedScript += reflect("", question)
-        mind.shapedScript += reflect(reflection, question)
+        mind.talkScript += "$reflection\n$question\nPlaces: what happened, what's ahead"
         ActivityScenario.launch(MainActivity::class.java).use {
             say(idChecks)
             compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
             assertTrue(shows("say", question))
-            assertEquals(2, mind.shapedAsked.size)
-            assertEquals(listOf("REFLECT", "ANSWER"), mind.shapesOffered.take(2))
-            assertTrue(mind.shapedAsked[1].contains(HerReply.AGAIN))
-            compose.waitFor("shape", "She chose REFLECT.")
-            compose.waitFor("parts-tried", "REFLECT: THE PLACES TOUCHED “what happened; what he made of it”; THE REFLECTION “”")
-            compose.waitFor("parts-tried", "asked once more for part one: REFLECT: THE PLACES TOUCHED")
-            compose.waitFor("placed", "She named what happened, what you made of it.")
-            compose.waitFor("step", "her first words on screen, from his message")
-            assertEquals("$reflection\n$question", mind.keptParts.single().second)
+            assertFalse("her places line is never shown", shows("say", "Places"))
+            compose.waitFor("raw", "Places: what happened, what's ahead")
+            compose.waitFor("places-line", "Her places line, taken off before showing: \u201cPlaces: what happened, what's ahead\u201d")
+            compose.waitFor("shape", "The split found REFLECT")
+            compose.waitFor("placed", "She named what happened, what\u2019s ahead.")
+            assertEquals("REFLECT", app.asking.history.last().shape)
+            // No tool call: she was asked once, free; her turn asks for the places line because his words tell of his day.
+            assertEquals(1, mind.talkMessages.size)
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Places:"))
         }
     }
 
-    /** Fix 4: part one empty both times: never shown as if whole; she is asked free, and her own words stand. */
+    /** Item 2: one conversation, opened once with her window and her recipe; each turn adds only his new message. */
     @Test
-    fun onE4BAReplyStillMissingPartOneIsNeverShownAsWhole() {
-        Fresh.hatched()
-        hisHand()
-        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
-        repeat(2) { mind.shapedScript += reflect("", question) }
-        mind.talkScript += "$reflection $question"
-        ActivityScenario.launch(MainActivity::class.java).use {
-            say(idChecks)
-            compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
-            assertEquals(2, mind.shapedAsked.size)
-            assertTrue("nothing kept from the shaped calls", mind.keptParts.isEmpty())
-        }
-    }
-
-    /** Fix 7 and 8: his question gets ANSWER, shown plain and named in the workings; no day, so no Sort as my day, and the no-day line is hers. */
-    @Test
-    fun onE4BHisQuestionIsAnsweredNotMirrored() {
+    fun oneConversationIsKeptAndEachTurnIsOnlyHisNewMessage() {
         Fresh.hatched()
         hisHand()
         app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
         app.showDetails = true
-        val answer = "Yes, the philosopher of process: he held that the world is made of events rather than things. What brought him to mind?"
-        mind.shapedScript += "answer" to mapOf("THE ANSWER" to answer)
+        mind.talkScript += "You're feeling not focused at all, and glum.\nWhat's one small thing in front of you right now?"
+        mind.talkScript += "$reflection\n$question\nPlaces: what happened, what's ahead"
+        ActivityScenario.launch(MainActivity::class.java).use {
+            say(glum)
+            compose.waitFor("say", "You're feeling not focused at all", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
+            compose.waitFor("places-line", "No places line.")
+            say(idChecks)
+            compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
+            compose.waitUntil(20_000) { app.asking.settled }
+            assertEquals("one conversation for both messages", 1, mind.talkInstructions.size)
+            assertEquals("opened as the conversation started, with nothing before", emptyList<Pair<String, String>>(), mind.talkHistories.single())
+            val opening = mind.talkInstructions.single()
+            assertTrue("her recipe in her instruction, once", opening.contains("Your reply has two parts, unless he asks you something"))
+            assertTrue("his hand read once, as it opened", opening.contains("and need to update a membership agreement and print it out"))
+            for (turn in mind.talkMessages) {
+                assertFalse("never her recipe again: $turn", turn.contains("Your reply has two parts"))
+                assertFalse("never the time again: $turn", turn.startsWith("(It is "))
+            }
+            assertTrue(mind.talkMessages[0].endsWith(glum))
+            assertTrue(mind.talkMessages[0].contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            assertTrue(mind.talkMessages[1].endsWith(idChecks))
+        }
+    }
+
+    /** Item 1: his question answered with no closing question: plain words, ANSWER in the workings. */
+    @Test
+    fun anAnswerWithNoClosingQuestionShowsAsPlainWords() {
+        Fresh.hatched()
+        hisHand()
+        app.set(Job.TALK, JobSettings.of(Job.TALK).copy(model = JobSettings.GEMMA_E4B))
+        app.showDetails = true
+        val answer = "Yes: the philosopher of process, who held that the world is made of events rather than things."
+        mind.talkScript += answer
         ActivityScenario.launch(MainActivity::class.java).use {
             say(whitehead)
             compose.waitFor("say", "the philosopher of process", timeoutMs = 20_000)
-            compose.waitFor("shape", "She chose ANSWER.")
-            assertTrue("no part two in italic, no mirror", !shows("say", "You've heard of"))
-            assertTrue(mind.shapedAsked.single().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            compose.waitFor("shape", "The split found ANSWER")
+            assertEquals(answer, app.asking.history.last().said)
+            assertTrue(mind.talkMessages.single().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
             compose.waitUntil(10_000) { app.asking.settled }
             assertTrue("no Sort as my day", none("sort-as-day"))
         }
@@ -435,7 +453,7 @@ class SundialDeviceTest {
             assertEquals("What has this day held for you?", app.asking.greeting?.question)
             nothingNotHers()
             // She was never handed his passport for it; her talk, after, still holds who he is.
-            val greetingWindow = mind.talkAsked.single { it.second.contains("he has opened his sundial") }.first
+            val greetingWindow = mind.talkAsked.single { it.second.contains("Ask him one question") }.first
             assertFalse(greetingWindow, greetingWindow.contains(Hatch.MATTHEW.who))
             assertTrue(greetingWindow, greetingWindow.contains("1. His heart"))
             say("Took the dog out with Sam by the river. I felt calm.")

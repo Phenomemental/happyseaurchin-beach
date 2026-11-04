@@ -516,11 +516,10 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
-            // Sundial 0.10.1: her reply in parts, each tool call exactly as she returned it; the shape she chose; her places; every step timed.
-            e.shape?.let { Text("She chose $it.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("shape")) }
-            e.partsTried.forEachIndexed { i, p ->
-                Text("Her tool call${if (i > 0) ", asked once more for part one" else ""}: $p", style = Type.small, color = ink.soft, modifier = Modifier.testTag("parts-tried"))
-            }
+            // Sundial 0.10.2: her reply as she wrote it; her places line, taken off before showing; the shape the split found; her places; every step timed.
+            e.raw?.let { Text("Her reply as she wrote it: \u201c${it.trim()}\u201d", style = Type.small, color = ink.soft, modifier = Modifier.testTag("raw")) }
+            if (e.raw != null) Text(e.placesLine?.let { "Her places line, taken off before showing: \u201c$it\u201d" } ?: "No places line.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("places-line"))
+            e.shape?.let { Text(asking.shapeSaid(it), style = Type.small, color = ink.soft, modifier = Modifier.testTag("shape")) }
             e.placed?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("placed")) }
             if (e.steps.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.testTag("steps")) {
                 for (st in e.steps) Text(st, style = Type.call, color = ink.soft, modifier = Modifier.testTag("step"))
