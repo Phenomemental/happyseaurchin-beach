@@ -17,7 +17,9 @@ import java.time.LocalDate
  *     address, before today's question; moments older than that are let go;
  * (c) Show the workings shows this as what it is, "today's words, not yet
  *     kept", and a whole copy of the pocket includes it;
- * (d) it holds his words and their instants only, never her replies.
+ * (d) it holds his words and their instants only, never her replies;
+ *     Sundial 0.10.3: and where she marked each sits (its places), from her
+ *     reply's places line, so Keep today sets out every moment already placed.
  *
  * Days are the beach's (UTC): the file speaks of the day each moment falls in.
  */
@@ -31,7 +33,10 @@ object Waiting {
     fun write(moments: List<Keep.Moment>): String = stringifyPretty(
         JsObj.of(
             "_" to str("$SAID: his words and when he said them, waiting for Keep today. Never a block, never her words."),
-            "moments" to JsArr(moments.sortedBy { it.atMs }.map { JsObj.of("at" to str(isoString(it.atMs)), "words" to str(it.words)) as Js? }.toMutableList()),
+            "moments" to JsArr(moments.sortedBy { it.atMs }.map { m ->
+                (if (m.places.isEmpty()) JsObj.of("at" to str(isoString(m.atMs)), "words" to str(m.words))
+                else JsObj.of("at" to str(isoString(m.atMs)), "words" to str(m.words), "places" to JsArr(m.places.map { JsNum(it.toDouble()) as Js? }.toMutableList()))) as Js?
+            }.toMutableList()),
         ),
     ) + "\n"
 
@@ -43,7 +48,8 @@ object Waiting {
             val o = e as? JsObj ?: return@mapNotNull null
             val at = (o["at"] as? JsStr)?.value?.let(::parseIsoMs) ?: return@mapNotNull null
             val words = (o["words"] as? JsStr)?.value?.trim()?.takeIf { it.isNotEmpty() } ?: return@mapNotNull null
-            Keep.Moment(words, at)
+            val places = (o["places"] as? JsArr)?.items?.mapNotNull { (it as? JsNum)?.value?.toInt() }?.filter { it in 1..Mark.POOLS.size }.orEmpty()
+            Keep.Moment(words, at, Mark.inOrder(places))
         }.sortedBy { it.atMs }
     }
 
@@ -53,6 +59,10 @@ object Waiting {
         if (w.isEmpty() || moments.any { it.atMs == atMs && it.words == w }) return moments
         return (moments + Keep.Moment(w, atMs)).sortedBy { it.atMs }
     }
+
+    /** Sundial 0.10.3: [moments] with the one said at [atMs] placed at [places], as her reply's places line named them. */
+    fun placed(moments: List<Keep.Moment>, atMs: Long, places: List<Int>): List<Keep.Moment> =
+        moments.map { if (it.atMs == atMs) it.copy(places = Mark.inOrder(places)) else it }
 
     /** The moments waiting from [day] (the beach's day). */
     fun of(moments: List<Keep.Moment>, day: LocalDate): List<Keep.Moment> = moments.filter { Keep.dayOf(it.atMs) == day }

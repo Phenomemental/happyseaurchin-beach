@@ -45,7 +45,7 @@ object Cook {
         fun cue(label: String): Cue? = answers[label.uppercase()]
     }
 
-    class Parsed(val procedures: Map<String, Procedure>, val cues: Cues, val refused: List<String>) {
+    class Parsed(val procedures: Map<String, Procedure>, val cues: Cues, val refused: List<String>, val unreadable: List<Pair<String, String>> = emptyList()) {
         val ok: Boolean get() = refused.isEmpty() && procedures.isNotEmpty()
     }
 
@@ -54,7 +54,8 @@ object Cook {
         class IsSet(val name: String) : Verb()
         class NameHeld(val name: String) : Verb()
         object AsksHerLines : Verb()
-        object TellsDay : Verb()
+        /** Sundial 0.10.3: the day check as its step's sentence states it, every number and clause read from it. */
+        class TellsDay(val check: Landing.DayCheck) : Verb()
         /** Sundial 0.10.1: whether [of]'s words say he may be in danger, by his safety words: the app's own check, never hers. */
         class Danger(val of: String) : Verb()
         class BlockStands(val name: String) : Verb()
@@ -112,14 +113,55 @@ object Cook {
     }
 
     private const val CAP = """THE [A-Z][A-Z ]*[A-Z](?![A-Za-z])"""
-    private fun rx(s: String) = Regex("^$s$")
+    /**
+     * A form, as the app reads a step against it. Sundial 0.10.3: the app's
+     * own words are read loosely, his words inside quotes freely: a line
+     * break anywhere (his line may run over several), a quote mark straight
+     * or curly, an apostrophe straight or curly, and any run of spaces read
+     * as one. On his Pixel on 4 November his SHEET step, changed only inside
+     * its quotes, was refused whole.
+     */
+    private fun rx(s: String) = Regex("^" + loosely(s) + "$", RegexOption.DOT_MATCHES_ALL)
+
+    /** [pattern] with its literal quote marks, apostrophes and spaces made loose, outside character classes. */
+    internal fun loosely(pattern: String): String {
+        val out = StringBuilder()
+        var depth = 0
+        var escaped = false
+        var lastSpace = false
+        for (ch in pattern) {
+            if (escaped) { out.append(ch); escaped = false; lastSpace = false; continue }
+            if (ch == '\\') { out.append(ch); escaped = true; lastSpace = false; continue }
+            if (depth > 0) { out.append(ch); if (ch == ']') depth--; lastSpace = false; continue }
+            when (ch) {
+                '[' -> { depth++; out.append(ch); lastSpace = false }
+                '“', '”', '"' -> { out.append(if (ch == '“') "[“\"]" else if (ch == '”') "[”\"]" else "[“”\"]"); lastSpace = false }
+                '\'', '’' -> { out.append("['’]"); lastSpace = false }
+                ' ' -> { if (!lastSpace) out.append("\\s+"); lastSpace = true }
+                else -> { out.append(ch); lastSpace = false }
+            }
+        }
+        return out.toString()
+    }
 
     private val FORMS: List<Pair<Regex, (MatchResult) -> Verb>> = listOf(
         rx("""Which does THE MESSAGE ask for, by the words at cook (\d)\? Take the first answer beneath whose words match, in order; else the last\.""") to { m -> Verb.Which(m.groupValues[1]) },
         rx("""(?:Are there words of his in|Is there) ($CAP)\?""") to { m -> Verb.IsSet(m.groupValues[1]) },
         rx("""Does his shell already give her ($CAP)\?""") to { m -> Verb.NameHeld(m.groupValues[1]) },
         rx("""Does THE MESSAGE ask to change her own lines\?""") to { _ -> Verb.AsksHerLines },
-        rx("""Does THE MESSAGE tell of his day: three sentences or more(?:, of| and) forty words or more(?: in all)?, or news of a card on his hand\?""") to { _ -> Verb.TellsDay },
+        rx("""Does THE MESSAGE tell of his day: three sentences or more(?:, of| and) forty words or more(?: in all)?, or news of a card on his hand\?""") to { _ -> Verb.TellsDay(Landing.DayCheck.SINCE_09) },
+        // Sundial 0.10.3: the sentence is the check: change a number or a clause, and the app checks what it now says.
+        rx("""Does THE MESSAGE tell of his day: ([\w-]+) sentences? or more and ([\w-]+) words? or more in all(?:, or a word of ([\w-]+) letters? or more that a card on his hand also holds)?\?(?: Never when it ends with a question mark(?:, or opens with one of: ([^.]+))?\.)?""") to { m ->
+            Verb.TellsDay(
+                Landing.DayCheck(
+                    sentences = number(m.groupValues[1]) ?: throw IllegalArgumentException("“${m.groupValues[1]}” isn't a number"),
+                    words = number(m.groupValues[2]) ?: throw IllegalArgumentException("“${m.groupValues[2]}” isn't a number"),
+                    cardLetters = m.groupValues[3].takeIf { it.isNotEmpty() }?.let { number(it) ?: throw IllegalArgumentException("“$it” isn't a number") },
+                    neverQuestion = m.value.contains(" Never when it ends with a question mark"),
+                    neverOpens = m.groupValues[4].takeIf { it.isNotBlank() }?.split(',')?.map { it.trim().removePrefix("or ").trim().lowercase() }?.filter { it.isNotEmpty() },
+                ),
+            )
+        },
         rx("""Is there a block called ($CAP) already\?""") to { m -> Verb.BlockStands(m.groupValues[1]) },
         rx("""Do the words of ($CAP) say he may be in danger, by his safety words \(the block safety-words, else the app's own\)\?""") to { m -> Verb.Danger(m.groupValues[1]) },
         rx("""Lift (his words|his telling|the new block's name|the name he gives her) from THE MESSAGE: (.+?)\. Carry (?:it|them) as ($CAP)\.""") to { m ->
@@ -202,6 +244,10 @@ object Cook {
         rx("""On his tap, send it\.""") to { _ -> Verb.OnTapSend },
         rx("""On his tap, run cook (\d(?:\.\d)?)\.""") to { m -> Verb.OnTapRun(m.groupValues[1]) },
         rx("""Cut ($CAP) into its sentences\. Carry them as ($CAP)\.""") to { m -> Verb.Cut(m.groupValues[1], m.groupValues[2]) },
+        // Sundial 0.10.3: the sentence says what CUT does first: each moment a piece at least, a line break always ending one.
+        rx("""Cut ($CAP) into its pieces: each of his moments a piece of its own at least, and a line break always ending one; then each into its sentences, or, where it has fewer full stops than one in (\w+) words, as a spoken telling has, before each of the joins at cook (\d\.\d\.\d), a join matched wherever its words begin, so “and I” cuts before “and I also” and “and I've” too, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
+            Verb.Cut(m.groupValues[1], m.groupValues[4], joins = m.groupValues[3], perStop = number(m.groupValues[2]) ?: 30)
+        },
         rx("""Cut ($CAP) into its sentences; where it has fewer full stops than one in (\w+) words, as a spoken telling has, cut it instead before each of the joins at cook (\d\.\d\.\d)(?:, a join matched as whole words wherever it stands \(“and I” before “and I've” too\)|, a join matched wherever its words begin, so “and I” cuts before “and I also” and “and I've” too)?, keeping every word his and in order\. Carry them as ($CAP)\.""") to { m ->
             Verb.Cut(m.groupValues[1], m.groupValues[4], joins = m.groupValues[3], perStop = number(m.groupValues[2]) ?: 30)
         },
@@ -221,8 +267,23 @@ object Cook {
         rx("""walk on\.""") to { _ -> Verb.WalkOn },
     )
 
-    private val NUMBERS = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
-    private fun number(s: String): Int? = s.toIntOrNull() ?: NUMBERS.indexOf(s.lowercase()).takeIf { it >= 0 }?.plus(1)
+    private val NUMBERS = listOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
+    private val TENS = listOf("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
+
+    /** A number as a step writes it: in figures, or in words to ninety-nine ("three", "forty", "forty-five"); "a" or "an" is one. */
+    fun number(s: String): Int? {
+        val w = s.trim().lowercase()
+        w.toIntOrNull()?.let { return it }
+        if (w == "a" || w == "an") return 1
+        NUMBERS.indexOf(w).takeIf { it >= 0 }?.let { return it + 1 }
+        val parts = w.split(Regex("""[\s-]+"""))
+        val tens = TENS.indexOf(parts[0]).takeIf { it >= 0 }?.let { (it + 2) * 10 } ?: return null
+        return when (parts.size) {
+            1 -> tens
+            2 -> NUMBERS.indexOf(parts[1]).takeIf { it in 0..8 }?.let { tens + it + 1 }
+            else -> null
+        }
+    }
 
     /** A label at a sentence's start: words in capitals (or "Yes", "No") ending in a stop or a colon. Never "THE …", which is carried. */
     private val LABEL = Regex("""^((?!THE )[A-Z][A-Z' ]*[A-Z]|Yes|No)([.:])\s*""")
@@ -235,13 +296,43 @@ object Cook {
         val name = label?.groupValues?.get(1)
         if (rest.isEmpty()) return name to Verb.Answer
         if (name == "ACCOUNT") return name to Verb.Account(rest)
-        for ((form, verb) in FORMS) form.matchEntire(rest)?.let { return name to verb(it) }
+        // Sundial 0.10.3: a sentence missing its last full stop (or question mark) is read as if it had it.
+        for (tried in listOf(rest) + (if (rest.endsWith(".") || rest.endsWith("?")) emptyList() else listOf("$rest.", "$rest?")))
+            for ((form, verb) in FORMS) form.matchEntire(tried)?.let { m -> runCatching { verb(m) }.getOrNull()?.let { return name to it } }
         return null
     }
 
+    /**
+     * Sundial 0.10.3: why a step couldn't be read, in plain words, beside the
+     * shipped step at the same place ([shipped]): a number that isn't one, a
+     * quote mark that never closes, or the first words outside the quotes that
+     * aren't the app's form. His words inside the quotes are his, never the
+     * reason.
+     */
+    fun why(text: String, shipped: String?): String {
+        val t = text.trim()
+        val label = LABEL.find(t)
+        val rest = label?.let { t.substring(it.range.last + 1).trim() } ?: t
+        for ((form, verb) in FORMS) form.matchEntire(rest)?.let { m -> runCatching { verb(m) }.exceptionOrNull()?.let { return it.message ?: "a part of it couldn't be read" } }
+        val opens = t.count { it == '“' }
+        val closes = t.count { it == '”' }
+        if (opens > closes) return "its quoted line opens with a quote mark (“) that never closes (”)"
+        if (shipped == null) return "the sentence “${clip(t, 80)}” is none of the app's forms"
+        val mine = outside(t)
+        val app = outside(shipped)
+        val i = (0 until minOf(mine.size, app.size)).firstOrNull { k -> Telling.plain(mine[k]) != Telling.plain(app[k]) } ?: minOf(mine.size, app.size)
+        if (i >= mine.size && i >= app.size) return "the sentence “${clip(t, 80)}” is none of the app's forms"
+        fun said(xs: List<String>) = xs.drop(i).take(6).joinToString(" ").ifEmpty { "nothing more" }
+        return "outside its quotes it reads “${said(mine)}” where the app's form reads “${said(app)}”; the words inside its quotes are yours to change"
+    }
+
+    /** The words of [text] outside every quoted span (“…”, or straight quotes), in order. */
+    private fun outside(text: String): List<String> =
+        text.replace(Regex("""“[^”]*”|"[^"]*""""), " ").split(Regex("""\s+""")).filter { it.isNotBlank() }
+
     private fun digits(o: JsObj): List<String> = (1..9).map { "$it" }.filter { o.has(it) }
 
-    private fun step(node: Js, at: String, refused: MutableList<String>, ringOf: Boolean = false): Step? {
+    private fun step(node: Js, at: String, refused: MutableList<String>, ringOf: Boolean = false, unreadable: MutableList<Pair<String, String>>? = null): Step? {
         val text = when (node) {
             is JsStr -> node.value
             is JsObj -> (node["_"] as? JsStr)?.value ?: collectUnderscore(node).orEmpty()
@@ -250,6 +341,7 @@ object Cook {
         val read = read(text)
         if (read == null) {
             refused += "$at: “${text.take(120)}”"
+            unreadable?.add(at to text)
             return null
         }
         val (label, verb) = read
@@ -260,7 +352,7 @@ object Cook {
             val ring = beneath.map { k -> (o!![k] as? JsStr)?.value ?: collectUnderscore(o[k]!!).orEmpty() }
             return Step(at, text, label, verb, emptyList(), ring)
         }
-        val kids = beneath.mapNotNull { k -> step(o!![k]!!, "$at.$k", refused) }
+        val kids = beneath.mapNotNull { k -> step(o!![k]!!, "$at.$k", refused, unreadable = unreadable) }
         return Step(at, text, label, verb, kids, emptyList())
     }
 
@@ -270,6 +362,7 @@ object Cook {
     /** His cook read: each procedure's steps, cook 9's words, and every step it couldn't read. */
     fun parse(block: Js?): Parsed {
         val refused = mutableListOf<String>()
+        val unreadable = mutableListOf<Pair<String, String>>()
         val o = block as? JsObj ?: return Parsed(emptyMap(), Cues(emptyMap(), emptyList(), emptyList()), listOf("the cook block is missing or isn't a block"))
         val procedures = LinkedHashMap<String, Procedure>()
         var cues = Cues(emptyMap(), emptyList(), emptyList())
@@ -287,16 +380,16 @@ object Cook {
                     val innerOpening = (inner?.get("_") as? JsStr)?.value
                     if (inner == null || innerOpening == null) { refused += "$k.$c: a place of procedures holds a line that isn't one"; continue }
                     val innerName = innerOpening.substringBefore(" —").substringBefore(" -").trim()
-                    procedures["$k.$c"] = Procedure("$k.$c", innerName, innerOpening, digits(inner).mapNotNull { s -> step(inner[s]!!, "$k.$c.$s", refused) })
+                    procedures["$k.$c"] = Procedure("$k.$c", innerName, innerOpening, digits(inner).mapNotNull { s -> step(inner[s]!!, "$k.$c.$s", refused, unreadable = unreadable) })
                 }
                 continue
             }
             val name = opening.substringBefore(" —").substringBefore(" -").trim()
-            val steps = digits(node).mapNotNull { s -> step(node[s]!!, "$k.$s", refused) }
+            val steps = digits(node).mapNotNull { s -> step(node[s]!!, "$k.$s", refused, unreadable = unreadable) }
             procedures[k] = Procedure(k, name, opening, steps)
         }
         if (cues.answers.isEmpty()) refused += "cook 9: the words the app listens for are missing"
-        return Parsed(procedures, cues, refused)
+        return Parsed(procedures, cues, refused, unreadable)
     }
 
     private fun cues(node: JsObj): Cues {
@@ -464,13 +557,20 @@ object Cook {
         data class Her(val question: String, val rings: List<Ring>) : Wait()
         data class Him(val card: Card) : Wait()
         /** Sundial: her placing, several places of one ring ([places], as she reads them, pool numbers in [pools]). */
-        data class HerMany(val question: String, val about: String, val places: List<String>, val pools: List<Int>) : Wait()
+        /**
+         * Sundial 0.10.3: when what she places is his moments, [moments] are
+         * they, each with the places her reply already gave it; she is asked
+         * only for those without ([unplaced]), and answers with [Walk.herEach].
+         */
+        data class HerMany(val question: String, val about: String, val places: List<String>, val pools: List<Int>, val moments: List<Keep.Moment> = emptyList()) : Wait() {
+            val unplaced: List<Keep.Moment> get() = moments.filter { it.places.isEmpty() }
+        }
         /** Sundial: her sheet for the day, drawn from [material] as [line] says. */
         data class HerSheet(val line: String, val material: String) : Wait()
     }
 
     /** His moments, oldest first: as words, his words alone, a moment a line; as she is handed them, each with its time on the phone's clock. */
-    class Gathered(val moments: List<Keep.Moment>, private val zone: java.time.ZoneId) {
+    class Gathered(val moments: List<Keep.Moment>, val zone: java.time.ZoneId) {
         override fun toString(): String = moments.sortedBy { it.atMs }.joinToString("\n") { it.words.trim() }
         fun timed(): String = moments.sortedBy { it.atMs }.joinToString("\n") { m ->
             java.time.Instant.ofEpochMilli(m.atMs).atZone(zone).toLocalTime().let { "%02d:%02d".format(it.hour, it.minute) } + " " + m.words.trim()
@@ -599,7 +699,7 @@ object Cook {
                     yesNo(s, held, if (held) "his shell already gives her ${str(v.name)}" else "his shell doesn't give her ${str(v.name)} yet")
                 }
                 Verb.AsksHerLines -> HerWindow.asksHerOpening(str("THE MESSAGE")).let { yesNo(s, it, if (it) "he asks to change her lines" else "he asks to change a line of his") }
-                Verb.TellsDay -> Landing.isTelling(str("THE MESSAGE"), world.cards(), runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
+                is Verb.TellsDay -> Landing.tellsDay(str("THE MESSAGE"), world.cards(), runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()), v.check)
                     .let { yesNo(s, it, if (it) "his words tell of his day" else "his words don't tell of his day") }
                 // Sundial 0.10.1: the app's danger check, the same that shows the help line beneath her reply; she is never handed an "if" to judge.
                 is Verb.Danger -> world.inDanger(str(v.of)).let { yesNo(s, it, if (it) "his words say he may be in danger, by his safety words" else "his words hold none of his safety words") }
@@ -728,7 +828,8 @@ object Cook {
                     val day = world.keepDay
                     val sheet = carried[v.sheet] as? Mark.Sheet
                     val grain = Keep.grainOf(v.grain) ?: Keep.Grain.MINUTE
-                    val landing = Days.landing(world.handle, day, sheet, places, moments, cards, rungs, world.now, his = hisLine(day), grain = grain, yesterday = day != todayOf())
+                    val landing = Days.landing(world.handle, day, sheet, places, moments, cards, rungs, world.now, his = hisLine(day), grain = grain, yesterday = day != todayOf(),
+                        onHand = runCatching { world.cards().values }.getOrDefault(emptyList()))
                     setOut(s, Card.Day(landing), "set out the keep card, for his yes")
                 }
                 is Verb.Carry -> {
@@ -744,15 +845,19 @@ object Cook {
                     val pools = s.ring.mapIndexed { i, _ -> i + 1 }
                     ringWords.clear()
                     s.ring.forEachIndexed { i, w -> ringWords[i + 1] = w.trim() }
+                    val gathered = carried[v.of] as? Gathered
                     if (s.ring.isEmpty() || !has(v.of)) {
                         carried.remove(v.into)
                         note(s, "nothing to place")
+                    } else if (gathered != null && (!world.big || gathered.moments.all { it.places.isNotEmpty() })) {
+                        // Sundial 0.10.3: his moments, each where her reply placed it; none left for her, or on E2B none asked.
+                        placeMoments(s, v, gathered, emptyMap())
                     } else if (!world.big) {
                         carried.remove(v.into)
                         note(s, "nothing is named (E2B)")
                     } else {
                         pendingHer = s
-                        waiting = Wait.HerMany(v.how, str(v.of), s.ring, pools)
+                        waiting = Wait.HerMany(v.how, str(v.of), s.ring, pools, gathered?.moments.orEmpty())
                     }
                 }
                 is Verb.Untouched -> {
@@ -828,13 +933,19 @@ object Cook {
                     run(v.place)
                 }
                 is Verb.Cut -> {
-                    val telling = str(v.from)
                     val joins = parsed.cues.joins
-                    val pieces = if (v.joins != null && Cook.spoken(telling, v.perStop)) Cook.cutAtJoins(telling, joins)
-                        else Telling.sentences(telling, runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()))
+                    val names = runCatching { Landing.names(world.pages) }.getOrDefault(emptySet())
+                    // Sundial 0.10.3: each of his moments a piece of its own at least, and a line break always ends one; then each
+                    // into its sentences, or at its joins where it is a spoken telling. On his Pixel on 4 November his moments, joined
+                    // by line breaks with no full stop between, were one piece: one card held them all, for the "I'm going to" in one.
+                    val units = Cook.units(carried[v.from] as? Gathered, str(v.from))
+                    var spoken = 0
+                    val pieces = units.flatMap { u ->
+                        if (v.joins != null && Cook.spoken(u, v.perStop)) { spoken++; Cook.cutAtJoins(u, joins) } else Telling.sentences(u, names)
+                    }
                     carried[v.into] = pieces
-                    val atJoins = v.joins != null && Cook.spoken(telling, v.perStop)
-                    note(s, if (atJoins) "a spoken telling: cut it at its joins into ${pieces.size} piece${if (pieces.size == 1) "" else "s"}" else "cut it into ${pieces.size} sentence${if (pieces.size == 1) "" else "s"}", v.into)
+                    note(s, "cut ${units.size} moment line${if (units.size == 1) "" else "s"} into ${pieces.size} piece${if (pieces.size == 1) "" else "s"}" +
+                        (if (spoken > 0) ", $spoken a spoken telling cut at its joins" else ""), v.into)
                 }
                 is Verb.Intents -> {
                     @Suppress("UNCHECKED_CAST") val pieces = (carried[v.from] as? List<String>).orEmpty()
@@ -957,6 +1068,42 @@ object Cook {
                 note(s, "she named ${named.size} place${if (named.size == 1) "" else "s"}", v.into)
             }
             return go()
+        }
+
+        /**
+         * Sundial 0.10.3: her places for each of his moments not yet placed
+         * ([placed], by instant; null when her answer wasn't whole). Every
+         * moment keeps the places her reply gave it; a moment she named all
+         * six for counts as none; the day's places are all of theirs.
+         */
+        fun herEach(placed: Map<Long, List<Int>>?): Walk {
+            val s = pendingHer ?: error("the walker isn't waiting for her")
+            pendingHer = null
+            waiting = null
+            val v = s.verb as Verb.NameMany
+            val gathered = carried[v.of] as? Gathered ?: return herMany(placed?.values?.flatten())
+            placeMoments(s, v, gathered, placed.orEmpty())
+            return go()
+        }
+
+        private fun placeMoments(s: Step, v: Verb.NameMany, gathered: Gathered, placed: Map<Long, List<Int>>) {
+            var six = 0
+            val moments = gathered.moments.map { m ->
+                if (m.places.isNotEmpty()) m
+                else {
+                    val named = placed[m.atMs]?.filter { it in 1..s.ring.size }?.distinct().orEmpty()
+                    if (s.ring.size > 1 && named.size >= s.ring.size) { six++; m } else m.copy(places = Mark.inOrder(named))
+                }
+            }
+            val now = Gathered(moments, gathered.zone)
+            // The same moments wherever they are carried (THE MOMENTS, THE WORDS).
+            for (k in carried.keys.toList()) if (carried[k] === gathered) carried[k] = now
+            val union = Mark.inOrder(moments.flatMap { it.places })
+            val placedHere = moments.count { it.places.isNotEmpty() }
+            if (union.isEmpty()) carried.remove(v.into) else carried[v.into] = union
+            note(s, "placed $placedHere of ${moments.size} moment${if (moments.size == 1) "" else "s"}" +
+                (if (six > 0) "; $six named all ${s.ring.size}, counted as none" else "") +
+                (if (union.isEmpty()) "" else ": ${Mark.placesWords(union)}"), v.into)
         }
 
         /** Sundial: her sheet for the day, or null when she gave none. */
@@ -1166,6 +1313,15 @@ object Cook {
     private val OBJECT = setOf("this", "that", "it", "these", "those", "all", "of", "some", "for", "me", "please", "down", "safe", "too", "as", "well", "in", "mind")
 
     /** 0.9.1: a spoken telling, as dictation gives it: fewer full stops than one in [perStop] words, its last aside. */
+    /**
+     * Sundial 0.10.3: what CUT cuts, before it cuts at sentences or joins:
+     * each of his moments ([gathered]), each line of each; else [telling], a
+     * line at a time. A line break always ends a piece.
+     */
+    fun units(gathered: Gathered?, telling: String): List<String> =
+        (gathered?.moments?.sortedBy { it.atMs }?.map { it.words } ?: listOf(telling))
+            .flatMap { it.split(Regex("""\r?\n""")) }.map { it.trim() }.filter { it.isNotEmpty() }
+
     fun spoken(telling: String, perStop: Int): Boolean {
         val t = telling.trim().trimEnd('.', '!', '?', ' ')
         val words = t.split(Regex("""\s+""")).count { it.isNotBlank() }
@@ -1214,6 +1370,18 @@ object Cook {
         }
     }
 
+    /**
+     * Sundial 0.10.3: why his cook couldn't be read, in plain words: the place,
+     * its name, and which part of it isn't the app's form. On his Pixel on 4
+     * November it said only "Your cook couldn't be read at 6.1.5 …".
+     */
+    fun refusal(parsed: Parsed, shippedCook: Js?): String {
+        val (at, text) = parsed.unreadable.firstOrNull() ?: return "Your cook couldn't be read at ${parsed.refused.first()}, so the shipped copy ran."
+        val shipped = places(shippedCook)[at]
+        val label = LABEL.find(text.trim())?.groupValues?.get(1)?.let { " ($it)" }.orEmpty()
+        return "Your cook couldn't be read at $at$label: ${why(text, shipped)}. So the shipped copy ran."
+    }
+
     fun load(handle: String?, storage: BlockStorage, procedures: Shelf?): Loaded {
         val shipped = parse(procedures?.load(SHIPPED_COOK))
         val shippedKernel = kernel(procedures?.load(SHIPPED_KERNEL))
@@ -1223,7 +1391,7 @@ object Cook {
         val kernel = storage.read(kernelOf(handle))?.let { runCatching { parseJson(it) }.getOrNull() }?.let(::kernel)?.takeIf { it.message != null } ?: shippedKernel
         val missing = (listOf(kernel.message, kernel.close).filterNotNull() - parsed.procedures.keys)
         return when {
-            !parsed.ok -> Loaded(shipped, shippedKernel, false, "Your cook couldn't be read at ${parsed.refused.first()}, so the shipped copy ran.")
+            !parsed.ok -> Loaded(shipped, shippedKernel, false, refusal(parsed, procedures?.load(SHIPPED_COOK)))
             missing.isNotEmpty() -> Loaded(shipped, shippedKernel, false, "Your kernel names cook ${missing.first()}, which doesn't stand, so the shipped copy ran.")
             else -> {
                 // Sundial's events: one his kernel names none of (or one naming a procedure his cook lacks) runs the shipped one, and says so.
@@ -1484,19 +1652,55 @@ object CookActs {
         if (card is Cook.Card.Whisper) {
             if (card.words.isBlank()) return "there were no words to keep"
             val done = pages.carryOut(pages.planEntry(Hatch.stashOf(handle), whisper(card, nowMs)))
-            return if (done.ok) null else done.problem ?: "the whisper couldn't be kept"
+            val problem = if (done.ok) null else done.problem ?: "the whisper couldn't be kept"
+            // Sundial 0.10.3: every write on his yes has its history entry, made as it is written.
+            Close.recordYes(handle, "a whisper kept at ${Mark.POOLS.getOrNull(card.pool - 1)?.phrase ?: "a place"}",
+                if (problem == null) listOf("his stash: “${Cook.shortly(card.words)}”") else emptyList(), listOfNotNull(problem), pages)
+            return problem
         }
-        if (card is Cook.Card.Day) {
-            val written = Days.blocks(card.landing, { name -> storage.read(name)?.let { runCatching { parseJson(it) }.getOrNull() } }, nowMs)
-            for ((name, block) in written.blocks) {
-                val done = pages.carryOut(pages.planWhole(name, block))
-                if (!done.ok) return done.problem ?: "$name couldn't be written"
-            }
-            return null
-        }
+        if (card is Cook.Card.Day) return keepDay(card.landing, handle, pages, storage, nowMs).problem
         val p = planned(card, handle, pages, storage, shelf, nowMs)
         val proposal = p.proposal ?: return p.problem ?: "nothing to write"
         proposal.refusal?.let { return it }
         return Asks.carryOut(proposal, pages, storage, shellOpening(pages)).problem
+    }
+
+    /** What one Keep it came to: what was written, what was skipped as on his hand already, what couldn't go, and what was refused. */
+    class Kept(val written: List<String>, val already: List<String>, val over: List<String>, val refused: List<String>, val recorded: String?) {
+        /** Null when every block landed; else what was refused, joined. */
+        val problem: String? get() = refused.takeIf { it.isNotEmpty() }?.joinToString("; ")
+    }
+
+    /**
+     * Sundial 0.10.3: his day written on his yes, block by block: each only
+     * when it changes; a card on his hand already skipped and said so, never
+     * a refusal; one block refused never stops the rest; and one entry in
+     * his history saying what was written and what wasn't
+     * (spine:pocket-beach 1.111178719927, 1.111178719929).
+     */
+    fun keepDay(l: Days.DayCard, handle: String, pages: Pages, storage: BlockStorage, nowMs: Long): Kept {
+        val written = Days.blocks(l, { name -> storage.read(name)?.let { runCatching { parseJson(it) }.getOrNull() } }, nowMs)
+        val refused = mutableListOf<String>()
+        val landed = mutableListOf<String>()
+        for ((name, block) in written.blocks) {
+            val done = runCatching { pages.carryOut(pages.planWhole(name, block)) }.getOrNull()
+            if (done?.ok == true) landed += name else refused += "$name: ${done?.problem ?: "it couldn't be written"}"
+        }
+        val day = l.day.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK))
+        val said = mutableListOf<String>()
+        if (Days.NOW in landed) {
+            if (written.dayLine == Keep.DayLine.WRITTEN) said += "his now: the day's line at $day" + (l.sheet?.title?.takeIf { it.isNotBlank() }?.let { ", “${Cook.shortly(it)}”" } ?: "")
+            written.moments.count { !it.already }.takeIf { it > 0 }?.let { said += "his now: $it moment${if (it == 1) "" else "s"} at ${if (it == 1) "its" else "their"} minute" }
+            for (line in l.lines.filter { it.ticked && !it.already }) when (val w = line.where) {
+                is Days.Where.Booking -> if (w.date != l.day) said += "his now: “${Cook.shortly(line.words)}” booked at ${w.date.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.UK))}"
+                is Days.Where.Rung -> said += "his now: “${Cook.shortly(line.words)}” on this ${w.level}'s rung"
+                else -> {}
+            }
+        }
+        if (Days.aheadOf(handle) in landed) for (line in l.lines.filter { it.ticked && !it.already && it.where is Days.Where.Pile })
+            if (line.words !in written.already && written.over.none { it.contains(line.words) }) said += "his hand: “${Cook.shortly(line.words)}”, ${Days.PILES.getOrElse((line.where as Days.Where.Pile).n - 1) { "a pile" }}"
+        val skipped = written.already.map { "“${Cook.shortly(it)}”: already on his hand, so not written again" }
+        val recorded = Close.recordYes(handle, "his day of $day kept", said + skipped, refused + written.over, pages)
+        return Kept(said, written.already, written.over, refused, recorded)
     }
 }

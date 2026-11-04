@@ -487,7 +487,8 @@ class CookTest {
         val moment = Keep.find(clock, Keep.keys(at, Keep.Grain.MINUTE))
         assertEquals(telling, Keep.lineOf(moment), "his words whole at their minute")
         assertEquals(said, Keep.instantOf(moment), "the instant kept with them")
-        assertEquals("I need to ring Jo tomorrow about the music.\nWhat’s ahead.", Keep.dayText(clock, Keep.dayOf(nowMs).plusDays(1)), "set ahead as Sundial sets a line ahead")
+        assertEquals("I need to ring Jo tomorrow about the music.", Keep.dayText(clock, Keep.dayOf(nowMs).plusDays(1)), "set ahead in his words alone: no label")
+        assertTrue(Keep.sundialsAt(Keep.find(clock, Keep.keys(Days.dayAddress(Keep.dayOf(nowMs).plusDays(1)), Keep.Grain.DAY))), "marked as Sundial's in its hidden directory, not in his words")
     }
 
     @Test
@@ -533,7 +534,8 @@ class CookTest {
         assertEquals("Put this in my now: $told1003", cut.joinToString(" "), "every word his and in order")
         val day = ((k.waiting as Cook.Wait.Him).card as Cook.Card.Day).landing
         val hand = day.lines.filter { it.where is Days.Where.Pile }.map { it.words }
-        assertEquals(listOf("for example I need to update some meeting minutes and print them out", "and need to update a membership agreement and print it out", "as well as respond to emails"), hand)
+        // Sundial 0.10.3: a card is only the piece that holds the words at cook 9.9; the pieces after it, with none, carry nothing on.
+        assertEquals(listOf("for example I need to update some meeting minutes and print them out"), hand)
         assertTrue(day.lines.any { it.where == Days.Where.Booking(now.toLocalDate()) && it.words == "and I also have a meeting later today as well." }, day.lines.joinToString("\n"))
     }
 

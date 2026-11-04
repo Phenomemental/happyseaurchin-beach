@@ -49,7 +49,8 @@ object Days {
         is Where.Rung -> "This ${w.level}, the rung above"
     }
 
-    data class Line(val words: String, val where: Where, val ticked: Boolean = true, val from: Where? = null) {
+    /** A line of his day beyond its sheet; [already]: Sundial 0.10.3, it stands on his hand already, so it is said so and not written again. */
+    data class Line(val words: String, val where: Where, val ticked: Boolean = true, val from: Where? = null, val already: Boolean = false) {
         val moved: Boolean get() = from != null && from != where
     }
 
@@ -78,8 +79,12 @@ object Days {
         val his: String? = null,
         val yesterday: Boolean = false,
     ) {
-        /** The day's line as Keep it writes it: the sheet in Sundial's form, its places line last; "In your own words." with none. */
-        val text: String? get() = sheet?.let { s -> Mark.write(s.copy(places = Mark.inOrder(places), own = places.isEmpty())) }
+        /**
+         * The day's line as Keep it writes it: the sheet in Sundial's form, its
+         * places line last. Sundial 0.10.3: with no place, no line at all for
+         * them; no label ("In your own words.") ever goes into his words.
+         */
+        val text: String? get() = sheet?.let { s -> Mark.write(s.copy(places = Mark.inOrder(places), own = false)) }
 
         fun describe(): String = buildString {
             val kept = lines.filter { it.ticked }
@@ -92,7 +97,13 @@ object Days {
             append(parts.joinToString(", ").ifEmpty { "nothing" })
         }
 
-        fun tick(i: Int) = copy(lines = lines.mapIndexed { k, l -> if (k == i) l.copy(ticked = !l.ticked) else l })
+        fun tick(i: Int) = copy(lines = lines.mapIndexed { k, l -> if (k == i && !l.already) l.copy(ticked = !l.ticked) else l })
+
+        /** Sundial 0.10.3: a place's colour tapped beside his [i]th moment: off if it was on, on if it was off; the day's places, all of theirs. */
+        fun placeMoment(i: Int, n: Int): DayCard {
+            val ms = moments.mapIndexed { k, m -> if (k == i) m.copy(places = Mark.inOrder(if (n in m.places) m.places - n else m.places + n)) else m }
+            return copy(moments = ms, places = Mark.inOrder(ms.flatMap { it.places }))
+        }
         fun move(i: Int, to: Where) = copy(lines = lines.mapIndexed { k, l -> if (k == i) l.copy(where = to, from = l.from ?: l.where, ticked = true) else l })
         /** A place's dot tapped: off if it was on, on if it was off. */
         fun place(n: Int) = copy(places = Mark.inOrder(if (n in places) places - n else places + n))
@@ -107,6 +118,7 @@ object Days {
     fun landing(
         handle: String, day: LocalDate, sheet: Mark.Sheet?, places: List<Int>, moments: List<Keep.Moment>,
         cards: List<Intent>, rungs: List<Rung>, now: ZonedDateTime, his: String? = null, grain: Keep.Grain = Keep.Grain.MINUTE, yesterday: Boolean = false,
+        onHand: Collection<String> = emptyList(),
     ): DayCard {
         val lines = mutableListOf<Line>()
         // Sundial 0.10.1: each line once, its words without a quote mark left open (his Pixel, 3 November: "I'm also going to need to do
@@ -114,9 +126,16 @@ object Days {
         // sized for this week, is on his hand; it isn't a rung as well.
         val seen = HashSet<String>()
         fun once(words: String): String? = Telling.unquoted(words).takeIf { it.isNotBlank() && seen.add(Telling.plain(it)) }
-        for (c in cards) once(c.words)?.let { lines += Line(it, c.date?.let { d -> Where.Booking(d) } ?: Where.Pile(c.pile ?: 3)) }
+        // Sundial 0.10.3: a card standing on his hand already, in any pile, is said so and never written again.
+        val held = onHand.map { Telling.plain(it) }.toSet()
+        for (c in cards) once(c.words)?.let { w ->
+            val already = c.date == null && Telling.plain(w) in held
+            lines += Line(w, c.date?.let { d -> Where.Booking(d) } ?: Where.Pile(c.pile ?: 3), ticked = !already, already = already)
+        }
         for (r in rungs) once(r.words)?.let { lines += Line(it, Where.Rung(r.level)) }
-        return DayCard(handle, day, sheet, Mark.inOrder(places), moments, lines, now.toInstant().toEpochMilli(), grain, his, yesterday)
+        // Sundial 0.10.3: the day's places are her places for its moments, all of them; else those she named for the day.
+        val fromMoments = Mark.inOrder(moments.flatMap { it.places })
+        return DayCard(handle, day, sheet, fromMoments.ifEmpty { Mark.inOrder(places) }, moments, lines, now.toInstant().toEpochMilli(), grain, his, yesterday)
     }
 
     // ── what he means to do, and the rungs ──
@@ -214,45 +233,97 @@ object Days {
 
     private fun rungDigits(level: String): Int = when (level) { "week" -> 7; "month" -> 6; "season" -> 5; else -> 4 }
 
-    /** What one yes writes: his now and his ahead, each whole; what couldn't go (past nine); and what became of the day's line. */
-    class Written(val blocks: List<Pair<String, JsObj>>, val over: List<String>, val dayLine: Keep.DayLine? = null, val moments: List<Keep.Landed> = emptyList())
+    /**
+     * What one yes writes: his now and his ahead, each whole and only when it
+     * changes; what couldn't go (past nine); what became of the day's line;
+     * and Sundial 0.10.3: the cards skipped, standing on his hand already.
+     */
+    class Written(val blocks: List<Pair<String, JsObj>>, val over: List<String>, val dayLine: Keep.DayLine? = null, val moments: List<Keep.Landed> = emptyList(), val already: List<String> = emptyList())
 
     fun blocks(l: DayCard, read: (String) -> Js?, nowMs: Long = l.atMs): Written {
         val over = mutableListOf<String>()
+        val already = l.lines.filter { it.already }.map { it.words }.toMutableList()
         val stamp = isoString(nowMs)
-        val kept = l.lines.filter { it.ticked }
+        val kept = l.lines.filter { it.ticked && !it.already }
         val out = mutableListOf<Pair<String, JsObj>>()
 
         // His now: the day's line in Sundial's form, each moment at its grain, bookings at their later day, rungs.
-        var clock = (read(NOW) as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: Landing.emptyClock(NOW_OPENING)
+        val nowBefore = read(NOW) as? JsObj
+        var clock = nowBefore?.let { parseJson(stringify(it)!!) as JsObj } ?: Landing.emptyClock(NOW_OPENING)
         var dayLine: Keep.DayLine? = null
         l.text?.let { text -> dayLine = Keep.dayLine(clock, l.day, text, nowMs) }
         val landed = l.moments.sortedBy { it.atMs }.map { Keep.moment(clock, it, l.momentGrain) }
         for (line in kept) {
             when (val w = line.where) {
                 // A booking at the day kept is in its moments and its sheet already.
-                is Where.Booking -> if (w.date != l.day) Keep.booking(clock, w.date, line.words)
+                is Where.Booking -> if (w.date != l.day) Keep.booking(clock, w.date, line.words, nowMs)
                 is Where.Rung -> clock = voiced(clock, dayAddress(l.day).take(rungDigits(w.level)), line.words)
                 else -> {}
             }
         }
-        if (dayLine == Keep.DayLine.WRITTEN || landed.any { !it.already } || kept.any { it.where !is Where.Pile }) out += NOW to clock
+        // Sundial 0.10.3: written only when it changes; a block that would stand as it does is no write, and never a refusal.
+        if (nowBefore == null || !deepEqual(clock, nowBefore)) out += NOW to clock
 
-        // His hand: each card at its pile, nine at most.
+        // His hand: each card at its pile, nine at most; a card standing anywhere on his hand already is skipped and said so.
         val cards = kept.filter { it.where is Where.Pile }
         if (cards.isNotEmpty()) {
             val name = aheadOf(l.handle)
-            val ahead = (read(name) as? JsObj)?.let { parseJson(stringify(it)!!) as JsObj } ?: emptyAhead(l.handle)
+            val aheadBefore = read(name) as? JsObj
+            val ahead = aheadBefore?.let { parseJson(stringify(it)!!) as JsObj } ?: emptyAhead(l.handle)
+            val held = handOf(ahead).values.map { plain(it) }.toMutableSet()
             for (c in cards) {
                 val n = (c.where as Where.Pile).n
+                if (plain(c.words) in held) { already += c.words; continue }
                 val pile = node(ahead, "$n") { JsObj.of("_" to str(PILES[n - 1])) }
-                if ((1..9).any { k -> textOf(pile["$k"])?.let { plain(it) == plain(c.words) } == true }) continue
                 val free = (1..9).firstOrNull { !pile.has("$it") || textOf(pile["$it"]).isNullOrBlank() }
-                if (free == null) over += "“${c.words}” (your hand, ${PILES[n - 1]}, holds nine)" else pile["$free"] = JsObj.of("_" to str(c.words), "3" to str(stamp))
+                if (free == null) over += "“${c.words}” (your hand, ${PILES[n - 1]}, holds nine)"
+                else { pile["$free"] = JsObj.of("_" to str(c.words), "3" to str(stamp)); held += plain(c.words) }
             }
-            out += name to ahead
+            if (aheadBefore == null || !deepEqual(ahead, aheadBefore)) out += name to ahead
         }
-        return Written(out, over, dayLine, landed)
+        return Written(out, over, dayLine, landed, already.distinct())
+    }
+
+    /** Sundial 0.10.3: the cards on his hand, by address ("3.1"), in every pile. */
+    fun handOf(ahead: JsObj?): Map<String, String> = buildMap {
+        for (k in 1..9) {
+            val pile = ahead?.get("$k") as? JsObj ?: continue
+            for (c in 1..9) textOf(pile["$c"])?.trim()?.takeIf { it.isNotEmpty() }?.let { put("$k.$c", it) }
+        }
+    }
+
+    /**
+     * Sundial 0.10.3: his hand with the card at [address] ("3.1") taken off,
+     * on his tap; the cards after it in its pile move up one, so none is left
+     * empty. Null when nothing stands there.
+     */
+    fun takenOff(ahead: JsObj, address: String): JsObj? {
+        val (p, c) = address.split('.').takeIf { it.size == 2 }?.let { it[0] to it[1].toIntOrNull() } ?: return null
+        val copy = parseJson(stringify(ahead)!!) as JsObj
+        val pile = copy[p] as? JsObj ?: return null
+        if (c == null || textOf(pile["$c"]).isNullOrBlank()) return null
+        val rest = (1..9).filter { it != c }.mapNotNull { k -> pile["$k"]?.takeIf { textOf(it)?.isNotBlank() == true } }
+        for (k in 1..9) pile.remove("$k")
+        rest.forEachIndexed { i, v -> pile["${i + 1}"] = v }
+        return copy
+    }
+
+    /**
+     * Sundial 0.10.3 (spine:pocket-beach 1.111178719929): the card at
+     * [address] ("3.1") taken off [handle]'s hand on his own tap, the app
+     * never taking one off for him, with its entry in his history. Null when
+     * done, else why not, in plain words.
+     */
+    fun takeOff(handle: String, address: String, pages: Pages, storage: BlockStorage): String? {
+        val name = aheadOf(handle)
+        val ahead = storage.read(name)?.let { runCatching { parseJson(it) }.getOrNull() } as? JsObj ?: return "your hand couldn't be read"
+        val words = handOf(ahead)[address] ?: return "that card isn't on your hand now"
+        val after = takenOff(ahead, address) ?: return "that card isn't on your hand now"
+        val done = runCatching { pages.carryOut(pages.planWhole(name, after)) }.getOrNull()
+        val problem = if (done?.ok == true) null else done?.problem ?: "your hand couldn't be written"
+        val pile = PILES.getOrElse((address.substringBefore('.').toIntOrNull() ?: 0) - 1) { "a pile" }
+        Close.recordYes(handle, "a card taken off his hand", if (problem == null) listOf("his hand: “${words.trim()}” taken off, $pile") else emptyList(), listOfNotNull(problem), pages)
+        return problem
     }
 
     const val NOW_OPENING = "My now, on the clock (spine:now): each day's line at its date, and the week, month, season and year above it, in my words."

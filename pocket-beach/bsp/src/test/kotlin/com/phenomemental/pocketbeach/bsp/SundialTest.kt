@@ -128,7 +128,7 @@ class SundialTest {
         // A day kept by Sundial, today, with its places line.
         Keep.dayLine(clock, today, Mark.write(Mark.Sheet("Phase two", listOf("You worked with David."), "", listOf(1, 4))), nowMs)
         // A booking on Friday: a day ahead, not a day kept.
-        Keep.booking(clock, today.plusDays(3), "Meeting with Jo.")
+        Keep.booking(clock, today.plusDays(3), "Meeting with Jo.", nowMs)
         val days = Keep.days(clock, p6, today)
         assertEquals(listOf(Days.dayAddress(today.minusDays(2)), Days.dayAddress(today)), days.map { it.address })
         assertEquals(listOf(1, 2), days[0].places, "the old day rests where his P6 holds it")
@@ -141,7 +141,7 @@ class SundialTest {
         val resting = Keep.restingIn(days, 2)
         assertEquals(1, resting.size)
         assertTrue(resting.single().second.contains("· I felt calm."), "the pieces resting there read with the day")
-        assertEquals("Meeting with Jo.\nWhat’s ahead.", Keep.dayText(clock, today.plusDays(3)))
+        assertEquals("Meeting with Jo.", Keep.dayText(clock, today.plusDays(3)), "his words alone: no label in them")
         assertEquals("Took the dog out with Sam. I felt calm.", Keep.lastDay(days, today)!!.text)
     }
 
