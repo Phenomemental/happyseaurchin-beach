@@ -334,7 +334,7 @@ class SundialDeviceTest {
             compose.waitFor("raw", "Places: what happened, what's ahead")
             compose.waitFor("places-line", "Her places line, taken off before showing: \u201cPlaces: what happened, what's ahead\u201d")
             compose.waitFor("shape", "The split found REFLECT")
-            compose.waitFor("placed", "She named what happened, what's ahead.")
+            compose.waitFor("placed", "She named what happened, what\u2019s ahead.")
             assertEquals("REFLECT", app.asking.history.last().shape)
             // No tool call: she was asked once, free; her turn asks for the places line because his words tell of his day.
             assertEquals(1, mind.talkMessages.size)
