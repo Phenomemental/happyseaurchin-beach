@@ -4,6 +4,55 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10.2 is released (4 November): her reply free, in one kept conversation:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.2
+- **Install:** `sundial-v0.10.2.apk` over 0.10.1; his blocks stay. His cook
+  is brought up place by place, keeping what he changed.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.10.2 (25), from main at `094ed1b` (PR #240), release run
+  244. APK SHA-256 `a4572330…`. The procedures it carries are byte for
+  byte main's.
+- **Why:** on his Pixel's E4B, 29.0 s from his message to her whole reply.
+  Her reply's tool call took 18.0 s (2,729 tokens read, 31 written) and
+  came back with no call: 31 tokens is her plain reply, so she wrote her
+  reply instead of calling the tool. She was then asked again free
+  (10.8 s), every turn, each time in a conversation opened afresh.
+- **What it changes:**
+  1. TALK has no tool call. She writes freely; when his words tell of his
+     day she ends with "Places:" and the places they touch, which the app
+     reads and takes off. A closing question shows in italic, what comes
+     before it as part one; with no closing question, plain words. The
+     workings record her reply as she wrote it, the places line and the
+     shape the split found.
+  2. One conversation, kept. It opens with his first message, holding her
+     window, the time and her recipe for talk; each turn adds only his new
+     message. It opens again only when the recipe, the model or the day
+     changes, or it nears its context.
+  3. GREET (cook 6.3) is short single sentences with no branch: the app
+     reads his tomorrow line and chooses. She speaks to him as you, never
+     by his name.
+  4. Keep today keeps its tool calls; one that isn't whole is read from what
+     she wrote in the same call.
+- **On the laptop's E4B (CPU):**
+  - 0.10.1's tool call came back whole 10 of 10, and 5 of 5 with a context
+    of 1,963 tokens; the laptop never reproduced his Pixel's no-call
+    (`trial/toolcall-0.10.1*.md`).
+  - In one kept conversation his first message read 846 tokens and his
+    second only its 84 new ones (`trial/kept-0.10.2.md`). At his phone's
+    rates of 3 November: about 2.5 s to her first words and 5.3 s whole for
+    the first, about 0.3 s and 7.3 s for the second (an estimate).
+  - The greeting: 5 of 5 each way as you, never he, never his name, and
+    about his tomorrow line when he left one (`trial/greeting-0.10.2.md`).
+- **Only his phone can confirm:** the times on his E4B; that each turn
+  after the first reads only his new message there too; how her replies
+  and greeting read with his fuller pocket.
+- **To try on his Pixel:** "no I'm not focused at all. I'm feeling glum",
+  then his id-checks day message, with Show the workings on: the times,
+  "read" for each turn, her places line; a new conversation for the
+  greeting.
+- **Next:** 0.11, the shells (findings section 9).
+
 **Sundial 0.10.1 is released (3 November), eleven fixes from his Pixel:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.1
 - **Install:** `sundial-v0.10.1.apk` over 0.10; his blocks stay. At first
@@ -42,7 +91,6 @@ https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
 - **To try on his Pixel:** his three messages of 3 November (the day, the
   question, no day); a new conversation on a day kept and on one not kept;
   Keep today.
-- **Next:** 0.11, the shells (findings section 9).
 
 **Sundial 0.10, Today and keeping, is released (3 November):**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10
