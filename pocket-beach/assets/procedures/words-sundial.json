@@ -60,7 +60,8 @@
    "5": "You spoke yesterday and didn't keep it.",
    "6": "Kept.",
    "7": "Tap a colour to take it off, or on.",
-   "8": "Nothing is kept until you tap Keep it."
+   "8": "Nothing is kept until you tap Keep it.",
+   "9": "She's marked where each moment sits. Tap a colour only to change it."
   },
   "3": {
    "_": "YOUR PLACES: the menu, a name with its line beneath (sundial.html:6214-6226).",
@@ -86,6 +87,14 @@
    "3": "Soon, the notes others leave you will be here too, with a dot when one is new.",
    "4": "Your room waits for your shell: once you have a name and a room, the box is here.",
    "5": "Notes you have sent"
+  },
+  "6": {
+   "_": "YOUR HAND: a card taken off on his own tap; the app never takes one off for him (Sundial 0.10.3).",
+   "1": "Take it off",
+   "2": "Take this off your hand? Your history keeps a note that you did.",
+   "3": "Take it off",
+   "4": "Leave it",
+   "5": "already on your hand"
   }
  },
  "6": {

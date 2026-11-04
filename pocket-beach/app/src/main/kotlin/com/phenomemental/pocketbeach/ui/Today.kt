@@ -156,7 +156,7 @@ fun TodayDial(model: Model, nav: Nav) {
     LaunchedEffect(card?.walk) { if (card != null) { delay(300); runCatching { cardInView.bringIntoView() } } }
     card?.let { k ->
         Column(Modifier.fillMaxWidth().bringIntoViewRequester(cardInView), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() })
+            KeepCardView(model, k.card, asking.keeping, onPlace = { asking.placeKeep(it) }, onTick = { asking.tickKeep(it) }, onKeep = { asking.keepIt() }, onNotNow = { asking.notNowKeep() }, onPlaceMoment = { i, n -> asking.placeKeepMoment(i, n) })
             k.fellBack?.let { Text(it, style = Type.small, color = ink.crimson) }
         }
     }

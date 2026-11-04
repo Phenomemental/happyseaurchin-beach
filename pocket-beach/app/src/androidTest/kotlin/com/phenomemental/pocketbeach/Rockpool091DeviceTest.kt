@@ -96,11 +96,12 @@ class Rockpool091DeviceTest {
             compose.waitFor("keep-card", timeoutMs = 20_000)
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Begin your reply with these words: “It's set out for your yes.”"))
             assertTrue("the one keep card, Keep today's", app.asking.keepCard != null)
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("and need to update a membership agreement and print it out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+            // Sundial 0.10.3: a card is only the piece holding the words at cook 9.9; the pieces after it, with none, are no card.
+            compose.waitUntil(5_000) { compose.onAllNodes(hasText("for example I need to update some meeting minutes and print them out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             assertTrue("no Sort as my day: he asked", none("sort-as-day"))
             compose.tap("day-yes")
             // His yes writes his day block by block (his now, then his ahead; no P6 from Sundial on): wait for both he is shown.
-            val cards = listOf("for example I need to update some meeting minutes and print them out", "and need to update a membership agreement and print it out", "as well as respond to emails")
+            val cards = listOf("for example I need to update some meeting minutes and print them out")
             compose.waitUntil(20_000) {
                 app.storage.read(Days.NOW)?.contains("phase two proposal") == true &&
                     app.storage.read(Days.aheadOf(h)).orEmpty().let { a -> cards.all { a.contains(it) } }
@@ -108,6 +109,7 @@ class Rockpool091DeviceTest {
             val ahead = app.storage.read(Days.aheadOf(h)).orEmpty()
             for (card in cards) assertTrue(ahead, ahead.contains(card))
             assertTrue("one intention a card: $ahead", !ahead.contains("these are some of the things") && !ahead.contains("phase two proposal") && !ahead.contains("later today"))
+            assertTrue("no card for a piece without the words at cook 9.9: $ahead", !ahead.contains("and need to update a membership agreement") && !ahead.contains("as well as respond to emails"))
             assertTrue("the meeting a booking at today", app.storage.read(Days.NOW)!!.contains("and I also have a meeting later today as well."))
         }
     }

@@ -459,7 +459,7 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
             }
             is Asking.Stage.Where -> WhereGoes(asking, e, w, hatched = model.app.hatching.hatched != null)
             // Sundial 0.10: his day as Sundial's keep card, beneath her reply ("Sort as my day", "Put this in my now").
-            is Asking.Stage.Told -> KeepCardView(model, w.card, writing = false, onPlace = { asking.placeTold(it, e) }, onTick = { asking.tickTold(it, e) }, onKeep = { asking.yesToTold(e) }, onNotNow = { asking.notNowToTold(e) })
+            is Asking.Stage.Told -> KeepCardView(model, w.card, writing = false, onPlace = { asking.placeTold(it, e) }, onTick = { asking.tickTold(it, e) }, onKeep = { asking.yesToTold(e) }, onNotNow = { asking.notNowToTold(e) }, onPlaceMoment = { i, n -> asking.placeToldMoment(i, n, e) })
             is Asking.Stage.ToldWriting -> KeepCardView(model, w.told.card, writing = true, onPlace = {}, onTick = {}, onKeep = {}, onNotNow = {})
             is Asking.Stage.Choosing -> {
                 Choosing(asking, e, w)

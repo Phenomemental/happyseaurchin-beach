@@ -25,8 +25,13 @@ import java.time.ZoneOffset
  * - All in UTC, the beach's day: no timezone is stored (pscale://sundial 8.3).
  */
 object Keep {
-    /** A moment he spoke: his words and their instant. His only, never hers (1.111178719915 (d)). */
-    data class Moment(val words: String, val atMs: Long)
+    /**
+     * A moment he spoke: his words and their instant. His only, never hers
+     * (1.111178719915 (d)). Sundial 0.10.3: [places], where she marked it
+     * sits (pool numbers): from her reply's places line, or at Keep today;
+     * none until she has. Never part of his words.
+     */
+    data class Moment(val words: String, val atMs: Long, val places: List<Int> = emptyList())
 
     /** The grains a recipe names: the day down to the second (pscale://sundial 2). */
     enum class Grain(val digits: Int, val fine: Int) {
@@ -109,10 +114,25 @@ object Keep {
     private fun plain(s: String) = Telling.plain(s)
 
     /** A line with its instant beside it, in the underscore's hidden directory. */
-    fun stamped(words: String, ms: Long): JsObj = JsObj.of("_" to str(words.trim()), "3" to str(isoString(ms)))
+    fun stamped(words: String, ms: Long, by: String? = null): JsObj =
+        if (by == null) JsObj.of("_" to str(words.trim()), "3" to str(isoString(ms)))
+        else JsObj.of("_" to str(words.trim()), "3" to str(isoString(ms)), "4" to str(by))
+
+    /**
+     * Sundial 0.10.3: who wrote a line the app set at a day, kept in its hidden
+     * directory at 4 beside its instant, never in his words: a day kept, or a
+     * line booked ahead. A label in his words told it before ("In your own
+     * words.", "What’s ahead."); his words are his alone now.
+     */
+    const val BY = "Sundial"
 
     /** Whether [text] is a line Sundial wrote: one whose last line names its places, or "In your own words." (days.js:316-331). */
     fun sundials(text: String?): Boolean = text != null && Mark.read(text).let { it.places.isNotEmpty() || it.own }
+
+    /** Whether the line at [node] is one Sundial wrote: marked so at 4 (0.10.3), or by its last line, as before. */
+    fun sundialsAt(node: Js?): Boolean = byOf(node) == BY || sundials(lineOf(node))
+
+    private fun byOf(node: Js?): String? = (((node as? JsObj)?.get("_") as? JsObj)?.get("4") as? JsStr)?.value
 
     /** What became of one moment: where it landed, or that it already stood. */
     data class Landed(val moment: Moment, val address: String?, val already: Boolean)
@@ -161,33 +181,34 @@ object Keep {
         val node = walk(clock, keys(dayAddress(day), Grain.DAY))
         val had = lineOf(node)
         if (had != null && plain(had) == plain(text)) return DayLine.SAME
-        if (had != null && !sundials(had)) return DayLine.HIS
-        node["_"] = stamped(text, keptMs)
+        if (had != null && !sundialsAt(node)) return DayLine.HIS
+        node["_"] = stamped(text, keptMs, BY)
         return DayLine.WRITTEN
     }
 
     /** Whether the day at [day] holds a line of his own (not Sundial's), which a keep leaves as it stands. */
-    fun hisOwnLine(clock: Js?, day: LocalDate): String? = lineOf(find(clock, keys(dayAddress(day), Grain.DAY)))?.takeIf { !sundials(it) }
+    fun hisOwnLine(clock: Js?, day: LocalDate): String? = find(clock, keys(dayAddress(day), Grain.DAY)).let { n -> lineOf(n)?.takeIf { !sundialsAt(n) } }
 
     /** The day's line at [day], whatever wrote it. */
     fun dayText(clock: Js?, day: LocalDate): String? = lineOf(find(clock, keys(dayAddress(day), Grain.DAY)))
 
     /**
      * A booking at a later day, as Sundial sets a line ahead (sundial.html:4951-4955):
-     * his words, then the places line "What’s ahead."; beside an ahead line
-     * already there, a line of it; beside a line of his own, after it.
+     * his words alone, marked as Sundial's at 4 (0.10.3: no "What’s ahead." in
+     * his words); beside a line Sundial set there already, a line of it (above
+     * its places line, where an older one has one); beside a line of his own,
+     * after it.
      */
-    fun booking(clock: JsObj, day: LocalDate, words: String) {
+    fun booking(clock: JsObj, day: LocalDate, words: String, nowMs: Long) {
         val node = walk(clock, keys(dayAddress(day), Grain.DAY))
         val had = lineOf(node)
-        val ahead = Mark.placesWords(listOf(6)).replaceFirstChar { it.uppercase() } + "."
         node["_"] = when {
-            had == null -> str(words.trim() + "\n" + ahead)
+            had == null -> stamped(words.trim(), nowMs, BY)
             had.split("\n").any { plain(it) == plain(words) } -> return
-            sundials(had) -> {
+            sundialsAt(node) -> {
                 val rows = had.split("\n").toMutableList()
-                rows.add(rows.size - 1, words.trim())
-                str(rows.joinToString("\n"))
+                if (rows.size > 1 && Mark.read(had).let { it.places.isNotEmpty() || it.own }) rows.add(rows.size - 1, words.trim()) else rows.add(words.trim())
+                stamped(rows.joinToString("\n"), nowMs, BY)
             }
             else -> str(had + "\n\n" + words.trim())
         }

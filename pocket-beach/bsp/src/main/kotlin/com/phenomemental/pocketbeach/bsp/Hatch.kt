@@ -397,4 +397,32 @@ object Close {
         val h = Hatch.hatched(storage) ?: return null
         return pages.planEntry(Hatch.historyOf(h), entry(t))
     }
+
+    /**
+     * Sundial 0.10.3 (spine:pocket-beach 1.111178719929): one entry for one
+     * yes, appended as it is carried out, never left for a conversation to
+     * close (on his Pixel on 4 November his ahead was written at 07:27 by
+     * Keep it on the dial, with no conversation, and no entry was made).
+     * Its opening says what he said yes to; beneath, what was written and
+     * what couldn't be.
+     */
+    fun yes(what: String, written: List<String>, refused: List<String> = emptyList()): JsObj {
+        fun lines(opening: String, xs: List<String>) =
+            JsObj.of("_" to str(opening), *xs.take(9).mapIndexed { i, x -> "${i + 1}" to str(x) }.toTypedArray())
+        val opening = "On his yes: ${what.trim().trimEnd('.')}" + when {
+            refused.isEmpty() -> "."
+            written.isEmpty() -> "; nothing could be written."
+            else -> "; not all of it could be written."
+        }
+        return JsObj.of(
+            "_" to str(opening),
+            "1" to lines("What was written.", written.ifEmpty { listOf("Nothing.") }),
+            *(if (refused.isEmpty()) emptyArray() else arrayOf("2" to lines("What couldn't be written, and why.", refused))),
+        )
+    }
+
+    /** One yes's entry appended to [handle]'s history: null when it landed, else why not. */
+    fun recordYes(handle: String, what: String, written: List<String>, refused: List<String>, pages: Pages): String? =
+        runCatching { pages.carryOut(pages.planEntry(Hatch.historyOf(handle), yes(what, written, refused))) }
+            .fold({ if (it.ok) null else it.problem ?: "the entry didn't land" }, { it.message ?: "the entry couldn't be written" })
 }

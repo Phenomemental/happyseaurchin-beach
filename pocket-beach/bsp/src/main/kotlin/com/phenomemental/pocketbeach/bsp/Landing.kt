@@ -266,4 +266,37 @@ object Landing {
     }
 
     private val ASKS = setOf("add", "note", "change", "make", "post", "put", "write", "keep", "remember", "save", "remove", "delete", "rename", "read", "show", "tell", "do")
+
+    /**
+     * Sundial 0.10.3: the day check as cook 1.1.8.3's sentence states it.
+     * [sentences] and [words]: a telling that long is his day; [cardLetters]:
+     * a word of that many letters or more that a card on his hand also holds
+     * is his day; [neverQuestion], [neverOpens]: never when it ends with a
+     * question mark, or opens with one of those words. [legacyCard]: the
+     * sentences before 0.10.3 ("or news of a card on his hand"), checked as
+     * they always were: a piece sharing any but the small words with a card.
+     */
+    data class DayCheck(
+        val sentences: Int, val words: Int, val cardLetters: Int? = null,
+        val neverQuestion: Boolean = false, val neverOpens: List<String>? = null, val legacyCard: Boolean = false,
+    ) {
+        companion object {
+            /** As the sentence of 0.9.1 to 0.10.2 was checked: three sentences and forty words, or news of a card; never a question or an ask. */
+            val SINCE_09 = DayCheck(3, 40, neverQuestion = true, neverOpens = ASKS.toList(), legacyCard = true)
+        }
+    }
+
+    /** Whether [said] tells of his day, by [check]: exactly what its sentence says. */
+    fun tellsDay(said: String, cards: Map<String, String>, names: Set<String>, check: DayCheck): Boolean {
+        val trimmed = said.trim()
+        if (trimmed.isEmpty()) return false
+        if (check.neverQuestion && trimmed.endsWith("?")) return false
+        val words = Telling.plain(trimmed).split(' ').filter { it.isNotEmpty() }
+        if (check.neverOpens != null && words.firstOrNull() in check.neverOpens.map { Telling.plain(it) }) return false
+        if (Telling.sentences(trimmed, names).size >= check.sentences && words.size >= check.words) return true
+        if (check.legacyCard) return Telling.cut(trimmed, names).any { Telling.cardsNear(it, cards).isNotEmpty() }
+        val n = check.cardLetters ?: return false
+        val mine = words.filter { it.length >= n }.toSet()
+        return cards.values.any { card -> Telling.plain(card).split(' ').any { it.length >= n && it in mine } }
+    }
 }

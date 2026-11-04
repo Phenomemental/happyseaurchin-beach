@@ -42,6 +42,9 @@ class WaitingRoom(private val dir: File) {
     /** His words said at [atMs], waiting for Keep today. */
     @Synchronized fun add(words: String, atMs: Long) = save(Waiting.add(all, words, atMs))
 
+    /** Sundial 0.10.3: the places she named for the moment said at [atMs], from her reply's places line: kept with it for Keep today. */
+    @Synchronized fun place(atMs: Long, places: List<Int>) { if (places.isNotEmpty()) save(Waiting.placed(all, atMs, places)) }
+
     /** Those waiting from [day], the beach's day. */
     fun of(day: LocalDate): List<Keep.Moment> = Waiting.of(all, day)
 

@@ -125,10 +125,15 @@ class HatchDeviceTest {
             compose.tap("yes")
             compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }
             assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your yes."))
-            // Leaving Ask closes the conversation: one history entry, by the app.
-            compose.menu("menu-blocks")
+            // Sundial 0.10.3 (spine:pocket-beach 1.111178719929): his yes has its own history entry, written as it lands.
             compose.waitUntil(20_000) { block("history:Phenomemental").has("1") }
-            val entry = block("history:Phenomemental")["1"] as JsObj
+            val yes = block("history:Phenomemental")["1"] as JsObj
+            assertTrue(stringify(yes)!!, collectUnderscore(yes)!!.startsWith("On his yes: what was set out beneath her reply to “Keep that for me please”"))
+            assertTrue(stringify(yes)!!, stringify(yes["1"])!!.contains("stash:Phenomemental"))
+            // Leaving Ask closes the conversation: one history entry more, by the app.
+            compose.menu("menu-blocks")
+            compose.waitUntil(20_000) { block("history:Phenomemental").has("2") }
+            val entry = block("history:Phenomemental")["2"] as JsObj
             assertTrue(stringify(entry)!!, collectUnderscore(entry)!!.startsWith("Talked with him: 2 messages, from “I've been making huge progress"))
             assertTrue(stringify(entry)!!, stringify(entry["2"])!!.contains("stash:Phenomemental"))
         }
