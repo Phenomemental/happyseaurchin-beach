@@ -453,9 +453,10 @@ class Asking(private val app: PocketApp) {
             runCatching {
                 talking.withLock {
                     app.mind.warm(app.running(MindJob.TALK))
-                    // Sundial 0.10.1: once he has hatched, her own conversation is opened ahead, so his first message reads only itself;
-                    // the Write job's opens when a change asks for it.
-                    if (hatched() != null) talker(MindJob.TALK) else if (together) talker(MindJob.WRITE)
+                    // Sundial 0.10.2: once he has hatched, her one conversation opens with his first message (or her greeting): opening one
+                    // is instant, and the engine reads her window at the first message either way. Opened ahead, it read his cook while the
+                    // app could still be bringing it in, and was opened again at his first message. Before the hatch, the Write job's, as before.
+                    if (hatched() == null && together) talker(MindJob.WRITE)
                 }
             }
         }
