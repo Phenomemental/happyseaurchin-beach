@@ -11,12 +11,24 @@ package com.phenomemental.pocketbeach.bsp
  * Keep today.
  */
 object Placing {
-    /** Her line for the ask: each moment numbered, one line back for each, its number, a colon, the places by name. */
+    /**
+     * Her line for the ask: each moment numbered, one line back for each, its
+     * number, a colon, the places by the ring's names, and only those. On the
+     * laptop's E4B, told only "the ring: …", she wrote topics from his words
+     * ("1: Haven, membership form") and none of his seven moments was placed;
+     * told the six names are the only ones she may write, all seven were.
+     */
     fun instruction(question: String, ring: List<String>): String =
-        "The app: name, for each of his moments below, every place of this ring its words plainly touch, never ranked; " +
-            "${question.trim().trimEnd('.')}. The ring: ${ring.joinToString(", ")}. " +
-            "Write one line for each moment: its number, a colon, then its places by name, as “1: ${ring.first()}”. " +
+        "The app: for each of his moments below, name the places of Sundial's ring his words plainly touch, never ranked; " +
+            "${question.trim().trimEnd('.')}. The ring has ${Words.count(ring.size)} places, and these are the only names you may write: ${ring.joinToString(", ")}. " +
+            "Never name things from his words (people, tasks, where he went). " +
+            "Write one line for each moment: its number, a colon, then its places by those names, as “1: ${ring.take(2).joinToString(", ")}”. " +
             "Where a moment touches no place, write its number and a colon only. Write nothing else."
+
+    private object Words {
+        private val NAMES = listOf("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+        fun count(n: Int) = NAMES.getOrElse(n) { "$n" }
+    }
 
     /** His moments as she is handed them, numbered from 1, each on one line, his words alone. */
     fun material(moments: List<Keep.Moment>): String =

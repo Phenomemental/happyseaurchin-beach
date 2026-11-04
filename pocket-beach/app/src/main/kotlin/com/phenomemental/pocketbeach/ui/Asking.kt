@@ -358,8 +358,11 @@ class Asking(private val app: PocketApp) {
                     continue
                 }
                 is Cook.Wait.HerSheet -> {
-                    val big = app.running(MindJob.TALK).model == JobSettings.GEMMA_E4B
-                    val sheet = runCatching { talking.withLock { app.mind.sheet(wait.line, wait.material, app.running(MindJob.TALK), tool = big) } }.getOrNull()
+                    // Sundial 0.10.3: written free and read by the app, never through the tool call: on the laptop's E4B free was as fast or
+                    // faster (18.8 s against 30.8 s; 15.0 s against 15.5 s), and the tool's own description said "the second person" over his line.
+                    val started = System.nanoTime()
+                    val sheet = runCatching { talking.withLock { app.mind.sheet(wait.line, wait.material, app.running(MindJob.TALK), tool = false) } }.getOrNull()
+                    app.mind.steps?.add("the card's sheet, written free" + (if (sheet == null) ": no title came back" else ""), Steps.since(started))
                     w.sheet(sheet)
                     continue
                 }
@@ -720,8 +723,10 @@ class Asking(private val app: PocketApp) {
                                 f.places.isEmpty() -> "She named no place."
                                 else -> "She named ${f.places.joinToString(", ") { com.phenomemental.pocketbeach.bsp.Mark.POOLS[it - 1].phrase }}."
                             }
-                            // Sundial 0.10.3: her places for this moment are kept with it, so Keep today shows them already marked (1.111178719927).
-                            if (h != null && f.places.isNotEmpty()) runCatching { app.waiting.place(e.at, f.places) }
+                            // Sundial 0.10.3: her places for this moment are kept with it, so Keep today shows them already marked (1.111178719927);
+                            // only from a turn whose line asked her for them (his day's): on the laptop she wrote a places line on every turn.
+                            val asked = walk.handed.any { it.line.contains("Places:") }
+                            if (h != null && asked && f.places.isNotEmpty()) runCatching { app.waiting.place(e.at, f.places) }
                         }
                         // A short reply shows whole at its end: its first words are shown then.
                         if (firstShown == null && whole.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000

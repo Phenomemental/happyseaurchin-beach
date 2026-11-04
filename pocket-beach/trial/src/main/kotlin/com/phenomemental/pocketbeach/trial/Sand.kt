@@ -301,6 +301,8 @@ fun main(args: Array<String>) {
     val out = File(args.getOrElse(1) { "trial/sand-0.10.3.md" })
     val seeds = args.getOrNull(2)?.split(",")?.map { it.trim().toInt() } ?: listOf(0)
     val dry = args.contains("dry")
+    // "places": only Keep today's places, every moment unplaced (as when no reply of hers carries a places line): free text against the tool call.
+    val placesOnly = args.contains("places")
     val opened = at(4, 9, 54)
     val openedMs = opened.toInstant().toEpochMilli()
 
@@ -362,9 +364,9 @@ fun main(args: Array<String>) {
     val engine = Engine(EngineConfig(modelPath = model, backend = Backend.CPU(), maxNumTokens = 8192, cacheDir = System.getProperty("pocket.cache") ?: Files.createTempDirectory("s").toString()))
     engine.initialize()
     engine.use { e ->
-        var moments = emptyList<Keep.Moment>()
+        var moments = if (placesOnly) aMessages.map { (_, m) -> Keep.Moment(m.first, m.second.toInstant().toEpochMilli()) } else emptyList()
         var t1Turn = ""
-        for (seed in seeds) {
+        for (seed in if (placesOnly) emptyList() else seeds) {
             r.append("### Seed $seed\n\n")
             val ms = mutableListOf<Keep.Moment>()
             e.createConversation(ConversationConfig(systemInstruction = Contents.of(opening), samplerConfig = talkSampler(seed), maxOutputToken = 1024, thinkingConfig = OFF)).use { c ->
@@ -391,10 +393,10 @@ fun main(args: Array<String>) {
         }
 
         // A, test 2's short answers: each in a conversation of its own, seeded with his first message and her reply as his Pixel had them.
-        r.append("### Test 2, his short answers to her question\n\n")
+        if (!placesOnly) r.append("### Test 2, his short answers to her question\n\n")
         val phoneT1 = "You walked Haven this morning then spent an hour on the membership form. What did the movement of that walk feel like compared to the stillness of filling out that form?\n\nPlaces: what happened, what he felt"
         r.append("Each in a conversation of its own: her instruction as above, then his first message (the turn above) and her reply to it exactly as his Pixel had it on 4 November, “${oneLine(phoneT1)}”; then his answer, walked through his cook. Seed 0.\n\n")
-        for ((said, _) in shortWalks) {
+        for ((said, _) in if (placesOnly) emptyList() else shortWalks) {
             val w = Cook.Walk(loaded.parsed, world(pages, storage, at(4, 9, 54, 40), listOf(aMessages[0].second.first)), said).start(loaded.kernel.message ?: "1")
             val turn = HerWindow.turnKept(said, pages, w.handed, recipe)
             val s = e.createConversation(ConversationConfig(systemInstruction = Contents.of(opening), initialMessages = listOf(Message.user(t1Turn), Message.model(phoneT1)), samplerConfig = talkSampler(0), maxOutputToken = 1024, thinkingConfig = OFF)).use { c ->
@@ -408,12 +410,12 @@ fun main(args: Array<String>) {
         }
 
         // B: test 5 in a fresh conversation.
-        r.append("## B. Test 5, ASKING HER: a fresh conversation\n\n")
+        if (!placesOnly) r.append("## B. Test 5, ASKING HER: a fresh conversation\n\n")
         val bNow = at(4, 10, 10)
         val bOpening = HerWindow.opening(HerWindow.window(H, pages, storage, PROCEDURES, bNow), bNow, recipe)
         e.createConversation(ConversationConfig(systemInstruction = Contents.of(bOpening), samplerConfig = talkSampler(0), maxOutputToken = 1024, thinkingConfig = OFF)).use { c ->
             val before = mutableListOf<String>()
-            for ((said, _) in bWalks) {
+            for ((said, _) in if (placesOnly) emptyList() else bWalks) {
                 val w = Cook.Walk(loaded.parsed, world(pages, storage, bNow, before.toList()), said).start(loaded.kernel.message ?: "1")
                 val turn = HerWindow.turnKept(said, pages, w.handed, recipe)
                 val s = say(c, turn, Talking.Shown(said, "", HerWindow.echoLines(turn), false, handedNever))
@@ -456,6 +458,19 @@ fun main(args: Array<String>) {
                         r.append("- Read by Placing.read: " + unplaced.joinToString("; ") { m -> "“${m.words.take(40)}…” → ${read[m.atMs]?.let { Mark.placesWords(it) } ?: "unplaced"}" } + "\n\n")
                         out.writeText(r.toString())
                         println("C places free: ${f1(free.secs)} s, ${read.size} placed")
+                        if (args.contains("alt")) {
+                            // A wording tried beside Placing.instruction (the trial's own, not the app's): the six names said to be the only ones.
+                            val altInstruction = "The app: for each of his moments below, name the places of Sundial's ring his words plainly touch, never ranked; ${wait.question.trim().trimEnd('.')}. " +
+                                "The ring has six places, and these are the only names you may write: ${wait.places.joinToString(", ")}. Never name things from his words (people, tasks, where he went). " +
+                                "Write one line for each moment: its number, a colon, then its places by those names, as “1: ${wait.places[0]}, ${wait.places[1]}”. " +
+                                "Where a moment touches no place, write its number and a colon only. Write nothing else."
+                            val alt = ask(e, altInstruction, material, 0)
+                            val altRead = Placing.read(alt.text, unplaced)
+                            r.append("**A wording tried beside it (this trial's, not the app's), free text once:** ${f1(alt.secs)} s, read ${alt.read} tokens, wrote ${alt.wrote}.\n\n- The instruction: “$altInstruction”\n- She wrote:\n\n```\n${alt.text.trim()}\n```\n\n")
+                            r.append("- Read by Placing.read: " + unplaced.joinToString("; ") { m -> "“${m.words.take(40)}…” → ${altRead[m.atMs]?.let { Mark.placesWords(it) } ?: "unplaced"}" } + "\n\n")
+                            out.writeText(r.toString())
+                            println("C places alt: ${f1(alt.secs)} s, ${altRead.size} placed")
+                        }
                         // The tool call, one call per unplaced moment (Gemma.chooseMany's call, its instruction as the app built it for a ring).
                         val ring = wait.places.mapIndexed { i, p -> "${i + 1} $p" }.joinToString("\n")
                         val toolInstruction = "Name every place of this ring his words plainly touch, one or more, never ranked: ${wait.question}.\n$ring"
@@ -478,6 +493,7 @@ fun main(args: Array<String>) {
                         w.herEach(read)
                     }
                     is Cook.Wait.HerSheet -> {
+                        if (placesOnly) break
                         r.append("### C(ii) her sheet ($label)\n\n")
                         r.append("- Her SHEET line, as his cook hands it: “${wait.line}”\n- Her material:\n\n```\n${wait.material}\n```\n\n")
                         val tool = sheetByTool(e, wait.line, wait.material, 0)
@@ -520,6 +536,7 @@ fun main(args: Array<String>) {
         }
 
         val (k1, placed) = keepWalk("his cook, the shipped SHEET line", loaded, null)
+        if (placesOnly) { out.writeText(r.toString()); return@use }
         r.append(cardNote(k1))
         out.writeText(r.toString())
 
