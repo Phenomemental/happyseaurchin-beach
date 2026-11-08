@@ -7,7 +7,7 @@
 //                                       C nine people by the link, D someone leaves and
 //                                       comes back by the link, E the room is locked,
 //                                       F Claude refuses the host's key, G three people, no key,
-//                                       H Look around
+//                                       H Look around, I closing the game
 // Screenshots, when asked for with SHOTS=<dir>, land there.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -20,7 +20,7 @@ const L = require('../zero-look.js');
 
 const PHONE = devices['iPhone 13'];
 const SHOTS = process.env.SHOTS || '';
-const which = (process.argv[2] || 'ABCDEFGH').toUpperCase();
+const which = (process.argv[2] || 'ABCDEFGIH').toUpperCase();
 
 // ---- Claude, stood in -------------------------------------------------------------------
 const WORDS = {
@@ -117,6 +117,23 @@ async function shot(page, name) {
   fs.mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: path.join(SHOTS, name + '.png'), fullPage: true });
 }
+// "Close the game" at the foot of each game screen, between the moves and the credits.
+async function closeWhere(p) {
+  const r = await p.page.evaluate(() => {
+    const t = document.getElementById('table');
+    if (!t || t.hidden) return null;
+    // the game's last screen, once it is over, has the poem to follow and nothing to choose
+    if (Array.from(document.querySelectorAll('#t-moves button')).some(b => b.textContent === 'The poem')) return null;
+    const ph = (document.getElementById('t-phase').textContent.split('·')[1] || '').trim();
+    const moves = document.getElementById('t-moves');
+    const screen = moves.querySelector('.picks.eye') || /Does any word not belong/.test(moves.textContent) ? 'the eye' : ph;
+    const c = document.getElementById('t-close'), go = document.getElementById('t-close-go'), f = document.querySelector('footer.foot');
+    const cr = c.getBoundingClientRect(), mr = moves.getBoundingClientRect(), fr = f.getBoundingClientRect();
+    return { screen, ok: !c.hidden && !go.hidden && go.offsetParent !== null && cr.top >= mr.bottom - 1 && cr.bottom <= fr.top + 1 && c.nextElementSibling === null };
+  }).catch(() => null);
+  if (r && r.screen && !(r.screen in p.closeAt)) p.closeAt[r.screen] = r.ok;
+  else if (r && r.screen && !r.ok) p.closeAt[r.screen] = false;
+}
 // Every screen a person sees, read for the words that must never appear.
 const seenBanned = [];
 async function watchWords(p) {
@@ -138,12 +155,15 @@ async function play(p, words, opts = {}) {
   const deadline = Date.now() + (opts.timeout || 240000);
   let hand = 0;
   p.saw = p.saw || {};
+  p.closeAt = p.closeAt || {};
   while (Date.now() < deadline) {
     await watchWords(p);
+    if (opts.until && await opts.until(hand)) return true;
     if (await page.locator('#end').isVisible()) return true;
     const phase = (await page.locator('#t-phase').textContent().catch(() => '')) || '';
     const m = /Hand (one|two|three|four)/.exec(phase);
     if (m) hand = ['one', 'two', 'three', 'four'].indexOf(m[1]) + 1;
+    await closeWhere(p);
     if (opts.shots && !seen.has(phase)) { seen.add(phase); await shot(page, opts.shots + '-' + phase.replace(/[^a-z]+/gi, '-').toLowerCase()); }
     try {
       if (await visible(page.locator('#m-word'))) {
@@ -267,7 +287,7 @@ async function addKey(page, key) {
 // itself, and once they are named they are seated, with no code typed.
 async function arrives(browser, link, name) {
   const p = await phone(browser, link);
-  await signUp(p.page, name, true);
+  p.door = await signUp(p.page, name, true);
   await p.page.waitForSelector('#waiting:not([hidden]), #table:not([hidden])');
   return p;
 }
@@ -333,6 +353,8 @@ async function tableA(browser, base, beach) {
   check('A: the turn says "Write a short sentence that brings all these words together."', host.saw.turn);
   check('A: the vote says "Vote for the sentence that brings the words together best. Not your own."', host.saw.vote);
   check('A: the table\'s eye asks "Does any word not belong under …? Tap one, or tap Skip."', host.saw.eye);
+  const screens = ['seats', 'the flop', 'the eye', 'the turn', 'the showdown', 'the voice'];
+  check('A: "Close the game" sits at the foot of every game screen, just above the credits', screens.every(x => host.closeAt[x] === true), JSON.stringify(host.closeAt));
   const h2 = t.hands[1];
   check('A: the computer players sent out the word that did not belong (spreadsheet), by more than half the seats', h2.eyeOut[1] === true && h2.marked[1] > 4.5, JSON.stringify({ words: h2.words, marked: h2.marked }));
   check('A: and marked honestly otherwise: no other word was marked in any hand', t.hands.every(h => Object.keys(h.marked).every(k => h.words[k] === 'spreadsheet')));
@@ -577,6 +599,60 @@ async function tableH(browser, base, beach) {
   await p.ctx.close();
 }
 
+async function tableI(browser, base, beach) {
+  console.log('I. Close the game: a guest frees their seat; the host ends the table for everyone');
+  const host = await phone(browser, base);
+  const { code, link } = await hostOpens(host, 'Ines', 'A new first word', 'Lantern');
+  await addKey(host.page, 'sk-ant-test');
+  // before the deal: Joe arrives and leaves, and his seat is free for the next
+  const joe = await arrives(browser, link, 'Joe');
+  await joe.page.click('#w-leave');
+  await joe.page.waitForSelector('#lobby:not([hidden])');
+  check('I: a guest leaving the waiting room is told plainly, where it can be seen', await joe.page.locator('#lobby-note').isVisible() && /You left the table. Your seat is free./.test(await joe.page.textContent('#lobby-note')));
+  await joe.ctx.close();
+  const kim = await arrives(browser, link, 'Kim');
+  const lou = await arrives(browser, link, 'Lou');
+  await host.page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 3, null, { timeout: 15000 });
+  check('I: Joe\'s seat was freed: Kim took seat two', (await atTable(host.page)).join('|') === 'Ineshost|Kim|Lou', (await atTable(host.page)).join('|'));
+  await host.page.click('#deal-go');
+  await kim.page.waitForSelector('#table:not([hidden])');
+  // Kim closes the game at the first move, before writing her word
+  await kim.page.waitForSelector('#t-close-go');
+  check('I: "Close the game" can be found at once', await kim.page.locator('#t-close-go').isVisible());
+  await kim.page.click('#t-close-go');
+  check('I: it asks first, in plain words, for a guest', /This frees your seat. The table plays on without you./.test(await kim.page.textContent('#t-close-say')) && (await kim.page.textContent('#t-close-yes')) === 'Leave the table');
+  await kim.page.click('#t-close-yes');
+  await kim.page.waitForSelector('#lobby:not([hidden])');
+  check('I: Kim is back in the lobby, told her seat is free', /You left the table. Your seat is free./.test(await kim.page.textContent('#lobby-note')));
+  // the table goes on without her: the host and Lou play on, nobody waits on Kim
+  const louDone = play(lou, h => ['wick', 'oil', 'glass', 'hook'][h - 1], { voteIndex: 0, until: async () => lou.page.locator('#lobby').isVisible() });
+  await play(host, h => ['beacon', 'shade', 'flame', 'bulb'][h - 1], { voteIndex: 0, until: async (hand) => hand >= 2 });
+  let t = await tableIn(beach, code);
+  check('I: the table plays on without Kim, never waiting on her', t.gone[2] === true && t.hands[0].steps.word.skipSeal[2] === true && t.hands.length >= 2 &&
+    !Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).some(e => Z.codeKey(e.code) === Z.codeKey(code) && e.kind === 'go'), JSON.stringify(t.gone));
+  check('I: her seat shows she has left', /Kim · left/.test(await host.page.textContent('#t-ring')));
+  // now the host closes the game for everyone
+  await host.page.click('#t-close-go');
+  check('I: it asks the host first, in plain words', /This ends the game for everyone at the table./.test(await host.page.textContent('#t-close-say')));
+  await host.page.click('#t-close-yes');
+  await host.page.waitForSelector('#lobby:not([hidden])');
+  check('I: the host is back in the lobby: "You closed the game."', /You closed the game. Everyone at the table has been told./.test(await host.page.textContent('#lobby-note')));
+  await louDone;
+  check('I: Lou is told plainly: "The host closed the game."', await lou.page.locator('#lobby').isVisible() && /The host closed the game./.test(await lou.page.textContent('#lobby-note')));
+  t = await tableIn(beach, code);
+  check('I: the table is closed, before its end', t.closed && !t.over);
+  // Kim opens the link again, as herself: her seat went when she left
+  const back = await phone(browser, link);
+  await back.page.getByRole('button', { name: 'I’ve been here before' }).click();
+  await back.page.fill('#door-name2', 'Kim');
+  await back.page.fill('#door-key', kim.door.words.join('-'));
+  await back.page.getByRole('button', { name: 'Come in' }).click();
+  await back.page.waitForFunction(() => document.querySelector('#i-error').textContent.length > 0, null, { timeout: 15000 });
+  check('I: coming back by the link after leaving, Kim is told her seat has gone', /You left this game, so your seat has gone./.test(await back.page.textContent('#i-error')), await back.page.textContent('#i-error'));
+  check('I: no page errors', ![host, kim, lou].some(p => p.errors.length), [host, kim, lou].map(p => p.errors.join(' / ')).join(' | '));
+  await Promise.all([host, kim, lou, back].map(p => p.ctx.close()));
+}
+
 // ---- run ----------------------------------------------------------------------------------
 const { server, beach, port } = await serve(0);
 const base = `http://localhost:${port}/zero.html?beach=http://localhost:${port}&fast=1`;
@@ -589,6 +665,7 @@ try {
   if (which.includes('E')) await tableE(browser, base, beach);
   if (which.includes('F')) await tableF(browser, base, beach);
   if (which.includes('G')) await tableG(browser, base, beach);
+  if (which.includes('I')) await tableI(browser, base, beach);
   if (which.includes('H')) await tableH(browser, base, beach);
 } catch (e) {
   check('the run finished', false, e.stack || String(e));

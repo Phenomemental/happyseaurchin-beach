@@ -247,3 +247,53 @@ test('seals only count from the seat\'s own writer', async () => {
   const t = await Z.derive(r.list, CODE);
   assert.deepEqual(Z.waitingSeal(t.current.steps.word), [1, 2]);
 });
+
+test('leaving before the deal frees the seat for the next to arrive', async () => {
+  const r = room();
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann', 6: 'eye' }, '3');
+  r.add('Ben', 'sit', 0, {});
+  r.add('Ben', 'leave', 0, {});
+  r.add('Cat', 'sit', 0, {});
+  const t = await Z.derive(r.list, CODE);
+  assert.deepEqual(t.sits.map(x => x.name), ['Cat']);
+  assert.equal(t.seats[2].name, 'Cat');
+});
+
+test('leaving during play: the seat sits out every move left, and the table does not wait', async () => {
+  const r = room();
+  const names = ['Ann', 'Ben', 'Cat', 'Dev'];
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann', 6: 'eye' }, '3');
+  r.add('Ann', 'deal', 1, { _: 'sea', 1: { _: 'Ann', 1: 'person' }, 2: { _: 'Ben', 1: 'person' }, 3: { _: 'Cat', 1: 'person' }, 4: { _: 'Dev', 1: 'person' } }, '3');
+  const writer = s => names[s - 1];
+  // Ben leaves before writing his word; the others' words complete the step without him
+  r.add('Ben', 'leave', 0, {});
+  r.add('Mallory', 'leave', 0, {});          // nobody of that name: nothing happens
+  r.add('Ann', 'leave', 0, {});              // the host closes instead: a leave from the host does nothing
+  await play(r, 1, 'word', { 1: 'wave', 3: 'gull', 4: 'tide' }, writer);
+  let t = await Z.derive(r.list, CODE);
+  assert.equal(t.gone[2], true);
+  assert.equal(t.gone[1], undefined);
+  assert.equal(t.phase, 'eye');
+  assert.deepEqual(t.current.steps.eye.need, [1, 3, 4]);
+  await play(r, 1, 'eye', { 1: '0', 3: '0', 4: '0' }, writer);
+  await play(r, 1, 'line', { 1: ['a', 1], 3: ['b', 1], 4: ['c', 1] }, writer);
+  t = await Z.derive(r.list, CODE);
+  assert.deepEqual(t.current.steps.vote.need, [1, 3, 4]);
+  await play(r, 1, 'vote', { 1: 3, 3: 1, 4: 1 }, writer);
+  r.add('Ann', 'pick', 1, { _: '1' }, '3');
+  r.add('Ann', 'deal', 2, { _: 'wave' }, '31');
+  t = await Z.derive(r.list, CODE);
+  assert.deepEqual(t.current.active, [1, 3, 4]);
+  // Dev leaves after sealing his word but before it is shown: the step goes on without it
+  const s1 = Z.salt(), s3 = Z.salt(), s4 = Z.salt();
+  r.add('Ann', 'seal', 2, { _: 'word', 1: await Z.seal(CODE, 2, 'word', 1, 'foam', undefined, s1) }, '31');
+  r.add('Cat', 'seal', 2, { _: 'word', 3: await Z.seal(CODE, 2, 'word', 3, 'spray', undefined, s3) }, '31');
+  r.add('Dev', 'seal', 2, { _: 'word', 4: await Z.seal(CODE, 2, 'word', 4, 'crest', undefined, s4) }, '31');
+  r.add('Ann', 'show', 2, { _: 'word', 1: { _: 'foam', 1: s1 } }, '31');
+  r.add('Cat', 'show', 2, { _: 'word', 3: { _: 'spray', 1: s3 } }, '31');
+  r.add('Dev', 'leave', 0, {});
+  t = await Z.derive(r.list, CODE);
+  assert.equal(t.phase, 'eye');
+  assert.deepEqual(t.current.survivors, [1, 3]);
+  assert.deepEqual(t.current.steps.eye.need, [1, 3]);
+});

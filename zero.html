@@ -282,6 +282,12 @@
   .notes .n b { font-weight: 600; font-size: 0.95rem; }
   .notes .n p { margin: 0.1rem 0 0; white-space: pre-line; overflow-wrap: anywhere; }
 
+  /* ---- closing the game ---- */
+  .close-game { text-align: center; border-top: 1px solid var(--line); margin: 1.2rem 0 0; padding-top: 0.6rem; }
+  .close-say { font-style: italic; margin: 0 0 0.5rem; }
+  .close-row { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+  .lobby-note { text-align: center; font-style: italic; color: var(--crimson); margin: -0.4rem 0 1rem; }
+
   /* ---- looking around ---- */
   .look-head { font-weight: 500; font-size: 0.95rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--soft); text-align: center; margin: 1.5rem 0 0.6rem; }
   .look-note { font-style: italic; color: var(--soft); font-size: 0.98rem; text-align: center; margin: 0 0 0.6rem; }
@@ -331,6 +337,7 @@
     <section id="lobby" aria-labelledby="lobby-title">
       <p class="title" id="lobby-title">Zero</p>
       <p class="tagline">Nine seats. One word. Say it so nobody else does.</p>
+      <p class="lobby-note" id="lobby-note" role="status" hidden></p>
       <p class="how">Write a word nobody else will think of. Write a short sentence that brings all the words together. Vote for the best sentence, never your own.</p>
       <div class="doors" role="group" aria-label="Host or join">
         <button type="button" id="door-host" aria-pressed="false">Host a table</button>
@@ -424,6 +431,17 @@
       <div class="moves" id="t-moves" aria-live="polite"></div>
       <p class="error" id="t-error" role="alert"></p>
       <p class="status" id="t-status"></p>
+      <!-- Always at the foot of the game, just above the credits -->
+      <div class="close-game" id="t-close">
+        <button type="button" class="quiet" id="t-close-go">Close the game</button>
+        <div id="t-close-ask" hidden>
+          <p class="close-say" id="t-close-say"></p>
+          <div class="close-row">
+            <button type="button" id="t-close-yes">Close it</button>
+            <button type="button" class="quiet" id="t-close-no">Keep playing</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- The end: the game's poem (spine:zero 4.6) -->
@@ -473,8 +491,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08e"></script>
-<script src="zero-look.js?v=2026-11-08e"></script>
-<script src="zero.js?v=2026-11-08e"></script>
+<script src="zero-law.js?v=2026-11-08f"></script>
+<script src="zero-look.js?v=2026-11-08f"></script>
+<script src="zero.js?v=2026-11-08f"></script>
 </body>
 </html>

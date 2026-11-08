@@ -384,15 +384,19 @@
 
   // ---- the lobby -------------------------------------------------------------------------
   var mode = '', places = [], chosen = '', moreShown = false, deeper = '', lobbyTables = {};
-  function lobby(asHost, beneath) {
+  function lobby(asHost, beneath, note) {
     show('lobby');
     address('');
     deeper = beneath || '';
     $('lobby-error').textContent = '';
     setMode(asHost === true ? 'host' : asHost === false ? 'join' : '');
+    // a plain line where it can be seen, above the doors: the game was closed, or left
+    $('lobby-note').textContent = note || '';
+    $('lobby-note').hidden = !note;
   }
   function setMode(m) {
     mode = m;
+    if (m) { $('lobby-note').textContent = ''; $('lobby-note').hidden = true; }
     $('door-host').setAttribute('aria-pressed', String(m === 'host'));
     $('door-join').setAttribute('aria-pressed', String(m === 'join'));
     $('lobby-form').hidden = !m;
@@ -551,6 +555,7 @@
           Object.keys(seats).forEach(function (s) { if (seats[s].kind === 'person' && seats[s].name.toLowerCase() === who.name.toLowerCase()) found = Number(s); });
           return found;
         };
+        if (mine() && t.roster && t.gone[mine()]) throw new Error('You left this game, so your seat has gone.');
         if (mine()) return { t: t, seat: mine(), open: open };
         if (t.closed) throw new Error('That table has closed.');
         if (t.roster) throw new Error('That table has already started.');
@@ -597,6 +602,7 @@
   var lastOk = 0, failing = false, inked = {};
   function enterTable() {
     T = null; treeHand = -1; flipped = {}; firstSeen = {}; voteChoice = 0;
+    closeAsk(false);
     address(S.code);
     readLaw();
     poll();
@@ -618,7 +624,7 @@
         return readTree().then(function (tree) { TREE_JSON = tree; treeHand = n; }, function () {});
       }
     }).then(function () {
-      if (T) { draw(); duties(); }
+      if (T) { draw(); if (T) duties(); }      // drawing a closed table leaves it
     }, function () {
       failing = true;
       if (T) draw();
@@ -632,7 +638,7 @@
   function draw() {
     if (!S || !T) return;
     if (T.phase === 'none') { $('t-status').textContent = 'Finding the table…'; return; }
-    if (T.phase === 'closed') { forgetTable(); lobby(); lobbyError('That table has closed.'); return; }
+    if (T.phase === 'closed') { var wasHost = S.host; forgetTable(); clearTimeout(timer); lobby(undefined, undefined, wasHost ? 'The game is closed.' : 'The host closed the game.'); return; }
     if (T.phase === 'waiting') return drawWaiting();
     if (T.phase === 'end' && S.ended) return drawEnd();
     drawTable();
@@ -738,13 +744,39 @@
     keyBlocked = false;
     drawWaiting();
   }
+  // Leaving from the waiting room: the host closes the table for everyone;
+  // anyone else frees their seat for the next to arrive.
   function leave() {
-    if (S && S.host && T && !T.over) {
-      post('close', { who: S.name, at: T.open ? Z.at(T.open.place) : '', code: S.code, text: S.code + ' · the host closed the table' });
+    var wasHost = S && S.host;
+    if (S && T && !T.over) {
+      post(wasHost ? 'close' : 'leave', { who: S.name, at: T.open ? Z.at(T.open.place) : '', code: S.code,
+        text: S.code + ' · ' + S.name + (wasHost ? ' closed the table' : ' leaves the table') });
     }
     forgetTable();
     clearTimeout(timer);
-    lobby();
+    lobby(undefined, undefined, wasHost ? 'You closed the table.' : 'You left the table. Your seat is free.');
+  }
+  // "Close the game", at the foot of every game screen: asked once, then the
+  // host ends the table for everyone, and anyone else frees their seat.
+  function closeAsk(on) {
+    $('t-close-ask').hidden = !on;
+    $('t-close-go').hidden = on;
+    if (!on) return;
+    $('t-close-say').textContent = S && S.host ? 'This ends the game for everyone at the table.' : 'This frees your seat. The table plays on without you.';
+    $('t-close-yes').textContent = S && S.host ? 'Close it for everyone' : 'Leave the table';
+  }
+  function closeGame() {
+    if (!S) return;
+    var wasHost = S.host, yes = $('t-close-yes');
+    yes.disabled = true;
+    post(wasHost ? 'close' : 'leave', { who: S.name, at: T && T.current ? Z.at(T.current.place) : '', code: S.code,
+      text: S.code + ' · ' + S.name + (wasHost ? ' closed the game' : ' leaves the table') }).then(function (r) {
+      if (!r.ok) throw new Error(refusal(r));
+      forgetTable();
+      clearTimeout(timer);
+      closeAsk(false);
+      lobby(undefined, undefined, wasHost ? 'You closed the game. Everyone at the table has been told.' : 'You left the table. Your seat is free.');
+    }).catch(function (e) { $('t-error').textContent = e.message; }).then(function () { yes.disabled = false; });
   }
 
   // ---- the table, drawn ----------------------------------------------------------------------
@@ -787,6 +819,7 @@
     if (!t.over) trail.appendChild(document.createTextNode(' › …'));
     drawRing(t, h);
     drawMoves(t, h);
+    $('t-close').hidden = !!t.over;
     $('t-status').textContent = failing ? 'The beach is out of reach just now. Trying again…' :
       'Live from the beach · checked ' + new Date(lastOk).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
@@ -823,7 +856,8 @@
       if (h.winners.indexOf(s) >= 0 && (h.stage === 'voice' || h.stage === 'done')) seat.classList.add('win');
       if (t.roster) card.appendChild(el('span', 'chips', String(t.chips[s] != null ? t.chips[s] : '')));
       seat.appendChild(card);
-      seat.appendChild(el('span', 'who', x ? x.name : 'open'));
+      if (t.gone[s]) seat.classList.add('out');
+      seat.appendChild(el('span', 'who', x ? x.name + (t.gone[s] ? ' \u00b7 left' : '') : 'open'));
       ring.appendChild(seat);
     }
     if (turning) setTimeout(function () { if (flipped[h.n] === 'now') { flipped[h.n] = true; } }, 800);
@@ -1092,10 +1126,10 @@
         });
         box.appendChild(row);
       } else {
-        box.appendChild(el('p', 'note', Z.nameOf(t, picker) + ' is choosing the next zero…'));
+        box.appendChild(el('p', 'note', t.gone[picker] ? Z.nameOf(t, picker) + ' has left the table, so the host chooses the next word.' : Z.nameOf(t, picker) + ' is choosing the next zero…'));
         var pk = 'pickwait:' + h.n;
         if (!firstSeen[pk]) firstSeen[pk] = Date.now();
-        if (S.host && !Z.isComputer(t, picker) && Date.now() - firstSeen[pk] >= WAIT_BEFORE_GO_ON) {
+        if (S.host && !Z.isComputer(t, picker) && (t.gone[picker] || Date.now() - firstSeen[pk] >= WAIT_BEFORE_GO_ON)) {
           var row2 = el('div', 'picks');
           row2.appendChild(el('p', 'note', 'Choose for ' + Z.nameOf(t, picker) + ':'));
           h.ring.forEach(function (s) {
@@ -1556,6 +1590,9 @@
   });
   $('deal-go').addEventListener('click', dealFirst);
   $('w-leave').addEventListener('click', leave);
+  $('t-close-go').addEventListener('click', function () { closeAsk(true); });
+  $('t-close-no').addEventListener('click', function () { closeAsk(false); });
+  $('t-close-yes').addEventListener('click', closeGame);
   $('e-keep').addEventListener('click', keepCard);
   $('e-share').addEventListener('click', shareCard);
   $('e-deeper').addEventListener('click', function () {
