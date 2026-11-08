@@ -322,9 +322,34 @@
   .look-list.sent s { text-decoration-color: var(--crimson); font-style: italic; }
   .look-shows { text-align: left; border-top: 1px solid var(--line); margin-top: 0.5rem; padding-top: 0.3rem; }
   .look-h { font-weight: 500; font-size: 1.02rem; font-style: italic; color: var(--crimson); margin: 0.8rem 0 0.3rem; text-align: center; }
-  .web { display: block; width: 100%; max-width: 28rem; margin: 0 auto 0.3rem; overflow: visible; }
-  .web text { font-family: "Cormorant Garamond", Garamond, serif; font-style: italic; font-size: 13px; fill: #2a2420; }
-  .web text.lead { fill: #8e1b1b; }
+  /* the voting web, the full width of the sheet and about as tall (spine:zero 4.91) */
+  .web { display: block; width: 100%; height: auto; margin: 0 0 0.2rem; overflow: visible; -webkit-tap-highlight-color: transparent; }
+  .web text, .trail-map text { font-family: "Cormorant Garamond", Garamond, serif; font-style: italic; font-size: 18px; fill: var(--ink);
+    paint-order: stroke; stroke: var(--sheet); stroke-width: 5px; stroke-linejoin: round; }
+  .look-card .web text, .look-card .trail-map text { stroke: var(--card); }
+  .web text.lead { fill: var(--crimson); }
+  .web .wn { cursor: pointer; outline: none; }
+  .web .wn-hit { fill: transparent; }
+  .web .wn-pt { fill: var(--ink); }
+  .web .wn-pt.lead { fill: var(--crimson); }
+  .web .edge { transition: opacity 0.2s, stroke 0.2s; }
+  .web.lit .edge.dim { opacity: 0.07; }
+  .web .edge.out { stroke: var(--crimson); stroke-opacity: 0.9; }
+  .web .edge.in { stroke: var(--ink); stroke-opacity: 0.85; }
+  .web.lit .wn text { opacity: 0.4; }
+  .web.lit .wn.near text, .web.lit .wn.on text { opacity: 1; }
+  .web .wn.on text { fill: var(--crimson); font-weight: 600; }
+  .web .wn.on .wn-pt { fill: var(--crimson); }
+  .web .wn:focus-visible text { text-decoration: underline; }
+  .web-line { min-height: 2.6em; color: var(--ink); }
+  .look-sec .look-note { text-align: left; }
+  .look-sec .web-line, .look-sec .votes-said { text-align: center; }
+  .trail-map { display: block; width: 100%; height: auto; margin: 0.2rem 0 0.3rem; overflow: visible; }
+  .trail-map .tm-seat { fill: var(--ink); opacity: 0.3; }
+  .trail-map .trail-path { stroke: var(--crimson); stroke-width: 1.6; opacity: 0.85; }
+  .trail-map .tm-stop { fill: var(--ink); }
+  .trail-map .tm-stop.last { fill: var(--crimson); }
+  .look-list.marked s, .look-list.fresh s { text-decoration-color: var(--crimson); }
   .look-list { list-style: none; padding: 0; margin: 0 0 0.5rem; }
   .look-list li { padding: 0.2rem 0; border-bottom: 1px solid var(--line); font-size: 1rem; line-height: 1.35; }
   .look-list li::before { content: none; }
@@ -505,8 +530,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08h"></script>
-<script src="zero-look.js?v=2026-11-08h"></script>
-<script src="zero.js?v=2026-11-08h"></script>
+<script src="zero-law.js?v=2026-11-08i"></script>
+<script src="zero-look.js?v=2026-11-08i"></script>
+<script src="zero.js?v=2026-11-08i"></script>
 </body>
 </html>

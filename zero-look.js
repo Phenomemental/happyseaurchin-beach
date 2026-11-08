@@ -50,9 +50,11 @@
   // ---- games played on the page ----------------------------------------------------------
   function tableGame(t) {
     var nameOf = function (s) { return Z.nameOf(t, s); };
+    var num = function (a, b) { return a - b; };
+    var seats = Object.keys(t.roster).map(Number).sort(num);
     var g = {
-      kind: 'table', code: t.code, stamp: t.open.stamp || '', people: Object.keys(t.roster).map(Number).sort(function (a, b) { return a - b; }).map(nameOf),
-      places: Z.poem(t), votes: [], same: [], alone: [], sentOut: [], words: [], hands: [],
+      kind: 'table', code: t.code, stamp: t.open.stamp || '', people: seats.map(nameOf),
+      places: Z.poem(t), votes: [], same: [], alone: [], sentOut: [], words: [], hands: [], rounds: [], computer: {},
       book: (function () {
         var b = Z.chipsBook(t);
         return Object.keys(t.roster).map(Number).sort(function (x, y) { return x - y; }).map(function (s) {
@@ -77,19 +79,39 @@
       Object.keys(h.eyeOut).forEach(function (s) { g.sentOut.push({ word: h.words[s], name: nameOf(Number(s)), place: h.zero }); });
       Object.keys(h.words).forEach(function (s) { g.words.push({ word: h.words[s], name: nameOf(Number(s)), place: h.zero, collided: matched.indexOf(Number(s)) >= 0 }); });
       Object.keys(h.votes).forEach(function (s) { g.votes.push({ from: nameOf(Number(s)), to: nameOf(h.votes[s]), place: h.zero }); });
+      // the hand as the readings of 4.91 need it: every word turned, every
+      // sentence with its stake and votes, and the eye's marks
+      var voiced = h.winners.length > 0;
+      var r = { place: h.place, zero: h.zero, words: [], lines: [], eye: !!(h.steps.eye && h.steps.eye.shown && !h.noEye), marks: [] };
+      Object.keys(h.words).map(Number).sort(num).forEach(function (s) {
+        r.words.push({ seat: s, word: h.words[s], name: nameOf(s), kept: voiced && h.ring.indexOf(s) >= 0 });
+      });
+      Object.keys(h.lines).map(Number).sort(num).forEach(function (s) {
+        r.lines.push({ name: nameOf(s), line: h.lines[s].line, stake: h.lines[s].stake, votes: h.tally[s] || 0, won: h.winners.indexOf(s) >= 0 });
+      });
+      Object.keys(h.marks).map(Number).sort(num).forEach(function (s) {
+        var m = h.marks[s];
+        r.marks.push({ from: nameOf(s), to: nameOf(m), word: h.words[m], out: !!h.eyeOut[m] });
+      });
+      g.rounds.push(r);
     });
+    seats.forEach(function (s) { if (Z.isComputer(t, s)) g.computer[nameOf(s)] = true; });
     g.first = (g.hands[0] || '')[0] || '';
     return g;
   }
+  // A table is its entries from its open on. A code can come round again
+  // for a later table, so each open begins a table of its own.
   function tableGames(entries) {
-    var byCode = {};
-    entries.forEach(function (e) {
+    var byCode = {}, lists = [];
+    entries.slice().sort(Z.byAddr).forEach(function (e) {
       var k = Z.codeKey(e.code);
       if (!k || !e.kind) return;
-      (byCode[k] = byCode[k] || []).push(e);
+      var runs = byCode[k] || (byCode[k] = []);
+      if (e.kind === 'open' || !runs.length) runs.push([]);
+      runs[runs.length - 1].push(e);
     });
-    return Promise.all(Object.keys(byCode).map(function (k) {
-      var list = byCode[k];
+    Object.keys(byCode).forEach(function (k) { byCode[k].forEach(function (list) { lists.push(list); }); });
+    return Promise.all(lists.map(function (list) {
       if (!list.some(function (e) { return e.kind === 'open'; }) || !list.some(function (e) { return e.kind === 'deal'; })) return null;
       return Z.derive(list, list[0].code).then(function (t) {
         if (!t.roster || !t.hands.some(function (h) { return h.winners.length; })) return null;
@@ -110,13 +132,15 @@
     return chains.map(function (chain) {
       var inChain = {};
       chain.forEach(function (d) { inChain[d] = true; });
-      var g = { kind: 'earlier', code: '', stamp: '', people: [], places: [], votes: [], same: [], alone: [], sentOut: [], words: [], hands: chain.slice(), first: chain[0][0] };
-      var people = [], wordOf = {}, seatOf = {};
+      var g = { kind: 'earlier', code: '', stamp: '', people: [], places: [], votes: [], same: [], alone: [], sentOut: [], words: [], hands: chain.slice(), first: chain[0][0], rounds: [], computer: {} };
+      var people = [], wordOf = {}, seatOf = {}, roundAt = {};
       chain.forEach(function (d) {
         var node = Z.nodeAt(tree, d), rp = Z.readPlace(node);
         wordOf[d] = rp.word;
         var lines = voiceParts(rp.voice).map(function (v) { return { line: v.line, name: v.by, votes: v.votes }; });
         g.places.push({ word: rp.word, digits: d, lines: lines });
+        var r = roundAt[d] = { place: d, zero: rp.word, words: [], lines: [], eye: false, marks: [], winners: lines.map(function (l) { return l.name; }) };
+        g.rounds.push(r);
         lines.forEach(function (l) { people.push(l.name); });
         for (var i = 1; i <= 9; i++) {
           var child = node && typeof node === 'object' ? node[String(i)] : null;
@@ -127,6 +151,7 @@
           if (cp.by && !(seatOf[cp.by] <= i)) seatOf[cp.by] = i;
           g.alone.push({ word: cp.word, name: cp.by, place: rp.word });
           g.words.push({ word: cp.word, name: cp.by, place: rp.word, collided: false });
+          r.words.push({ seat: i, word: cp.word, name: cp.by, kept: true });
         }
       });
       // the record the computer table wrote at these places, in prose
@@ -154,12 +179,38 @@
           var own = new RegExp('Showdown vote at [^:]+: (' + alt + ')\\.').exec(e.text);
           if (own) add(e.who, own[1]);
         }
+        var r = roundAt[Z.digitsOf(e.at)];
         var fre = /Flop: (\S+) from both ([^,.;]+?) and ([^,.;]+?)(?=[,.;])/g, f;
         while ((f = fre.exec(e.text))) {
           g.same.push({ word: f[1], words: [f[1], f[1]], names: [f[2].trim(), f[3].trim()], place: place });
           g.words.push({ word: f[1], name: f[2].trim(), place: place, collided: true }, { word: f[1], name: f[3].trim(), place: place, collided: true });
+          if (r) r.words.push({ seat: 0, word: f[1], name: f[2].trim(), kept: false }, { seat: 0, word: f[1], name: f[3].trim(), kept: false });
         }
+        // the sentences and their stakes: "Child (stake 3): Things that let you see in the dark. | Sailor (stake 5): …",
+        // a player's own "Turn line at Light (stake 5): …", and "Phenomemental stakes 5 at Vigil" named later
+        if (!r) return;
+        var said = function (name, line, stake) {
+          if (!name || !line || r.lines.some(function (l) { return l.name === name; })) return;
+          r.lines.push({ name: name, line: line.trim(), stake: stake });
+        };
+        if (alt) {
+          var lre = new RegExp('(?:^|[.:|] )(' + alt + ') \\(stake (\\d+)[^)]*\\): (.*?)(?= \\| (?:' + alt + ') \\(stake| Votes:|$)', 'g'), l;
+          while ((l = lre.exec(e.text))) said(l[1], l[3], Number(l[2]));
+          var later = new RegExp('(' + alt + ') stakes (\\d+) at ').exec(e.text);
+          if (later) r.lines.forEach(function (x) { if (x.name === later[1] && x.stake == null) x.stake = Number(later[2]); });
+        }
+        var mine = /^Turn line at [^(:]+\(stake ([^)]*)\): (.*)$/.exec(e.text);
+        if (mine) said(e.who, mine[2], /^\d+/.test(mine[1]) ? parseInt(mine[1], 10) : null);
       });
+      // each sentence's votes and whether it won, from the votes read above and the place's voice
+      g.rounds.forEach(function (r) {
+        r.lines.forEach(function (l) {
+          l.votes = g.votes.filter(function (v) { return v.place === r.zero && v.to === l.name; }).length;
+          l.won = r.winners.indexOf(l.name) >= 0;
+        });
+        delete r.winners;
+      });
+      g.people.forEach(function (n) { if (Z.PERSONAS.indexOf(n) >= 0) g.computer[n] = true; });
       return g;
     });
   }
@@ -170,9 +221,58 @@
       var covered = {};
       tg.forEach(function (g) { g.hands.forEach(function (d) { covered[d] = true; }); });
       var all = tg.concat(earlierGames(tree, entries, covered));
-      return all.sort(function (a, b) {
+      all.sort(function (a, b) {
         if (!a.stamp !== !b.stamp) return a.stamp ? -1 : 1;
         return a.stamp < b.stamp ? 1 : a.stamp > b.stamp ? -1 : 0;
+      });
+      freshen(tree, all);
+      return all;
+    });
+  }
+
+  // Words new to the tree (spine:zero 4.91): the words a game put into the
+  // tree that nobody had played anywhere in it before that game began. A
+  // place in the tree belongs to the game that wrote its word there (a first
+  // word, to the earliest game dealt at it); what stood before a game is
+  // every place belonging to no game or to an earlier one. Case and singular
+  // form are ignored, as for the word chips. Each word is listed once, where
+  // the game first played it.
+  function earlierThan(a, b) { return !a.stamp || !b.stamp ? !a.stamp && !!b.stamp : a.stamp < b.stamp; }
+  function freshen(tree, gs) {
+    var owner = {}, seat = {};
+    gs.forEach(function (g, i) {
+      (g.rounds || []).forEach(function (r) {
+        r.words.forEach(function (w) { if (w.kept && w.seat) { var d = r.place + w.seat; if (owner[d] == null) { owner[d] = i; seat[d] = true; } } });
+      });
+    });
+    gs.forEach(function (g, i) {
+      (g.rounds || []).forEach(function (r) {
+        if (seat[r.place]) return;
+        if (owner[r.place] == null || earlierThan(g, gs[owner[r.place]])) owner[r.place] = i;
+      });
+    });
+    var places = [];
+    (function walk(node, digits) {
+      for (var k = 1; k <= 9; k++) {
+        var n = node && typeof node === 'object' ? node[String(k)] : null;
+        if (n == null) continue;
+        var w = Z.readPlace(n).word;
+        if (w) places.push({ digits: digits + k, word: w });
+        walk(n, digits + k);
+      }
+    })(tree, '');
+    gs.forEach(function (g, i) {
+      var before = places.filter(function (p) { var o = owner[p.digits]; return o == null || (o !== i && earlierThan(gs[o], g)); });
+      var listed = [];
+      g.fresh = [];
+      (g.rounds || []).forEach(function (r) {
+        r.words.forEach(function (w) {
+          if (!w.kept) return;
+          if (listed.some(function (x) { return Z.same(x, w.word); })) return;
+          if (before.some(function (p) { return Z.same(p.word, w.word); })) return;
+          listed.push(w.word);
+          g.fresh.push({ word: w.word, name: w.name, place: r.zero });
+        });
       });
     });
   }
@@ -202,6 +302,107 @@
         alone: list.filter(function (x) { return x.plays === 1; }).map(function (x) { return { word: x.word, name: x.names[0] }; }).sort(function (a, b) { return a.word.toLowerCase() < b.word.toLowerCase() ? -1 : 1; })
       };
     });
+  }
+
+  // ---- the readings of spine:zero 4.91, worked out from a game ---------------------------
+  // Words in a sentence, as they are counted and matched.
+  function wordsIn(line) { return String(line || '').match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) || []; }
+  function tokenSame(token, word) { return Z.same(String(token).replace(/['’]s$/i, ''), word); }
+  function mean(list) { return list.length ? list.reduce(function (a, b) { return a + b; }, 0) / list.length : 0; }
+  // [{name, n}] counted, most first, then in the order they sat.
+  function tally(list, order) {
+    var n = {};
+    list.forEach(function (x) { n[x] = (n[x] || 0) + 1; });
+    return Object.keys(n).sort(function (a, b) { return n[b] - n[a] || order.indexOf(a) - order.indexOf(b); }).map(function (k) { return { name: k, n: n[k] }; });
+  }
+  function readings(g) {
+    var order = uniq(g.people.concat(g.votes.map(function (v) { return v.from; }), g.votes.map(function (v) { return v.to; })));
+    var isComp = function (n) { return !!g.computer[n]; };
+    var rounds = g.rounds || [];
+    var voiced = rounds.filter(function (r) { return r.lines.some(function (l) { return l.won; }); });
+    var out = {};
+
+    // People or computer: votes between people and computer players
+    var pc = { pp: 0, pc: 0, cp: 0, cc: 0 };
+    g.votes.forEach(function (v) { pc[(isComp(v.from) ? 'c' : 'p') + (isComp(v.to) ? 'c' : 'p')]++; });
+    pc.people = order.filter(function (n) { return !isComp(n); });
+    pc.computers = order.filter(isComp).length;
+    out.pc = pc;
+
+    // Who listens to whom: pairs who voted for each other, and who received no votes
+    var gave = {};
+    g.votes.forEach(function (v) { gave[v.from + '→' + v.to] = true; });
+    var pairs = [];
+    order.forEach(function (a, i) {
+      order.slice(i + 1).forEach(function (b) { if (gave[a + '→' + b] && gave[b + '→' + a]) pairs.push([a, b]); });
+    });
+    out.listens = { pairs: pairs, unvoted: order.filter(function (n) { return !g.votes.some(function (v) { return v.to === n; }); }) };
+
+    // Bold or careful: each player's stakes beside how their sentences did
+    out.bold = order.map(function (n) {
+      var mine = [];
+      voiced.forEach(function (r) { r.lines.forEach(function (l) { if (l.name === n) mine.push(l); }); });
+      var stakes = mine.map(function (l) { return l.stake; });
+      return { name: n, stakes: stakes, votes: mine.map(function (l) { return l.votes; }), won: mine.filter(function (l) { return l.won; }).length,
+        known: stakes.every(function (s) { return typeof s === 'number'; }) };
+    }).filter(function (b) { return b.stakes.length; });
+
+    // The table's eye: whose words were marked as not belonging, and who marked most
+    var eyeRounds = rounds.filter(function (r) { return r.eye; });
+    var marked = [];
+    eyeRounds.forEach(function (r, ri) {
+      r.marks.forEach(function (m) {
+        var x = marked.filter(function (y) { return y.ri === ri && y.name === m.to; })[0];
+        if (!x) marked.push(x = { word: m.word, name: m.to, place: r.zero, n: 0, out: m.out, ri: ri });
+        x.n++;
+      });
+    });
+    // hand by hand, the most marked first
+    marked.sort(function (a, b) { return a.ri - b.ri || b.n - a.n; });
+    var markers = tally([].concat.apply([], eyeRounds.map(function (r) { return r.marks.map(function (m) { return m.from; }); })), order);
+    out.eye = { hands: eyeRounds.length, of: rounds.length, marked: marked, markers: markers,
+      most: markers.filter(function (m) { return m.n === (markers[0] || {}).n; }).map(function (m) { return m.name; }) };
+
+    // Short wins: words in the winning sentences beside the rest, and each player's average
+    var won = [], rest = [], by = {};
+    voiced.forEach(function (r) {
+      r.lines.forEach(function (l) {
+        var n = wordsIn(l.line).length;
+        (l.won ? won : rest).push(n);
+        (by[l.name] = by[l.name] || []).push(n);
+      });
+    });
+    out.short = { won: mean(won), rest: mean(rest), wonN: won.length, restN: rest.length,
+      each: order.filter(function (n) { return by[n]; }).map(function (n) { return { name: n, avg: mean(by[n]), n: by[n].length }; })
+        .sort(function (a, b) { return a.avg - b.avg || order.indexOf(a.name) - order.indexOf(b.name); }) };
+
+    // Words that travelled: a word from one hand that came back in a later
+    // hand, as a word or in a sentence. A word chosen as the next zero is the
+    // trail, not travel, in the hand it is the centre of.
+    var travelled = [];
+    rounds.forEach(function (r, i) {
+      r.words.forEach(function (w) {
+        if (travelled.some(function (x) { return Z.same(x.word, w.word); })) return;
+        var back = [];
+        for (var j = i + 1; j < rounds.length; j++) {
+          var q = rounds[j];
+          if (Z.same(q.zero, w.word)) continue;
+          var asWord = uniq(q.words.filter(function (x) { return Z.same(x.word, w.word); }).map(function (x) { return x.name; }));
+          var inLines = q.lines.filter(function (l) { return wordsIn(l.line).some(function (tk) { return tokenSame(tk, w.word); }); }).map(function (l) { return l.name; });
+          if (asWord.length || inLines.length) back.push({ place: q.zero, words: asWord, lines: inLines });
+        }
+        if (back.length) {
+          travelled.push({ word: w.word, from: r.zero, names: uniq(r.words.filter(function (x) { return Z.same(x.word, w.word); }).map(function (x) { return x.name; })), back: back });
+        }
+      });
+    });
+    out.travelled = travelled;
+
+    // Where the trail went: the centre words, each in its seat beneath the one before
+    var trail = [];
+    rounds.forEach(function (r) { if (!trail.length || trail[trail.length - 1].digits !== r.place) trail.push({ word: r.zero, digits: r.place, seat: Number(r.place.slice(-1)) }); });
+    out.trail = trail;
+    return out;
   }
 
   // ---- drawing ---------------------------------------------------------------------------------
@@ -287,54 +488,130 @@
     return li;
   }
 
-  // Who voted for whom, drawn as a web: each name round a circle, an arrow
-  // from each voter to the one they voted for, heavier for more votes.
+  // Who voted for whom, drawn as a web (spine:zero 4.91): the full width of
+  // the sheet and about as tall as it is wide, each name round a circle, an
+  // arrow from each voter to the one they voted for, heavier for more votes.
+  // Tapping a name lights only the arrows to and from that player, with a
+  // line beneath saying whom they voted for and who voted for them.
   var NS = 'http://www.w3.org/2000/svg';
+  var drawn = 0;     // every drawing's markers get their own ids
   function svg(tag, attrs) {
     var n = document.createElementNS(NS, tag);
     Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
     return n;
   }
-  function web(g) {
+  function either(list) { return list.length <= 1 ? list.join('') : list.slice(0, -1).join(', ') + ' or ' + list[list.length - 1]; }
+  function times(x) { return x.name + (x.n > 1 ? ' (' + (x.n === 2 ? 'twice' : x.n + ' times') + ')' : ''); }
+  function votedLine(p, votes, order) {
+    var gave = tally(votes.filter(function (v) { return v.from === p; }).map(function (v) { return v.to; }), order);
+    var got = tally(votes.filter(function (v) { return v.to === p; }).map(function (v) { return v.from; }), order);
+    return (gave.length ? p + ' voted for ' + names(gave.map(times)) + '.' : p + ' gave no vote.') + ' ' +
+      (got.length ? names(got.map(times)) + ' voted for ' + p + '.' : 'Nobody voted for ' + p + '.');
+  }
+  var HINT = 'Tap a name to light only their votes.';
+  function web(g, line) {
     var people = uniq(g.people.concat(g.votes.map(function (v) { return v.from; }), g.votes.map(function (v) { return v.to; })));
-    // wider than tall, so the longest name fits on either side of a phone
-    var n = people.length, CX = 220, C = 170, R = 110;
+    var n = people.length, W = 400, CX = 200, CY = 200, R = n > 1 ? 140 : 0;
     var pos = {}, received = {}, edges = {};
     people.forEach(function (p, i) {
       var a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1);
-      pos[p] = { x: CX + R * Math.cos(a), y: C + R * Math.sin(a), a: a };
+      pos[p] = { x: CX + R * Math.cos(a), y: CY + R * Math.sin(a), a: a };
       received[p] = 0;
     });
     g.votes.forEach(function (v) { received[v.to]++; var k = v.from + '→' + v.to; edges[k] = (edges[k] || 0) + 1; });
     var top = Math.max.apply(null, people.map(function (p) { return received[p]; }).concat([0]));
-    var s = svg('svg', { viewBox: '0 0 440 340', class: 'web', role: 'img', 'aria-label': 'Who voted for whom' });
-    var arrow = 'arrow-' + String(g.code || g.hands[0]).replace(/[^A-Za-z0-9]/g, '');
+    var s = svg('svg', { viewBox: '0 0 ' + W + ' 400', class: 'web', role: 'group', 'aria-label': 'Who voted for whom. Tap a name to light their votes.' });
+    var id = 'web' + (++drawn);
     var defs = svg('defs');
-    var mk = svg('marker', { id: arrow, viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse' });
-    mk.appendChild(svg('path', { d: 'M0,1 L9,5 L0,9 z', fill: 'rgba(42,36,32,0.55)' }));
-    defs.appendChild(mk);
+    [['', 'rgba(42,36,32,0.55)'], ['-out', '#8e1b1b'], ['-in', '#2a2420']].forEach(function (m) {
+      var mk = svg('marker', { id: id + m[0], viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse' });
+      mk.appendChild(svg('path', { d: 'M0,1 L9,5 L0,9 z', fill: m[1] }));
+      defs.appendChild(mk);
+    });
     s.appendChild(defs);
+    var arrows = [];
     Object.keys(edges).forEach(function (k) {
       var parts = k.split('→'), a = pos[parts[0]], b = pos[parts[1]];
       if (!a || !b) return;
       var dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy) || 1;
       var ux = dx / len, uy = dy / len;
-      var x1 = a.x + ux * 9, y1 = a.y + uy * 9, x2 = b.x - ux * 11, y2 = b.y - uy * 11;
+      var x1 = a.x + ux * 10, y1 = a.y + uy * 10, x2 = b.x - ux * 12, y2 = b.y - uy * 12;
       // a slight bow, so a vote each way between two people draws two arcs
-      var mx = (x1 + x2) / 2 - uy * 12, my = (y1 + y2) / 2 + ux * 12;
-      s.appendChild(svg('path', { d: 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1),
-        fill: 'none', stroke: 'rgba(42,36,32,0.42)', 'stroke-width': (0.9 + 0.9 * (edges[k] - 1)).toFixed(1), 'marker-end': 'url(#' + arrow + ')', class: 'edge' }));
+      var mx = (x1 + x2) / 2 - uy * 14, my = (y1 + y2) / 2 + ux * 14;
+      var path = svg('path', { d: 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1),
+        fill: 'none', stroke: 'rgba(42,36,32,0.42)', 'stroke-width': (1 + 1 * (edges[k] - 1)).toFixed(1), 'marker-end': 'url(#' + id + ')', class: 'edge' });
+      path.setAttribute('data-from', parts[0]);
+      path.setAttribute('data-to', parts[1]);
+      s.appendChild(path);
+      arrows.push(path);
     });
+    var whos = [];
     people.forEach(function (p) {
       var o = pos[p], lead = top && received[p] === top;
-      s.appendChild(svg('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: lead ? 5 : 3.5, fill: lead ? '#8e1b1b' : '#2a2420' }));
-      var lx = CX + (R + 14) * Math.cos(o.a), ly = C + (R + 14) * Math.sin(o.a);
-      var anchor = Math.abs(Math.cos(o.a)) < 0.3 ? 'middle' : Math.cos(o.a) > 0 ? 'start' : 'end';
-      var t = svg('text', { x: lx.toFixed(1), y: (ly + 4).toFixed(1), 'text-anchor': anchor, class: lead ? 'lead' : '' });
+      var grp = svg('g', { class: 'wn', tabindex: '0', role: 'button', 'aria-pressed': 'false' });
+      grp.setAttribute('data-who', p);
+      grp.setAttribute('aria-label', p + ': whom they voted for, and who voted for them');
+      grp.appendChild(svg('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: 24, class: 'wn-hit' }));
+      grp.appendChild(svg('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: lead ? 6 : 4.5, class: lead ? 'wn-pt lead' : 'wn-pt' }));
+      // the name above its point (below it on the lower half), kept inside the sheet
+      var half = p.length * 4 + 3;
+      var lx = Math.min(W - half - 2, Math.max(half + 2, o.x)), ly = Math.sin(o.a) < 0.2 ? o.y - 12 : o.y + 25;
+      var t = svg('text', { x: lx.toFixed(1), y: ly.toFixed(1), 'text-anchor': 'middle', class: lead ? 'lead' : '' });
       t.textContent = p;
-      s.appendChild(t);
+      grp.appendChild(t);
+      s.appendChild(grp);
+      whos.push(grp);
     });
+    var chosen = null;
+    function light(p) {
+      chosen = p === chosen ? null : p;
+      s.classList.toggle('lit', !!chosen);
+      arrows.forEach(function (e) {
+        var how = !chosen ? '' : e.getAttribute('data-from') === chosen ? 'out' : e.getAttribute('data-to') === chosen ? 'in' : 'dim';
+        e.setAttribute('class', how ? 'edge ' + how : 'edge');
+        e.setAttribute('marker-end', 'url(#' + id + (how === 'out' ? '-out' : how === 'in' ? '-in' : '') + ')');
+      });
+      whos.forEach(function (w) {
+        var me = w.getAttribute('data-who');
+        var near = chosen && g.votes.some(function (v) { return (v.from === chosen && v.to === me) || (v.to === chosen && v.from === me); });
+        w.setAttribute('class', 'wn' + (me === chosen ? ' on' : near ? ' near' : ''));
+        w.setAttribute('aria-pressed', String(me === chosen));
+      });
+      if (line) line.textContent = chosen ? votedLine(chosen, g.votes, people) : HINT;
+    }
+    whos.forEach(function (w) {
+      w.addEventListener('click', function (e) { e.stopPropagation(); light(w.getAttribute('data-who')); });
+      w.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); light(w.getAttribute('data-who')); }
+      });
+    });
+    // a tap anywhere else on the web puts every arrow back
+    s.addEventListener('click', function () { if (chosen) light(chosen); });
     return { svg: s, received: received, people: people };
+  }
+
+  // Where the trail went (4.91): each centre word in the row of nine seats
+  // beneath the one before, joined as a path down the sheet.
+  function trailMap(trail) {
+    var X = function (k) { return 40 + (k - 1) * 40; }, Y = function (i) { return 22 + i * 46; };
+    var H = Y(trail.length - 1) + 22;
+    var s = svg('svg', { viewBox: '0 0 400 ' + H, class: 'trail-map', role: 'img', 'aria-label': 'The trail: ' + trail.map(function (t) { return t.word; }).join(', ') });
+    trail.forEach(function (t, i) {
+      for (var k = 1; k <= 9; k++) s.appendChild(svg('circle', { cx: X(k), cy: Y(i), r: 1.8, class: 'tm-seat' }));
+    });
+    var d = 'M' + X(trail[0].seat) + ',' + Y(0);
+    for (var i = 1; i < trail.length; i++) {
+      d += ' C' + X(trail[i - 1].seat) + ',' + (Y(i - 1) + 23) + ' ' + X(trail[i].seat) + ',' + (Y(i) - 23) + ' ' + X(trail[i].seat) + ',' + Y(i);
+    }
+    if (trail.length > 1) s.appendChild(svg('path', { d: d, class: 'trail-path', fill: 'none' }));
+    trail.forEach(function (t, i) {
+      s.appendChild(svg('circle', { cx: X(t.seat), cy: Y(i), r: 4.5, class: i === trail.length - 1 ? 'tm-stop last' : 'tm-stop' }));
+      var right = t.seat <= 5;
+      var label = svg('text', { x: X(t.seat) + (right ? 11 : -11), y: Y(i) + 5, 'text-anchor': right ? 'start' : 'end' });
+      label.textContent = t.word;
+      s.appendChild(label);
+    });
+    return s;
   }
 
   function card(g) {
@@ -357,7 +634,7 @@
     return box;
   }
   // 'What this game shows', open by default and folded with a tap: the same
-  // readings in Look around and at the end of a game (spine:zero 4.9, 4.62).
+  // readings in Look around and at the end of a game (spine:zero 4.9, 4.62, 4.91).
   function showsPanel(box, g) {
     var toggle = el('button', 'quiet look-open', 'What this game shows');
     toggle.type = 'button';
@@ -372,18 +649,70 @@
     box.appendChild(shows);
     return shows;
   }
+  function section(box, key, title) {
+    var d = el('div', 'look-sec');
+    d.setAttribute('data-reading', key);
+    d.appendChild(el('h3', 'look-h', title));
+    box.appendChild(d);
+    return d;
+  }
+  function say(box, text, cls) { box.appendChild(el('p', 'look-note' + (cls ? ' ' + cls : ''), text)); }
+  function num1(x) { return String(Math.round(x * 10) / 10); }
+  function votesWord(n) { return n + (n === 1 ? ' vote' : ' votes'); }
+  // [{word, name, place}] as one row a place: "under Gift: seed (Farmer) · Joy (Phenomemental)"
+  function byPlaceList(list, cls) {
+    var rows = [];
+    list.forEach(function (x) {
+      var row = rows.filter(function (r) { return r.place === x.place; })[0];
+      if (!row) rows.push(row = { place: x.place, words: [] });
+      row.words.push(x);
+    });
+    var ul = el('ul', 'look-list ' + cls);
+    rows.forEach(function (r) {
+      var li = el('li');
+      li.appendChild(el('span', 'lp', 'under ' + r.place + ': '));
+      r.words.forEach(function (x, i) {
+        if (i) li.appendChild(document.createTextNode(' · '));
+        li.appendChild(el(x.out ? 's' : 'span', 'lw', x.word));
+        if (x.name) li.appendChild(document.createTextNode(' (' + x.name + (x.tail || '') + ')'));
+      });
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+  // Words new to the tree: drawn once the tree is read (Look around has it
+  // already; the end of a game reads it, then calls this again).
+  function fillFresh(sec, g) {
+    while (sec.childNodes.length > 1) sec.removeChild(sec.lastChild);
+    if (g.fresh === undefined) return say(sec, 'Reading the tree…');
+    if (g.fresh === null) return say(sec, 'The tree could not be read just now.');
+    var kept = [];
+    (g.rounds || []).forEach(function (r) { r.words.forEach(function (w) { if (w.kept && !kept.some(function (k) { return Z.same(k, w.word); })) kept.push(w.word); }); });
+    if (!g.fresh.length) return say(sec, kept.length ? 'Every word this game put into the tree had been played in it before.' : 'This game put no word into the tree.');
+    say(sec, g.fresh.length + ' of the ' + kept.length + ' words this game put into the tree had never been played anywhere in it before:');
+    sec.appendChild(byPlaceList(g.fresh, 'fresh'));
+  }
+  function setFresh(shows, g) {
+    var sec = shows && shows.querySelector('.look-sec[data-reading="fresh"]');
+    if (sec) fillFresh(sec, g);
+  }
   function fillShows(box, g) {
-    box.appendChild(el('h3', 'look-h', 'Who voted for whom'));
+    var R = readings(g);
+    var sec = section(box, 'votes', 'Who voted for whom');
     if (g.votes.length) {
-      var w = web(g);
-      box.appendChild(w.svg);
+      var line = el('p', 'look-note web-line', HINT);
+      line.setAttribute('aria-live', 'polite');
+      var w = web(g, line);
+      sec.appendChild(w.svg);
+      sec.appendChild(line);
       var ranked = w.people.filter(function (p) { return w.received[p]; }).sort(function (a, b) { return w.received[b] - w.received[a]; });
-      box.appendChild(el('p', 'look-note votes-said', 'Votes received: ' + ranked.map(function (p) { return p + ' ' + w.received[p]; }).join(' · ') +
-        (w.people.length > ranked.length ? '. None for ' + names(w.people.filter(function (p) { return !w.received[p]; })) + '.' : '.')));
+      say(sec, 'Votes received: ' + ranked.map(function (p) { return p + ' ' + w.received[p]; }).join(' · ') +
+        (w.people.length > ranked.length ? '. None for ' + names(w.people.filter(function (p) { return !w.received[p]; })) + '.' : '.'), 'votes-said');
     } else {
-      box.appendChild(el('p', 'look-note', 'No votes are kept for this game.'));
+      say(sec, 'No votes are kept for this game.');
     }
-    box.appendChild(el('h3', 'look-h', 'Where two players thought the same'));
+
+    sec = section(box, 'same', 'Where two players thought the same');
     if (g.same.length) {
       var ul = el('ul', 'look-list same');
       g.same.forEach(function (x) {
@@ -393,32 +722,16 @@
         li.appendChild(el('span', 'lp', ' under ' + x.place));
         ul.appendChild(li);
       });
-      box.appendChild(ul);
+      sec.appendChild(ul);
     } else {
-      box.appendChild(el('p', 'look-note', 'Nobody thought the same.'));
+      say(sec, 'Nobody thought the same.');
     }
-    box.appendChild(el('h3', 'look-h', 'Words only one person saw'));
-    var byPlace = [];
-    g.alone.forEach(function (x) {
-      var row = byPlace.filter(function (r) { return r.place === x.place; })[0];
-      if (!row) byPlace.push(row = { place: x.place, words: [] });
-      row.words.push(x);
-    });
-    var al = el('ul', 'look-list alone');
-    byPlace.forEach(function (r) {
-      var li = el('li');
-      li.appendChild(el('span', 'lp', 'under ' + r.place + ': '));
-      r.words.forEach(function (x, i) {
-        if (i) li.appendChild(document.createTextNode(' · '));
-        li.appendChild(el('span', 'lw', x.word));
-        if (x.name) li.appendChild(document.createTextNode(' (' + x.name + ')'));
-      });
-      al.appendChild(li);
-    });
-    box.appendChild(al);
+
+    fillFresh(section(box, 'fresh', 'Words new to the tree'), g);
+
     // words the table sent out, and each player's chips (a game played on the page keeps both)
     if (g.kind === 'table') {
-      box.appendChild(el('h3', 'look-h', 'Words the table sent out'));
+      sec = section(box, 'sent', 'Words the table sent out');
       if (g.sentOut.length) {
         var so = el('ul', 'look-list sent');
         g.sentOut.forEach(function (x) {
@@ -428,20 +741,121 @@
           li.appendChild(el('span', 'lp', ' under ' + x.place));
           so.appendChild(li);
         });
-        box.appendChild(so);
+        sec.appendChild(so);
       } else {
-        box.appendChild(el('p', 'look-note', 'The table sent no word out.'));
+        say(sec, 'The table sent no word out.');
       }
-      box.appendChild(el('h3', 'look-h', 'Chips from words and from sentences'));
+      sec = section(box, 'chips', 'Chips from words and from sentences');
       var bk = el('ul', 'look-list chips');
       g.book.forEach(function (r) {
         var li = el('li');
         li.appendChild(el('span', 'lw', r.name));
-        li.appendChild(document.createTextNode(' \u00b7 ' + r.words + ' from words \u00b7 ' + (r.sentences < 0 ? '\u2212' + (-r.sentences) : r.sentences) + ' from sentences'));
-        li.appendChild(el('span', 'lp', ' \u00b7 ' + r.total));
+        li.appendChild(document.createTextNode(' · ' + r.words + ' from words · ' + (r.sentences < 0 ? '−' + (-r.sentences) : r.sentences) + ' from sentences'));
+        li.appendChild(el('span', 'lp', ' · ' + r.total));
         bk.appendChild(li);
       });
-      box.appendChild(bk);
+      sec.appendChild(bk);
+    }
+
+    // People or computer
+    sec = section(box, 'pc', 'People or computer');
+    var pc = R.pc, one = pc.people.length === 1 ? pc.people[0] : '';
+    if (!g.votes.length) say(sec, 'No votes are kept for this game.');
+    else if (!pc.computers) say(sec, 'Everyone at this table was a person: all ' + votesWord(pc.pp) + ' went from people to people.');
+    else if (!pc.people.length) say(sec, 'Every seat was a computer player: all ' + votesWord(pc.cc) + ' went between them.');
+    else {
+      say(sec, (one ? one + ', the only person at the table, gave ' + votesWord(pc.pc) + ' to computer players.'
+        : 'People gave ' + votesWord(pc.pp) + ' to people and ' + pc.pc + ' to computer players.') +
+        (one ? ' Computer players gave ' + one + ' ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + '.'
+          : ' Computer players gave ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + ' to people.'));
+    }
+
+    // Who listens to whom
+    sec = section(box, 'listens', 'Who listens to whom');
+    if (!g.votes.length) say(sec, 'No votes are kept for this game.');
+    else {
+      var pairs = R.listens.pairs.map(function (p) { return p.join(' and '); });
+      say(sec, (!pairs.length ? 'No two players voted for each other.'
+        : pairs.length === 1 ? pairs[0] + ' voted for each other.'
+          : 'Pairs who voted for each other: ' + pairs.join(' · ') + '.') + ' ' +
+        (R.listens.unvoted.length ? 'Nobody voted for ' + either(R.listens.unvoted) + '.' : 'Everyone received a vote.'));
+    }
+
+    // Bold or careful
+    sec = section(box, 'bold', 'Bold or careful');
+    var known = R.bold.filter(function (b) { return b.known; });
+    if (!R.bold.length) say(sec, 'No stakes are kept for this game.');
+    else {
+      if (known.length > 1) {
+        var avg = function (b) { return mean(b.stakes); };
+        var hi = Math.max.apply(null, known.map(avg)), lo = Math.min.apply(null, known.map(avg));
+        var at = function (v) { return known.filter(function (b) { return avg(b) === v; }).map(function (b) { return b.name; }); };
+        say(sec, hi === lo ? 'Everyone staked about the same: ' + num1(hi) + ' a sentence.'
+          : 'Boldest: ' + names(at(hi)) + ', staking ' + num1(hi) + ' a sentence on average. Most careful: ' + names(at(lo)) + ', ' + num1(lo) + '.');
+      }
+      var bl = el('ul', 'look-list bold');
+      R.bold.forEach(function (b) {
+        var li = el('li');
+        li.appendChild(el('span', 'lw', b.name));
+        li.appendChild(document.createTextNode(' · staked ' + b.stakes.map(function (x) { return typeof x === 'number' ? x : '?'; }).join(', ') +
+          ' · ' + (b.stakes.length === 1 ? 'drew ' + votesWord(b.votes[0]) : 'votes ' + b.votes.join(', '))));
+        li.appendChild(el('span', 'lp', ' · ' + (b.won ? 'won ' + b.won + ' of ' + b.stakes.length : 'won none')));
+        bl.appendChild(li);
+      });
+      sec.appendChild(bl);
+    }
+
+    // The table's eye
+    sec = section(box, 'eye', 'The table’s eye');
+    var eye = R.eye;
+    if (!eye.hands) say(sec, g.kind === 'table' ? 'This table played before the table’s eye.' : 'Played in chat, before the table’s eye.');
+    else if (!eye.marked.length) say(sec, 'Nobody marked a word as not belonging' + (eye.hands < eye.of ? ', in the ' + eye.hands + ' hands the eye was open.' : '.'));
+    else {
+      say(sec, 'Words marked as not belonging, and by how many:');
+      sec.appendChild(byPlaceList(eye.marked.map(function (m) {
+        return { word: m.word, name: m.name, place: m.place, out: m.out, tail: ', ' + m.n + (m.n === 1 ? ' mark' : ' marks') + (m.out ? ', sent out' : '') };
+      }), 'marked'));
+      var topN = eye.markers[0].n;
+      say(sec, (eye.most.length === 1 ? eye.most[0] + ' marked most: ' + topN + (topN === 1 ? ' word' : ' words') + ' in ' + eye.hands + (eye.hands === 1 ? ' hand.' : ' hands.')
+        : names(eye.most) + ' marked most, ' + topN + (topN === 1 ? ' word each.' : ' words each.')));
+    }
+
+    // Short wins
+    sec = section(box, 'short', 'Short wins');
+    var sh = R.short;
+    if (!sh.wonN) say(sec, 'No sentences are kept for this game.');
+    else {
+      say(sec, sh.restN ? 'The winning sentences had ' + num1(sh.won) + ' words on average; the rest had ' + num1(sh.rest) + '.'
+        : 'Every sentence won, with ' + num1(sh.won) + ' words on average.');
+      say(sec, 'Each player’s average: ' + sh.each.map(function (e) { return e.name + ' ' + num1(e.avg); }).join(' · ') + '.', 'short-each');
+    }
+
+    // Words that travelled
+    sec = section(box, 'travelled', 'Words that travelled');
+    if (!R.travelled.length) say(sec, 'No word from one hand came back in a later one.');
+    else {
+      var tl = el('ul', 'look-list travelled');
+      R.travelled.forEach(function (x) {
+        var li = el('li');
+        li.appendChild(el('span', 'lw', x.word));
+        li.appendChild(document.createTextNode(' (' + names(x.names) + ')'));
+        li.appendChild(el('span', 'lp', ' from ' + x.from));
+        li.appendChild(document.createTextNode(': back ' + x.back.map(function (b) {
+          var how = [b.words.length ? 'as a word' : '', b.lines.length ? 'in ' + (b.lines.length === 1 ? 'a sentence' : b.lines.length + ' sentences') : ''].filter(Boolean).join(' and ');
+          return 'at ' + b.place + ' ' + how;
+        }).join('; ') + '.'));
+        tl.appendChild(li);
+      });
+      sec.appendChild(tl);
+    }
+
+    // Where the trail went
+    sec = section(box, 'trail', 'Where the trail went');
+    if (R.trail.length) {
+      sec.appendChild(trailMap(R.trail));
+      var first = R.trail[0].word, last = R.trail[R.trail.length - 1].word;
+      say(sec, R.trail.length === 1 ? 'The game stayed at ' + first + '.'
+        : 'From ' + first + ' down to ' + last + ': each word was chosen from the nine seats beneath the one before (the small dots).');
     }
   }
   function acrossView(rows) {
@@ -475,7 +889,7 @@
   }
 
   var api = { voiceParts: voiceParts, voicedPlaces: voicedPlaces, games: games, across: across, render: render, ENOUGH: ENOUGH,
-    tableGame: tableGame, showsPanel: showsPanel };
+    tableGame: tableGame, showsPanel: showsPanel, setFresh: setFresh, readings: readings, wordsIn: wordsIn };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLook = api;
 })(typeof self !== 'undefined' ? self : this);

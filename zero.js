@@ -490,7 +490,8 @@
     } else if (!chosen) { lobbyError('Choose where to play.'); return; }
     $('open-go').disabled = true;
     lobbyError('');
-    whoAmI().then(function (who) { return Promise.all([readTree(), readRoom('').catch(function () { return []; })]).then(function (r) {
+    // the whole room, so the new table's code is one no table has used (Look around tells games apart by it)
+    whoAmI().then(function (who) { return Promise.all([readTree(), readRoom('0').catch(function () { return readRoom(''); }).catch(function () { return []; })]).then(function (r) {
       TREE_JSON = r[0];
       var tables = liveTables(r[1]), taken = claimed(tables), place, word;
       if (chosen === 'new') {
@@ -1455,13 +1456,26 @@
     var fresh = document.querySelector('#end .poem');
     fresh.id = 'e-poem';
     $('e-trail').href = trailUrl(t);
-    // What this game shows, beneath the poem card, open by default (spine:zero 4.62);
-    // drawn once a game, so a fold stays folded while the page keeps reading.
+    // What this game shows, beneath the poem card, open by default (spine:zero 4.62, 4.91);
+    // drawn once a game, so a fold or a lit name stays while the page keeps reading.
     var shows = $('e-shows'), sig = t.code + '|' + t.hands.length + '|' + (t.over ? 1 : 0);
     if (shows.dataset.sig !== sig && window.ZeroLook) {
       shows.dataset.sig = sig;
       shows.textContent = '';
-      try { window.ZeroLook.showsPanel(shows, window.ZeroLook.tableGame(t)); } catch (e) { shows.dataset.sig = ''; }
+      try {
+        var game = window.ZeroLook.tableGame(t);
+        var panel = window.ZeroLook.showsPanel(shows, game);
+        // Words new to the tree need the tree and the other games, read once,
+        // exactly as Look around reads them, so both say the same.
+        Promise.all([readTree(), readRoom('0', 25000)]).then(function (r) {
+          return window.ZeroLook.games(r[0], r[1]);
+        }).then(function (gs) {
+          var mine = gs.filter(function (x) { return x.kind === 'table' && Z.codeKey(x.code) === Z.codeKey(t.code) && x.stamp === game.stamp; })[0];
+          game.fresh = mine ? mine.fresh : null;
+        }).catch(function () { game.fresh = null; }).then(function () {
+          if (shows.dataset.sig === sig) window.ZeroLook.setFresh(panel, game);
+        });
+      } catch (e) { shows.dataset.sig = ''; }
     }
     var notes = $('e-notes');
     notes.textContent = '';
