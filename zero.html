@@ -124,9 +124,6 @@
   .doors button[aria-pressed=true] { font-style: italic; box-shadow: inset 0 0 0 1px var(--crimson); }
   .group { margin: 0 0 0.9rem; }
   .group-head { font-size: 0.98rem; color: var(--soft); margin: 0.2rem 0 0.35rem; }
-  .counter { display: flex; align-items: center; gap: 0.9rem; }
-  .counter button { width: 2.75rem; padding: 0; font-size: 1.4rem; line-height: 1; }
-  .counter output { font-size: 1.6rem; min-width: 1.4rem; text-align: center; font-variant-numeric: lining-nums; }
   .places { display: grid; gap: 0.4rem; margin: 0 0 0.4rem; }
   .places button {
     text-align: left;
@@ -148,12 +145,23 @@
     line-height: 1.1;
     margin: 0.2rem 0 0.4rem;
   }
+  .how { text-align: center; font-size: 1.02rem; color: var(--soft); max-width: 24rem; margin: -0.6rem auto 1.2rem; }
+  .invite { margin: 0.8rem 0 1rem; text-align: center; }
+  .invite label { text-align: center; color: var(--ink); font-size: 1.05rem; }
+  .invite input[type=text] { text-align: center; font-size: 0.98rem; margin-bottom: 0.5rem; }
+  .invite-go { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+  .invite .field-note { text-align: center; margin: 0.35rem 0 0; min-height: 1.2em; }
+  .at-head { text-align: center; margin-top: 0.4rem; }
+  .at-table { list-style: none; padding: 0; margin: 0 0 0.3rem; border-top: 1px solid var(--line); }
+  .at-table li { display: flex; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--line); padding: 0.35rem 0.2rem; font-size: 1.08rem; }
+  .at-table li .n { font-style: italic; }
+  .at-table li.me .n { color: var(--crimson); }
+  .at-table li .r { font-size: 0.92rem; font-style: italic; color: var(--soft); }
+  .empty-row { text-align: center; font-style: italic; color: var(--soft); margin: 0.4rem 0 0.9rem; }
+  .keep-open { text-align: center; font-style: italic; font-size: 0.98rem; margin: 0.7rem 0 0; }
+  #w-key-part input { margin-bottom: 0.5rem; }
   .code-label { text-align: center; font-style: italic; color: var(--soft); margin: 0.6rem 0 0; font-size: 1rem; }
   .seated { text-align: center; margin: 0.4rem 0 0.9rem; }
-  .roster { list-style: none; padding: 0; margin: 0.4rem 0 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem; }
-  .roster li { border: 1px solid var(--line); background: var(--card); padding: 0.3rem 0.2rem; text-align: center; font-size: 0.95rem; font-style: italic; overflow-wrap: anywhere; }
-  .roster li.empty { color: var(--faint); border-style: dashed; }
-  .roster li.me { color: var(--crimson); }
 
   /* ---- the table ---- */
   .bar { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; }
@@ -286,6 +294,7 @@
     <section id="lobby" aria-labelledby="lobby-title">
       <p class="title" id="lobby-title">Zero</p>
       <p class="tagline">Nine seats. One word. Say it so nobody else does.</p>
+      <p class="how">Write a word nobody else will think of. Write a short sentence that brings all the words together. Vote for the best sentence, never your own.</p>
       <div class="doors" role="group" aria-label="Host or join">
         <button type="button" id="door-host" aria-pressed="false">Host a table</button>
         <button type="button" id="door-join" aria-pressed="false">Join a table</button>
@@ -294,21 +303,6 @@
         <p class="who-line" id="who-line"></p>
 
         <div id="host-part" hidden>
-          <div class="group">
-            <p class="group-head" id="cp-head">Computer players</p>
-            <div class="counter" role="group" aria-labelledby="cp-head">
-              <button type="button" id="cp-less" aria-label="Fewer computer players">&minus;</button>
-              <output id="cp-count" aria-live="polite">8</output>
-              <button type="button" id="cp-more" aria-label="More computer players">+</button>
-            </div>
-            <p class="field-note" id="cp-line" style="margin-top:0.35rem">They fill empty seats, using your key on this device.</p>
-          </div>
-          <div class="group" id="key-part" hidden>
-            <label for="my-key">Your Anthropic key</label>
-            <input type="password" id="my-key" autocomplete="off" spellcheck="false" autocapitalize="off">
-            <p class="field-note">Kept in this browser only, never written to the beach. Set a monthly spending limit on it in the Anthropic console first.</p>
-          </div>
-          <p class="field-note" id="key-kept" hidden>Your key is kept on this device. <button type="button" class="quiet" id="key-forget">Forget it</button></p>
           <div class="group">
             <p class="group-head" id="where-head">Where to play</p>
             <div class="places" id="places" role="group" aria-labelledby="where-head"></div>
@@ -332,16 +326,48 @@
     </section>
 
     <!-- Seated, before the deal -->
-    <section id="waiting" hidden aria-live="polite">
+    <!-- The waiting room and inviting (spine:zero 4.26) -->
+    <section id="waiting" hidden>
       <div class="bar"><span class="name">Zero</span><span class="phase" id="w-place"></span></div>
       <p class="code-label">The table code</p>
       <p class="code" id="w-code"></p>
-      <p class="seated" id="w-count"></p>
-      <ul class="roster" id="w-roster"></ul>
+      <div class="invite">
+        <label for="w-link">Send this link to invite someone</label>
+        <input type="text" id="w-link" readonly>
+        <div class="invite-go">
+          <button type="button" id="w-copy">Copy the link</button>
+          <button type="button" id="w-share" hidden>Share</button>
+        </div>
+        <p class="field-note" id="w-copied" role="status"></p>
+      </div>
+      <p class="group-head at-head">At the table</p>
+      <ul class="at-table" id="w-roster" aria-live="polite"></ul>
+      <p class="empty-row" id="w-empty"></p>
+      <div id="w-host" hidden>
+        <div class="group" id="w-key-part">
+          <label for="w-key">Your Anthropic key, for the computer players</label>
+          <input type="password" id="w-key" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <button type="button" id="w-key-go">Add the key</button>
+          <p class="field-note" style="margin-top:0.4rem">Kept in this browser only, never written to the beach. Set a monthly spending limit on it in the Anthropic console first.</p>
+        </div>
+        <p class="field-note" id="w-key-kept" hidden>Your key is kept on this device. <button type="button" class="quiet" id="w-key-forget">Forget it</button></p>
+        <button type="button" class="go" id="deal-go">Deal</button>
+      </div>
       <p class="seated" id="w-say"></p>
-      <button type="button" class="go" id="deal-go" hidden>Deal</button>
+      <p class="keep-open" id="w-keep"></p>
       <p class="error" id="w-error" role="alert"></p>
       <p class="centre"><button type="button" class="quiet" id="w-leave">Leave this table</button></p>
+      <p class="public">Everything you write here is public and kept.</p>
+    </section>
+
+    <!-- Arriving by an invite link: through the door, then straight to a seat -->
+    <section id="invited" hidden>
+      <p class="title">Zero</p>
+      <p class="tagline">You’re invited to a table.</p>
+      <p class="code" id="i-code"></p>
+      <p class="who-line" id="i-who"></p>
+      <button type="button" class="go" id="i-go">Take a seat</button>
+      <p class="error" id="i-error" role="alert"></p>
       <p class="public">Everything you write here is public and kept.</p>
     </section>
 
@@ -402,7 +428,7 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08b"></script>
-<script src="zero.js?v=2026-11-08b"></script>
+<script src="zero-law.js?v=2026-11-08c"></script>
+<script src="zero.js?v=2026-11-08c"></script>
 </body>
 </html>
