@@ -19,13 +19,16 @@
      pick   the winner picks the next zero: 9 {_: the seat whose word}
      close  the host closes the table
      note   a word about the game, left at the end
-   Steps are 'word', 'line' (a line and its stake) and 'vote'.
+   Steps are 'word', 'eye' (the table's eye: the seat whose word does not
+   belong, or 0 to skip), 'line' (a sentence and its stake) and 'vote'. In
+   the code a player's sentence is still called a line; on screen it is
+   always a sentence (spine:zero 4.2).
 
    Where function:zero is silent the page settles it (spine:zero 5.1.7):
-   every word knocked out makes a hand with no ring, which counts, and the
-   next is dealt at the same zero; a tie between equal stakes goes to the
-   line that reached the beach first; a seat the host goes on without sits
-   out that move only. */
+   every word knocked out makes a hand with no sentences, which counts, and
+   the next is dealt at the same zero; a tie between equal stakes goes to
+   the sentence that reached the beach first; a seat the host goes on
+   without sits out that move only. */
 (function (root) {
   'use strict';
 
@@ -33,7 +36,7 @@
   var START = 10;          // chips each seat starts with (function:zero 1)
   var HANDS = 4;           // a game is four hands (function:zero 1, 7)
   var SEATS = 9;
-  var STEPS = ['word', 'line', 'vote'];
+  var STEPS = ['word', 'eye', 'line', 'vote'];
 
   // ---- words ------------------------------------------------------------------
   // A word as typed, trimmed of the punctuation round it; inside it, letters,
@@ -79,8 +82,8 @@
   // A line, kept to two short lines' worth.
   function oneLine(raw) {
     var t = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim().replace(/^[\[{]+\s*/, '');
-    if (!t) return { ok: false, why: 'Write a line first' };
-    if (t.length > 160) return { ok: false, why: 'Shorter: a line wins by being held in a breath' };
+    if (!t) return { ok: false, why: 'Write a sentence first' };
+    if (t.length > 160) return { ok: false, why: 'Shorter, please: the best sentences are said in a breath' };
     return { ok: true, line: t };
   }
 
@@ -251,7 +254,7 @@
     return { name: name, need: need.slice(), seals: {}, shows: {}, skipSeal: {}, skipShow: {}, closed: false, sealed: false, shown: false };
   }
   function stepFor(h) {
-    return h.stage === 'word' ? h.steps.word : h.stage === 'line' ? h.steps.line : h.stage === 'vote' ? h.steps.vote : null;
+    return h.stage === 'word' ? h.steps.word : h.stage === 'eye' ? h.steps.eye : h.stage === 'line' ? h.steps.line : h.stage === 'vote' ? h.steps.vote : null;
   }
   // Seats still to seal, or to show, in a step.
   function waitingSeal(st) {
@@ -357,7 +360,8 @@
       var h = {
         n: n, place: place, zero: String(d._ || ''), dealAddr: e.addr, active: active,
         steps: { word: newStep('word', active) }, words: {}, voidSeats: {}, out: {}, ring: [], lines: {}, votes: {},
-        tally: {}, winners: [], pot: 0, shares: {}, picker: 0, pick: 0, stage: 'word', noRing: false, votesCast: 0, chipsBefore: copy(t.chips)
+        tally: {}, winners: [], pot: 0, shares: {}, picker: 0, pick: 0, stage: 'word', noRing: false, votesCast: 0, chipsBefore: copy(t.chips),
+        survivors: [], marks: {}, marked: {}, eyeOut: {}
       };
       t.hands.push(h);
       if (!active.length) h.stage = 'done';
@@ -424,7 +428,27 @@
       h.words = words;
       h.out = f.out;
       h.active.forEach(function (s) { if (h.voidSeats[s]) h.out[s] = true; });
+      h.survivors = f.ring;
       h.ring = f.ring;
+      if (!h.ring.length) { h.noRing = true; h.stage = 'done'; return; }
+      // The table's eye (function:zero 2): every seat may mark one word that
+      // does not belong under the zero, never its own, or skip.
+      h.stage = 'eye';
+      h.steps.eye = newStep('eye', Object.keys(t.roster).map(Number).sort(function (a, b) { return a - b; }));
+      return advance(t, h);
+    }
+    if (st.name === 'eye') {
+      st.need.forEach(function (s) {
+        if (!ok(s)) return;
+        var m = Number(st.shows[s].move);
+        if (!m || m === s || h.survivors.indexOf(m) < 0) return;
+        h.marks[s] = m;
+        h.marked[m] = (h.marked[m] || 0) + 1;
+      });
+      // A word marked by more than half the seats goes out; its seat stays empty.
+      var seats = Object.keys(t.roster).length;
+      h.survivors.forEach(function (s) { if ((h.marked[s] || 0) * 2 > seats) { h.eyeOut[s] = true; h.out[s] = true; } });
+      h.ring = h.survivors.filter(function (s) { return !h.eyeOut[s]; });
       if (!h.ring.length) { h.noRing = true; h.stage = 'done'; return; }
       h.stage = 'line';
       h.steps.line = newStep('line', h.ring);

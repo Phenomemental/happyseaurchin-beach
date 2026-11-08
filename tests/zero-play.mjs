@@ -32,7 +32,8 @@ const WORDS = {
   'Night nurse': ['ward', 'chart', 'monitor', 'hush', 'lamp', 'pulse']
 };
 const PERSONAS = Object.keys(WORDS);
-const calls = { word: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set() };
+const calls = { word: 0, eye: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set(), badWords: [] };
+const BANNED = /\b(ring|holds|lines?)\b/i;          // never on screen, nor in the computer players' instructions (spine:zero 4.23)
 const turns = {};
 async function claudeRoute(route) {
   const req = route.request();
@@ -43,6 +44,7 @@ async function claudeRoute(route) {
   const body = JSON.parse(req.postData());
   calls.models.add(body.model);
   const sys = body.system, user = body.messages[0].content;
+  if (BANNED.test(sys + ' ' + user)) calls.badWords.push((sys + ' ' + user).match(BANNED)[0]);
   const persona = (/playing as the ([A-Za-z ]+)\./.exec(sys) || [])[1] || 'Child';
   const pi = PERSONAS.indexOf(persona);
   let out;
@@ -53,12 +55,18 @@ async function claudeRoute(route) {
     turns[k] = (turns[k] || 0) + 1;
     const list = WORDS[persona];
     out = { word: list[(zero.length + turns[k] - 1) % list.length] };
-  } else if (/Answer as \{"line"/.test(user)) {
+  } else if (/may send out a word/.test(user)) {
+    // honest: only a word that plainly does not belong, never its own
+    calls.eye++;
+    const me = Number((/seat (\d): [^\n]* \(your own\)/.exec(user) || [])[1]);
+    const odd = [...user.matchAll(/^seat (\d): (\S+)/gm)].find(m => /^spreadsheet$/i.test(m[2]) && Number(m[1]) !== me);
+    out = { seat: odd ? Number(odd[1]) : 0, why: odd ? 'that is not a light' : 'they all belong' };
+  } else if (/Answer as \{"sentence"/.test(user)) {
     calls.line++;
-    const ring = /surviving ring is: ([^.]+)\./.exec(user)[1].split(', ');
+    const left = /still in after the flop are: ([^.]+)\./.exec(user)[1].split(', ');
     const chips = Number(/You have (\d+) chips/.exec(user)[1]);
-    out = { line: `${ring.slice(0, 3).join(' and ')}, as a ${persona.toLowerCase()} sees it.`, stake: Math.min(chips, (pi % 4) + 1) };
-  } else if (/Vote for the one line/.test(user)) {
+    out = { sentence: `${left.slice(0, 3).join(' and ')}, as a ${persona.toLowerCase()} sees it.`, stake: Math.min(chips, (pi % 4) + 1) };
+  } else if (/Vote for the sentence that brings the words together best/.test(user)) {
     calls.vote++;
     const me = Number(/You are seat (\d)/.exec(user)[1]);
     const seats = [...user.matchAll(/^seat (\d) \(/gm)].map(m => Number(m[1])).filter(s => s !== me);
@@ -107,6 +115,18 @@ async function shot(page, name) {
   fs.mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: path.join(SHOTS, name + '.png'), fullPage: true });
 }
+// Every screen a person sees, read for the words that must never appear.
+const seenBanned = [];
+async function watchWords(p) {
+  const hit = await p.page.evaluate((src) => {
+    const re = new RegExp(src, 'i');
+    let txt = '';
+    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview'].forEach(id => { const n = document.getElementById(id); if (n && !n.hidden) txt += ' ' + n.innerText; });
+    const m = txt.match(re);
+    return m ? m[0] + ' in: …' + txt.slice(Math.max(0, m.index - 60), m.index + 40).replace(/\s+/g, ' ') + '…' : '';
+  }, BANNED.source).catch(() => '');
+  if (hit) seenBanned.push(hit);
+}
 const visible = async (loc) => (await loc.count()) > 0 && await loc.first().isVisible();
 
 // Play whatever the panel asks, until the poem. words(hand) gives this person's word.
@@ -115,7 +135,9 @@ async function play(p, words, opts = {}) {
   const seen = new Set();
   const deadline = Date.now() + (opts.timeout || 240000);
   let hand = 0;
+  p.saw = p.saw || {};
   while (Date.now() < deadline) {
+    await watchWords(p);
     if (await page.locator('#end').isVisible()) return true;
     const phase = (await page.locator('#t-phase').textContent().catch(() => '')) || '';
     const m = /Hand (one|two|three|four)/.exec(phase);
@@ -127,11 +149,24 @@ async function play(p, words, opts = {}) {
         await page.click('#t-moves button[type=submit]');
       } else if (await visible(page.getByRole('button', { name: 'Turn the cards' }))) {
         await page.getByRole('button', { name: 'Turn the cards' }).click();
+      } else if (await visible(page.locator('.picks.eye button'))) {
+        p.saw.eye = p.saw.eye || /Does any word not belong under .+\? Tap one, or tap Skip\./.test(await page.textContent('#t-moves'));
+        if (opts.shots && !seen.has('eye' + hand)) { seen.add('eye' + hand); await shot(page, opts.shots + '-hand-' + hand + '-the-eye'); }
+        const target = opts.eye ? opts.eye(hand) : null;
+        const tile = target && page.locator('.picks.eye button:not([disabled])', { hasText: new RegExp('^' + target + '$') });
+        if (tile && await visible(tile)) {
+          await tile.click();
+          await page.locator('#t-moves .picks:not(.eye) button', { hasText: 'Seal it' }).click();
+        } else {
+          await page.locator('#t-moves button', { hasText: 'Skip' }).click();
+        }
       } else if (await visible(page.locator('#m-line'))) {
+        p.saw.turn = p.saw.turn || /Write a short sentence that brings all these words together\./.test(await page.textContent('#t-moves'));
         await page.fill('#m-line', opts.line ? opts.line(hand) : 'Everything here keeps someone company.');
         await page.locator('#m-stake').evaluate((el, v) => { el.value = String(Math.min(Number(el.max), v)); el.dispatchEvent(new Event('input')); }, opts.stake || 2);
-        await page.getByRole('button', { name: 'Seal line and stake' }).click();
+        await page.locator('#t-moves form button[type=submit]').click();
       } else if (await visible(page.locator('.slip:not([disabled])'))) {
+        p.saw.vote = p.saw.vote || /Vote for the sentence that brings the words together best\. Not your own\./.test(await page.textContent('#t-moves'));
         await page.locator('.slip:not([disabled])').nth(opts.voteIndex || 0).click().catch(() => page.locator('.slip:not([disabled])').first().click());
         await page.getByRole('button', { name: /^Seal vote for/ }).click();
       } else if (await visible(page.locator('.picks button:not(.quiet)'))) {
@@ -159,6 +194,8 @@ function floorOf(b) { let f = 0, n = b; while (n && typeof n === 'object' && n._
 async function endChecks(label, beach, page, people) {
   const code = (await page.evaluate(() => JSON.parse(localStorage.getItem('zero.table') || '{}').code));
   const t = await tableIn(beach, code);
+  await watchWords({ page });
+  check(label + ': no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 3).join(' / '));
   check(label + ': four hands played to the end', t.over && t.hands.length === 4, `hands ${t.hands.length}, phase ${t.phase}`);
   const chips = Object.values(t.chips).reduce((a, b) => a + b, 0), seats = Object.keys(t.roster).length;
   check(label + ': chips are kept (' + 10 * seats + ' in all)', chips === 10 * seats, 'total ' + chips);
@@ -288,9 +325,18 @@ async function tableA(browser, base, beach) {
   await shot(page, 'a-waiting');
   await page.click('#deal-go');
   await page.waitForSelector('#table:not([hidden])');
-  await play(host, h => ['flicker', 'beacon', 'match', 'wick'][h - 1], { shots: SHOTS ? 'a' : '', voteIndex: 1 });
+  await play(host, h => ['flicker', 'spreadsheet', 'match', 'wick'][h - 1], { shots: SHOTS ? 'a' : '', voteIndex: 1 });
   await shot(page, 'a-end');
   const t = await endChecks('A', beach, page, ['Matthew']);
+  check('A: the turn says "Write a short sentence that brings all these words together."', host.saw.turn);
+  check('A: the vote says "Vote for the sentence that brings the words together best. Not your own."', host.saw.vote);
+  check('A: the table\'s eye asks "Does any word not belong under …? Tap one, or tap Skip."', host.saw.eye);
+  const h2 = t.hands[1];
+  check('A: the computer players sent out the word that did not belong (spreadsheet), by more than half the seats', h2.eyeOut[1] === true && h2.marked[1] > 4.5, JSON.stringify({ words: h2.words, marked: h2.marked }));
+  check('A: and marked honestly otherwise: no other word was marked in any hand', t.hands.every(h => Object.keys(h.marked).every(k => h.words[k] === 'spreadsheet')));
+  check('A: the host, sent out, wrote no sentence but still voted', !h2.lines[1] && h2.votes[1] != null);
+  check('A: the seat sent out stays empty in the tree', Z.nodeAt(beach.blocks.zero, h2.place + '1') == null);
+  check('A: the computer players\' instructions never say ring, holds or line', !calls.badWords.length && calls.eye > 0, calls.badWords.slice(0, 3).join(','));
   check('A: computer players took all eight empty seats at the deal', Object.values(t.roster).filter(r => r.kind === 'computer').length === 8);
   const owed = t.hands.reduce((a, h) => a + h.active.filter(s => Z.isComputer(t, s)).length, 0);
   check('A: the computer seats moved through Claude with the browser headers, on claude-haiku-5-5', calls.word >= owed && calls.headersOk && calls.models.has('claude-haiku-5-5') && calls.models.size === 1, JSON.stringify({ ...calls, models: [...calls.models] }));
@@ -356,10 +402,11 @@ async function tableC(browser, base, beach) {
   check('C: every seat is taken', /Every seat is taken/.test(await host.page.textContent('#w-empty')));
   await host.page.click('#deal-go');
   const pool = ['beam', 'keeper', 'rocks', 'storm', 'gull', 'lens', 'spiral', 'foghorn', 'island', 'stairs', 'wick', 'mist'];
-  await Promise.all(ps.map((p, i) => play(p, h => (h === 1 && (i === 4 || i === 5)) ? 'Lamp' : pool[(i + h * 3) % pool.length] + (h > 1 ? 'x'.repeat(i) : ''), { voteIndex: i % 3, timeout: 300000, line: h => `${names[i]} keeps the light for hand ${h}.`, stake: 1 + (i % 3) })));
+  await Promise.all(ps.map((p, i) => play(p, h => (h === 1 && (i === 4 || i === 5)) ? 'Lamp' : pool[(i + h * 3) % pool.length] + (h > 1 ? 'x'.repeat(i) : ''), { voteIndex: i % 3, timeout: 300000, line: h => `${names[i]} keeps the light for hand ${h}.`, stake: 1 + (i % 3), eye: h => h === 1 ? 'mist' : null })));
   const t = await endChecks('C', beach, host.page, names);
   check('C: nine people, no computer seat', Object.keys(t.roster).length === 9 && Object.values(t.roster).every(r => r.kind === 'person'));
   check('C: Liam and Mona matched on Lamp and were knocked out', t.hands[0].out[5] && t.hands[0].out[6], JSON.stringify(t.hands[0].words));
+  check('C: eight people marked mist and the table sent it out; Pia could not mark her own', t.hands[0].eyeOut[9] === true && t.hands[0].marked[9] === 8 && t.hands[0].marks[9] == null, JSON.stringify(t.hands[0].marked));
   for (const p of ps) check('C: no page errors', !p.errors.length, p.errors.join(' / '));
   await Promise.all(ps.map(p => p.ctx.close()));
 }
@@ -376,11 +423,12 @@ async function tableG(browser, base, beach) {
   check('G: with three, Deal is ready, and says the table plays with the three', /plays with the 3 of you/.test(await host.page.textContent('#w-say')), await host.page.textContent('#w-say'));
   await host.page.click('#deal-go');
   await Promise.all([
-    play(host, h => ['proton', 'quark', 'lepton', 'boson'][h - 1], { voteIndex: 0 }),
-    play(rae, h => ['ray', 'glow', 'flash', 'gleam'][h - 1], { voteIndex: 0 }),
+    play(host, h => ['proton', 'quark', 'lepton', 'boson'][h - 1], { voteIndex: 0, eye: h => h === 1 ? 'sun' : null }),
+    play(rae, h => ['ray', 'glow', 'flash', 'gleam'][h - 1], { voteIndex: 0, eye: h => h === 1 ? 'sun' : null }),
     play(sol, h => ['sun', 'heat', 'spark', 'blaze'][h - 1], { voteIndex: 0 })
   ]);
   const t = await endChecks('G', beach, host.page, ['Quinn', 'Rae', 'Sol']);
+  check('G: two of three is more than half: the table sent out sun', t.hands[0].eyeOut[3] === true && t.hands[0].marked[3] === 2);
   check('G: three seats only, no computer, empty seats left empty', Object.keys(t.roster).join(',') === '1,2,3' && Object.values(t.roster).every(r => r.kind === 'person'));
   for (const p of [host, rae, sol]) check('G: no page errors', !p.errors.length, p.errors.join(' / '));
   await Promise.all([host, rae, sol].map(p => p.ctx.close()));
