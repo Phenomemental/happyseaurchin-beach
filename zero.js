@@ -292,7 +292,7 @@
     });
   }
   function askLine(key, t, h, s) {
-    var name = Z.nameOf(t, s), chips = h.chipsBefore[s] || 0;
+    var name = Z.nameOf(t, s), chips = Z.stakeable(h, s);
     var left = h.ring.map(function (r) { return h.words[r]; });
     var user = 'The zero word is “' + h.zero + '”. The words still in after the flop are: ' + left.join(', ') + '. Your own word among them is “' + h.words[s] + '”.' +
       '\nWrite a short sentence that brings all these words together, in your own voice. Under twenty words; shorter usually wins.' +
@@ -506,7 +506,7 @@
       return post('open', {
         who: who.name, at: Z.at(place), code: code,
         text: code + ' · ' + who.name + ' opens a table at ' + word,
-        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '', 6: 'eye' }
+        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '', 6: 'eye', 7: 'chips' }
       }).then(function (res) {
         if (!res.ok) throw new Error(refusal(res));
         return readRoom('').then(function (list) {
@@ -846,6 +846,7 @@
         card.appendChild(wd);
         if (h.out[s]) seat.classList.add('struck', 'out');
         if (h.eyeOut[s]) seat.title = 'the table sent it out';
+        if (h.wordChips[s]) card.appendChild(el('span', 'earn', s === h.pick && h.chosenChips ? '+2 \u00b7 chosen' : h.wordChips[s] === 2 ? '+2 \u00b7 never played before' : '+1'));
         if (turning) seat.classList.add('turning');
       } else if (h.stage === 'word' || needsTurn(h)) {
         var wst = h.steps.word;
@@ -979,10 +980,12 @@
         box.appendChild(el('p', 'note', h.active.indexOf(mine) < 0 ? 'You have no chips left. You keep your vote.' :
           h.eyeOut[mine] ? 'The table sent your word out, so you sit out this hand. You still vote.' : 'Your word was matched, so you sit out this hand. You still vote.'));
         if (st.need.length) box.appendChild(el('p', 'note', waitingLine(st)));
+      } else if (t.open.chips && !h.banked) {
+        box.appendChild(el('p', 'note', 'Paying the word chips…'));
       } else if (computersWaiting(st).length) {
         box.appendChild(el('p', 'note', 'The computer players are writing their sentences first…'));
       } else if (!st.seals[mine] && !st.skipSeal[mine]) {
-        var chips = h.chipsBefore[mine] || 0;
+        var chips = Z.stakeable(h, mine);
         var lf = el('form');
         lf.noValidate = true;
         var lab = el('label', 'ask', 'Write a short sentence that brings all these words together.');
@@ -1056,7 +1059,7 @@
   function movesSig(t, h) {
     var st = Z.stepFor(h);
     return [h.n, h.stage, needsTurn(h), st ? Object.keys(st.seals).join(',') + '/' + Object.keys(st.shows).join(',') + '/' + Object.keys(st.skipSeal).join(',') : '',
-      h.pick, t.over, voteChoice, eyeChoice, S.ended ? 1 : 0].join('|');
+      h.pick, t.over, voteChoice, eyeChoice, S.ended ? 1 : 0, h.banked ? 1 : 0].join('|');
   }
   // The words still in, shown above the sentence box; and any the table sent out.
   function wordsLeft(h) {
@@ -1247,6 +1250,7 @@
     if (st && st.sealed && !st.shown) once('show:' + h.n + st.name, function () { return showMine(h, st); });
     if (!S.host) return;
     var key = sget(KEY);
+    if (owesWords(t, h)) { once('bank:' + h.n, function () { return payWords(h); }); return; }
     if (st && !st.closed) {
       var comp = computersWaiting(st);
       if (comp.length) {
@@ -1256,6 +1260,25 @@
       }
     }
     hostEnd(t, h);
+  }
+  // Word chips (function:zero 2.1), paid from the bank once the eye has spoken:
+  // the host's page reads the tree at that moment and puts the award in the
+  // table's record, so every phone reads the same payment for good.
+  function owesWords(t, h) {
+    return !!(t.open && t.open.chips && h && h.steps.word.shown && !h.banked && h.ring.length && !h.noRing &&
+      ['line', 'vote', 'voice', 'done'].indexOf(h.stage) >= 0);
+  }
+  function payWords(h) {
+    return readTree().then(function (tree) {
+      TREE_JSON = tree;
+      var data = { _: 'words' }, said = [];
+      h.ring.forEach(function (s) {
+        var fresh = !Z.playedBefore(tree, h.words[s]);
+        data[String(s)] = fresh ? '2' : '1';
+        said.push(h.words[s] + (fresh ? ' +2 (never played before)' : ' +1'));
+      });
+      return post('bank', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' \u00b7 word chips at ' + h.zero + ': ' + said.join(', '), data: data });
+    });
   }
   function hostEnd(t, h) {
     if (!S.host || !h) return;
@@ -1376,6 +1399,26 @@
   function poemPlaces(t) {
     return Z.poem(t);
   }
+  function signed(n) { return n < 0 ? '\u2212' + (-n) : String(n); }
+  function bookLines(t) {
+    var book = Z.chipsBook(t);
+    return Object.keys(t.seats).map(Number).sort(function (a, b) { return a - b; }).map(function (s) {
+      var b = book[s] || { words: 0, sentences: 0, total: t.chips[s] };
+      return { name: t.seats[s].name, words: b.words, sentences: b.sentences, total: b.total };
+    });
+  }
+  // Everyone who sat, each with chips from words beside chips from sentences.
+  function chipsList(t) {
+    var ul = el('ul', 'book');
+    bookLines(t).forEach(function (r) {
+      var li = el('li');
+      li.appendChild(el('span', 'bn', r.name));
+      li.appendChild(el('span', 'bw', r.words + ' from words \u00b7 ' + signed(r.sentences) + ' from sentences'));
+      li.appendChild(el('span', 'bt', String(r.total)));
+      ul.appendChild(li);
+    });
+    return ul;
+  }
   function sittersLine(t) {
     return Object.keys(t.seats).sort(function (a, b) { return a - b; }).map(function (s) { return t.seats[s].name; }).join(' · ');
   }
@@ -1392,7 +1435,8 @@
         box.appendChild(d);
       });
     });
-    if (full) box.appendChild(el('p', 'sat', sittersLine(t)));
+    if (full && t.open && t.open.chips) box.appendChild(chipsList(t));
+    else if (full) box.appendChild(el('p', 'sat', sittersLine(t)));
     return box;
   }
   function lastPlace(t) {
@@ -1457,7 +1501,10 @@
         });
       });
       parts.push({ rule: true });
-      wrap(sittersLine(t), 'italic 400 30px ' + FACE, inner).forEach(function (l) { parts.push({ t: l, f: 'italic 400 30px ' + FACE, c: '#6d6158', lh: 42 }); });
+      if (t.open && t.open.chips) bookLines(t).forEach(function (r) {
+        parts.push({ t: r.name + ' \u00b7 ' + r.words + ' from words \u00b7 ' + signed(r.sentences) + ' from sentences \u00b7 ' + r.total, f: 'italic 400 30px ' + FACE, c: '#6d6158', lh: 42 });
+      });
+      else wrap(sittersLine(t), 'italic 400 30px ' + FACE, inner).forEach(function (l) { parts.push({ t: l, f: 'italic 400 30px ' + FACE, c: '#6d6158', lh: 42 }); });
       parts.push({ gap: 24 });
       parts.push({ t: 'Zero · made by Matthew Bushell, on David Pinto’s beach', f: 'italic 400 26px ' + FACE, c: '#8a7f74', lh: 36 });
       var H = 170 + parts.reduce(function (a, p) { return a + (p.gap || (p.rule ? 50 : p.lh)); }, 0) + 110;

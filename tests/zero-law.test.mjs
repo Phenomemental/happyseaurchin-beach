@@ -297,3 +297,59 @@ test('leaving during play: the seat sits out every move left, and the table does
   assert.deepEqual(t.current.survivors, [1, 3]);
   assert.deepEqual(t.current.steps.eye.need, [1, 3]);
 });
+
+test('word chips (function:zero 2.1): from the bank, 1 for each word left after the eye, 2 if never played, 2 more when chosen', async () => {
+  const r = room();
+  const names = ['Ann', 'Ben', 'Cat', 'Dev'];
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann', 6: 'eye', 7: 'chips' }, '3');
+  r.add('Ann', 'deal', 1, { _: 'sea', 1: { _: 'Ann', 1: 'person' }, 2: { _: 'Ben', 1: 'person' }, 3: { _: 'Cat', 1: 'person' }, 4: { _: 'Dev', 1: 'person' } }, '3');
+  const writer = s => names[s - 1];
+  await play(r, 1, 'word', { 1: 'wave', 2: 'Waves', 3: 'gull', 4: 'spreadsheet' }, writer);
+  await play(r, 1, 'eye', { 1: '4', 2: '4', 3: '4', 4: '0' }, writer);
+  let t = await Z.derive(r.list, CODE);
+  assert.deepEqual(t.current.ring, [3]);
+  assert.equal(t.current.banked, false);
+  r.add('Ben', 'bank', 1, { _: 'words', 3: '2' }, '3');              // not the host: ignored
+  r.add('Ann', 'bank', 1, { _: 'words', 1: '2', 3: '2', 4: '1' }, '3'); // only the word left is paid
+  r.add('Ann', 'bank', 1, { _: 'words', 3: '2' }, '3');              // once a hand
+  t = await Z.derive(r.list, CODE);
+  const h = t.current;
+  assert.deepEqual(h.wordChips, { 3: 2 });
+  assert.equal(t.chips[3], 12);
+  assert.equal(t.chips[1], 10);
+  assert.equal(Z.stakeable(h, 3), 12);
+  // the word chips can be staked in the same turn
+  await play(r, 1, 'line', { 3: ['Gulls over the sea.', 12] }, writer);
+  await play(r, 1, 'vote', { 1: 3, 2: 3, 4: 3 }, writer);
+  t = await Z.derive(r.list, CODE);
+  assert.equal(t.current.lines[3].stake, 12);
+  assert.equal(t.chips[3], 12);                       // staked 12, won the pot of 12
+  r.add('Ann', 'pick', 1, { _: '3' }, '3');
+  t = await Z.derive(r.list, CODE);
+  assert.equal(t.current.chosenChips, 2);
+  assert.equal(t.chips[3], 14);
+  const book = Z.chipsBook(t);
+  assert.deepEqual(book[3], { words: 4, sentences: 0, total: 14 });
+  assert.deepEqual(book[1], { words: 0, sentences: 0, total: 10 });
+  Object.keys(book).forEach(s => assert.equal(book[s].total, 10 + book[s].words + book[s].sentences));
+});
+
+test('a table from before word chips pays none, whatever its record says', async () => {
+  const r = room();
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann', 6: 'eye' }, '3');
+  r.add('Ann', 'deal', 1, { _: 'sea', 1: { _: 'Ann', 1: 'person' }, 2: { _: 'Ben', 1: 'person' } }, '3');
+  await play(r, 1, 'word', { 1: 'wave', 2: 'gull' }, s => ['Ann', 'Ben'][s - 1]);
+  await play(r, 1, 'eye', { 1: '0', 2: '0' }, s => ['Ann', 'Ben'][s - 1]);
+  r.add('Ann', 'bank', 1, { _: 'words', 1: '1', 2: '2' }, '3');
+  const t = await Z.derive(r.list, CODE);
+  assert.deepEqual(t.chips, { 1: 10, 2: 10 });
+});
+
+test('played before: anywhere in the tree, case and singular form ignored', () => {
+  const tree = { 1: { _: 'Light — Small lights. (Night nurse, 3 votes of 7)', 1: 'torch · Child', 5: { _: 'candle — x (Grandmother, 4 votes of 7)', 2: 'lantern · Sailor' } } };
+  assert.equal(Z.playedBefore(tree, 'Candles'), true);
+  assert.equal(Z.playedBefore(tree, 'TORCHES'), true);
+  assert.equal(Z.playedBefore(tree, 'light'), true);
+  assert.equal(Z.playedBefore(tree, 'spreadsheet'), false);
+  assert.equal(Z.playedBefore(tree, 'lanterns'), true);
+});
