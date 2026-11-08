@@ -117,6 +117,26 @@ async function shot(page, name) {
   fs.mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: path.join(SHOTS, name + '.png'), fullPage: true });
 }
+// Word chips on the cards (spine:zero 4.32): read at the showdown, when the
+// bank has paid, and again when a word is chosen.
+async function earnWhere(p, hand) {
+  const r = await p.page.evaluate(() => {
+    const t = document.getElementById('table');
+    if (!t || t.hidden) return null;
+    const ph = document.getElementById('t-phase').textContent, moves = document.getElementById('t-moves').textContent;
+    const labels = {};
+    document.querySelectorAll('#t-ring .seat').forEach(seat => {
+      const who = seat.querySelector('.who').textContent.replace(/ · left$/, '');
+      const e = seat.querySelector('.earn');
+      labels[who] = e ? e.textContent : '';
+    });
+    return { showdown: /the showdown/.test(ph), picked: / picked /.test(moves), labels };
+  }).catch(() => null);
+  if (!r || !hand) return;
+  p.earn = p.earn || {}; p.chosen = p.chosen || {};
+  if (r.showdown && !p.earn[hand]) p.earn[hand] = r.labels;
+  if (r.picked && !p.chosen[hand]) p.chosen[hand] = r.labels;
+}
 // "Close the game" at the foot of each game screen, between the moves and the credits.
 async function closeWhere(p) {
   const r = await p.page.evaluate(() => {
@@ -164,6 +184,7 @@ async function play(p, words, opts = {}) {
     const m = /Hand (one|two|three|four)/.exec(phase);
     if (m) hand = ['one', 'two', 'three', 'four'].indexOf(m[1]) + 1;
     await closeWhere(p);
+    await earnWhere(p, hand);
     if (opts.shots && !seen.has(phase)) { seen.add(phase); await shot(page, opts.shots + '-' + phase.replace(/[^a-z]+/gi, '-').toLowerCase()); }
     try {
       if (await visible(page.locator('#m-word'))) {
@@ -184,6 +205,8 @@ async function play(p, words, opts = {}) {
         }
       } else if (await visible(page.locator('#m-line'))) {
         p.saw.turn = p.saw.turn || /Write a short sentence that brings all these words together\./.test(await page.textContent('#t-moves'));
+        p.stakeMax = p.stakeMax || {};
+        if (!(hand in p.stakeMax)) p.stakeMax[hand] = Number(await page.getAttribute('#m-stake', 'max'));
         await page.fill('#m-line', opts.line ? opts.line(hand) : 'Everything here keeps someone company.');
         await page.locator('#m-stake').evaluate((el, v) => { el.value = String(Math.min(Number(el.max), v)); el.dispatchEvent(new Event('input')); }, opts.stake || 2);
         await page.locator('#t-moves form button[type=submit]').click();
@@ -220,7 +243,15 @@ async function endChecks(label, beach, page, people) {
   check(label + ': no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 3).join(' / '));
   check(label + ': four hands played to the end', t.over && t.hands.length === 4, `hands ${t.hands.length}, phase ${t.phase}`);
   const chips = Object.values(t.chips).reduce((a, b) => a + b, 0), seats = Object.keys(t.roster).length;
-  check(label + ': chips are kept (' + 10 * seats + ' in all)', chips === 10 * seats, 'total ' + chips);
+  const book = Z.chipsBook(t), paid = Object.values(book).reduce((a, b) => a + b.words, 0);
+  check(label + ': chips add up: 10 a seat, and the word chips the bank paid (' + (10 * seats + paid) + ')', chips === 10 * seats + paid && paid > 0 &&
+    Object.values(book).every(b => b.total === 10 + b.words + b.sentences), 'total ' + chips + ', words ' + paid);
+  check(label + ': only words still standing after the flop and the eye were paid, each 1 or 2, and the chosen word 2 more', t.hands.every(h =>
+    Object.keys(h.wordChips).every(s => h.ring.includes(Number(s)) && [1, 2].includes(h.wordChips[s])) && (!h.ring.length || h.noRing || h.banked) &&
+    (h.pick ? h.chosenChips === 2 : h.chosenChips === 0)));
+  const rows = await page.locator('#e-poem .book li').evaluateAll(n => n.map(li => [li.querySelector('.bn').textContent, li.querySelector('.bw').textContent, li.querySelector('.bt').textContent]));
+  const want = Object.keys(t.roster).map(Number).sort((a, b) => a - b).map(s => [Z.nameOf(t, s), book[s].words + ' from words · ' + (book[s].sentences < 0 ? '−' + (-book[s].sentences) : book[s].sentences) + ' from sentences', String(book[s].total)]);
+  check(label + ': the end card lists each player\'s chips from words beside their chips from sentences', JSON.stringify(rows) === JSON.stringify(want), JSON.stringify(rows.slice(0, 2)));
   const tree = beach.blocks.zero;
   const voiced = t.hands.filter(h => h.winners.length);
   const allVoiced = voiced.every(h => { const n = Z.nodeAt(tree, h.place); return n && Z.readPlace(n).voice && Z.textOf(n) === Z.placeAfter(h, s => Z.nameOf(t, s))._; });
@@ -232,7 +263,8 @@ async function endChecks(label, beach, page, people) {
   check(label + ': the trail goes one level deeper each hand', t.hands.every((h, i) => !i || h.place.length === t.hands[i - 1].place.length + (t.hands[i - 1].noRing ? 0 : 1)));
   const poemLines = await page.locator('#e-poem .pline').count();
   check(label + ': the poem card shows the winning lines', poemLines === voiced.reduce((a, h) => a + h.winners.length, 0), poemLines + ' lines');
-  const sat = await page.locator('#e-poem .sat').textContent();
+  // everyone who sat: the chips list at the foot (a table with word chips), else the line of names
+  const sat = (await page.locator('#e-poem .book').count()) ? (await page.locator('#e-poem .book .bn').allTextContents()).join(' · ') : await page.locator('#e-poem .sat').textContent();
   check(label + ': everyone who sat is at the foot of the card', people.every(n => sat.includes(n)), sat);
   check(label + ': the table closed after the game', t.closed);
   const mine = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).filter(e => Z.codeKey(e.code) === Z.codeKey(code));
@@ -353,6 +385,17 @@ async function tableA(browser, base, beach) {
   check('A: the turn says "Write a short sentence that brings all these words together."', host.saw.turn);
   check('A: the vote says "Vote for the sentence that brings the words together best. Not your own."', host.saw.vote);
   check('A: the table\'s eye asks "Does any word not belong under …? Tap one, or tap Skip."', host.saw.eye);
+  const label = (h, s) => h.wordChips[s] === 2 ? '+2 · never played before' : h.wordChips[s] === 1 ? '+1' : '';
+  const seen = Object.keys(host.earn || {}).map(Number);
+  check('A: at the showdown every card shows its word chips: +1, or +2 · never played before, and nothing for a word out', seen.length >= 3 &&
+    seen.every(n => { const h = t.hands[n - 1]; return Object.keys(t.roster).every(s => host.earn[n][Z.nameOf(t, Number(s))] === label(h, Number(s))); }), JSON.stringify(host.earn && host.earn[seen[0]]));
+  const chosenSeen = Object.keys(host.chosen || {}).map(Number);
+  check('A: the card of the word chosen as the next zero shows +2 · chosen', chosenSeen.length >= 1 &&
+    chosenSeen.every(n => { const h = t.hands[n - 1]; return host.chosen[n][Z.nameOf(t, h.pick)] === '+2 · chosen'; }), JSON.stringify(host.chosen));
+  const h1 = t.hands[0], first = JSON.parse(fs.readFileSync(new URL('./zero-fixtures.json', import.meta.url), 'utf8')).zero;
+  check('A: hand one paid 2 exactly to the words never played anywhere in the tree as it stood (case and singular ignored)', h1.ring.every(s => h1.wordChips[s] === (Z.playedBefore(first, h1.words[s]) ? 1 : 2)) && h1.ring.some(s => h1.wordChips[s] === 1) && h1.ring.some(s => h1.wordChips[s] === 2), JSON.stringify(h1.ring.map(s => h1.words[s] + ':' + h1.wordChips[s])));
+  const stakes = Object.keys(host.stakeMax || {}).map(Number);
+  check('A: the turn lets a seat stake its word chips too', stakes.length >= 1 && stakes.every(n => host.stakeMax[n] === Z.stakeable(t.hands[n - 1], 1)), JSON.stringify(host.stakeMax));
   const screens = ['seats', 'the flop', 'the eye', 'the turn', 'the showdown', 'the voice'];
   check('A: "Close the game" sits at the foot of every game screen, just above the credits', screens.every(x => host.closeAt[x] === true), JSON.stringify(host.closeAt));
   const h2 = t.hands[1];

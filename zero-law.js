@@ -19,6 +19,11 @@
      pick   the winner picks the next zero: 9 {_: the seat whose word}
      close  the host closes the table
      note   a word about the game, left at the end
+     bank   word chips, paid by the host's page from the bank once the eye
+            has spoken (function:zero 2.1): 9 {_: 'words', n: 1 or 2 for each
+            word that survived}, 2 for a word never played in the tree before,
+            read from the tree when paid; the chosen word's 2 more are paid
+            by the law itself when the pick lands
      leave  a person closes the game on their phone and frees their seat:
             before the deal the seat opens for the next to arrive; after it,
             the seat sits out every move left (the host closes with close)
@@ -327,7 +332,9 @@
         isNew: d['5'] === 'new', stamp: e.stamp,
         // A table opened since the table's eye was added says so; one opened
         // before it played straight from the flop to the sentences.
-        eye: d['6'] === 'eye'
+        eye: d['6'] === 'eye',
+        // and one opened since word chips says so; older tables pay none
+        chips: d['7'] === 'chips'
       };
       t.open.personas = personas.slice(0, t.open.computers);
       t.phase = 'waiting';
@@ -386,7 +393,7 @@
         n: n, place: place, zero: String(d._ || ''), dealAddr: e.addr, active: active,
         steps: { word: newStep('word', active) }, words: {}, voidSeats: {}, out: {}, ring: [], lines: {}, votes: {},
         tally: {}, winners: [], pot: 0, shares: {}, picker: 0, pick: 0, stage: 'word', noRing: false, votesCast: 0, chipsBefore: copy(t.chips),
-        survivors: [], marks: {}, marked: {}, eyeOut: {}
+        survivors: [], marks: {}, marked: {}, eyeOut: {}, wordChips: {}, banked: false, chosenChips: 0
       };
       t.hands.push(h);
       if (!active.length) h.stage = 'done';
@@ -403,6 +410,20 @@
       if (h2.ring.indexOf(ps) < 0) return;
       h2.pick = ps;
       h2.stage = 'done';
+      // 2 more chips from the bank to the word chosen as the next zero (function:zero 2.1)
+      if (t.open.chips) { t.chips[ps] += 2; h2.chosenChips = 2; }
+      return;
+    }
+    if (e.kind === 'bank') {
+      // word chips, once a hand, from the host, for words still standing after the eye
+      if (!host || !t.open.chips || h2.banked || !h2.steps.word.shown || h2.stage === 'eye' || h2.stage === 'word' || d._ !== 'words') return;
+      h2.ring.forEach(function (s) {
+        var n = Number(d[String(s)]);
+        if (n !== 1 && n !== 2) return;
+        h2.wordChips[s] = n;
+        t.chips[s] += n;
+      });
+      h2.banked = true;
       return;
     }
     var st = stepFor(h2);
@@ -491,7 +512,7 @@
     if (st.name === 'line') {
       h.ring.forEach(function (s) {
         if (!ok(s) || !oneLine(st.shows[s].move).ok) return;
-        var stake = Math.max(0, Math.min(h.chipsBefore[s] || 0, Math.floor(st.shows[s].stake || 0)));
+        var stake = Math.max(0, Math.min(stakeable(h, s), Math.floor(st.shows[s].stake || 0)));
         h.lines[s] = { line: oneLine(st.shows[s].move).line, stake: stake, sealAddr: st.seals[s].addr };
       });
       var writers = Object.keys(h.lines).map(Number);
@@ -553,6 +574,36 @@
   }
 
   // The game's poem: the winning lines down the trail.
+  // What a seat may stake in the turn: all its chips, the word chips just paid included.
+  function stakeable(h, s) { return (h.chipsBefore[s] || 0) + (h.wordChips[s] || 0); }
+  // Every word in the tree, folded, for the bank's question: played before?
+  function playedBefore(tree, word) {
+    var found = false;
+    (function walk(node) {
+      if (found || !node || typeof node !== 'object') return;
+      for (var i = 1; i <= 9; i++) {
+        var n = node[String(i)];
+        if (n == null) continue;
+        if (same(readPlace(n).word, word)) { found = true; return; }
+        walk(n);
+      }
+    })(tree);
+    return found;
+  }
+  // Each seat's chips at the end, from words and from sentences (spine:zero 4.32).
+  function chipsBook(t) {
+    var book = {};
+    Object.keys(t.roster || {}).forEach(function (k) {
+      var s = Number(k), words = 0, sentences = 0;
+      t.hands.forEach(function (h) {
+        words += (h.wordChips[s] || 0) + (h.pick === s ? h.chosenChips : 0);
+        sentences += (h.shares[s] || 0) - (h.lines[s] ? h.lines[s].stake : 0);
+      });
+      book[s] = { words: words, sentences: sentences, total: t.chips[s] };
+    });
+    return book;
+  }
+
   function poem(t) {
     return t.hands.filter(function (h) { return h.winners.length; }).map(function (h) {
       return { word: h.zero, digits: h.place, lines: h.winners.map(function (w) { return { line: h.lines[w].line, name: nameOf(t, w), votes: h.tally[w] }; }) };
@@ -567,7 +618,8 @@
     openPlaces: openPlaces, freeTops: freeTops, trail: trail, voiceText: voiceText, placeAfter: placeAfter,
     entryOf: entryOf, entriesIn: entriesIn, codeKey: codeKey, byAddr: byAddr,
     derive: derive, nameOf: nameOf, isComputer: isComputer, writerOf: writerOf, provisional: provisional,
-    waitingSeal: waitingSeal, waitingShow: waitingShow, stepFor: stepFor, nextPlace: nextPlace, poem: poem
+    waitingSeal: waitingSeal, waitingShow: waitingShow, stepFor: stepFor, nextPlace: nextPlace, poem: poem,
+    stakeable: stakeable, playedBefore: playedBefore, chipsBook: chipsBook
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLaw = api;
