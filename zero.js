@@ -54,9 +54,9 @@
   }
   function now() { return Date.now() + offset; }
   // A read: {status, json}; status 0 is no answer. Never throws.
-  function look(block, query) {
+  function look(block, query, ms) {
     var ctl = window.AbortController ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, LIMIT_MS);
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, ms || LIMIT_MS);
     var url = WIRE + '?block=' + encodeURIComponent(block) + (query || '');
     return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) {
       clearTimeout(timer);
@@ -111,21 +111,21 @@
   // and then only the nodes a table needs; a node is kept once a later one
   // has begun, since the beach fills slots in order.
   var room = { floor: 0, cache: {}, cacheFloor: 0 };
-  function outline() {
+  function outline(ms) {
     var guess = room.floor || 2;
-    return look(ROOM, '&pscale=' + Math.max(0, guess - 1)).then(function (r) {
+    return look(ROOM, '&pscale=' + Math.max(0, guess - 1), ms).then(function (r) {
       if (r.status === 404) return { floor: 0, tops: [] };
       if (r.status !== 200 || !r.json) throw new Error('room');
       var f = Number(r.json.floor) || 1;
-      if (f !== guess) { room.floor = f; return outline(); }
+      if (f !== guess) { room.floor = f; return outline(ms); }
       var tops = (r.json.entries || []).map(function (e) { return String(e.address); }).filter(function (a) { return /^[1-9]$/.test(a); }).sort();
       return { floor: f, tops: tops };
     });
   }
   function pad(addr, f) { addr = String(addr || ''); return addr.length >= f ? addr : '0'.repeat(f - addr.length) + addr; }
   // Every entry from address `from` on; with no `from`, the recent ones.
-  function readRoom(from) {
-    return outline().then(function (o) {
+  function readRoom(from, ms) {
+    return outline(ms).then(function (o) {
       // A supernest moves every older entry one rung down: what was kept is read afresh.
       if (o.floor !== room.cacheFloor) { room.cache = {}; room.cacheFloor = o.floor; }
       room.floor = o.floor;
@@ -144,7 +144,7 @@
       return Promise.all(want.map(function (t) {
         var c = room.cache[t];
         if (c && c.complete) return c.entries;
-        return look(ROOM, '&spindle=' + (t === '0' ? '0' : t + '0'.repeat(F - 1))).then(function (r) {
+        return look(ROOM, '&spindle=' + (t === '0' ? '0' : t + '0'.repeat(F - 1)), ms).then(function (r) {
           if (r.status !== 200 || !r.json) throw new Error('room');
           var list = Z.entriesIn(r.json, t, F);
           room.cache[t] = { entries: list, complete: t !== max && t < max };
@@ -370,7 +370,7 @@
   // ---- who I am, and the table I'm at ---------------------------------------------------
   var S = jget(TABLE);           // {code, start, name, seat, host, secrets, done}
   function saveS() { jset(TABLE, S); }
-  function forgetTable() { S = null; jset(TABLE, null); T = null; }
+  function forgetTable() { S = null; jset(TABLE, null); T = null; if ($('e-shows')) { $('e-shows').dataset.sig = ''; $('e-shows').textContent = ''; } }
   // Who is at this phone comes through the door (door.js), as on Matthew's
   // other pages: "I'm new" offers three words as the key to a name and a
   // card to keep them; "I've been here" takes a name and its words. The
@@ -1455,6 +1455,14 @@
     var fresh = document.querySelector('#end .poem');
     fresh.id = 'e-poem';
     $('e-trail').href = trailUrl(t);
+    // What this game shows, beneath the poem card, open by default (spine:zero 4.62);
+    // drawn once a game, so a fold stays folded while the page keeps reading.
+    var shows = $('e-shows'), sig = t.code + '|' + t.hands.length + '|' + (t.over ? 1 : 0);
+    if (shows.dataset.sig !== sig && window.ZeroLook) {
+      shows.dataset.sig = sig;
+      shows.textContent = '';
+      try { window.ZeroLook.showsPanel(shows, window.ZeroLook.tableGame(t)); } catch (e) { shows.dataset.sig = ''; }
+    }
     var notes = $('e-notes');
     notes.textContent = '';
     t.notes.forEach(function (n) {
@@ -1573,7 +1581,7 @@
     var box = $('look-body');
     box.textContent = '';
     box.appendChild(el('p', 'look-note', 'Reading the tree\u2026'));
-    Promise.all([readTree(), readRoom('0')]).then(function (r) {
+    Promise.all([readTree(), readRoom('0', 25000)]).then(function (r) {
       return window.ZeroLook.games(r[0], r[1]).then(function (gs) { window.ZeroLook.render(box, r[0], gs); });
     }).catch(function () {
       box.textContent = '';

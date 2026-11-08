@@ -52,7 +52,13 @@
     var nameOf = function (s) { return Z.nameOf(t, s); };
     var g = {
       kind: 'table', code: t.code, stamp: t.open.stamp || '', people: Object.keys(t.roster).map(Number).sort(function (a, b) { return a - b; }).map(nameOf),
-      places: Z.poem(t), votes: [], same: [], alone: [], sentOut: [], words: [], hands: []
+      places: Z.poem(t), votes: [], same: [], alone: [], sentOut: [], words: [], hands: [],
+      book: (function () {
+        var b = Z.chipsBook(t);
+        return Object.keys(t.roster).map(Number).sort(function (x, y) { return x - y; }).map(function (s) {
+          return { name: nameOf(s), words: b[s].words, sentences: b[s].sentences, total: b[s].total };
+        });
+      })()
     };
     t.hands.forEach(function (h) {
       if (!h.steps.word.shown) return;
@@ -347,19 +353,24 @@
       });
     });
     box.appendChild(el('p', 'sat', g.people.join(' · ')));
+    showsPanel(box, g);
+    return box;
+  }
+  // 'What this game shows', open by default and folded with a tap: the same
+  // readings in Look around and at the end of a game (spine:zero 4.9, 4.62).
+  function showsPanel(box, g) {
     var toggle = el('button', 'quiet look-open', 'What this game shows');
     toggle.type = 'button';
-    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-expanded', 'true');
     var shows = el('div', 'look-shows');
-    shows.hidden = true;
+    fillShows(shows, g);
     toggle.addEventListener('click', function () {
-      if (!shows.childNodes.length) fillShows(shows, g);
       shows.hidden = !shows.hidden;
       toggle.setAttribute('aria-expanded', String(!shows.hidden));
     });
     box.appendChild(toggle);
     box.appendChild(shows);
-    return box;
+    return shows;
   }
   function fillShows(box, g) {
     box.appendChild(el('h3', 'look-h', 'Who voted for whom'));
@@ -405,8 +416,32 @@
       al.appendChild(li);
     });
     box.appendChild(al);
-    if (g.sentOut.length) {
-      box.appendChild(el('p', 'look-note', 'The table sent out: ' + g.sentOut.map(function (x) { return x.word + ' (' + x.name + ', under ' + x.place + ')'; }).join(' · ') + '.'));
+    // words the table sent out, and each player's chips (a game played on the page keeps both)
+    if (g.kind === 'table') {
+      box.appendChild(el('h3', 'look-h', 'Words the table sent out'));
+      if (g.sentOut.length) {
+        var so = el('ul', 'look-list sent');
+        g.sentOut.forEach(function (x) {
+          var li = el('li');
+          li.appendChild(el('s', 'lw', x.word));
+          li.appendChild(document.createTextNode(' (' + x.name + ')'));
+          li.appendChild(el('span', 'lp', ' under ' + x.place));
+          so.appendChild(li);
+        });
+        box.appendChild(so);
+      } else {
+        box.appendChild(el('p', 'look-note', 'The table sent no word out.'));
+      }
+      box.appendChild(el('h3', 'look-h', 'Chips from words and from sentences'));
+      var bk = el('ul', 'look-list chips');
+      g.book.forEach(function (r) {
+        var li = el('li');
+        li.appendChild(el('span', 'lw', r.name));
+        li.appendChild(document.createTextNode(' \u00b7 ' + r.words + ' from words \u00b7 ' + (r.sentences < 0 ? '\u2212' + (-r.sentences) : r.sentences) + ' from sentences'));
+        li.appendChild(el('span', 'lp', ' \u00b7 ' + r.total));
+        bk.appendChild(li);
+      });
+      box.appendChild(bk);
     }
   }
   function acrossView(rows) {
@@ -439,7 +474,8 @@
     }
   }
 
-  var api = { voiceParts: voiceParts, voicedPlaces: voicedPlaces, games: games, across: across, render: render, ENOUGH: ENOUGH };
+  var api = { voiceParts: voiceParts, voicedPlaces: voicedPlaces, games: games, across: across, render: render, ENOUGH: ENOUGH,
+    tableGame: tableGame, showsPanel: showsPanel };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLook = api;
 })(typeof self !== 'undefined' ? self : this);

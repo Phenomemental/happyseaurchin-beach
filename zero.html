@@ -316,7 +316,10 @@
   .tp-sentence { font-style: italic; margin: 0; line-height: 1.3; }
   .tp-by, .tp-seat { font-size: 0.9rem; font-style: italic; color: var(--soft); margin: 0; }
   .tp-seat:empty { display: none; }
-  .look-card .look-open { display: block; margin: 0.5rem auto 0; }
+  .look-card .look-open, .end-shows .look-open { display: block; margin: 0.5rem auto 0; }
+  .end-shows { margin: 0 0 0.8rem; }
+  .end-shows .look-shows { border-top: 0; }
+  .look-list.sent s { text-decoration-color: var(--crimson); font-style: italic; }
   .look-shows { text-align: left; border-top: 1px solid var(--line); margin-top: 0.5rem; padding-top: 0.3rem; }
   .look-h { font-weight: 500; font-size: 1.02rem; font-style: italic; color: var(--crimson); margin: 0.8rem 0 0.3rem; text-align: center; }
   .web { display: block; width: 100%; max-width: 28rem; margin: 0 auto 0.3rem; overflow: visible; }
@@ -458,6 +461,8 @@
       <div class="bar"><span class="name">Zero</span><span class="phase">the poem</span></div>
       <p class="winner" id="e-winner"></p>
       <div class="poem" id="e-poem"></div>
+      <!-- What this game shows, open by default (spine:zero 4.62) -->
+      <div class="end-shows" id="e-shows"></div>
       <div class="three">
         <button type="button" id="e-keep">Keep the card</button>
         <button type="button" id="e-share">Share it</button>
@@ -500,8 +505,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08g"></script>
-<script src="zero-look.js?v=2026-11-08g"></script>
-<script src="zero.js?v=2026-11-08g"></script>
+<script src="zero-law.js?v=2026-11-08h"></script>
+<script src="zero-look.js?v=2026-11-08h"></script>
+<script src="zero.js?v=2026-11-08h"></script>
 </body>
 </html>

@@ -252,6 +252,23 @@ async function endChecks(label, beach, page, people) {
   const rows = await page.locator('#e-poem .book li').evaluateAll(n => n.map(li => [li.querySelector('.bn').textContent, li.querySelector('.bw').textContent, li.querySelector('.bt').textContent]));
   const want = Object.keys(t.roster).map(Number).sort((a, b) => a - b).map(s => [Z.nameOf(t, s), book[s].words + ' from words · ' + (book[s].sentences < 0 ? '−' + (-book[s].sentences) : book[s].sentences) + ' from sentences', String(book[s].total)]);
   check(label + ': the end card lists each player\'s chips from words beside their chips from sentences', JSON.stringify(rows) === JSON.stringify(want), JSON.stringify(rows.slice(0, 2)));
+  await page.waitForSelector('#e-shows .look-shows');
+  const place = await page.evaluate(() => {
+    const poem = document.getElementById('e-poem').getBoundingClientRect(), sh = document.getElementById('e-shows').getBoundingClientRect(), btn = document.querySelector('#end .three').getBoundingClientRect();
+    const box = document.querySelector('#e-shows .look-shows');
+    return { below: sh.top >= poem.bottom - 1, above: sh.bottom <= btn.top + 1, open: !box.hidden && document.querySelector('#e-shows .look-open').getAttribute('aria-expanded') === 'true',
+      heads: Array.from(document.querySelectorAll('#e-shows .look-h')).map(h => h.textContent) };
+  });
+  check(label + ': at the end, What this game shows sits beneath the poem card and above its buttons, open by default', place.below && place.above && place.open, JSON.stringify(place));
+  check(label + ': with the three readings, the words sent out, and the chips', JSON.stringify(place.heads) === JSON.stringify(['Who voted for whom', 'Where two players thought the same', 'Words only one person saw', 'Words the table sent out', 'Chips from words and from sentences']), place.heads.join(' | '));
+  const g = L.tableGame(t);
+  const pairs = new Set(g.votes.map(v => v.from + '>' + v.to)).size;
+  check(label + ': the web draws every voter\'s choice, and the words alike, alone and sent out match the record', (await page.locator('#e-shows svg.web path.edge').count()) === pairs &&
+    (await page.locator('#e-shows .look-list.alone li').count()) === new Set(g.alone.map(x => x.place)).size &&
+    (g.same.length ? (await page.locator('#e-shows .look-list.same li').count()) === g.same.length : /Nobody thought the same/.test(await page.textContent('#e-shows'))) &&
+    (g.sentOut.length ? (await page.locator('#e-shows .look-list.sent li').count()) === g.sentOut.length : /The table sent no word out/.test(await page.textContent('#e-shows'))), pairs + ' pairs, ' + g.same.length + ' alike, ' + g.sentOut.length + ' sent out');
+  const chipRows = await page.locator('#e-shows .look-list.chips li').allTextContents();
+  check(label + ': and each player\'s chips there match the book', chipRows.length === g.book.length && g.book.every((b, i) => chipRows[i].startsWith(b.name + ' · ' + b.words + ' from words · ') && chipRows[i].endsWith('· ' + b.total)), chipRows.slice(0, 2).join(' / '));
   const tree = beach.blocks.zero;
   const voiced = t.hands.filter(h => h.winners.length);
   const allVoiced = voiced.every(h => { const n = Z.nodeAt(tree, h.place); return n && Z.readPlace(n).voice && Z.textOf(n) === Z.placeAfter(h, s => Z.nameOf(t, s))._; });
@@ -616,7 +633,8 @@ async function tableH(browser, base, beach) {
   check('H: newest first', (await page.locator('#look .look-card').first().getAttribute('data-game')) === (gs[0].code || gs[0].hands[0]));
   const kite = page.locator('#look .look-card[data-game="KITE 1"]');
   check('H: KITE 1 shows its date and who sat down', /a game of Zero · 8 November 2026/.test(await kite.locator('.top').textContent()) && /Phenomemental · Engineer/.test(await kite.locator('.sat').textContent()));
-  await kite.locator('.look-open').click();
+  check('H: What this game shows is open by default on every card', (await page.locator('#look .look-card .look-shows:not([hidden])').count()) === cards &&
+    (await page.locator('#look .look-card .look-open[aria-expanded="true"]').count()) === cards);
   const kg = gs.find(g => g.code === 'KITE 1');
   const pairs = new Set(kg.votes.map(v => v.from + '>' + v.to)).size;
   check('H: who voted for whom is drawn as a web, an arrow for each voter and choice', (await kite.locator('svg.web path.edge').count()) === pairs, pairs + ' pairs');
@@ -627,7 +645,12 @@ async function tableH(browser, base, beach) {
   check('H: words only one person saw', /Feedback \(Engineer\)/.test(await kite.locator('.look-list.alone').textContent()));
   await shot(page, 'h-kite');
   const first = page.locator('#look .look-card[data-game="1"]');
-  await first.locator('.look-open').click();
+  for (const [code, out] of [['RAIN 6', ['Torque', 'infirmary']], ['TIDE 3', ['stubble']]]) {
+    const c = page.locator(`#look .look-card[data-game="${code}"]`);
+    check('H: ' + code + ' (played on the page tonight) shows its web, its words alike, and the words the table sent out', (await c.locator('svg.web path.edge').count()) > 0 &&
+      JSON.stringify(await c.locator('.look-list.sent .lw').allTextContents()) === JSON.stringify(out) && (await c.locator('.look-list.chips li').count()) === 9, code);
+  }
+  check('H: the first game, played in chat, keeps no chips or marks, so shows neither', (await first.locator('.look-list.chips').count()) === 0);
   check('H: the first game, played in chat, has its votes read from its record (27)', sum(await first.locator('.votes-said').textContent()) === 27);
   check('H: and its matches: birthday, watch, snow', /birthday · Child and Phenomemental/.test(await first.locator('.look-list.same').textContent()) && /snow · Grandmother and Farmer/.test(await first.locator('.look-list.same').textContent()));
   const rows = L.across(tree, gs);
