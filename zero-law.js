@@ -19,6 +19,9 @@
      pick   the winner picks the next zero: 9 {_: the seat whose word}
      close  the host closes the table
      note   a word about the game, left at the end
+     leave  a person closes the game on their phone and frees their seat:
+            before the deal the seat opens for the next to arrive; after it,
+            the seat sits out every move left (the host closes with close)
    Steps are 'word', 'eye' (the table's eye: the seat whose word does not
    belong, or 0 to skip), 'line' (a sentence and its stake) and 'vote'. In
    the code a player's sentence is still called a line; on screen it is
@@ -269,7 +272,7 @@
   function derive(all, code) {
     var key = codeKey(code);
     var list = all.filter(function (e) { return codeKey(e.code) === key; }).sort(byAddr);
-    var t = { code: code, open: null, sits: [], roster: null, hands: [], chips: {}, phase: 'none', over: false, closed: false, notes: [], last: null };
+    var t = { code: code, open: null, sits: [], roster: null, hands: [], chips: {}, phase: 'none', over: false, closed: false, notes: [], last: null, gone: {} };
     var checks = [];
     // First pass: gather what must be checked against its seal.
     list.forEach(function (e) { t.last = e; });
@@ -333,6 +336,25 @@
     if (!t.open) return;
     var host = e.who === t.open.host;
     if (e.kind === 'close') { if (host) t.closed = true; return; }
+    if (e.kind === 'leave') {
+      if (host) return;                       // the host closes the table instead
+      if (!t.roster) {                        // before the deal: the seat opens again
+        t.sits = t.sits.filter(function (x) { return nameFold(x.name) !== nameFold(e.who); });
+        return;
+      }
+      var gs = 0;
+      Object.keys(t.roster).forEach(function (k) { if (t.roster[k].kind === 'person' && t.roster[k].name === e.who) gs = Number(k); });
+      if (!gs || t.gone[gs]) return;
+      t.gone[gs] = true;
+      // the move now waiting on this seat waits no more
+      var hl = t.hands[t.hands.length - 1], sl = hl && stepFor(hl);
+      if (sl && sl.need.indexOf(gs) >= 0) {
+        if (!sl.seals[gs]) sl.skipSeal[gs] = true;
+        else if (!sl.shows[gs]) sl.skipShow[gs] = true;
+        advance(t, hl);
+      }
+      return;
+    }
     if (e.kind === 'sit') {
       if (t.roster) return;
       var nm = String(e.who || '').trim();
@@ -359,7 +381,7 @@
         Object.keys(roster).forEach(function (k) { t.chips[k] = START; });
       }
       var place = digitsOf(e.at);
-      var active = Object.keys(t.roster).map(Number).filter(function (k) { return t.chips[k] > 0; }).sort(function (a, b) { return a - b; });
+      var active = Object.keys(t.roster).map(Number).filter(function (k) { return t.chips[k] > 0 && !t.gone[k]; }).sort(function (a, b) { return a - b; });
       var h = {
         n: n, place: place, zero: String(d._ || ''), dealAddr: e.addr, active: active,
         steps: { word: newStep('word', active) }, words: {}, voidSeats: {}, out: {}, ring: [], lines: {}, votes: {},
@@ -390,7 +412,7 @@
       h2.ring = h2.survivors.slice();
       h2.noEye = true;
       h2.stage = 'line';
-      h2.steps.line = newStep('line', h2.ring);
+      h2.steps.line = newStep('line', h2.ring.filter(function (k) { return !t.gone[k]; }));
       st = h2.steps.line;
     }
     if (!st || d._ !== st.name) return;
@@ -446,7 +468,7 @@
       // The table's eye (function:zero 2): every seat may mark one word that
       // does not belong under the zero, never its own, or skip.
       h.stage = 'eye';
-      h.steps.eye = newStep('eye', Object.keys(t.roster).map(Number).sort(function (a, b) { return a - b; }));
+      h.steps.eye = newStep('eye', Object.keys(t.roster).map(Number).filter(function (k) { return !t.gone[k]; }).sort(function (a, b) { return a - b; }));
       return advance(t, h);
     }
     if (st.name === 'eye') {
@@ -463,7 +485,7 @@
       h.ring = h.survivors.filter(function (s) { return !h.eyeOut[s]; });
       if (!h.ring.length) { h.noRing = true; h.stage = 'done'; return; }
       h.stage = 'line';
-      h.steps.line = newStep('line', h.ring);
+      h.steps.line = newStep('line', h.ring.filter(function (k) { return !t.gone[k]; }));
       return advance(t, h);
     }
     if (st.name === 'line') {
@@ -480,7 +502,7 @@
         return writers.some(function (w) { return w !== s; });
       }).sort(function (a, b) { return a - b; });
       h.stage = 'vote';
-      h.steps.vote = newStep('vote', voters);
+      h.steps.vote = newStep('vote', voters.filter(function (k) { return !t.gone[k]; }));
       return advance(t, h);
     }
     if (st.name === 'vote') {
