@@ -21,7 +21,7 @@
   var WIRE = BEACH + '/.well-known/pscale-beach';
   var ROOM = 'pool:zero', TREE = 'zero', LAW = 'function:zero';
   var API = 'https://api.anthropic.com/v1/messages', MODEL = 'claude-haiku-5-5';
-  var KEY = 'zero.key', ME = 'zero.me', TABLE = 'zero.table', CP = 'zero.computers';
+  var KEY = 'zero.key', TABLE = 'zero.table', CP = 'zero.computers';
   var LIMIT_MS = 8000, POLL_MS = 2500, QUIET_MS = 10000, WAIT_BEFORE_GO_ON = 120000, PAUSE_BEFORE_DEAL = 8000;
   var LIVE_MS = 2 * 60 * 60 * 1000;   // a table with nothing for two hours no longer holds its place
   if (LOCAL && params.get('fast')) { POLL_MS = 500; PAUSE_BEFORE_DEAL = 1200; WAIT_BEFORE_GO_ON = 4000; }   // a builder's test
@@ -343,11 +343,13 @@
   }
 
   // ---- who I am, and the table I'm at ---------------------------------------------------
-  var S = jget(TABLE);           // {code, start, name, three, seat, host, secrets, done}
+  var S = jget(TABLE);           // {code, start, name, seat, host, secrets, done}
   function saveS() { jset(TABLE, S); }
   function forgetTable() { S = null; jset(TABLE, null); T = null; }
-  var me = jget(ME) || { name: '', three: '' };
-  function cleanName(v) { return String(v || '').replace(/\s+/g, ' ').trim().slice(0, 32); }
+  // Who is at this phone comes through the door (door.js), as on Matthew's
+  // other pages: "I'm new" offers three words as the key to a name and a
+  // card to keep them; "I've been here" takes a name and its words. The
+  // words never leave the door: Zero itself writes without a key.
   function nameProblem(n) {
     if (!n) return 'Your name, please.';
     if (!/^[\p{L}\p{N}][\p{L}\p{N} '’.\-]*$/u.test(n)) return 'Letters and numbers for your name, please.';
@@ -361,8 +363,6 @@
   function lobby(asHost, beneath) {
     show('lobby');
     deeper = beneath || '';
-    $('my-name').value = me.name || '';
-    $('my-three').value = me.three || '';
     $('lobby-error').textContent = '';
     setMode(asHost === true ? 'host' : asHost === false ? 'join' : '');
   }
@@ -441,18 +441,15 @@
     return a;
   }
   function lobbyError(t) { $('lobby-error').textContent = t || ''; }
-  function readMe() {
-    var name = cleanName($('my-name').value), three = String($('my-three').value || '').replace(/\s+/g, ' ').trim().slice(0, 60);
-    var p = nameProblem(name);
-    if (p) { lobbyError(p); $('my-name').focus(); return null; }
-    if (!three) { lobbyError('Three words about you, please.'); $('my-three').focus(); return null; }
-    me = { name: name, three: three };
-    jset(ME, me);
-    return me;
+  // The name at this phone: known already, or asked through the door now.
+  function whoAmI() {
+    return window.Door.name().then(function (m) {
+      var p = nameProblem(m.name);
+      if (p) throw new Error(p);
+      return { name: m.name };
+    }, function () { throw new Error('First, a name: I\u2019m new, or I\u2019ve been here.'); });
   }
   function openTable() {
-    var who = readMe();
-    if (!who) return;
     if (computers) {
       var typed = String($('my-key').value || '').trim();
       if (typed) { sset(KEY, typed); $('my-key').value = ''; }
@@ -467,7 +464,7 @@
     sset(CP, String(computers));
     $('open-go').disabled = true;
     lobbyError('');
-    Promise.all([readTree(), readRoom('').catch(function () { return []; })]).then(function (r) {
+    whoAmI().then(function (who) { return Promise.all([readTree(), readRoom('').catch(function () { return []; })]).then(function (r) {
       TREE_JSON = r[0];
       var tables = liveTables(r[1]), taken = claimed(tables), place, word;
       if (chosen === 'new') {
@@ -484,7 +481,7 @@
       return post('open', {
         who: who.name, at: Z.at(place), code: code,
         text: code + ' · ' + who.name + ' opens a table at ' + word + ' (' + (9 - computers) + ' seats for people, ' + computers + ' computer)',
-        data: { _: word, 1: who.name, 2: who.three, 3: String(computers), 4: personas.join(', '), 5: chosen === 'new' ? 'new' : '' }
+        data: { _: word, 1: who.name, 3: String(computers), 4: personas.join(', '), 5: chosen === 'new' ? 'new' : '' }
       }).then(function (res) {
         if (!res.ok) throw new Error(refusal(res));
         return readRoom('').then(function (list) {
@@ -502,24 +499,23 @@
             post('close', { who: who.name, at: Z.at(place), code: code, text: code + ' · closed: the place was taken a moment before' });
             throw new Error('That place was taken a moment ago. Choose another.');
           }
-          S = { code: code, start: start, name: who.name, three: who.three, seat: 1, host: true, secrets: {}, done: {} };
+          S = { code: code, start: start, name: who.name, seat: 1, host: true, secrets: {}, done: {} };
           saveS();
           enterTable();
         });
       });
-    }).catch(function (e) {
+    }); }).catch(function (e) {
       lobbyError(e.message || 'That didn’t work. Try again.');
       loadPlaces();
     }).then(function () { $('open-go').disabled = false; });
   }
   function joinTable() {
-    var who = readMe();
-    if (!who) return;
     var key = Z.codeKey($('join-code').value);
     if (!/^[A-Z]+[0-9]+$/.test(key)) { lobbyError('The table code is a word and a number, like LAMP 4.'); $('join-code').focus(); return; }
     $('join-go').disabled = true;
     lobbyError('');
-    readRoom('').then(function (list) {
+    var who;
+    whoAmI().then(function (m) { who = m; return readRoom(''); }).then(function (list) {
       var open = list.filter(function (e) { return e.kind === 'open' && Z.codeKey(e.code) === key; })[0];
       if (!open) throw new Error('No table with that code is open. Check it with the host.');
       return readRoom(open.addr).then(function (entries) { return Z.derive(entries, open.code); }).then(function (t) {
@@ -537,7 +533,7 @@
         var free = 9 - t.open.computers - 1 - t.sits.length;
         if (free <= 0) throw new Error('That table is full.');
         return post('sit', {
-          who: who.name, at: Z.at(t.open.place), code: open.code, text: open.code + ' · ' + who.name + ' takes a seat', data: { _: who.three }
+          who: who.name, at: Z.at(t.open.place), code: open.code, text: open.code + ' · ' + who.name + ' takes a seat'
         }).then(function (res) {
           if (!res.ok) throw new Error(refusal(res));
           return readRoom(open.addr).then(function (entries) { return Z.derive(entries, open.code); }).then(function (t3) {
@@ -549,7 +545,7 @@
       });
     }).then(function (r) {
       // The seat's own spelling of the name, so every seal is read as this seat's.
-      S = { code: r.open.code, start: r.open.addr, name: r.t.seats[r.seat].name, three: who.three, seat: r.seat, host: false, secrets: {}, done: {} };
+      S = { code: r.open.code, start: r.open.addr, name: r.t.seats[r.seat].name, seat: r.seat, host: false, secrets: {}, done: {} };
       saveS();
       enterTable();
     }, function (e) {
@@ -640,10 +636,9 @@
       var x = seats[s];
       if (!x) {
         if (!hasKey) { $('w-error').textContent = 'Every seat needs someone before the deal.'; return; }
-        x = { name: spare.shift(), kind: 'computer', three: '' };
+        x = { name: spare.shift(), kind: 'computer' };
       }
       roster[String(s)] = { _: x.name, 1: x.kind };
-      if (x.three) roster[String(s)]['2'] = x.three;
     }
     $('deal-go').disabled = true;
     $('w-error').textContent = '';
@@ -1412,6 +1407,7 @@
   $('note-form').addEventListener('submit', leaveNote);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && S) soon(); });
 
+  if (window.Door) window.Door.whoLine($('who-line'));
   if (params.get('trail')) trailView(Z.digitsOf(params.get('trail')));
   else if (S && S.code && S.start) { show('table'); $('t-status').textContent = 'Finding the table…'; enterTable(); }
   else lobby();

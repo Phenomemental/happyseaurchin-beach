@@ -84,9 +84,22 @@ async function phone(browser, base) {
   await page.goto(base);
   return { ctx, page, errors };
 }
-async function fillMe(page, name, three) {
-  await page.fill('#my-name', name);
-  await page.fill('#my-three', three);
+// Through the door (door.js), as on Matthew's other pages: "I'm new", a name,
+// the three words it offers, the card. With `asked`, the sheet has already
+// opened by itself (a seat taken before a name).
+async function signUp(page, name, asked) {
+  if (!asked) await page.locator('#who-line button', { hasText: 'I’m new' }).click();
+  await page.fill('#door-name', name);
+  if (name === 'Matthew') await shot(page, 'door-new');
+  const words = await page.locator('.door-words span').allTextContents();
+  await page.check('#door-adult');
+  await page.getByRole('button', { name: 'Carry on' }).click();
+  await page.getByRole('button', { name: 'I’ve kept them' }).waitFor();
+  await page.waitForFunction(() => { const i = document.querySelector('.door-card'); return !i || (i.src && i.src.startsWith('data:image/png')); });
+  const card = await page.locator('.door-card').getAttribute('alt');
+  if (name === 'Matthew') await shot(page, 'door-card');
+  await page.getByRole('button', { name: 'I’ve kept them' }).click();
+  return { words, card };
 }
 async function shot(page, name) {
   if (!SHOTS) return;
@@ -199,7 +212,11 @@ async function tableA(browser, base, beach) {
   const { page } = host;
   await shot(page, 'a-lobby');
   await page.click('#door-host');
-  await fillMe(page, 'Matthew', 'curious, kind, restless');
+  check('A: before a name, the lobby offers the door: I’m new · I’ve been here', /I’m new · I’ve been here/.test(await page.textContent('#who-line')));
+  const door = await signUp(page, 'Matthew');
+  check('A: the door offers three words, and a card showing the name and the words', door.words.length === 3 && door.card.includes('Matthew') && door.words.every(w => door.card.includes(w)), JSON.stringify(door));
+  check('A: the lobby then says who this phone is', /You are Matthew on this phone/.test(await page.textContent('#who-line')));
+  check('A: the name is a real name on the beach (passport:Matthew)', !!beach.blocks['passport:Matthew']);
   await page.fill('#my-key', 'sk-ant-test');
   await page.waitForSelector('#places button');
   // the first game's tree: torch, lighthouse, photon … are open; Light, candle, vigil, silence are played
@@ -251,7 +268,7 @@ async function tableB(browser, base, beach) {
   console.log('B. the host and two phones, six computer seats');
   const host = await phone(browser, base), ann = await phone(browser, base), ben = await phone(browser, base);
   await host.page.click('#door-host');
-  await fillMe(host.page, 'Matthew', 'curious, kind, restless');
+  await signUp(host.page, 'Mira');
   await host.page.fill('#my-key', 'sk-ant-test');
   await host.page.click('#cp-less'); await host.page.click('#cp-less');
   check('B: two fewer computer players leaves six', (await host.page.textContent('#cp-count')) === '6');
@@ -264,18 +281,20 @@ async function tableB(browser, base, beach) {
   check('B: the host waits for two more people', /Waiting for 2 more people/.test(await host.page.textContent('#w-say')));
   for (const [p, name] of [[ann, 'Ann'], [ben, 'Ben']]) {
     await p.page.click('#door-join');
-    await fillMe(p.page, name, 'tea, rain, maps');
+    if (name === 'Ben') await signUp(p.page, name);
     await p.page.fill('#join-code', code.toLowerCase().replace(' ', ''));
     await p.page.click('#join-go');
+    if (name === 'Ann') await signUp(p.page, name, true);
     await p.page.waitForSelector('#waiting:not([hidden])');
   }
+  check('B: taking a seat before a name opens the door, and the seat follows', true);
   check('B: a joiner sees the seated line', /You’re seated. The game starts when the host deals./.test(await ann.page.textContent('#w-say')));
   await shot(ann.page, 'b-seated');
   await host.page.waitForFunction(() => /Everyone is here/.test(document.querySelector('#w-say').textContent), null, { timeout: 15000 });
   // a fourth person is turned away: the table is full
   const extra = await phone(browser, base);
   await extra.page.click('#door-join');
-  await fillMe(extra.page, 'Cat', 'late, sorry, hello');
+  await signUp(extra.page, 'Cat');
   await extra.page.fill('#join-code', code);
   await extra.page.click('#join-go');
   await extra.page.waitForFunction(() => document.querySelector('#lobby-error').textContent.length > 0, null, { timeout: 15000 });
@@ -283,7 +302,7 @@ async function tableB(browser, base, beach) {
   await extra.ctx.close();
   await host.page.click('#deal-go');
   await host.page.waitForSelector('#table:not([hidden])');
-  check('B: the new first word is written at a free top seat', Object.keys(beach.blocks.zero).some(k => /^\d$/.test(k) && /^Harbour · Matthew/.test(Z.textOf(beach.blocks.zero[k]))));
+  check('B: the new first word is written at a free top seat', Object.keys(beach.blocks.zero).some(k => /^\d$/.test(k) && /^Harbour · Mira/.test(Z.textOf(beach.blocks.zero[k]))));
   const runs = [
     play(host, h => ['mooring', 'gull', 'keel', 'lantern'][h - 1], { voteIndex: 0 }),
     // Ann and Ben write the same word in hand one: both are knocked out
@@ -291,7 +310,7 @@ async function tableB(browser, base, beach) {
     play(ben, h => ['Jetties', 'crane', 'anchor', 'chart'][h - 1], { voteIndex: 2 })
   ];
   await Promise.all(runs);
-  const t = await endChecks('B', beach, host.page, ['Matthew', 'Ann', 'Ben']);
+  const t = await endChecks('B', beach, host.page, ['Mira', 'Ann', 'Ben']);
   const h1 = t.hands[0];
   check('B: jetty and Jetties match at the flop and knock each other out', h1.out[2] && h1.out[3], JSON.stringify(h1.words));
   check('B: knocked-out seats still voted', h1.votes[2] != null && h1.votes[3] != null);
@@ -302,12 +321,12 @@ async function tableB(browser, base, beach) {
 
 async function tableC(browser, base, beach) {
   console.log('C. a full table of nine people, no key');
-  const names = ['Matthew', 'Ann', 'Ben', 'Cat', 'Dev', 'Eve', 'Fin', 'Gus', 'Hal'];
+  const names = ['Hugo', 'Iris', 'Jack', 'Kate', 'Liam', 'Mona', 'Nell', 'Owen', 'Pia'];
   const ps = [];
   for (let i = 0; i < 9; i++) ps.push(await phone(browser, base));
   const host = ps[0];
   await host.page.click('#door-host');
-  await fillMe(host.page, 'Matthew', 'curious, kind, restless');
+  await signUp(host.page, 'Hugo');
   while ((await host.page.textContent('#cp-count')) !== '0') await host.page.click('#cp-less');
   check('C: at 0 computer players the lobby says no key is needed', (await host.page.textContent('#cp-line')) === 'Only people. No key needed.' && await host.page.locator('#key-part').isHidden());
   await host.page.evaluate(() => localStorage.removeItem('zero.key'));
@@ -321,7 +340,7 @@ async function tableC(browser, base, beach) {
   for (let i = 1; i < 9; i++) {
     const p = ps[i];
     await p.page.click('#door-join');
-    await fillMe(p.page, names[i], 'one, two, three');
+    await signUp(p.page, names[i]);
     await p.page.fill('#join-code', code);
     await p.page.click('#join-go');
     await p.page.waitForSelector('#waiting:not([hidden])');
@@ -332,7 +351,7 @@ async function tableC(browser, base, beach) {
   await Promise.all(ps.map((p, i) => play(p, h => (h === 1 && (i === 4 || i === 5)) ? 'Lamp' : pool[(i + h * 3) % pool.length] + (h > 1 ? 'x'.repeat(i) : ''), { voteIndex: i % 3, timeout: 300000, line: h => `${names[i]} keeps the light for hand ${h}.`, stake: 1 + (i % 3) })));
   const t = await endChecks('C', beach, host.page, names);
   check('C: no computer seat at the table', Object.values(t.roster).every(r => r.kind === 'person'));
-  check('C: Dev and Eve matched on Lamp and were knocked out', t.hands[0].out[5] && t.hands[0].out[6], JSON.stringify(t.hands[0].words));
+  check('C: Liam and Mona matched on Lamp and were knocked out', t.hands[0].out[5] && t.hands[0].out[6], JSON.stringify(t.hands[0].words));
   for (const p of ps) check('C: no page errors', !p.errors.length, p.errors.join(' / '));
   await Promise.all(ps.map(p => p.ctx.close()));
 }
@@ -341,7 +360,7 @@ async function tableD(browser, base, beach) {
   console.log('D. someone leaves mid-game: the host goes on without them');
   const host = await phone(browser, base), ann = await phone(browser, base);
   await host.page.click('#door-host');
-  await fillMe(host.page, 'Matthew', 'curious, kind, restless');
+  await signUp(host.page, 'Dora');
   await host.page.fill('#my-key', 'sk-ant-test');
   await host.page.click('#cp-less');
   await host.page.waitForSelector('#places button');
@@ -351,13 +370,13 @@ async function tableD(browser, base, beach) {
   await host.page.waitForSelector('#waiting:not([hidden])');
   const code = await host.page.textContent('#w-code');
   await ann.page.click('#door-join');
-  await fillMe(ann.page, 'Ann', 'tea, rain, maps');
+  await signUp(ann.page, 'Abe');
   await ann.page.fill('#join-code', code);
   await ann.page.click('#join-go');
   await ann.page.waitForSelector('#waiting:not([hidden])');
   await host.page.waitForFunction(() => /Everyone is here/.test(document.querySelector('#w-say').textContent), null, { timeout: 15000 });
   await host.page.click('#deal-go');
-  await ann.ctx.close();                       // Ann goes, before writing a word
+  await ann.ctx.close();                       // Abe goes, before writing a word
   // the host plays, and goes on without Ann whenever the table waits on her
   const deadline = Date.now() + 240000;
   let wentOn = 0;
@@ -369,10 +388,10 @@ async function tableD(browser, base, beach) {
     }
   })();
   await Promise.all([loop, play(host, h => ['blossom', 'ladder', 'cider', 'wasp'][h - 1], { voteIndex: 0 })]);
-  check('D: the host was offered "Go on without Ann", and the table went on', wentOn >= 1, 'went on ' + wentOn + ' times');
+  check('D: the host was offered "Go on without Abe", and the table went on', wentOn >= 1, 'went on ' + wentOn + ' times');
   const t = await tableIn(beach, code);
   check('D: the game reached its end without her', t.over && t.hands.length === 4, 'hands ' + t.hands.length);
-  check('D: Ann wrote no word and sat out, but the table kept her seat', t.hands[0].out[2] === true && t.roster[2].name === 'Ann');
+  check('D: Abe wrote no word and sat out, but the table kept his seat', t.hands[0].out[2] === true && t.roster[2].name === 'Abe');
   check('D: no page errors', !host.errors.length, host.errors.join(' / '));
   await host.ctx.close();
 }
@@ -382,7 +401,7 @@ async function tableE(browser, base, beach) {
   beach.locked.add('pool:zero');
   const host = await phone(browser, base);
   await host.page.click('#door-host');
-  await fillMe(host.page, 'Matthew', 'curious, kind, restless');
+  await signUp(host.page, 'Edith');
   while ((await host.page.textContent('#cp-count')) !== '0') await host.page.click('#cp-less');
   await host.page.waitForSelector('#places button');
   await host.page.locator('#places button', { hasText: 'A new first word' }).click();
@@ -406,7 +425,7 @@ async function tableF(browser, base, beach) {
   const page = await ctx.newPage();
   await page.goto(base);
   await page.click('#door-host');
-  await fillMe(page, 'Matthew', 'curious, kind, restless');
+  await signUp(page, 'Fred');
   await page.fill('#my-key', 'sk-ant-wrong');
   await page.waitForSelector('#places button');
   await page.locator('#places button', { hasText: 'A new first word' }).click();
