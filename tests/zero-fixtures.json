@@ -1,0 +1,144 @@
+{
+ "zero": {
+  "1": {
+   "1": "torch · Child",
+   "2": "lighthouse · Sailor",
+   "4": "photon · Engineer",
+   "5": {
+    "2": "lantern · Sailor",
+    "3": "flicker · Poet",
+    "4": "wax · Engineer",
+    "5": "church · Grandmother",
+    "6": "dinner · Chef",
+    "7": "beeswax · Farmer",
+    "8": {
+     "1": "sleepover · Child",
+     "3": {
+      "1": "library · Child",
+      "2": "fog · Sailor",
+      "4": "mute · Engineer",
+      "6": "closing · Chef",
+      "8": "ward · Night nurse",
+      "9": "infinity · Phenomemental",
+      "_": "silence — The hush that comes at four in the morning. (Night nurse, 2 votes of 6)"
+     },
+     "4": "monitor · Engineer",
+     "5": "prayer · Grandmother",
+     "6": "coffee · Chef",
+     "7": "lambing · Farmer",
+     "9": "watching · Phenomemental",
+     "_": "vigil — tied, 2 votes each of 7: \"Staying awake all night because something matters.\" (Child) and \"That's novelty in quiet watching, hope in prayer, and new life in gently being, together.\" (Phenomemental)"
+    },
+    "_": "candle — What you light when you're waiting for someone. (Grandmother, 4 votes of 7)"
+   },
+   "6": "flame · Chef",
+   "8": "lamp · Night nurse",
+   "9": "illumination · Phenomemental",
+   "_": "Light — Small lights kept on so someone isn't alone. (Night nurse, 3 votes of 7)"
+  },
+  "_": "The tree of Zero, the nine-seat word game (design at spine:zero, law at function:zero, room at pool:zero). Every place is a table: a zero word, nine seats beneath it. Each place's voice is the winning line, signed. An empty seat is not-yet-spoken: sit in one. Read the winning lines down any trail and you have that game's poem."
+ },
+ "function:zero": {
+  "1": "The table: nine seats around a zero word. Every seat starts with 10 chips. A game is four hands.",
+  "2": "Seats: each seat writes one word that belongs under the zero, hidden until all are in. Words that match after lower-casing and singular form (house and houses match; watch and watching do not) knock each other out for that hand; their seats in the tree stay empty, open for anyone later.",
+  "3": "The turn: every seat still in writes one line that holds the surviving ring, and stakes from 0 to all its chips, both hidden until all are in.",
+  "4": "The showdown: every seat votes for one line, never its own — including seats knocked out this hand or out of chips. Most votes takes the whole pot; that line becomes the voice of the place, signed. A tie splits the pot evenly, the odd chip to the higher stake, and the tied lines stand together.",
+  "5": "Deeper: the winner picks one surviving word, and it becomes the next zero, one level down. On a tie, the higher stake picks.",
+  "6": "Out: a seat knocked out sits out that hand only. A seat with no chips writes no more words or lines, but keeps its vote to the end.",
+  "7": "The end: after four hands, most chips wins. The winning lines read from the top of the trail down are the game's poem.",
+  "8": "The craft: a line wins by holding the whole ring in a breath. Compression is the skill.",
+  "9": "Computer seats fill any seat no person takes: Child, Sailor, Poet, Engineer, Grandmother, Chef, Farmer, Night nurse. Each writes as if alone, in its own voice, short and plain, and collisions are allowed. A computer seat's move is always committed before any person's move opens.",
+  "_": "The law of Zero — read by the game page and by every computer seat. The tree is the block zero; the room is pool:zero; the design is spine:zero."
+ },
+ "pool:zero": {
+  "1": {
+   "1": {
+    "1": "zero-table",
+    "2": "1.583",
+    "3": "2026-11-08T18:41:05.611Z",
+    "_": "Last hand, at Silence. Flop: snow from both Grandmother and Farmer, both knocked out. Phenomemental's infinity stands. Turn lines, written before Phenomemental's: Child (stake 10): Places where everyone has to be quiet. | Sailor (stake 3): When the world goes grey and you can't hear the shore. | Engineer (stake 2): Signal off. | Chef (stake 2): The room after everyone's gone home. | Night nurse (stake 4): The hush that comes at four in the morning."
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "1.583",
+    "3": "2026-11-08T18:45:07.789Z",
+    "_": "Turn line at Silence (stake 13, all in): It all feels like a scene out of Harry Potter, where real magic in the library, on a foggy night, after the book is closed, lifts us to the stars and infinite universe."
+   },
+   "3": {
+    "1": "zero-table",
+    "2": "1.583",
+    "3": "2026-11-08T18:45:10.211Z",
+    "_": "Showdown votes at Silence, cast before Phenomemental's: Child to Phenomemental: magic in the library! | Sailor to Night nurse: the hush at four, I've stood that watch. | Engineer to Child: the one line true of every word in the ring. | Chef to Night nurse: that's the hour after the hour after closing. | Night nurse to Chef: a ward at night is a room after everyone's gone home."
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "1.583",
+    "3": "2026-11-08T18:46:53.310Z",
+    "_": "Showdown vote at Silence: Sailor. Result: Night nurse 2, Phenomemental 1, Child 1, Chef 1, Sailor 1. Night nurse takes the pot of 34. Game over after four hands. Final chips: Night nurse 56, Grandmother 24, Child 7, Farmer 3; Sailor, Engineer, Chef, Poet and Phenomemental out. Night nurse wins the first game of Zero."
+   },
+   "5": {
+    "1": "Phenomemental",
+    "2": "",
+    "3": "2026-11-08T18:50:45.748Z",
+    "_": "The tree has moved to the block zero (same places, same addresses); spine:zero is now the design document and function:zero the law. Moves in this room before this line that name spine:zero refer to the tree as it stood then."
+   }
+  },
+  "_": {
+   "1": {
+    "1": "zero-table",
+    "2": "1",
+    "3": "2026-11-08T18:23:34.880Z",
+    "_": "Turn lines at Light, written before Phenomemental's. Child (stake 3): Things that let you see in the dark. | Sailor (stake 5): Every one of them is a way home. | Engineer (stake 4): Energy made visible, from a single photon to a whole tower. | Grandmother (stake 6): What we carry for each other when it gets late. | Chef (stake 3): Fire, tamed and put to work. | Night nurse (stake 5): Small lights kept on so someone isn't alone."
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "1",
+    "3": "2026-11-08T18:26:03.807Z",
+    "_": "Turn line at Light (stake 5): Hold the torch, like a lighthouse, beaming that photon, as a candle in the dark, with it's burning flame, a hearts good lamp, lighting up the world in loving illumination."
+   },
+   "3": {
+    "1": "zero-table",
+    "2": "1",
+    "3": "2026-11-08T18:26:06.628Z",
+    "_": "Showdown votes at Light, cast before Phenomemental's vote. Child votes Phenomemental: it has all of them in it. | Sailor votes Night nurse: that is what a light is for, at sea and anywhere. | Engineer votes Child: the only line that is true of a photon as much as a candle. | Grandmother votes Night nurse: she knows the long hours. | Chef votes Grandmother: food and light are both things you carry to someone. | Night nurse votes Grandmother: carried for each other is the whole of it."
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "1",
+    "3": "2026-11-08T18:27:27.527Z",
+    "_": "Showdown vote at Light: Night nurse. Result: Night nurse 3, Grandmother 2, Child 1, Phenomemental 1. Night nurse takes the pot of 31 and picks candle as the next zero."
+   },
+   "5": {
+    "1": "zero-table",
+    "2": "1.5",
+    "3": "2026-11-08T18:29:11.128Z",
+    "_": "Hand at Candle. Flop: birthday from both Child and Phenomemental, both knocked out, seats open. Turn lines: Sailor (stake 2): Carried through the dark until someone comes back. | Poet (stake 6): A small fire that keeps watch. | Engineer (stake 3): Wax, a wick, and a flame doing slow work. | Grandmother (stake 4): What you light when you're waiting for someone. | Chef (stake 3): The table set, the light low. | Farmer (stake 4): Bees' work, burning for us. | Night nurse (stake 10): Keeping watch, one small flame at a time. Votes: Sailor to Grandmother; Poet to Grandmother; Engineer to Poet; Grandmother to Poet; Chef to Grandmother; Farmer to Poet; Night nurse to Grandmother. Grandmother 4, Poet 3. Grandmother takes the pot of 32 and picks vigil as the next zero. Next deal at Vigil written to spine:zero before Phenomemental plays."
+   },
+   "6": {
+    "1": "zero-table",
+    "2": "1.58",
+    "3": "2026-11-08T18:30:52.361Z",
+    "_": "Hand at Vigil. Flop: watch from both Sailor and Night nurse, both knocked out; Phenomemental's watching is a different word and stays. Turn lines, written before Phenomemental's: Child (stake 2): Staying awake all night because something matters. | Poet (stake 4): The long hours kept for someone else. | Engineer (stake 1): Systems left on through the night. | Grandmother (stake 8): Lying awake so someone else can sleep. | Chef (stake 2): The kettle on at three in the morning. | Farmer (stake 3): Up all night in case they need you."
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "1.58",
+    "3": "2026-11-08T18:34:09.217Z",
+    "_": "Turn line at Vigil (stake not yet named): That's novelty in quiet watching, hope in prayer, and new life in gently being, together."
+   },
+   "8": {
+    "1": "zero-table",
+    "2": "1.58",
+    "3": "2026-11-08T18:36:31.743Z",
+    "_": "Phenomemental stakes 5 at Vigil (named before any line was shown). Showdown votes cast before Phenomemental's: Child to Farmer: that's like lambing, staying up for them. | Poet to Phenomemental: the only line that finds hope in the night. | Engineer to Child: true of every word in the ring. | Grandmother to Poet: kept for someone else. | Chef to Grandmother: that is what a vigil is. | Farmer to Phenomemental: new life, that is lambing. Tie rule, set before the deciding vote: tied lines split the pot evenly, the odd chip to the higher stake."
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "1.58",
+    "3": "2026-11-08T18:37:37.161Z",
+    "_": "Showdown vote at Vigil: Child. Result: Phenomemental 2, Child 2, Farmer 1, Poet 1, Grandmother 1. Tie: pot of 25 split, Phenomemental 13 (higher stake takes the odd chip), Child 12. Poet has no chips left and leaves the table. Rule set: on a tie, the higher stake picks the next zero, so Phenomemental picks."
+   },
+   "_": "The room for Zero, the nine-seat word game whose tree is spine:zero. Turn lines (each seat's line holding the ring) and stakes land here, located at the place being played, before the showdown."
+  }
+ }
+}
