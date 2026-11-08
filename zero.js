@@ -37,9 +37,11 @@
   function sset(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function jget(k) { try { return JSON.parse(sget(k) || 'null'); } catch (e) { return null; } }
   function jset(k, v) { sset(k, v == null ? null : JSON.stringify(v)); }
+  var SCREENS = ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'];
   function show(id) {
-    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].forEach(function (s) { $(s).hidden = s !== id; });
+    SCREENS.forEach(function (s) { $(s).hidden = s !== id; });
     window.scrollTo(0, 0);
+    drawFoot();
   }
   function cap(w) { w = String(w || ''); return w.charAt(0).toUpperCase() + w.slice(1); }
   var HAND_WORDS = ['', 'one', 'two', 'three', 'four'];
@@ -404,6 +406,7 @@
     $('join-part').hidden = m !== 'join';
     $('lobby-error').textContent = '';
     if (m === 'host') loadPlaces();
+    if (screenOn() === 'lobby') $('f-back-part').hidden = !m;
   }
   // The page's address: the table's invite link while seated, else the plain page.
   function inviteUrl(code) {
@@ -747,7 +750,7 @@
   }
   // Leaving from the waiting room: the host closes the table for everyone;
   // anyone else frees their seat for the next to arrive.
-  function leave() {
+  function leave(after) {
     var wasHost = S && S.host;
     if (S && T && !T.over) {
       post(wasHost ? 'close' : 'leave', { who: S.name, at: T.open ? Z.at(T.open.place) : '', code: S.code,
@@ -756,6 +759,7 @@
     forgetTable();
     clearTimeout(timer);
     lobby(undefined, undefined, wasHost ? 'You closed the table.' : 'You left the table. Your seat is free.');
+    if (typeof after === 'function') after();
   }
   // "Close the game", at the foot of every game screen: asked once, then the
   // host ends the table for everyone, and anyone else frees their seat.
@@ -763,12 +767,13 @@
     $('t-close-ask').hidden = !on;
     $('t-close-go').hidden = on;
     if (!on) return;
+    if (footFor) footAsk('');
     $('t-close-say').textContent = S && S.host ? 'This ends the game for everyone at the table.' : 'This frees your seat. The table plays on without you.';
     $('t-close-yes').textContent = S && S.host ? 'Close it for everyone' : 'Leave the table';
   }
-  function closeGame() {
+  function closeGame(after) {
     if (!S) return;
-    var wasHost = S.host, yes = $('t-close-yes');
+    var wasHost = S.host, yes = footFor ? $('f-ask-yes') : $('t-close-yes');
     yes.disabled = true;
     post(wasHost ? 'close' : 'leave', { who: S.name, at: T && T.current ? Z.at(T.current.place) : '', code: S.code,
       text: S.code + ' · ' + S.name + (wasHost ? ' closed the game' : ' leaves the table') }).then(function (r) {
@@ -777,7 +782,89 @@
       clearTimeout(timer);
       closeAsk(false);
       lobby(undefined, undefined, wasHost ? 'You closed the game. Everyone at the table has been told.' : 'You left the table. Your seat is free.');
-    }).catch(function (e) { $('t-error').textContent = e.message; }).then(function () { yes.disabled = false; });
+      if (typeof after === 'function') after();
+    }).catch(function (e) { $('f-error').textContent = e.message; }).then(function () { yes.disabled = false; });
+  }
+
+  // ---- the foot of every screen (spine:zero 4.24) ---------------------------------------------
+  // In this order: who is at this phone, with 'not you?'; Back to the lobby;
+  // Close the game on game screens; then the credits (in the page itself).
+  var DEVICE = /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent) ? 'phone' : 'computer';
+  var footFor = '';    // 'back' or 'out' while the foot asks before leaving a game
+  function screenOn() {
+    var on = '';
+    SCREENS.forEach(function (s) { if (!$(s).hidden) on = s; });
+    return on;
+  }
+  // In a game: seated and the game not over. The waiting room counts, since
+  // leaving it frees the seat too.
+  function inGame() {
+    var on = screenOn();
+    return !!S && (on === 'waiting' || on === 'table') && !(T && T.over);
+  }
+  function drawFoot() {
+    var on = screenOn();
+    $('f-back-part').hidden = on === 'lobby' && !mode;
+    $('t-close').hidden = !(on === 'table' && S && !(T && T.over));
+    footAsk('');
+    closeAsk(false);
+    $('f-error').textContent = '';
+    drawWho();
+  }
+  function drawWho() {
+    var box = $('f-who'), D = window.Door, m = D ? D.me() : null;
+    box.textContent = '';
+    if (!D) return;
+    if (m) {
+      box.appendChild(document.createTextNode('You are '));
+      box.appendChild(el('strong', null, m.name));
+      box.appendChild(document.createTextNode(' on this ' + DEVICE + ' · '));
+      var b = el('button', 'door-link', 'not you?');
+      b.type = 'button';
+      b.id = 'f-notyou';
+      b.addEventListener('click', notYou);
+      box.appendChild(b);
+    } else {
+      var n = el('button', 'door-link', 'I’m new'), c = el('button', 'door-link', 'I’ve been here');
+      n.type = c.type = 'button';
+      n.addEventListener('click', function () { D.sheet('new').then(null, function () {}); });
+      c.addEventListener('click', function () { D.sheet('back').then(null, function () {}); });
+      box.appendChild(n);
+      box.appendChild(document.createTextNode(' · '));
+      box.appendChild(c);
+    }
+  }
+  // Asked first when leaving a game, whether back to the lobby or signing out.
+  function footAsk(why) {
+    footFor = why;
+    $('f-ask').hidden = !why;
+    $('f-back').hidden = !!why;
+    if (!why) return;
+    closeAsk(false);
+    $('f-ask-say').textContent = S && S.host ? 'Leave this game? You host it, so it ends for everyone at the table.' : 'Leave this game? Your seat will be freed.';
+  }
+  function backToLobby() {
+    if (inGame()) { footAsk('back'); return; }
+    if (S) { forgetTable(); clearTimeout(timer); }
+    lobby();
+  }
+  // Not you? Signs out and returns to the door; from a game, asked first, and the seat freed.
+  function notYou() {
+    if (inGame()) { footAsk('out'); return; }
+    // the end card is the last person's: it goes with them
+    if (S) { forgetTable(); clearTimeout(timer); lobby(); }
+    signOut();
+  }
+  // Anywhere else (Look around, a trail, an invite) the screen stays, with the door open over it.
+  function signOut() {
+    window.Door.forget();
+    drawWho();
+    window.Door.sheet().then(null, function () {});
+  }
+  function leaveGame() {
+    var then = footFor === 'out' ? signOut : null;
+    if (screenOn() === 'table') closeGame(then);
+    else { footAsk(''); leave(then); }
   }
 
   // ---- the table, drawn ----------------------------------------------------------------------
@@ -1642,7 +1729,6 @@
   $('door-host').addEventListener('click', function () { setMode('host'); });
   $('door-join').addEventListener('click', function () { setMode('join'); });
   $('door-look').addEventListener('click', openLook);
-  $('look-back').addEventListener('click', function () { lobby(); });
   $('w-copy').addEventListener('click', copyLink);
   $('w-share').addEventListener('click', shareLink);
   $('w-link').addEventListener('focus', function () { $('w-link').select(); });
@@ -1670,11 +1756,14 @@
     clearTimeout(timer);
     lobby(true, lp);
   });
-  $('e-again').addEventListener('click', function () { forgetTable(); clearTimeout(timer); lobby(); });
+  $('f-back').addEventListener('click', backToLobby);
+  $('f-ask-yes').addEventListener('click', leaveGame);
+  $('f-ask-no').addEventListener('click', function () { footAsk(''); });
   $('note-form').addEventListener('submit', leaveNote);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && S) soon(); });
 
-  if (window.Door) { window.Door.whoLine($('who-line')); window.Door.whoLine($('i-who')); }
+  if (window.Door) window.Door.onNamed(drawWho);
+  drawFoot();
   var invite = Z.codeKey(params.get('table') || params.get('code') || '');
   if (params.get('trail')) trailView(Z.digitsOf(params.get('trail')));
   else if (params.get('look')) openLook();

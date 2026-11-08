@@ -20,7 +20,7 @@ const L = require('../zero-look.js');
 
 const PHONE = devices['iPhone 13'];
 const SHOTS = process.env.SHOTS || '';
-const which = (process.argv[2] || 'ABCDEFGIH').toUpperCase();
+const which = (process.argv[2] || 'ABCDEFGIJH').toUpperCase();
 
 // ---- Claude, stood in -------------------------------------------------------------------
 const WORDS = {
@@ -99,7 +99,7 @@ async function phone(browser, base, clipboard) {
 // the three words it offers, the card. With `asked`, the sheet has already
 // opened by itself (a seat taken before a name).
 async function signUp(page, name, asked) {
-  if (!asked) await page.locator('#who-line button', { hasText: 'I’m new' }).click();
+  if (!asked) await page.locator('#f-who button', { hasText: 'I’m new' }).click();
   await page.fill('#door-name', name);
   if (name === 'Matthew') await shot(page, 'door-new');
   const words = await page.locator('.door-words span').allTextContents();
@@ -137,22 +137,47 @@ async function earnWhere(p, hand) {
   if (r.showdown && !p.earn[hand]) p.earn[hand] = r.labels;
   if (r.picked && !p.chosen[hand]) p.chosen[hand] = r.labels;
 }
-// "Close the game" at the foot of each game screen, between the moves and the credits.
-async function closeWhere(p) {
-  const r = await p.page.evaluate(() => {
-    const t = document.getElementById('table');
-    if (!t || t.hidden) return null;
-    // the game's last screen, once it is over, has the poem to follow and nothing to choose
-    if (Array.from(document.querySelectorAll('#t-moves button')).some(b => b.textContent === 'The poem')) return null;
-    const ph = (document.getElementById('t-phase').textContent.split('·')[1] || '').trim();
-    const moves = document.getElementById('t-moves');
-    const screen = moves.querySelector('.picks.eye') || /Does any word not belong/.test(moves.textContent) ? 'the eye' : ph;
-    const c = document.getElementById('t-close'), go = document.getElementById('t-close-go'), f = document.querySelector('footer.foot');
-    const cr = c.getBoundingClientRect(), mr = moves.getBoundingClientRect(), fr = f.getBoundingClientRect();
-    return { screen, ok: !c.hidden && !go.hidden && go.offsetParent !== null && cr.top >= mr.bottom - 1 && cr.bottom <= fr.top + 1 && c.nextElementSibling === null };
+// The foot of every screen (spine:zero 4.24), read from whatever screen is showing: who is at
+// this phone with "not you?", Back to the lobby, Close the game on game screens, then the credits,
+// in that order, beneath the screen, and the credits over no control.
+async function footAt(page) {
+  return page.evaluate(() => {
+    const on = ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].find(id => !document.getElementById(id).hidden);
+    if (!on) return null;
+    let screen = on;
+    const over = on === 'table' && Array.from(document.querySelectorAll('#t-moves button')).some(b => b.textContent === 'The poem');
+    if (on === 'table') {
+      const moves = document.getElementById('t-moves');
+      const ph = (document.getElementById('t-phase').textContent.split('·')[1] || '').trim();
+      screen = over ? 'the game over' : moves.querySelector('.picks.eye') || /Does any word not belong/.test(moves.textContent) ? 'the eye' : ph || 'finding the table';
+    }
+    const form = document.getElementById('lobby-form');
+    if (on === 'lobby' && !form.hidden) screen = !document.getElementById('host-part').hidden ? 'lobby, hosting' : 'lobby, joining';
+    const vis = n => !n.hidden && n.offsetParent !== null && n.getBoundingClientRect().height > 0;
+    const r = n => n.getBoundingClientRect();
+    const who = document.getElementById('f-who'), back = document.getElementById('f-back-part'), close = document.getElementById('t-close'), credits = document.querySelector('footer.foot');
+    const shown = [who, back, close, credits].filter(vis);
+    const inOrder = shown.every((x, k) => !k || r(x).top >= r(shown[k - 1]).bottom - 1);
+    const text = who.textContent;
+    const signed = /^You are .+ on this phone · not you\?$/.test(text), door = text === 'I’m new · I’ve been here';
+    const wantBack = !(on === 'lobby' && form.hidden), wantClose = on === 'table' && !over;
+    const below = r(who).top >= r(document.getElementById(on)).bottom - 1;
+    const cr = r(credits);
+    const controls = Array.from(document.querySelectorAll('button, input, textarea, a[href], select')).filter(c => !credits.contains(c) && vis(c));
+    const clear = controls.every(c => { const x = r(c); return x.bottom <= cr.top || x.top >= cr.bottom || x.right <= cr.left || x.left >= cr.right; });
+    const last = credits.nextElementSibling === null && credits.lastElementChild.textContent === 'made by Matthew Bushell' &&
+      /With thanks to David Pinto, who built the ground these pages stand on/.test(credits.textContent) && credits.querySelector('a').href === 'https://beach.happyseaurchin.com/';
+    const ok = vis(who) && (signed || door) && vis(back) === wantBack && vis(close) === wantClose && inOrder && below && clear && last;
+    return { screen, ok, text, why: JSON.stringify({ text, back: vis(back), wantBack, close: vis(close), wantClose, inOrder, below, clear, last }) };
   }).catch(() => null);
-  if (r && r.screen && !(r.screen in p.closeAt)) p.closeAt[r.screen] = r.ok;
-  else if (r && r.screen && !r.ok) p.closeAt[r.screen] = false;
+}
+// Recorded on every screen a phone passes through: the first time, and any time it is wrong.
+async function recordFoot(p) {
+  const f = await footAt(p.page);
+  if (!f) return f;
+  p.footAt = p.footAt || {};
+  if (!(f.screen in p.footAt) || !f.ok) p.footAt[f.screen] = f.ok ? true : f.why;
+  return f;
 }
 // Every screen a person sees, read for the words that must never appear.
 const seenBanned = [];
@@ -175,7 +200,7 @@ async function play(p, words, opts = {}) {
   const deadline = Date.now() + (opts.timeout || 240000);
   let hand = 0;
   p.saw = p.saw || {};
-  p.closeAt = p.closeAt || {};
+  p.footAt = p.footAt || {};
   while (Date.now() < deadline) {
     await watchWords(p);
     if (opts.until && await opts.until(hand)) return true;
@@ -183,7 +208,7 @@ async function play(p, words, opts = {}) {
     const phase = (await page.locator('#t-phase').textContent().catch(() => '')) || '';
     const m = /Hand (one|two|three|four)/.exec(phase);
     if (m) hand = ['one', 'two', 'three', 'four'].indexOf(m[1]) + 1;
-    await closeWhere(p);
+    await recordFoot(p);
     await earnWhere(p, hand);
     if (opts.shots && !seen.has(phase)) { seen.add(phase); await shot(page, opts.shots + '-' + phase.replace(/[^a-z]+/gi, '-').toLowerCase()); }
     try {
@@ -263,6 +288,12 @@ async function webChecks(label, page, where, g) {
   await node.click();
   check(label + ': and tapping it again puts every arrow back', !(await page.locator(where + ' svg.web.lit').count()) && (await page.textContent(where + ' .web-line')) === HINT);
 }
+// The words a game put into the tree, each once (case and singular form ignored, as the law has it).
+function keptWords(g) {
+  const kept = [];
+  g.rounds.forEach(r => r.words.forEach(w => { if (w.kept && !kept.some(k => Z.same(k, w.word))) kept.push(w.word); }));
+  return kept;
+}
 async function readingChecks(label, page, where, g) {
   const R = L.readings(g);
   const sec = async k => (await page.textContent(where + ` .look-sec[data-reading="${k}"]`)) || '';
@@ -270,7 +301,7 @@ async function readingChecks(label, page, where, g) {
   const n1 = x => String(Math.round(x * 10) / 10), vw = n => n + (n === 1 ? ' vote' : ' votes');
   // words new to the tree
   const fresh = await page.locator(where + ' .look-list.fresh .lw').allTextContents();
-  check(label + ': words new to the tree: the words nobody had played anywhere in it before the game', g.fresh.length ? JSON.stringify(fresh) === JSON.stringify(g.fresh.map(x => x.word)) && new RegExp('^Words new to the tree' + g.fresh.length + ' of the ').test(await sec('fresh'))
+  check(label + ': words new to the tree: the words nobody had played anywhere in it before the game', g.fresh.length ? JSON.stringify(fresh) === JSON.stringify(g.fresh.map(x => x.word)) && new RegExp('^Words new to the tree' + (g.fresh.length === keptWords(g).length ? 'All ' + g.fresh.length + ' words' : g.fresh.length + ' of the ' + keptWords(g).length + ' words')).test(await sec('fresh'))
     : /had been played in it before|put no word/.test(await sec('fresh')), fresh.length + ' new: ' + fresh.slice(0, 6).join(', '));
   // people or computer
   const pc = R.pc, one = pc.people.length === 1 ? pc.people[0] : '';
@@ -345,6 +376,8 @@ async function endChecks(label, beach, page, people) {
   const everything = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).sort(Z.byAddr);
   const full = (await L.games(beach.blocks.zero, everything)).find(x => x.kind === 'table' && Z.codeKey(x.code) === Z.codeKey(t.code));
   await readingChecks(label, page, '#e-shows', full);
+  const foot = await footAt(page);
+  check(label + ': the end card has the foot: who is at this phone, Back to the lobby, the credits (no Close the game, the game is over)', foot && foot.screen === 'end' && foot.ok, foot && foot.why);
   const tree = beach.blocks.zero;
   const voiced = t.hands.filter(h => h.winners.length);
   const allVoiced = voiced.every(h => { const n = Z.nodeAt(tree, h.place); return n && Z.readPlace(n).voice && Z.textOf(n) === Z.placeAfter(h, s => Z.nameOf(t, s))._; });
@@ -443,7 +476,7 @@ async function tableA(browser, base, beach) {
   check('A: the lobby has no computer-player count now (4.25)', (await page.locator('#cp-count').count()) === 0);
   check('A: the lobby says how it plays', /Write a word nobody else will think of/.test(await page.textContent('#lobby')));
   await page.click('#door-host');
-  check('A: before a name, the lobby offers the door: I’m new · I’ve been here', /I’m new · I’ve been here/.test(await page.textContent('#who-line')));
+  check('A: before a name, the lobby offers the door: I’m new · I’ve been here', /I’m new · I’ve been here/.test(await page.textContent('#f-who')));
   const door = await signUp(page, 'Matthew');
   check('A: the door offers three words, and a card showing the name and the words', door.words.length === 3 && door.card.includes('Matthew') && door.words.every(w => door.card.includes(w)), JSON.stringify(door));
   check('A: the name is a real name on the beach (passport:Matthew)', !!beach.blocks['passport:Matthew']);
@@ -490,7 +523,7 @@ async function tableA(browser, base, beach) {
   const stakes = Object.keys(host.stakeMax || {}).map(Number);
   check('A: the turn lets a seat stake its word chips too', stakes.length >= 1 && stakes.every(n => host.stakeMax[n] === Z.stakeable(t.hands[n - 1], 1)), JSON.stringify(host.stakeMax));
   const screens = ['seats', 'the flop', 'the eye', 'the turn', 'the showdown', 'the voice'];
-  check('A: "Close the game" sits at the foot of every game screen, just above the credits', screens.every(x => host.closeAt[x] === true), JSON.stringify(host.closeAt));
+  check('A: every game screen has the foot of 4.24: who is at this phone, Back to the lobby, Close the game, the credits', screens.every(x => host.footAt[x] === true), JSON.stringify(host.footAt));
   const h2 = t.hands[1];
   check('A: the computer players sent out the word that did not belong (spreadsheet), by more than half the seats', h2.eyeOut[1] === true && h2.marked[1] > 4.5, JSON.stringify({ words: h2.words, marked: h2.marked }));
   check('A: and marked honestly otherwise: no other word was marked in any hand', t.hands.every(h => Object.keys(h.marked).every(k => h.words[k] === 'spreadsheet')));
@@ -503,6 +536,9 @@ async function tableA(browser, base, beach) {
   check('A: the computers sealed before the host could write, every step', await computersFirst(beach, code));
   check('A: the key is still nowhere on the beach', !JSON.stringify(beach.blocks).includes('sk-ant-test'));
   await keepAndNote('A', page, beach);
+  await page.click('#f-back');
+  check('A: from the end card, Back to the lobby goes straight there: the game is over, so nothing is asked', await page.locator('#lobby').isVisible() && await page.locator('#f-ask').isHidden() &&
+    (await page.evaluate(() => localStorage.getItem('zero.table'))) === null);
   check('A: no page errors', !host.errors.length, host.errors.join(' / '));
   await host.ctx.close();
 }
@@ -760,9 +796,101 @@ async function tableH(browser, base, beach) {
   check('H: no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 2).join(' / '));
   check('H: Look around wrote nothing to the beach', beach.log.length === writesBefore);
   check('H: the look has its own address (?look=1), and Back returns to the lobby', /[?&]look=1/.test(page.url()));
-  await page.click('#look-back');
+  await page.click('#f-back');
   check('H: …back to the lobby', await page.locator('#lobby').isVisible() && !/look=1/.test(page.url()));
   check('H: no page errors', !p.errors.length, p.errors.join(' / '));
+  await p.ctx.close();
+}
+
+async function tableJ(browser, base, beach) {
+  console.log('J. The foot of every screen: who is at this phone, Back to the lobby, Close the game, the credits');
+  const foot = async (p, label, screen, extra) => {
+    const f = await recordFoot(p);
+    check('J: ' + label, f && f.screen === screen && f.ok && (!extra || extra(f)), f ? f.screen + ' ' + f.why : 'no screen');
+    return f;
+  };
+  const p = await phone(browser, base);
+  const { page } = p;
+  await foot(p, 'the lobby, before a name: the door (I’m new · I’ve been here), no way back from where you are, the credits', 'lobby', f => f.text === 'I’m new · I’ve been here');
+  await page.click('#door-host');
+  await foot(p, 'hosting: Back to the lobby appears', 'lobby, hosting');
+  await page.click('#f-back');
+  check('J: …and takes you back to the three doors', await page.locator('#lobby-form').isHidden() && await page.locator('#f-back-part').isHidden() && await page.locator('#door-host').isVisible());
+  await page.click('#door-join');
+  await foot(p, 'joining: the same foot', 'lobby, joining');
+  await page.click('#f-back');
+  // a name, a table, the waiting room
+  const { code, link } = await hostOpens(p, 'Jude', 'A new first word', 'Harbourside');
+  await foot(p, 'the waiting room: You are Jude on this phone · not you?, Back to the lobby, the credits', 'waiting', f => f.text === 'You are Jude on this phone · not you?');
+  check('J: before anyone sits down, one plain line: Everything you write here is public and kept.', /Everything you write here is public and kept\./.test(await page.textContent('#waiting')));
+  // the invite link, before a name
+  const v = await phone(browser, link);
+  await v.page.locator('.door-sheet').waitFor();
+  await v.page.click('.door-shut');
+  await v.page.waitForSelector('#invited:not([hidden])');
+  await foot(v, 'arriving by the invite link: the door in the foot, Back to the lobby, the credits', 'invited', f => f.text === 'I’m new · I’ve been here');
+  check('J: and the invited screen says too: Everything you write here is public and kept.', /Everything you write here is public and kept\./.test(await v.page.textContent('#invited')));
+  await v.ctx.close();
+  // a guest in the waiting room: asked first, Stay keeps the seat, Leave frees it
+  const kai = await arrives(browser, link, 'Kai');
+  await kai.page.waitForSelector('#waiting:not([hidden])');
+  await kai.page.click('#f-back');
+  check('J: in the waiting room, Back to the lobby asks first: Leave this game? Your seat will be freed.', await kai.page.locator('#f-ask').isVisible() && (await kai.page.textContent('#f-ask-say')) === 'Leave this game? Your seat will be freed.' && await kai.page.locator('#f-back').isHidden());
+  await kai.page.click('#f-ask-no');
+  check('J: Stay keeps the seat', await kai.page.locator('#waiting').isVisible() && await kai.page.locator('#f-ask').isHidden() && await kai.page.locator('#f-back').isVisible());
+  await page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 2, null, { timeout: 15000 });
+  await kai.page.click('#f-back');
+  await kai.page.click('#f-ask-yes');
+  await kai.page.waitForSelector('#lobby:not([hidden])');
+  check('J: Leave the game frees the seat and says so', /You left the table. Your seat is free./.test(await kai.page.textContent('#lobby-note')));
+  await page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 1, null, { timeout: 15000 });
+  check('J: and the host sees the seat free again', (await atTable(page)).length === 1);
+  await foot(kai, 'back in the lobby, still named: You are Kai on this phone · not you?', 'lobby', f => f.text === 'You are Kai on this phone · not you?');
+  await kai.ctx.close();
+  // the game: the foot on every screen it passes, then asked before leaving
+  await addKey(page, 'sk-ant-test');
+  await page.click('#deal-go');
+  await page.waitForSelector('#table:not([hidden])');
+  await play(p, h => ['quay', 'bollard', 'gull', 'rope'][h - 1], { until: async () => visible(page.locator('#m-line')) });
+  const seen = Object.keys(p.footAt).filter(k => ['seats', 'the flop', 'the eye', 'the turn'].includes(k));
+  check('J: every game screen on the way (seats, the flop, the eye, the turn) has the foot, Close the game beneath Back to the lobby', seen.length >= 3 && seen.every(k => p.footAt[k] === true), JSON.stringify(p.footAt));
+  await page.click('#f-back');
+  check('J: in a game, Back to the lobby asks first; the host is told the game ends for everyone', await page.locator('#f-ask').isVisible() && (await page.textContent('#f-ask-say')) === 'Leave this game? You host it, so it ends for everyone at the table.');
+  await page.click('#t-close-go');
+  check('J: Close the game and the question never stand open together', await page.locator('#t-close-ask').isVisible() && await page.locator('#f-ask').isHidden() && await page.locator('#f-back').isVisible());
+  await page.click('#t-close-no');
+  await page.locator('#f-notyou').click();
+  check('J: not you?, in a game, asks the same first', await page.locator('#f-ask').isVisible() && await page.locator('#table').isVisible());
+  await page.click('#f-ask-no');
+  check('J: Stay: still at the table, still Jude', await page.locator('#table').isVisible() && /You are Jude on this phone/.test(await page.textContent('#f-who')));
+  await page.locator('#f-notyou').click();
+  await page.click('#f-ask-yes');
+  await page.locator('.door-sheet').waitFor({ timeout: 15000 });
+  const all = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).filter(e => Z.codeKey(e.code) === Z.codeKey(code));
+  check('J: not you? then Leave the game: the table is closed (the host was leaving), Jude is signed out, and the door opens', all.some(e => e.kind === 'close') &&
+    await page.locator('#lobby').isVisible() && /You closed the game/.test(await page.textContent('#lobby-note')) && (await page.evaluate(() => localStorage.getItem('zero.table'))) === null);
+  await page.click('.door-shut');
+  await page.locator('.door-sheet').waitFor({ state: 'detached' });
+  await foot(p, 'signed out, the foot offers the door again', 'lobby', f => f.text === 'I’m new · I’ve been here');
+  // Look around and a trail read on its own
+  await signUp(page, 'Juno');
+  await page.click('#door-look');
+  await page.waitForSelector('#look .look-card', { timeout: 30000 });
+  await foot(p, 'Look around: You are Juno on this phone · not you?, Back to the lobby, the credits', 'look', f => f.text === 'You are Juno on this phone · not you?');
+  await page.locator('#f-notyou').click();
+  await page.locator('.door-sheet').waitFor();
+  check('J: not you? outside a game asks nothing: it signs out, and the door opens over Look around', await page.locator('#look').isVisible() && await page.locator('#f-ask').isHidden());
+  await page.click('.door-shut');
+  await page.locator('.door-sheet').waitFor({ state: 'detached' });
+  check('J: …and the foot offers the door', (await page.textContent('#f-who')) === 'I’m new · I’ve been here');
+  await page.click('#f-back');
+  check('J: Back to the lobby from Look around', await page.locator('#lobby').isVisible() && await page.locator('#f-ask').isHidden());
+  await page.goto(base + '&trail=1583');
+  await page.waitForSelector('#trailview:not([hidden]) .poem .place');
+  await foot(p, 'a trail read on its own: the same foot', 'trailview');
+  await page.click('#f-back');
+  check('J: Back to the lobby from a trail', await page.locator('#lobby').isVisible() && !/trail=/.test(page.url()));
+  check('J: no page errors', !p.errors.length, p.errors.join(' / '));
   await p.ctx.close();
 }
 
@@ -833,6 +961,7 @@ try {
   if (which.includes('F')) await tableF(browser, base, beach);
   if (which.includes('G')) await tableG(browser, base, beach);
   if (which.includes('I')) await tableI(browser, base, beach);
+  if (which.includes('J')) await tableJ(browser, base, beach);
   if (which.includes('H')) await tableH(browser, base, beach);
 } catch (e) {
   check('the run finished', false, e.stack || String(e));

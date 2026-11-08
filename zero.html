@@ -292,7 +292,12 @@
   .notes .n p { margin: 0.1rem 0 0; white-space: pre-line; overflow-wrap: anywhere; }
 
   /* ---- closing the game ---- */
-  .close-game { text-align: center; border-top: 1px solid var(--line); margin: 1.2rem 0 0; padding-top: 0.6rem; }
+  .close-game { text-align: center; margin: 0.2rem 0 0; }
+  /* ---- the foot of every screen (spine:zero 4.24) ---- */
+  .foot-nav { text-align: center; border-top: 1px solid var(--line); margin: 1.4rem 0 0; padding-top: 0.6rem; }
+  .foot-nav .who-line { font-size: 1rem; margin: 0 0 0.2rem; }
+  .foot-back { margin: 0 0 0.2rem; }
+  .foot-nav .error:empty { min-height: 0; margin: 0; }
   .close-say { font-style: italic; margin: 0 0 0.5rem; }
   .close-row { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
   .lobby-note { text-align: center; font-style: italic; color: var(--crimson); margin: -0.4rem 0 1rem; }
@@ -382,7 +387,6 @@
         <button type="button" id="door-look">Look around</button>
       </div>
       <form id="lobby-form" novalidate hidden>
-        <p class="who-line" id="who-line"></p>
 
         <div id="host-part" hidden>
           <div class="group">
@@ -447,7 +451,6 @@
       <p class="title">Zero</p>
       <p class="tagline">You’re invited to a table.</p>
       <p class="code" id="i-code"></p>
-      <p class="who-line" id="i-who"></p>
       <button type="button" class="go" id="i-go">Take a seat</button>
       <p class="error" id="i-error" role="alert"></p>
       <p class="public">Everything you write here is public and kept.</p>
@@ -468,17 +471,6 @@
       <div class="moves" id="t-moves" aria-live="polite"></div>
       <p class="error" id="t-error" role="alert"></p>
       <p class="status" id="t-status"></p>
-      <!-- Always at the foot of the game, just above the credits -->
-      <div class="close-game" id="t-close">
-        <button type="button" class="quiet" id="t-close-go">Close the game</button>
-        <div id="t-close-ask" hidden>
-          <p class="close-say" id="t-close-say"></p>
-          <div class="close-row">
-            <button type="button" id="t-close-yes">Close it</button>
-            <button type="button" class="quiet" id="t-close-no">Keep playing</button>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- The end: the game's poem (spine:zero 4.6) -->
@@ -502,14 +494,12 @@
         <p class="error" id="note-error" role="status"></p>
       </form>
       <div class="notes" id="e-notes"></div>
-      <p class="centre"><button type="button" class="quiet" id="e-again">Back to the lobby</button></p>
     </section>
 
     <!-- Look around (spine:zero 4.9): the tree, the games, what each shows -->
     <section id="look" hidden>
       <div class="bar"><span class="name">Zero</span><span class="phase">looking around</span></div>
       <div id="look-body"><p class="look-note">Reading the tree…</p></div>
-      <p class="centre"><button type="button" class="quiet" id="look-back">Back to the lobby</button></p>
     </section>
 
     <!-- A trail read on its own: zero.html?trail=1583 -->
@@ -519,6 +509,32 @@
       <p class="centre"><a href="zero.html">Play Zero</a></p>
     </section>
 
+    <!-- The foot of every screen (spine:zero 4.24), in this order: who is at this phone,
+         the way back to the lobby, Close the game on game screens, then the credits -->
+    <nav class="foot-nav" id="foot" aria-label="You, and the way back">
+      <p class="who-line" id="f-who"></p>
+      <div class="foot-back" id="f-back-part">
+        <button type="button" class="quiet" id="f-back">Back to the lobby</button>
+        <div id="f-ask" hidden>
+          <p class="close-say" id="f-ask-say">Leave this game? Your seat will be freed.</p>
+          <div class="close-row">
+            <button type="button" id="f-ask-yes">Leave the game</button>
+            <button type="button" class="quiet" id="f-ask-no">Stay</button>
+          </div>
+        </div>
+      </div>
+      <div class="close-game" id="t-close" hidden>
+        <button type="button" class="quiet" id="t-close-go">Close the game</button>
+        <div id="t-close-ask" hidden>
+          <p class="close-say" id="t-close-say"></p>
+          <div class="close-row">
+            <button type="button" id="t-close-yes">Close it</button>
+            <button type="button" class="quiet" id="t-close-no">Keep playing</button>
+          </div>
+        </div>
+      </div>
+      <p class="error" id="f-error" role="alert"></p>
+    </nav>
     <footer class="foot">
       <p><a href="https://beach.happyseaurchin.com">With thanks to David Pinto, who built the ground these pages stand on</a></p>
       <p class="made">made by Matthew Bushell</p>
@@ -530,8 +546,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08i"></script>
-<script src="zero-look.js?v=2026-11-08i"></script>
-<script src="zero.js?v=2026-11-08i"></script>
+<script src="zero-law.js?v=2026-11-08j"></script>
+<script src="zero-look.js?v=2026-11-08j"></script>
+<script src="zero.js?v=2026-11-08j"></script>
 </body>
 </html>
