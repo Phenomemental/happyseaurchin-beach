@@ -6,7 +6,8 @@
 //                                       B host + 2 phones by the link + 6 computer,
 //                                       C nine people by the link, D someone leaves and
 //                                       comes back by the link, E the room is locked,
-//                                       F Claude refuses the host's key, G three people, no key
+//                                       F Claude refuses the host's key, G three people, no key,
+//                                       H Look around
 // Screenshots, when asked for with SHOTS=<dir>, land there.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -15,10 +16,11 @@ import { serve } from './zero-beach.mjs';
 const require = createRequire(import.meta.url);
 const { chromium, devices } = require('playwright');   // the machine's own Playwright
 const Z = require('../zero-law.js');
+const L = require('../zero-look.js');
 
 const PHONE = devices['iPhone 13'];
 const SHOTS = process.env.SHOTS || '';
-const which = (process.argv[2] || 'ABCDEFG').toUpperCase();
+const which = (process.argv[2] || 'ABCDEFGH').toUpperCase();
 
 // ---- Claude, stood in -------------------------------------------------------------------
 const WORDS = {
@@ -121,7 +123,7 @@ async function watchWords(p) {
   const hit = await p.page.evaluate((src) => {
     const re = new RegExp(src, 'i');
     let txt = '';
-    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview'].forEach(id => { const n = document.getElementById(id); if (n && !n.hidden) txt += ' ' + n.innerText; });
+    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].forEach(id => { const n = document.getElementById(id); if (n && !n.hidden) txt += ' ' + n.innerText; });
     const m = txt.match(re);
     return m ? m[0] + ' in: …' + txt.slice(Math.max(0, m.index - 60), m.index + 40).replace(/\s+/g, ' ') + '…' : '';
   }, BANNED.source).catch(() => '');
@@ -519,6 +521,62 @@ async function tableF(browser, base, beach) {
   await ctx.close();
 }
 
+async function tableH(browser, base, beach) {
+  console.log('H. Look around: the tree, every game, what each game shows');
+  const p = await phone(browser, base);
+  const { page } = p;
+  const writesBefore = beach.log.length;
+  check('H: the lobby has a third door, Look around', await page.locator('#door-look').isVisible() && (await page.textContent('#door-look')) === 'Look around');
+  await page.click('#door-look');
+  await page.waitForSelector('#look li.tp', { timeout: 20000 });
+  await page.waitForSelector('#look .look-card', { timeout: 20000 });
+  await shot(page, 'h-look');
+  const tree = beach.blocks.zero;
+  const voiced = L.voicedPlaces(tree);
+  const points = await page.locator('#look li.tp.played').count();
+  check('H: every played place in the tree is a crimson point', points === voiced.length, points + ' of ' + voiced.length);
+  await page.locator('#look li[data-place="2"] > .tp-row .tp-word').click();
+  const said = await page.locator('#look li[data-place="2"] > .tp-detail .tp-sentence').first().textContent();
+  check('H: tapping a place shows its winning sentence', said === L.voiceParts(Z.readPlace(tree['2']).voice)[0].line, said);
+  const seats = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(i => tree['2'][i] != null).length;
+  const filled = await page.locator('#look li[data-place="2"] > .tp-row .dot:not(.open)').count();
+  const hollow = await page.locator('#look li[data-place="2"] > .tp-row .dot.open').count();
+  check('H: its seats are small dots, open seats hollow', filled === seats && hollow === 9 - seats, filled + ' filled, ' + hollow + ' hollow');
+  await page.locator('#look li[data-place="2"] > .tp-row .dot').nth(1).click();
+  check('H: tapping a seat shows its word and who wrote it', (await page.locator('#look li[data-place="2"] > .tp-detail .tp-seat').textContent()) === Z.textOf(tree['2']['2']));
+  const all = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).sort(Z.byAddr);
+  const gs = await L.games(tree, all);
+  const cards = await page.locator('#look .look-card').count();
+  check('H: every game played has its poem card', cards === gs.length && gs.length >= 2, cards + ' cards, ' + gs.length + ' games');
+  check('H: newest first', (await page.locator('#look .look-card').first().getAttribute('data-game')) === (gs[0].code || gs[0].hands[0]));
+  const kite = page.locator('#look .look-card[data-game="KITE 1"]');
+  check('H: KITE 1 shows its date and who sat down', /a game of Zero · 8 November 2026/.test(await kite.locator('.top').textContent()) && /Phenomemental · Engineer/.test(await kite.locator('.sat').textContent()));
+  await kite.locator('.look-open').click();
+  const kg = gs.find(g => g.code === 'KITE 1');
+  const pairs = new Set(kg.votes.map(v => v.from + '>' + v.to)).size;
+  check('H: who voted for whom is drawn as a web, an arrow for each voter and choice', (await kite.locator('svg.web path.edge').count()) === pairs, pairs + ' pairs');
+  const sum = t => (/Votes received: ([^.]*)/.exec(t)[1].match(/\d+/g) || []).reduce((a, b) => a + Number(b), 0);
+  check('H: and every vote is counted (36 in KITE 1)', sum(await kite.locator('.votes-said').textContent()) === 36);
+  const same = await kite.locator('.look-list.same').textContent();
+  check('H: where two players thought the same, with both names', /Team · Phenomemental and Child/.test(same) && /moon/.test(same), same.slice(0, 120));
+  check('H: words only one person saw', /Feedback \(Engineer\)/.test(await kite.locator('.look-list.alone').textContent()));
+  await shot(page, 'h-kite');
+  const first = page.locator('#look .look-card[data-game="1"]');
+  await first.locator('.look-open').click();
+  check('H: the first game, played in chat, has its votes read from its record (27)', sum(await first.locator('.votes-said').textContent()) === 27);
+  check('H: and its matches: birthday, watch, snow', /birthday · Child and Phenomemental/.test(await first.locator('.look-list.same').textContent()) && /snow · Grandmother and Farmer/.test(await first.locator('.look-list.same').textContent()));
+  const rows = L.across(tree, gs);
+  check('H: Across all games shows once a first word has two games, and not before', (await page.locator('#look .look-across').count() > 0) === (rows.length > 0), rows.length + ' rows');
+  await watchWords(p);
+  check('H: no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 2).join(' / '));
+  check('H: Look around wrote nothing to the beach', beach.log.length === writesBefore);
+  check('H: the look has its own address (?look=1), and Back returns to the lobby', /[?&]look=1/.test(page.url()));
+  await page.click('#look-back');
+  check('H: …back to the lobby', await page.locator('#lobby').isVisible() && !/look=1/.test(page.url()));
+  check('H: no page errors', !p.errors.length, p.errors.join(' / '));
+  await p.ctx.close();
+}
+
 // ---- run ----------------------------------------------------------------------------------
 const { server, beach, port } = await serve(0);
 const base = `http://localhost:${port}/zero.html?beach=http://localhost:${port}&fast=1`;
@@ -531,6 +589,7 @@ try {
   if (which.includes('E')) await tableE(browser, base, beach);
   if (which.includes('F')) await tableF(browser, base, beach);
   if (which.includes('G')) await tableG(browser, base, beach);
+  if (which.includes('H')) await tableH(browser, base, beach);
 } catch (e) {
   check('the run finished', false, e.stack || String(e));
   // what the room held when it stopped

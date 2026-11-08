@@ -119,8 +119,8 @@
     margin: 0.4rem 0 0.4rem;
   }
   .tagline { text-align: center; font-style: italic; font-size: 1.2rem; margin: 0 0 1.3rem; }
-  .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0 0 1.2rem; }
-  .doors button { min-height: 3.4rem; font-size: 1.15rem; }
+  .doors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin: 0 0 1.2rem; }
+  .doors button { min-height: 3.4rem; font-size: 1.05rem; padding: 0.3rem 0.4rem; line-height: 1.15; }
   .doors button[aria-pressed=true] { font-style: italic; box-shadow: inset 0 0 0 1px var(--crimson); }
   .group { margin: 0 0 0.9rem; }
   .group-head { font-size: 0.98rem; color: var(--soft); margin: 0.2rem 0 0.35rem; }
@@ -282,6 +282,38 @@
   .notes .n b { font-weight: 600; font-size: 0.95rem; }
   .notes .n p { margin: 0.1rem 0 0; white-space: pre-line; overflow-wrap: anywhere; }
 
+  /* ---- looking around ---- */
+  .look-head { font-weight: 500; font-size: 0.95rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--soft); text-align: center; margin: 1.5rem 0 0.6rem; }
+  .look-note { font-style: italic; color: var(--soft); font-size: 0.98rem; text-align: center; margin: 0 0 0.6rem; }
+  .look-tree ul.tree { list-style: none; margin: 0; padding: 0 0 0 0.85rem; border-left: 1px solid var(--line); }
+  .look-tree > ul.tree { border-left: 0; padding-left: 0; }
+  .look-tree li.tp { margin: 0.1rem 0; }
+  .tp-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0 0.4rem; }
+  .tp-word { border: 0; background: none; padding: 0.15rem 0.1rem; min-height: 2.2rem; display: inline-flex; align-items: center; gap: 0.45rem; color: var(--ink); font-size: 1.08rem; letter-spacing: 0; }
+  .tp.played > .tp-row .tp-word .w { font-style: italic; color: var(--crimson); }
+  .pt { flex: 0 0 auto; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--crimson); display: inline-block; }
+  .pt.open { background: transparent; border: 1px solid var(--crimson); }
+  .dots { display: inline-flex; }
+  .dot { position: relative; width: 1.15rem; height: 1.7rem; min-height: 0; padding: 0; border: 0; background: none; }
+  .dot::after { content: ""; position: absolute; left: 50%; top: 50%; width: 0.42rem; height: 0.42rem; margin: -0.21rem 0 0 -0.21rem; border-radius: 50%; background: var(--ink); opacity: 0.72; }
+  .dot.open::after { background: transparent; border: 1px solid var(--ink); opacity: 0.55; box-sizing: border-box; }
+  .tp-detail { padding: 0 0 0.45rem 1.15rem; }
+  .tp-sentence { font-style: italic; margin: 0; line-height: 1.3; }
+  .tp-by, .tp-seat { font-size: 0.9rem; font-style: italic; color: var(--soft); margin: 0; }
+  .tp-seat:empty { display: none; }
+  .look-card .look-open { display: block; margin: 0.5rem auto 0; }
+  .look-shows { text-align: left; border-top: 1px solid var(--line); margin-top: 0.5rem; padding-top: 0.3rem; }
+  .look-h { font-weight: 500; font-size: 1.02rem; font-style: italic; color: var(--crimson); margin: 0.8rem 0 0.3rem; text-align: center; }
+  .web { display: block; width: 100%; max-width: 28rem; margin: 0 auto 0.3rem; overflow: visible; }
+  .web text { font-family: "Cormorant Garamond", Garamond, serif; font-style: italic; font-size: 13px; fill: #2a2420; }
+  .web text.lead { fill: #8e1b1b; }
+  .look-list { list-style: none; padding: 0; margin: 0 0 0.5rem; }
+  .look-list li { padding: 0.2rem 0; border-bottom: 1px solid var(--line); font-size: 1rem; line-height: 1.35; }
+  .look-list li::before { content: none; }
+  .look-list .lw { font-style: italic; }
+  .look-list .lp { color: var(--soft); font-style: italic; font-size: 0.92rem; }
+  .across-head { text-align: center; font-style: italic; margin: 0.4rem 0 0.2rem; }
+
   /* ---- the foot of every screen ---- */
   .public { font-style: italic; color: var(--soft); font-size: 0.98rem; text-align: center; margin: 0.9rem 0 0; }
   .foot { text-align: center; font-style: italic; color: var(--soft); font-size: 0.9rem; margin: 1.6rem 0 0.4rem; }
@@ -303,6 +335,7 @@
       <div class="doors" role="group" aria-label="Host or join">
         <button type="button" id="door-host" aria-pressed="false">Host a table</button>
         <button type="button" id="door-join" aria-pressed="false">Join a table</button>
+        <button type="button" id="door-look">Look around</button>
       </div>
       <form id="lobby-form" novalidate hidden>
         <p class="who-line" id="who-line"></p>
@@ -415,6 +448,13 @@
       <p class="centre"><button type="button" class="quiet" id="e-again">Back to the lobby</button></p>
     </section>
 
+    <!-- Look around (spine:zero 4.9): the tree, the games, what each shows -->
+    <section id="look" hidden>
+      <div class="bar"><span class="name">Zero</span><span class="phase">looking around</span></div>
+      <div id="look-body"><p class="look-note">Reading the tree…</p></div>
+      <p class="centre"><button type="button" class="quiet" id="look-back">Back to the lobby</button></p>
+    </section>
+
     <!-- A trail read on its own: zero.html?trail=1583 -->
     <section id="trailview" hidden>
       <div class="bar"><span class="name">Zero</span><span class="phase">a trail</span></div>
@@ -433,7 +473,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-08d"></script>
-<script src="zero.js?v=2026-11-08d"></script>
+<script src="zero-law.js?v=2026-11-08e"></script>
+<script src="zero-look.js?v=2026-11-08e"></script>
+<script src="zero.js?v=2026-11-08e"></script>
 </body>
 </html>

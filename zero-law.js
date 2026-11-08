@@ -321,7 +321,10 @@
       t.open = {
         addr: e.addr, host: String(d['1'] || e.who || ''), word: String(d._ || ''),
         place: digitsOf(e.at), computers: Math.max(0, Math.min(8, Number(d['3']) || 0)), personas: personas,
-        isNew: d['5'] === 'new', stamp: e.stamp
+        isNew: d['5'] === 'new', stamp: e.stamp,
+        // A table opened since the table's eye was added says so; one opened
+        // before it played straight from the flop to the sentences.
+        eye: d['6'] === 'eye'
       };
       t.open.personas = personas.slice(0, t.open.computers);
       t.phase = 'waiting';
@@ -381,6 +384,15 @@
       return;
     }
     var st = stepFor(h2);
+    // A table from before the eye: its record goes from the flop straight to
+    // the sentences, so its eye is passed over and nobody is sent out.
+    if (st && st.name === 'eye' && !t.open.eye && d._ === 'line' && (e.kind === 'seal' || e.kind === 'go')) {
+      h2.ring = h2.survivors.slice();
+      h2.noEye = true;
+      h2.stage = 'line';
+      h2.steps.line = newStep('line', h2.ring);
+      st = h2.steps.line;
+    }
     if (!st || d._ !== st.name) return;
     if (e.kind === 'seal') {
       if (st.closed) return;
