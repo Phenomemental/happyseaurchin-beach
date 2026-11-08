@@ -689,7 +689,7 @@
     var kept = [];
     (g.rounds || []).forEach(function (r) { r.words.forEach(function (w) { if (w.kept && !kept.some(function (k) { return Z.same(k, w.word); })) kept.push(w.word); }); });
     if (!g.fresh.length) return say(sec, kept.length ? 'Every word this game put into the tree had been played in it before.' : 'This game put no word into the tree.');
-    say(sec, g.fresh.length + ' of the ' + kept.length + ' words this game put into the tree had never been played anywhere in it before:');
+    say(sec, (g.fresh.length === kept.length ? 'All ' + kept.length : g.fresh.length + ' of the ' + kept.length) + ' words this game put into the tree had never been played anywhere in it before:');
     sec.appendChild(byPlaceList(g.fresh, 'fresh'));
   }
   function setFresh(shows, g) {
