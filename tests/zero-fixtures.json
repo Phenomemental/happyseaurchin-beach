@@ -36,6 +36,37 @@
    "9": "illumination · Phenomemental",
    "_": "Light — Small lights kept on so someone isn't alone. (Night nurse, 3 votes of 7)"
   },
+  "2": {
+   "2": "Feedback · Engineer",
+   "4": "Compass · Sailor",
+   "6": "Fatigue · Night nurse",
+   "8": "lichen · Poet",
+   "9": {
+    "1": "Mycelium · Phenomemental",
+    "2": "thermodynamics · Engineer",
+    "3": {
+     "2": "tunnel · Engineer",
+     "3": "dirt · Child",
+     "4": {
+      "2": "gauge · Engineer",
+      "6": "moonlight · Night nurse",
+      "7": "brine · Chef",
+      "_": "tide — Moonlight on the gauge, brine climbing the tide. (Chef, 6 votes of 9)"
+     },
+     "6": "insomnia · Night nurse",
+     "7": "kitchen · Chef",
+     "_": "worms — Tide turns the dirt, insomnia tunnels worms through the kitchen. (Sailor, 6 votes of 9)"
+    },
+    "4": "galley · Sailor",
+    "5": "garden · Grandmother",
+    "6": "dusk · Night nurse",
+    "7": "kitchenscraps · Chef",
+    "8": "rot · Poet",
+    "9": "manure · Farmer",
+    "_": "compost — Worms and rot and dusk turn the galley scraps back into garden. (Poet, 4 votes of 9)"
+   },
+   "_": "Organisation — Feedback from the compost turns fatigue into lichen, and the compass points back to the soil. (Farmer, 3 votes of 9)"
+  },
   "_": "The tree of Zero, the nine-seat word game (design at spine:zero, law at function:zero, room at pool:zero). Every place is a table: a zero word, nine seats beneath it. Each place's voice is the winning line, signed. An empty seat is not-yet-spoken: sit in one. Read the winning lines down any trail and you have that game's poem."
  },
  "function:zero": {
@@ -81,6 +112,1059 @@
     "2": "",
     "3": "2026-11-08T18:50:45.748Z",
     "_": "The tree has moved to the block zero (same places, same addresses); spine:zero is now the design document and function:zero the law. Moves in this room before this line that name spine:zero refer to the tree as it stood then."
+   },
+   "6": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:30:18.957Z",
+    "6": "FERN 2",
+    "7": "open",
+    "9": {
+     "1": "Phenomemental",
+     "3": "8",
+     "4": "Chef, Farmer, Grandmother, Night nurse, Poet, Sailor, Engineer, Child",
+     "5": "new",
+     "_": "Organisation"
+    },
+    "_": "FERN 2 · Phenomemental opens a table at Organisation (1 seats for people, 8 computer)"
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:31:20.576Z",
+    "6": "FERN 2",
+    "7": "close",
+    "_": "FERN 2 · the host closed the table"
+   },
+   "8": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:33:53.978Z",
+    "6": "MOTH 5",
+    "7": "open",
+    "9": {
+     "1": "Phenomemental",
+     "3": "7",
+     "4": "Chef, Sailor, Night nurse, Engineer, Grandmother, Farmer, Child",
+     "5": "new",
+     "_": "Organisation"
+    },
+    "_": "MOTH 5 · Phenomemental opens a table at Organisation (2 seats for people, 7 computer)"
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:06.712Z",
+    "6": "MOTH 5",
+    "7": "close",
+    "_": "MOTH 5 · the host closed the table"
+   }
+  },
+  "2": {
+   "1": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:27.155Z",
+    "6": "KITE 1",
+    "7": "open",
+    "9": {
+     "1": "Phenomemental",
+     "3": "8",
+     "4": "Engineer, Child, Sailor, Grandmother, Night nurse, Chef, Poet, Farmer",
+     "5": "new",
+     "_": "Organisation"
+    },
+    "_": "KITE 1 · Phenomemental opens a table at Organisation (1 seats for people, 8 computer)"
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:34.717Z",
+    "6": "KITE 1",
+    "7": "deal",
+    "8": "1",
+    "9": {
+     "1": {
+      "1": "person",
+      "_": "Phenomemental"
+     },
+     "2": {
+      "1": "computer",
+      "_": "Engineer"
+     },
+     "3": {
+      "1": "computer",
+      "_": "Child"
+     },
+     "4": {
+      "1": "computer",
+      "_": "Sailor"
+     },
+     "5": {
+      "1": "computer",
+      "_": "Grandmother"
+     },
+     "6": {
+      "1": "computer",
+      "_": "Night nurse"
+     },
+     "7": {
+      "1": "computer",
+      "_": "Chef"
+     },
+     "8": {
+      "1": "computer",
+      "_": "Poet"
+     },
+     "9": {
+      "1": "computer",
+      "_": "Farmer"
+     },
+     "_": "Organisation"
+    },
+    "_": "KITE 1 · hand one at Organisation"
+   },
+   "3": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:39.805Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "1",
+    "9": {
+     "2": "fb71786a180236f9e6499ee33d9c64308a6f2719d020b291a7d9106ead6cb695",
+     "3": "791a5ba8c89ae103d4eccebb488c7aebf28e291c07be925b688f220d1061f30e",
+     "4": "db4dae18a3fbd6f56ad530ff2eba57acf06aeebc5316836e06f03caed4bb71e5",
+     "5": "a7c40b3bff6b3a61aaa488c47cbaa541c70efcb285a3299ed7750b9a6aa14b04",
+     "6": "eb8b0adddecc6a84eedc6c9170bc5ad4e97e6b16dae7fb2499b3eb8c5a293b1d",
+     "7": "7b3be0cda9faa74dd9bc1bfc2424f19926380d952debd4f7b9a545e0008d18a5",
+     "8": "b978facfafcff06d867bed0c84155369a14d79e83caf4369d6ba8bce6e162864",
+     "9": "06c4ba5172cb49d59611deb8f1f90e73cca0ed029d9854d0453c14fc213719fa",
+     "_": "word"
+    },
+    "_": "KITE 1 · the computer players seal their words"
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:55.712Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "1",
+    "9": {
+     "1": "59d529a09da6731e0eca7079f17576322f73801d7dbf43243d98162bf9e19d44",
+     "_": "word"
+    },
+    "_": "KITE 1 · Phenomemental seals a word"
+   },
+   "5": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:35:58.094Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "1",
+    "9": {
+     "1": {
+      "1": "dee8bca495dfa9c0a1e19b22363a1a16",
+      "_": "Team"
+     },
+     "2": {
+      "1": "2ac3bb0b7e139f52a2ba2d427f20b712",
+      "_": "Feedback"
+     },
+     "3": {
+      "1": "28d18bcbbced1dee6018dc5bb5710303",
+      "_": "Team"
+     },
+     "4": {
+      "1": "f40ba6fd42be7e7bc5713aab280c18ee",
+      "_": "Compass"
+     },
+     "5": {
+      "1": "d7a206c5e25de3446f20be9ee1c57985",
+      "_": "kitchen"
+     },
+     "6": {
+      "1": "27a8d4c07229527c62cc92b2d4f4bbcb",
+      "_": "Fatigue"
+     },
+     "7": {
+      "1": "850b947c0594adc1e7bb5f0e177d7e9e",
+      "_": "kitchen"
+     },
+     "8": {
+      "1": "bcba5bd112f2c9bcff232bec18992023",
+      "_": "lichen"
+     },
+     "9": {
+      "1": "e00cd7caf643b408c912bffec5a41471",
+      "_": "compost"
+     },
+     "_": "word"
+    },
+    "_": "KITE 1 · words at Organisation: Phenomemental: Team | Engineer: Feedback | Child: Team | Sailor: Compass | Grandmother: kitchen | Night nurse: Fatigue | Chef: kitchen | Poet: lichen | Farmer: compost"
+   },
+   "6": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:36:03.850Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "1",
+    "9": {
+     "2": "9b175d4871b79433ed650bd58f69436ffe8525ffdc5d6e9874b1ea9e0843c047",
+     "4": "c791764491342b2278a6a8644a02fcf95c8d72b3e7023d4024e9272a24f066a4",
+     "6": "52979842ce50fe23f5b94ceac4bec7ecb6cf929d49f186449569e85748b55d74",
+     "8": "91971f3d42a817c924d463ef78cd4905e254967f359da4cc61ce17b4e996f83b",
+     "9": "cf20453c54557eaf608818a49650a7704f4694dec211a1f5a299f6d496e45371",
+     "_": "line"
+    },
+    "_": "KITE 1 · the computer players seal their lines and stakes"
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:36:05.804Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "1",
+    "9": {
+     "2": {
+      "1": "46da33dce78374203d6d2831589a0bc1",
+      "2": "3",
+      "_": "Compost feedback: fatigue and lichen turn the compass slowly into organisation."
+     },
+     "4": {
+      "1": "29aba6344e766c7f4f3c3e6764cb43d6",
+      "2": "3",
+      "_": "Trust the compass through fatigue and feedback, and let lichen and compost show the slow way home."
+     },
+     "6": {
+      "1": "6e6dccd3a103095ab80422b6652a3aa3",
+      "2": "3",
+      "_": "Night shift: feedback, compass, fatigue, lichen and compost all wait for the same slow dawn."
+     },
+     "8": {
+      "1": "f017fdbac53bd2da4955e09cc90e3469",
+      "2": "3",
+      "_": "Compost feeds the lichen while fatigue and feedback circle a compass."
+     },
+     "9": {
+      "1": "f55210fb2df24843e472800cbf1656bc",
+      "2": "3",
+      "_": "Feedback from the compost turns fatigue into lichen, and the compass points back to the soil."
+     },
+     "_": "line"
+    },
+    "_": "KITE 1 · lines at Organisation: Engineer: Compost feedback: fatigue and lichen turn the compass slowly into organisation. (stake 3) | Sailor: Trust the compass through fatigue and feedback, and let lichen and compost show the slow way home. (stake 3) | Night nurse: Night shift: feedback, compass, fatigue, lichen and compost all wait for the same slow dawn. (stake 3) | Poet: Compost feeds the lichen while fatigue and feedback circle a compass. (stake 3) | Farmer: Feedback from the compost turns fatigue into lichen, and the compass points back to the soil. (stake 3)"
+   },
+   "8": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:36:11.055Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "1",
+    "9": {
+     "2": "219e633901f2c79d3c5ffe9e19d22a48d142b2190ed52db125d8b1ddd847e689",
+     "3": "afb7fffd5addc197e05eef072d3261faa63fe9f2ac2326970f3e93694372e7c7",
+     "4": "2bfd0e81b28f8e8fa17ed8b1953f30e2095996179b53012a54f8e558b616fbab",
+     "5": "ff5f8887546ffb2bf5ad88c5c7cc050d3c922f1cef1101b4d0f4a23bfd018cb6",
+     "6": "2c1681e2aa58d0c55287ec8b05df962896af3e2ccc8b0f99a419defe3c1974f1",
+     "7": "fec05e8c0860914484a6a2f0ee395f6a7fc29e9cea5806fb831078a3922bb242",
+     "8": "9c97b3c05c748c636c9367bdedc5868fccdc7a78239dd83a5dfa6dc212c30619",
+     "9": "4f4fb539c2b2c57ecd698c1d20af6a276fff49dfb73c9aecc1ff04409c5ef965",
+     "_": "vote"
+    },
+    "_": "KITE 1 · the computer players seal their votes"
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:44:27.432Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "1",
+    "9": {
+     "1": "68705b82bbc92df3cd906b5fe7be0b266956f1d44918c12213ad9e8f6e1dd364",
+     "_": "vote"
+    },
+    "_": "KITE 1 · Phenomemental seals a vote"
+   }
+  },
+  "3": {
+   "1": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:44:29.036Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "1",
+    "9": {
+     "1": {
+      "1": "22f40b2610b0b52e1f3db63416690999",
+      "_": "4"
+     },
+     "2": {
+      "1": "3724c754316f10f8f8cd344c27030589",
+      "_": "9"
+     },
+     "3": {
+      "1": "5c1bf2e2b27fbe0a6466bfe944a6e6e5",
+      "_": "8"
+     },
+     "4": {
+      "1": "9a50719248caec87c12cf1a95aaf519b",
+      "_": "6"
+     },
+     "5": {
+      "1": "de7296998d15fb2b6f335d9a70dbb4f1",
+      "_": "6"
+     },
+     "6": {
+      "1": "93cf9bc63c5d901489b40792958b55c9",
+      "_": "9"
+     },
+     "7": {
+      "1": "342e5050414a22d34fd4ed82ee6a8040",
+      "_": "8"
+     },
+     "8": {
+      "1": "93300ce49b91272fdb8eb06bf46bdea8",
+      "_": "9"
+     },
+     "9": {
+      "1": "19667b788ad0f42354e7803608ca14eb",
+      "_": "2"
+     },
+     "_": "vote"
+    },
+    "_": "KITE 1 · votes at Organisation: Phenomemental: votes Sailor | Engineer: votes Farmer (Shortest path through all five words with a clear mechanism: compost feeds feedback, feedback turns fatigue into lichen, the compass returns) | Child: votes Poet (It is short and it holds all the words in one breath, like a little song.) | Sailor: votes Night nurse (Short and whole. Five words in one breath, and the slow dawn fits a long watch. Mine runs too long.) | Grandmother: votes Night nurse (Short and gentle, it holds all five words in one breath, and it feels like a kitchen light left on through the night.) | Night nurse: votes Farmer (Short enough to hold in one breath, and it keeps the soil and the slow turning of the ring without spilling past what it needs.) | Chef: votes Poet (Shortest and tightest; all five words sit in one breath without strain, and the compost-lichen-compass image reads like the soil itself.) | Poet: votes Farmer (Farmer's line is the only one that turns the ring into a single motion, compost to lichen to soil, without strain.) | Farmer: votes Engineer (It holds all five words and the zero word in one line, and the compost-to-organisation turn feels like soil work.)"
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "2",
+    "3": "2026-11-08T20:44:35.939Z",
+    "6": "KITE 1",
+    "7": "pick",
+    "8": "1",
+    "9": {
+     "_": "9"
+    },
+    "_": "KITE 1 · Farmer picks compost as the next zero"
+   },
+   "3": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:44:47.924Z",
+    "6": "KITE 1",
+    "7": "deal",
+    "8": "2",
+    "9": {
+     "_": "compost"
+    },
+    "_": "KITE 1 · hand two at compost"
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:44:51.228Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "2": "ec44cf7620a02575e224cfa1fbeaf5b0d4f127fb817baef4970b839ea4e4463c",
+     "3": "1b68d69fad8982b03266e3dc1b669b92365756cdb8761b9b2eba2fc19f265cc8",
+     "4": "e1bf4890e83927dd6291b3eb0ba83ab2dcf31c638c14c7bb139abefed6734cff",
+     "5": "e5e56b6544ab38ccc51eac21ae2e5cf6d327ef169ddb67adf3bbf77f9b14ba10",
+     "6": "c63f9c3350c3d73999ad93dd1fa0a0aa5e62c11911aeab48e5f5aead585c6a0e",
+     "7": "e3e7dda403aca8377267df4d8678dd7ba671164eb9ade7be2205d90c25f721c7",
+     "8": "9d146f99aa8fbb902fd49e6cf859c81b92a12cc404bbd00a03824edc2ddebd36",
+     "9": "73dbe6d87a21e5116e8d1efdd0e016e2c1eaf3424403f1d603daeae35ee95f09",
+     "_": "word"
+    },
+    "_": "KITE 1 · the computer players seal their words"
+   },
+   "5": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:45:28.674Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "1": "7a9de77f46aa12d19271675bc4faa3a867e39dceead10b3a7a164b1ac9635023",
+     "_": "word"
+    },
+    "_": "KITE 1 · Phenomemental seals a word"
+   },
+   "6": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:45:30.898Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "2",
+    "9": {
+     "1": {
+      "1": "40257a88f80a4671712ca57b3aff0ff4",
+      "_": "Mycelium"
+     },
+     "2": {
+      "1": "16235aa53df15241608547b8cc7477a3",
+      "_": "thermodynamics"
+     },
+     "3": {
+      "1": "0834a336f0b76cc46c9019520d53c950",
+      "_": "worms"
+     },
+     "4": {
+      "1": "662ed2bf8238b45d2971360148260d77",
+      "_": "galley"
+     },
+     "5": {
+      "1": "5fa58881be0bc241c3b10919288d3dc3",
+      "_": "garden"
+     },
+     "6": {
+      "1": "ccdeed8871fe1509e03848fdf5a69dfb",
+      "_": "dusk"
+     },
+     "7": {
+      "1": "a0e0b7323b5faff57649b49b43bd62d8",
+      "_": "kitchenscraps"
+     },
+     "8": {
+      "1": "0d4c021ac1c3438fe8cbc39de7e554e7",
+      "_": "rot"
+     },
+     "9": {
+      "1": "a77a206cd8bc713ef80e7e75ba2710f5",
+      "_": "manure"
+     },
+     "_": "word"
+    },
+    "_": "KITE 1 · words at compost: Phenomemental: Mycelium | Engineer: thermodynamics | Child: worms | Sailor: galley | Grandmother: garden | Night nurse: dusk | Chef: kitchenscraps | Poet: rot | Farmer: manure"
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:45:35.677Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "2": "fba5cf1eea7f5d6081fd18bba7391325196d42c0f4d1fb004bd554fb21a09803",
+     "3": "b4a6de98b12ee9167d6c10818df146c90c30c60579b2a14221ad826bca8d9430",
+     "4": "cb8af117741c769c185b1aa7808df027a65ac7293645444a656f1a3d50c10fa6",
+     "5": "f47b089ecfdc42d5c1782b366149d52d524522ba11014031da6e88638bf77bc5",
+     "6": "ccd1d0c80f9203a16e2b26cab31154a30a534c479ad3630934bacc391a8d6d8e",
+     "7": "868ae000e19576a415a7b647c9473d4c8219700929d0a763594ad7c526e99694",
+     "8": "9d499befeebe331ce81d326f3b730cd647774c3bcab926c79787609d9318032e",
+     "9": "aab11fd21b5a473b10225e93cea06bc937a69fd0a0b6dabb787e2910414e95eb",
+     "_": "line"
+    },
+    "_": "KITE 1 · the computer players seal their lines and stakes"
+   },
+   "8": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:47:22.606Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "1": "efc9c5923a919b093109e78843d6f0bc9f94380852a7cbed608fa49008809ed5",
+     "_": "line"
+    },
+    "_": "KITE 1 · Phenomemental seals a line and a stake"
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:47:24.550Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "2",
+    "9": {
+     "1": {
+      "1": "8ee0ef54231bb5308c8eedfe8182dfb0",
+      "2": "10",
+      "_": "As the sun sets, beautiful, living things come from the darkest, smelliest, and coldest places,"
+     },
+     "2": {
+      "1": "24cc35011d062289a6e17a0ec045a89e",
+      "2": "3",
+      "_": "Entropy feeds the worms: rot, dusk, and kitchen scraps turn to dark garden gold."
+     },
+     "3": {
+      "1": "c61b2b2796ee68bb857e8d464ba0a0b1",
+      "2": "3",
+      "_": "Worms eat the kitchen scraps in the garden dusk, and the rot becomes soft dark earth."
+     },
+     "4": {
+      "1": "a2a337bad73430a88a311f628a2d3f58",
+      "2": "2",
+      "_": "Rot in the galley's scraps, worms and mycelium turning dusk into the garden's dark thermodynamics."
+     },
+     "5": {
+      "1": "88cd78bfaa7b2cd2d8e55176bc2b1a38",
+      "2": "3",
+      "_": "Dusk falls on the garden, and the worms turn our kitchen scraps back into soil."
+     },
+     "6": {
+      "1": "eb3d82f636d7daaea3e2c49f400f86a0",
+      "2": "2",
+      "_": "Dusk settles on the garden as worms and mycelium turn kitchen scraps and rot back into dark, warm manure."
+     },
+     "7": {
+      "1": "af8dfd2c11b9b48cbe1f635699e443a8",
+      "2": "4",
+      "_": "Dusk warms the galley as worms and rot turn kitchen scraps into garden gold."
+     },
+     "8": {
+      "1": "a28b35d3e36322c26971be30b1b4efc5",
+      "2": "3",
+      "_": "Worms and rot and dusk turn the galley scraps back into garden."
+     },
+     "9": {
+      "1": "682d02d8b478010d804a7ab27701465f",
+      "2": "4",
+      "_": "Worms and rot and manure, slow in the dusk, turn the galley scraps into garden."
+     },
+     "_": "line"
+    },
+    "_": "KITE 1 · lines at compost: Phenomemental: As the sun sets, beautiful, living things come from the darkest, smelliest, and coldest places, (stake 10) | Engineer: Entropy feeds the worms: rot, dusk, and kitchen scraps turn to dark garden gold. (stake 3) | Child: Worms eat the kitchen scraps in the garden dusk, and the rot becomes soft dark earth. (stake 3) | Sailor: Rot in the galley's scraps, worms and mycelium turning dusk into the garden's dark thermodynamics. (stake 2) | Grandmother: Dusk falls on the garden, and the worms turn our kitchen scraps back into soil. (stake 3) | Night nurse: Dusk settles on the garden as worms and mycelium turn kitchen scraps and rot back into dark, warm manure. (stake 2) | Chef: Dusk warms the galley as worms and rot turn kitchen scraps into garden gold. (stake 4) | Poet: Worms and rot and dusk turn the galley scraps back into garden. (stake 3) | Farmer: Worms and rot and manure, slow in the dusk, turn the galley scraps into garden. (stake 4)"
+   }
+  },
+  "4": {
+   "1": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:47:30.180Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "2": "35ccce5e37a25b6b203bf3d9ec8bd221f122fe53ac09b2f2e575c0d1dbdd2447",
+     "3": "2d061f4ba523ed6eefe053bdc9fb6fb8941c744adfb8fe6696c4784263df9152",
+     "4": "cdf04a6a5254e824e9959473a29e43a49855ec50acc937bf2e0caf0d2d16a67a",
+     "5": "a0b2aacf70f1d32647c10c66268e2b835f0dbbd1385d7145ea870171b6940b8f",
+     "6": "8a7bc05819fa9243f431c932d1435a06a433374f52277fdac96b1ca0b9a64443",
+     "7": "3b2a6d733b6914d0f6333db52f36182f2769fabf683ebe9ae837f86e6ad2d919",
+     "8": "777bfb730dd6e9b84ccb46587c7cf436f97229ab6afe63d2157624bd9d6566d3",
+     "9": "35ac77922a59b70cc1bb05e154e5b628959bba697427f626c7fb64a87cf7c41b",
+     "_": "vote"
+    },
+    "_": "KITE 1 · the computer players seal their votes"
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:51:32.264Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "2",
+    "9": {
+     "1": "47ef4e130e24e0705da48f7adaf3c476f87fcda6350b4f9a1f10eebe9a104ba7",
+     "_": "vote"
+    },
+    "_": "KITE 1 · Phenomemental seals a vote"
+   },
+   "3": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:51:34.484Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "2",
+    "9": {
+     "1": {
+      "1": "b2af209ccfe28f30956ba0212b7e5f95",
+      "_": "6"
+     },
+     "2": {
+      "1": "4a1b5d2dd7a0755ad48de03d4366a854",
+      "_": "8"
+     },
+     "3": {
+      "1": "68e574d1388a4da3490752ee3aca2838",
+      "_": "8"
+     },
+     "4": {
+      "1": "b0d1340bef81daaaafe646ba7cb540ff",
+      "_": "9"
+     },
+     "5": {
+      "1": "9221048210316b7a3169f0177ffe7110",
+      "_": "8"
+     },
+     "6": {
+      "1": "894e9a0705f496c083ada98548020e77",
+      "_": "8"
+     },
+     "7": {
+      "1": "4156f4ff12418c7c831ab7e1053b6927",
+      "_": "6"
+     },
+     "8": {
+      "1": "78883b6f47f253d554a4792ba8c63d23",
+      "_": "5"
+     },
+     "9": {
+      "1": "d5af0c0809f8ae9d2a06722d539f5f49",
+      "_": "6"
+     },
+     "_": "vote"
+    },
+    "_": "KITE 1 · votes at compost: Phenomemental: votes Night nurse | Engineer: votes Poet (Shortest line that holds worms, rot, dusk, galley and garden in one breath. Compression is the skill, and it is the tightest mechanism here.) | Child: votes Poet (It is short and holds the words in one breath, like a little garden story.) | Sailor: votes Farmer (Short, holds the ring, and turns the scraps into garden without fuss; the rest ramble or run long.) | Grandmother: votes Poet (It holds the most of the ring in the fewest words, and it lands on garden, which is where the scraps go back to earth.) | Night nurse: votes Poet (It holds the most of the ring in the fewest words, and the galley scraps turning back into garden feels like a true breath.) | Chef: votes Night nurse (It holds the most of the ring in one breath: worms, mycelium, rot, scraps, dusk, garden, and the warm manure that is compost itself.) | Poet: votes Grandmother (Grandmother's line is plain and whole: worms, kitchen scraps, dusk and garden all sit in one breath, and soil closes it.) | Farmer: votes Night nurse (It gathers worms, mycelium, rot and scraps into one breath of soil, and the warm manure lands the ending.)"
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "2.9",
+    "3": "2026-11-08T20:51:41.174Z",
+    "6": "KITE 1",
+    "7": "pick",
+    "8": "2",
+    "9": {
+     "_": "3"
+    },
+    "_": "KITE 1 · Poet picks worms as the next zero"
+   },
+   "5": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:51:53.095Z",
+    "6": "KITE 1",
+    "7": "deal",
+    "8": "3",
+    "9": {
+     "_": "worms"
+    },
+    "_": "KITE 1 · hand three at worms"
+   },
+   "6": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:51:56.504Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "3",
+    "9": {
+     "2": "2108f59bf92a7a3a5ba0f546be569ddc084631eaef51b8926e20117c97d52380",
+     "3": "1964fc6fcf4d0483d1f8a816fee13901dde558a00271d26984af260ccc82a7ed",
+     "4": "d76907e5db7bacfa1ead4b5cef4e720b1c593ac344fe672af4925f2286c7bfdb",
+     "5": "0d02bf78e3972ff18593f0ed8de76336c5f97c11e00252fc01ec352592da1aa6",
+     "6": "9fc970068f2ef6552670a7d4c36c29fb8a9b5467ed75dd466536780348389aa3",
+     "7": "4efe8f32da332a7cc56b4b0d65c92608dae0bd489574ec428d8401b8c363dd53",
+     "8": "0360ede5c960e0435556e773882e76fc7a6e73550aa0f3c66f9293674bb6f46e",
+     "9": "ee06c57cfaaf199ff943313803b883d66001305521933fefbf9ecf595d808ca3",
+     "_": "word"
+    },
+    "_": "KITE 1 · the computer players seal their words"
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:51:58.774Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "3",
+    "9": {
+     "2": {
+      "1": "c4d884b3e6ec97f80a7d76bbc1bd5382",
+      "_": "tunnel"
+     },
+     "3": {
+      "1": "96c298e49ac59929f94d5c669c77569b",
+      "_": "dirt"
+     },
+     "4": {
+      "1": "03c3a3ba4ed966c7f99a778006989902",
+      "_": "tide"
+     },
+     "5": {
+      "1": "6a3019739f8aa9761b8a0c6fda0fa415",
+      "_": "soil"
+     },
+     "6": {
+      "1": "78f16ad39709bc330e3e87a0bfdbc95f",
+      "_": "insomnia"
+     },
+     "7": {
+      "1": "9eac0552e3bdc8c0089604f0e6033da4",
+      "_": "kitchen"
+     },
+     "8": {
+      "1": "2f47e5a9068b4fbcdf710484cd930df4",
+      "_": "soil"
+     },
+     "9": {
+      "1": "f98f9fea40f509eec13886b3d07cc861",
+      "_": "soil"
+     },
+     "_": "word"
+    },
+    "_": "KITE 1 · words at worms: Engineer: tunnel | Child: dirt | Sailor: tide | Grandmother: soil | Night nurse: insomnia | Chef: kitchen | Poet: soil | Farmer: soil"
+   },
+   "8": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:02.266Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "3",
+    "9": {
+     "2": "ef6ac17e0faf094c66aaa51021a8e083a2dac10bc8d22f25e6436d44bff1966f",
+     "3": "890e51971f04a1a103dc3bd10ddea8129a8ceb871cd6ca061c1bb9e6239cf0cf",
+     "4": "075e8e624c163d3faa08b82243dee83552832960721d35d408ac94078ab8dabb",
+     "6": "77dd9b8da056ca34c8d61a8fa72389442c208d7491be89ae236f19acb79feb4d",
+     "7": "7bbee0b15b3a8e1df77f7c1cc62b71e71b9ec4f1f75b08dd8ea042265ad46a21",
+     "_": "line"
+    },
+    "_": "KITE 1 · the computer players seal their lines and stakes"
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:04.013Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "3",
+    "9": {
+     "2": {
+      "1": "e53f5758b94ceb342f9bd1ba30de1e92",
+      "2": "2",
+      "_": "Worms tunnel through dirt at high tide while insomnia keeps the kitchen awake."
+     },
+     "3": {
+      "1": "9dd98e9c96fcac7eb2756ce1aebe6dc6",
+      "2": "2",
+      "_": "Worms dig through dirt in the tunnel while the tide and insomnia keep the kitchen awake."
+     },
+     "4": {
+      "1": "421c3e857a3dec80536d039e61e401cb",
+      "2": "2",
+      "_": "Tide turns the dirt, insomnia tunnels worms through the kitchen."
+     },
+     "6": {
+      "1": "6307cc806f473d82ad521cf40ec94f7c",
+      "2": "2",
+      "_": "Under the kitchen tide, insomnia tunnels dirt until the night gives way."
+     },
+     "7": {
+      "1": "a5a08dd5d9976aab9b3a0fd40dd8b2d1",
+      "2": "2",
+      "_": "Night kitchen: worms tunnel through dirt and tide, while insomnia keeps me stirring."
+     },
+     "_": "line"
+    },
+    "_": "KITE 1 · lines at worms: Engineer: Worms tunnel through dirt at high tide while insomnia keeps the kitchen awake. (stake 2) | Child: Worms dig through dirt in the tunnel while the tide and insomnia keep the kitchen awake. (stake 2) | Sailor: Tide turns the dirt, insomnia tunnels worms through the kitchen. (stake 2) | Night nurse: Under the kitchen tide, insomnia tunnels dirt until the night gives way. (stake 2) | Chef: Night kitchen: worms tunnel through dirt and tide, while insomnia keeps me stirring. (stake 2)"
+   }
+  },
+  "5": {
+   "1": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:08.991Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "3",
+    "9": {
+     "2": "cf2dc587cc44db5b0bc8a3f2fd6d2206da3abe3edd170487fea18d1bf8a270e3",
+     "3": "ab6b5698f440281b0ecae9efc4980d0e2b480910cb3febb202af465595974285",
+     "4": "56fa6cc257faa525cf8044bf41c2de0e0491d9cb6738d5209f9673cd72784814",
+     "5": "245aad81c4cdd0fe8c63facf05d12c3c1178ea7f43824838a043a5ea36d62d99",
+     "6": "ca749ec7e6b5879bcb4c2b066e972e33e418d738ff241f1324df5010b010c419",
+     "7": "e19c74ea8c37b8b324852aaf50595f633a4f36fb23487587e900aee1b4905e53",
+     "8": "4352319670a660daae53b2fd306819ced0aa1ee55c65af9411422f2d1a1b33a1",
+     "9": "8ac48b8a1cdb9430d477099ce5249e90f45349e7d3c1bd1c6884d5f1a5754427",
+     "_": "vote"
+    },
+    "_": "KITE 1 · the computer players seal their votes"
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:20.084Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "3",
+    "9": {
+     "1": "5b255aac8393778fa39c93d446e6a508f4373040c51b11f350677995c06591f2",
+     "_": "vote"
+    },
+    "_": "KITE 1 · Phenomemental seals a vote"
+   },
+   "3": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:22.302Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "3",
+    "9": {
+     "1": {
+      "1": "7d51fb7a63d428346ad195b4dac4b699",
+      "_": "2"
+     },
+     "2": {
+      "1": "e51c2d004d103a64963a8f5d6f28269c",
+      "_": "4"
+     },
+     "3": {
+      "1": "684b9781d56316af5324cef2e897f664",
+      "_": "4"
+     },
+     "4": {
+      "1": "372a69db76fb143c45b0ab08d5b2b0a1",
+      "_": "2"
+     },
+     "5": {
+      "1": "1dd7bfd2d1cae6200cf42edbf6c4c377",
+      "_": "6"
+     },
+     "6": {
+      "1": "b6274905c05e5412bdfb5273e5fdf873",
+      "_": "4"
+     },
+     "7": {
+      "1": "ff9246f7f0e4b0c1a162b0033bc1bfcf",
+      "_": "4"
+     },
+     "8": {
+      "1": "83b742dd0dac47e16a7c3c587f826cf2",
+      "_": "4"
+     },
+     "9": {
+      "1": "515b5462356eb1d3b4cea7b24b386e06",
+      "_": "4"
+     },
+     "_": "vote"
+    },
+    "_": "KITE 1 · votes at worms: Phenomemental: votes Engineer | Engineer: votes Sailor (Shortest breath of the five, and it carries every word in one motion: tide, dirt, insomnia, worms, kitchen. Compression is the skill; the re) | Child: votes Sailor (It is short and it holds all the words in one breath, like a little story about worms and tides.) | Sailor: votes Engineer (Short, plain, and it holds worms, tunnel, dirt, tide, insomnia and kitchen with nothing wasted. Good weather for a line.) | Grandmother: votes Night nurse (It holds the whole ring in one breath and ends on the night, which is where a grandmother sits up waiting.) | Night nurse: votes Sailor (Shortest breath of the lot, and it turns the worms, dirt, tide and tunnel into one motion without leaning on filler.) | Chef: votes Sailor (Shortest line that gathers worms, tunnel, dirt, tide, insomnia and kitchen in one breath; it compresses best.) | Poet: votes Sailor (Shortest breath, and it turns the dirt and tunnels the worms through the kitchen without strain.) | Farmer: votes Sailor (Shortest breath; tide, dirt, insomnia, worms and kitchen all turn in one tight motion, no clutter.)"
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "2.93",
+    "3": "2026-11-08T20:52:28.935Z",
+    "6": "KITE 1",
+    "7": "pick",
+    "8": "3",
+    "9": {
+     "_": "4"
+    },
+    "_": "KITE 1 · Sailor picks tide as the next zero"
+   },
+   "5": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:41.272Z",
+    "6": "KITE 1",
+    "7": "deal",
+    "8": "4",
+    "9": {
+     "_": "tide"
+    },
+    "_": "KITE 1 · hand four at tide"
+   },
+   "6": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:45.862Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "4",
+    "9": {
+     "2": "7fbaf0df2bfd3093c044985bafed70d5d04d131748f1acb18cea31670798b62f",
+     "3": "d54934e62796245e1410f5c8a9fd0c79e95f0b27d73ca35bd0a521b6f683512f",
+     "4": "d0a67c467840d342c10e4292c544378cf9f6d8767fc51c60509604834096f271",
+     "5": "ae5698433ef6bb29b2b243f35500b7a7dc6944787d36aa3606577e4ee63f8c66",
+     "6": "33f39deb5be39517827d462dcfa10eb75d06f99b11a8c9974d102d42e7c63a38",
+     "7": "8d8b4ad43d273204c6200cbd8503f95023f0aed2eac4a72258094f76cdfffb39",
+     "8": "fed33f2849fa43a5325b55849fa5331f3aa2e1e314a1b269ccc8e757edfac24f",
+     "9": "10f2e43f325635f14d71090662635ebf59d8cce963dea0bfd951deda1411335d",
+     "_": "word"
+    },
+    "_": "KITE 1 · the computer players seal their words"
+   },
+   "7": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:47.637Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "4",
+    "9": {
+     "2": {
+      "1": "7c9f9a38d48020a0df5048899b158c65",
+      "_": "gauge"
+     },
+     "3": {
+      "1": "7253cc6e2a830a7943c3a8da44c75d28",
+      "_": "moon"
+     },
+     "4": {
+      "1": "371e95643c62370fb9f27a81d04b8b56",
+      "_": "moon"
+     },
+     "5": {
+      "1": "033e2d09e15d63f5c7fa8964434375f3",
+      "_": "moon"
+     },
+     "6": {
+      "1": "478a8b98b96312a772559da0dfd2e251",
+      "_": "moonlight"
+     },
+     "7": {
+      "1": "e2b7489579bae644102b596a6612e791",
+      "_": "brine"
+     },
+     "8": {
+      "1": "fb92a4f39afb284811d9e8614ea5cd66",
+      "_": "moon"
+     },
+     "9": {
+      "1": "e60e62e337c1fd0957d237152aa8493f",
+      "_": "moon"
+     },
+     "_": "word"
+    },
+    "_": "KITE 1 · words at tide: Engineer: gauge | Child: moon | Sailor: moon | Grandmother: moon | Night nurse: moonlight | Chef: brine | Poet: moon | Farmer: moon"
+   },
+   "8": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:51.041Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "4",
+    "9": {
+     "2": "29cddd81c4366c4a2b5dd761ae84df798ed7ac4405e4839c6d4ab5ef2840114f",
+     "6": "a313ee8d2d39d126d8e7b18bea4866a3ffac513d7f5025c7291a0fcb3fc71e8f",
+     "7": "859a7d78c7bef35079b5a78b7f1371adefd9b5266a88937f26fd796ef4c0e473",
+     "_": "line"
+    },
+    "_": "KITE 1 · the computer players seal their lines and stakes"
+   },
+   "9": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:53.442Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "4",
+    "9": {
+     "2": {
+      "1": "31e256b02a9028782c10a4de3010e34c",
+      "2": "1",
+      "_": "Moonlight measures the brine's pull, and the gauge reads the tide."
+     },
+     "6": {
+      "1": "5e2676b5a5c1abd73fb1ec32663765d0",
+      "2": "1",
+      "_": "Moonlight pulls the brine past the gauge, and the tide keeps its count."
+     },
+     "7": {
+      "1": "40a2cbaaff0d16dae7aa3587d0476a2d",
+      "2": "1",
+      "_": "Moonlight on the gauge, brine climbing the tide."
+     },
+     "_": "line"
+    },
+    "_": "KITE 1 · lines at tide: Engineer: Moonlight measures the brine's pull, and the gauge reads the tide. (stake 1) | Night nurse: Moonlight pulls the brine past the gauge, and the tide keeps its count. (stake 1) | Chef: Moonlight on the gauge, brine climbing the tide. (stake 1)"
+   }
+  },
+  "6": {
+   "1": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:52:56.777Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "4",
+    "9": {
+     "2": "f710888651339e13ce8dca24399e71f7b248d3ba8b208e02da32b11254e39f61",
+     "3": "ffaab8b153414c8c232af4777dc49514c3f511330f40245fc367e993a91afa83",
+     "4": "2884151c385bb3e0690f37d114c7c22c9800710fd6750944b033715e48a67e64",
+     "5": "4ef0a47ad89f9be98e0503f83c47c677015948ef1116466bce8f0aeee8eef4e1",
+     "6": "1e4c3385d46875f07fefadb73192d2896e4e89e64b030c48f2b18f9826ae399f",
+     "7": "36ad7afb86cd0aab56b119d082e76336b875a7fe65ee43c9d8fbd48d09827563",
+     "8": "3c76c80ba4dd6056ced4b07951c301aca8e2430aea3d71e4184fb2ad14e80539",
+     "9": "8af83c33012eeca17874df69bc09f7eba561fe1c0ec31f757b967c5e83c1d73d",
+     "_": "vote"
+    },
+    "_": "KITE 1 · the computer players seal their votes"
+   },
+   "2": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:53:12.590Z",
+    "6": "KITE 1",
+    "7": "seal",
+    "8": "4",
+    "9": {
+     "1": "3ab3a29a595c06ced63236bda9b26fb6b8a417b890ac315da1dad77347529ffa",
+     "_": "vote"
+    },
+    "_": "KITE 1 · Phenomemental seals a vote"
+   },
+   "3": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:53:14.640Z",
+    "6": "KITE 1",
+    "7": "show",
+    "8": "4",
+    "9": {
+     "1": {
+      "1": "1a9ec2a1cddcb386ccd1ae240c6aba6a",
+      "_": "7"
+     },
+     "2": {
+      "1": "a226c61e50ea4dcc869d090b5d79fb96",
+      "_": "6"
+     },
+     "3": {
+      "1": "6501ff25380388ea5b5c0a9f7c89d0e6",
+      "_": "7"
+     },
+     "4": {
+      "1": "a9813db559f63aa3674e3c1fce017217",
+      "_": "7"
+     },
+     "5": {
+      "1": "2bf2e3b54888cc2d332f5806868b07d3",
+      "_": "7"
+     },
+     "6": {
+      "1": "5e180b163667501637c63e92c953961a",
+      "_": "2"
+     },
+     "7": {
+      "1": "080aeda1c5229f1a846b90898caf7fdb",
+      "_": "6"
+     },
+     "8": {
+      "1": "e73e870a667feab683142712642d1345",
+      "_": "7"
+     },
+     "9": {
+      "1": "2c86ffb6850598652cecaec320eddd02",
+      "_": "7"
+     },
+     "_": "vote"
+    },
+    "_": "KITE 1 · votes at tide: Phenomemental: votes Chef | Engineer: votes Night nurse (Seat 6 binds moonlight, brine and gauge into one measured motion, with the tide keeping its count. Clear mechanism, no waste.) | Child: votes Chef (It is short and it holds moonlight, gauge, and brine all in one little breath, like a picture.) | Sailor: votes Chef (Short and tight. Moonlight, gauge and brine all pull together in one breath, and the tide rises through it. The others run long and lose the) | Grandmother: votes Chef (Short and plain, it holds moonlight, gauge, and brine in one breath without the extra clutter the others carry.) | Night nurse: votes Engineer (Quiet and exact: it holds moonlight, brine, gauge and tide in one breath, each doing its own work.) | Chef: votes Night nurse (Seat 6 holds moonlight, brine, gauge and tide in one breath, and the pull past the gauge feels like a tide turning in the dark.) | Poet: votes Chef (Shortest breath, and the moon, gauge and brine all sit in one image.) | Farmer: votes Chef (Short and tight; the moon, the gauge and the brine sit in one image, no spare words.)"
+   },
+   "4": {
+    "1": "Phenomemental",
+    "2": "2.934",
+    "3": "2026-11-08T20:53:20.173Z",
+    "6": "KITE 1",
+    "7": "close",
+    "_": "KITE 1 · game over: Poet wins, with 38 chips."
    }
   },
   "_": {

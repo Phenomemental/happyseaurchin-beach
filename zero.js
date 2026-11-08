@@ -38,7 +38,7 @@
   function jget(k) { try { return JSON.parse(sget(k) || 'null'); } catch (e) { return null; } }
   function jset(k, v) { sset(k, v == null ? null : JSON.stringify(v)); }
   function show(id) {
-    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview'].forEach(function (s) { $(s).hidden = s !== id; });
+    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].forEach(function (s) { $(s).hidden = s !== id; });
     window.scrollTo(0, 0);
   }
   function cap(w) { w = String(w || ''); return w.charAt(0).toUpperCase() + w.slice(1); }
@@ -404,7 +404,7 @@
   // The page's address: the table's invite link while seated, else the plain page.
   function inviteUrl(code) {
     var q = new URLSearchParams(location.search);
-    ['table', 'code', 'trail'].forEach(function (k) { q.delete(k); });
+    ['table', 'code', 'trail', 'look'].forEach(function (k) { q.delete(k); });
     if (code) q.set('table', Z.codeKey(code));
     var qs = q.toString();
     return location.origin + location.pathname + (qs ? '?' + qs : '');
@@ -502,7 +502,7 @@
       return post('open', {
         who: who.name, at: Z.at(place), code: code,
         text: code + ' · ' + who.name + ' opens a table at ' + word,
-        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '' }
+        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '', 6: 'eye' }
       }).then(function (res) {
         if (!res.ok) throw new Error(refusal(res));
         return readRoom('').then(function (list) {
@@ -1483,6 +1483,23 @@
     }).catch(function (e) { $('note-error').textContent = e.message; }).then(function () { $('note-go').disabled = false; });
   }
 
+  // ---- Look around (spine:zero 4.9) ----------------------------------------------------------
+  // The tree, every game played as its poem card, and what each game shows,
+  // read live from the tree and the whole room; nothing is written.
+  function openLook() {
+    show('look');
+    try { var u = new URL(inviteUrl('')); u.searchParams.set('look', '1'); history.replaceState(null, '', u.href); } catch (e) {}
+    var box = $('look-body');
+    box.textContent = '';
+    box.appendChild(el('p', 'look-note', 'Reading the tree\u2026'));
+    Promise.all([readTree(), readRoom('0')]).then(function (r) {
+      return window.ZeroLook.games(r[0], r[1]).then(function (gs) { window.ZeroLook.render(box, r[0], gs); });
+    }).catch(function () {
+      box.textContent = '';
+      box.appendChild(el('p', 'error', 'The tree is out of reach just now. Try again in a moment.'));
+    });
+  }
+
   // ---- a trail read on its own --------------------------------------------------------------
   function trailView(digits) {
     show('trailview');
@@ -1521,6 +1538,8 @@
   // ---- wiring ------------------------------------------------------------------------------------
   $('door-host').addEventListener('click', function () { setMode('host'); });
   $('door-join').addEventListener('click', function () { setMode('join'); });
+  $('door-look').addEventListener('click', openLook);
+  $('look-back').addEventListener('click', function () { lobby(); });
   $('w-copy').addEventListener('click', copyLink);
   $('w-share').addEventListener('click', shareLink);
   $('w-link').addEventListener('focus', function () { $('w-link').select(); });
@@ -1552,6 +1571,7 @@
   if (window.Door) { window.Door.whoLine($('who-line')); window.Door.whoLine($('i-who')); }
   var invite = Z.codeKey(params.get('table') || params.get('code') || '');
   if (params.get('trail')) trailView(Z.digitsOf(params.get('trail')));
+  else if (params.get('look')) openLook();
   else if (/^[A-Z]+[0-9]+$/.test(invite)) invited(invite);
   else if (S && S.code && S.start) { show('table'); $('t-status').textContent = 'Finding the table…'; enterTable(); }
   else lobby();
