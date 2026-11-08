@@ -21,7 +21,7 @@
   var WIRE = BEACH + '/.well-known/pscale-beach';
   var ROOM = 'pool:zero', TREE = 'zero', LAW = 'function:zero';
   var API = 'https://api.anthropic.com/v1/messages', MODEL = 'claude-haiku-5-5';
-  var KEY = 'zero.key', TABLE = 'zero.table', CP = 'zero.computers';
+  var KEY = 'zero.key', TABLE = 'zero.table';
   var LIMIT_MS = 8000, POLL_MS = 2500, QUIET_MS = 10000, WAIT_BEFORE_GO_ON = 120000, PAUSE_BEFORE_DEAL = 8000;
   var LIVE_MS = 2 * 60 * 60 * 1000;   // a table with nothing for two hours no longer holds its place
   if (LOCAL && params.get('fast')) { POLL_MS = 500; PAUSE_BEFORE_DEAL = 1200; WAIT_BEFORE_GO_ON = 4000; }   // a builder's test
@@ -38,7 +38,7 @@
   function jget(k) { try { return JSON.parse(sget(k) || 'null'); } catch (e) { return null; } }
   function jset(k, v) { sset(k, v == null ? null : JSON.stringify(v)); }
   function show(id) {
-    ['lobby', 'waiting', 'table', 'end', 'trailview'].forEach(function (s) { $(s).hidden = s !== id; });
+    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview'].forEach(function (s) { $(s).hidden = s !== id; });
     window.scrollTo(0, 0);
   }
   function cap(w) { w = String(w || ''); return w.charAt(0).toUpperCase() + w.slice(1); }
@@ -358,10 +358,10 @@
   }
 
   // ---- the lobby -------------------------------------------------------------------------
-  var mode = '', places = [], chosen = '', moreShown = false, deeper = '', computers = 8, lobbyTables = {};
-  (function () { var c = Number(sget(CP)); if (sget(CP) != null && c >= 0 && c <= 8) computers = c; })();
+  var mode = '', places = [], chosen = '', moreShown = false, deeper = '', lobbyTables = {};
   function lobby(asHost, beneath) {
     show('lobby');
+    address('');
     deeper = beneath || '';
     $('lobby-error').textContent = '';
     setMode(asHost === true ? 'host' : asHost === false ? 'join' : '');
@@ -374,17 +374,20 @@
     $('host-part').hidden = m !== 'host';
     $('join-part').hidden = m !== 'join';
     $('lobby-error').textContent = '';
-    if (m === 'host') { drawComputers(); loadPlaces(); }
+    if (m === 'host') loadPlaces();
   }
-  function drawComputers() {
-    $('cp-count').textContent = String(computers);
-    $('cp-less').disabled = computers <= 0;
-    $('cp-more').disabled = computers >= 8;
-    $('cp-line').textContent = computers ? 'They fill empty seats, using your key on this device.' : 'Only people. No key needed.';
-    var kept = !!sget(KEY);
-    $('key-part').hidden = !computers || kept;
-    $('key-kept').hidden = !computers || !kept;
+  // The page's address: the table's invite link while seated, else the plain page.
+  function inviteUrl(code) {
+    var q = new URLSearchParams(location.search);
+    ['table', 'code', 'trail'].forEach(function (k) { q.delete(k); });
+    if (code) q.set('table', Z.codeKey(code));
+    var qs = q.toString();
+    return location.origin + location.pathname + (qs ? '?' + qs : '');
   }
+  function address(code) {
+    try { if (location.href !== inviteUrl(code)) history.replaceState(null, '', inviteUrl(code)); } catch (e) {}
+  }
+  function prettyCode(key) { return String(key).replace(/^([A-Z]+)([0-9]+)$/, '$1 $2'); }
   function loadPlaces() {
     $('places').textContent = '';
     $('places').appendChild(el('p', 'soft it', 'Reading the tree…'));
@@ -450,18 +453,12 @@
     }, function () { throw new Error('First, a name: I\u2019m new, or I\u2019ve been here.'); });
   }
   function openTable() {
-    if (computers) {
-      var typed = String($('my-key').value || '').trim();
-      if (typed) { sset(KEY, typed); $('my-key').value = ''; }
-      if (!sget(KEY)) { lobbyError('The computer players need your Anthropic key. Or choose 0 for people only.'); $('my-key').focus(); return; }
-    }
     var first = '';
     if (chosen === 'new') {
       var w = Z.oneWord($('first-word').value);
       if (!w.ok) { lobbyError(w.why === 'One word, no spaces' ? 'One word to begin, no spaces.' : w.why); $('first-word').focus(); return; }
       first = w.word;
     } else if (!chosen) { lobbyError('Choose where to play.'); return; }
-    sset(CP, String(computers));
     $('open-go').disabled = true;
     lobbyError('');
     whoAmI().then(function (who) { return Promise.all([readTree(), readRoom('').catch(function () { return []; })]).then(function (r) {
@@ -477,11 +474,10 @@
         place = chosen; word = Z.readPlace(node).word;
       }
       var code = newCode(tables);
-      var personas = shuffle(Z.PERSONAS).slice(0, computers);
       return post('open', {
         who: who.name, at: Z.at(place), code: code,
-        text: code + ' · ' + who.name + ' opens a table at ' + word + ' (' + (9 - computers) + ' seats for people, ' + computers + ' computer)',
-        data: { _: word, 1: who.name, 3: String(computers), 4: personas.join(', '), 5: chosen === 'new' ? 'new' : '' }
+        text: code + ' · ' + who.name + ' opens a table at ' + word,
+        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '' }
       }).then(function (res) {
         if (!res.ok) throw new Error(refusal(res));
         return readRoom('').then(function (list) {
@@ -514,22 +510,25 @@
     if (!/^[A-Z]+[0-9]+$/.test(key)) { lobbyError('The table code is a word and a number, like LAMP 4.'); $('join-code').focus(); return; }
     $('join-go').disabled = true;
     lobbyError('');
+    seatAt(key).then(null, function (e) { lobbyError(e.message || 'That didn\u2019t work. Try again.'); })
+      .then(function () { $('join-go').disabled = false; });
+  }
+  // Take the next free seat at the table with this code, or the seat already
+  // held under this name (a phone closed and opened again, spine:zero 4.28).
+  function seatAt(key) {
     var who;
-    whoAmI().then(function (m) { who = m; return readRoom(''); }).then(function (list) {
+    return whoAmI().then(function (m) { who = m; return readRoom(''); }).then(function (list) {
       var open = list.filter(function (e) { return e.kind === 'open' && Z.codeKey(e.code) === key; })[0];
       if (!open) throw new Error('No table with that code is open. Check it with the host.');
       return readRoom(open.addr).then(function (entries) { return Z.derive(entries, open.code); }).then(function (t) {
-        if (t.closed) throw new Error('That table has closed.');
         var mine = function () {
           var seats = t.seats, found = 0;
           Object.keys(seats).forEach(function (s) { if (seats[s].kind === 'person' && seats[s].name.toLowerCase() === who.name.toLowerCase()) found = Number(s); });
           return found;
         };
-        if (t.roster) {
-          if (mine()) return { t: t, seat: mine(), open: open };
-          throw new Error('That table has already started.');
-        }
         if (mine()) return { t: t, seat: mine(), open: open };
+        if (t.closed) throw new Error('That table has closed.');
+        if (t.roster) throw new Error('That table has already started.');
         var free = 9 - t.open.computers - 1 - t.sits.length;
         if (free <= 0) throw new Error('That table is full.');
         return post('sit', {
@@ -544,13 +543,28 @@
         });
       });
     }).then(function (r) {
-      // The seat's own spelling of the name, so every seal is read as this seat's.
-      S = { code: r.open.code, start: r.open.addr, name: r.t.seats[r.seat].name, seat: r.seat, host: false, secrets: {}, done: {} };
+      // The seat's own spelling of the name, so every seal is read as this seat's;
+      // the host coming back by the link is the host again.
+      var name = r.t.seats[r.seat].name;
+      S = { code: r.open.code, start: r.open.addr, name: name, seat: r.seat, host: r.seat === 1 && name === r.t.open.host, secrets: {}, done: {} };
       saveS();
       enterTable();
-    }, function (e) {
-      lobbyError(e.message || 'That didn’t work. Try again.');
-    }).then(function () { $('join-go').disabled = false; });
+    });
+  }
+  // Arriving by an invite link (zero.html?table=<code>): through the door
+  // first if this phone has no name, then straight to the next free seat.
+  function invited(key) {
+    if (S && S.start && Z.codeKey(S.code) === key) { show('table'); $('t-status').textContent = 'Finding the table\u2026'; enterTable(); return; }
+    show('invited');
+    $('i-code').textContent = prettyCode(key);
+    var go = function () {
+      $('i-go').disabled = true;
+      $('i-error').textContent = '';
+      seatAt(key).then(null, function (e) { $('i-error').textContent = e.message || 'That didn\u2019t work. Try again.'; })
+        .then(function () { $('i-go').disabled = false; });
+    };
+    $('i-go').onclick = go;
+    go();
   }
 
   // ---- at the table ------------------------------------------------------------------------
@@ -558,6 +572,7 @@
   var lastOk = 0, failing = false, inked = {};
   function enterTable() {
     T = null; treeHand = -1; flipped = {}; firstSeen = {}; voteChoice = 0;
+    address(S.code);
     readLaw();
     poll();
   }
@@ -598,44 +613,59 @@
     drawTable();
   }
 
-  // Seated, before the deal (spine:zero 4.2.5: "You're seated. The game starts when the host deals.")
+  // The waiting room (spine:zero 4.26): the code and the invite link, who
+  // has arrived, the empty seats, and Deal whenever the host chooses.
   function drawWaiting() {
     if ($('waiting').hidden) show('waiting');
-    var t = T, o = t.open, people = 9 - o.computers;
+    var t = T, o = t.open, seats = t.seats, hasKey = !!sget(KEY);
     $('w-place').textContent = o.isNew ? 'a new first word' : 'beneath ' + o.word;
     $('w-code').textContent = t.code;
-    $('w-count').textContent = people + (people === 1 ? ' seat' : ' seats') + ' for people · ' + o.computers + ' computer';
-    var ul = $('w-roster');
+    var url = inviteUrl(t.code);
+    if ($('w-link').value !== url) $('w-link').value = url;
+    $('w-share').hidden = !navigator.share;
+    var ul = $('w-roster'), people = [];
     ul.textContent = '';
-    var seats = t.seats, filled = 0;
-    for (var s = 1; s <= 9; s++) {
+    Object.keys(seats).map(Number).sort(function (a, b) { return a - b; }).forEach(function (s) {
       var x = seats[s];
-      var li = el('li', x ? (s === S.seat ? 'me' : '') : 'empty', x ? x.name : 'open');
-      if (x && x.kind === 'person') filled++;
+      if (x.kind !== 'person') return;
+      people.push(s);
+      var li = el('li', s === S.seat ? 'me' : '');
+      li.appendChild(el('span', 'n', x.name));
+      li.appendChild(el('span', 'r', x.name === o.host ? 'host' : s === S.seat ? 'you' : ''));
       ul.appendChild(li);
-    }
-    var missing = people - filled, hasKey = !!sget(KEY);
-    var deal = $('deal-go');
-    deal.hidden = !S.host;
+    });
+    var empty = 9 - Object.keys(seats).length;
+    $('w-empty').textContent = !empty ? 'Every seat is taken.' :
+      empty + (empty === 1 ? ' seat' : ' seats') + ' empty' + (!S.host ? '' : hasKey ? ' \u00b7 computer fills them' : ' \u00b7 without a key, the table plays with who is here');
+    $('w-host').hidden = !S.host;
     if (S.host) {
-      deal.disabled = missing > 0 && !hasKey;
-      deal.textContent = missing > 0 && hasKey ? 'Deal now (computer players take the empty seats)' : 'Deal';
-      $('w-say').textContent = missing > 0 ? 'Waiting for ' + missing + ' more ' + (missing === 1 ? 'person' : 'people') + '. Show them the code.' : 'Everyone is here.';
+      $('w-key-part').hidden = hasKey;
+      $('w-key-kept').hidden = !hasKey;
+      var canDeal = hasKey || people.length >= 3;
+      $('deal-go').disabled = !canDeal;
+      $('w-say').textContent = !canDeal ? 'Without a key, the table needs three people or more. Add a key, or invite more.' :
+        hasKey ? (empty ? 'Deal whenever you\u2019re ready: computer players take the ' + empty + ' empty ' + (empty === 1 ? 'seat' : 'seats') + '.' : 'Everyone is here. Deal whenever you\u2019re ready.') :
+        'Deal whenever you\u2019re ready: the table plays with the ' + people.length + ' of you.';
+      $('w-keep').textContent = hasKey ? 'Keep this page open while you play. The computer players live on your phone.' : 'Keep this page open while you play. The table runs from your phone.';
     } else {
-      $('w-say').textContent = 'You’re seated. The game starts when the host deals.';
+      $('w-say').textContent = 'You\u2019re seated. The game starts when the host deals.';
+      $('w-keep').textContent = 'If the host closes their page, the table pauses until they come back.';
     }
     $('w-leave').textContent = S.host ? 'Close this table' : 'Leave this table';
   }
+  // The deal: every empty seat becomes a computer player when the host has a
+  // key; without one the table plays with who is there, three or more.
   function dealFirst() {
-    var t = T, o = t.open, seats = t.seats, used = {};
-    var hasKey = !!sget(KEY);
+    var t = T, o = t.open, seats = t.seats, used = {}, hasKey = !!sget(KEY);
+    var people = Object.keys(seats).filter(function (s) { return seats[s].kind === 'person'; }).length;
+    if (!hasKey && people < 3) { $('w-error').textContent = 'Without a key, the table needs three people or more.'; return; }
     Object.keys(seats).forEach(function (s) { used[seats[s].name] = true; });
     var spare = shuffle(Z.PERSONAS.filter(function (p) { return !used[p]; }));
     var roster = { _: o.word };
     for (var s = 1; s <= 9; s++) {
       var x = seats[s];
       if (!x) {
-        if (!hasKey) { $('w-error').textContent = 'Every seat needs someone before the deal.'; return; }
+        if (!hasKey) continue;
         x = { name: spare.shift(), kind: 'computer' };
       }
       roster[String(s)] = { _: x.name, 1: x.kind };
@@ -647,18 +677,41 @@
       var node = Z.nodeAt(tree, o.place);
       if (o.isNew) {
         if (node != null) throw new Error('Someone has just written a first word in that seat. Close this table and open another.');
-        return write(TREE, { spindle: Z.at(o.place), content: o.word + ' · ' + S.name }).then(function (r) { if (!r.ok) throw new Error(refusal(r)); });
+        return write(TREE, { spindle: Z.at(o.place), content: o.word + ' \u00b7 ' + S.name }).then(function (r) { if (!r.ok) throw new Error(refusal(r)); });
       }
       if (node == null || Z.played(node)) throw new Error('This place has been played since the table opened. Close this table and open another.');
     }).then(function () {
-      return post('deal', { who: S.name, at: Z.at(o.place), code: t.code, hand: 1, text: t.code + ' · hand one at ' + o.word, data: roster });
+      return post('deal', { who: S.name, at: Z.at(o.place), code: t.code, hand: 1, text: t.code + ' \u00b7 hand one at ' + o.word, data: roster });
     }).then(function (r) {
       if (r && !r.ok) throw new Error(refusal(r));
       soon();
     }).catch(function (e) {
-      $('w-error').textContent = e.message || 'The deal didn’t reach the beach. Try again.';
+      $('w-error').textContent = e.message || 'The deal didn\u2019t reach the beach. Try again.';
       $('deal-go').disabled = false;
     });
+  }
+  function copyLink() {
+    var url = $('w-link').value, said = $('w-copied');
+    var done = function () { said.textContent = 'The link is copied. Send it to whoever you\u2019d like at the table.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, function () { $('w-link').select(); said.textContent = 'Press and hold the link to copy it.'; });
+    } else {
+      $('w-link').select();
+      try { document.execCommand('copy'); done(); } catch (e) { said.textContent = 'Press and hold the link to copy it.'; }
+    }
+  }
+  function shareLink() {
+    if (!navigator.share) return;
+    navigator.share({ title: 'Zero', text: 'Come and play Zero with me: nine seats, one word.', url: $('w-link').value }).then(null, function () {});
+  }
+  function addKey() {
+    var k = String($('w-key').value || '').trim();
+    if (!k) { $('w-key').focus(); return; }
+    sset(KEY, k);
+    $('w-key').value = '';
+    plainCall = false;
+    keyBlocked = false;
+    drawWaiting();
   }
   function leave() {
     if (S && S.host && T && !T.over) {
@@ -1382,9 +1435,12 @@
   // ---- wiring ------------------------------------------------------------------------------------
   $('door-host').addEventListener('click', function () { setMode('host'); });
   $('door-join').addEventListener('click', function () { setMode('join'); });
-  $('cp-less').addEventListener('click', function () { if (computers > 0) computers--; drawComputers(); });
-  $('cp-more').addEventListener('click', function () { if (computers < 8) computers++; drawComputers(); });
-  $('key-forget').addEventListener('click', function () { sset(KEY, null); drawComputers(); });
+  $('w-copy').addEventListener('click', copyLink);
+  $('w-share').addEventListener('click', shareLink);
+  $('w-link').addEventListener('focus', function () { $('w-link').select(); });
+  $('w-key-go').addEventListener('click', addKey);
+  $('w-key').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); addKey(); } });
+  $('w-key-forget').addEventListener('click', function () { sset(KEY, null); drawWaiting(); });
   $('places-more').addEventListener('click', function () {
     if (deeper) { deeper = ''; loadPlaces(); return; }
     moreShown = true; drawPlaces();
@@ -1407,9 +1463,10 @@
   $('note-form').addEventListener('submit', leaveNote);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && S) soon(); });
 
-  if (window.Door) window.Door.whoLine($('who-line'));
+  if (window.Door) { window.Door.whoLine($('who-line')); window.Door.whoLine($('i-who')); }
+  var invite = Z.codeKey(params.get('table') || params.get('code') || '');
   if (params.get('trail')) trailView(Z.digitsOf(params.get('trail')));
+  else if (/^[A-Z]+[0-9]+$/.test(invite)) invited(invite);
   else if (S && S.code && S.start) { show('table'); $('t-status').textContent = 'Finding the table…'; enterTable(); }
   else lobby();
-  if (params.get('code') && !S) { lobby(false); $('join-code').value = params.get('code'); }
 })();

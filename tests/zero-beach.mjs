@@ -129,6 +129,8 @@ export function makeBeach(seed) {
       return [200, { ok: true, slot, supernested, floor: F, ...(born ? { born: true } : {}) }];
     }
     const existing = blocks[name];
+    // A lock verb alone (secret and new_lock, no content) changes no words: with no locks kept here, it answers yes.
+    if (content === undefined) return existing === undefined && !('new_lock' in body) ? [404, { error: 'not found', code: 'not_found' }] : [200, { ok: true }];
     if (content !== undefined && !spindle && existing !== undefined && confirm !== true) return [400, { error: 'whole-block replace requires {confirm: true}', code: 'confirm_required' }];
     if (!spindle) { blocks[name] = content; log.push({ name, whole: true }); return [200, { ok: true }]; }
     const b = existing === undefined ? { _: `${name} at localhost.` } : existing;

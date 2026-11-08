@@ -2,10 +2,11 @@
 // beach on this computer (tests/zero-beach.mjs) with Claude stood in, so
 // nothing reaches the real beach or spends a key (spine:zero 4.7).
 //   node tests/zero-play.mjs            every table
-//   node tests/zero-play.mjs A..F       one: A host + 8 computer seats,
-//                                       B host + 2 phones + 6 computer, C nine people,
-//                                       D someone leaves mid-game, E the room is locked,
-//                                       F Claude refuses the host's key
+//   node tests/zero-play.mjs A..G       one or more: A host + 8 computer seats,
+//                                       B host + 2 phones by the link + 6 computer,
+//                                       C nine people by the link, D someone leaves and
+//                                       comes back by the link, E the room is locked,
+//                                       F Claude refuses the host's key, G three people, no key
 // Screenshots, when asked for with SHOTS=<dir>, land there.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -17,7 +18,7 @@ const Z = require('../zero-law.js');
 
 const PHONE = devices['iPhone 13'];
 const SHOTS = process.env.SHOTS || '';
-const which = (process.argv[2] || 'ABCDEF').toUpperCase();
+const which = (process.argv[2] || 'ABCDEFG').toUpperCase();
 
 // ---- Claude, stood in -------------------------------------------------------------------
 const WORDS = {
@@ -74,8 +75,8 @@ async function claudeRoute(route) {
 }
 
 // ---- a person at a phone -----------------------------------------------------------------
-async function phone(browser, base) {
-  const ctx = await browser.newContext({ ...PHONE });
+async function phone(browser, base, clipboard) {
+  const ctx = await browser.newContext({ ...PHONE, ...(clipboard ? { permissions: ['clipboard-read', 'clipboard-write'] } : {}) });
   await ctx.route('https://api.anthropic.com/**', claudeRoute);
   const page = await ctx.newPage();
   const errors = [];
@@ -159,8 +160,8 @@ async function endChecks(label, beach, page, people) {
   const code = (await page.evaluate(() => JSON.parse(localStorage.getItem('zero.table') || '{}').code));
   const t = await tableIn(beach, code);
   check(label + ': four hands played to the end', t.over && t.hands.length === 4, `hands ${t.hands.length}, phase ${t.phase}`);
-  const chips = Object.values(t.chips).reduce((a, b) => a + b, 0);
-  check(label + ': chips are kept (90 in all)', chips === 90, 'total ' + chips);
+  const chips = Object.values(t.chips).reduce((a, b) => a + b, 0), seats = Object.keys(t.roster).length;
+  check(label + ': chips are kept (' + 10 * seats + ' in all)', chips === 10 * seats, 'total ' + chips);
   const tree = beach.blocks.zero;
   const voiced = t.hands.filter(h => h.winners.length);
   const allVoiced = voiced.every(h => { const n = Z.nodeAt(tree, h.place); return n && Z.readPlace(n).voice && Z.textOf(n) === Z.placeAfter(h, s => Z.nameOf(t, s))._; });
@@ -206,49 +207,35 @@ async function keepAndNote(label, page, beach) {
 }
 
 // ---- the tables --------------------------------------------------------------------------
-async function tableA(browser, base, beach) {
-  console.log('A. one host with eight computer seats');
-  const host = await phone(browser, base);
-  const { page } = host;
-  await shot(page, 'a-lobby');
+// The host opens a table: through the door, a place, Open the table, the waiting room.
+async function hostOpens(p, name, place, first) {
+  const { page } = p;
   await page.click('#door-host');
-  check('A: before a name, the lobby offers the door: I’m new · I’ve been here', /I’m new · I’ve been here/.test(await page.textContent('#who-line')));
-  const door = await signUp(page, 'Matthew');
-  check('A: the door offers three words, and a card showing the name and the words', door.words.length === 3 && door.card.includes('Matthew') && door.words.every(w => door.card.includes(w)), JSON.stringify(door));
-  check('A: the lobby then says who this phone is', /You are Matthew on this phone/.test(await page.textContent('#who-line')));
-  check('A: the name is a real name on the beach (passport:Matthew)', !!beach.blocks['passport:Matthew']);
-  await page.fill('#my-key', 'sk-ant-test');
+  await signUp(page, name);
   await page.waitForSelector('#places button');
-  // the first game's tree: torch, lighthouse, photon … are open; Light, candle, vigil, silence are played
-  const rows = await page.locator('#places button').allTextContents();
-  check('A: the lobby offers a new first word and the open words', rows[0] === 'A new first word' && rows.some(r => r.includes('beneath torch')) && !rows.some(r => /candle|vigil|Light/.test(r)), rows.join(' | '));
-  await shot(page, 'a-lobby-host');
-  await page.locator('#places button', { hasText: 'beneath torch' }).click();
+  if (place !== 'A new first word' && !(await visible(page.locator('#places button', { hasText: place }))) && await page.locator('#places-more').isVisible()) await page.click('#places-more');
+  await page.locator('#places button', { hasText: place }).click();
+  if (first) await page.fill('#first-word', first);
   await page.click('#open-go');
   await page.waitForSelector('#waiting:not([hidden])');
-  const code = await page.textContent('#w-code');
-  check('A: the table code shows large, a word and a number', /^[A-Z]+ [1-9]$/.test(code), code);
-  check('A: the key stays in this browser and never reaches the beach', !JSON.stringify(beach.blocks).includes('sk-ant-test'));
-  await shot(page, 'a-waiting');
-  await page.click('#deal-go');
-  await page.waitForSelector('#table:not([hidden])');
-  await play(host, h => ['flicker', 'beacon', 'match', 'wick'][h - 1], { shots: SHOTS ? 'a' : '', voteIndex: 1 });
-  await shot(page, 'a-end');
-  const t = await endChecks('A', beach, page, ['Matthew', ...t0names(beach, code)]);
-  const owed = t.hands.reduce((a, h) => a + h.active.filter(s => Z.isComputer(t, s)).length, 0);
-  check('A: the computer seats moved through Claude with the browser headers, on claude-haiku-5-5', calls.word >= owed && calls.headersOk && calls.models.has('claude-haiku-5-5') && calls.models.size === 1, JSON.stringify({ ...calls, models: [...calls.models] }));
-  check('A: the computers sealed before the host could write (one seal entry before the host\'s, every step)', await computersFirst(beach, code));
-  check('A: the key is still nowhere on the beach', !JSON.stringify(beach.blocks).includes('sk-ant-test'));
-  await keepAndNote('A', page, beach);
-  check('A: no page errors', !host.errors.length, host.errors.join(' / '));
-  await host.ctx.close();
-  return t;
+  return { code: await page.textContent('#w-code'), link: await page.inputValue('#w-link') };
 }
-function t0names(beach, code) {
-  const all = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero']));
-  const deal = all.find(e => e.kind === 'deal' && Z.codeKey(e.code) === Z.codeKey(code));
-  return Object.keys(deal.data).filter(k => /\d/.test(k)).map(k => deal.data[k]._).filter(n => n !== 'Matthew');
+async function addKey(page, key) {
+  await page.fill('#w-key', key);
+  await page.click('#w-key-go');
 }
+// Someone opens the invite link on a phone with no name yet: the door opens by
+// itself, and once they are named they are seated, with no code typed.
+async function arrives(browser, link, name) {
+  const p = await phone(browser, link);
+  await signUp(p.page, name, true);
+  await p.page.waitForSelector('#waiting:not([hidden]), #table:not([hidden])');
+  return p;
+}
+async function atTable(page) {
+  return (await page.locator('#w-roster li').allTextContents()).map(s => s.replace(/\s+/g, ' ').trim());
+}
+
 async function computersFirst(beach, code) {
   const all = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).sort(Z.byAddr).filter(e => Z.codeKey(e.code) === Z.codeKey(code));
   const t = await Z.derive(all, code);
@@ -264,136 +251,182 @@ async function computersFirst(beach, code) {
   return ok;
 }
 
+async function tableA(browser, base, beach) {
+  console.log('A. one host with eight computer seats');
+  const host = await phone(browser, base, true);
+  const { page } = host;
+  await shot(page, 'a-lobby');
+  check('A: the lobby has no computer-player count now (4.25)', (await page.locator('#cp-count').count()) === 0);
+  check('A: the lobby says how it plays', /Write a word nobody else will think of/.test(await page.textContent('#lobby')));
+  await page.click('#door-host');
+  check('A: before a name, the lobby offers the door: I’m new · I’ve been here', /I’m new · I’ve been here/.test(await page.textContent('#who-line')));
+  const door = await signUp(page, 'Matthew');
+  check('A: the door offers three words, and a card showing the name and the words', door.words.length === 3 && door.card.includes('Matthew') && door.words.every(w => door.card.includes(w)), JSON.stringify(door));
+  check('A: the name is a real name on the beach (passport:Matthew)', !!beach.blocks['passport:Matthew']);
+  await page.waitForSelector('#places button');
+  const rows = await page.locator('#places button').allTextContents();
+  check('A: the lobby offers a new first word and the open words', rows[0] === 'A new first word' && rows.some(r => r.includes('beneath torch')) && !rows.some(r => /candle|vigil|Light/.test(r)), rows.join(' | '));
+  await shot(page, 'a-lobby-host');
+  await page.locator('#places button', { hasText: 'beneath torch' }).click();
+  await page.click('#open-go');
+  await page.waitForSelector('#waiting:not([hidden])');
+  const code = await page.textContent('#w-code'), link = await page.inputValue('#w-link');
+  check('A: the waiting room shows the code large, a word and a number', /^[A-Z]+ [1-9]$/.test(code), code);
+  check('A: the invite link is zero.html?table=<code>', new URL(link).pathname.endsWith('/zero.html') && new URL(link).searchParams.get('table') === code.replace(' ', ''), link);
+  check('A: the page\'s own address is the invite link, so a reload comes back', page.url() === link, page.url());
+  await page.click('#w-copy');
+  const copied = await page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
+  check('A: Copy the link copies it', copied === link, copied);
+  check('A: the share button shows only where the phone can share', (await page.locator('#w-share').isHidden()) === !(await page.evaluate(() => !!navigator.share)));
+  check('A: At the table lists the host, marked', (await atTable(page)).join('|') === 'Matthewhost', (await atTable(page)).join('|'));
+  check('A: alone and without a key, Deal waits (three people, or a key)', await page.locator('#deal-go').isDisabled() && /three people or more/.test(await page.textContent('#w-say')));
+  await shot(page, 'a-waiting-nokey');
+  await addKey(page, 'sk-ant-test');
+  check('A: with a key, the empty seats say the computer fills them', /^8 seats empty · computer fills them$/.test(await page.textContent('#w-empty')), await page.textContent('#w-empty'));
+  check('A: and the host is told to keep the page open', /Keep this page open while you play. The computer players live on your phone./.test(await page.textContent('#w-keep')));
+  check('A: the key stays in this browser and never reaches the beach', !JSON.stringify(beach.blocks).includes('sk-ant-test'));
+  await shot(page, 'a-waiting');
+  await page.click('#deal-go');
+  await page.waitForSelector('#table:not([hidden])');
+  await play(host, h => ['flicker', 'beacon', 'match', 'wick'][h - 1], { shots: SHOTS ? 'a' : '', voteIndex: 1 });
+  await shot(page, 'a-end');
+  const t = await endChecks('A', beach, page, ['Matthew']);
+  check('A: computer players took all eight empty seats at the deal', Object.values(t.roster).filter(r => r.kind === 'computer').length === 8);
+  const owed = t.hands.reduce((a, h) => a + h.active.filter(s => Z.isComputer(t, s)).length, 0);
+  check('A: the computer seats moved through Claude with the browser headers, on claude-haiku-5-5', calls.word >= owed && calls.headersOk && calls.models.has('claude-haiku-5-5') && calls.models.size === 1, JSON.stringify({ ...calls, models: [...calls.models] }));
+  check('A: the computers sealed before the host could write, every step', await computersFirst(beach, code));
+  check('A: the key is still nowhere on the beach', !JSON.stringify(beach.blocks).includes('sk-ant-test'));
+  await keepAndNote('A', page, beach);
+  check('A: no page errors', !host.errors.length, host.errors.join(' / '));
+  await host.ctx.close();
+}
+
 async function tableB(browser, base, beach) {
-  console.log('B. the host and two phones, six computer seats');
-  const host = await phone(browser, base), ann = await phone(browser, base), ben = await phone(browser, base);
-  await host.page.click('#door-host');
-  await signUp(host.page, 'Mira');
-  await host.page.fill('#my-key', 'sk-ant-test');
-  await host.page.click('#cp-less'); await host.page.click('#cp-less');
-  check('B: two fewer computer players leaves six', (await host.page.textContent('#cp-count')) === '6');
-  await host.page.waitForSelector('#places button');
-  await host.page.locator('#places button', { hasText: 'A new first word' }).click();
-  await host.page.fill('#first-word', 'Harbour');
-  await host.page.click('#open-go');
-  await host.page.waitForSelector('#waiting:not([hidden])');
-  const code = await host.page.textContent('#w-code');
-  check('B: the host waits for two more people', /Waiting for 2 more people/.test(await host.page.textContent('#w-say')));
-  for (const [p, name] of [[ann, 'Ann'], [ben, 'Ben']]) {
-    await p.page.click('#door-join');
-    if (name === 'Ben') await signUp(p.page, name);
-    await p.page.fill('#join-code', code.toLowerCase().replace(' ', ''));
-    await p.page.click('#join-go');
-    if (name === 'Ann') await signUp(p.page, name, true);
-    await p.page.waitForSelector('#waiting:not([hidden])');
-  }
-  check('B: taking a seat before a name opens the door, and the seat follows', true);
-  check('B: a joiner sees the seated line', /You’re seated. The game starts when the host deals./.test(await ann.page.textContent('#w-say')));
+  console.log('B. the host and two phones by the invite link; computer players fill the rest');
+  const host = await phone(browser, base);
+  const { code, link } = await hostOpens(host, 'Mira', 'A new first word', 'Harbour');
+  await addKey(host.page, 'sk-ant-test');
+  // Ann opens the link with no name: the door opens by itself, then she is seated
+  const ann = await arrives(browser, link, 'Ann');
+  check('B: the link takes a newcomer through the door and straight to a seat, no code typed', await ann.page.locator('#waiting').isVisible() && (await ann.page.inputValue('#w-link')) === link);
+  check('B: a seated person sees the waiting line', /You’re seated. The game starts when the host deals./.test(await ann.page.textContent('#w-say')));
+  // Ben already has a name on this phone: the link seats him at once
+  const ben = await phone(browser, base);
+  await ben.page.click('#door-join');
+  await signUp(ben.page, 'Ben');
+  await ben.page.goto(link);
+  await ben.page.waitForSelector('#waiting:not([hidden])');
+  check('B: a phone that already has a name goes straight to the seat', true);
   await shot(ann.page, 'b-seated');
-  await host.page.waitForFunction(() => /Everyone is here/.test(document.querySelector('#w-say').textContent), null, { timeout: 15000 });
-  // a fourth person is turned away: the table is full
-  const extra = await phone(browser, base);
-  await extra.page.click('#door-join');
-  await signUp(extra.page, 'Cat');
-  await extra.page.fill('#join-code', code);
-  await extra.page.click('#join-go');
-  await extra.page.waitForFunction(() => document.querySelector('#lobby-error').textContent.length > 0, null, { timeout: 15000 });
-  check('B: a fourth person finds the table full', /full/.test(await extra.page.textContent('#lobby-error')), await extra.page.textContent('#lobby-error'));
-  await extra.ctx.close();
+  await host.page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 3, null, { timeout: 15000 });
+  check('B: At the table lists who has arrived, the host marked', (await atTable(host.page)).join('|') === 'Mirahost|Ann|Ben', (await atTable(host.page)).join('|'));
+  check('B: one invited… two invited plus the host: six seats empty, computer fills them', /^6 seats empty · computer fills them$/.test(await host.page.textContent('#w-empty')), await host.page.textContent('#w-empty'));
+  check('B: the others are told the table pauses if the host leaves', /pauses until they come back/.test(await ann.page.textContent('#w-keep')));
+  await shot(host.page, 'b-waiting-host');
   await host.page.click('#deal-go');
   await host.page.waitForSelector('#table:not([hidden])');
   check('B: the new first word is written at a free top seat', Object.keys(beach.blocks.zero).some(k => /^\d$/.test(k) && /^Harbour · Mira/.test(Z.textOf(beach.blocks.zero[k]))));
-  const runs = [
+  // someone arriving after the deal is turned away
+  const late = await phone(browser, link);
+  await signUp(late.page, 'Cat', true);
+  await late.page.waitForFunction(() => document.querySelector('#i-error').textContent.length > 0, null, { timeout: 15000 });
+  check('B: a person arriving by the link after the deal is told the table has started', /already started/.test(await late.page.textContent('#i-error')), await late.page.textContent('#i-error'));
+  await late.ctx.close();
+  await Promise.all([
     play(host, h => ['mooring', 'gull', 'keel', 'lantern'][h - 1], { voteIndex: 0 }),
-    // Ann and Ben write the same word in hand one: both are knocked out
     play(ann, h => ['jetty', 'bollard', 'net', 'buoy'][h - 1], { voteIndex: 1, shots: SHOTS ? 'b-ann' : '' }),
     play(ben, h => ['Jetties', 'crane', 'anchor', 'chart'][h - 1], { voteIndex: 2 })
-  ];
-  await Promise.all(runs);
+  ]);
   const t = await endChecks('B', beach, host.page, ['Mira', 'Ann', 'Ben']);
-  const h1 = t.hands[0];
-  check('B: jetty and Jetties match at the flop and knock each other out', h1.out[2] && h1.out[3], JSON.stringify(h1.words));
-  check('B: knocked-out seats still voted', h1.votes[2] != null && h1.votes[3] != null);
-  await shot(ann.page, 'b-ann-end');
+  check('B: computer players took the six empty seats at the deal', Object.values(t.roster).filter(r => r.kind === 'computer').length === 6);
+  check('B: jetty and Jetties match at the flop and knock each other out', t.hands[0].out[2] && t.hands[0].out[3], JSON.stringify(t.hands[0].words));
+  check('B: knocked-out seats still voted', t.hands[0].votes[2] != null && t.hands[0].votes[3] != null);
   for (const p of [host, ann, ben]) check('B: no page errors', !p.errors.length, p.errors.join(' / '));
   await Promise.all([host, ann, ben].map(p => p.ctx.close()));
 }
 
 async function tableC(browser, base, beach) {
-  console.log('C. a full table of nine people, no key');
+  console.log('C. a full table of nine people by the link, no key');
   const names = ['Hugo', 'Iris', 'Jack', 'Kate', 'Liam', 'Mona', 'Nell', 'Owen', 'Pia'];
-  const ps = [];
-  for (let i = 0; i < 9; i++) ps.push(await phone(browser, base));
-  const host = ps[0];
-  await host.page.click('#door-host');
-  await signUp(host.page, 'Hugo');
-  while ((await host.page.textContent('#cp-count')) !== '0') await host.page.click('#cp-less');
-  check('C: at 0 computer players the lobby says no key is needed', (await host.page.textContent('#cp-line')) === 'Only people. No key needed.' && await host.page.locator('#key-part').isHidden());
-  await host.page.evaluate(() => localStorage.removeItem('zero.key'));
-  await host.page.waitForSelector('#places button');
-  if (await host.page.locator('#places-more').isVisible()) await host.page.click('#places-more');
-  await host.page.locator('#places button', { hasText: 'beneath lighthouse' }).click();
-  await host.page.click('#open-go');
-  await host.page.waitForSelector('#waiting:not([hidden])');
-  const code = await host.page.textContent('#w-code');
-  check('C: without a key the deal waits for all nine', await host.page.locator('#deal-go').isDisabled());
-  for (let i = 1; i < 9; i++) {
-    const p = ps[i];
-    await p.page.click('#door-join');
-    await signUp(p.page, names[i]);
-    await p.page.fill('#join-code', code);
-    await p.page.click('#join-go');
-    await p.page.waitForSelector('#waiting:not([hidden])');
-  }
-  await host.page.waitForFunction(() => !document.querySelector('#deal-go').disabled, null, { timeout: 20000 });
+  const host = await phone(browser, base);
+  const { code, link } = await hostOpens(host, 'Hugo', 'beneath lighthouse');
+  const ps = [host];
+  for (let i = 1; i < 9; i++) ps.push(await arrives(browser, link, names[i]));
+  await host.page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 9, null, { timeout: 20000 });
+  check('C: every seat is taken', /Every seat is taken/.test(await host.page.textContent('#w-empty')));
   await host.page.click('#deal-go');
   const pool = ['beam', 'keeper', 'rocks', 'storm', 'gull', 'lens', 'spiral', 'foghorn', 'island', 'stairs', 'wick', 'mist'];
   await Promise.all(ps.map((p, i) => play(p, h => (h === 1 && (i === 4 || i === 5)) ? 'Lamp' : pool[(i + h * 3) % pool.length] + (h > 1 ? 'x'.repeat(i) : ''), { voteIndex: i % 3, timeout: 300000, line: h => `${names[i]} keeps the light for hand ${h}.`, stake: 1 + (i % 3) })));
   const t = await endChecks('C', beach, host.page, names);
-  check('C: no computer seat at the table', Object.values(t.roster).every(r => r.kind === 'person'));
+  check('C: nine people, no computer seat', Object.keys(t.roster).length === 9 && Object.values(t.roster).every(r => r.kind === 'person'));
   check('C: Liam and Mona matched on Lamp and were knocked out', t.hands[0].out[5] && t.hands[0].out[6], JSON.stringify(t.hands[0].words));
   for (const p of ps) check('C: no page errors', !p.errors.length, p.errors.join(' / '));
   await Promise.all(ps.map(p => p.ctx.close()));
 }
 
-async function tableD(browser, base, beach) {
-  console.log('D. someone leaves mid-game: the host goes on without them');
-  const host = await phone(browser, base), ann = await phone(browser, base);
-  await host.page.click('#door-host');
-  await signUp(host.page, 'Dora');
-  await host.page.fill('#my-key', 'sk-ant-test');
-  await host.page.click('#cp-less');
-  await host.page.waitForSelector('#places button');
-  await host.page.locator('#places button', { hasText: 'A new first word' }).click();
-  await host.page.fill('#first-word', 'Orchard');
-  await host.page.click('#open-go');
-  await host.page.waitForSelector('#waiting:not([hidden])');
-  const code = await host.page.textContent('#w-code');
-  await ann.page.click('#door-join');
-  await signUp(ann.page, 'Abe');
-  await ann.page.fill('#join-code', code);
-  await ann.page.click('#join-go');
-  await ann.page.waitForSelector('#waiting:not([hidden])');
-  await host.page.waitForFunction(() => /Everyone is here/.test(document.querySelector('#w-say').textContent), null, { timeout: 15000 });
+async function tableG(browser, base, beach) {
+  console.log('G. three people and no key: the table plays with who is there');
+  const host = await phone(browser, base);
+  const { code, link } = await hostOpens(host, 'Quinn', 'beneath photon');
+  const rae = await arrives(browser, link, 'Rae');
+  await host.page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 2, null, { timeout: 15000 });
+  check('G: with two and no key, Deal waits for a third', await host.page.locator('#deal-go').isDisabled());
+  const sol = await arrives(browser, link, 'Sol');
+  await host.page.waitForFunction(() => !document.querySelector('#deal-go').disabled, null, { timeout: 15000 });
+  check('G: with three, Deal is ready, and says the table plays with the three', /plays with the 3 of you/.test(await host.page.textContent('#w-say')), await host.page.textContent('#w-say'));
   await host.page.click('#deal-go');
-  await ann.ctx.close();                       // Abe goes, before writing a word
-  // the host plays, and goes on without Ann whenever the table waits on her
-  const deadline = Date.now() + 240000;
-  let wentOn = 0;
+  await Promise.all([
+    play(host, h => ['proton', 'quark', 'lepton', 'boson'][h - 1], { voteIndex: 0 }),
+    play(rae, h => ['ray', 'glow', 'flash', 'gleam'][h - 1], { voteIndex: 0 }),
+    play(sol, h => ['sun', 'heat', 'spark', 'blaze'][h - 1], { voteIndex: 0 })
+  ]);
+  const t = await endChecks('G', beach, host.page, ['Quinn', 'Rae', 'Sol']);
+  check('G: three seats only, no computer, empty seats left empty', Object.keys(t.roster).join(',') === '1,2,3' && Object.values(t.roster).every(r => r.kind === 'person'));
+  for (const p of [host, rae, sol]) check('G: no page errors', !p.errors.length, p.errors.join(' / '));
+  await Promise.all([host, rae, sol].map(p => p.ctx.close()));
+}
+
+async function tableD(browser, base, beach) {
+  console.log('D. someone leaves mid-game and comes back by the same link');
+  const host = await phone(browser, base);
+  const { code, link } = await hostOpens(host, 'Dora', 'A new first word', 'Orchard');
+  await addKey(host.page, 'sk-ant-test');
+  const abe = await phone(browser, link);
+  const abeDoor = await signUp(abe.page, 'Abe', true);
+  await abe.page.waitForSelector('#waiting:not([hidden])');
+  await host.page.waitForFunction(() => document.querySelectorAll('#w-roster li').length === 2, null, { timeout: 15000 });
+  await host.page.click('#deal-go');
+  await abe.ctx.close();                       // Abe goes, before writing a word
+  let wentOn = 0, back = null;
+  const deadline = Date.now() + 300000;
   const loop = (async () => {
     while (Date.now() < deadline && !(await host.page.locator('#end').isVisible())) {
       const b = host.page.locator('#m-goon');
       if (await visible(b)) { await b.click().catch(() => {}); wentOn++; }
+      // in hand two Abe opens the same link on a fresh phone and says who he is
+      if (!back && /Hand two/.test((await host.page.textContent('#t-phase').catch(() => '')) || '')) {
+        back = await phone(browser, link);
+        await back.page.getByRole('button', { name: 'I’ve been here before' }).click();
+        await back.page.fill('#door-name2', 'Abe');
+        await back.page.fill('#door-key', abeDoor.words.join('-'));
+        await back.page.getByRole('button', { name: 'Come in' }).click();
+        await back.page.waitForSelector('#table:not([hidden])', { timeout: 20000 });
+        back.playing = play(back, h => ['pip', 'core', 'stalk', 'seed'][h - 1], { voteIndex: 0 });
+      }
       await host.page.waitForTimeout(400);
     }
   })();
   await Promise.all([loop, play(host, h => ['blossom', 'ladder', 'cider', 'wasp'][h - 1], { voteIndex: 0 })]);
+  if (back) await back.playing;
   check('D: the host was offered "Go on without Abe", and the table went on', wentOn >= 1, 'went on ' + wentOn + ' times');
   const t = await tableIn(beach, code);
-  check('D: the game reached its end without her', t.over && t.hands.length === 4, 'hands ' + t.hands.length);
-  check('D: Abe wrote no word and sat out, but the table kept his seat', t.hands[0].out[2] === true && t.roster[2].name === 'Abe');
-  check('D: no page errors', !host.errors.length, host.errors.join(' / '));
+  check('D: the game reached its end', t.over && t.hands.length === 4, 'hands ' + t.hands.length);
+  check('D: Abe wrote no word in hand one and sat it out, but kept his seat', t.hands[0].out[2] === true && t.roster[2].name === 'Abe');
+  check('D: Abe came back by the same link with his name and words, to his own seat', !!back && JSON.parse(await back.page.evaluate(() => localStorage.getItem('zero.table'))).seat === 2);
+  check('D: and played on from there', t.hands.slice(1).some(h => ['word', 'line', 'vote'].some(st => h.steps[st] && h.steps[st].seals[2])));
+  check('D: no page errors', !host.errors.length && (!back || !back.errors.length), host.errors.concat(back ? back.errors : []).join(' / '));
   await host.ctx.close();
+  if (back) await back.ctx.close();
 }
 
 async function tableE(browser, base, beach) {
@@ -402,7 +435,6 @@ async function tableE(browser, base, beach) {
   const host = await phone(browser, base);
   await host.page.click('#door-host');
   await signUp(host.page, 'Edith');
-  while ((await host.page.textContent('#cp-count')) !== '0') await host.page.click('#cp-less');
   await host.page.waitForSelector('#places button');
   await host.page.locator('#places button', { hasText: 'A new first word' }).click();
   await host.page.fill('#first-word', 'Quarry');
@@ -424,14 +456,8 @@ async function tableF(browser, base, beach) {
   });
   const page = await ctx.newPage();
   await page.goto(base);
-  await page.click('#door-host');
-  await signUp(page, 'Fred');
-  await page.fill('#my-key', 'sk-ant-wrong');
-  await page.waitForSelector('#places button');
-  await page.locator('#places button', { hasText: 'A new first word' }).click();
-  await page.fill('#first-word', 'Meadow');
-  await page.click('#open-go');
-  await page.waitForSelector('#waiting:not([hidden])');
+  await hostOpens({ page }, 'Fred', 'A new first word', 'Meadow');
+  await addKey(page, 'sk-ant-wrong');
   await page.click('#deal-go');
   await page.waitForSelector('#m-key', { timeout: 20000 });
   const said = await page.textContent('#t-error');
@@ -456,6 +482,7 @@ try {
   if (which.includes('D')) await tableD(browser, base, beach);
   if (which.includes('E')) await tableE(browser, base, beach);
   if (which.includes('F')) await tableF(browser, base, beach);
+  if (which.includes('G')) await tableG(browser, base, beach);
 } catch (e) {
   check('the run finished', false, e.stack || String(e));
   // what the room held when it stopped
