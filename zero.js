@@ -67,8 +67,17 @@
       return { status: 0, json: null };
     });
   }
-  // A write in the beach's own shape. Never throws.
+  // A write in the beach's own shape. Never throws. The beach reads a block,
+  // changes it and writes it back, so this device sends its writes to one
+  // block one after another (as door.js does).
+  var queue = {};
   function write(block, body) {
+    var run = function () { return send(block, body); };
+    var p = (queue[block] || Promise.resolve()).then(run, run);
+    queue[block] = p;
+    return p;
+  }
+  function send(block, body) {
     return fetch(WIRE + '?block=' + encodeURIComponent(block), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -101,7 +110,7 @@
   // The room only grows, so it is read by its outline (the top-level nodes)
   // and then only the nodes a table needs; a node is kept once a later one
   // has begun, since the beach fills slots in order.
-  var room = { floor: 0, cache: {} };
+  var room = { floor: 0, cache: {}, cacheFloor: 0 };
   function outline() {
     var guess = room.floor || 2;
     return look(ROOM, '&pscale=' + Math.max(0, guess - 1)).then(function (r) {
@@ -117,7 +126,9 @@
   // Every entry from address `from` on; with no `from`, the recent ones.
   function readRoom(from) {
     return outline().then(function (o) {
-      if (o.floor !== room.floor) { room.floor = o.floor; room.cache = {}; }
+      // A supernest moves every older entry one rung down: what was kept is read afresh.
+      if (o.floor !== room.cacheFloor) { room.cache = {}; room.cacheFloor = o.floor; }
+      room.floor = o.floor;
       var F = o.floor;
       if (!F) return [];
       var tops = o.tops, want;
@@ -979,7 +990,7 @@
     if (!S.host) return;
     var st = Z.stepFor(h);
     if (!st) return;
-    var sealWait = Z.waitingSeal(st).filter(function (s) { return !Z.isComputer(t, s); });
+    var sealWait = Z.waitingSeal(st).filter(function (s) { return !Z.isComputer(t, s) && s !== S.seat; });
     var showWait = Z.waitingShow(st).filter(function (s) { return !Z.isComputer(t, s) && s !== S.seat; });
     var phase = sealWait.length ? 'seal' : showWait.length ? 'show' : '';
     if (!phase) return;
@@ -1036,6 +1047,18 @@
 
   // ---- what this device does on each read ------------------------------------------------
   var keyBlocked = false;     // Claude refused the key: wait for another
+  // A duty whose key is marked once (S.done) never runs again on this device,
+  // whatever a later read shows: a move is never written twice.
+  function once(key, fn) {
+    if (S.done[key]) return;
+    duty(key, function () {
+      return Promise.resolve().then(fn).then(function (r) {
+        if (r && r.ok === false) throw new Error(refusal(r));
+        S.done[key] = true;
+        saveS();
+      });
+    });
+  }
   function duty(key, fn) {
     if (running[key]) return;
     running[key] = true;
@@ -1053,7 +1076,7 @@
     var t = T, h = t.current;
     if (!h || t.phase === 'end' && S.ended) return hostEnd(t, h);
     var st = Z.stepFor(h);
-    if (st && st.sealed && !st.shown) duty('show:' + h.n + st.name, function () { return showMine(h, st); });
+    if (st && st.sealed && !st.shown) once('show:' + h.n + st.name, function () { return showMine(h, st); });
     if (!S.host) return;
     var key = sget(KEY);
     if (st && !st.closed) {
@@ -1061,7 +1084,7 @@
       if (comp.length) {
         if (keyBlocked) return hostEnd(t, h);
         if (!key) { $('t-error').textContent = 'The computer players need your Anthropic key on this device.'; keyBlocked = true; drawKeyBox(); return; }
-        duty('cmp:' + h.n + st.name, function () { return computerMoves(key, t, h, st, comp); });
+        once('cmp:' + h.n + st.name, function () { return computerMoves(key, t, h, st, comp); });
       }
     }
     hostEnd(t, h);
@@ -1074,7 +1097,7 @@
     var treeOk = !resolved || S.done[treeKey];
     if (h.stage === 'voice' && Z.isComputer(t, h.picker) && treeOk && !keyBlocked) {
       var key = sget(KEY);
-      if (key) duty('pick:' + h.n, function () {
+      if (key) once('pick:' + h.n, function () {
         return askPick(key, t, h, h.picker).then(function (s) {
           return post('pick', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · ' + Z.nameOf(t, h.picker) + ' picks ' + h.words[s] + ' as the next zero', data: { _: String(s) } });
         });
@@ -1083,13 +1106,11 @@
     if (h.stage === 'done' && !t.over && treeOk) {
       var k = 'deal:' + (h.n + 1);
       if (!firstSeen[k]) firstSeen[k] = Date.now();
-      if (Date.now() - firstSeen[k] >= PAUSE_BEFORE_DEAL) duty(k, function () { return dealNext(t, h); });
+      if (Date.now() - firstSeen[k] >= PAUSE_BEFORE_DEAL) once(k, function () { return dealNext(t, h); });
       else schedule(Math.min(POLL_MS, PAUSE_BEFORE_DEAL - (Date.now() - firstSeen[k]) + 50));
     }
-    if (t.over && treeOk && !S.done.closed) duty('close', function () {
-      return post('close', { who: S.name, at: Z.at(h.place), code: S.code, text: S.code + ' · game over: ' + finalLine(t) }).then(function (r) {
-        if (r.ok) { S.done.closed = true; saveS(); }
-      });
+    if (t.over && treeOk) once('closed', function () {
+      return post('close', { who: S.name, at: Z.at(h.place), code: S.code, text: S.code + ' · game over: ' + finalLine(t) });
     });
   }
   function computerMoves(key, t, h, st, seats) {
@@ -1108,11 +1129,14 @@
       var data = { _: st.name };
       sealed.forEach(function (x) { data[String(x.s)] = x.hash; });
       return post('seal', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · the computer players seal ' + ({ word: 'their words', line: 'their lines and stakes', vote: 'their votes' })[st.name], data: data });
-    }).then(function (r) { if (!r.ok) throw new Error(refusal(r)); });
+    }).then(function (r) { if (!r.ok) throw new Error(refusal(r)); return r; });
   }
   // The played place goes into the tree: its voice, signed, and each
   // surviving word in its seat. Never over a seat or a voice already there.
-  function writePlace(t, h) {
+  // Another table writing elsewhere in the tree at the same moment could
+  // be lost under it, so the write is read back, and sent again if missing.
+  function writePlace(t, h, attempt) {
+    attempt = attempt || 1;
     var nameOf = function (s) { return Z.nameOf(t, s); };
     var content = Z.placeAfter(h, nameOf);
     return readTree().then(function (tree) {
@@ -1120,22 +1144,30 @@
       var node = Z.nodeAt(tree, h.place);
       if (node != null && Z.played(node)) {
         if (Z.textOf(node) !== content._) $('t-error').textContent = 'This place already had a voice in the tree, so this hand stays in the room only.';
-        return { ok: true };
+        return { ok: true, stood: true };
       }
       return write(TREE, { spindle: Z.at(h.place), content: content });
     }).then(function (r) {
       if (!r.ok) throw new Error(refusal(r));
+      if (r.stood) return true;
+      return readTree().then(function (tree) {
+        TREE_JSON = tree;
+        return Z.textOf(Z.nodeAt(tree, h.place)) === content._;
+      });
+    }).then(function (landed) {
+      if (!landed) {
+        if (attempt >= 4) throw new Error('The tree didn\u2019t keep this place. Trying again.');
+        return new Promise(function (r) { setTimeout(r, 700 * attempt); }).then(function () { return writePlace(t, h, attempt + 1); });
+      }
       S.done['tree:' + h.n] = true;
       saveS();
-      return readTree().then(function (tree) { TREE_JSON = tree; }, function () {});
     });
   }
   function dealNext(t, h) {
     var place = Z.nextPlace(h);
     if (!place) return Promise.resolve();
     var word = h.noRing ? h.zero : h.words[h.pick];
-    return post('deal', { who: S.name, at: Z.at(place), code: S.code, hand: h.n + 1, text: S.code + ' · hand ' + HAND_WORDS[h.n + 1] + ' at ' + word, data: { _: word } })
-      .then(function (r) { if (!r.ok) throw new Error(refusal(r)); });
+    return post('deal', { who: S.name, at: Z.at(place), code: S.code, hand: h.n + 1, text: S.code + ' · hand ' + HAND_WORDS[h.n + 1] + ' at ' + word, data: { _: word } });
   }
   function drawKeyBox() {
     if ($('m-key')) return;

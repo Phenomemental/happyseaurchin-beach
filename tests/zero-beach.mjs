@@ -58,6 +58,8 @@ export function makeBeach(seed) {
     return d;
   }
   function walkRead(b, spindle) {
+    // As the beach answers it: an address of noughts alone reads the first rung down.
+    if (/^0+$/.test(String(spindle))) return isObj(b._) ? b._ : b;
     const d = digitsOf(spindle, floorOf(b));
     let n = b;
     for (const c of d) {
@@ -105,8 +107,10 @@ export function makeBeach(seed) {
     }
     return [200, b];
   }
+  const locked = new Set();     // blocks that refuse every write, as a latched block refuses one without its secret
   function post(name, body, now) {
     if (!name) return [400, { error: 'block name required', code: 'invalid_shape' }];
+    if (locked.has(name)) return [403, { error: `"${name}" is locked`, code: 'lock_required' }];
     const { content, spindle, confirm, append } = body;
     const bad = validate(content);
     if (bad) return [400, { error: bad, code: 'invalid_shape' }];
@@ -133,7 +137,7 @@ export function makeBeach(seed) {
     log.push({ name, spindle, content });
     return [200, existing === undefined ? { ok: true, born: true } : { ok: true }];
   }
-  return { blocks, log, get, post };
+  return { blocks, log, get, post, locked };
 }
 
 export function serve(port = 0, seed) {
