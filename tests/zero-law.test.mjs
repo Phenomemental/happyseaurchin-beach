@@ -105,8 +105,13 @@ test('a hand: seats, flop, turn, showdown, a tie split, the pick and the next de
 
   await play(r, 1, 'word', { 1: 'flame', 2: 'dark', 3: 'beam', 4: 'wick', 5: 'Flames', 6: 'cave', 7: 'oil', 8: 'bedside', 9: 'shadow' }, writer);
   t = await Z.derive(r.list, CODE);
-  assert.equal(t.phase, 'line');
+  assert.equal(t.phase, 'eye');
   assert.deepEqual(Object.keys(t.current.out).map(Number).sort(), [1, 5]);
+  assert.deepEqual(t.current.survivors, [2, 3, 4, 6, 7, 8, 9]);
+  assert.equal(t.current.steps.eye.need.length, 9);          // every seat may mark, the knocked-out too
+  await play(r, 1, 'eye', { 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0' }, writer);
+  t = await Z.derive(r.list, CODE);
+  assert.equal(t.phase, 'line');
   assert.deepEqual(t.current.ring, [2, 3, 4, 6, 7, 8, 9]);
 
   await play(r, 1, 'line', { 2: ['A', 2], 3: ['B', 3], 4: ['C', 1], 6: ['D', 3], 7: ['E', 0], 8: ['F', 1], 9: ['G', 5] }, writer);
@@ -161,11 +166,66 @@ test('a forged reveal is void; a late seat is gone on without; no ring deals aga
   r.add('Ben', 'show', 1, { _: 'word', 2: { _: 'pebble', 1: sB } }, '2');
   t = await Z.derive(r.list, CODE);
   assert.equal(t.current.steps.word.shows[2].ok, false);
+  assert.deepEqual(t.current.survivors, [1]);
+  // the table's eye: Ann and Ben skip; Cat has gone, and the host goes on without her
+  await play(r, 1, 'eye', { 1: '0', 2: '0' }, writer);
+  r.add('Ann', 'go', 1, { _: 'eye', 1: 'seal', 2: '3' }, '2');
+  t = await Z.derive(r.list, CODE);
   assert.deepEqual(t.current.ring, [1]);
-  // the lone line: Ann can vote for nobody else, so only Ben and Cat vote
+  // the lone sentence: Ann can vote for nobody else, so only Ben and Cat vote
   await play(r, 1, 'line', { 1: ['A stone remembers.', 4] }, writer);
   t = await Z.derive(r.list, CODE);
   assert.deepEqual(t.current.steps.vote.need, [2, 3]);
+});
+
+test('the table\'s eye: a word marked by more than half the seats goes out; never one\'s own', async () => {
+  const r = room();
+  const names = ['Ann', 'Ben', 'Cat', 'Dev', 'Eve', 'Fin', 'Gus', 'Hal', 'Ivy'];
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann' }, '3');
+  const roster = { _: 'sea' };
+  names.forEach((nm, i) => { roster[String(i + 1)] = { _: nm, 1: 'person' }; });
+  r.add('Ann', 'deal', 1, roster, '3');
+  const writer = s => names[s - 1];
+  await play(r, 1, 'word', { 1: 'wave', 2: 'shell', 3: 'gull', 4: 'tide', 5: 'salt', 6: 'Waves', 7: 'spreadsheet', 8: 'invoice', 9: 'foam' }, writer);
+  let t = await Z.derive(r.list, CODE);
+  assert.equal(t.phase, 'eye');
+  assert.deepEqual(t.current.survivors, [2, 3, 4, 5, 7, 8, 9]);
+  // five of nine mark spreadsheet (more than half: out); two mark invoice (not more than half: stays);
+  // spreadsheet's own seat marks itself (ignored); one marks wave, already matched out (ignored)
+  await play(r, 1, 'eye', { 1: '7', 2: '7', 3: '7', 4: '7', 5: '7', 6: '8', 7: '7', 8: '1', 9: '8' }, writer);
+  t = await Z.derive(r.list, CODE);
+  const h = t.current;
+  assert.equal(h.marked[7], 5);
+  assert.equal(h.marked[8], 2);
+  assert.equal(h.marks[7], undefined);
+  assert.equal(h.marks[8], undefined);
+  assert.equal(h.eyeOut[7], true);
+  assert.equal(h.eyeOut[8], undefined);
+  assert.deepEqual(h.ring, [2, 3, 4, 5, 8, 9]);
+  assert.equal(t.phase, 'line');
+  assert.deepEqual(h.steps.line.need, [2, 3, 4, 5, 8, 9]);
+  // the seat sent out writes no sentence, but still votes, and stays empty in the tree
+  await play(r, 1, 'line', { 2: ['a', 1], 3: ['b', 1], 4: ['c', 1], 5: ['d', 1], 8: ['e', 1], 9: ['f', 1] }, writer);
+  t = await Z.derive(r.list, CODE);
+  assert.ok(t.current.steps.vote.need.includes(7));
+  await play(r, 1, 'vote', { 1: 2, 2: 3, 3: 2, 4: 2, 5: 2, 6: 2, 7: 2, 8: 2, 9: 2 }, writer);
+  t = await Z.derive(r.list, CODE);
+  const place = Z.placeAfter(t.current, s => names[s - 1]);
+  assert.equal(place['7'], undefined);
+  assert.equal(place['8'], 'invoice · Hal');
+});
+
+test('the eye can send out every word left: the hand has no sentences and is dealt again', async () => {
+  const r = room();
+  r.add('Ann', 'open', 0, { _: 'sea', 1: 'Ann' }, '3');
+  r.add('Ann', 'deal', 1, { _: 'sea', 1: { _: 'Ann', 1: 'person' }, 2: { _: 'Ben', 1: 'person' }, 3: { _: 'Cat', 1: 'person' } }, '3');
+  const writer = s => ['Ann', 'Ben', 'Cat'][s - 1];
+  await play(r, 1, 'word', { 1: 'wave', 2: 'waves', 3: 'tax' }, writer);
+  await play(r, 1, 'eye', { 1: '3', 2: '3', 3: '0' }, writer);
+  const t = await Z.derive(r.list, CODE);
+  assert.equal(t.current.eyeOut[3], true);
+  assert.equal(t.current.noRing, true);
+  assert.equal(Z.nextPlace(t.current), '3');
 });
 
 test('every word knocked out: the hand counts and the next is dealt at the same zero', async () => {

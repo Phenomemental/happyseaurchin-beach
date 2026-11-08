@@ -192,15 +192,20 @@
   // ---- the law, as the computer seats read it --------------------------------------------
   var LAW_TEXT = [
     'The table: nine seats around a zero word. Every seat starts with 10 chips. A game is four hands.',
-    'Seats: each seat writes one word that belongs under the zero, hidden until all are in. Words that match after lower-casing and singular form knock each other out for that hand.',
-    'The turn: every seat still in writes one line that holds the surviving ring, and stakes from 0 to all its chips, both hidden until all are in.',
-    'The showdown: every seat votes for one line, never its own. Most votes takes the whole pot; that line becomes the voice of the place, signed. A tie splits the pot.',
+    'Seats: each seat writes one word that belongs under the zero, hidden until all are in. Two things knock a word out for that hand: words that match after lower-casing and singular form knock each other out; and the table\u2019s eye: when the words are turned, every seat may mark one word that does not belong under the zero (never its own), and any word marked by more than half the seats goes out. So the skill is a word that belongs and that nobody else thought of.',
+    'The turn: every seat still in writes one short sentence that brings all the surviving words together, and stakes from 0 to all its chips, both hidden until all are in.',
+    'The showdown: every seat votes for one sentence, never its own. Most votes takes the whole pot; that sentence becomes the voice of the place, signed. A tie splits the pot.',
     'Deeper: the winner picks one surviving word, and it becomes the next zero, one level down.',
-    'Out: a seat knocked out sits out that hand only. A seat with no chips writes no more words or lines, but keeps its vote to the end.',
-    'The end: after four hands, most chips wins. The winning lines read from the top of the trail down are the game’s poem.',
-    'The craft: a line wins by holding the whole ring in a breath. Compression is the skill.',
+    'Out: a seat knocked out sits out that hand only. A seat with no chips writes no more words or sentences, but keeps its vote to the end.',
+    'The end: after four hands, most chips wins. The winning sentences read from the top of the trail down are the game\u2019s poem.',
+    'The craft: a sentence wins by bringing all the words together in a single breath. Short sentences win; compression is the skill.',
     'Computer seats fill any seat no person takes. Each writes as if alone, in its own voice, short and plain, and collisions are allowed.'
   ].join('\n');
+  // What a player writes is a sentence, everywhere (spine:zero 4.2): the law
+  // as read from the beach is told to the computer players in the same words.
+  function sentenceWords(text) {
+    return String(text).replace(/\bLines\b/g, 'Sentences').replace(/\blines\b/g, 'sentences').replace(/\bLine\b/g, 'Sentence').replace(/\bline\b/g, 'sentence');
+  }
   var lawRead = false;
   function readLaw() {
     if (lawRead) return Promise.resolve(LAW_TEXT);
@@ -208,7 +213,7 @@
       if (r.status === 200 && r.json) {
         var lines = [];
         for (var i = 1; i <= 9; i++) { var t = Z.textOf(r.json[String(i)]); if (t) lines.push(t); }
-        if (lines.length >= 5) { LAW_TEXT = lines.join('\n'); lawRead = true; }
+        if (lines.length >= 5) { LAW_TEXT = sentenceWords(lines.join('\n')); lawRead = true; }
       }
       return LAW_TEXT;
     });
@@ -268,7 +273,7 @@
       'Play as if you were alone at the table: you never see anyone’s move before making yours. Stay in your own voice. Reply only with the JSON asked for.';
   }
   var S_WORD = { type: 'object', additionalProperties: false, required: ['word'], properties: { word: { type: 'string' } } };
-  var S_LINE = { type: 'object', additionalProperties: false, required: ['line', 'stake'], properties: { line: { type: 'string' }, stake: { type: 'integer' } } };
+  var S_LINE = { type: 'object', additionalProperties: false, required: ['sentence', 'stake'], properties: { sentence: { type: 'string' }, stake: { type: 'integer' } } };
   var S_SEAT = { type: 'object', additionalProperties: false, required: ['seat', 'why'], properties: { seat: { type: 'integer' }, why: { type: 'string' } } };
   function trailWords(h) {
     var up = TREE_JSON ? Z.trail(TREE_JSON, h.place.slice(0, -1)).map(function (x) { return x.word; }).filter(Boolean) : [];
@@ -288,13 +293,13 @@
   }
   function askLine(key, t, h, s) {
     var name = Z.nameOf(t, s), chips = h.chipsBefore[s] || 0;
-    var ring = h.ring.map(function (r) { return h.words[r]; });
-    var user = 'The zero word is “' + h.zero + '”. After the flop the surviving ring is: ' + ring.join(', ') + '. Your own word in it is “' + h.words[s] + '”.' +
-      '\nWrite one short line, in your own voice, that holds the whole ring in a breath. Under twenty words; shorter usually wins.' +
-      '\nYou have ' + chips + ' chips. Stake from 0 to ' + chips + ' on your line: more if you believe the table will vote for it. Answer as {"line": "...", "stake": n}.';
+    var left = h.ring.map(function (r) { return h.words[r]; });
+    var user = 'The zero word is “' + h.zero + '”. The words still in after the flop are: ' + left.join(', ') + '. Your own word among them is “' + h.words[s] + '”.' +
+      '\nWrite a short sentence that brings all these words together, in your own voice. Under twenty words; shorter usually wins.' +
+      '\nYou have ' + chips + ' chips. Stake from 0 to ' + chips + ' on your sentence: more if you believe the table will vote for it. Answer as {"sentence": "...", "stake": n}.';
     return tries(3, function () {
       return claude(key, persona(name), user, S_LINE).then(function (j) {
-        var l = Z.oneLine(j.line);
+        var l = Z.oneLine(j.sentence != null ? j.sentence : j.line);
         if (!l.ok) throw new Error('again');
         return { move: l.line, stake: Math.max(0, Math.min(chips, Math.round(Number(j.stake) || 0))) };
       });
@@ -303,10 +308,10 @@
   function askVote(key, t, h, s) {
     var name = Z.nameOf(t, s);
     var options = Object.keys(h.lines).map(Number).filter(function (x) { return x !== s; });
-    var ring = h.ring.map(function (r) { return h.words[r]; });
-    var user = 'The zero word is “' + h.zero + '” and the ring is: ' + ring.join(', ') + '. The lines:\n' +
+    var left = h.ring.map(function (r) { return h.words[r]; });
+    var user = 'The zero word is “' + h.zero + '” and the words still in are: ' + left.join(', ') + '. The sentences:\n' +
       Object.keys(h.lines).map(function (x) { return 'seat ' + x + ' (' + Z.nameOf(t, Number(x)) + '): ' + h.lines[x].line; }).join('\n') +
-      '\nYou are seat ' + s + '. Vote for the one line that best holds the whole ring in a breath; never your own. Say why in a few words, in your voice. Answer as {"seat": n, "why": "..."}.';
+      '\nYou are seat ' + s + '. Vote for the sentence that brings the words together best. Not your own. Say why in a few words, in your voice. Answer as {"seat": n, "why": "..."}.';
     return tries(3, function () {
       return claude(key, persona(name), user, S_SEAT).then(function (j) {
         var v = Number(j.seat);
@@ -318,9 +323,29 @@
       return { move: String(options[Math.floor(Math.random() * options.length)]), why: '' };
     });
   }
+  // The table's eye (function:zero 2): a computer player marks a word only if
+  // it plainly does not belong under the zero, never its own; else it skips.
+  function askEye(key, t, h, s) {
+    var name = Z.nameOf(t, s);
+    var options = h.survivors.filter(function (x) { return x !== s; });
+    if (!options.length) return Promise.resolve({ move: '0', why: '' });
+    var user = 'The zero word is “' + h.zero + '”. The words still in after the flop:\n' +
+      h.survivors.map(function (x) { return 'seat ' + x + ': ' + h.words[x] + (x === s ? ' (your own)' : ''); }).join('\n') +
+      '\nThe table may send out a word that does not belong under “' + h.zero + '”. Mark a word only if it plainly does not belong, by its seat, and never your own. If every word belongs, or you are unsure, skip with seat 0. Be honest: most words belong. Answer as {"seat": n, "why": "..."}.';
+    return tries(3, function () {
+      return claude(key, persona(name), user, S_SEAT).then(function (j) {
+        var v = Number(j.seat) || 0;
+        if (v && options.indexOf(v) < 0) throw new Error('again');
+        return { move: String(v), why: String(j.why || '').slice(0, 140) };
+      });
+    }).catch(function (e) {
+      if (e.status != null) throw e;
+      return { move: '0', why: '' };
+    });
+  }
   function askPick(key, t, h, s) {
     var name = Z.nameOf(t, s);
-    var user = 'Your line won the vote at “' + h.zero + '”. Pick one surviving word to become the next zero, one level deeper:\n' +
+    var user = 'Your sentence won the vote at “' + h.zero + '”. Pick one surviving word to become the next zero, one level deeper:\n' +
       h.ring.map(function (r) { return 'seat ' + r + ': ' + h.words[r]; }).join('\n') + '\nAnswer as {"seat": n, "why": "..."}.';
     return tries(3, function () {
       return claude(key, persona(name), user, S_SEAT).then(function (j) {
@@ -568,7 +593,7 @@
   }
 
   // ---- at the table ------------------------------------------------------------------------
-  var T = null, TREE_JSON = null, treeHand = 0, timer = null, polling = false, running = {}, firstSeen = {}, flipped = {}, voteChoice = 0;
+  var T = null, TREE_JSON = null, treeHand = 0, timer = null, polling = false, running = {}, firstSeen = {}, flipped = {}, voteChoice = 0, eyeChoice = 0;
   var lastOk = 0, failing = false, inked = {};
   function enterTable() {
     T = null; treeHand = -1; flipped = {}; firstSeen = {}; voteChoice = 0;
@@ -694,10 +719,10 @@
     var url = $('w-link').value, said = $('w-copied');
     var done = function () { said.textContent = 'The link is copied. Send it to whoever you\u2019d like at the table.'; };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(done, function () { $('w-link').select(); said.textContent = 'Press and hold the link to copy it.'; });
+      navigator.clipboard.writeText(url).then(done, function () { $('w-link').select(); said.textContent = 'Select the link to copy it.'; });
     } else {
       $('w-link').select();
-      try { document.execCommand('copy'); done(); } catch (e) { said.textContent = 'Press and hold the link to copy it.'; }
+      try { document.execCommand('copy'); done(); } catch (e) { said.textContent = 'Select the link to copy it.'; }
     }
   }
   function shareLink() {
@@ -728,10 +753,10 @@
     if (!h) return '';
     if (t.over) return 'the voice';
     if (needsTurn(h)) return 'the flop';
-    return { word: 'seats', line: 'the turn', vote: 'the showdown', voice: 'the voice', done: 'the voice' }[h.stage] || '';
+    return { word: 'seats', eye: 'the flop', line: 'the turn', vote: 'the showdown', voice: 'the voice', done: 'the voice' }[h.stage] || '';
   }
   function needsTurn(h) {
-    return h.steps.word.shown && !flipped[h.n] && (h.stage === 'line' || (h.stage === 'done' && h.noRing));
+    return h.steps.word.shown && !flipped[h.n] && (h.stage === 'eye' || (h.stage === 'done' && h.noRing && !h.steps.eye));
   }
   function wordsShown(h) { return h.steps.word.shown && !needsTurn(h); }
   function mySeats() {
@@ -787,6 +812,7 @@
         if (w && w.length > 9) wd.style.fontSize = '0.72rem';
         card.appendChild(wd);
         if (h.out[s]) seat.classList.add('struck', 'out');
+        if (h.eyeOut[s]) seat.title = 'the table sent it out';
         if (turning) seat.classList.add('turning');
       } else if (h.stage === 'word' || needsTurn(h)) {
         var wst = h.steps.word;
@@ -867,18 +893,65 @@
       tb.type = 'button';
       tb.addEventListener('click', function () { flipped[h.n] = 'now'; drawTable(); });
       box.appendChild(tb);
+    } else if (h.stage === 'eye') {
+      // The table's eye (spine:zero 4.23): mark one word that does not belong, never your own, or skip.
+      var canMark = st.need.indexOf(mine) >= 0 && !st.seals[mine] && !st.skipSeal[mine] && !computersWaiting(st).length;
+      var eask = el('p', 'ask');
+      eask.appendChild(document.createTextNode('Does any word not belong under '));
+      eask.appendChild(el('em', null, h.zero));
+      eask.appendChild(document.createTextNode('? Tap one, or tap Skip.'));
+      box.appendChild(eask);
+      if (computersWaiting(st).length) {
+        box.appendChild(el('p', 'note', 'The computer players are looking first…'));
+      } else if (canMark) {
+        var tiles = el('div', 'picks eye');
+        h.survivors.forEach(function (s) {
+          var tb2 = el('button', null, h.words[s]);
+          tb2.type = 'button';
+          tb2.disabled = s === mine;
+          if (s === mine) tb2.title = 'your own word';
+          tb2.setAttribute('aria-pressed', String(eyeChoice === s));
+          tb2.addEventListener('click', function () { eyeChoice = s; box.dataset.sig = ''; drawMoves(t, h); });
+          tiles.appendChild(tb2);
+        });
+        box.appendChild(tiles);
+        var erow = el('div', 'picks');
+        var chosenOk = eyeChoice && eyeChoice !== mine && h.survivors.indexOf(eyeChoice) >= 0;
+        var mark = el('button', null, 'Seal it');
+        mark.type = 'button';
+        mark.disabled = !chosenOk;
+        var skip = el('button', null, 'Skip');
+        skip.type = 'button';
+        var eerr = el('p', 'error');
+        mark.addEventListener('click', function () {
+          mark.disabled = skip.disabled = true;
+          sealMine(h, 'eye', String(eyeChoice)).catch(function (e) { eerr.textContent = e.message; mark.disabled = skip.disabled = false; });
+        });
+        skip.addEventListener('click', function () {
+          mark.disabled = skip.disabled = true;
+          sealMine(h, 'eye', '0').catch(function (e) { eerr.textContent = e.message; mark.disabled = skip.disabled = false; });
+        });
+        erow.appendChild(mark); erow.appendChild(skip);
+        box.appendChild(erow);
+        box.appendChild(eerr);
+      } else {
+        box.appendChild(el('p', 'note', waitingLine(st)));
+      }
     } else if (h.stage === 'line') {
-      box.appendChild(ringWords(h));
+      box.appendChild(wordsLeft(h));
+      var gone = sentOut(h);
+      if (gone) box.appendChild(gone);
       if (h.ring.indexOf(mine) < 0) {
-        box.appendChild(el('p', 'note', h.active.indexOf(mine) < 0 ? 'You have no chips left. You keep your vote.' : 'Your word was matched, so you sit out this hand. You still vote.'));
+        box.appendChild(el('p', 'note', h.active.indexOf(mine) < 0 ? 'You have no chips left. You keep your vote.' :
+          h.eyeOut[mine] ? 'The table sent your word out, so you sit out this hand. You still vote.' : 'Your word was matched, so you sit out this hand. You still vote.'));
         if (st.need.length) box.appendChild(el('p', 'note', waitingLine(st)));
       } else if (computersWaiting(st).length) {
-        box.appendChild(el('p', 'note', 'The computer players are writing their lines first…'));
+        box.appendChild(el('p', 'note', 'The computer players are writing their sentences first…'));
       } else if (!st.seals[mine] && !st.skipSeal[mine]) {
         var chips = h.chipsBefore[mine] || 0;
         var lf = el('form');
         lf.noValidate = true;
-        var lab = el('label', null, 'One line that holds the ring');
+        var lab = el('label', 'ask', 'Write a short sentence that brings all these words together.');
         lab.htmlFor = 'm-line';
         var ta = el('textarea');
         ta.id = 'm-line'; ta.rows = 2; ta.maxLength = 160;
@@ -893,7 +966,7 @@
         var say = function () { out.textContent = rng.value + ' of ' + chips; };
         rng.addEventListener('input', say); say();
         row.appendChild(sl); row.appendChild(rng); row.appendChild(out);
-        var lb = el('button', null, 'Seal line and stake');
+        var lb = el('button', null, 'Seal it');
         lb.type = 'submit';
         var lerr = el('p', 'error');
         lf.appendChild(lab); lf.appendChild(ta); lf.appendChild(row); lf.appendChild(lb); lf.appendChild(lerr);
@@ -910,7 +983,7 @@
       }
     } else if (h.stage === 'vote') {
       var canVote = st.need.indexOf(mine) >= 0 && !st.seals[mine] && !st.skipSeal[mine] && !computersWaiting(st).length;
-      box.appendChild(el('p', 'ask', canVote ? 'Tap the line that holds the ring best.' : 'The lines'));
+      box.appendChild(el('p', 'ask', canVote ? 'Vote for the sentence that brings the words together best. Not your own.' : 'The sentences'));
       Object.keys(h.lines).map(Number).sort(function (a, b) { return a - b; }).forEach(function (s) {
         var b = el('button', 'slip');
         b.type = 'button';
@@ -935,7 +1008,7 @@
       } else if (computersWaiting(st).length) {
         box.appendChild(el('p', 'note', 'The computer players are voting first…'));
       } else if (st.need.indexOf(mine) < 0) {
-        box.appendChild(el('p', 'note', 'There is no line for you to vote for but your own.'));
+        box.appendChild(el('p', 'note', 'There is no sentence for you to vote for but your own.'));
         box.appendChild(el('p', 'note', waitingLine(st)));
       } else {
         box.appendChild(el('p', 'note', waitingLine(st)));
@@ -949,12 +1022,24 @@
   function movesSig(t, h) {
     var st = Z.stepFor(h);
     return [h.n, h.stage, needsTurn(h), st ? Object.keys(st.seals).join(',') + '/' + Object.keys(st.shows).join(',') + '/' + Object.keys(st.skipSeal).join(',') : '',
-      h.pick, t.over, voteChoice, S.ended ? 1 : 0].join('|');
+      h.pick, t.over, voteChoice, eyeChoice, S.ended ? 1 : 0].join('|');
   }
-  function ringWords(h) {
+  // The words still in, shown above the sentence box; and any the table sent out.
+  function wordsLeft(h) {
     var p = el('p', 'ringwords');
-    p.setAttribute('aria-label', 'The ring');
+    p.setAttribute('aria-label', 'The words');
     h.ring.forEach(function (s) { p.appendChild(el('span', null, h.words[s])); });
+    return p;
+  }
+  function sentOut(h) {
+    var out = Object.keys(h.eyeOut).map(Number);
+    if (!out.length) return null;
+    var p = el('p', 'note');
+    out.forEach(function (s, i) {
+      if (i) p.appendChild(document.createTextNode(', '));
+      p.appendChild(el('s', null, h.words[s]));
+    });
+    p.appendChild(document.createTextNode(out.length === 1 ? ' \u00b7 the table sent it out' : ' \u00b7 the table sent them out'));
     return p;
   }
   function waitingLine(st) {
@@ -965,7 +1050,7 @@
   }
   function drawVoice(box, t, h) {
     if (h.noRing) {
-      box.appendChild(el('p', 'ask', 'Every word was matched, so there is no ring this hand.'));
+      box.appendChild(el('p', 'ask', 'Every word went out, so there are no sentences this hand.'));
       box.appendChild(el('p', 'note', t.over ? 'That was the last hand.' : 'The next hand is dealt again at ' + h.zero + '.'));
     } else {
       var ul = el('ul', 'tally');
@@ -992,7 +1077,7 @@
     if (h.stage === 'voice') {
       var picker = h.picker;
       if (picker === S.seat) {
-        box.appendChild(el('p', 'ask', 'Your line won. Pick the next zero, one level down.'));
+        box.appendChild(el('p', 'ask', 'Your sentence won. Choose the next word. The table goes one level deeper.'));
         var row = el('div', 'picks');
         h.ring.forEach(function (s) {
           var b = el('button', null, h.words[s]);
@@ -1069,10 +1154,11 @@
     return keep(h, step, S.seat, move, stake).then(function (hash) {
       var data = { _: step };
       data[String(S.seat)] = hash;
-      return post('seal', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · ' + S.name + ' seals ' + ({ word: 'a word', line: 'a line and a stake', vote: 'a vote' })[step], data: data });
+      return post('seal', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · ' + S.name + ' seals ' + ({ word: 'a word', eye: 'a mark', line: 'a sentence and a stake', vote: 'a vote' })[step], data: data });
     }).then(function (r) {
       if (!r.ok) throw new Error(refusal(r));
       voteChoice = 0;
+      eyeChoice = 0;
       soon();
     });
   }
@@ -1087,10 +1173,10 @@
       if (st.name === 'line') m['2'] = String(x.stake || 0);
       data[String(s)] = m;
       any = true;
-      said.push(Z.nameOf(T, s) + ': ' + (st.name === 'vote' ? 'votes ' + Z.nameOf(T, Number(x.move)) + (x.why ? ' (' + x.why + ')' : '') : st.name === 'line' ? x.move + ' (stake ' + (x.stake || 0) + ')' : x.move));
+      said.push(Z.nameOf(T, s) + ': ' + (st.name === 'vote' ? 'votes ' + Z.nameOf(T, Number(x.move)) + (x.why ? ' (' + x.why + ')' : '') : st.name === 'eye' ? (x.move === '0' ? 'skips' : 'marks ' + h.words[Number(x.move)]) : st.name === 'line' ? x.move + ' (stake ' + (x.stake || 0) + ')' : x.move));
     });
     if (!any) return Promise.resolve();
-    return post('show', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · ' + ({ word: 'words', line: 'lines', vote: 'votes' })[st.name] + ' at ' + h.zero + ': ' + said.join(' | '), data: data });
+    return post('show', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · ' + ({ word: 'words', eye: 'marks', line: 'sentences', vote: 'votes' })[st.name] + ' at ' + h.zero + ': ' + said.join(' | '), data: data });
   }
 
   // ---- what this device does on each read ------------------------------------------------
@@ -1162,7 +1248,7 @@
     });
   }
   function computerMoves(key, t, h, st, seats) {
-    var ask = st.name === 'word' ? askWord : st.name === 'line' ? askLine : askVote;
+    var ask = st.name === 'word' ? askWord : st.name === 'eye' ? askEye : st.name === 'line' ? askLine : askVote;
     $('t-error').textContent = '';
     return Promise.all(seats.map(function (s) {
       var have = S.secrets[secretKey(h, st.name, s)];
@@ -1176,7 +1262,7 @@
     })).then(function (sealed) {
       var data = { _: st.name };
       sealed.forEach(function (x) { data[String(x.s)] = x.hash; });
-      return post('seal', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · the computer players seal ' + ({ word: 'their words', line: 'their lines and stakes', vote: 'their votes' })[st.name], data: data });
+      return post('seal', { who: S.name, at: Z.at(h.place), code: S.code, hand: h.n, text: S.code + ' · the computer players seal ' + ({ word: 'their words', eye: 'their marks', line: 'their sentences and stakes', vote: 'their votes' })[st.name], data: data });
     }).then(function (r) { if (!r.ok) throw new Error(refusal(r)); return r; });
   }
   // The played place goes into the tree: its voice, signed, and each
