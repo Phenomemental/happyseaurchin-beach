@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero</title>
+<meta name="description" content="Zero: nine seats round a word. Say it so nobody else does. A word game made by Matthew Bushell on the beach.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  /* The look, from Matthew's sketch of 8 November 2026 (spine:zero 4.2.1):
+     one framed sheet of paper, ink and crimson only, Cormorant Garamond. */
+  :root {
+    --page: #f4ecdc;
+    --sheet: #faf5ea;
+    --line: #b9a98c;
+    --ink: #2a2420;
+    --crimson: #8e1b1b;
+    --soft: rgba(42, 36, 32, 0.62);
+    --faint: rgba(42, 36, 32, 0.34);
+    --card: #fffcf4;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: clamp(16px, calc(16px + (100vw - 480px) * 0.004), 19px); }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+    font-size: 1.15rem;
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+  }
+  main { max-width: 34rem; margin: 0 auto; padding: 0.9rem 0.75rem 1.5rem; }
+  .sheet {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    outline: 1px solid var(--line);
+    outline-offset: 5px;
+    margin: 6px;
+    padding: 1.3rem 1rem 1.4rem;
+  }
+  @media (min-width: 560px) { .sheet { padding: 2rem 2.2rem 2rem; } }
+  [hidden] { display: none !important; }
+  h1, h2, h3 { font-weight: 500; margin: 0; }
+  p { margin: 0 0 0.7rem; }
+  a { color: var(--crimson); text-decoration: none; border-bottom: 1px solid transparent; }
+  a:hover { border-bottom-color: currentColor; }
+  em, .it { font-style: italic; }
+  .soft { color: var(--soft); }
+  .centre { text-align: center; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Buttons are crimson-outlined paper, never filled. */
+  button, .button {
+    font: inherit;
+    font-size: 1.08rem;
+    color: var(--crimson);
+    background: var(--sheet);
+    border: 1px solid var(--crimson);
+    border-radius: 2px;
+    padding: 0.4rem 1.15rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  button:disabled { opacity: 0.42; cursor: default; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, .slip:focus-visible {
+    outline: 2px solid var(--crimson);
+    outline-offset: 2px;
+  }
+  .quiet {
+    border: 0;
+    background: none;
+    padding: 0.2rem 0.3rem;
+    min-height: 2.2rem;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--crimson);
+  }
+  label { display: block; font-size: 0.98rem; color: var(--soft); margin: 0 0 0.2rem; text-align: left; }
+  input[type=text], input[type=password], textarea {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 1.1rem;
+    color: var(--ink);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 0.45rem 0.6rem;
+    margin: 0 0 0.75rem;
+  }
+  textarea { resize: none; line-height: 1.35; }
+  .field-note { font-size: 0.92rem; font-style: italic; color: var(--soft); margin: -0.5rem 0 0.75rem; text-align: left; }
+  .error { color: var(--crimson); font-style: italic; min-height: 1.4em; margin: 0.35rem 0 0; }
+  .status { font-size: 0.92rem; font-style: italic; color: var(--soft); text-align: center; margin: 0.9rem 0 0; min-height: 1.3em; }
+
+  /* ---- the lobby ---- */
+  .title {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--crimson);
+    font-size: 3.3rem;
+    line-height: 1;
+    text-align: center;
+    margin: 0.4rem 0 0.4rem;
+  }
+  .tagline { text-align: center; font-style: italic; font-size: 1.2rem; margin: 0 0 1.3rem; }
+  .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin: 0 0 1.2rem; }
+  .doors button { min-height: 3.4rem; font-size: 1.15rem; }
+  .doors button[aria-pressed=true] { font-style: italic; box-shadow: inset 0 0 0 1px var(--crimson); }
+  .group { margin: 0 0 0.9rem; }
+  .group-head { font-size: 0.98rem; color: var(--soft); margin: 0.2rem 0 0.35rem; }
+  .counter { display: flex; align-items: center; gap: 0.9rem; }
+  .counter button { width: 2.75rem; padding: 0; font-size: 1.4rem; line-height: 1; }
+  .counter output { font-size: 1.6rem; min-width: 1.4rem; text-align: center; font-variant-numeric: lining-nums; }
+  .places { display: grid; gap: 0.4rem; margin: 0 0 0.4rem; }
+  .places button {
+    text-align: left;
+    color: var(--ink);
+    border-color: var(--line);
+    background: var(--card);
+    padding: 0.45rem 0.75rem;
+    font-size: 1.05rem;
+  }
+  .places button[aria-pressed=true] { border-color: var(--crimson); box-shadow: inset 0 0 0 1px var(--crimson); }
+  .places .pw { font-style: italic; color: var(--crimson); }
+  .go { display: block; width: 100%; margin: 0.4rem 0 0; font-size: 1.15rem; }
+  .code {
+    font-style: italic;
+    color: var(--crimson);
+    font-size: 2.9rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.1;
+    margin: 0.2rem 0 0.4rem;
+  }
+  .code-label { text-align: center; font-style: italic; color: var(--soft); margin: 0.6rem 0 0; font-size: 1rem; }
+  .seated { text-align: center; margin: 0.4rem 0 0.9rem; }
+  .roster { list-style: none; padding: 0; margin: 0.4rem 0 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem; }
+  .roster li { border: 1px solid var(--line); background: var(--card); padding: 0.3rem 0.2rem; text-align: center; font-size: 0.95rem; font-style: italic; overflow-wrap: anywhere; }
+  .roster li.empty { color: var(--faint); border-style: dashed; }
+  .roster li.me { color: var(--crimson); }
+
+  /* ---- the table ---- */
+  .bar { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; }
+  .bar .name { font-style: italic; color: var(--crimson); font-size: 1.7rem; line-height: 1; }
+  .bar .phase { font-style: italic; color: var(--soft); font-size: 1rem; text-align: right; }
+  .trail { font-style: italic; color: var(--soft); font-size: 0.98rem; margin: 0.25rem 0 0; overflow-wrap: anywhere; }
+  .trail b { font-weight: 500; color: var(--ink); }
+  .ring { position: relative; width: min(100%, 21.5rem); aspect-ratio: 1 / 1; margin: 0.5rem auto 0.3rem; }
+  .seat {
+    position: absolute;
+    width: 22%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    transition: opacity 0.5s;
+  }
+  .card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    height: 2.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.2rem;
+    box-shadow: 0 1px 0 rgba(42, 36, 32, 0.06);
+    transform-style: preserve-3d;
+  }
+  .card .w { font-style: italic; font-size: 0.86rem; line-height: 1.05; overflow-wrap: anywhere; }
+  .card .sealed { font-style: italic; color: var(--crimson); font-size: 0.82rem; }
+  .card .chips { position: absolute; top: -0.55rem; right: -0.35rem; font-size: 0.68rem; color: var(--soft); background: var(--sheet); padding: 0 0.15rem; line-height: 1.1; font-variant-numeric: lining-nums; }
+  .seat .who { display: block; font-size: 0.78rem; font-style: italic; margin-top: 0.12rem; line-height: 1.1; overflow-wrap: anywhere; }
+  .seat.me .who { color: var(--crimson); }
+  .seat.out { opacity: 0.42; }
+  .seat.struck .w { text-decoration: line-through; text-decoration-color: var(--crimson); text-decoration-thickness: 1.5px; }
+  .seat.empty .card { border-style: dashed; background: transparent; }
+  .seat.win .card { border-color: var(--crimson); }
+  .turning .card { animation: turn 0.7s ease both; }
+  @keyframes turn { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .turning .card { animation: none; } .seat { transition: none; } }
+  .middle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 46%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .middle .label { font-style: italic; font-size: 0.82rem; color: var(--soft); }
+  .middle .zero { font-style: italic; color: var(--crimson); font-size: 2rem; line-height: 1.05; overflow-wrap: anywhere; }
+  .middle .voice { font-style: italic; font-size: 0.82rem; line-height: 1.2; margin-top: 0.25rem; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .middle .voice.inked { animation: ink 1.6s ease both; }
+  @keyframes ink { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: none; } }
+  @media (prefers-reduced-motion: reduce) { .middle .voice.inked { animation: none; } }
+  .middle .pot { font-size: 0.8rem; font-style: italic; color: var(--soft); margin-top: 0.15rem; }
+  .moves { border-top: 1px solid var(--line); margin-top: 0.4rem; padding-top: 0.8rem; text-align: center; }
+  .moves .ask { font-size: 1.12rem; margin: 0 0 0.55rem; }
+  .moves .ask em { color: var(--crimson); }
+  .moves input[type=text] { text-align: center; font-size: 1.25rem; }
+  .moves textarea { font-size: 1.12rem; font-style: italic; }
+  .moves .note { font-style: italic; color: var(--soft); margin: 0.2rem 0 0.4rem; }
+  .ringwords { font-style: italic; margin: 0 0 0.6rem; }
+  .ringwords span + span::before { content: " \00b7\00a0"; color: var(--faint); }
+  .stake { display: flex; align-items: center; gap: 0.7rem; margin: 0 0 0.7rem; }
+  .stake label { margin: 0; white-space: nowrap; }
+  .stake input[type=range] { flex: 1; accent-color: var(--crimson); }
+  .stake output { min-width: 3.6rem; text-align: right; font-variant-numeric: lining-nums; }
+  .slip {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 1px;
+    padding: 0.5rem 0.7rem 0.45rem;
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    min-height: 2.75rem;
+    box-shadow: 0 1px 0 rgba(42, 36, 32, 0.06);
+  }
+  .slip .l { font-style: italic; display: block; }
+  .slip .by { display: block; font-size: 0.85rem; color: var(--soft); margin-top: 0.1rem; }
+  .slip[aria-pressed=true] { border-color: var(--crimson); box-shadow: inset 0 0 0 1px var(--crimson); }
+  .slip:disabled { opacity: 0.4; }
+  .slip.won { border-color: var(--crimson); }
+  .tally { list-style: none; padding: 0; margin: 0.2rem auto 0.7rem; max-width: 22rem; text-align: left; }
+  .tally li { display: flex; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--line); padding: 0.2rem 0.1rem; font-size: 1rem; }
+  .tally li.won { color: var(--crimson); font-style: italic; }
+  .picks { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; margin: 0.3rem 0 0.4rem; }
+  .picks button { font-style: italic; }
+
+  /* ---- the poem: the card that grows down the trail, and the end ---- */
+  .poem {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 1.1rem 1rem 1rem;
+    margin: 0.9rem 0 0.6rem;
+    text-align: center;
+  }
+  .poem .top { font-style: italic; color: var(--soft); font-size: 0.95rem; margin: 0 0 0.25rem; }
+  .poem .path { font-style: italic; color: var(--crimson); font-size: 1.1rem; margin: 0 0 0.9rem; overflow-wrap: anywhere; }
+  .poem .place { margin: 0 0 0.85rem; }
+  .poem .pword { font-style: italic; color: var(--crimson); font-size: 0.92rem; }
+  .poem .pline { font-style: italic; font-size: 1.32rem; line-height: 1.25; margin: 0.05rem 0 0.1rem; }
+  .poem .pby { font-style: italic; font-size: 0.9rem; color: var(--soft); }
+  .poem .sat { border-top: 1px solid var(--line); padding-top: 0.6rem; margin-top: 0.4rem; font-style: italic; font-size: 0.92rem; color: var(--soft); }
+  .poem-head { font-size: 0.92rem; font-style: italic; color: var(--soft); margin: 0.9rem 0 0; text-align: center; }
+  .three { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0.4rem 0 1.2rem; }
+  .winner { text-align: center; font-size: 1.25rem; margin: 0.2rem 0 0; }
+  .winner em { color: var(--crimson); }
+  .notes .n { border-bottom: 1px solid var(--line); padding: 0.45rem 0; text-align: left; }
+  .notes .n b { font-weight: 600; font-size: 0.95rem; }
+  .notes .n p { margin: 0.1rem 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+
+  /* ---- the foot of every screen ---- */
+  .public { font-style: italic; color: var(--soft); font-size: 0.98rem; text-align: center; margin: 0.9rem 0 0; }
+  .foot { text-align: center; font-style: italic; color: var(--soft); font-size: 0.9rem; margin: 1.6rem 0 0.4rem; }
+  .foot p { margin: 0 0 0.3rem; }
+  .foot a { color: var(--soft); border-bottom: 1px solid var(--faint); }
+  .foot .made { margin-top: 0.6rem; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <div class="sheet">
+    <h1 class="visually-hidden">Zero</h1>
+
+    <!-- The lobby: two doors (spine:zero 4.2.5) -->
+    <section id="lobby" aria-labelledby="lobby-title">
+      <p class="title" id="lobby-title">Zero</p>
+      <p class="tagline">Nine seats. One word. Say it so nobody else does.</p>
+      <div class="doors" role="group" aria-label="Host or join">
+        <button type="button" id="door-host" aria-pressed="false">Host a table</button>
+        <button type="button" id="door-join" aria-pressed="false">Join a table</button>
+      </div>
+      <form id="lobby-form" novalidate hidden>
+        <label for="my-name">Your name</label>
+        <input type="text" id="my-name" maxlength="32" autocomplete="nickname" autocapitalize="words" spellcheck="false">
+        <label for="my-three">Three words about you</label>
+        <input type="text" id="my-three" maxlength="60" autocomplete="off">
+        <p class="field-note">Shown at the table and on the card. Not the three words that open your name elsewhere.</p>
+
+        <div id="host-part" hidden>
+          <div class="group">
+            <p class="group-head" id="cp-head">Computer players</p>
+            <div class="counter" role="group" aria-labelledby="cp-head">
+              <button type="button" id="cp-less" aria-label="Fewer computer players">&minus;</button>
+              <output id="cp-count" aria-live="polite">8</output>
+              <button type="button" id="cp-more" aria-label="More computer players">+</button>
+            </div>
+            <p class="field-note" id="cp-line" style="margin-top:0.35rem">They fill empty seats, using your key on this device.</p>
+          </div>
+          <div class="group" id="key-part" hidden>
+            <label for="my-key">Your Anthropic key</label>
+            <input type="password" id="my-key" autocomplete="off" spellcheck="false" autocapitalize="off">
+            <p class="field-note">Kept in this browser only, never written to the beach. Set a monthly spending limit on it in the Anthropic console first.</p>
+          </div>
+          <p class="field-note" id="key-kept" hidden>Your key is kept on this device. <button type="button" class="quiet" id="key-forget">Forget it</button></p>
+          <div class="group">
+            <p class="group-head" id="where-head">Where to play</p>
+            <div class="places" id="places" role="group" aria-labelledby="where-head"></div>
+            <button type="button" class="quiet" id="places-more" hidden>More places</button>
+            <div id="first-part" hidden>
+              <label for="first-word">The first word</label>
+              <input type="text" id="first-word" maxlength="32" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <button type="submit" class="go" id="open-go">Open the table</button>
+        </div>
+
+        <div id="join-part" hidden>
+          <label for="join-code">The table code</label>
+          <input type="text" id="join-code" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="LAMP 4">
+          <button type="submit" class="go" id="join-go">Take a seat</button>
+        </div>
+        <p class="error" id="lobby-error" role="alert"></p>
+      </form>
+      <p class="public">Everything you write here is public and kept.</p>
+    </section>
+
+    <!-- Seated, before the deal -->
+    <section id="waiting" hidden aria-live="polite">
+      <div class="bar"><span class="name">Zero</span><span class="phase" id="w-place"></span></div>
+      <p class="code-label">The table code</p>
+      <p class="code" id="w-code"></p>
+      <p class="seated" id="w-count"></p>
+      <ul class="roster" id="w-roster"></ul>
+      <p class="seated" id="w-say"></p>
+      <button type="button" class="go" id="deal-go" hidden>Deal</button>
+      <p class="error" id="w-error" role="alert"></p>
+      <p class="centre"><button type="button" class="quiet" id="w-leave">Leave this table</button></p>
+      <p class="public">Everything you write here is public and kept.</p>
+    </section>
+
+    <!-- The table -->
+    <section id="table" hidden>
+      <div class="bar"><span class="name">Zero</span><span class="phase" id="t-phase"></span></div>
+      <p class="trail" id="t-trail"></p>
+      <div class="ring" id="t-ring" aria-label="The table">
+        <div class="middle">
+          <div class="label">the zero</div>
+          <div class="zero" id="t-zero"></div>
+          <div class="voice" id="t-voice"></div>
+          <div class="pot" id="t-pot"></div>
+        </div>
+      </div>
+      <div class="moves" id="t-moves" aria-live="polite"></div>
+      <p class="error" id="t-error" role="alert"></p>
+      <p class="status" id="t-status"></p>
+    </section>
+
+    <!-- The end: the game's poem (spine:zero 4.6) -->
+    <section id="end" hidden>
+      <div class="bar"><span class="name">Zero</span><span class="phase">the poem</span></div>
+      <p class="winner" id="e-winner"></p>
+      <div class="poem" id="e-poem"></div>
+      <div class="three">
+        <button type="button" id="e-keep">Keep the card</button>
+        <button type="button" id="e-share">Share it</button>
+        <button type="button" id="e-deeper">Play deeper</button>
+      </div>
+      <p class="status" id="e-said"></p>
+      <p class="centre"><a id="e-trail" href="#">This trail in the tree</a></p>
+      <form id="note-form" novalidate>
+        <label for="note-text">Leave a word about this game</label>
+        <textarea id="note-text" rows="3" maxlength="1000"></textarea>
+        <button type="submit" id="note-go">Leave it</button>
+        <p class="error" id="note-error" role="status"></p>
+      </form>
+      <div class="notes" id="e-notes"></div>
+      <p class="centre"><button type="button" class="quiet" id="e-again">Back to the lobby</button></p>
+    </section>
+
+    <!-- A trail read on its own: zero.html?trail=1583 -->
+    <section id="trailview" hidden>
+      <div class="bar"><span class="name">Zero</span><span class="phase">a trail</span></div>
+      <div class="poem" id="v-poem"></div>
+      <p class="centre"><a href="zero.html">Play Zero</a></p>
+    </section>
+
+    <footer class="foot">
+      <p><a href="https://beach.happyseaurchin.com">With thanks to David Pinto, who built the ground these pages stand on</a></p>
+      <p class="made">made by Matthew Bushell</p>
+    </footer>
+  </div>
+</main>
+<script src="zero-law.js?v=2026-11-08a"></script>
+<script src="zero.js?v=2026-11-08a"></script>
+</body>
+</html>
