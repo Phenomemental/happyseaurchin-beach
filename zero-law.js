@@ -6,12 +6,12 @@
    A table lives in pool:zero as entries, each {_: words anyone can read,
    1: who wrote it, 2: the place being played, 3: the beach's arrival stamp,
    6: the table code, 7: what kind of entry, 8: the hand, 9: the move}. Kinds:
-     open   the host opens a table: 9 {_: the zero word, 1: host, 2: host's
-            three words, 3: computer seats, 4: their names in seat order,
+     open   the host opens a table: 9 {_: the zero word, 1: host,
+            3: computer seats, 4: their names in seat order,
             5: 'new' when the place is a new first word}
-     sit    a person takes a seat: 9 {_: their three words}
+     sit    a person takes a seat, under the name the door gave them
      deal   the host deals a hand: 9 {_: the zero word}; hand one also names
-            every seat, 9.n {_: name, 1: 'person' or 'computer', 2: words}
+            every seat, 9.n {_: name, 1: 'person' or 'computer'}
      seal   moves committed: 9 {_: step, n: SHA-256 for seat n}
      show   moves revealed: 9 {_: step, n: {_: move, 1: salt, 2: stake}}
      go     the host goes on without seats: 9 {_: step, 1: 'seal' or 'show',
@@ -298,10 +298,10 @@
     var seats = {};
     if (!t.open) return seats;
     var people = SEATS - t.open.computers;
-    seats[1] = { name: t.open.host, kind: 'person', three: t.open.three };
+    seats[1] = { name: t.open.host, kind: 'person' };
     var n = 2;
-    t.sits.forEach(function (s) { if (n <= people) seats[n++] = { name: s.name, kind: 'person', three: s.three }; });
-    t.open.personas.forEach(function (p, i) { seats[people + 1 + i] = { name: p, kind: 'computer', three: '' }; });
+    t.sits.forEach(function (s) { if (n <= people) seats[n++] = { name: s.name, kind: 'person' }; });
+    t.open.personas.forEach(function (p, i) { seats[people + 1 + i] = { name: p, kind: 'computer' }; });
     return seats;
   }
   function isComputer(t, s) { return !!(t.roster && t.roster[s] && t.roster[s].kind === 'computer'); }
@@ -316,7 +316,7 @@
       if (t.open) return;
       var personas = String(d['4'] || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
       t.open = {
-        addr: e.addr, host: String(d['1'] || e.who || ''), three: String(d['2'] || ''), word: String(d._ || ''),
+        addr: e.addr, host: String(d['1'] || e.who || ''), word: String(d._ || ''),
         place: digitsOf(e.at), computers: Math.max(0, Math.min(8, Number(d['3']) || 0)), personas: personas,
         isNew: d['5'] === 'new', stamp: e.stamp
       };
@@ -333,7 +333,7 @@
       var taken = [t.open.host].concat(t.sits.map(function (s) { return s.name; })).concat(t.open.personas);
       if (!nm || taken.some(function (x) { return nameFold(x) === nameFold(nm); })) return;
       if (t.sits.length >= SEATS - t.open.computers - 1) return;
-      t.sits.push({ name: nm, three: String(d._ || ''), addr: e.addr });
+      t.sits.push({ name: nm, addr: e.addr });
       return;
     }
     if (e.kind === 'deal') {
@@ -346,7 +346,7 @@
         var roster = {};
         for (var s = 1; s <= SEATS; s++) {
           var r = d[String(s)];
-          if (r && typeof r === 'object' && textOf(r)) roster[s] = { name: textOf(r), kind: r['1'] === 'computer' ? 'computer' : 'person', three: String(r['2'] || '') };
+          if (r && typeof r === 'object' && textOf(r)) roster[s] = { name: textOf(r), kind: r['1'] === 'computer' ? 'computer' : 'person' };
         }
         if (!Object.keys(roster).length) return;
         t.roster = roster;

@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="door.css?v=2026-10-26a">
 <style>
   /* The look, from Matthew's sketch of 8 November 2026 (spine:zero 4.2.1):
      one framed sheet of paper, ink and crimson only, Cormorant Garamond. */
@@ -20,6 +21,12 @@
     --soft: rgba(42, 36, 32, 0.62);
     --faint: rgba(42, 36, 32, 0.34);
     --card: #fffcf4;
+    /* the door (door.js) wears these */
+    --ground: #f4ecdc;
+    --panel: #faf5ea;
+    --muted: #6f645a;
+    --accent: #8e1b1b;
+    --serif: "Cormorant Garamond", Garamond, "Times New Roman", serif;
   }
   * { box-sizing: border-box; }
   html { font-size: clamp(16px, calc(16px + (100vw - 480px) * 0.004), 19px); }
@@ -93,6 +100,10 @@
     margin: 0 0 0.75rem;
   }
   textarea { resize: none; line-height: 1.35; }
+  /* who this phone thinks you are: the door's own line (door.js) */
+  .who-line { text-align: center; font-size: 1.08rem; margin: 0 0 1rem; }
+  .who-line strong { font-weight: 500; font-style: italic; color: var(--crimson); }
+  .who-line .door-link { font: inherit; font-style: italic; color: var(--crimson); background: none; border: 0; padding: 0.2rem 0.2rem; min-height: 2.2rem; cursor: pointer; }
   .field-note { font-size: 0.92rem; font-style: italic; color: var(--soft); margin: -0.5rem 0 0.75rem; text-align: left; }
   .error { color: var(--crimson); font-style: italic; min-height: 1.4em; margin: 0.35rem 0 0; }
   .status { font-size: 0.92rem; font-style: italic; color: var(--soft); text-align: center; margin: 0.9rem 0 0; min-height: 1.3em; }
@@ -280,11 +291,7 @@
         <button type="button" id="door-join" aria-pressed="false">Join a table</button>
       </div>
       <form id="lobby-form" novalidate hidden>
-        <label for="my-name">Your name</label>
-        <input type="text" id="my-name" maxlength="32" autocomplete="nickname" autocapitalize="words" spellcheck="false">
-        <label for="my-three">Three words about you</label>
-        <input type="text" id="my-three" maxlength="60" autocomplete="off">
-        <p class="field-note">Shown at the table and on the card. Not the three words that open your name elsewhere.</p>
+        <p class="who-line" id="who-line"></p>
 
         <div id="host-part" hidden>
           <div class="group">
@@ -390,7 +397,12 @@
     </footer>
   </div>
 </main>
-<script src="zero-law.js?v=2026-11-08a"></script>
-<script src="zero.js?v=2026-11-08a"></script>
+<script>
+  // The way in, as on Matthew's other pages: a name, and three words offered as its key, kept on a card.
+  window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
+</script>
+<script src="door.js?v=2026-10-27a"></script>
+<script src="zero-law.js?v=2026-11-08b"></script>
+<script src="zero.js?v=2026-11-08b"></script>
 </body>
 </html>
