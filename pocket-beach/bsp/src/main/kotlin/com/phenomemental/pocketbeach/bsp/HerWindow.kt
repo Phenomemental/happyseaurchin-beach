@@ -420,8 +420,8 @@ object HerWindow {
      * safety line when his words say he isn't safe; the app's line; then
      * his words. Each of the app's lines is in brackets, his words bare.
      */
-    fun turn(said: String, now: ZonedDateTime, pages: Pages, storage: BlockStorage, appLine: String, changes: String? = null, told: String? = null): String = buildString {
-        appendLine("(It is ${WHEN.format(now)}.)")
+    fun turn(said: String, now: ZonedDateTime, pages: Pages, storage: BlockStorage, appLine: String, changes: String? = null, told: String? = null, lastMs: Long? = null): String = buildString {
+        appendLine("(${stamp(now, lastMs)})")
         changes?.let { appendLine("($it)") }
         told?.let { appendLine("(How his last proposal ended: $it)") }
         val unsafe = Talking.unsafe(said, pages)
@@ -451,8 +451,8 @@ object HerWindow {
      * READ read it), the safety line when his words say he isn't safe, the
      * lines the walker handed her, then his words.
      */
-    fun turnHanded(said: String, now: ZonedDateTime, pages: Pages, handed: List<Cook.Handed>, changes: String? = null, told: String? = null): String = buildString {
-        appendLine("(It is ${WHEN.format(now)}.)")
+    fun turnHanded(said: String, now: ZonedDateTime, pages: Pages, handed: List<Cook.Handed>, changes: String? = null, told: String? = null, lastMs: Long? = null): String = buildString {
+        appendLine("(${stamp(now, lastMs)})")
         changes?.let { appendLine("($it)") }
         told?.let { appendLine("(How his last proposal ended: $it)") }
         val unsafe = Talking.unsafe(said, pages)
@@ -466,18 +466,51 @@ object HerWindow {
     /**
      * Sundial 0.10.2: her turn in her one kept conversation, which holds her
      * window, the time it opened and her recipe for talk: his words and only
-     * what is new with them. How his last proposal ended; what was read for
-     * her (only when READ read it); the safety line when his words say he
-     * isn't safe; the lines the walker handed her other than her recipe
-     * ([recipe]); then his words.
+     * what is new with them. The time he said them ([now], with [lastMs], the
+     * instant of his message before: see [stamp]); how his last proposal
+     * ended; what was read for her (only when READ read it); the safety line
+     * when his words say he isn't safe; the lines the walker handed her other
+     * than her recipe ([recipe]); then his words.
      */
-    fun turnKept(said: String, pages: Pages, handed: List<Cook.Handed>, recipe: String?, told: String? = null): String = buildString {
+    fun turnKept(said: String, pages: Pages, handed: List<Cook.Handed>, recipe: String?, told: String? = null, now: ZonedDateTime? = null, lastMs: Long? = null): String = buildString {
+        now?.let { appendLine("(${stamp(it, lastMs)})") }
         told?.let { appendLine("(How his last proposal ended: $it)") }
         val unsafe = Talking.unsafe(said, pages)
         if (!unsafe) for (h in handed) for (m in h.material) appendLine(m)
         if (unsafe) appendLine("(${Talking.SAFETY})")
         for (h in handed) if (h.line != recipe) appendLine("(${h.line})")
         append(said.trim())
+    }
+
+    /**
+     * The time stamped on one of his messages in her turn, as the beach gives
+     * it: the day and the clock time where he is, the part of the day in the
+     * beach's own words (its nine parts, deep night to night, as its clock
+     * voices an address: [DAY_PARTS]), and, when his message before
+     * ([lastMs]) was more than an hour earlier, how long ago that was.
+     * Her one conversation stays open all day (0.10.2), so the time it
+     * opened goes stale: on his Pixel on 9 November, at 22:59 and 23:19, she
+     * asked "What's on for today?". Every turn carries its own time now; the
+     * conversation is never opened again for it. It opens "It is", so it is
+     * never played back as hers (echoLines).
+     */
+    fun stamp(now: ZonedDateTime, lastMs: Long? = null): String {
+        val ms = now.toInstant().toEpochMilli()
+        val part = DAY_PARTS.getOrNull(momentToAddress(ms)[8] - '1')
+        val gap = lastMs?.let { ms - it }?.takeIf { it > HOUR_MS }?.let { " His last message was ${since(it)} ago." }.orEmpty()
+        return "It is ${WHEN.format(now)}${part?.let { ", $it" }.orEmpty()}.$gap"
+    }
+
+    private const val HOUR_MS = 3_600_000L
+
+    /** How long [ms] is, in his words: "an hour and 20 minutes", "3 hours", "a day and 2 hours", "4 days". */
+    fun since(ms: Long): String {
+        fun count(n: Long, one: String) = if (n == 1L) (if (one == "hour") "an hour" else "a $one") else "$n ${one}s"
+        val days = ms / 86_400_000L
+        val hours = (ms % 86_400_000L) / HOUR_MS
+        val minutes = (ms % HOUR_MS) / 60_000L
+        return if (days > 0) count(days, "day") + (if (hours > 0) " and " + count(hours, "hour") else "")
+        else count(hours, "hour") + (if (minutes > 0) " and " + count(minutes, "minute") else "")
     }
 
     /** Sundial 0.10.2: the opening of her one kept conversation: her window, the day and time it opened, and her recipe for talk. */

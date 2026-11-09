@@ -202,6 +202,9 @@ class Asking(private val app: PocketApp) {
         /** Sundial 0.10.2: her places line as she wrote it ("Places: …"), taken off before showing; null when she gave none. */
         var placesLine by mutableStateOf<String?>(null)
 
+        /** The time stamped on his message in her turn, as the beach gives it (HerWindow.stamp), for the workings. */
+        var stamp by mutableStateOf<String?>(null)
+
         /** Sundial 0.10.2: the shape the split found in what is shown: REFLECT (part one, then her question), QUESTION (her question alone), ANSWER (no closing question). */
         var shape by mutableStateOf<String?>(null)
 
@@ -383,6 +386,14 @@ class Asking(private val app: PocketApp) {
             w.her(choices)
         }
     }
+
+    /**
+     * The instant of his message before [atMs]: the last in this run of the
+     * app, else the last still waiting for Keep today (said in a run before);
+     * null when there is none.
+     */
+    private fun lastMessageBefore(atMs: Long): Long? =
+        (history.map { it.at } + runCatching { app.waiting.all.map { it.atMs } }.getOrDefault(emptyList())).filter { it < atMs }.maxOrNull()
 
     /** 0.8: the handle his shell on this phone is of, once he has hatched; null before. */
     fun hatched(): String? = runCatching { Hatch.hatched(app.storage) }.getOrNull()
@@ -676,8 +687,12 @@ class Asking(private val app: PocketApp) {
                         if (walk != null) conversation.read += walk.reads.map { "his $it" }
                         else runCatching { Talking.named(q, app.pages, all = true) }.getOrNull()?.let { names -> conversation.read += names.map { "his $it" } }
                         // Sundial 0.10.2: in her one conversation, only his new message and what is new with it; her recipe is in her instruction.
-                        val message = if (walk != null) HerWindow.turnKept(q, app.pages, walk.handed, talkRecipe, e.told)
-                            else HerWindow.turn(q, now, app.pages, app.storage, e.appLine!!, changes, e.told)
+                        // Every one of his messages carries its own time, as the beach gives it; her conversation is never opened again for it.
+                        val saidAt = java.time.Instant.ofEpochMilli(e.at).atZone(now.zone)
+                        val last = lastMessageBefore(e.at)
+                        e.stamp = HerWindow.stamp(saidAt, last)
+                        val message = if (walk != null) HerWindow.turnKept(q, app.pages, walk.handed, talkRecipe, e.told, saidAt, last)
+                            else HerWindow.turn(q, saidAt, app.pages, app.storage, e.appLine!!, changes, e.told, last)
                         val echo = HerWindow.echoLines(message)
                         val opening = shellOpening()
                         val words = StringBuilder()
@@ -1239,7 +1254,7 @@ class Asking(private val app: PocketApp) {
                         val now = ZonedDateTime.now()
                         kept.remove(MindJob.TALK)?.let { runCatching { it.talker.close() } }
                         val window = HerWindow.window(h, app.pages, app.storage, app.shelf, now, leaveOut = HerWindow.GREETING_LEAVES_OUT)
-                        val message = HerWindow.turnHanded("", now, app.pages, w.handed)
+                        val message = HerWindow.turnHanded("", now, app.pages, w.handed, lastMs = lastMessageBefore(now.toInstant().toEpochMilli()))
                         // Never shown as hers: an app line, what she was handed (her window's own lines, his last day, the app's lines), "Kept.".
                         val handed = HerWindow.notHers(h, app.storage, app.shelf, now) + w.handed.flatMap { listOf(it.line) + it.material }
                         val t = app.mind.talker(window, emptyList(), settings = app.running(MindJob.TALK))
@@ -1713,6 +1728,7 @@ class Asking(private val app: PocketApp) {
             appendLine()
             appendLine("${time.format(at(e.at))} Matthew: ${e.question}")
             appendLine("Companion: ${e.said.ifBlank { "(nothing of hers shown)" }}")
+            e.stamp?.let { appendLine("  The time she was given: $it") }
             e.appLine?.let { appendLine("  The app's line to her: $it") }
             e.cookNote?.let { appendLine("  $it") }
             if (e.trace.isNotEmpty()) { appendLine("  His cook, step by step:"); e.trace.forEach { appendLine("    $it") } }

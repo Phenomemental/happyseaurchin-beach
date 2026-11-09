@@ -516,6 +516,8 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
         // Every answer's time and chip, in Details; a GPU that failed, always.
         if (details) {
             if (e.time.isNotEmpty()) Text(e.time, style = Type.small, color = ink.soft, modifier = Modifier.testTag("took"))
+            // The time stamped on his message in her turn, as the beach gives it.
+            e.stamp?.let { Text("The time she was given: $it", style = Type.small, color = ink.soft, modifier = Modifier.testTag("stamp")) }
             // Sundial 0.10.2: her reply as she wrote it; her places line, taken off before showing; the shape the split found; her places; every step timed.
             e.raw?.let { Text("Her reply as she wrote it: \u201c${it.trim()}\u201d", style = Type.small, color = ink.soft, modifier = Modifier.testTag("raw")) }
             if (e.raw != null) Text(e.placesLine?.let { "Her places line, taken off before showing: \u201c$it\u201d" } ?: "No places line.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("places-line"))
