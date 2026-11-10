@@ -37,7 +37,7 @@
   function sset(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function jget(k) { try { return JSON.parse(sget(k) || 'null'); } catch (e) { return null; } }
   function jset(k, v) { sset(k, v == null ? null : JSON.stringify(v)); }
-  var SCREENS = ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'];
+  var SCREENS = ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look', 'revote'];
   function show(id) {
     SCREENS.forEach(function (s) { $(s).hidden = s !== id; });
     window.scrollTo(0, 0);
@@ -200,13 +200,19 @@
     'Deeper: the winner picks one surviving word, and it becomes the next zero, one level down.',
     'Out: a seat knocked out sits out that hand only. A seat with no chips writes no more words or sentences, but keeps its vote to the end.',
     'The end: after four hands, most chips wins. The winning sentences read from the top of the trail down are the game\u2019s poem.',
-    'The craft: a sentence wins by bringing all the words together in a single breath. Short sentences win; compression is the skill.',
+    'The craft: a sentence wins by making the words belong together in a way nobody saw coming: a fresh image, an unusual turn of phrase, a true feeling, a laugh. It need not use every word, and it need not be short. A list of the words is the weakest sentence.',
     'Computer seats fill any seat no person takes. Each writes as if alone, in its own voice, short and plain, and collisions are allowed.'
   ].join('\n');
   // What a player writes is a sentence, everywhere (spine:zero 4.2): the law
   // as read from the beach is told to the computer players in the same words.
   function sentenceWords(text) {
     return String(text).replace(/\bLines\b/g, 'Sentences').replace(/\blines\b/g, 'sentences').replace(/\bLine\b/g, 'Sentence').replace(/\bline\b/g, 'sentence');
+  }
+  // A reason is said in the page's own words too: a sentence is never a
+  // 'line', the words are never 'the ring', and nothing 'holds' them.
+  function plainWhy(text) {
+    return sentenceWords(String(text || '')).replace(/\bthe ring\b/gi, 'the words').replace(/\bring\b/gi, 'words').replace(/\bholds\b/g, 'keeps').replace(/\bHolds\b/g, 'Keeps')
+      .replace(/\s+/g, ' ').trim();
   }
   var lawRead = false;
   function readLaw() {
@@ -277,6 +283,7 @@
   var S_WORD = { type: 'object', additionalProperties: false, required: ['word'], properties: { word: { type: 'string' } } };
   var S_LINE = { type: 'object', additionalProperties: false, required: ['sentence', 'stake'], properties: { sentence: { type: 'string' }, stake: { type: 'integer' } } };
   var S_SEAT = { type: 'object', additionalProperties: false, required: ['seat', 'why'], properties: { seat: { type: 'integer' }, why: { type: 'string' } } };
+  var S_CHOICE = { type: 'object', additionalProperties: false, required: ['choice', 'why'], properties: { choice: { type: 'integer' }, why: { type: 'string' } } };
   function trailWords(h) {
     var up = TREE_JSON ? Z.trail(TREE_JSON, h.place.slice(0, -1)).map(function (x) { return x.word; }).filter(Boolean) : [];
     return up.concat([h.zero]);
@@ -293,11 +300,20 @@
       });
     });
   }
+  // The poem so far: the winning sentences of the hands before this one.
+  function poemSoFar(t, h) {
+    var out = [];
+    t.hands.forEach(function (g) { if (g.n < h.n) g.winners.forEach(function (w) { out.push(g.lines[w].line); }); });
+    return out;
+  }
   function askLine(key, t, h, s) {
     var name = Z.nameOf(t, s), chips = Z.stakeable(h, s);
     var left = h.ring.map(function (r) { return h.words[r]; });
+    var before = t.open.thread ? poemSoFar(t, h) : [];
     var user = 'The zero word is “' + h.zero + '”. The words still in after the flop are: ' + left.join(', ') + '. Your own word among them is “' + h.words[s] + '”.' +
-      '\nWrite a short sentence that brings all these words together, in your own voice. Under twenty words; shorter usually wins.' +
+      '\nWrite one sentence that brings these words together, in your own voice, under twenty-five words. It will be judged by the craft in the law: never a list of the words.' +
+      (before.length ? '\nThe poem so far, the winning sentences of the hands before this one:\n' + before.map(function (l) { return '  ' + l; }).join('\n') +
+        '\nThe four hands should grow into one poem. If you can do it well, pick up a word or an image from the poem so far: a sentence that carries one of its words earns 1 more chip.' : '') +
       '\nYou have ' + chips + ' chips. Stake from 0 to ' + chips + ' on your sentence: more if you believe the table will vote for it. Answer as {"sentence": "...", "stake": n}.';
     return tries(3, function () {
       return claude(key, persona(name), user, S_LINE).then(function (j) {
@@ -309,16 +325,19 @@
   }
   function askVote(key, t, h, s) {
     var name = Z.nameOf(t, s);
-    var options = Object.keys(h.lines).map(Number).filter(function (x) { return x !== s; });
+    // Nobody's name and no seat order: each voter is given the sentences
+    // unsigned, in an order of its own, with its own sentence left out.
+    var options = shuffle(Object.keys(h.lines).map(Number).filter(function (x) { return x !== s; }));
     var left = h.ring.map(function (r) { return h.words[r]; });
-    var user = 'The zero word is “' + h.zero + '” and the words still in are: ' + left.join(', ') + '. The sentences:\n' +
-      Object.keys(h.lines).map(function (x) { return 'seat ' + x + ' (' + Z.nameOf(t, Number(x)) + '): ' + h.lines[x].line; }).join('\n') +
-      '\nYou are seat ' + s + '. Vote for the sentence that brings the words together best. Not your own. Say why in a few words, in your voice. Answer as {"seat": n, "why": "..."}.';
+    var user = 'The zero word is “' + h.zero + '” and the words still in are: ' + left.join(', ') + '.\nThe sentences, unsigned and in no order' + (h.lines[s] ? ' (your own is left out)' : '') + ':\n' +
+      options.map(function (x, i) { return (i + 1) + '. ' + h.lines[x].line; }).join('\n') +
+      '\nVote for one. Judge only by the craft as the law states it, not by which sentence is nearest to your own world or sounds most like you.' +
+      ' Say why in a few words, in your voice, without naming a number. Answer as {"choice": n, "why": "..."}.';
     return tries(3, function () {
-      return claude(key, persona(name), user, S_SEAT).then(function (j) {
-        var v = Number(j.seat);
-        if (options.indexOf(v) < 0) throw new Error('again');
-        return { move: String(v), why: String(j.why || '').slice(0, 140) };
+      return claude(key, persona(name), user, S_CHOICE).then(function (j) {
+        var v = options[Number(j.choice) - 1];
+        if (v == null) throw new Error('again');
+        return { move: String(v), why: plainWhy(j.why).slice(0, 160) };
       });
     }).catch(function (e) {
       if (e.status != null) throw e;
@@ -411,7 +430,7 @@
   // The page's address: the table's invite link while seated, else the plain page.
   function inviteUrl(code) {
     var q = new URLSearchParams(location.search);
-    ['table', 'code', 'trail', 'look'].forEach(function (k) { q.delete(k); });
+    ['table', 'code', 'trail', 'look', 'revote'].forEach(function (k) { q.delete(k); });
     if (code) q.set('table', Z.codeKey(code));
     var qs = q.toString();
     return location.origin + location.pathname + (qs ? '?' + qs : '');
@@ -510,7 +529,7 @@
       return post('open', {
         who: who.name, at: Z.at(place), code: code,
         text: code + ' · ' + who.name + ' opens a table at ' + word,
-        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '', 6: 'eye', 7: 'chips' }
+        data: { _: word, 1: who.name, 5: chosen === 'new' ? 'new' : '', 6: 'eye', 7: 'chips', 8: 'thread' }
       }).then(function (res) {
         if (!res.ok) throw new Error(refusal(res));
         return readRoom('').then(function (list) {
@@ -1088,6 +1107,14 @@
       var gone = sentOut(h);
       if (gone) box.appendChild(gone);
       if (t.open.chips && h.banked) box.appendChild(el('p', 'note chips-note', 'Word chips: +1 for a word still standing, +2 if it is new to the tree.'));
+      var sofar = t.open.thread ? poemSoFar(t, h) : [];
+      if (sofar.length) {
+        var so = el('div', 'sofar');
+        so.appendChild(el('p', 'poem-head', 'the poem so far'));
+        sofar.forEach(function (l) { so.appendChild(el('p', 'sofar-line', l)); });
+        so.appendChild(el('p', 'note chips-note', 'The thread: pick up a word from the poem so far and earn 1 more chip.'));
+        box.appendChild(so);
+      }
       if (h.ring.indexOf(mine) < 0) {
         box.appendChild(el('p', 'note', h.active.indexOf(mine) < 0 ? 'You have no chips left. You keep your vote.' :
           h.eyeOut[mine] ? 'The table sent your word out, so you sit out this hand. You still vote.' : 'Your word was matched, so you sit out this hand. You still vote.'));
@@ -1133,18 +1160,24 @@
     } else if (h.stage === 'vote') {
       var canVote = st.need.indexOf(mine) >= 0 && !st.seals[mine] && !st.skipSeal[mine] && !computersWaiting(st).length;
       box.appendChild(el('p', 'ask', canVote ? 'Vote for the sentence that brings the words together best. Not your own.' : 'The sentences'));
-      Object.keys(h.lines).map(Number).sort(function (a, b) { return a - b; }).forEach(function (s) {
+      box.appendChild(el('p', 'note unsigned', 'Unsigned: names and stakes are shown once every vote is in.'));
+      // in the order of their seals, which nobody can read a seat from
+      var lst = h.steps.line;
+      Object.keys(h.lines).map(Number).sort(function (a, b) {
+        var x = lst.seals[a].hash, y = lst.seals[b].hash;
+        return x < y ? -1 : x > y ? 1 : a - b;
+      }).forEach(function (s) {
         var b = el('button', 'slip');
         b.type = 'button';
         b.appendChild(el('span', 'l', h.lines[s].line));
-        b.appendChild(el('span', 'by', Z.nameOf(t, s) + ' · staked ' + h.lines[s].stake));
+        if (s === mine) b.appendChild(el('span', 'by', 'your sentence'));
         b.disabled = s === mine || !canVote;
         b.setAttribute('aria-pressed', String(voteChoice === s));
         b.addEventListener('click', function () { voteChoice = s; box.dataset.sig = ''; drawMoves(t, h); });
         box.appendChild(b);
       });
       if (canVote) {
-        var vb = el('button', null, voteChoice && h.lines[voteChoice] && voteChoice !== mine ? 'Seal vote for ' + Z.nameOf(t, voteChoice) : 'Seal vote');
+        var vb = el('button', null, 'Seal vote');
         vb.type = 'button';
         vb.disabled = !(voteChoice && h.lines[voteChoice] && voteChoice !== mine);
         var verr = el('p', 'error');
@@ -1202,17 +1235,36 @@
       box.appendChild(el('p', 'ask', 'Every word went out, so there are no sentences this hand.'));
       box.appendChild(el('p', 'note', t.over ? 'That was the last hand.' : 'The next hand is dealt again at ' + h.zero + '.'));
     } else {
-      var ul = el('ul', 'tally');
-      Object.keys(h.lines).map(Number).sort(function (a, b) { return (h.tally[b] - h.tally[a]) || (a - b); }).forEach(function (s) {
-        var li = el('li', h.winners.indexOf(s) >= 0 ? 'won' : '');
-        li.appendChild(el('span', null, Z.nameOf(t, s)));
-        li.appendChild(el('span', null, (h.tally[s] || 0) + (h.tally[s] === 1 ? ' vote' : ' votes')));
-        ul.appendChild(li);
-      });
-      box.appendChild(ul);
       box.appendChild(el('p', 'note', h.winners.length === 1
         ? Z.nameOf(t, h.winners[0]) + ' takes the pot of ' + h.pot + '.'
         : 'Tied: ' + names(h.winners) + ' split the pot of ' + h.pot + '.'));
+      // Most votes first. The winner's row and your own stand open; any row
+      // with a vote or the thread opens on a tap, to show who and why.
+      var res = el('div', 'results');
+      Object.keys(h.lines).map(Number).sort(function (a, b) { return (h.tally[b] - h.tally[a]) || (a - b); }).forEach(function (s) {
+        var voters = Object.keys(h.votes).map(Number).filter(function (v) { return h.votes[v] === s; }).sort(function (a, b) { return a - b; });
+        var won = h.winners.indexOf(s) >= 0, more = voters.length > 0 || !!h.thread[s];
+        var row = el(more ? 'details' : 'div', 'result' + (won ? ' won' : '') + (s === S.seat ? ' mine' : ''));
+        row.setAttribute('data-seat', String(s));
+        if (more && (won || s === S.seat)) row.open = true;
+        var sum = el(more ? 'summary' : 'div', 'result-sum');
+        sum.appendChild(el('span', 'l', h.lines[s].line));
+        sum.appendChild(el('span', 'by', Z.nameOf(t, s) + ' · staked ' + h.lines[s].stake + ' · ' + (h.tally[s] || 0) + (h.tally[s] === 1 ? ' vote' : ' votes') + (h.thread[s] ? ' · +1 the thread' : '')));
+        row.appendChild(sum);
+        if (more) {
+          var whys = el('ul', 'whys');
+          voters.forEach(function (v) {
+            var li = el('li');
+            li.appendChild(el('b', null, Z.nameOf(t, v)));
+            li.appendChild(document.createTextNode(h.whys[v] ? ': ' + plainWhy(h.whys[v]) : ' voted for it.'));
+            whys.appendChild(li);
+          });
+          if (h.thread[s]) whys.appendChild(el('li', 'thread-li', 'Picked up “' + h.thread[s] + '” from the poem so far: 1 chip from the bank.'));
+          row.appendChild(whys);
+        }
+        res.appendChild(row);
+      });
+      box.appendChild(res);
       box.appendChild(el('p', 'poem-head', 'the poem so far'));
       box.appendChild(poemSheet(t, false));
     }
@@ -1320,6 +1372,7 @@
       if (!x) return;
       var m = { _: x.move, 1: x.salt };
       if (st.name === 'line') m['2'] = String(x.stake || 0);
+      if (st.name === 'vote' && x.why) m['3'] = x.why;         // said with the vote, shown at the showdown
       data[String(s)] = m;
       any = true;
       said.push(Z.nameOf(T, s) + ': ' + (st.name === 'vote' ? 'votes ' + Z.nameOf(T, Number(x.move)) + (x.why ? ' (' + x.why + ')' : '') : st.name === 'eye' ? (x.move === '0' ? 'skips' : 'marks ' + h.words[Number(x.move)]) : st.name === 'line' ? x.move + ' (stake ' + (x.stake || 0) + ')' : x.move));
@@ -1549,15 +1602,40 @@
       p.lines.forEach(function (l, i) {
         var d = el('div', 'place');
         if (!i) d.appendChild(el('div', 'pword', p.word));
-        d.appendChild(el('div', 'pline', l.line));
+        var pl = el('div', 'pline'), at = l.thread ? l.line.indexOf(l.thread) : -1;
+        if (at < 0) pl.textContent = l.line;
+        else {
+          // the word this sentence picked up from the poem before it
+          pl.appendChild(document.createTextNode(l.line.slice(0, at)));
+          var th = el('em', 'thread', l.thread);
+          th.title = 'picked up from the poem so far';
+          pl.appendChild(th);
+          pl.appendChild(document.createTextNode(l.line.slice(at + l.thread.length)));
+        }
+        d.appendChild(pl);
         d.appendChild(el('div', 'pby', l.name));
         box.appendChild(d);
       });
     });
     if (full && t.open && t.open.chips) box.appendChild(chipsList(t));
     else if (full) box.appendChild(el('p', 'sat', sittersLine(t)));
+    if (full && t.over) {
+      var tl = Z.titles(t);
+      if (tl.length) {
+        var ul = el('ul', 'titles');
+        tl.forEach(function (x) {
+          var li = el('li');
+          li.appendChild(el('span', 'tt', x.title));
+          li.appendChild(el('span', 'tn', names2(x.names)));
+          li.appendChild(el('span', 'tw', x.note));
+          ul.appendChild(li);
+        });
+        box.appendChild(ul);
+      }
+    }
     return box;
   }
+  function names2(list) { return list.length <= 1 ? list.join('') : list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1]; }
   function lastPlace(t) {
     var played = t.hands.filter(function (h) { return h.winners.length; });
     return played.length ? played[played.length - 1].place : (t.current ? t.current.place : '');
@@ -1645,6 +1723,11 @@
         parts.push({ t: r.name + ' \u00b7 ' + r.words + ' from words \u00b7 ' + signed(r.sentences) + ' from sentences \u00b7 ' + r.total, f: 'italic 400 30px ' + FACE, c: '#6d6158', lh: 42 });
       });
       else wrap(sittersLine(t), 'italic 400 30px ' + FACE, inner).forEach(function (l) { parts.push({ t: l, f: 'italic 400 30px ' + FACE, c: '#6d6158', lh: 42 }); });
+      var tl = t.over ? Z.titles(t) : [];
+      if (tl.length) parts.push({ gap: 18 });
+      tl.forEach(function (x) {
+        wrap(x.title + ' \u00b7 ' + names2(x.names) + ' \u00b7 ' + x.note, 'italic 400 30px ' + FACE, inner).forEach(function (l) { parts.push({ t: l, f: 'italic 400 30px ' + FACE, c: '#8e1b1b', lh: 42 }); });
+      });
       parts.push({ gap: 24 });
       parts.push({ t: 'Zero · made by Matthew Bushell, on David Pinto’s beach', f: 'italic 400 26px ' + FACE, c: '#8a7f74', lh: 36 });
       var H = 170 + parts.reduce(function (a, p) { return a + (p.gap || (p.rule ? 50 : p.lh)); }, 0) + 110;
@@ -1702,6 +1785,113 @@
       $('note-error').textContent = 'Thank you. Your word is on the beach.';
       soon();
     }).catch(function (e) { $('note-error').textContent = e.message; }).then(function () { $('note-go').disabled = false; });
+  }
+
+  // ---- Vote again: a check, never a game (zero.html?revote=1) ----------------------------
+  // The computer players vote again on the sentences of games already played,
+  // by the law as it stands now and with every sentence unsigned, to show how
+  // their judgement has changed since. It counts their votes for people, in
+  // the hands where a person had a sentence on the table. Nothing is written.
+  function openRevote() {
+    show('revote');
+    try { var u = new URL(inviteUrl('')); u.searchParams.set('revote', '1'); history.replaceState(null, '', u.href); } catch (e) {}
+    $('rv-key-part').hidden = !!sget(KEY);
+    $('rv-out').textContent = '';
+    $('rv-say').textContent = '';
+    readLaw().then(function (law) {
+      $('rv-law').textContent = String(law).split('\n').filter(function (l) { return /^The craft:/.test(l); })[0] || '';
+    }, function () {});
+  }
+  function runRevote() {
+    var typed = String($('rv-key').value || '').trim();
+    if (typed) { sset(KEY, typed); $('rv-key').value = ''; }
+    var key = sget(KEY);
+    if (!key) { $('rv-key-part').hidden = false; $('rv-key').focus(); return; }
+    $('rv-key-part').hidden = true;
+    var go = $('rv-go'), say = $('rv-say'), out = $('rv-out');
+    go.disabled = true;
+    out.textContent = '';
+    say.textContent = 'Reading the games…';
+    plainCall = false;
+    Promise.all([readLaw(), readRoom('0', 25000)]).then(function (r) {
+      $('rv-law').textContent = String(r[0]).split('\n').filter(function (l) { return /^The craft:/.test(l); })[0] || '';
+      return window.ZeroLook.tables(r[1]);
+    }).then(function (tables) {
+      var jobs = [];
+      tables.forEach(function (t) {
+        t.hands.forEach(function (h) {
+          if (!h.winners.length) return;
+          if (!Object.keys(h.lines).some(function (s) { return !Z.isComputer(t, Number(s)); })) return;
+          Object.keys(h.votes).map(Number).forEach(function (s) { if (Z.isComputer(t, s)) jobs.push({ t: t, h: h, s: s, then: h.votes[s] }); });
+        });
+      });
+      if (!jobs.length) { say.textContent = 'No game yet where a person and computer players wrote sentences at the same table.'; return; }
+      var done = 0, next = 0, failed = null;
+      var worker = function () {
+        if (failed || next >= jobs.length) return Promise.resolve();
+        var j = jobs[next++];
+        return askVote(key, j.t, j.h, j.s).then(function (v) {
+          j.now = Number(v.move);
+          j.why = v.why;
+          done++;
+          say.textContent = 'Voting again… ' + done + ' of ' + jobs.length;
+        }, function (e) { failed = e; }).then(worker);
+      };
+      say.textContent = 'Voting again… 0 of ' + jobs.length;
+      return Promise.all([worker(), worker(), worker(), worker()]).then(function () {
+        if (failed) throw failed;
+        drawRevote(jobs);
+        say.textContent = 'Nothing was written to the beach.';
+      });
+    }).catch(function (e) {
+      if (e && (e.status === 401 || e.status === 403)) { sset(KEY, null); $('rv-key-part').hidden = false; }
+      say.textContent = e && e.status != null ? e.message : 'The beach is out of reach just now. Try again.';
+    }).then(function () { go.disabled = false; });
+  }
+  function drawRevote(jobs) {
+    var out = $('rv-out');
+    out.textContent = '';
+    var person = function (j, seat) { return !Z.isComputer(j.t, seat); };
+    var count = function (list, when) { return list.filter(function (j) { return person(j, j[when]); }).length; };
+    var total = el('p', 'rv-total');
+    total.appendChild(document.createTextNode('Computer players gave people '));
+    total.appendChild(el('b', null, count(jobs, 'then') + ' of ' + jobs.length));
+    total.appendChild(document.createTextNode(' votes when these games were played, and '));
+    total.appendChild(el('b', null, count(jobs, 'now') + ' of ' + jobs.length));
+    total.appendChild(document.createTextNode(' voting again now.'));
+    out.appendChild(total);
+    // game by game
+    var tables = [];
+    jobs.forEach(function (j) { if (tables.indexOf(j.t) < 0) tables.push(j.t); });
+    var ul = el('ul', 'look-list rv-games');
+    tables.forEach(function (t) {
+      var mine = jobs.filter(function (j) { return j.t === t; });
+      var li = el('li');
+      li.appendChild(el('span', 'lw', cap(t.hands[0].zero)));
+      li.appendChild(document.createTextNode(' \u00b7 ' + count(mine, 'then') + ' of ' + mine.length + ' then \u00b7 ' + count(mine, 'now') + ' of ' + mine.length + ' now'));
+      ul.appendChild(li);
+    });
+    out.appendChild(ul);
+    // every vote that goes to a person now, with its reason
+    var won = jobs.filter(function (j) { return person(j, j.now); });
+    if (won.length) {
+      out.appendChild(el('p', 'poem-head', 'votes for a person now, and why'));
+      var wl = el('div', 'results');
+      won.forEach(function (j) {
+        var row = el('div', 'result');
+        var sum = el('div', 'result-sum');
+        sum.appendChild(el('span', 'l', j.h.lines[j.now].line));
+        sum.appendChild(el('span', 'by', Z.nameOf(j.t, j.now) + ' \u00b7 at ' + j.h.zero));
+        row.appendChild(sum);
+        var whys = el('ul', 'whys'), li = el('li');
+        li.appendChild(el('b', null, Z.nameOf(j.t, j.s)));
+        li.appendChild(document.createTextNode(j.why ? ': ' + j.why : ' voted for it.'));
+        whys.appendChild(li);
+        row.appendChild(whys);
+        wl.appendChild(row);
+      });
+      out.appendChild(wl);
+    }
   }
 
   // ---- Look around (spine:zero 4.9) ----------------------------------------------------------
@@ -1787,6 +1977,8 @@
     clearTimeout(timer);
     lobby(true, lp);
   });
+  $('rv-go').addEventListener('click', runRevote);
+  $('rv-key').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); runRevote(); } });
   $('f-back').addEventListener('click', backToLobby);
   $('f-ask-yes').addEventListener('click', leaveGame);
   $('f-ask-no').addEventListener('click', function () { footAsk(''); });
@@ -1798,6 +1990,7 @@
   var invite = Z.codeKey(params.get('table') || params.get('code') || '');
   if (params.get('trail')) trailView(Z.digitsOf(params.get('trail')));
   else if (params.get('look')) openLook();
+  else if (params.get('revote')) openRevote();
   else if (/^[A-Z]+[0-9]+$/.test(invite)) invited(invite);
   else if (S && S.code && S.start) { show('table'); $('t-status').textContent = 'Finding the table…'; enterTable(); }
   else lobby();

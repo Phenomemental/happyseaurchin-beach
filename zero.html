@@ -260,6 +260,44 @@
   /* a sentence that cannot be chosen is still there to be read: never faded */
   .slip:disabled { opacity: 1; cursor: default; border-style: dashed; box-shadow: none; }
   .slip.won { border-color: var(--crimson); }
+  /* the showdown's result: every sentence signed at last, with who voted for it and why */
+  .unsigned { font-size: 1rem; margin-top: -0.3rem; }
+  .results { text-align: left; margin: 0.3rem 0 0.7rem; }
+  .result { background: var(--card); border: 1px solid var(--line); border-radius: 1px; margin: 0 0 0.45rem; box-shadow: 0 1px 0 rgba(42, 36, 32, 0.06); }
+  .result.won { border-color: var(--crimson); }
+  .result.mine { box-shadow: inset 3px 0 0 var(--crimson); }
+  .result-sum { display: block; position: relative; list-style: none; padding: 0.5rem 0.7rem 0.45rem; }
+  .result-sum::-webkit-details-marker { display: none; }
+  summary.result-sum { cursor: pointer; padding-right: 2.2rem; -webkit-tap-highlight-color: transparent; }
+  summary.result-sum::after {
+    content: ""; position: absolute; right: 0.8rem; top: 0.95rem; width: 0.55rem; height: 0.55rem;
+    border-right: 2px solid var(--crimson); border-bottom: 2px solid var(--crimson); transform: rotate(45deg); transition: transform 0.2s;
+  }
+  details[open] > summary.result-sum::after { transform: rotate(-135deg); top: 1.2rem; }
+  summary.result-sum:focus-visible { outline: 2px solid var(--crimson); outline-offset: 2px; }
+  .result .l { display: block; font-style: italic; font-size: 1.08rem; line-height: 1.3; }
+  .result .by { display: block; font-size: 0.98rem; color: var(--soft); margin-top: 0.15rem; }
+  .result.won .by { color: var(--crimson); }
+  .whys { list-style: none; margin: 0; padding: 0.1rem 0.7rem 0.55rem; border-top: 1px solid var(--line); }
+  .whys li { padding: 0.3rem 0 0; font-size: 1.02rem; line-height: 1.3; }
+  .whys li::before { content: none; }
+  .whys b { font-weight: 600; font-style: italic; }
+  .whys .thread-li { color: var(--crimson); font-style: italic; }
+  /* the poem so far, at the turn, to pick the thread up from */
+  .sofar { border-top: 1px solid var(--line); margin: 0.5rem 0 0.7rem; padding-top: 0.1rem; }
+  .sofar .poem-head { margin: 0.4rem 0 0.2rem; }
+  .sofar-line { font-style: italic; margin: 0 0 0.35rem; line-height: 1.3; }
+  /* a word picked up from the poem before it */
+  .poem .pline .thread, .sofar-line .thread { font-style: inherit; color: var(--crimson); border-bottom: 1px solid var(--crimson); }
+  /* titles at the foot of the end card */
+  .titles { list-style: none; margin: 0.6rem 0 0; padding: 0.5rem 0 0; border-top: 1px solid var(--line); text-align: left; }
+  .titles li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; padding: 0.12rem 0; font-size: 1.02rem; }
+  .titles li::before { content: none; }
+  .titles .tt { font-style: italic; color: var(--crimson); font-weight: 600; }
+  .titles .tn { font-weight: 600; }
+  .titles .tw { color: var(--soft); font-style: italic; font-size: 0.98rem; }
+  /* voting again */
+  .rv-total { font-size: 1.15rem; margin: 0.6rem 0; }
   .tally { list-style: none; padding: 0; margin: 0.2rem auto 0.7rem; max-width: 22rem; text-align: left; }
   .tally li { display: flex; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--line); padding: 0.2rem 0.1rem; font-size: 1.05rem; }
   .tally li.won { color: var(--crimson); font-style: italic; }
@@ -557,6 +595,21 @@
       <div id="look-body"><p class="look-note">Reading the tree…</p></div>
     </section>
 
+    <!-- Vote again: a check, never a game (zero.html?revote=1), linked from nowhere -->
+    <section id="revote" hidden>
+      <div class="bar"><span class="name">Zero</span><span class="phase">voting again</span></div>
+      <p class="how">A check, not a game. The computer players vote again on the sentences of games already played, by the law as it stands now, with every sentence unsigned. Nothing is written to the beach.</p>
+      <p class="look-note" id="rv-law"></p>
+      <div class="group" id="rv-key-part" hidden>
+        <label for="rv-key">Your Anthropic key, for the computer players</label>
+        <input type="password" id="rv-key" autocomplete="off" spellcheck="false" autocapitalize="off">
+        <p class="field-note">Kept in this browser only, never written to the beach.</p>
+      </div>
+      <button type="button" class="go" id="rv-go">Vote again</button>
+      <p class="status" id="rv-say" role="status"></p>
+      <div id="rv-out"></div>
+    </section>
+
     <!-- A trail read on its own: zero.html?trail=1583 -->
     <section id="trailview" hidden>
       <div class="bar"><span class="name">Zero</span><span class="phase">a trail</span></div>
@@ -601,8 +654,8 @@
   window.DOOR = { place: 'Zero', home: 'https://phenomemental.github.io/happyseaurchin-beach/zero.html' };
 </script>
 <script src="door.js?v=2026-10-27a"></script>
-<script src="zero-law.js?v=2026-11-10a"></script>
-<script src="zero-look.js?v=2026-11-10a"></script>
-<script src="zero.js?v=2026-11-10a"></script>
+<script src="zero-law.js?v=2026-11-10b"></script>
+<script src="zero-look.js?v=2026-11-10b"></script>
+<script src="zero.js?v=2026-11-10b"></script>
 </body>
 </html>

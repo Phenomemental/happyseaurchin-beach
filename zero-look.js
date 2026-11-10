@@ -87,7 +87,7 @@
         r.words.push({ seat: s, word: h.words[s], name: nameOf(s), kept: voiced && h.ring.indexOf(s) >= 0 });
       });
       Object.keys(h.lines).map(Number).sort(num).forEach(function (s) {
-        r.lines.push({ name: nameOf(s), line: h.lines[s].line, stake: h.lines[s].stake, votes: h.tally[s] || 0, won: h.winners.indexOf(s) >= 0 });
+        r.lines.push({ name: nameOf(s), line: h.lines[s].line, stake: h.lines[s].stake, votes: h.tally[s] || 0, won: h.winners.indexOf(s) >= 0, thread: h.thread[s] || '' });
       });
       Object.keys(h.marks).map(Number).sort(num).forEach(function (s) {
         var m = h.marks[s];
@@ -97,11 +97,14 @@
     });
     seats.forEach(function (s) { if (Z.isComputer(t, s)) g.computer[nameOf(s)] = true; });
     g.first = (g.hands[0] || '')[0] || '';
+    g.threaded = !!t.open.thread;          // this table paid the thread
+    g.titles = t.over ? Z.titles(t) : [];
     return g;
   }
   // A table is its entries from its open on. A code can come round again
   // for a later table, so each open begins a table of its own.
-  function tableGames(entries) {
+  // Every table in the room that played a hand to its vote, as the law works it out.
+  function tables(entries) {
     var byCode = {}, lists = [];
     entries.slice().sort(Z.byAddr).forEach(function (e) {
       var k = Z.codeKey(e.code);
@@ -114,10 +117,12 @@
     return Promise.all(lists.map(function (list) {
       if (!list.some(function (e) { return e.kind === 'open'; }) || !list.some(function (e) { return e.kind === 'deal'; })) return null;
       return Z.derive(list, list[0].code).then(function (t) {
-        if (!t.roster || !t.hands.some(function (h) { return h.winners.length; })) return null;
-        return tableGame(t);
+        return t.roster && t.hands.some(function (h) { return h.winners.length; }) ? t : null;
       });
-    })).then(function (gs) { return gs.filter(Boolean); });
+    })).then(function (ts) { return ts.filter(Boolean); });
+  }
+  function tableGames(entries) {
+    return tables(entries).then(function (ts) { return ts.map(tableGame); });
   }
 
   // ---- games played in chat, before the page --------------------------------------------
@@ -642,6 +647,17 @@
         });
       });
       body.appendChild(el('p', 'sat', g.people.join(' · ')));
+      if (g.titles && g.titles.length) {
+        var tl = el('ul', 'titles');
+        g.titles.forEach(function (x) {
+          var li = el('li');
+          li.appendChild(el('span', 'tt', x.title));
+          li.appendChild(el('span', 'tn', names(x.names)));
+          li.appendChild(el('span', 'tw', x.note));
+          tl.appendChild(li);
+        });
+        body.appendChild(tl);
+      }
       showsPanel(body, g);
       box.appendChild(body);
     }
@@ -752,6 +768,15 @@
     K.travelled = !tw.length ? { text: 'No word from one hand came back in a later one.', more: false }
       : { more: true, text: tw.length > 3 ? tw.length + ' words came back in later hands, ' + names(tw.slice(0, 3)) + ' among them.'
         : names(tw) + (tw.length === 1 && R.travelled[0].back.length === 1 ? ' came back in a later hand.' : ' came back in later hands.') };
+    // the thread: who picked up a word from the poem so far (a table that pays it)
+    if (g.threaded) {
+      var picked = [];
+      (g.rounds || []).forEach(function (r) { r.lines.forEach(function (l) { if (l.thread) picked.push(l.name); }); });
+      var keepers = tally(picked, order);
+      K.thread = !picked.length ? { text: 'No sentence picked up a word from the poem before it.', more: false }
+        : { more: true, text: (picked.length === 1 ? 'One sentence' : picked.length + ' sentences') + ' picked up a word from the poem before ' + (picked.length === 1 ? 'it' : 'them') + '; ' +
+          names(keepers.filter(function (x) { return x.n === keepers[0].n; }).map(function (x) { return x.name; })) + ' most.' };
+    }
     // where the trail went
     K.trail = R.trail.length > 1 ? { text: R.trail.map(function (x) { return cap(x.word); }).join(' › '), more: true }
       : { text: R.trail.length ? 'The game stayed at ' + R.trail[0].word + '.' : 'No trail is kept for this game.', more: false };
@@ -956,6 +981,13 @@
       more.appendChild(tl);
     });
 
+    if (g.threaded) add('thread', 'The thread', function (more) {
+      var list = [];
+      g.rounds.forEach(function (r) { r.lines.forEach(function (l) { if (l.thread) list.push({ word: l.thread, name: l.name + (l.won ? ', and won' : ''), place: r.zero }); }); });
+      say(more, 'A word picked up from the winning sentences before it: 1 chip from the bank each time.');
+      more.appendChild(byPlaceList(list, 'threads'));
+    });
+
     add('trail', 'Where the trail went', function (more) {
       more.appendChild(trailMap(R.trail));
       say(more, 'Each word was chosen from the nine seats beneath the one before (the small dots).');
@@ -994,7 +1026,7 @@
   }
 
   var api = { voiceParts: voiceParts, voicedPlaces: voicedPlaces, games: games, across: across, render: render, ENOUGH: ENOUGH,
-    tableGame: tableGame, showsPanel: showsPanel, setFresh: setFresh, readings: readings, takes: takes, wordsIn: wordsIn };
+    tableGame: tableGame, tables: tables, showsPanel: showsPanel, setFresh: setFresh, readings: readings, takes: takes, wordsIn: wordsIn };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLook = api;
 })(typeof self !== 'undefined' ? self : this);
