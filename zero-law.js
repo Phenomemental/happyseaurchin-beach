@@ -88,11 +88,25 @@
     return { out: out, ring: seats.filter(function (s) { return !out[s]; }) };
   }
   // A line, kept to two short lines' worth.
+  var LINE_MAX = 160;
   function oneLine(raw) {
     var t = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim().replace(/^[\[{]+\s*/, '');
     if (!t) return { ok: false, why: 'Write a sentence first' };
-    if (t.length > 160) return { ok: false, why: 'Shorter, please: the best sentences are said in a breath' };
+    if (t.length > LINE_MAX) return { ok: false, why: 'Shorter, please: the best sentences are said in a breath' };
     return { ok: true, line: t };
+  }
+  // A sentence that runs over the limit, cut to fit: at its last clause where
+  // there is one, else at its last whole word, and closed with a full stop.
+  // For a computer player's sentence that is still too long after it has been
+  // told, so that a table never waits on a sentence that cannot be used.
+  function clipLine(raw) {
+    var t = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim().replace(/^[\[{]+\s*/, '');
+    if (t.length <= LINE_MAX) return t;
+    var head = t.slice(0, LINE_MAX - 1);
+    var cut = Math.max(head.lastIndexOf('. '), head.lastIndexOf('; '), head.lastIndexOf(': '), head.lastIndexOf(', '), head.lastIndexOf(' — '));
+    if (cut < 60) cut = head.lastIndexOf(' ');
+    if (cut < 1) cut = LINE_MAX - 1;
+    return head.slice(0, cut).replace(/[\s,;:.—-]+$/, '').replace(/\s+(and|or|but|nor|the|a|an|of|to|in|on|at|by|for|with|that|which|while|as|then)$/i, '').replace(/[\s,;:.—-]+$/, '') + '.';
   }
 
   // ---- seals ------------------------------------------------------------------
@@ -704,7 +718,7 @@
 
   var api = {
     PERSONAS: PERSONAS, START: START, HANDS: HANDS, SEATS: SEATS, STEPS: STEPS,
-    clean: clean, oneWord: oneWord, oneLine: oneLine, fold: fold, same: same, flop: flop,
+    clean: clean, oneWord: oneWord, oneLine: oneLine, clipLine: clipLine, LINE_MAX: LINE_MAX, fold: fold, same: same, flop: flop,
     salt: salt, seal: seal, sealText: sealText, sha256: sha256,
     at: at, digitsOf: digitsOf, nodeAt: nodeAt, textOf: textOf, readPlace: readPlace, played: played,
     openPlaces: openPlaces, freeTops: freeTops, trail: trail, voiceText: voiceText, placeAfter: placeAfter,

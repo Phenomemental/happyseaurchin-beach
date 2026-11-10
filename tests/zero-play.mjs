@@ -34,7 +34,7 @@ const WORDS = {
   'Night nurse': ['ward', 'chart', 'monitor', 'hush', 'lamp', 'pulse']
 };
 const PERSONAS = Object.keys(WORDS);
-const calls = { word: 0, eye: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set(), badWords: [], signed: false, voteOptions: [], sawPoem: 0 };
+const calls = { word: 0, eye: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set(), badWords: [], signed: false, voteOptions: [], sawPoem: 0, limitTold: 0, tooLong: 0, tooLongTold: [] };
 const BANNED = /\b(ring|holds|lines?)\b/i;          // never on screen, nor in the computer players' instructions (spine:zero 4.23)
 const turns = {};
 async function claudeRoute(route) {
@@ -68,7 +68,14 @@ async function claudeRoute(route) {
     const left = /still in after the flop are: ([^.]+)\./.exec(user)[1].split(', ');
     const chips = Number(/You have (\d+) chips/.exec(user)[1]);
     if (/The poem so far, the winning sentences of the hands before this one:/.test(user) && /earns 1 more chip/.test(user)) calls.sawPoem++;
+    if (/The page takes 150 characters at most, spaces counted/.test(user)) calls.limitTold++;
+    const told = /Your last sentence ran to (\d+) characters, which is too long for the page\./.exec(user);
+    if (told) calls.tooLongTold.push(Number(told[1]));
     out = { sentence: `${left.slice(0, 3).join(' and ')}, as a ${persona.toLowerCase()} sees it.`, stake: Math.min(chips, (pi % 4) + 1) };
+    // As happened live: sentences longer than the page takes. The Engineer writes one too long until told so;
+    // the Sailor never learns, and is cut to fit on the third try.
+    const rambling = out.sentence.replace(/\.$/, '') + ', and then it goes on about ' + 'the tolerances and the load paths and the margins of safety, '.repeat(3) + 'at length.';
+    if ((persona === 'Engineer' && !told) || persona === 'Sailor') { out.sentence = rambling; calls.tooLong++; }
   } else if (/Vote for one\. Judge only by the craft as the law states it/.test(user)) {
     calls.vote++;
     // the sentences come unsigned and numbered, in no seat order, with no name anywhere
@@ -650,6 +657,14 @@ async function tableA(browser, base, beach) {
     soSeen.every(n => host.saw.sofar[n].hint && JSON.stringify(host.saw.sofar[n].lines) === JSON.stringify(t.hands.slice(0, n - 1).flatMap(h => h.winners.map(w => h.lines[w].line)))), JSON.stringify(host.saw.sofar));
   check('A: the computer players are shown the poem so far too, and told of the thread', calls.sawPoem >= 8, String(calls.sawPoem));
   check('A: the thread was paid: some sentence after hand one picked up a word', t.hands.slice(1).some(h => Object.keys(h.thread).length > 0), JSON.stringify(t.hands.map(h => h.thread)));
+  // the fault found live on 10 November 2026: computer players' sentences over the page's limit, and the table waiting for ever
+  const seatOf = name => Number(Object.keys(t.roster).find(k => t.roster[k].name === name));
+  const lineOf = (h, name) => h.lines[seatOf(name)] ? h.lines[seatOf(name)].line : null;
+  check('A: the computer players are told the page\'s limit; one that runs over is told by how much and asked again', calls.limitTold >= 8 && calls.tooLong >= 4 && calls.tooLongTold.length >= 2 && calls.tooLongTold.every(n => n > 160), JSON.stringify({ told: calls.limitTold, long: calls.tooLong, back: calls.tooLongTold.slice(0, 4) }));
+  check('A: so the Engineer, told once, writes one that fits; and no hand waits: every computer player still in has its sentence', t.hands.every(h => h.ring.filter(s => Z.isComputer(t, s)).every(s => h.lines[s] && h.lines[s].line.length <= 160)) &&
+    t.hands.every(h => !h.ring.includes(seatOf('Engineer')) || /, as a engineer sees it\.$/.test(lineOf(h, 'Engineer'))), JSON.stringify(t.hands.map(h => lineOf(h, 'Engineer'))));
+  check('A: a sentence still too long on the third try is cut to fit at a clause, closed with a full stop', t.hands.every(h => { const l = lineOf(h, 'Sailor'); return !h.ring.includes(seatOf('Sailor')) || (l.length <= 160 && l.length > 80 && /as a sailor sees it, and then it goes on about .*[a-z]\.$/.test(l) && !/at length/.test(l)); }),
+    JSON.stringify(t.hands.map(h => lineOf(h, 'Sailor'))));
   check('A: the table\'s eye asks "Does any word not belong under …? Tap one, or tap Skip."', host.saw.eye);
   const label = (h, s) => h.wordChips[s] === 2 ? '+2 · new' : h.wordChips[s] === 1 ? '+1' : '';
   const seen = Object.keys(host.earn || {}).map(Number);
