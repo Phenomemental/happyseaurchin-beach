@@ -207,3 +207,41 @@ test('a code that comes round again starts a table of its own: Happening, played
   assert.deepEqual(kites[0].rounds.map(r => r.zero), ['Happening', 'Ember', 'Vigil', 'Monitor']);
   assert.ok(!gs.some(g => g.kind === 'earlier' && g.first === '4'));   // its places are not taken for a game played in chat
 });
+
+// ---- each reading in one plain line (the rows of What this game shows, folded) ------------------
+test('each reading in one plain line, and whether there is more beneath it to open', async () => {
+  const gs = await L.games(tree, entries);
+  const by = c => L.takes(gs.find(g => (g.code || g.hands[0]) === c));
+  const tide = by('TIDE 3');
+  assert.deepEqual(Object.keys(tide), ['votes', 'same', 'fresh', 'sent', 'chips', 'pc', 'listens', 'bold', 'eye', 'short', 'travelled', 'trail']);
+  assert.equal(tide.votes.text, 'Night nurse drew the most votes: 14 of 36.');
+  assert.equal(tide.same.text, 'Thought alike on Candle.');
+  assert.equal(tide.fresh.text, '27 of the 31 words this game put into the tree were new to it.');
+  assert.equal(tide.sent.text, 'stubble was sent out.');
+  assert.equal(tide.chips.text, 'Night nurse finished highest, with 43 chips.');
+  assert.equal(tide.listens.text, '6 pairs voted for each other. Everyone received a vote.');
+  assert.equal(tide.bold.text, 'Boldest: Night nurse, staking 6.5 a sentence. Most careful: Engineer and Chef, 2.');
+  assert.equal(tide.eye.text, '7 words were marked as not belonging; Davido marked most.');
+  assert.equal(tide.short.text, 'Winning sentences averaged 16.6 words; the rest, 18.');
+  assert.equal(tide.travelled.text, 'Kettle, ward and Thermocouple came back in later hands.');
+  assert.equal(tide.trail.text, 'Happening › Ember › Vigil › Monitor');
+  assert.ok(Object.keys(tide).every(k => tide[k].more === (k !== 'pc')));       // people or computer is whole in its line
+  // a tie for most votes; a reading with nothing beneath it is a plain row
+  const rain = by('RAIN 6');
+  assert.equal(rain.votes.text, 'Sailor and Poet drew the most votes: 8 each of 36.');
+  assert.equal(rain.sent.text, 'Torque and infirmary were sent out.');
+  assert.deepEqual([rain.travelled.text, rain.travelled.more], ['No word from one hand came back in a later one.', false]);
+  const kite = by('KITE 1');
+  assert.deepEqual([kite.sent.text, kite.sent.more], ['The table sent no word out.', false]);
+  assert.deepEqual([kite.eye.text, kite.eye.more], ['This table played before the table’s eye.', false]);
+  assert.equal(kite.fresh.text, 'All 22 words this game put into the tree were new to it.');
+  assert.equal(kite.travelled.text, 'kitchen came back in later hands.');      // at compost, and again at worms
+  // the first game, played in chat: no marks or chips kept, so no rows for them
+  const first = by('1');
+  assert.deepEqual(Object.keys(first), ['votes', 'same', 'fresh', 'pc', 'listens', 'bold', 'eye', 'short', 'travelled', 'trail']);
+  assert.equal(first.same.text, 'Thought alike on birthday, watch and snow.');
+  assert.equal(first.travelled.text, 'flame came back in a later hand.');
+  // before the tree is read (the end of a game), the line says so
+  const g = L.tableGame(await Z.derive(entries, 'KITE 1'));
+  assert.deepEqual(L.takes(g).fresh, { text: 'Reading the tree…', more: false });
+});

@@ -912,15 +912,34 @@
       'Live from the beach · checked ' + new Date(lastOk).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
+  // Every word and name round the table is set as large as its card allows,
+  // on one line: a long word is made smaller, never broken or cut off.
+  function fitRing(ring) {
+    Array.prototype.forEach.call(ring.querySelectorAll('.seat'), function (seat) {
+      var card = seat.querySelector('.card'), room = card.clientWidth - 6;
+      if (room <= 0) return;                        // not on screen: nothing to measure
+      [seat.querySelector('.card .w'), seat.querySelector('.who')].forEach(function (node) {
+        if (!node) return;
+        var name = node.classList.contains('who'), size = parseFloat(getComputedStyle(node).fontSize);
+        // a name may reach a little past its card on either side; a word stays inside it
+        var over = function () { return name ? node.scrollWidth > node.clientWidth : node.offsetWidth > room; };
+        while (over() && size > 9) { size -= 0.5; node.style.fontSize = size + 'px'; }
+      });
+    });
+  }
+  // Where the nine seats sit round the zero, clockwise from the top, as a
+  // share of the table's width and height: three across the top, two down
+  // each side, two along the bottom. Set in rows, so that on a phone the
+  // cards can be wide enough to read and no name runs into the next card.
+  var SEAT_AT = [null, [50, 10], [83, 13.5], [86, 38.5], [86, 63.5], [68, 89.5], [32, 89.5], [14, 63.5], [14, 38.5], [17, 13.5]];
   function drawRing(t, h) {
     var ring = $('t-ring');
     Array.prototype.slice.call(ring.querySelectorAll('.seat')).forEach(function (n) { n.remove(); });
     var st = Z.stepFor(h), shown = wordsShown(h), turning = flipped[h.n] === 'now';
     for (var s = 1; s <= 9; s++) {
-      var a = (-90 + (s - 1) * 40) * Math.PI / 180;
       var seat = el('div', 'seat');
-      seat.style.left = (50 + 39 * Math.cos(a)) + '%';
-      seat.style.top = (50 + 39 * Math.sin(a)) + '%';
+      seat.style.left = SEAT_AT[s][0] + '%';
+      seat.style.top = SEAT_AT[s][1] + '%';
       var card = el('div', 'card');
       var x = t.seats[s];
       if (!x) { seat.classList.add('empty'); }
@@ -930,11 +949,14 @@
       if (shown && inHand) {
         var w = h.words[s];
         var wd = el('span', 'w', w || '—');
-        if (w && w.length > 9) wd.style.fontSize = '0.72rem';
         card.appendChild(wd);
         if (h.out[s]) seat.classList.add('struck', 'out');
         if (h.eyeOut[s]) seat.title = 'the table sent it out';
-        if (h.wordChips[s]) card.appendChild(el('span', 'earn', s === h.pick && h.chosenChips ? '+2 \u00b7 chosen' : h.wordChips[s] === 2 ? '+2 \u00b7 never played before' : '+1'));
+        if (h.wordChips[s]) {
+          var earn = el('span', 'earn', s === h.pick && h.chosenChips ? '+2 \u00b7 chosen' : h.wordChips[s] === 2 ? '+2 \u00b7 new' : '+1');
+          if (h.wordChips[s] === 2) earn.title = 'never played before, anywhere in the tree';
+          card.appendChild(earn);
+        }
         if (turning) seat.classList.add('turning');
       } else if (h.stage === 'word' || needsTurn(h)) {
         var wst = h.steps.word;
@@ -949,6 +971,7 @@
       seat.appendChild(el('span', 'who', x ? x.name + (t.gone[s] ? ' \u00b7 left' : '') : 'open'));
       ring.appendChild(seat);
     }
+    fitRing(ring);
     if (turning) setTimeout(function () { if (flipped[h.n] === 'now') { flipped[h.n] = true; } }, 800);
     var z = $('t-zero');
     z.textContent = h.zero;
@@ -1064,6 +1087,7 @@
       box.appendChild(wordsLeft(h));
       var gone = sentOut(h);
       if (gone) box.appendChild(gone);
+      if (t.open.chips && h.banked) box.appendChild(el('p', 'note chips-note', 'Word chips: +1 for a word still standing, +2 if it is new to the tree.'));
       if (h.ring.indexOf(mine) < 0) {
         box.appendChild(el('p', 'note', h.active.indexOf(mine) < 0 ? 'You have no chips left. You keep your vote.' :
           h.eyeOut[mine] ? 'The table sent your word out, so you sit out this hand. You still vote.' : 'Your word was matched, so you sit out this hand. You still vote.'));
@@ -1496,16 +1520,23 @@
     });
   }
   // Everyone who sat, each with chips from words beside chips from sentences.
+  // A small table, a line a player: names down the side, the figures across.
   function chipsList(t) {
-    var ul = el('ul', 'book');
+    var table = el('table', 'look-table book'), head = el('tr'), thead = el('thead'), body = el('tbody');
+    ['', 'words', 'sentences', 'chips'].forEach(function (h) { var th = el('th', null, h); th.setAttribute('scope', 'col'); head.appendChild(th); });
+    thead.appendChild(head);
     bookLines(t).forEach(function (r) {
-      var li = el('li');
-      li.appendChild(el('span', 'bn', r.name));
-      li.appendChild(el('span', 'bw', r.words + ' from words \u00b7 ' + signed(r.sentences) + ' from sentences'));
-      li.appendChild(el('span', 'bt', String(r.total)));
-      ul.appendChild(li);
+      var tr = el('tr'), name = el('th', 'bn', r.name);
+      name.setAttribute('scope', 'row');
+      tr.appendChild(name);
+      tr.appendChild(el('td', null, String(r.words)));
+      tr.appendChild(el('td', null, signed(r.sentences)));
+      tr.appendChild(el('td', 'bt', String(r.total)));
+      body.appendChild(tr);
     });
-    return ul;
+    table.appendChild(thead);
+    table.appendChild(body);
+    return table;
   }
   function sittersLine(t) {
     return Object.keys(t.seats).sort(function (a, b) { return a - b; }).map(function (s) { return t.seats[s].name; }).join(' · ');
