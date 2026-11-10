@@ -70,13 +70,13 @@ function room() {
   return { list, add };
 }
 async function play(r, hand, step, moves, writerOf) {
-  // moves: {seat: move} or {seat: [line, stake]}
+  // moves: {seat: move}, {seat: [line, stake]} or, for a vote with its reason, {seat: [move, undefined, why]}
   const secrets = {};
   const bySeal = {};
   for (const [seat, mv] of Object.entries(moves)) {
     const move = Array.isArray(mv) ? mv[0] : mv, stake = Array.isArray(mv) ? mv[1] : undefined;
     const s = Z.salt();
-    secrets[seat] = { move, stake, s };
+    secrets[seat] = { move, stake, s, why: Array.isArray(mv) ? mv[2] : '' };
     const w = writerOf(Number(seat));
     (bySeal[w] = bySeal[w] || { _: step })[seat] = await Z.seal(CODE, hand, step, seat, move, stake, s);
   }
@@ -86,6 +86,7 @@ async function play(r, hand, step, moves, writerOf) {
     const w = writerOf(Number(seat));
     const m = { _: String(x.move), 1: x.s };
     if (x.stake != null) m['2'] = String(x.stake);
+    if (x.why) m['3'] = x.why;
     (byShow[w] = byShow[w] || { _: step })[seat] = m;
   }
   for (const [w, d] of Object.entries(byShow)) r.add(w, 'show', hand, d);
@@ -329,8 +330,8 @@ test('word chips (function:zero 2.1): from the bank, 1 for each word left after 
   assert.equal(t.current.chosenChips, 2);
   assert.equal(t.chips[3], 14);
   const book = Z.chipsBook(t);
-  assert.deepEqual(book[3], { words: 4, sentences: 0, total: 14 });
-  assert.deepEqual(book[1], { words: 0, sentences: 0, total: 10 });
+  assert.deepEqual(book[3], { words: 4, sentences: 0, thread: 0, total: 14 });
+  assert.deepEqual(book[1], { words: 0, sentences: 0, thread: 0, total: 10 });
   Object.keys(book).forEach(s => assert.equal(book[s].total, 10 + book[s].words + book[s].sentences));
 });
 
@@ -352,4 +353,84 @@ test('played before: anywhere in the tree, case and singular form ignored', () =
   assert.equal(Z.playedBefore(tree, 'light'), true);
   assert.equal(Z.playedBefore(tree, 'spreadsheet'), false);
   assert.equal(Z.playedBefore(tree, 'lanterns'), true);
+});
+
+// ---- the thread, the reasons, the titles (decided by Matthew, 10 November 2026) --------------
+// Two hands by four people: hand one at sea, won by Ann; hand two at tide, beneath it.
+async function twoHands(marks) {
+  const r = room();
+  const names = ['Ann', 'Ben', 'Cat', 'Dev'], writer = s => names[s - 1];
+  r.add('Ann', 'open', 0, Object.assign({ _: 'sea', 1: 'Ann' }, marks), '3');
+  r.add('Ann', 'deal', 1, { _: 'sea', 1: { _: 'Ann', 1: 'person' }, 2: { _: 'Ben', 1: 'person' }, 3: { _: 'Cat', 1: 'person' }, 4: { _: 'Dev', 1: 'person' } }, '3');
+  await play(r, 1, 'word', { 1: 'wave', 2: 'gull', 3: 'salt', 4: 'tide' }, writer);
+  await play(r, 1, 'eye', { 1: '0', 2: '0', 3: '0', 4: '0' }, writer);
+  if (marks['7']) r.add('Ann', 'bank', 1, { _: 'words', 1: '2', 2: '1', 3: '1', 4: '2' }, '3');
+  await play(r, 1, 'line', { 1: ['Salt on the gull’s wing, a wave against the harbour wall.', 2], 2: ['Wave, gull, salt and tide.', 1], 3: ['The tide salts the wave.', 1], 4: ['A gull rides the tide.', 5] }, writer);
+  await play(r, 1, 'vote', { 1: [2, undefined, 'plain as a list'], 2: [1, undefined, 'the harbour wall: I did not see that coming'], 3: [1, undefined, '  it has   a place in it '], 4: 1 }, writer);
+  r.add('Ann', 'pick', 1, { _: '4' }, '3');
+  r.add('Ann', 'deal', 2, { _: 'tide' }, '34');
+  await play(r, 2, 'word', { 1: 'moon', 2: 'pull', 3: 'shore', 4: 'ebb' }, writer);
+  await play(r, 2, 'eye', { 1: '0', 2: '0', 3: '0', 4: '0' }, writer);
+  if (marks['7']) r.add('Ann', 'bank', 2, { _: 'words', 1: '1', 2: '2', 3: '1', 4: '1' }, '34');
+  await play(r, 2, 'line', {
+    1: ['The moon leans on the walls of the tide.', 1],          // walls: the wall of hand one
+    2: ['The moon pulls the shore past the Harbour.', 1],        // Harbour: the harbour of hand one
+    3: ['Ebb and pull, moon on the shore.', 1],                   // nothing of the poem so far
+    4: ['The tide and the ebb, on the wave of it.', 1]            // wave: a word of hand one, in its winning sentence
+  }, writer);
+  await play(r, 2, 'vote', { 1: 3, 2: 3, 3: 2, 4: 3 }, writer);
+  return Z.derive(r.list, CODE);
+}
+
+test('the thread: 1 chip from the bank to every sentence that picks up a word from the poem so far', async () => {
+  const t = await twoHands({ 6: 'eye', 7: 'chips', 8: 'thread' });
+  const [h1, h2] = t.hands;
+  assert.deepEqual(h1.thread, {});                              // hand one has no poem before it
+  assert.deepEqual(h1.winners, [1]);
+  // the loose words of the poem so far: what the winning sentence said, less small words and this hand's own words
+  assert.deepEqual(Z.threadWords(t, h2), ['salt', 'gull', 'wing', 'wave', 'against', 'harbour', 'wall']);
+  assert.deepEqual(h2.thread, { 1: 'walls', 2: 'Harbour', 4: 'wave' });   // as each was written; plural and case ignored
+  assert.deepEqual(h2.winners, [3]);                            // the thread is paid whether or not the sentence wins
+  // from the bank, never the pot: the pot is still the stakes, and the winner still takes all of it
+  assert.equal(h2.pot, 4);
+  assert.equal(h2.shares[3], 4);
+  const book = Z.chipsBook(t);
+  assert.deepEqual([book[1].thread, book[2].thread, book[3].thread, book[4].thread], [1, 1, 0, 1]);
+  Object.keys(book).forEach(s => assert.equal(book[s].total, 10 + book[s].words + book[s].sentences, 'seat ' + s));
+  assert.equal(book[2].sentences, -1 - 1 + 1);                  // lost a stake of 1 in each hand, and a chip for the thread
+  // the poem carries the word that was picked up, for the card to show
+  assert.deepEqual(Z.poem(t).map(p => p.lines.map(l => l.thread)), [[''], ['']]);
+  // this hand's zero and the words turned at it are never the thread: every sentence holds them anyway
+  assert.equal(Z.picksUp('The tide and the moon.', Z.threadWords(t, h2)), '');
+});
+
+test('a table from before the thread pays none; and small words carry no thread', async () => {
+  const t = await twoHands({ 6: 'eye', 7: 'chips' });
+  assert.deepEqual(t.hands[1].thread, {});
+  assert.equal(Z.chipsBook(t)[1].thread, 0);
+  const loose = Z.threadWords(t, t.hands[1]);                  // the words are the same; only the payment is missing
+  assert.ok(!loose.some(w => ['on', 'the', 'a'].includes(w)) && loose.includes('harbour'));
+  assert.equal(Z.picksUp('On the one that is over there.', loose), '');
+  assert.equal(Z.picksUp('A wall’s shadow.', ['wall']), 'wall’s');
+  assert.equal(Z.picksUp('Stone walls.', ['wall']), 'walls');
+  assert.equal(Z.picksUp('Walled in.', ['wall']), '');          // watch and watching stay apart, as at the flop
+});
+
+test('a vote may carry its reason, kept beside the vote in the record', async () => {
+  const t = await twoHands({ 6: 'eye', 7: 'chips', 8: 'thread' });
+  assert.deepEqual(t.hands[0].whys, { 1: 'plain as a list', 2: 'the harbour wall: I did not see that coming', 3: 'it has a place in it' });
+  assert.deepEqual(t.hands[0].votes, { 1: 2, 2: 1, 3: 1, 4: 1 });
+  assert.deepEqual(t.hands[1].whys, {});
+});
+
+test('titles for the end card: Boldest, Most original, Kept the thread', async () => {
+  const t = await twoHands({ 6: 'eye', 7: 'chips', 8: 'thread' });
+  assert.deepEqual(Z.titles(t), [
+    { title: 'Boldest', names: ['Dev'], note: 'staked 3 a sentence' },                       // 5 and 1
+    { title: 'Most original', names: ['Ann', 'Ben', 'Dev'], note: '1 word new to the tree' },
+    { title: 'Kept the thread', names: ['Ann', 'Ben', 'Dev'], note: '1 sentence picked it up' }
+  ]);
+  // a table that pays neither word chips nor the thread has only the boldest
+  const old = await twoHands({ 6: 'eye' });
+  assert.deepEqual(Z.titles(old).map(x => x.title), ['Boldest']);
 });

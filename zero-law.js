@@ -334,7 +334,9 @@
         // before it played straight from the flop to the sentences.
         eye: d['6'] === 'eye',
         // and one opened since word chips says so; older tables pay none
-        chips: d['7'] === 'chips'
+        chips: d['7'] === 'chips',
+        // and one opened since the thread says so (decided by Matthew, 10 November 2026)
+        thread: d['8'] === 'thread'
       };
       t.open.personas = personas.slice(0, t.open.computers);
       t.phase = 'waiting';
@@ -393,7 +395,8 @@
         n: n, place: place, zero: String(d._ || ''), dealAddr: e.addr, active: active,
         steps: { word: newStep('word', active) }, words: {}, voidSeats: {}, out: {}, ring: [], lines: {}, votes: {},
         tally: {}, winners: [], pot: 0, shares: {}, picker: 0, pick: 0, stage: 'word', noRing: false, votesCast: 0, chipsBefore: copy(t.chips),
-        survivors: [], marks: {}, marked: {}, eyeOut: {}, wordChips: {}, banked: false, chosenChips: 0
+        survivors: [], marks: {}, marked: {}, eyeOut: {}, wordChips: {}, banked: false, chosenChips: 0,
+        whys: {}, thread: {}
       };
       t.hands.push(h);
       if (!active.length) h.stage = 'done';
@@ -457,7 +460,8 @@
         var m = d[String(j)];
         if (!m || typeof m !== 'object' || !st.seals[j] || st.shows[j] || st.skipShow[j]) continue;
         st.closed = true;     // sealing ends with the first reveal
-        st.shows[j] = { move: textOf(m), stake: Number(m['2']) || 0, ok: check[String(j)] === st.seals[j].hash, addr: e.addr };
+        st.shows[j] = { move: textOf(m), stake: Number(m['2']) || 0, ok: check[String(j)] === st.seals[j].hash, addr: e.addr,
+          why: typeof m['3'] === 'string' ? m['3'].replace(/\s+/g, ' ').trim().slice(0, 200) : '' };
       }
     }
     advance(t, h2);
@@ -536,6 +540,7 @@
         h.votes[s] = v;
         h.tally[v]++;
         h.votesCast++;
+        if (st.shows[s].why) h.whys[s] = st.shows[s].why;
       });
       var max = Math.max.apply(null, lineSeats.map(function (s) { return h.tally[s]; }));
       var order = function (a, b) {
@@ -546,6 +551,17 @@
       h.winners.forEach(function (s, i) { h.shares[s] = each + (i < odd ? 1 : 0); });
       lineSeats.forEach(function (s) { t.chips[s] -= h.lines[s].stake; });
       h.winners.forEach(function (s) { t.chips[s] += h.shares[s]; });
+      // The thread: 1 chip from the bank, never the pot, to every sentence
+      // that picks up a word from the poem so far, so four hands grow into one poem.
+      if (t.open.thread) {
+        var loose = threadWords(t, h);
+        lineSeats.forEach(function (s) {
+          var hit = picksUp(h.lines[s].line, loose);
+          if (!hit) return;
+          h.thread[s] = hit;
+          t.chips[s] += 1;
+        });
+      }
       h.picker = h.winners[0];
       h.stage = h.n >= HANDS ? 'done' : 'voice';
     }
@@ -590,24 +606,100 @@
     })(tree);
     return found;
   }
+  // ---- the thread -------------------------------------------------------------------
+  // The words of a sentence, as they are counted and matched.
+  function wordsIn(line) { return String(line || '').match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) || []; }
+  // Small words carry no thread: only a word that means something can be picked up.
+  var SMALL = {};
+  ('a about above after again all almost along also always am among an and any are around as at away back be because been before being below ' +
+    'beneath beside between both but by can could did do does doing done down during each either else even ever every for from get gets got had ' +
+    'has have having he her here hers him his how however i if in into is it its just keep keeps kept less let like made make makes many may me ' +
+    'might mine more most much must my near never no nor not now of off on once one only onto or other our ours out over own past per put same ' +
+    'shall she should since so some still such than that the their theirs them then there these they this those though through till to too toward ' +
+    'towards under until up upon us very was we were what when where whether which while who whom whose why will with within without would yet ' +
+    'you your yours two three four five six seven eight nine ten').split(' ').forEach(function (w) { SMALL[w] = true; });
+  function bare(token) { return fold(String(token).replace(/['’]s$/i, '')); }
+  // The loose words of the poem so far: every word of the winning sentences
+  // before this hand that means something, less the words this hand's
+  // sentences are asked to hold anyway (its zero and the words turned at it).
+  function threadWords(t, h) {
+    var mine = [h.zero].concat(Object.keys(h.words).map(function (k) { return h.words[k]; }));
+    var out = [];
+    t.hands.forEach(function (g) {
+      if (g.n >= h.n) return;
+      g.winners.forEach(function (w) {
+        wordsIn(g.lines[w].line).forEach(function (tk) {
+          var b = bare(tk);
+          if (b.length < 3 || SMALL[b] || /^\d+$/.test(b)) return;
+          if (mine.some(function (m) { return same(b, m); })) return;
+          if (!out.some(function (o) { return same(o, b); })) out.push(b);
+        });
+      });
+    });
+    return out;
+  }
+  // The word of a sentence that picks up the thread, as it was written, or ''.
+  function picksUp(line, loose) {
+    if (!loose.length) return '';
+    var tokens = wordsIn(line);
+    for (var i = 0; i < tokens.length; i++) {
+      var b = bare(tokens[i]);
+      if (b.length >= 3 && loose.some(function (o) { return same(o, b); })) return tokens[i];
+    }
+    return '';
+  }
+
   // Each seat's chips at the end, from words and from sentences (spine:zero 4.32).
+  // A chip for the thread is a chip from a sentence, and is counted there.
   function chipsBook(t) {
     var book = {};
     Object.keys(t.roster || {}).forEach(function (k) {
-      var s = Number(k), words = 0, sentences = 0;
+      var s = Number(k), words = 0, sentences = 0, thread = 0;
       t.hands.forEach(function (h) {
         words += (h.wordChips[s] || 0) + (h.pick === s ? h.chosenChips : 0);
-        sentences += (h.shares[s] || 0) - (h.lines[s] ? h.lines[s].stake : 0);
+        sentences += (h.shares[s] || 0) - (h.lines[s] ? h.lines[s].stake : 0) + (h.thread[s] ? 1 : 0);
+        if (h.thread[s]) thread++;
       });
-      book[s] = { words: words, sentences: sentences, total: t.chips[s] };
+      book[s] = { words: words, sentences: sentences, thread: thread, total: t.chips[s] };
     });
     return book;
   }
 
   function poem(t) {
     return t.hands.filter(function (h) { return h.winners.length; }).map(function (h) {
-      return { word: h.zero, digits: h.place, lines: h.winners.map(function (w) { return { line: h.lines[w].line, name: nameOf(t, w), votes: h.tally[w] }; }) };
+      return { word: h.zero, digits: h.place, lines: h.winners.map(function (w) { return { line: h.lines[w].line, name: nameOf(t, w), votes: h.tally[w], thread: h.thread[w] || '' }; }) };
     });
+  }
+
+  // Titles for the end card, each read from what the table already records:
+  // [{title, names, note}]. Boldest: the highest stake a sentence, on average.
+  // Most original: the most words nobody had played anywhere in the tree
+  // before (the bank's own count). Kept the thread: the most sentences that
+  // picked up a word from the poem so far. A title nobody earned is left out.
+  function titles(t) {
+    var seats = Object.keys(t.roster || {}).map(Number).sort(function (a, b) { return a - b; });
+    var out = [];
+    var best = function (title, score, note) {
+      var scored = seats.map(function (s) { return { s: s, v: score(s) }; }).filter(function (x) { return x.v > 0; });
+      if (!scored.length) return;
+      var max = Math.max.apply(null, scored.map(function (x) { return x.v; }));
+      var who = scored.filter(function (x) { return x.v === max; }).map(function (x) { return nameOf(t, x.s); });
+      if (who.length === seats.length && seats.length > 1) return;       // everyone alike: nobody stands out
+      out.push({ title: title, names: who, note: note(max) });
+    };
+    var round = function (x) { return String(Math.round(x * 10) / 10); };
+    best('Boldest', function (s) {
+      var st = [];
+      t.hands.forEach(function (h) { if (h.winners.length && h.lines[s]) st.push(h.lines[s].stake); });
+      return st.length ? st.reduce(function (a, b) { return a + b; }, 0) / st.length : 0;
+    }, function (v) { return 'staked ' + round(v) + ' a sentence'; });
+    best('Most original', function (s) {
+      return t.hands.filter(function (h) { return h.wordChips[s] === 2; }).length;
+    }, function (v) { return v + (v === 1 ? ' word' : ' words') + ' new to the tree'; });
+    best('Kept the thread', function (s) {
+      return t.hands.filter(function (h) { return h.thread[s]; }).length;
+    }, function (v) { return v + (v === 1 ? ' sentence' : ' sentences') + ' picked it up'; });
+    return out;
   }
 
   var api = {
@@ -619,7 +711,8 @@
     entryOf: entryOf, entriesIn: entriesIn, codeKey: codeKey, byAddr: byAddr,
     derive: derive, nameOf: nameOf, isComputer: isComputer, writerOf: writerOf, provisional: provisional,
     waitingSeal: waitingSeal, waitingShow: waitingShow, stepFor: stepFor, nextPlace: nextPlace, poem: poem,
-    stakeable: stakeable, playedBefore: playedBefore, chipsBook: chipsBook
+    stakeable: stakeable, playedBefore: playedBefore, chipsBook: chipsBook,
+    wordsIn: wordsIn, threadWords: threadWords, picksUp: picksUp, titles: titles
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLaw = api;

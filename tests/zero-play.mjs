@@ -20,7 +20,7 @@ const L = require('../zero-look.js');
 
 const PHONE = devices['iPhone 13'];
 const SHOTS = process.env.SHOTS || '';
-const which = (process.argv[2] || 'ABCDEFGIJH').toUpperCase();
+const which = (process.argv[2] || 'ABCDEFGIJHK').toUpperCase();
 
 // ---- Claude, stood in -------------------------------------------------------------------
 const WORDS = {
@@ -34,7 +34,7 @@ const WORDS = {
   'Night nurse': ['ward', 'chart', 'monitor', 'hush', 'lamp', 'pulse']
 };
 const PERSONAS = Object.keys(WORDS);
-const calls = { word: 0, eye: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set(), badWords: [] };
+const calls = { word: 0, eye: 0, line: 0, vote: 0, pick: 0, headersOk: true, models: new Set(), badWords: [], signed: false, voteOptions: [], sawPoem: 0 };
 const BANNED = /\b(ring|holds|lines?)\b/i;          // never on screen, nor in the computer players' instructions (spine:zero 4.23)
 const turns = {};
 async function claudeRoute(route) {
@@ -67,12 +67,16 @@ async function claudeRoute(route) {
     calls.line++;
     const left = /still in after the flop are: ([^.]+)\./.exec(user)[1].split(', ');
     const chips = Number(/You have (\d+) chips/.exec(user)[1]);
+    if (/The poem so far, the winning sentences of the hands before this one:/.test(user) && /earns 1 more chip/.test(user)) calls.sawPoem++;
     out = { sentence: `${left.slice(0, 3).join(' and ')}, as a ${persona.toLowerCase()} sees it.`, stake: Math.min(chips, (pi % 4) + 1) };
-  } else if (/Vote for the sentence that brings the words together best/.test(user)) {
+  } else if (/Vote for one\. Judge only by the craft as the law states it/.test(user)) {
     calls.vote++;
-    const me = Number(/You are seat (\d)/.exec(user)[1]);
-    const seats = [...user.matchAll(/^seat (\d) \(/gm)].map(m => Number(m[1])).filter(s => s !== me);
-    out = { seat: seats[pi % seats.length], why: 'it holds the ring' };
+    // the sentences come unsigned and numbered, in no seat order, with no name anywhere
+    const n = [...user.matchAll(/^(\d+)\. /gm)].length;
+    if (/\bseat \d|\((Matthew|Mira|Ann|Ben|Child|Sailor|Poet|Engineer|Grandmother|Chef|Farmer|Night nurse)\)/.test(user)) calls.signed = true;
+    calls.voteOptions.push(n);
+    // the Poet says it in the old jargon, to see the page put it plainly
+    out = { choice: (pi % n) + 1, why: persona === 'Poet' ? 'this line holds the ring best' : 'it made the words belong, to a ' + persona.toLowerCase() };
   } else {
     calls.pick++;
     const seats = [...user.matchAll(/^seat (\d):/gm)].map(m => Number(m[1]));
@@ -130,9 +134,28 @@ async function earnWhere(p, hand) {
       const e = seat.querySelector('.earn');
       labels[who] = e ? e.textContent : '';
     });
-    return { showdown: /the showdown/.test(ph), picked: / picked /.test(moves), labels };
+    // every word and name on one line, inside its card (a name may reach a little past it)
+    const fits = Array.from(document.querySelectorAll('#t-ring .seat')).every(seat => {
+      const c = seat.querySelector('.card'), w = seat.querySelector('.card .w'), who = seat.querySelector('.who');
+      return (!w || (w.offsetWidth <= c.clientWidth && w.getClientRects().length === 1)) && who.scrollWidth <= who.clientWidth + 1 && who.getBoundingClientRect().height < 24;
+    });
+    const slip = document.querySelector('#t-moves .slip:disabled');
+    const sofar = document.querySelector('#t-moves .sofar');
+    const results = Array.from(document.querySelectorAll('#t-moves .results > .result')).map(r => ({ seat: Number(r.dataset.seat), l: r.querySelector('.l').textContent, by: r.querySelector('.by').textContent,
+      whys: Array.from(r.querySelectorAll('.whys li')).map(li => li.textContent), box: r.tagName === 'DETAILS', open: !!r.open, won: r.classList.contains('won') }));
+    return { showdown: /the showdown/.test(ph), picked: / picked /.test(moves), labels, fits, shown: !!document.querySelector('#t-ring .card .w'), results,
+      sofar: sofar ? { lines: Array.from(sofar.querySelectorAll('.sofar-line')).map(x => x.textContent), hint: /The thread: pick up a word from the poem so far and earn 1 more chip\./.test(sofar.textContent) } : null,
+      slip: slip ? Number(getComputedStyle(slip).opacity) : null, chipsNote: /Word chips: \+1 for a word still standing, \+2 if it is new to the tree\./.test(moves) };
   }).catch(() => null);
-  if (!r || !hand) return;
+  if (!r) return;
+  p.saw = p.saw || {};
+  if (r.shown) p.saw.fits = p.saw.fits !== false && r.fits;
+  if (r.slip != null) p.saw.slip = Math.min(p.saw.slip == null ? 1 : p.saw.slip, r.slip);
+  if (r.chipsNote) p.saw.chipsNote = true;
+  p.saw.results = p.saw.results || {}; p.saw.sofar = p.saw.sofar || {};
+  if (hand && r.results.length && !p.saw.results[hand]) p.saw.results[hand] = r.results;
+  if (hand && r.sofar && !p.saw.sofar[hand]) p.saw.sofar[hand] = r.sofar;
+  if (!hand) return;
   p.earn = p.earn || {}; p.chosen = p.chosen || {};
   if (r.showdown && !p.earn[hand]) p.earn[hand] = r.labels;
   if (r.picked && !p.chosen[hand]) p.chosen[hand] = r.labels;
@@ -177,6 +200,8 @@ async function recordFoot(p) {
   if (!f) return f;
   p.footAt = p.footAt || {};
   if (!(f.screen in p.footAt) || !f.ok) p.footAt[f.screen] = f.ok ? true : f.why;
+  p.typeAt = p.typeAt || {};
+  if (!(f.screen in p.typeAt)) p.typeAt[f.screen] = await typeAt(p.page);
   return f;
 }
 // Every screen a person sees, read for the words that must never appear.
@@ -185,7 +210,7 @@ async function watchWords(p) {
   const hit = await p.page.evaluate((src) => {
     const re = new RegExp(src, 'i');
     let txt = '';
-    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].forEach(id => { const n = document.getElementById(id); if (n && !n.hidden) txt += ' ' + n.innerText; });
+    ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look', 'revote'].forEach(id => { const n = document.getElementById(id); if (n && !n.hidden) txt += ' ' + n.innerText; });
     const m = txt.match(re);
     return m ? m[0] + ' in: …' + txt.slice(Math.max(0, m.index - 60), m.index + 40).replace(/\s+/g, ' ') + '…' : '';
   }, BANNED.source).catch(() => '');
@@ -237,8 +262,14 @@ async function play(p, words, opts = {}) {
         await page.locator('#t-moves form button[type=submit]').click();
       } else if (await visible(page.locator('.slip:not([disabled])'))) {
         p.saw.vote = p.saw.vote || /Vote for the sentence that brings the words together best\. Not your own\./.test(await page.textContent('#t-moves'));
+        // at the vote: every sentence unsigned, no stake shown, in the order of the seals
+        const slips = await page.evaluate(() => ({ lines: Array.from(document.querySelectorAll('#t-moves .slip .l')).map(x => x.textContent),
+          by: Array.from(document.querySelectorAll('#t-moves .slip .by')).map(x => x.textContent), text: document.getElementById('t-moves').innerText }));
+        p.saw.voteOrder = p.saw.voteOrder || {};
+        if (!p.saw.voteOrder[hand]) p.saw.voteOrder[hand] = slips.lines;
+        p.saw.unsigned = p.saw.unsigned !== false && slips.by.every(b => b === 'your sentence') && !/staked/.test(slips.text) && /Unsigned: names and stakes are shown once every vote is in\./.test(slips.text);
         await page.locator('.slip:not([disabled])').nth(opts.voteIndex || 0).click().catch(() => page.locator('.slip:not([disabled])').first().click());
-        await page.getByRole('button', { name: /^Seal vote for/ }).click();
+        await page.getByRole('button', { name: 'Seal vote', exact: true }).click();
       } else if (await visible(page.locator('.picks button:not(.quiet)'))) {
         await page.locator('.picks button:not(.quiet)').first().click();
       } else if (await visible(page.getByRole('button', { name: 'The poem' }))) {
@@ -294,47 +325,118 @@ function keptWords(g) {
   g.rounds.forEach(r => r.words.forEach(w => { if (w.kept && !kept.some(k => Z.same(k, w.word))) kept.push(w.word); }));
   return kept;
 }
+// What this game shows as rows that open (the expansion boxes), checked wherever it is drawn:
+// every reading keeps its heading and one plain line in view, and the rows with more beneath open on a tap.
 async function readingChecks(label, page, where, g) {
-  const R = L.readings(g);
+  const R = L.readings(g), K = L.takes(g, R);
+  const n1 = x => String(Math.round(x * 10) / 10);
+  const state = () => page.evaluate(w => Array.from(document.querySelectorAll(w + ' .look-shows > .look-sec')).map(s => ({
+    key: s.dataset.reading, box: s.tagName === 'DETAILS', open: !!s.open, take: s.querySelector('.look-take').textContent,
+    seen: s.querySelector('.look-take').checkVisibility(), more: s.querySelector('.look-more') && s.querySelector('.look-more').checkVisibility() ? s.querySelector('.look-more').getBoundingClientRect().height : 0 })), where);
+  let rows = await state();
+  check(label + ': every reading shows its heading and one plain line, folded or not', JSON.stringify(rows.map(r => [r.key, r.take])) === JSON.stringify(Object.keys(K).map(k => [k, K[k].text])) && rows.every(r => r.seen),
+    rows.filter(r => !K[r.key] || r.take !== K[r.key].text).map(r => r.key + ': ' + r.take).join(' / ').slice(0, 200));
+  check(label + ': the readings with more beneath are boxes that open; the web stands open, the rest folded', rows.every(r => K[r.key] && r.box === K[r.key].more && r.open === (r.box && r.key === 'votes') && (r.open ? r.more > 0 : r.more === 0)),
+    rows.map(r => r.key + (r.box ? (r.open ? ':open' : ':shut') : ':plain')).join(' '));
+  const shut = rows.find(r => r.box && r.key !== 'votes');
+  if (shut) {
+    const sum = page.locator(`${where} .look-sec[data-reading="${shut.key}"] > summary`), more = page.locator(`${where} .look-sec[data-reading="${shut.key}"] .look-more`);
+    await sum.click();
+    const opened = await more.isVisible();
+    await sum.click();
+    check(label + ': tapping a folded row (' + shut.key + ') opens it, and tapping again folds it', opened && !(await more.isVisible()));
+  }
+  const all = page.locator(where + ' .shows-all');
+  const before = await all.textContent();
+  await all.click();
+  rows = await state();
+  check(label + ': Open all opens every box at once, and then offers Close all', before === 'Open all' && rows.filter(r => r.box).every(r => r.open && r.more > 0) && (await all.textContent()) === 'Close all');
+  await watchWords({ page });       // everything open: read for the words that must never appear
+  const type = await typeAt(page);
+  check(label + ': with everything open the words are large and dark enough to read (none under 12px; quiet text at 4.5 to 1 or better)', typeOk(type), typeSay(type));
   const sec = async k => (await page.textContent(where + ` .look-sec[data-reading="${k}"]`)) || '';
-  const items = k => page.locator(where + ` .look-sec[data-reading="${k}"] li`).allTextContents();
-  const n1 = x => String(Math.round(x * 10) / 10), vw = n => n + (n === 1 ? ' vote' : ' votes');
+  const items = k => page.locator(where + ` .look-sec[data-reading="${k}"] .look-more li`).allTextContents();
+  const cells = k => page.locator(where + ` .look-sec[data-reading="${k}"] tbody tr`).evaluateAll(trs => trs.map(r => Array.from(r.children).map(c => c.textContent)));
   // words new to the tree
   const fresh = await page.locator(where + ' .look-list.fresh .lw').allTextContents();
-  check(label + ': words new to the tree: the words nobody had played anywhere in it before the game', g.fresh.length ? JSON.stringify(fresh) === JSON.stringify(g.fresh.map(x => x.word)) && new RegExp('^Words new to the tree' + (g.fresh.length === keptWords(g).length ? 'All ' + g.fresh.length + ' words' : g.fresh.length + ' of the ' + keptWords(g).length + ' words')).test(await sec('fresh'))
+  check(label + ': words new to the tree: the words nobody had played anywhere in it before the game', g.fresh.length ? JSON.stringify(fresh) === JSON.stringify(g.fresh.map(x => x.word)) && K.fresh.text.startsWith(g.fresh.length === keptWords(g).length ? 'All ' + g.fresh.length + ' words' : g.fresh.length + ' of the ' + keptWords(g).length + ' words')
     : /had been played in it before|put no word/.test(await sec('fresh')), fresh.length + ' new: ' + fresh.slice(0, 6).join(', '));
-  // people or computer
-  const pc = R.pc, one = pc.people.length === 1 ? pc.people[0] : '';
-  const pcWant = !pc.computers ? 'Everyone at this table was a person: all ' + vw(pc.pp) + ' went from people to people.'
-    : one ? one + ', the only person at the table, gave ' + vw(pc.pc) + ' to computer players. Computer players gave ' + one + ' ' + pc.cp + ' of their ' + vw(pc.cp + pc.cc) + '.'
-      : 'People gave ' + vw(pc.pp) + ' to people and ' + pc.pc + ' to computer players. Computer players gave ' + pc.cp + ' of their ' + vw(pc.cp + pc.cc) + ' to people.';
-  check(label + ': people or computer, counted from the votes', (await sec('pc')) === 'People or computer' + pcWant, (await sec('pc')).slice(18));
   // who listens to whom
   const ls = await sec('listens');
   check(label + ': who listens to whom: the pairs who voted for each other, and anyone with no votes', R.listens.pairs.every(p => ls.includes(p.join(' and '))) &&
+    (R.listens.pairs.length < 2 || JSON.stringify(await items('listens')) === JSON.stringify(R.listens.pairs.map(p => p.join(' and ')))) &&
     (R.listens.pairs.length || /No two players voted for each other/.test(ls)) && (R.listens.unvoted.length ? R.listens.unvoted.every(n => ls.includes(n)) && /Nobody voted for/.test(ls) : /Everyone received a vote/.test(ls)), ls.slice(19, 160));
-  // bold or careful
-  const bold = await items('bold');
-  check(label + ': bold or careful: each player\'s stakes beside how their sentences did', bold.length === R.bold.length &&
-    R.bold.every((b, i) => bold[i].startsWith(b.name + ' · staked ' + b.stakes.join(', ')) && bold[i].endsWith(b.won ? 'won ' + b.won + ' of ' + b.stakes.length : 'won none')), bold.slice(0, 2).join(' / '));
+  // bold or careful, as a small table
+  const bold = await cells('bold');
+  check(label + ': bold or careful: each player\'s stakes beside the votes their sentences drew, in a small table', JSON.stringify(bold) === JSON.stringify(R.bold.map(b => [b.name, b.stakes.join(', '), b.votes.join(', '), b.won ? b.won + ' of ' + b.stakes.length : 'none'])), JSON.stringify(bold.slice(0, 2)));
   // the table's eye
   const eye = await sec('eye');
   const places = new Set(R.eye.marked.map(m => m.place)).size;
   check(label + ': the table\'s eye: whose words were marked, and who marked most', !R.eye.hands ? /before the table’s eye/.test(eye)
     : !R.eye.marked.length ? /Nobody marked a word/.test(eye)
       : (await items('eye')).length === places && R.eye.most.every(n => eye.includes(n)) && /marked most/.test(eye) && R.eye.marked.every(m => eye.includes(m.word + ' (' + m.name + ', ' + m.n + (m.n === 1 ? ' mark' : ' marks'))), eye.slice(16, 200));
-  // short wins
-  const sh = await sec('short');
-  check(label + ': short wins: the winning sentences\' length beside the rest, and each player\'s average', sh.includes(n1(R.short.won) + ' words on average') && (!R.short.restN || sh.includes('the rest had ' + n1(R.short.rest) + '.')) &&
-    R.short.each.every(e => sh.includes(e.name + ' ' + n1(e.avg))), sh.slice(10, 160));
+  // short wins, each player's average as a bar
+  const bars = await page.locator(where + ' .look-bars li').evaluateAll(lis => lis.map(li => [li.querySelector('.bn').textContent, li.querySelector('.bv').textContent, li.querySelector('.bar i').getBoundingClientRect().width]));
+  const widest = Math.max(...bars.map(b => b[2]), 0);
+  check(label + ': short wins: the winning sentences\' length beside the rest, and each player\'s average as a bar, shortest first', K.short.text.includes(n1(R.short.won)) && (!R.short.restN || K.short.text.includes('the rest, ' + n1(R.short.rest) + '.')) &&
+    JSON.stringify(bars.map(b => b.slice(0, 2))) === JSON.stringify(R.short.each.map(e => [e.name, n1(e.avg)])) && bars.every((b, k) => !k || b[2] >= bars[k - 1][2] - 1) && (!bars.length || widest > 40), K.short.text);
   // words that travelled
   const tr = await items('travelled');
-  check(label + ': words that travelled: from one hand back in a later one', R.travelled.length ? tr.length === R.travelled.length && R.travelled.every((x, i) => tr[i].startsWith(x.word + ' (')) : /No word from one hand came back/.test(await sec('travelled')), tr.slice(0, 2).join(' / ') || 'none');
+  check(label + ': words that travelled: from one hand back in a later one', R.travelled.length ? tr.length === R.travelled.length && R.travelled.every((x, k) => tr[k].startsWith(x.word + ' (')) : /No word from one hand came back/.test(await sec('travelled')), tr.slice(0, 2).join(' / ') || 'none');
+  // the thread: who picked up which word
+  if (g.threaded) {
+    const want = [];
+    g.rounds.forEach(r => r.lines.forEach(l => { if (l.thread) want.push(l.thread); }));
+    const got = await page.locator(where + ' .look-list.threads .lw').allTextContents();
+    check(label + ': the thread: every word a sentence picked up from the poem before it', want.length ? JSON.stringify(got) === JSON.stringify(want) : /No sentence picked up a word/.test(await sec('thread')), got.slice(0, 5).join(', ') || 'none');
+  }
   // where the trail went
   const stops = await page.locator(where + ' .look-sec[data-reading="trail"] svg.trail-map circle.tm-stop').count();
   const words = await page.locator(where + ' .look-sec[data-reading="trail"] svg.trail-map text').allTextContents();
-  check(label + ': where the trail went: the centre words drawn as a path', stops === R.trail.length && JSON.stringify(words) === JSON.stringify(R.trail.map(x => x.word)) && (R.trail.length < 2 || (await page.locator(where + ' .trail-path').count()) === 1), words.join(' → '));
+  check(label + ': where the trail went: the centre words drawn as a path', R.trail.length < 2 ? /The game stayed at/.test(await sec('trail'))
+    : stops === R.trail.length && JSON.stringify(words) === JSON.stringify(R.trail.map(x => x.word)) && (await page.locator(where + ' .trail-path').count()) === 1, words.join(' → '));
+  await all.click();
+  rows = await state();
+  check(label + ': Close all folds them again', rows.every(r => !r.open) && (await all.textContent()) === 'Open all');
+  if (rows.some(r => r.key === 'votes' && r.box)) await page.locator(where + ' .look-sec[data-reading="votes"] > summary').click();   // as it was found
 }
+
+// How the words on the screen now showing can be read (asked for by Matthew, 10 November 2026:
+// darker and larger on a phone): the smallest text, and the faintest against the paper. Text in a
+// disabled button, or on a seat out of the hand, is dimmed on purpose and counted apart.
+async function typeAt(page) {
+  return page.evaluate(() => {
+    const on = ['lobby', 'invited', 'waiting', 'table', 'end', 'trailview', 'look'].find(id => !document.getElementById(id).hidden);
+    if (!on) return null;
+    const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+    const lum = c => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+    const PAPER = [250, 245, 234];
+    let small = { px: 99, text: '' }, faint = { ratio: 99, text: '' }, dim = { ratio: 99, text: '' };
+    [document.getElementById(on), document.getElementById('foot'), document.querySelector('footer.foot')].forEach(root => {
+      const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+        const text = n.nodeValue.trim(), el = n.parentElement;
+        if (!text || !el.getClientRects().length || !el.checkVisibility() || el.closest('.visually-hidden, .inked')) continue;   // folded or hidden: not on the screen
+        const cs = getComputedStyle(el), svg = el.closest('svg');
+        if (cs.visibility === 'hidden') continue;
+        let px = parseFloat(cs.fontSize);
+        if (svg && svg.viewBox.baseVal.width) px *= svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+        if (px < small.px) small = { px: Math.round(px * 10) / 10, text: text.slice(0, 40) };
+        const m = ((svg ? cs.fill : cs.color).match(/[\d.]+/g) || []).map(Number);
+        let a = m.length > 3 ? m[3] : 1;
+        for (let e = el; e && e !== document.body; e = e.parentElement) a *= parseFloat(getComputedStyle(e).opacity);
+        const mix = m.slice(0, 3).map((c, k) => c * a + PAPER[k] * (1 - a));
+        const l1 = lum(PAPER), l2 = lum(mix), ratio = Math.round(100 * (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) / 100;
+        if (el.closest('button:disabled, .seat.out')) { if (ratio < dim.ratio) dim = { ratio, text: text.slice(0, 40) }; }
+        else if (ratio < faint.ratio) faint = { ratio, text: text.slice(0, 40) };
+      }
+    });
+    const body = getComputedStyle(document.body);
+    return { screen: on, body: parseFloat(body.fontSize), weight: body.fontWeight, small, faint, dim };
+  }).catch(() => null);
+}
+const typeOk = t => !!t && t.small.px >= 12 && t.faint.ratio >= 4.5 && t.dim.ratio >= 2.5;
+const typeSay = t => t ? `smallest ${t.small.px}px "${t.small.text}", faintest ${t.faint.ratio} "${t.faint.text}", dimmed ${t.dim.ratio} "${t.dim.text}"` : 'no screen';
 
 async function endChecks(label, beach, page, people) {
   const code = (await page.evaluate(() => JSON.parse(localStorage.getItem('zero.table') || '{}').code));
@@ -343,15 +445,24 @@ async function endChecks(label, beach, page, people) {
   check(label + ': no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 3).join(' / '));
   check(label + ': four hands played to the end', t.over && t.hands.length === 4, `hands ${t.hands.length}, phase ${t.phase}`);
   const chips = Object.values(t.chips).reduce((a, b) => a + b, 0), seats = Object.keys(t.roster).length;
-  const book = Z.chipsBook(t), paid = Object.values(book).reduce((a, b) => a + b.words, 0);
-  check(label + ': chips add up: 10 a seat, and the word chips the bank paid (' + (10 * seats + paid) + ')', chips === 10 * seats + paid && paid > 0 &&
-    Object.values(book).every(b => b.total === 10 + b.words + b.sentences), 'total ' + chips + ', words ' + paid);
+  const book = Z.chipsBook(t), paid = Object.values(book).reduce((a, b) => a + b.words, 0), threads = Object.values(book).reduce((a, b) => a + b.thread, 0);
+  check(label + ': chips add up: 10 a seat, the word chips the bank paid, and its chips for the thread (' + (10 * seats + paid + threads) + ')', chips === 10 * seats + paid + threads && paid > 0 &&
+    Object.values(book).every(b => b.total === 10 + b.words + b.sentences), 'total ' + chips + ', words ' + paid + ', thread ' + threads);
+  check(label + ': the thread is paid only from hand two on, 1 chip a sentence, only where the sentence carries a word of the poem before it', t.open.thread && !Object.keys(t.hands[0].thread).length &&
+    t.hands.every(h => Object.keys(h.thread).every(k => h.lines[k] && Z.picksUp(h.lines[k].line, Z.threadWords(t, h)) === h.thread[k])), JSON.stringify(t.hands.map(h => h.thread)));
   check(label + ': only words still standing after the flop and the eye were paid, each 1 or 2, and the chosen word 2 more', t.hands.every(h =>
     Object.keys(h.wordChips).every(s => h.ring.includes(Number(s)) && [1, 2].includes(h.wordChips[s])) && (!h.ring.length || h.noRing || h.banked) &&
     (h.pick ? h.chosenChips === 2 : h.chosenChips === 0)));
-  const rows = await page.locator('#e-poem .book li').evaluateAll(n => n.map(li => [li.querySelector('.bn').textContent, li.querySelector('.bw').textContent, li.querySelector('.bt').textContent]));
-  const want = Object.keys(t.roster).map(Number).sort((a, b) => a - b).map(s => [Z.nameOf(t, s), book[s].words + ' from words · ' + (book[s].sentences < 0 ? '−' + (-book[s].sentences) : book[s].sentences) + ' from sentences', String(book[s].total)]);
-  check(label + ': the end card lists each player\'s chips from words beside their chips from sentences', JSON.stringify(rows) === JSON.stringify(want), JSON.stringify(rows.slice(0, 2)));
+  const rows = await page.locator('#e-poem .book tbody tr').evaluateAll(trs => trs.map(r => Array.from(r.children).map(c => c.textContent)));
+  const want = Object.keys(t.roster).map(Number).sort((a, b) => a - b).map(s => [Z.nameOf(t, s), String(book[s].words), book[s].sentences < 0 ? '−' + (-book[s].sentences) : String(book[s].sentences), String(book[s].total)]);
+  check(label + ': the end card lists each player\'s chips from words beside their chips from sentences, a line each, under words, sentences and chips', JSON.stringify(rows) === JSON.stringify(want) &&
+    JSON.stringify(await page.locator('#e-poem .book thead th').allTextContents()) === JSON.stringify(['', 'words', 'sentences', 'chips']), JSON.stringify(rows.slice(0, 2)));
+  const titles = await page.locator('#e-poem .titles li').evaluateAll(lis => lis.map(li => Array.from(li.children).map(c => c.textContent)));
+  const wantTitles = Z.titles(t).map(x => [x.title, x.names.length <= 1 ? x.names.join('') : x.names.slice(0, -1).join(', ') + ' and ' + x.names[x.names.length - 1], x.note]);
+  check(label + ': the end card carries the titles earned (of Boldest, Most original, Kept the thread), each from the record; a title nobody stands out for is left out', JSON.stringify(titles) === JSON.stringify(wantTitles) && wantTitles.length >= 1 &&
+    wantTitles.every(x => ['Boldest', 'Most original', 'Kept the thread'].includes(x[0])), JSON.stringify(titles));
+  const marked = await page.locator('#e-poem .pline em.thread').allTextContents();
+  check(label + ': in the poem, a winning sentence\'s word picked up from the poem before it is marked', JSON.stringify(marked) === JSON.stringify(Z.poem(t).flatMap(pl => pl.lines.map(l => l.thread).filter(Boolean))), marked.join(', ') || 'none');
   await page.waitForSelector('#e-shows .look-shows');
   const place = await page.evaluate(() => {
     const poem = document.getElementById('e-poem').getBoundingClientRect(), sh = document.getElementById('e-shows').getBoundingClientRect(), btn = document.querySelector('#end .three').getBoundingClientRect();
@@ -361,15 +472,15 @@ async function endChecks(label, beach, page, people) {
   });
   check(label + ': at the end, What this game shows sits beneath the poem card and above its buttons, open by default', place.below && place.above && place.open, JSON.stringify(place));
   const HEADS = ['Who voted for whom', 'Where two players thought the same', 'Words new to the tree', 'Words the table sent out', 'Chips from words and from sentences',
-    'People or computer', 'Who listens to whom', 'Bold or careful', 'The table’s eye', 'Short wins', 'Words that travelled', 'Where the trail went'];
+    'People or computer', 'Who listens to whom', 'Bold or careful', 'The table’s eye', 'Short wins', 'Words that travelled', 'The thread', 'Where the trail went'];
   check(label + ': with every reading of 4.91 in order: the web, the words alike, words new to the tree, sent out, chips, and the seven new ones', JSON.stringify(place.heads) === JSON.stringify(HEADS), place.heads.join(' | '));
   const g = L.tableGame(t);
   const pairs = new Set(g.votes.map(v => v.from + '>' + v.to)).size;
   check(label + ': the web draws every voter\'s choice, and the words alike and sent out match the record', (await page.locator('#e-shows svg.web path.edge').count()) === pairs &&
     (g.same.length ? (await page.locator('#e-shows .look-list.same li').count()) === g.same.length : /Nobody thought the same/.test(await page.textContent('#e-shows'))) &&
     (g.sentOut.length ? (await page.locator('#e-shows .look-list.sent li').count()) === g.sentOut.length : /The table sent no word out/.test(await page.textContent('#e-shows'))), pairs + ' pairs, ' + g.same.length + ' alike, ' + g.sentOut.length + ' sent out');
-  const chipRows = await page.locator('#e-shows .look-list.chips li').allTextContents();
-  check(label + ': and each player\'s chips there match the book', chipRows.length === g.book.length && g.book.every((b, i) => chipRows[i].startsWith(b.name + ' · ' + b.words + ' from words · ') && chipRows[i].endsWith('· ' + b.total)), chipRows.slice(0, 2).join(' / '));
+  const chipRows = await page.locator('#e-shows .look-table.chips tbody tr').evaluateAll(trs => trs.map(r => Array.from(r.children).map(c => c.textContent)));
+  check(label + ': and each player\'s chips there, in a small table, match the book', JSON.stringify(chipRows) === JSON.stringify(g.book.map(b => [b.name, String(b.words), b.sentences < 0 ? '−' + (-b.sentences) : String(b.sentences), String(b.total)])), JSON.stringify(chipRows.slice(0, 2)));
   await webChecks(label, page, '#e-shows', g);
   // words new to the tree: the page reads the tree and the room once, then fills it in
   await page.waitForFunction(() => { const s = document.querySelector('#e-shows .look-sec[data-reading="fresh"]'); return s && !/Reading the tree/.test(s.textContent); }, null, { timeout: 30000 });
@@ -510,10 +621,39 @@ async function tableA(browser, base, beach) {
   const t = await endChecks('A', beach, page, ['Matthew']);
   check('A: the turn says "Write a short sentence that brings all these words together."', host.saw.turn);
   check('A: the vote says "Vote for the sentence that brings the words together best. Not your own."', host.saw.vote);
+  const voteSeen = Object.keys(host.saw.voteOrder || {}).map(Number);
+  check('A: at the vote every sentence is unsigned and no stake is shown, until every vote is in', host.saw.unsigned === true && voteSeen.length >= 3);
+  check('A: and they stand in the order of their seals, which no seat can be read from', voteSeen.every(n => {
+    const h = t.hands[n - 1], st = h.steps.line;
+    const order = Object.keys(h.lines).map(Number).sort((a, b) => st.seals[a].hash < st.seals[b].hash ? -1 : st.seals[a].hash > st.seals[b].hash ? 1 : a - b);
+    return JSON.stringify(host.saw.voteOrder[n]) === JSON.stringify(order.map(s => h.lines[s].line));
+  }), JSON.stringify(host.saw.voteOrder[voteSeen[0]]));
+  check('A: computer players are given the sentences unsigned and numbered, with no name or seat anywhere', !calls.signed && calls.voteOptions.length >= 8 && calls.voteOptions.every(n => n >= 1));
+  const nm = s => Z.nameOf(t, s);
+  const rowsOk = n => {
+    const h = t.hands[n - 1], got = host.saw.results[n];
+    const want = Object.keys(h.lines).map(Number).sort((a, b) => (h.tally[b] - h.tally[a]) || (a - b)).map(s => {
+      const voters = Object.keys(h.votes).map(Number).filter(v => h.votes[v] === s).sort((a, b) => a - b);
+      return { seat: s, l: h.lines[s].line, by: nm(s) + ' · staked ' + h.lines[s].stake + ' · ' + h.tally[s] + (h.tally[s] === 1 ? ' vote' : ' votes') + (h.thread[s] ? ' · +1 the thread' : ''),
+        whys: voters.map(v => nm(v) + (h.whys[v] ? ': ' + h.whys[v] : ' voted for it.')).concat(h.thread[s] ? ['Picked up “' + h.thread[s] + '” from the poem so far: 1 chip from the bank.'] : []),
+        box: voters.length > 0 || !!h.thread[s], open: (voters.length > 0 || !!h.thread[s]) && (h.winners.includes(s) || s === 1), won: h.winners.includes(s) };
+    });
+    return JSON.stringify(got) === JSON.stringify(want);
+  };
+  const resSeen = Object.keys(host.saw.results || {}).map(Number);
+  check('A: once every vote is in, each sentence is signed, with its stake, its votes, who voted for it and why; the winner\'s row stands open', resSeen.length >= 3 && resSeen.every(rowsOk),
+    JSON.stringify((host.saw.results[resSeen.find(n => !rowsOk(n))] || []).slice(0, 2)).slice(0, 400));
+  const said = resSeen.flatMap(n => host.saw.results[n].flatMap(r => r.whys));
+  check('A: a computer player\'s reason is shown in the page\'s plain words (a sentence, the words; never the old jargon)', said.includes('Poet: this sentence keeps the words best') && said.some(x => /^Chef: it made the words belong, to a chef$/.test(x)), said.filter(x => /^Poet/.test(x))[0]);
+  const soSeen = Object.keys(host.saw.sofar || {}).map(Number);
+  check('A: from hand two, the turn shows the poem so far and says the thread earns 1 more chip; hand one has neither', soSeen.length >= 1 && !soSeen.includes(1) &&
+    soSeen.every(n => host.saw.sofar[n].hint && JSON.stringify(host.saw.sofar[n].lines) === JSON.stringify(t.hands.slice(0, n - 1).flatMap(h => h.winners.map(w => h.lines[w].line)))), JSON.stringify(host.saw.sofar));
+  check('A: the computer players are shown the poem so far too, and told of the thread', calls.sawPoem >= 8, String(calls.sawPoem));
+  check('A: the thread was paid: some sentence after hand one picked up a word', t.hands.slice(1).some(h => Object.keys(h.thread).length > 0), JSON.stringify(t.hands.map(h => h.thread)));
   check('A: the table\'s eye asks "Does any word not belong under …? Tap one, or tap Skip."', host.saw.eye);
-  const label = (h, s) => h.wordChips[s] === 2 ? '+2 · never played before' : h.wordChips[s] === 1 ? '+1' : '';
+  const label = (h, s) => h.wordChips[s] === 2 ? '+2 · new' : h.wordChips[s] === 1 ? '+1' : '';
   const seen = Object.keys(host.earn || {}).map(Number);
-  check('A: at the showdown every card shows its word chips: +1, or +2 · never played before, and nothing for a word out', seen.length >= 3 &&
+  check('A: at the showdown every card shows its word chips: +1, or +2 · new, and nothing for a word out', seen.length >= 3 &&
     seen.every(n => { const h = t.hands[n - 1]; return Object.keys(t.roster).every(s => host.earn[n][Z.nameOf(t, Number(s))] === label(h, Number(s))); }), JSON.stringify(host.earn && host.earn[seen[0]]));
   const chosenSeen = Object.keys(host.chosen || {}).map(Number);
   check('A: the card of the word chosen as the next zero shows +2 · chosen', chosenSeen.length >= 1 &&
@@ -524,6 +664,10 @@ async function tableA(browser, base, beach) {
   check('A: the turn lets a seat stake its word chips too', stakes.length >= 1 && stakes.every(n => host.stakeMax[n] === Z.stakeable(t.hands[n - 1], 1)), JSON.stringify(host.stakeMax));
   const screens = ['seats', 'the flop', 'the eye', 'the turn', 'the showdown', 'the voice'];
   check('A: every game screen has the foot of 4.24: who is at this phone, Back to the lobby, Close the game, the credits', screens.every(x => host.footAt[x] === true), JSON.stringify(host.footAt));
+  check('A: every game screen can be read on a phone: no text under 12px, and quiet text at 4.5 to 1 or better', screens.every(x => typeOk(host.typeAt[x])), screens.filter(x => !typeOk(host.typeAt[x])).map(x => x + ': ' + typeSay(host.typeAt[x])).join(' | '));
+  check('A: round the table every word and name sits on one line, fitted to its card', host.saw.fits === true);
+  check('A: sentences that cannot be chosen are never faded: they are still there to be read', host.saw.slip === 1, String(host.saw.slip));
+  check('A: the turn says once what the labels on the cards mean: +1 for a word still standing, +2 if it is new to the tree', host.saw.chipsNote === true);
   const h2 = t.hands[1];
   check('A: the computer players sent out the word that did not belong (spreadsheet), by more than half the seats', h2.eyeOut[1] === true && h2.marked[1] > 4.5, JSON.stringify({ words: h2.words, marked: h2.marked }));
   check('A: and marked honestly otherwise: no other word was marked in any hand', t.hands.every(h => Object.keys(h.marked).every(k => h.words[k] === 'spreadsheet')));
@@ -743,9 +887,20 @@ async function tableH(browser, base, beach) {
   const cards = await page.locator('#look .look-card').count();
   check('H: every game played has its poem card', cards === gs.length && gs.length >= 2, cards + ' cards, ' + gs.length + ' games');
   check('H: newest first', (await page.locator('#look .look-card').first().getAttribute('data-game')) === (gs[0].code || gs[0].hands[0]));
+  const folded = await page.evaluate(() => Array.from(document.querySelectorAll('#look .look-card')).map(c => ({ open: c.open, head: c.querySelector('summary').innerText.replace(/\s+/g, ' ').trim(), body: !!c.querySelector('.card-body') })));
+  check('H: the newest game stands open; the others are folded to their heads (date, trail, who sat), drawn only when opened', folded[0].open && folded[0].body && folded.slice(1).every(c => !c.open && !c.body) &&
+    folded.every((c, k) => c.head.startsWith('a game of Zero') && c.head.includes(gs[k].places.map(x => x.word.charAt(0).toUpperCase() + x.word.slice(1)).filter((w, n, a) => a.indexOf(w) === n).join(' · ')) && c.head.includes(gs[k].people.length + ' at the table')), JSON.stringify(folded).slice(0, 300));
+  const tall = await page.evaluate(() => ({ screens: document.documentElement.scrollHeight / window.innerHeight,
+    heads: Array.from(document.querySelectorAll('#look .look-card:not([open])')).map(c => c.getBoundingClientRect().height / window.innerHeight) }));
+  check('H: folded, each older game takes under a quarter of a screen, so a long list of games is a short scroll', tall.heads.length === cards - 1 && tall.heads.every(h => h > 0 && h < 0.25),
+    cards + ' games in ' + tall.screens.toFixed(1) + ' screens; a folded game ' + Math.max(...tall.heads).toFixed(2) + ' of a screen at most');
+  const type = await typeAt(page);
+  check('H: Look around can be read on a phone: no text under 12px, quiet text at 4.5 to 1 or better', typeOk(type), typeSay(type));
+  while (await page.locator('#look .look-card:not([open])').count()) await page.locator('#look .look-card:not([open]) > summary').first().click();
+  check('H: a tap on a folded game opens it', (await page.locator('#look .look-card[open] .card-body').count()) === cards);
   const kite = page.locator('#look .look-card[data-game="KITE 1"]');
   check('H: KITE 1 shows its date and who sat down', /a game of Zero · 8 November 2026/.test(await kite.locator('.top').textContent()) && /Phenomemental · Engineer/.test(await kite.locator('.sat').textContent()));
-  check('H: What this game shows is open by default on every card', (await page.locator('#look .look-card .look-shows:not([hidden])').count()) === cards &&
+  check('H: What this game shows is open by default on every card, once the card is open', (await page.locator('#look .look-card .look-shows:not([hidden])').count()) === cards &&
     (await page.locator('#look .look-card .look-open[aria-expanded="true"]').count()) === cards);
   const kg = gs.find(g => g.code === 'KITE 1');
   const pairs = new Set(kg.votes.map(v => v.from + '>' + v.to)).size;
@@ -762,7 +917,7 @@ async function tableH(browser, base, beach) {
     const where = `#look .look-card[data-game="${key}"]`;
     const heads = await page.locator(where + ' .look-h').allTextContents();
     const want = ['Who voted for whom', 'Where two players thought the same', 'Words new to the tree'].concat(g.kind === 'table' ? ['Words the table sent out', 'Chips from words and from sentences'] : [],
-      ['People or computer', 'Who listens to whom', 'Bold or careful', 'The table’s eye', 'Short wins', 'Words that travelled', 'Where the trail went']);
+      ['People or computer', 'Who listens to whom', 'Bold or careful', 'The table’s eye', 'Short wins', 'Words that travelled'], g.threaded ? ['The thread'] : [], ['Where the trail went']);
     check('H: ' + key + ' shows every reading, in order', JSON.stringify(heads) === JSON.stringify(want), heads.join(' | '));
     if (g.votes.length) await webChecks('H: ' + key, page, where, g);
     await readingChecks('H: ' + key, page, where, g);
@@ -778,16 +933,16 @@ async function tableH(browser, base, beach) {
   check('H: Happening: Davido marked most, once a hand; Phenomemental and Davido voted for each other', /Davido marked most: 4 words in 4 hands\./.test(await reads('TIDE 3', 'eye')) && /Phenomemental and Davido/.test(await reads('TIDE 3', 'listens')));
   check('H: Happening: ward, Vigil and Monitor are not new to the tree (the first game had them); Kettle and Oscilloscope are', !(await page.locator('#look .look-card[data-game="TIDE 3"] .look-list.fresh .lw').allTextContents()).some(w => /^(ward|Vigil|Monitor)$/.test(w)) &&
     /Kettle/.test(await reads('TIDE 3', 'fresh')) && /Oscilloscope/.test(await reads('TIDE 3', 'fresh')));
-  check('H: the first game\'s stakes, read from its prose: Phenomemental staked 5, 5 and 13, and won 1 of 3', /Phenomemental · staked 5, 5, 13 · votes 1, 2, 1 · won 1 of 3/.test(await reads('1', 'bold')));
+  check('H: the first game\'s stakes, read from its prose: Phenomemental staked 5, 5 and 13, and won 1 of 3', (await page.locator('#look .look-card[data-game="1"] .look-table.bold tbody tr').evaluateAll(trs => trs.map(r => Array.from(r.children).map(c => c.textContent).join(' | ')))).includes('Phenomemental | 5, 5, 13 | 1, 2, 1 | 1 of 3'));
   check('H: the first game\'s trail: Light, candle, vigil, silence', JSON.stringify(await page.locator('#look .look-card[data-game="1"] .trail-map text').allTextContents()) === JSON.stringify(['Light', 'candle', 'vigil', 'silence']));
   await shot(page, 'h-kite');
   const first = page.locator('#look .look-card[data-game="1"]');
   for (const [code, out] of [['RAIN 6', ['Torque', 'infirmary']], ['TIDE 3', ['stubble']]]) {
     const c = page.locator(`#look .look-card[data-game="${code}"]`);
     check('H: ' + code + ' (played on the page tonight) shows its web, its words alike, and the words the table sent out', (await c.locator('svg.web path.edge').count()) > 0 &&
-      JSON.stringify(await c.locator('.look-list.sent .lw').allTextContents()) === JSON.stringify(out) && (await c.locator('.look-list.chips li').count()) === 9, code);
+      JSON.stringify(await c.locator('.look-list.sent .lw').allTextContents()) === JSON.stringify(out) && (await c.locator('.look-table.chips tbody tr').count()) === 9, code);
   }
-  check('H: the first game, played in chat, keeps no chips or marks, so shows neither', (await first.locator('.look-list.chips').count()) === 0);
+  check('H: the first game, played in chat, keeps no chips or marks, so shows neither', (await first.locator('.look-table.chips').count()) === 0);
   check('H: the first game, played in chat, has its votes read from its record (27)', sum(await first.locator('.votes-said').textContent()) === 27);
   check('H: and its matches: birthday, watch, snow', /birthday · Child and Phenomemental/.test(await first.locator('.look-list.same').textContent()) && /snow · Grandmother and Farmer/.test(await first.locator('.look-list.same').textContent()));
   const rows = L.across(tree, gs);
@@ -890,7 +1045,51 @@ async function tableJ(browser, base, beach) {
   await foot(p, 'a trail read on its own: the same foot', 'trailview');
   await page.click('#f-back');
   check('J: Back to the lobby from a trail', await page.locator('#lobby').isVisible() && !/trail=/.test(page.url()));
+  const typed = Object.keys(p.typeAt || {});
+  check('J: every screen walked can be read on a phone: no text under 12px, quiet text at 4.5 to 1 or better', typed.length >= 8 && typed.every(k => typeOk(p.typeAt[k])), typed.filter(k => !typeOk(p.typeAt[k])).map(k => k + ': ' + typeSay(p.typeAt[k])).join(' | ') || typed.join(', '));
+  const body = p.typeAt[typed[0]];
+  check('J: on a phone the words are set larger and a weight heavier than before (20px or more, medium; they were 18.4px, regular)', body && body.body >= 20 && body.weight === '500', body && body.body + 'px, ' + body.weight);
   check('J: no page errors', !p.errors.length, p.errors.join(' / '));
+  await p.ctx.close();
+}
+
+// Vote again (zero.html?revote=1): the computer players vote again on games already played, by the law as it stands.
+async function tableK(browser, base, beach) {
+  console.log('K. Vote again: a check on the computer players\' judgement, never a game');
+  const p = await phone(browser, base + '&revote=1');
+  const { page } = p;
+  await page.waitForSelector('#revote:not([hidden])');
+  const writesBefore = beach.log.length, votesBefore = calls.vote;
+  check('K: the check has its own address, says what it is, and shows the craft it will judge by', /A check, not a game\./.test(await page.textContent('#revote')) && /Nothing is written to the beach\./.test(await page.textContent('#revote')));
+  await page.waitForFunction(() => /^The craft:/.test(document.getElementById('rv-law').textContent), null, { timeout: 15000 });
+  check('K: the craft is read from the law on the beach', (await page.textContent('#rv-law')) === Z.textOf(beach.blocks['function:zero']['8']), await page.textContent('#rv-law'));
+  check('K: with no key on this phone, it asks for one, kept in this browser only', await page.locator('#rv-key-part').isVisible() && /Kept in this browser only, never written to the beach\./.test(await page.textContent('#rv-key-part')));
+  await page.fill('#rv-key', 'sk-ant-test');
+  await page.click('#rv-go');
+  await page.waitForSelector('#rv-out .rv-total', { timeout: 120000 });
+  // what the record says: every computer vote in a hand where a person had a sentence on the table
+  const all = Z.entriesIn(beach.blocks['pool:zero'], '', floorOf(beach.blocks['pool:zero'])).sort(Z.byAddr);
+  const tables = await L.tables(all);
+  let jobs = 0, then = 0;
+  tables.forEach(t => t.hands.forEach(h => {
+    if (!h.winners.length || !Object.keys(h.lines).some(s => !Z.isComputer(t, Number(s)))) return;
+    Object.keys(h.votes).map(Number).filter(s => Z.isComputer(t, s)).forEach(s => { jobs++; if (!Z.isComputer(t, h.votes[s])) then++; });
+  }));
+  const total = await page.textContent('#rv-out .rv-total');
+  const m = /^Computer players gave people (\d+) of (\d+) votes when these games were played, and (\d+) of (\d+) voting again now\.$/.exec(total) || [];
+  check('K: it counts the computer players\' votes for people then, from the record, and now (' + jobs + ' votes in hands where a person had a sentence)', Number(m[1]) === then && Number(m[2]) === jobs && Number(m[4]) === jobs && Number(m[3]) >= 0 && Number(m[3]) <= jobs && jobs >= 60, total);
+  check('K: every one of those votes was asked again, unsigned', calls.vote - votesBefore === jobs && !calls.signed, (calls.vote - votesBefore) + ' asked');
+  const games = await page.locator('#rv-out .rv-games li').allTextContents();
+  check('K: game by game, then and now', games.length >= 3 && games.every(x => /^\S.* · \d+ of \d+ then · \d+ of \d+ now$/.test(x)) && games.some(x => /^Gift · 0 of 32 then/.test(x)), games.join(' / '));
+  const rows = await page.locator('#rv-out .results .result').evaluateAll(rs => rs.map(r => ({ by: r.querySelector('.by').textContent, why: r.querySelector('.whys li').textContent })));
+  const people = new Set(tables.flatMap(t => Object.keys(t.roster).map(Number).filter(s => !Z.isComputer(t, s)).map(s => Z.nameOf(t, s))));
+  check('K: each vote that now goes to a person is listed with whose sentence it was and the reason given', rows.length === Number(m[3]) && rows.every(r => people.has(r.by.split(' · ')[0]) && /: \S/.test(r.why)), rows.length + ' rows');
+  check('K: nothing was written to the beach, and the key is nowhere on it', beach.log.length === writesBefore && !JSON.stringify(beach.blocks).includes('sk-ant-test'));
+  await watchWords(p);
+  check('K: no screen said ring, holds or line', !seenBanned.length, seenBanned.slice(0, 2).join(' / '));
+  await page.click('#f-back');
+  check('K: Back to the lobby', await page.locator('#lobby').isVisible() && !/revote=/.test(page.url()));
+  check('K: no page errors', !p.errors.length, p.errors.join(' / '));
   await p.ctx.close();
 }
 
@@ -963,6 +1162,7 @@ try {
   if (which.includes('I')) await tableI(browser, base, beach);
   if (which.includes('J')) await tableJ(browser, base, beach);
   if (which.includes('H')) await tableH(browser, base, beach);
+  if (which.includes('K')) await tableK(browser, base, beach);
 } catch (e) {
   check('the run finished', false, e.stack || String(e));
   // what the room held when it stopped

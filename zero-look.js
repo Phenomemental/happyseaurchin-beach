@@ -87,7 +87,7 @@
         r.words.push({ seat: s, word: h.words[s], name: nameOf(s), kept: voiced && h.ring.indexOf(s) >= 0 });
       });
       Object.keys(h.lines).map(Number).sort(num).forEach(function (s) {
-        r.lines.push({ name: nameOf(s), line: h.lines[s].line, stake: h.lines[s].stake, votes: h.tally[s] || 0, won: h.winners.indexOf(s) >= 0 });
+        r.lines.push({ name: nameOf(s), line: h.lines[s].line, stake: h.lines[s].stake, votes: h.tally[s] || 0, won: h.winners.indexOf(s) >= 0, thread: h.thread[s] || '' });
       });
       Object.keys(h.marks).map(Number).sort(num).forEach(function (s) {
         var m = h.marks[s];
@@ -97,11 +97,14 @@
     });
     seats.forEach(function (s) { if (Z.isComputer(t, s)) g.computer[nameOf(s)] = true; });
     g.first = (g.hands[0] || '')[0] || '';
+    g.threaded = !!t.open.thread;          // this table paid the thread
+    g.titles = t.over ? Z.titles(t) : [];
     return g;
   }
   // A table is its entries from its open on. A code can come round again
   // for a later table, so each open begins a table of its own.
-  function tableGames(entries) {
+  // Every table in the room that played a hand to its vote, as the law works it out.
+  function tables(entries) {
     var byCode = {}, lists = [];
     entries.slice().sort(Z.byAddr).forEach(function (e) {
       var k = Z.codeKey(e.code);
@@ -114,10 +117,12 @@
     return Promise.all(lists.map(function (list) {
       if (!list.some(function (e) { return e.kind === 'open'; }) || !list.some(function (e) { return e.kind === 'deal'; })) return null;
       return Z.derive(list, list[0].code).then(function (t) {
-        if (!t.roster || !t.hands.some(function (h) { return h.winners.length; })) return null;
-        return tableGame(t);
+        return t.roster && t.hands.some(function (h) { return h.winners.length; }) ? t : null;
       });
-    })).then(function (gs) { return gs.filter(Boolean); });
+    })).then(function (ts) { return ts.filter(Boolean); });
+  }
+  function tableGames(entries) {
+    return tables(entries).then(function (ts) { return ts.map(tableGame); });
   }
 
   // ---- games played in chat, before the page --------------------------------------------
@@ -554,8 +559,8 @@
       grp.appendChild(svg('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: 24, class: 'wn-hit' }));
       grp.appendChild(svg('circle', { cx: o.x.toFixed(1), cy: o.y.toFixed(1), r: lead ? 6 : 4.5, class: lead ? 'wn-pt lead' : 'wn-pt' }));
       // the name above its point (below it on the lower half), kept inside the sheet
-      var half = p.length * 4 + 3;
-      var lx = Math.min(W - half - 2, Math.max(half + 2, o.x)), ly = Math.sin(o.a) < 0.2 ? o.y - 12 : o.y + 25;
+      var half = p.length * 4.9 + 4;
+      var lx = Math.min(W - half - 2, Math.max(half + 2, o.x)), ly = Math.sin(o.a) < 0.2 ? o.y - 13 : o.y + 28;
       var t = svg('text', { x: lx.toFixed(1), y: ly.toFixed(1), 'text-anchor': 'middle', class: lead ? 'lead' : '' });
       t.textContent = p;
       grp.appendChild(t);
@@ -614,23 +619,52 @@
     return s;
   }
 
-  function card(g) {
-    var box = el('div', 'poem look-card');
+  // A game's poem card in Look around. Folded to its head (the date, the
+  // trail, who sat) until tapped, so a long list of games stays short on a
+  // phone; what is inside is drawn the first time it is opened.
+  function card(g, open) {
+    var box = el('details', 'poem look-card');
     box.setAttribute('data-game', g.code || g.hands[0]);
     var when = dateWords(g.stamp);
-    box.appendChild(el('p', 'top', 'a game of Zero' + (when ? ' · ' + when : '')));
-    box.appendChild(el('p', 'path', uniq(g.places.map(function (p) { return cap(p.word); })).join(' · ')));
-    g.places.forEach(function (p) {
-      p.lines.forEach(function (l, i) {
-        var d = el('div', 'place');
-        if (!i) d.appendChild(el('div', 'pword', p.word));
-        d.appendChild(el('div', 'pline', l.line));
-        if (l.name) d.appendChild(el('div', 'pby', l.name));
-        box.appendChild(d);
+    var sum = el('summary', 'card-sum');
+    sum.appendChild(el('span', 'top', 'a game of Zero' + (when ? ' · ' + when : '')));
+    sum.appendChild(el('span', 'path', uniq(g.places.map(function (p) { return cap(p.word); })).join(' · ')));
+    var top = g.book && g.book.length ? highest(g.book) : null;
+    sum.appendChild(el('span', 'card-take', g.people.length + ' at the table' + (!top ? '' : top.names.length > 2 ? ' · ' + top.names.length + ' tied highest' : ' · ' + names(top.names) + ' finished highest')));
+    box.appendChild(sum);
+    var built = false;
+    function build() {
+      if (built) return;
+      built = true;
+      var body = el('div', 'card-body');
+      g.places.forEach(function (p) {
+        p.lines.forEach(function (l, i) {
+          var d = el('div', 'place');
+          if (!i) d.appendChild(el('div', 'pword', p.word));
+          d.appendChild(el('div', 'pline', l.line));
+          if (l.name) d.appendChild(el('div', 'pby', l.name));
+          body.appendChild(d);
+        });
       });
-    });
-    box.appendChild(el('p', 'sat', g.people.join(' · ')));
-    showsPanel(box, g);
+      body.appendChild(el('p', 'sat', g.people.join(' · ')));
+      if (g.titles && g.titles.length) {
+        var tl = el('ul', 'titles');
+        g.titles.forEach(function (x) {
+          var li = el('li');
+          li.appendChild(el('span', 'tt', x.title));
+          li.appendChild(el('span', 'tn', names(x.names)));
+          li.appendChild(el('span', 'tw', x.note));
+          tl.appendChild(li);
+        });
+        body.appendChild(tl);
+      }
+      showsPanel(body, g);
+      box.appendChild(body);
+    }
+    // drawn on the tap itself, so the card opens with its poem already in it
+    sum.addEventListener('click', build);
+    box.addEventListener('toggle', function () { if (box.open) build(); });
+    if (open) { box.open = true; build(); }
     return box;
   }
   // 'What this game shows', open by default and folded with a tap: the same
@@ -649,16 +683,124 @@
     box.appendChild(shows);
     return shows;
   }
-  function section(box, key, title) {
-    var d = el('div', 'look-sec');
-    d.setAttribute('data-reading', key);
-    d.appendChild(el('h3', 'look-h', title));
-    box.appendChild(d);
-    return d;
-  }
   function say(box, text, cls) { box.appendChild(el('p', 'look-note' + (cls ? ' ' + cls : ''), text)); }
   function num1(x) { return String(Math.round(x * 10) / 10); }
   function votesWord(n) { return n + (n === 1 ? ' vote' : ' votes'); }
+  function signed(n) { return n < 0 ? '−' + (-n) : String(n); }
+  // Who finished with most chips: {names, total}.
+  function highest(book) {
+    var max = Math.max.apply(null, book.map(function (b) { return b.total; }));
+    return { names: book.filter(function (b) { return b.total === max; }).map(function (b) { return b.name; }), total: max };
+  }
+  // The words a game put into the tree, each once (case and singular form ignored).
+  function keptWords(g) {
+    var kept = [];
+    (g.rounds || []).forEach(function (r) { r.words.forEach(function (w) { if (w.kept && !kept.some(function (k) { return Z.same(k, w.word); })) kept.push(w.word); }); });
+    return kept;
+  }
+
+  // ---- each reading in one plain line ----------------------------------------------------------
+  // What a reading says while it is folded, and whether there is more to
+  // open beneath it: {key: {text, more}}. Pure, so it is checked in Node.
+  function takes(g, R) {
+    R = R || readings(g);
+    var order = uniq(g.people.concat(g.votes.map(function (v) { return v.from; }), g.votes.map(function (v) { return v.to; })));
+    var K = {};
+    // who voted for whom
+    var got = tally(g.votes.map(function (v) { return v.to; }), order);
+    if (!got.length) K.votes = { text: 'No votes are kept for this game.', more: false };
+    else {
+      var most = got.filter(function (x) { return x.n === got[0].n; }).map(function (x) { return x.name; });
+      K.votes = { text: names(most) + ' drew the most votes: ' + got[0].n + (most.length > 1 ? ' each' : '') + ' of ' + g.votes.length + '.', more: true };
+    }
+    // where two players thought the same
+    var alike = uniq(g.same.map(function (x) { return x.words[0]; }));
+    K.same = alike.length ? { text: 'Thought alike on ' + names(alike) + '.', more: true } : { text: 'Nobody thought the same.', more: false };
+    // words new to the tree
+    var kept = keptWords(g);
+    if (g.fresh === undefined) K.fresh = { text: 'Reading the tree…', more: false };
+    else if (g.fresh === null) K.fresh = { text: 'The tree could not be read just now.', more: false };
+    else if (!g.fresh.length) K.fresh = { text: kept.length ? 'Every word this game put into the tree had been played in it before.' : 'This game put no word into the tree.', more: false };
+    else K.fresh = { text: (g.fresh.length === kept.length ? 'All ' + kept.length : g.fresh.length + ' of the ' + kept.length) + ' words this game put into the tree were new to it.', more: true };
+    // sent out, and chips (a game played on the page keeps both)
+    if (g.kind === 'table') {
+      var outs = g.sentOut.map(function (x) { return x.word; });
+      K.sent = outs.length ? { text: names(outs) + (outs.length === 1 ? ' was' : ' were') + ' sent out.', more: true } : { text: 'The table sent no word out.', more: false };
+      var top = highest(g.book);
+      K.chips = { text: names(top.names) + ' finished highest, with ' + top.total + (top.total === 1 ? ' chip' : ' chips') + (top.names.length > 1 ? ' each' : '') + '.', more: true };
+    }
+    // people or computer: the whole reading is its line
+    var pc = R.pc, one = pc.people.length === 1 ? pc.people[0] : '';
+    K.pc = { more: false, text: !g.votes.length ? 'No votes are kept for this game.'
+      : !pc.computers ? 'Everyone at this table was a person: all ' + votesWord(pc.pp) + ' went from people to people.'
+        : !pc.people.length ? 'Every seat was a computer player: all ' + votesWord(pc.cc) + ' went between them.'
+          : one ? one + ', the only person at the table, gave ' + votesWord(pc.pc) + ' to computer players. Computer players gave ' + one + ' ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + '.'
+            : 'People gave ' + votesWord(pc.pp) + ' to people and ' + pc.pc + ' to computer players. Computer players gave ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + ' to people.' };
+    // who listens to whom
+    var pairs = R.listens.pairs, none = R.listens.unvoted;
+    var unvoted = none.length ? 'Nobody voted for ' + either(none) + '.' : 'Everyone received a vote.';
+    K.listens = !g.votes.length ? { text: 'No votes are kept for this game.', more: false }
+      : { more: pairs.length > 1, text: (!pairs.length ? 'No two players voted for each other.' : pairs.length === 1 ? pairs[0].join(' and ') + ' voted for each other.' : pairs.length + ' pairs voted for each other.') + ' ' + unvoted };
+    // bold or careful
+    var known = R.bold.filter(function (b) { return b.known; });
+    if (!R.bold.length) K.bold = { text: 'No stakes are kept for this game.', more: false };
+    else if (known.length < 2) K.bold = { text: 'Each player’s stakes, beside the votes their sentences drew.', more: true };
+    else {
+      var avg = function (b) { return mean(b.stakes); };
+      var hi = Math.max.apply(null, known.map(avg)), lo = Math.min.apply(null, known.map(avg));
+      var at = function (v) { return known.filter(function (b) { return avg(b) === v; }).map(function (b) { return b.name; }); };
+      K.bold = { more: true, text: hi === lo ? 'Everyone staked about the same: ' + num1(hi) + ' a sentence.'
+        : 'Boldest: ' + names(at(hi)) + ', staking ' + num1(hi) + ' a sentence. Most careful: ' + names(at(lo)) + ', ' + num1(lo) + '.' };
+    }
+    // the table's eye
+    var eye = R.eye;
+    if (!eye.hands) K.eye = { text: g.kind === 'table' ? 'This table played before the table’s eye.' : 'Played in chat, before the table’s eye.', more: false };
+    else if (!eye.marked.length) K.eye = { text: 'Nobody marked a word as not belonging.', more: false };
+    else {
+      K.eye = { more: true, text: (eye.marked.length === 1 ? 'One word was' : eye.marked.length + ' words were') + ' marked as not belonging; ' + names(eye.most) + ' marked most.' };
+    }
+    // short wins
+    var sh = R.short;
+    K.short = !sh.wonN ? { text: 'No sentences are kept for this game.', more: false }
+      : { more: true, text: sh.restN ? 'Winning sentences averaged ' + num1(sh.won) + ' words; the rest, ' + num1(sh.rest) + '.' : 'Every sentence won, with ' + num1(sh.won) + ' words on average.' };
+    // words that travelled
+    var tw = R.travelled.map(function (x) { return x.word; });
+    K.travelled = !tw.length ? { text: 'No word from one hand came back in a later one.', more: false }
+      : { more: true, text: tw.length > 3 ? tw.length + ' words came back in later hands, ' + names(tw.slice(0, 3)) + ' among them.'
+        : names(tw) + (tw.length === 1 && R.travelled[0].back.length === 1 ? ' came back in a later hand.' : ' came back in later hands.') };
+    // the thread: who picked up a word from the poem so far (a table that pays it)
+    if (g.threaded) {
+      var picked = [];
+      (g.rounds || []).forEach(function (r) { r.lines.forEach(function (l) { if (l.thread) picked.push(l.name); }); });
+      var keepers = tally(picked, order);
+      K.thread = !picked.length ? { text: 'No sentence picked up a word from the poem before it.', more: false }
+        : { more: true, text: (picked.length === 1 ? 'One sentence' : picked.length + ' sentences') + ' picked up a word from the poem before ' + (picked.length === 1 ? 'it' : 'them') + '; ' +
+          names(keepers.filter(function (x) { return x.n === keepers[0].n; }).map(function (x) { return x.name; })) + ' most.' };
+    }
+    // where the trail went
+    K.trail = R.trail.length > 1 ? { text: R.trail.map(function (x) { return cap(x.word); }).join(' › '), more: true }
+      : { text: R.trail.length ? 'The game stayed at ' + R.trail[0].word + '.' : 'No trail is kept for this game.', more: false };
+    return K;
+  }
+
+  // ---- the readings as rows that open -----------------------------------------------------------
+  // One reading: its heading and its one plain line, always in view; where
+  // there is more, the row opens on a tap to show it (an expansion box).
+  function reading(key, title, take, fill, open) {
+    var sec = el(take.more ? 'details' : 'div', take.more ? 'look-sec' : 'look-sec plain');
+    sec.setAttribute('data-reading', key);
+    var sum = el(take.more ? 'summary' : 'div', 'look-sum');
+    sum.appendChild(el('span', 'look-h', title));
+    sum.appendChild(el('span', 'look-take', take.text));
+    sec.appendChild(sum);
+    if (take.more) {
+      var more = el('div', 'look-more');
+      fill(more);
+      sec.appendChild(more);
+      if (open) sec.open = true;
+    }
+    return sec;
+  }
   // [{word, name, place}] as one row a place: "under Gift: seed (Farmer) · Joy (Phenomemental)"
   function byPlaceList(list, cls) {
     var rows = [];
@@ -680,40 +822,71 @@
     });
     return ul;
   }
+  // A small table: a name down the side, figures across, so nine players read at a glance.
+  function table(cls, heads, rows) {
+    var t = el('table', 'look-table ' + cls), head = el('tr');
+    heads.forEach(function (h) { var th = el('th', null, h); th.setAttribute('scope', 'col'); head.appendChild(th); });
+    var thead = el('thead'), body = el('tbody');
+    thead.appendChild(head);
+    rows.forEach(function (r) {
+      var tr = el('tr');
+      r.forEach(function (c, i) {
+        var cell = el(i ? 'td' : 'th', null, c);
+        if (!i) cell.setAttribute('scope', 'row');
+        tr.appendChild(cell);
+      });
+      body.appendChild(tr);
+    });
+    t.appendChild(thead);
+    t.appendChild(body);
+    return t;
+  }
   // Words new to the tree: drawn once the tree is read (Look around has it
-  // already; the end of a game reads it, then calls this again).
-  function fillFresh(sec, g) {
-    while (sec.childNodes.length > 1) sec.removeChild(sec.lastChild);
-    if (g.fresh === undefined) return say(sec, 'Reading the tree…');
-    if (g.fresh === null) return say(sec, 'The tree could not be read just now.');
-    var kept = [];
-    (g.rounds || []).forEach(function (r) { r.words.forEach(function (w) { if (w.kept && !kept.some(function (k) { return Z.same(k, w.word); })) kept.push(w.word); }); });
-    if (!g.fresh.length) return say(sec, kept.length ? 'Every word this game put into the tree had been played in it before.' : 'This game put no word into the tree.');
-    say(sec, (g.fresh.length === kept.length ? 'All ' + kept.length : g.fresh.length + ' of the ' + kept.length) + ' words this game put into the tree had never been played anywhere in it before:');
-    sec.appendChild(byPlaceList(g.fresh, 'fresh'));
+  // already; the end of a game reads it, then calls setFresh).
+  function freshRow(g, K) {
+    return reading('fresh', 'Words new to the tree', (K || takes(g)).fresh, function (more) {
+      say(more, 'Nobody had played these anywhere in the tree before this game:');
+      more.appendChild(byPlaceList(g.fresh, 'fresh'));
+    });
   }
   function setFresh(shows, g) {
-    var sec = shows && shows.querySelector('.look-sec[data-reading="fresh"]');
-    if (sec) fillFresh(sec, g);
+    var old = shows && shows.querySelector('.look-sec[data-reading="fresh"]');
+    if (!old) return;
+    var fresh = freshRow(g);
+    if (old.open && fresh.tagName === 'DETAILS') fresh.open = true;
+    old.replaceWith(fresh);
   }
   function fillShows(box, g) {
-    var R = readings(g);
-    var sec = section(box, 'votes', 'Who voted for whom');
-    if (g.votes.length) {
+    var R = readings(g), K = takes(g, R);
+    // one tap opens every reading, or folds them all again
+    var bar = el('p', 'shows-bar'), all = el('button', 'quiet shows-all', 'Open all');
+    all.type = 'button';
+    bar.appendChild(all);
+    box.appendChild(bar);
+    var boxes = function () { return Array.prototype.slice.call(box.querySelectorAll('details.look-sec')); };
+    var anyShut = function () { return boxes().some(function (d) { return !d.open; }); };
+    var sync = function () { all.textContent = anyShut() ? 'Open all' : 'Close all'; };
+    all.addEventListener('click', function () {
+      var to = anyShut();
+      boxes().forEach(function (d) { d.open = to; });
+      sync();
+    });
+    box.addEventListener('toggle', sync, true);
+    var add = function (key, title, fill, open) { box.appendChild(reading(key, title, K[key], fill, open)); };
+
+    // who voted for whom: the web, open from the start
+    add('votes', 'Who voted for whom', function (more) {
       var line = el('p', 'look-note web-line', HINT);
       line.setAttribute('aria-live', 'polite');
       var w = web(g, line);
-      sec.appendChild(w.svg);
-      sec.appendChild(line);
+      more.appendChild(w.svg);
+      more.appendChild(line);
       var ranked = w.people.filter(function (p) { return w.received[p]; }).sort(function (a, b) { return w.received[b] - w.received[a]; });
-      say(sec, 'Votes received: ' + ranked.map(function (p) { return p + ' ' + w.received[p]; }).join(' · ') +
+      say(more, 'Votes received: ' + ranked.map(function (p) { return p + ' ' + w.received[p]; }).join(' · ') +
         (w.people.length > ranked.length ? '. None for ' + names(w.people.filter(function (p) { return !w.received[p]; })) + '.' : '.'), 'votes-said');
-    } else {
-      say(sec, 'No votes are kept for this game.');
-    }
+    }, true);
 
-    sec = section(box, 'same', 'Where two players thought the same');
-    if (g.same.length) {
+    add('same', 'Where two players thought the same', function (more) {
       var ul = el('ul', 'look-list same');
       g.same.forEach(function (x) {
         var li = el('li');
@@ -722,17 +895,14 @@
         li.appendChild(el('span', 'lp', ' under ' + x.place));
         ul.appendChild(li);
       });
-      sec.appendChild(ul);
-    } else {
-      say(sec, 'Nobody thought the same.');
-    }
+      more.appendChild(ul);
+    });
 
-    fillFresh(section(box, 'fresh', 'Words new to the tree'), g);
+    box.appendChild(freshRow(g, K));
 
     // words the table sent out, and each player's chips (a game played on the page keeps both)
     if (g.kind === 'table') {
-      sec = section(box, 'sent', 'Words the table sent out');
-      if (g.sentOut.length) {
+      add('sent', 'Words the table sent out', function (more) {
         var so = el('ul', 'look-list sent');
         g.sentOut.forEach(function (x) {
           var li = el('li');
@@ -741,99 +911,61 @@
           li.appendChild(el('span', 'lp', ' under ' + x.place));
           so.appendChild(li);
         });
-        sec.appendChild(so);
-      } else {
-        say(sec, 'The table sent no word out.');
-      }
-      sec = section(box, 'chips', 'Chips from words and from sentences');
-      var bk = el('ul', 'look-list chips');
-      g.book.forEach(function (r) {
-        var li = el('li');
-        li.appendChild(el('span', 'lw', r.name));
-        li.appendChild(document.createTextNode(' · ' + r.words + ' from words · ' + (r.sentences < 0 ? '−' + (-r.sentences) : r.sentences) + ' from sentences'));
-        li.appendChild(el('span', 'lp', ' · ' + r.total));
-        bk.appendChild(li);
+        more.appendChild(so);
       });
-      sec.appendChild(bk);
-    }
-
-    // People or computer
-    sec = section(box, 'pc', 'People or computer');
-    var pc = R.pc, one = pc.people.length === 1 ? pc.people[0] : '';
-    if (!g.votes.length) say(sec, 'No votes are kept for this game.');
-    else if (!pc.computers) say(sec, 'Everyone at this table was a person: all ' + votesWord(pc.pp) + ' went from people to people.');
-    else if (!pc.people.length) say(sec, 'Every seat was a computer player: all ' + votesWord(pc.cc) + ' went between them.');
-    else {
-      say(sec, (one ? one + ', the only person at the table, gave ' + votesWord(pc.pc) + ' to computer players.'
-        : 'People gave ' + votesWord(pc.pp) + ' to people and ' + pc.pc + ' to computer players.') +
-        (one ? ' Computer players gave ' + one + ' ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + '.'
-          : ' Computer players gave ' + pc.cp + ' of their ' + votesWord(pc.cp + pc.cc) + ' to people.'));
-    }
-
-    // Who listens to whom
-    sec = section(box, 'listens', 'Who listens to whom');
-    if (!g.votes.length) say(sec, 'No votes are kept for this game.');
-    else {
-      var pairs = R.listens.pairs.map(function (p) { return p.join(' and '); });
-      say(sec, (!pairs.length ? 'No two players voted for each other.'
-        : pairs.length === 1 ? pairs[0] + ' voted for each other.'
-          : 'Pairs who voted for each other: ' + pairs.join(' · ') + '.') + ' ' +
-        (R.listens.unvoted.length ? 'Nobody voted for ' + either(R.listens.unvoted) + '.' : 'Everyone received a vote.'));
-    }
-
-    // Bold or careful
-    sec = section(box, 'bold', 'Bold or careful');
-    var known = R.bold.filter(function (b) { return b.known; });
-    if (!R.bold.length) say(sec, 'No stakes are kept for this game.');
-    else {
-      if (known.length > 1) {
-        var avg = function (b) { return mean(b.stakes); };
-        var hi = Math.max.apply(null, known.map(avg)), lo = Math.min.apply(null, known.map(avg));
-        var at = function (v) { return known.filter(function (b) { return avg(b) === v; }).map(function (b) { return b.name; }); };
-        say(sec, hi === lo ? 'Everyone staked about the same: ' + num1(hi) + ' a sentence.'
-          : 'Boldest: ' + names(at(hi)) + ', staking ' + num1(hi) + ' a sentence on average. Most careful: ' + names(at(lo)) + ', ' + num1(lo) + '.');
-      }
-      var bl = el('ul', 'look-list bold');
-      R.bold.forEach(function (b) {
-        var li = el('li');
-        li.appendChild(el('span', 'lw', b.name));
-        li.appendChild(document.createTextNode(' · staked ' + b.stakes.map(function (x) { return typeof x === 'number' ? x : '?'; }).join(', ') +
-          ' · ' + (b.stakes.length === 1 ? 'drew ' + votesWord(b.votes[0]) : 'votes ' + b.votes.join(', '))));
-        li.appendChild(el('span', 'lp', ' · ' + (b.won ? 'won ' + b.won + ' of ' + b.stakes.length : 'won none')));
-        bl.appendChild(li);
+      add('chips', 'Chips from words and from sentences', function (more) {
+        more.appendChild(table('chips', ['', 'words', 'sentences', 'chips'], g.book.map(function (r) {
+          return [r.name, String(r.words), signed(r.sentences), String(r.total)];
+        })));
       });
-      sec.appendChild(bl);
     }
 
-    // The table's eye
-    sec = section(box, 'eye', 'The table’s eye');
-    var eye = R.eye;
-    if (!eye.hands) say(sec, g.kind === 'table' ? 'This table played before the table’s eye.' : 'Played in chat, before the table’s eye.');
-    else if (!eye.marked.length) say(sec, 'Nobody marked a word as not belonging' + (eye.hands < eye.of ? ', in the ' + eye.hands + ' hands the eye was open.' : '.'));
-    else {
-      say(sec, 'Words marked as not belonging, and by how many:');
-      sec.appendChild(byPlaceList(eye.marked.map(function (m) {
+    add('pc', 'People or computer');
+
+    add('listens', 'Who listens to whom', function (more) {
+      var ul = el('ul', 'look-pills pairs');
+      R.listens.pairs.forEach(function (p) { ul.appendChild(el('li', null, p.join(' and '))); });
+      more.appendChild(ul);
+    });
+
+    add('bold', 'Bold or careful', function (more) {
+      more.appendChild(table('bold', ['', 'staked', 'votes', 'won'], R.bold.map(function (b) {
+        return [b.name, b.stakes.map(function (x) { return typeof x === 'number' ? x : '?'; }).join(', '), b.votes.join(', '),
+          b.won ? b.won + ' of ' + b.stakes.length : 'none'];
+      })));
+      say(more, 'Hand by hand: what each player staked on a sentence, and the votes it drew.', 'small');
+    });
+
+    add('eye', 'The table’s eye', function (more) {
+      var eye = R.eye;
+      say(more, 'Words marked as not belonging, and by how many:');
+      more.appendChild(byPlaceList(eye.marked.map(function (m) {
         return { word: m.word, name: m.name, place: m.place, out: m.out, tail: ', ' + m.n + (m.n === 1 ? ' mark' : ' marks') + (m.out ? ', sent out' : '') };
       }), 'marked'));
       var topN = eye.markers[0].n;
-      say(sec, (eye.most.length === 1 ? eye.most[0] + ' marked most: ' + topN + (topN === 1 ? ' word' : ' words') + ' in ' + eye.hands + (eye.hands === 1 ? ' hand.' : ' hands.')
+      say(more, (eye.most.length === 1 ? eye.most[0] + ' marked most: ' + topN + (topN === 1 ? ' word' : ' words') + ' in ' + eye.hands + (eye.hands === 1 ? ' hand.' : ' hands.')
         : names(eye.most) + ' marked most, ' + topN + (topN === 1 ? ' word each.' : ' words each.')));
-    }
+    });
 
-    // Short wins
-    sec = section(box, 'short', 'Short wins');
-    var sh = R.short;
-    if (!sh.wonN) say(sec, 'No sentences are kept for this game.');
-    else {
-      say(sec, sh.restN ? 'The winning sentences had ' + num1(sh.won) + ' words on average; the rest had ' + num1(sh.rest) + '.'
-        : 'Every sentence won, with ' + num1(sh.won) + ' words on average.');
-      say(sec, 'Each player’s average: ' + sh.each.map(function (e) { return e.name + ' ' + num1(e.avg); }).join(' · ') + '.', 'short-each');
-    }
+    // short wins: each player's average as a bar, shortest first
+    add('short', 'Short wins', function (more) {
+      say(more, 'Words in a sentence, each player’s average:');
+      var longest = Math.max.apply(null, R.short.each.map(function (e) { return e.avg; }).concat([1]));
+      var ul = el('ul', 'look-bars');
+      R.short.each.forEach(function (e) {
+        var li = el('li');
+        li.appendChild(el('span', 'bn', e.name));
+        var bar = el('span', 'bar'), fill = el('i');
+        fill.style.width = Math.max(4, Math.round(100 * e.avg / longest)) + '%';
+        bar.appendChild(fill);
+        li.appendChild(bar);
+        li.appendChild(el('span', 'bv', num1(e.avg)));
+        ul.appendChild(li);
+      });
+      more.appendChild(ul);
+    });
 
-    // Words that travelled
-    sec = section(box, 'travelled', 'Words that travelled');
-    if (!R.travelled.length) say(sec, 'No word from one hand came back in a later one.');
-    else {
+    add('travelled', 'Words that travelled', function (more) {
       var tl = el('ul', 'look-list travelled');
       R.travelled.forEach(function (x) {
         var li = el('li');
@@ -846,17 +978,21 @@
         }).join('; ') + '.'));
         tl.appendChild(li);
       });
-      sec.appendChild(tl);
-    }
+      more.appendChild(tl);
+    });
 
-    // Where the trail went
-    sec = section(box, 'trail', 'Where the trail went');
-    if (R.trail.length) {
-      sec.appendChild(trailMap(R.trail));
-      var first = R.trail[0].word, last = R.trail[R.trail.length - 1].word;
-      say(sec, R.trail.length === 1 ? 'The game stayed at ' + first + '.'
-        : 'From ' + first + ' down to ' + last + ': each word was chosen from the nine seats beneath the one before (the small dots).');
-    }
+    if (g.threaded) add('thread', 'The thread', function (more) {
+      var list = [];
+      g.rounds.forEach(function (r) { r.lines.forEach(function (l) { if (l.thread) list.push({ word: l.thread, name: l.name + (l.won ? ', and won' : ''), place: r.zero }); }); });
+      say(more, 'A word picked up from the winning sentences before it: 1 chip from the bank each time.');
+      more.appendChild(byPlaceList(list, 'threads'));
+    });
+
+    add('trail', 'Where the trail went', function (more) {
+      more.appendChild(trailMap(R.trail));
+      say(more, 'Each word was chosen from the nine seats beneath the one before (the small dots).');
+    });
+    sync();
   }
   function acrossView(rows) {
     var box = el('div', 'look-across');
@@ -880,7 +1016,8 @@
     box.appendChild(treeView(tree));
     box.appendChild(el('h2', 'look-head', 'Games played'));
     if (!gs.length) box.appendChild(el('p', 'look-note', 'No game has been played yet.'));
-    gs.forEach(function (g) { box.appendChild(card(g)); });
+    // the newest game open, the rest folded to their heads
+    gs.forEach(function (g, i) { box.appendChild(card(g, i === 0)); });
     var rows = across(tree, gs);
     if (rows.length) {
       box.appendChild(el('h2', 'look-head', 'Across all games'));
@@ -889,7 +1026,7 @@
   }
 
   var api = { voiceParts: voiceParts, voicedPlaces: voicedPlaces, games: games, across: across, render: render, ENOUGH: ENOUGH,
-    tableGame: tableGame, showsPanel: showsPanel, setFresh: setFresh, readings: readings, wordsIn: wordsIn };
+    tableGame: tableGame, tables: tables, showsPanel: showsPanel, setFresh: setFresh, readings: readings, takes: takes, wordsIn: wordsIn };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ZeroLook = api;
 })(typeof self !== 'undefined' ? self : this);
