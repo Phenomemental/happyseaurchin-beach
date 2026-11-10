@@ -625,7 +625,7 @@
     sum.appendChild(el('span', 'top', 'a game of Zero' + (when ? ' · ' + when : '')));
     sum.appendChild(el('span', 'path', uniq(g.places.map(function (p) { return cap(p.word); })).join(' · ')));
     var top = g.book && g.book.length ? highest(g.book) : null;
-    sum.appendChild(el('span', 'card-take', g.people.length + ' at the table' + (top ? ' · ' + names(top.names) + ' finished highest' : '')));
+    sum.appendChild(el('span', 'card-take', g.people.length + ' at the table' + (!top ? '' : top.names.length > 2 ? ' · ' + top.names.length + ' tied highest' : ' · ' + names(top.names) + ' finished highest')));
     box.appendChild(sum);
     var built = false;
     function build() {

@@ -829,8 +829,10 @@ async function tableH(browser, base, beach) {
   const folded = await page.evaluate(() => Array.from(document.querySelectorAll('#look .look-card')).map(c => ({ open: c.open, head: c.querySelector('summary').innerText.replace(/\s+/g, ' ').trim(), body: !!c.querySelector('.card-body') })));
   check('H: the newest game stands open; the others are folded to their heads (date, trail, who sat), drawn only when opened', folded[0].open && folded[0].body && folded.slice(1).every(c => !c.open && !c.body) &&
     folded.every((c, k) => c.head.startsWith('a game of Zero') && c.head.includes(gs[k].places.map(x => x.word.charAt(0).toUpperCase() + x.word.slice(1)).filter((w, n, a) => a.indexOf(w) === n).join(' · ')) && c.head.includes(gs[k].people.length + ' at the table')), JSON.stringify(folded).slice(0, 300));
-  const tall = await page.evaluate(() => document.documentElement.scrollHeight / window.innerHeight);
-  check('H: folded, the whole of Look around is a short scroll (under eight screens for four games)', tall < 8, tall.toFixed(1) + ' screens');
+  const tall = await page.evaluate(() => ({ screens: document.documentElement.scrollHeight / window.innerHeight,
+    heads: Array.from(document.querySelectorAll('#look .look-card:not([open])')).map(c => c.getBoundingClientRect().height / window.innerHeight) }));
+  check('H: folded, each older game takes under a quarter of a screen, so a long list of games is a short scroll', tall.heads.length === cards - 1 && tall.heads.every(h => h > 0 && h < 0.25),
+    cards + ' games in ' + tall.screens.toFixed(1) + ' screens; a folded game ' + Math.max(...tall.heads).toFixed(2) + ' of a screen at most');
   const type = await typeAt(page);
   check('H: Look around can be read on a phone: no text under 12px, quiet text at 4.5 to 1 or better', typeOk(type), typeSay(type));
   while (await page.locator('#look .look-card:not([open])').count()) await page.locator('#look .look-card:not([open]) > summary').first().click();
