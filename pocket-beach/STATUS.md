@@ -4,6 +4,47 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10.4 is released (10 November): his lines run as his:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.4
+- **Install:** `sundial-v0.10.4.apk` over 0.10.3; his blocks stay. At first
+  opening his SHEET step is written in the app's form around his own
+  quoted words, and the app says so in its one line.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.10.4 (27), from main at `d13576f` (PR #254), release run
+  260. APK SHA-256 `11648c0e…`. The procedures it carries are byte for
+  byte main's.
+- **Tests:** 317 core and all 86 device tests (CI run on `196d37f`). The
+  line in the sand (tests 3 and 9) gains these checks:
+  - his three lines of his own, brought up from 0.10.2 and 0.10.3, are kept
+    and run, and nothing is offered over them;
+  - one step that can't be read never throws out the rest of his cook;
+  - a card from an earlier day is never today's;
+  - an evening turn carries the evening's time.
+- **What it fixes:**
+  1. **His TALK and no-day lines ran as the shipped wording.**
+     - The bring-up had kept them in his cook. His SHEET step lacked "Carry
+       it as THE SHEET.", so his whole cook couldn't be read, and the
+       shipped copy ran in its place.
+     - Now his quoted wording is put back into the app's form, at the
+       bring-up and whenever his cook loads.
+     - A step that still can't be read runs as the shipped step at its
+       place, and only there. The workings say so.
+  2. **A card of 2 November was read as today's line.**
+     - A card in "within hours" or "today" from an earlier day is handed to
+       her apart, as "from Monday 2 November". Your hand shows its day too.
+     - Long cards are handed to her cut to their first sentence.
+     - Today's line comes only from his now at today.
+  3. **Her clock went stale.** Every turn carries its own time: the day,
+     the clock time, the beach's part of the day (night at 23:19), and how
+     long since his last message when over an hour. The workings and the
+     log show it.
+- **Only his phone can confirm:**
+  - that his own SHEET wording comes through the bring-up, with nothing of
+    his lost;
+  - how she names the cards with the stale one set apart;
+  - whether the time stops her asking "What's on for today?" late at night.
+
 **Sundial 0.10.3 is released (4 November): the line in the sand:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.3
 - **Install:** `sundial-v0.10.3.apk` over 0.10.2; his blocks stay. His cook
