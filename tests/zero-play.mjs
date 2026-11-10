@@ -459,7 +459,8 @@ async function endChecks(label, beach, page, people) {
     JSON.stringify(await page.locator('#e-poem .book thead th').allTextContents()) === JSON.stringify(['', 'words', 'sentences', 'chips']), JSON.stringify(rows.slice(0, 2)));
   const titles = await page.locator('#e-poem .titles li').evaluateAll(lis => lis.map(li => Array.from(li.children).map(c => c.textContent)));
   const wantTitles = Z.titles(t).map(x => [x.title, x.names.length <= 1 ? x.names.join('') : x.names.slice(0, -1).join(', ') + ' and ' + x.names[x.names.length - 1], x.note]);
-  check(label + ': the end card carries the titles: Boldest, Most original, Kept the thread, each from the record', JSON.stringify(titles) === JSON.stringify(wantTitles) && wantTitles.some(x => x[0] === 'Boldest'), JSON.stringify(titles));
+  check(label + ': the end card carries the titles earned (of Boldest, Most original, Kept the thread), each from the record; a title nobody stands out for is left out', JSON.stringify(titles) === JSON.stringify(wantTitles) && wantTitles.length >= 1 &&
+    wantTitles.every(x => ['Boldest', 'Most original', 'Kept the thread'].includes(x[0])), JSON.stringify(titles));
   const marked = await page.locator('#e-poem .pline em.thread').allTextContents();
   check(label + ': in the poem, a winning sentence\'s word picked up from the poem before it is marked', JSON.stringify(marked) === JSON.stringify(Z.poem(t).flatMap(pl => pl.lines.map(l => l.thread).filter(Boolean))), marked.join(', ') || 'none');
   await page.waitForSelector('#e-shows .look-shows');
