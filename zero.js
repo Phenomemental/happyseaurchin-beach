@@ -295,6 +295,7 @@
     return tries(3, function () {
       return claude(key, persona(name), user, S_WORD).then(function (j) {
         var w = Z.oneWord(j.word);
+        if (!w.ok) w = Z.oneWord(String(j.word == null ? '' : j.word).trim().split(/[\s,;\/]+/)[0]);
         if (!w.ok || Z.same(w.word, h.zero)) throw new Error('again');
         return { move: w.word };
       });
@@ -311,16 +312,28 @@
     var left = h.ring.map(function (r) { return h.words[r]; });
     var before = t.open.thread ? poemSoFar(t, h) : [];
     var user = 'The zero word is “' + h.zero + '”. The words still in after the flop are: ' + left.join(', ') + '. Your own word among them is “' + h.words[s] + '”.' +
-      '\nWrite one sentence that brings these words together, in your own voice, under twenty-five words. It will be judged by the craft in the law: never a list of the words.' +
+      '\nWrite one sentence that brings these words together, in your own voice. The page takes ' + (Z.LINE_MAX - 10) + ' characters at most, spaces counted (about twenty words), so keep it to that however much you have to say.' +
+      ' It will be judged by the craft in the law: never a list of the words.' +
       (before.length ? '\nThe poem so far, the winning sentences of the hands before this one:\n' + before.map(function (l) { return '  ' + l; }).join('\n') +
         '\nThe four hands should grow into one poem. If you can do it well, pick up a word or an image from the poem so far: a sentence that carries one of its words earns 1 more chip.' : '') +
       '\nYou have ' + chips + ' chips. Stake from 0 to ' + chips + ' on your sentence: more if you believe the table will vote for it. Answer as {"sentence": "...", "stake": n}.';
+    // A sentence over the limit is told by how much and asked again; on the
+    // last try it is cut at a clause, so the table never waits on it.
+    var over = 0, asked = 0;
     return tries(3, function () {
-      return claude(key, persona(name), user, S_LINE).then(function (j) {
-        var l = Z.oneLine(j.sentence != null ? j.sentence : j.line);
-        if (!l.ok) throw new Error('again');
+      asked++;
+      var say = user + (over ? '\nYour last sentence ran to ' + over + ' characters, which is too long for the page. Write a shorter one: ' + (Z.LINE_MAX - 10) + ' characters at most.' : '');
+      return claude(key, persona(name), say, S_LINE).then(function (j) {
+        var raw = String(j.sentence != null ? j.sentence : j.line == null ? '' : j.line).replace(/\s+/g, ' ').trim();
+        var l = Z.oneLine(raw);
+        if (!l.ok && raw.length > Z.LINE_MAX && asked >= 3) l = Z.oneLine(Z.clipLine(raw));
+        if (!l.ok) { over = raw.length > Z.LINE_MAX ? raw.length : 0; throw new Error('again'); }
         return { move: l.line, stake: Math.max(0, Math.min(chips, Math.round(Number(j.stake) || 0))) };
       });
+    }).catch(function (e) {
+      if (e.status != null) throw e;
+      // no sentence that could be used, three times over: the plainest one, staked nothing, so the hand goes on
+      return { move: Z.clipLine(cap(left.join(', ')) + '.'), stake: 0 };
     });
   }
   function askVote(key, t, h, s) {
@@ -1395,6 +1408,7 @@
       });
     });
   }
+  var failed = {};
   function duty(key, fn) {
     if (running[key]) return;
     running[key] = true;
@@ -1403,9 +1417,12 @@
       if (!keyBlocked) $('t-error').textContent = '';
       soon();
     }, function (e) {
-      $('t-error').textContent = (e && e.message) || 'Something went wrong. Trying again.';
+      $('t-error').textContent = e && e.message === 'again' ? 'A computer player’s answer could not be used. Asking again in a moment.' : (e && e.message) || 'Something went wrong. Trying again.';
       if (e && (e.status === 401 || e.status === 403)) { keyBlocked = true; drawKeyBox(); }
-      setTimeout(function () { delete running[key]; }, e && e.status === 0 ? 4000 : 6000);
+      // an answer that cannot be used is asked for again slowly, and more slowly each time: it is the host's key that pays
+      failed[key] = (failed[key] || 0) + 1;
+      var wait = e && e.status === 0 ? 4000 : e && e.message === 'again' ? Math.min(120000, 15000 * failed[key]) : 6000;
+      setTimeout(function () { delete running[key]; }, wait);
     });
   }
   function duties() {

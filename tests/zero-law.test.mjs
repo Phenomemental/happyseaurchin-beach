@@ -434,3 +434,21 @@ test('titles for the end card: Boldest, Most original, Kept the thread', async (
   const old = await twoHands({ 6: 'eye' });
   assert.deepEqual(Z.titles(old).map(x => x.title), ['Boldest']);
 });
+
+// ---- a sentence that runs over the limit (found live on 10 November 2026: the table waited for ever) ----
+test('a sentence over 160 characters is refused; cut to fit, it ends at a clause or a whole word', () => {
+  const long = 'Fire scorches the stubble while combustion hums in the galley, a kettle sings over the campfire, and one last ember glows beneath the dressing on a burn that will not quite heal before morning comes.';
+  assert.equal(long.length > Z.LINE_MAX, true);
+  assert.equal(Z.oneLine(long).ok, false);
+  const cut = Z.clipLine(long);
+  assert.equal(cut, 'Fire scorches the stubble while combustion hums in the galley, a kettle sings over the campfire.');
+  assert.equal(Z.oneLine(cut).ok, true);
+  // no clause to cut at: the last whole word, with no dangling small word left at the end
+  const run = 'Fire and scorch and combustion and dressing and kettle and campfire and ember and stubble and galley and fire and scorch and combustion and dressing and kettle and campfire and ember';
+  const c2 = Z.clipLine(run);
+  assert.ok(c2.length <= Z.LINE_MAX && /[a-z]\.$/.test(c2) && !/ and\.$/.test(c2) && run.startsWith(c2.slice(0, -1)), c2);
+  // already within the limit: left exactly as written
+  assert.equal(Z.clipLine('A short one.'), 'A short one.');
+  assert.equal(Z.clipLine('x'.repeat(300)).length, Z.LINE_MAX);
+  assert.equal(Z.oneLine(Z.clipLine('x'.repeat(300))).ok, true);
+});
