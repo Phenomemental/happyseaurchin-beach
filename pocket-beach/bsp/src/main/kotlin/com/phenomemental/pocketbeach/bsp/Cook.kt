@@ -1357,7 +1357,10 @@ object Cook {
     // ── which copy runs ──
 
     /** The cook that runs: his own, as it stands, when it reads; else the shipped copy, and why. */
-    class Loaded(val parsed: Parsed, val kernel: Kernel, val own: Boolean, val refusal: String?, val fellBack: Map<String, String> = emptyMap(), val shipped: Parsed? = null) {
+    class Loaded(val parsed: Parsed, val kernel: Kernel, val own: Boolean, val refusal: String?, val fellBack: Map<String, String> = emptyMap(), val shipped: Parsed? = null, val steps: String? = null) {
+        /** What the workings say of his cook as it ran: why the shipped copy ran, else how a step of his was read (Sundial 0.10.4); null when it ran as it stands. */
+        val note: String? get() = refusal ?: steps
+
         /**
          * What one of Sundial's events walks: his cook at the procedure his
          * kernel names; with none named, the shipped kernel's, in his cook
@@ -1368,6 +1371,58 @@ object Cook {
             if (place in parsed.procedures) return parsed to place
             return shipped?.takeIf { place in it.procedures }?.let { it to place }
         }
+    }
+
+    /**
+     * Sundial 0.10.4: [his] step, which can't be read, written in the form of
+     * the [shipped] step at its place, with his quoted wording kept inside the
+     * quotes: the app's form words added around his own words, never a step
+     * refused for them. Null when his step has no quoted line, the shipped
+     * step has none, or the step so formed still can't be read.
+     */
+    fun reformed(his: String, shipped: String): String? {
+        fun isOpen(c: Char) = c == '“' || c == '"'
+        fun isClose(c: Char) = c == '”' || c == '"'
+        val o = shipped.indexOfFirst(::isOpen).takeIf { it >= 0 } ?: return null
+        // The shipped quoted line: from its first quote mark to the last closing one that, with other words inside, still reads.
+        val c = shipped.indices.filter { it > o && isClose(shipped[it]) }.reversed()
+            .firstOrNull { k -> read(shipped.substring(0, o + 1) + "Words of his." + shipped.substring(k)) != null } ?: return null
+        // Only a line handed to her is his wording; a short phrase the app reads (“Tomorrow:”, “and I”) is the app's own.
+        if (c - o - 1 < 40) return null
+        val prefix = shipped.substring(0, o + 1)
+        val tail = shipped.substring(c)
+        val ho = his.indexOfFirst(::isOpen).takeIf { it >= 0 } ?: return null
+        // His quoted line ends at the closing quote mark after which his words follow the shipped step's own (what he left of its form), else at his last.
+        val tailWords = Telling.plain(tail.drop(1)).split(' ').filter { it.isNotEmpty() }
+        val closes = his.indices.filter { it > ho && isClose(his[it]) }
+        val hc = closes.maxByOrNull { k ->
+            val after = Telling.plain(his.substring(k + 1)).split(' ').filter { it.isNotEmpty() }
+            if (after.size <= tailWords.size && tailWords.subList(0, after.size) == after) after.size * 10_000 + k else -1
+        }?.takeIf { k -> Telling.plain(his.substring(k + 1)).split(' ').filter { it.isNotEmpty() }.let { a -> a.size <= tailWords.size && tailWords.subList(0, a.size) == a } }
+        val inner = (if (hc != null) his.substring(ho + 1, hc) else his.substring(ho + 1)).trim()
+        if (inner.isEmpty()) return null
+        val formed = prefix + inner + tail
+        return formed.takeIf { read(it) != null && it != his }
+    }
+
+    /**
+     * Sundial 0.10.4: [mine] with each step that can't be read re-formed
+     * from the [shipped] step at its place ([reformed]), and the places so
+     * re-formed. A step that can't be re-formed stands as it is.
+     */
+    fun reform(mine: JsObj, shipped: JsObj): Pair<JsObj, List<String>> {
+        val unreadable = parse(mine).unreadable
+        if (unreadable.isEmpty()) return mine to emptyList()
+        val theirs = places(shipped)
+        val all = places(mine).toMutableMap()
+        val done = mutableListOf<String>()
+        for ((at, text) in unreadable) {
+            val their = theirs[at] ?: continue
+            val formed = reformed(text, their) ?: continue
+            all[at] = formed
+            done += at
+        }
+        return if (done.isEmpty()) mine to emptyList() else fromPlaces(all) to done
     }
 
     /**
@@ -1383,11 +1438,32 @@ object Cook {
     }
 
     fun load(handle: String?, storage: BlockStorage, procedures: Shelf?): Loaded {
-        val shipped = parse(procedures?.load(SHIPPED_COOK))
+        val shippedCook = procedures?.load(SHIPPED_COOK)
+        val shipped = parse(shippedCook)
         val shippedKernel = kernel(procedures?.load(SHIPPED_KERNEL))
         if (handle == null) return Loaded(shipped, shippedKernel, false, null)
-        val mine = storage.read(cookOf(handle))?.let { runCatching { parseJson(it) }.getOrNull() } ?: return Loaded(shipped, shippedKernel, false, null)
-        val parsed = parse(mine)
+        val read = storage.read(cookOf(handle))?.let { runCatching { parseJson(it) }.getOrNull() } ?: return Loaded(shipped, shippedKernel, false, null)
+        // Sundial 0.10.4: a step of his that can't be read never throws out the rest of his cook. On his Pixel after 0.10.3 his SHEET step
+        // lacked "Carry it as THE SHEET.", so his whole cook was refused and the shipped copy ran: her TALK and no-day lines were the
+        // shipped wording, though his own stood in his cook. His quoted wording is read in the app's form around it; a step with no
+        // quoted line to keep runs as the shipped step at its place, and only that step.
+        val (mine, formed) = (read as? JsObj)?.let { m -> (shippedCook as? JsObj)?.let { reform(m, it) } } ?: (read to emptyList())
+        var parsed = parse(mine)
+        val said = mutableListOf<String>()
+        if (formed.isNotEmpty()) said += "Your cook at ${formed.joinToString(", ")}: the words around your quoted line weren't the app's form, so your own words ran in the app's form around them."
+        if (!parsed.ok && parsed.unreadable.isNotEmpty() && parsed.refused.size == parsed.unreadable.size) {
+            val theirs = places(shippedCook)
+            val fall = parsed.unreadable.filter { (at, _) -> theirs[at]?.let { read(it) } != null }
+            if (fall.size == parsed.unreadable.size) {
+                val patched = places(mine).toMutableMap().also { m -> for ((at, _) in fall) m[at] = theirs.getValue(at) }
+                val again = parse(fromPlaces(patched))
+                if (again.ok) {
+                    said += fall.joinToString(" ") { (at, text) -> "Your cook couldn't be read at $at: ${why(text, theirs[at])}. So the shipped step ran there, and the rest of your cook ran as yours." }
+                    parsed = again
+                }
+            }
+        }
+        val steps = said.takeIf { it.isNotEmpty() }?.joinToString(" ")
         val kernel = storage.read(kernelOf(handle))?.let { runCatching { parseJson(it) }.getOrNull() }?.let(::kernel)?.takeIf { it.message != null } ?: shippedKernel
         val missing = (listOf(kernel.message, kernel.close).filterNotNull() - parsed.procedures.keys)
         return when {
@@ -1402,7 +1478,7 @@ object Cook {
                 val greet = event(GREET, kernel.greet, shippedKernel.greet)
                 val keep = event(KEEP, kernel.keep, shippedKernel.keep)
                 val listen = event(LISTEN, kernel.listen, shippedKernel.listen)
-                Loaded(parsed, Kernel(kernel.message, kernel.close, greet, keep, listen), true, null, fell, shipped)
+                Loaded(parsed, Kernel(kernel.message, kernel.close, greet, keep, listen), true, null, fell, shipped, steps)
             }
         }
     }
@@ -1419,11 +1495,14 @@ object Cook {
     class Up(val shipped: String, val block: String, val whole: Boolean, val merged: JsObj?, val took: List<String>, val added: List<String>, val removed: List<String>, val yours: List<Yours>) {
         /** Sundial 0.10: his old cook 6, retired whole, and what of it he had changed; null when cook 6 was already Sundial's. */
         var sundial: ToSundial? = null
+        /** Sundial 0.10.4: the places of his where the app's form words were added around his own quoted wording. */
+        var reformed: List<String> = emptyList()
         /** Brought in whole, or brought up: anything to write. */
-        val changed: Boolean get() = whole || merged != null
+        val changed: Boolean get() = whole || merged != null || reformed.isNotEmpty()
         /** The trace of it, a line a place. */
         fun trace(): List<String> = took.map { "$block $it: the new sentence" } + added.map { "$block $it: added" } + removed.map { "$block $it: gone from this version" } +
-            yours.map { y -> "$block ${y.at}: yours, kept" + if (y.shipped != null) " (the new one offered beside it)" else "" }
+            yours.map { y -> "$block ${y.at}: yours, kept" + if (y.shipped != null) " (the new one offered beside it)" else "" } +
+            reformed.map { "$block $it: your words kept, in the app's form around them" }
     }
 
     /** A place he changed: his sentence, and the new shipped one where it changed too (null when it didn't, or was taken out). */
@@ -1602,8 +1681,18 @@ object Cook {
             val sundial = if (name == SHIPPED_COOK) (now as? JsObj)?.let { toSundial(it, shipped, last) } else null
             sundial?.let { now = it.mine }
             val u = up(name, mine, now, shipped, last, offered).also { it.sundial = sundial }
+            // Sundial 0.10.4: a step of his the app's form no longer reads keeps his quoted wording, the form words added around it.
+            val target = when {
+                u.whole -> null
+                u.merged != null -> u.merged
+                sundial != null -> sundial.mine
+                else -> now as? JsObj
+            }
+            val formed = if (name == SHIPPED_COOK) target?.let { reform(it, shipped) } else null
+            formed?.second?.let { u.reformed = it }
             val plan = when {
                 u.whole -> pages.planWhole(mine, parseJson(stringify(shipped)!!) as JsObj)
+                formed != null && formed.second.isNotEmpty() -> pages.planWhole(mine, formed.first)
                 u.merged != null -> pages.planWhole(mine, u.merged)
                 sundial != null -> pages.planWhole(mine, sundial.mine)
                 else -> null

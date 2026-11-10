@@ -653,7 +653,7 @@ class Asking(private val app: PocketApp) {
                 runCatching {
                     val loaded = Cook.load(h, app.storage, app.procedures)
                     recipeNow = Cook.talkRecipe(loaded.parsed)
-                    e.cookNote = loaded.refusal
+                    e.cookNote = loaded.note
                     Cook.Walk(loaded.parsed, AppWorld(e, h, earlier), q).start(loaded.kernel.message ?: "1")
                 }.onFailure { t -> failed("his cook", t) }.getOrNull()
             }
@@ -1147,7 +1147,7 @@ class Asking(private val app: PocketApp) {
                     val w = Cook.Walk(parsed, AppWorld(null, h, emptyList(), day), "")
                     w.start(place)
                     serveHer(w, null)
-                    w to (loaded.refusal ?: loaded.fellBack[Cook.KEEP])
+                    w to (loaded.note ?: loaded.fellBack[Cook.KEEP])
                 }
             }
             made.onSuccess { (w, why) ->

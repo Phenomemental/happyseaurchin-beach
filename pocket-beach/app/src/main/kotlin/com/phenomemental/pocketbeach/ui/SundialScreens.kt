@@ -363,11 +363,15 @@ fun HandScreen(model: Model, nav: Nav) {
     val h = Hatch.hatched(model.app.storage)
     val scope = rememberCoroutineScope()
     // Each pile with its cards, by their place on his hand ("3.1"), so a card can be taken off by where it stands.
+    // Sundial 0.10.4: a card in "within hours" or "today" from an earlier day shows its day, never as today's.
+    val today = Keep.dayOf(System.currentTimeMillis())
+    var stale by remember { mutableStateOf<Map<String, java.time.LocalDate>>(emptyMap()) }
     val piles by produceState<List<Pair<String, List<Pair<String, String>>>>>(emptyList(), model.version) {
         value = withContext(Dispatchers.IO) {
             runCatching {
                 val a = h?.let { model.app.storage.read(Days.aheadOf(it)) }?.let { parseJson(it) as? JsObj } ?: return@runCatching emptyList()
                 val hand = Days.handOf(a)
+                stale = hand.keys.mapNotNull { at -> Days.staleDay(a, at, today)?.let { at to it } }.toMap()
                 (1..9).mapNotNull { k ->
                     val pile = a["$k"] as? JsObj ?: return@mapNotNull null
                     val cards = hand.filterKeys { it.substringBefore('.') == "$k" }.toList()
@@ -387,6 +391,7 @@ fun HandScreen(model: Model, nav: Nav) {
             for ((at, c) in cards) {
                 Column(Modifier.fillMaxWidth().testTag("hand-card-row:$at"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(c, style = Type.body, color = ink.ink, modifier = Modifier.testTag("hand-card"))
+                    stale[at]?.let { d -> Text("from " + d.format(java.time.format.DateTimeFormatter.ofPattern(if (d.year == today.year) "EEEE d MMMM" else "EEEE d MMMM yyyy", java.util.Locale.UK)), style = Type.small, color = ink.soft, modifier = Modifier.testTag("hand-card-day:$at")) }
                     if (asking == at) {
                         Text(Words.sundial(app, "6.2", "Take this off your hand? Your history keeps a note that you did."), style = Type.small, color = ink.soft)
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

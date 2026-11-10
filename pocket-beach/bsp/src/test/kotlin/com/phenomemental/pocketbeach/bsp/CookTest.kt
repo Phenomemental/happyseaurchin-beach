@@ -90,15 +90,25 @@ class CookTest {
     }
 
     @Test
-    fun aStepTheWalkerCantReadRefusesTheBlockAndTheShippedCopyRuns() {
+    fun aStepTheWalkerCantReadRunsTheShippedStepThereAndOnlyThere() {
         val (storage, pages) = hatched()
         val mine = parseJson(stringify(procedures.load(Cook.SHIPPED_COOK))!!) as JsObj
         (mine["3"] as JsObj)["4"] = str("Set out something lovely for him, whatever he likes.")
         check(pages.carryOut(pages.planWhole(Cook.cookOf(h), mine)).ok)
         val loaded = Cook.load(h, storage, procedures)
-        assertFalse(loaded.own)
-        assertTrue(loaded.refusal!!.startsWith("Your cook couldn't be read at 3.4"), loaded.refusal)
+        // Sundial 0.10.4: his cook runs; only the step that can't be read runs as the shipped step at its place, and that is said.
+        assertTrue(loaded.own)
+        assertNull(loaded.refusal)
+        assertTrue(loaded.note!!.startsWith("Your cook couldn't be read at 3.4"), loaded.note)
+        assertTrue(loaded.note!!.endsWith("So the shipped step ran there, and the rest of your cook ran as yours."), loaded.note)
         assertTrue(loaded.parsed.ok)
+        // A step of his own, at a place the shipped cook has none, that can't be read: the shipped copy runs, as before.
+        val added = parseJson(stringify(procedures.load(Cook.SHIPPED_COOK))!!) as JsObj
+        (added["3"] as JsObj)["9"] = str("Set out something lovely for him, whatever he likes.")
+        check(pages.carryOut(pages.planWhole(Cook.cookOf(h), added)).ok)
+        val whole = Cook.load(h, storage, procedures)
+        assertFalse(whole.own)
+        assertTrue(whole.refusal!!.startsWith("Your cook couldn't be read at 3.9"), whole.refusal)
     }
 
     @Test

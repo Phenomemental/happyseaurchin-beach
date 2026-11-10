@@ -166,7 +166,7 @@ object HerWindow {
         val cards = (1..9).mapNotNull { k ->
             val c = day["$k"] ?: return@mapNotNull null
             val text = (c as? JsStr)?.value ?: collectUnderscore(c)
-            text?.trim()?.takeIf { it.isNotEmpty() }?.let { PARTS[k - 1] to it }
+            text?.trim()?.takeIf { it.isNotEmpty() }?.let { PARTS[k - 1] to shortened(it) }
         }
         val parts = mutableListOf<String>()
         if (cards.isNotEmpty()) parts += cards.joinToString("; ") { (part, text) -> "$part, ${quoted(text)}" }
@@ -175,9 +175,9 @@ object HerWindow {
         return "Today on his clock: " + parts.joinToString("; ") + "."
     }
 
-    /** His hand as he left it: each shelf's cards, and when he left it. Null when it holds no card. */
-    fun hand(storage: BlockStorage): String? {
-        Hatch.hatched(storage)?.let { h -> storage.read(Days.aheadOf(h))?.let { return ahead(parseJson(it) as? JsObj, storage.stamps().touched[Days.aheadOf(h)]) } }
+    /** His hand as he left it: each shelf's cards, and when he left it ([now]: what counts as today's). Null when it holds no card. */
+    fun hand(storage: BlockStorage, now: ZonedDateTime? = null): String? {
+        Hatch.hatched(storage)?.let { h -> storage.read(Days.aheadOf(h))?.let { return ahead(parseJson(it) as? JsObj, storage.stamps().touched[Days.aheadOf(h)], now?.let { n -> Keep.dayOf(n.toInstant().toEpochMilli()) }) } }
         val telling = storage.read(Landing.TELLING)?.let(::parseJson) as? JsObj ?: return null
         val hand = telling["2"] as? JsObj ?: return null
         val shelves = (1..9).mapNotNull { k ->
@@ -190,17 +190,45 @@ object HerWindow {
         return "His hand, as he left it$left: " + shelves.joinToString(". ") + "."
     }
 
-    /** Rockpool: his hand as his ahead holds it, pile by pile (function:ahead), and when he left it. Null when it holds no card. */
-    fun ahead(block: JsObj?, touched: String?): String? {
+    /**
+     * Rockpool: his hand as his ahead holds it, pile by pile (function:ahead),
+     * and when he left it. Null when it holds no card. Sundial 0.10.4: a card
+     * in the piles "within hours" or "today" whose day ([today]) has passed
+     * is never handed as today's: it stands apart with its day ("from Monday
+     * 2 November"). On his Pixel on 9 November she read a card of 2 November
+     * from the "today" pile out word for word as today's line. A long card is
+     * handed shortened to its first sentence.
+     */
+    fun ahead(block: JsObj?, touched: String?, today: java.time.LocalDate? = null): String? {
+        val earlier = mutableListOf<String>()
         val piles = (1..9).mapNotNull { k ->
             val pile = block?.get("$k") as? JsObj ?: return@mapNotNull null
-            val cards = (1..9).mapNotNull { c -> (pile["$c"] as? JsStr)?.value ?: pile["$c"]?.let(::collectUnderscore) }.map { it.trim() }.filter { it.isNotEmpty() }
-            if (cards.isEmpty()) null else "${collectUnderscore(pile)?.replaceFirstChar { it.uppercase() }}: " + cards.joinToString("; ") { quoted(it) }
-        }
+            val cards = (1..9).mapNotNull { c -> pile["$c"] }.mapNotNull { node ->
+                val text = ((node as? JsStr)?.value ?: collectUnderscore(node))?.trim()?.takeIf { it.isNotEmpty() } ?: return@mapNotNull null
+                val day = ((node as? JsObj)?.get("3") as? JsStr)?.value?.let(::parseIsoMs)?.let { Keep.dayOf(it) }
+                if (today != null && k <= 2 && day != null && day.isBefore(today)) {
+                    earlier += "${quoted(shortened(text))} (from ${dayWords(day, today)})"
+                    null
+                } else quoted(shortened(text))
+            }
+            if (cards.isEmpty()) null else "${collectUnderscore(pile)?.replaceFirstChar { it.uppercase() }}: " + cards.joinToString("; ")
+        } + listOfNotNull(earlier.takeIf { it.isNotEmpty() }?.let { "From earlier days, not today's: " + it.joinToString("; ") })
         if (piles.isEmpty()) return null
         val left = touched?.let(::parseIsoMs)?.let { " on " + voiceAddress(momentToAddress(it)).substringBefore(" (beat") }.orEmpty()
         return "His hand, as he left it$left: " + piles.joinToString(". ") + "."
     }
+
+    /** Sundial 0.10.4: a long line handed to her shortened to its first sentence; a first sentence itself long, clipped. */
+    fun shortened(text: String, long: Int = 120): String {
+        val t = text.trim().replace(Regex("""\s*\n\s*"""), " ")
+        if (t.length <= long) return t
+        val first = Regex("""^.+?[.!?](?=\s|$)""").find(t)?.value ?: t
+        return clip(first, 160)
+    }
+
+    /** A day as she is told it: "Monday 2 November", with its year when it isn't [today]'s. */
+    private fun dayWords(day: java.time.LocalDate, today: java.time.LocalDate): String =
+        day.format(java.time.format.DateTimeFormatter.ofPattern(if (day.year == today.year) "EEEE d MMMM" else "EEEE d MMMM yyyy", Locale.UK))
 
     // ── 0.8: her window, the nine places of his shell ──
 
@@ -223,7 +251,7 @@ object HerWindow {
         val places = mutableListOf<Pair<Int, String>>()
         for ((i, label) in Hatch.LABELS.withIndex()) point(bySlot["${i + 1}"])?.let { places += (i + 1) to "$label: ${quoted(it)}" }
         if (bySlot["4"]?.let { !it.absent } == true) today(storage, now)?.let { places += 4 to it }
-        if (bySlot["5"]?.let { !it.absent } == true) hand(storage)?.let { places += 5 to it }
+        if (bySlot["5"]?.let { !it.absent } == true) hand(storage, now)?.let { places += 5 to it }
         bySlot["6"]?.takeIf { !it.absent && it.ref != null }?.let { m -> people(mapOf((m.name ?: "people") to memberLines(m)))?.let { places += 6 to it } }
         bySlot["7"]?.takeIf { !it.absent && it.ref != null }?.let { m -> kept(memberBlock(m))?.let { places += 7 to it } }
         point(bySlot["8"])?.let { places += 8 to it }

@@ -154,8 +154,13 @@ class Hatching(private val app: PocketApp) {
                 val u = up.map { it.first }
                 val took = u.sumOf { it.took.size + it.added.size + it.removed.size }
                 val yours = u.flatMap { it.yours }
-                said += "your cook and kernel brought up place by place: $took took this version's sentences" +
-                    (if (yours.isEmpty()) "" else "; " + yours.joinToString(", ") { "${if (it.block.startsWith("kernel:")) "kernel" else "cook"} ${it.at}" } + " ${if (yours.size == 1) "is" else "are"} yours as you changed ${if (yours.size == 1) "it" else "them"}, and kept")
+                // Sundial 0.10.4: a step of his whose words around his quoted line weren't the app's form keeps his words, in the form.
+                val reformed = u.flatMap { it.reformed }
+                said += "your cook and kernel brought up place by place: " + listOfNotNull(
+                    "$took took this version's sentences".takeIf { took > 0 },
+                    yours.takeIf { it.isNotEmpty() }?.let { ys -> ys.joinToString(", ") { "${if (it.block.startsWith("kernel:")) "kernel" else "cook"} ${it.at}" } + " ${if (ys.size == 1) "is" else "are"} yours as you changed ${if (ys.size == 1) "it" else "them"}, and kept" },
+                    reformed.takeIf { it.isNotEmpty() }?.let { r -> "cook ${r.joinToString(", ")}: your own words kept, with the app's form words added around them" },
+                ).joinToString("; ")
                 broughtUp = u.flatMap { it.trace() }
             }
             shown(toOffer)
