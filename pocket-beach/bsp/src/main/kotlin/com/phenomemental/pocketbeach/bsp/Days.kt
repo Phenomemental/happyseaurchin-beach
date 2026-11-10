@@ -293,6 +293,19 @@ object Days {
     }
 
     /**
+     * Sundial 0.10.4: the day a card in the piles "within hours" or "today"
+     * was put there, when that day is before [today]: such a card is shown
+     * with its day, never as today's. Null for any other card.
+     */
+    fun staleDay(ahead: JsObj?, address: String, today: LocalDate): LocalDate? {
+        val (p, c) = address.split('.').takeIf { it.size == 2 } ?: return null
+        if (p.toIntOrNull() !in 1..2) return null
+        val card = (ahead?.get(p) as? JsObj)?.get(c) as? JsObj ?: return null
+        val day = (card["3"] as? JsStr)?.value?.let(::parseIsoMs)?.let { Keep.dayOf(it) } ?: return null
+        return day.takeIf { it.isBefore(today) }
+    }
+
+    /**
      * Sundial 0.10.3: his hand with the card at [address] ("3.1") taken off,
      * on his tap; the cards after it in its pile move up one, so none is left
      * empty. Null when nothing stands there.

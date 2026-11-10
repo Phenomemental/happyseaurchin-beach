@@ -366,8 +366,11 @@ class SundialDeviceTest {
             assertTrue("his hand read once, as it opened", opening.contains("and need to update a membership agreement and print it out"))
             for (turn in mind.talkMessages) {
                 assertFalse("never her recipe again: $turn", turn.contains("Your reply has two parts"))
-                assertFalse("never the time again: $turn", turn.startsWith("(It is "))
+                // 9 November: every turn carries its own time, as the beach gives it; the conversation isn't opened again for it.
+                assertTrue("the time of his message, and its part of the day: $turn", Regex("""^\(It is \w+day \d+ \w+ \d{4}, \d\d:\d\d, [a-z ]+\.""").containsMatchIn(turn))
             }
+            // In Show the workings: the time she was given.
+            compose.waitFor("stamp", "The time she was given: It is ")
             assertTrue(mind.talkMessages[0].endsWith(glum))
             assertTrue(mind.talkMessages[0].contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
             assertTrue(mind.talkMessages[1].endsWith(idChecks))

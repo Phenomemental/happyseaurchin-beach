@@ -152,4 +152,60 @@ class LineInTheSandDeviceTest {
             assertTrue(history().last(), history().last().startsWith("On his yes: his day of"))
         }
     }
+
+    // ── Sundial 0.10.4 ──
+
+    /** His three lines in his own wording, his SHEET step without its last sentence, as his phone held them after 0.10.3. */
+    private val hisTalk = "Hand her this line: “The app: talk with me as yourself, warmly, in a few sentences. Speak to him as you, never by his name.”"
+    private val hisNoDay = "Hand her this line: “The app: this message is not news of my day. If I seem to be struggling, ask gently whether I'd like to sit with it a moment.”"
+    private val hisSheet = "The app: I am keeping today. From my words today, draw my day's sheet in the first person, the whole day and not one thread."
+
+    @Test
+    fun test9_hisCookIsBroughtUpAndHisLinesStayHisAndRun() {
+        Fresh.hatched()
+        val shipped = app.procedures.load(com.phenomemental.pocketbeach.bsp.Cook.SHIPPED_COOK) as JsObj
+        val his = parseJson(com.phenomemental.pocketbeach.bsp.stringify(shipped)!!) as JsObj
+        fun at(vararg k: String) = k.fold<String, Js?>(his) { n, x -> com.phenomemental.pocketbeach.bsp.jsGet(n, x) } as JsObj
+        at("1", "1", "8")["1"] = str(hisTalk)
+        at("1", "1", "8", "3", "2")["1"] = str(hisNoDay)
+        val sheet = com.phenomemental.pocketbeach.bsp.Cook.places(shipped).getValue("6.1.5")
+        val inside = Regex("“(.+?)” On E2B").find(sheet)!!.groupValues[1]
+        at("6", "1")["5"] = str(sheet.replace(inside, hisSheet).replace(" Carry it as THE SHEET.", ""))
+        check(app.pages.carryOut(app.pages.planWhole(com.phenomemental.pocketbeach.bsp.Cook.cookOf(h), his)).ok)
+        val kernel = app.procedures.load(com.phenomemental.pocketbeach.bsp.Cook.SHIPPED_KERNEL) as JsObj
+        check(app.pages.carryOut(app.pages.planWhole(com.phenomemental.pocketbeach.bsp.Cook.kernelOf(h), parseJson(com.phenomemental.pocketbeach.bsp.stringify(kernel)!!) as JsObj)).ok)
+        java.io.File(app.filesDir, "shipped-${com.phenomemental.pocketbeach.bsp.Cook.SHIPPED_COOK}.json").writeText(com.phenomemental.pocketbeach.bsp.stringify(shipped)!!)
+        java.io.File(app.filesDir, "shipped-${com.phenomemental.pocketbeach.bsp.Cook.SHIPPED_KERNEL}.json").writeText(com.phenomemental.pocketbeach.bsp.stringify(kernel)!!)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("corrected", "cook 6.1.5: your own words kept, with the app's form words added around them", timeoutMs = 20_000)
+            val now = com.phenomemental.pocketbeach.bsp.Cook.places(parseJson(app.storage.read(com.phenomemental.pocketbeach.bsp.Cook.cookOf(h))!!))
+            assertEquals(hisTalk, now["1.1.8.1"])
+            assertEquals(hisNoDay, now["1.1.8.3.2.1"])
+            assertTrue(now["6.1.5"]!!, now["6.1.5"]!!.contains("“$hisSheet”") && now["6.1.5"]!!.endsWith("Carry it as THE SHEET."))
+            compose.waitFor("dial")
+            say("stiff but free")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.isNotEmpty() }
+            assertTrue("his TALK line is her recipe", mind.talkInstructions.last().contains("The app: talk with me as yourself, warmly, in a few sentences."))
+            assertTrue("his no-day line is handed her", mind.talkMessages.last().contains("If I seem to be struggling, ask gently whether I'd like to sit with it a moment."))
+        }
+    }
+
+    @Test
+    fun test3_aCardFromAnEarlierDayReachesHerWithItsDayNeverAsTodays() {
+        Fresh.hatched()
+        val stale = "These are the things I need to get done around the membership work and the LERO proposal. First the agreement, then the minutes, then the emails."
+        val ahead = Days.emptyAhead(h)
+        (ahead["2"] as JsObj)["1"] = JsObj.of("_" to str(stale), "3" to str("2026-11-02T10:02"))
+        (ahead["2"] as JsObj)["2"] = JsObj.of("_" to str("I'm going to finish the membership form"), "3" to str(com.phenomemental.pocketbeach.bsp.isoString(System.currentTimeMillis())))
+        check(app.pages.carryOut(app.pages.planWhole(Days.aheadOf(h), ahead)).ok)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            say("What have I got in front of me?")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkInstructions.isNotEmpty() }
+            val window = mind.talkInstructions.last()
+            assertTrue(window, window.contains("From earlier days, not today's: “These are the things I need to get done around the membership work and the LERO proposal.” (from Monday 2 November"))
+            assertTrue(window, window.contains("Today: “I'm going to finish the membership form”"))
+            assertTrue("shortened to its first sentence", !window.contains("First the agreement"))
+        }
+    }
 }
