@@ -172,6 +172,24 @@ footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;
 .piece .ic,.bcard .ic{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--crimson);display:flex;align-items:center;justify-content:center}.piece .ic .ti{font-size:1.3rem;color:var(--crimson)}
 .briefgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1rem;margin:1rem 0 2rem}.blist{margin:.3rem 0 .6rem;padding-left:1.1rem;line-height:1.5}.blist li{margin:.2rem 0}.blab{margin:.6rem 0 0;font-weight:600;color:var(--crimson)}
 .opengrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:1rem;margin:1rem 0 2rem}.openitem .eyebrow a{color:inherit}
+
+.bh{display:flex;align-items:center;gap:.5rem;font-size:1.45rem;margin:2rem 0 .7rem}.bh .ti{color:var(--crimson)}
+.roadwrap{display:grid;gap:1rem}@media (min-width:860px){.roadwrap{grid-template-columns:1.1fr 1fr;align-items:start}}
+.road{position:relative;height:560px}.roadline{position:absolute;inset:0;width:100%;height:100%}
+.stone{position:absolute;display:flex;align-items:center;gap:.5rem;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font:inherit;text-align:left;max-width:62%}
+.stone .sic{flex:none;width:46px;height:46px;border-radius:50%;border:1.5px dashed var(--muted);display:flex;align-items:center;justify-content:center;background:var(--ground);transition:transform .3s,border-color .3s}
+.stone .sic .ti{font-size:1.35rem;color:var(--muted)}.stone .sname{font-size:1.08rem;line-height:1.2}.stone .sname b{color:var(--crimson)}.stone em{font-size:.85rem;color:var(--crimson)}
+.stone.now .sic{border:2px solid var(--crimson)}.stone.now .sic .ti{color:var(--crimson)}
+.stone.on .sic{transform:scale(1.15);border-style:solid;border-color:#d9b24a}.stone.on .sic .ti{color:#d9b24a}
+.roadpanel{padding:1rem 1.1rem;min-height:300px}.rp-h{display:flex;gap:.8rem;align-items:center}.rp-h h3{margin:0;color:var(--nink)}.rp-l{margin:.2rem 0 0;color:var(--nmuted)}
+.sic.big{flex:none;width:56px;height:56px;border-radius:50%;border:2px solid #d9b24a;display:flex;align-items:center;justify-content:center}.sic.big .ti{font-size:1.7rem;color:#d9b24a}
+.roadpanel .blab{color:#d9b24a}.ticks{list-style:none;padding:0;margin:.4rem 0 0}.ticks li{display:flex;gap:.5rem;align-items:flex-start;color:var(--nink);margin:.45rem 0;line-height:1.45;animation:tickin .5s both}.ticks .ti{color:#6fae7b;font-size:1.2rem;flex:none;margin-top:.1rem}
+@keyframes tickin{from{opacity:0;transform:translateX(-6px)}}@media (prefers-reduced-motion:reduce){.ticks li{animation:none}}
+.dmwrap{padding:.8rem}.dmwrap svg{display:block;width:100%;height:auto;font-family:'Cormorant Garamond',Georgia,serif}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.7rem}.rule-t{display:flex;align-items:center;gap:.7rem;border:1px solid var(--line);padding:.6rem .8rem;background:var(--panel);font-size:1.08rem;line-height:1.3}
+.rule-t .sic{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--crimson);display:flex;align-items:center;justify-content:center}.rule-t .sic .ti{font-size:1.25rem;color:var(--crimson)}
+.later .rule-t{opacity:.75}.later .rule-t .sic{border-style:dashed;border-color:var(--muted)}.later .rule-t .sic .ti{color:var(--muted)}.later em{margin-left:auto;font-size:.85rem;color:var(--muted)}
+#datamap{max-width:620px;margin:0 auto}#datamap+.note,#datamap~.dvc{max-width:620px;margin-left:auto;margin-right:auto}[data-anim=who] svg{max-width:560px;margin:0 auto}
 </style>
 </head>
 <body>
@@ -338,12 +356,22 @@ footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;
 
 <div class="part" id="p3"><span class="pn">3</span><div><h2 class="pt">What we’re building now</h2><p class="pl">For the builders: what comes first, when each piece is done, where the data lives, and the rules.</p></div></div>
 <section class="brief" id="brief">
- <div class="pieces" data-pieces="1.11114"></div>
- <div class="briefgrid">
-  <article class="sc bcard" data-blist="1.11115" data-icon="ti-database"></article>
-  <article class="sc bcard" data-blist="1.11116" data-icon="ti-shield-check"></article>
-  <article class="sc bcard" data-blist="1.11117" data-icon="ti-message-question"></article>
- </div>
+ <h3 class="bh"><i class="ti ti-route" aria-hidden="true"></i> Seven pieces, in order</h3>
+ <div class="roadwrap"><div id="road" class="road"></div><div id="roadpanel" class="roadpanel night" aria-live="polite"></div></div>
+ <h3 class="bh"><i class="ti ti-database" aria-hidden="true"></i> Where the data lives</h3>
+ <div class="night dmwrap"><div id="datamap"></div><p class="note" id="datanote" aria-live="polite"></p><p class="dvc">Dashed and crimson: new, named by weft before it is built. Everything stands on Community Recovery’s own beach.</p></div>
+ <h3 class="bh"><i class="ti ti-shield-check" aria-hidden="true"></i> The rules that don’t bend</h3>
+ <div class="rules"><div class="rule-t"><span class="sic"><i class="ti ti-chart-bar-off" aria-hidden="true"></i></span><span>Nothing about a person counted or scored</span></div><div class="rule-t"><span class="sic"><i class="ti ti-message-circle" aria-hidden="true"></i></span><span>I and we, in plain words</span></div><div class="rule-t"><span class="sic"><i class="ti ti-accessible" aria-hidden="true"></i></span><span>A tap and a plain list beside every gesture; WCAG 2.2 AA</span></div><div class="rule-t"><span class="sic"><i class="ti ti-camera" aria-hidden="true"></i></span><span>Before and after, 380 wide, dark, live data</span></div><div class="rule-t"><span class="sic"><i class="ti ti-sparkles" aria-hidden="true"></i></span><span>Never plainer, never less alive</span></div><div class="rule-t"><span class="sic"><i class="ti ti-user" aria-hidden="true"></i></span><span>One builder per screen</span></div><div class="rule-t"><span class="sic"><i class="ti ti-lock" aria-hidden="true"></i></span><span>My days: read by me alone</span></div><div class="rule-t"><span class="sic"><i class="ti ti-hand-click" aria-hidden="true"></i></span><span>A yes for each share, one at a time</span></div></div>
+ <h3 class="bh"><i class="ti ti-clock-pause" aria-hidden="true"></i> Not in this build</h3>
+ <div class="rules later"><div class="rule-t"><span class="sic"><i class="ti ti-world" aria-hidden="true"></i></span><span>A world on the beach <span class="addr">4.7</span></span><em>later</em></div><div class="rule-t"><span class="sic"><i class="ti ti-door" aria-hidden="true"></i></span><span>Rooms for talk, until safeguarding <span class="addr">4.4</span></span><em>later</em></div><div class="rule-t"><span class="sic"><i class="ti ti-message-2-off" aria-hidden="true"></i></span><span>Private talk between two <span class="addr">4.4</span></span><em>later</em></div><div class="rule-t"><span class="sic"><i class="ti ti-sparkles" aria-hidden="true"></i></span><span>An AI inside the app <span class="addr">5.2</span></span><em>later</em></div><div class="rule-t"><span class="sic"><i class="ti ti-device-mobile" aria-hidden="true"></i></span><span>Sundial and recipes <span class="addr">5.4</span></span><em>later</em></div><div class="rule-t"><span class="sic"><i class="ti ti-building-community" aria-hidden="true"></i></span><span>Other LEROs <span class="addr">1.111</span></span><em>later</em></div></div>
+ <h3 class="bh"><i class="ti ti-message-question" aria-hidden="true"></i> Who decides, and where to ask</h3>
+ <div class="night dmwrap" data-anim="who"><svg viewBox="0 0 340 200" role="img" aria-label="Who decides: Matthew, David and weft, and where they differ, Matthew decides"></svg><p class="note">Ask in <a href="#room">the room</a>, or on a piece’s thread once it has one.</p></div>
+ <details class="more"><summary>Read the builders’ lines in full</summary>
+  <h4 data-sp="1.11114" data-part="title"></h4><p data-sp="1.11114" data-part="body"></p>
+  <h4 data-sp="1.11115" data-part="title"></h4><p data-sp="1.11115" data-part="body"></p>
+  <h4 data-sp="1.11116" data-part="title"></h4><p data-sp="1.11116" data-part="body"></p>
+  <h4 data-sp="1.11117" data-part="title"></h4><p data-sp="1.11117" data-part="body"></p>
+ </details>
 </section>
 <section class="step flip" id="s5">
  <div class="words">
@@ -461,17 +489,41 @@ function paint(S){
   var box=$('#settled');if(box){box.innerHTML='';[["1.14", "Co-production", "ti-users-group", "A basic standard first, then the leaders are asked; nothing decided before is closed.", "copro"], ["4.5", "Joining", "ti-door-enter", "Part one online; part two always in person, on paper.", "join"], ["4.2", "What is mine", "ti-eye", "Hope comes back; each part has its own choice of who sees it.", "see"], ["4.9", "My days and where they rest", "ti-heart", "Where my days rest, back as a quiet corner, with no AI. Try the heart in the screens.", "days"], ["1.11", "The gift map", "ti-gift", "It starts from hope; needs stay on paper.", "gift"], ["4.3", "Privacy and AI", "ti-sparkles", "Our helper notices; a peer leader makes the introduction.", "help"], ["4.4", "Talking safely", "ti-shield-heart", "Rooms open once the safeguarding policy is adopted.", "safe"], ["1.17", "What the lighthouse shows", "ti-building-lighthouse", "Paths shown by place and week, never who.", "light"], ["1.12", "Moving through the app", "ti-hand-finger", "The thumb menu, with Everything always beside it.", "move"], ["4.1", "Who holds the place", "ti-key", "The key passes to two caretakers, Matthew beside them for a while.", "key"], ["4.6", "Money and reach", "ti-coin-pound", "The work costs weft’s and David’s time; members pay nothing.", "money"], ["1.111", "Every LERO", "ti-world", "Built ready to white-label; offered once phase one’s kit is ready.", "every"], ["4.7", "How the landscape is kept", "ti-stack-2", "A map the app draws, now.", "kept"], ["4.8", "Keeping the record true", "ti-file-check", "The form, the notice and the phases brought into line.", "record"], ["1.19", "The user experience", "ti-device-mobile", "The app grows with what a person does; nothing is counted.", "ux"]].forEach(function(x){var d=cardOf.apply(null,x);if(d)box.appendChild(d)})}
   var sb=$('#strands');if(sb){sb.innerHTML='';[["5.1", "My days, with no AI", "ti-heart", "In this phase’s build.", "days"], ["5.2", "An AI inside the app", "ti-sparkles", "On a shared key: an option, with its conditions and a concern.", "ai"], ["5.3", "Three AIs, named apart", "ti-users", "The LERO helper, our helper, and a member’s companion.", "three"], ["5.4", "Sundial on the phone", "ti-device-mobile", "Days that never leave the phone. In development.", "sundial"], ["5.5", "Recipes", "ti-notebook", "A LERO writes how its AI speaks, with its members.", "recipes"], ["5.6", "The real sun", "ti-sun", "The day’s rhythm, away from productivity.", "sun"]].forEach(function(x){var d=cardOf(x[0],x[1],x[2],x[3],x[4]);if(d)sb.appendChild(d)})}
   if(window.crAnim)crAnim();})();
- (function(){var ICON=['ti-eye','ti-stairs','ti-heart','ti-heart-handshake','ti-plant-2','ti-gift','ti-building-lighthouse'];
-  $$('[data-pieces]').forEach(function(box){var t=split(text(at(S,box.getAttribute('data-pieces')))||'');var b=t.body;if(!b)return;var al='',ai=b.indexOf('ALONGSIDE:');if(ai>=0){al=b.slice(ai+10).trim();b=b.slice(0,ai).trim()}
-   var parts=b.split(/\(\d\)\s+/),intro=parts.shift();var h='<p class="lede2">'+esc(cap1(intro))+'</p><ol class="plist">';
-   parts.forEach(function(x,i){var m=x.match(/^([A-Z][A-Z' ,’]+?)\s*(\([0-9., ]+\))?:\s*/),name=m?soft(m[1]):'',ref=m&&m[2]?m[2]:'',rest=m?x.slice(m[0].length):x;
-    h+='<li class="piece"><span class="ic"><i class="ti '+(ICON[i]||'ti-point')+'" aria-hidden="true"></i></span><div><h3>'+(i+1)+' · '+esc(name)+' <span class="addr">'+esc(ref)+'</span></h3><p>'+esc(cap1(rest.replace(/;?\s*$/,'')))+'</p></div></li>'});
-   h+='</ol>'+(al?'<p class="small">Alongside: '+esc(al)+'</p>':'');box.innerHTML=h});
-  $$('[data-blist]').forEach(function(c){var a=c.getAttribute('data-blist'),t=split(text(at(S,a))||'');if(!t.body){c.style.display='none';return}var title=soft(t.title).replace(/^For builders,\s*/i,'');title=cap1(title);
-   var body=t.body,secs=body.split(/\b(WHAT STANDS:|WHAT IS NEW,[^:]*:|not now:)\s*/);var h='<div class="ichead"><span class="ic"><i class="ti '+c.getAttribute('data-icon')+'" aria-hidden="true"></i></span><h3>'+esc(title)+' <span class="addr">'+a+'</span></h3></div>';
-   function list(x){var src='',pm=x.match(/\s*\(([^()]*)\)\.?\s*$/);if(pm&&/\d\.\d|CLAUDE/.test(pm[1])){src=pm[1];x=x.slice(0,pm.index)}return '<ul class="blist">'+x.split(/;\s+/).filter(function(y){return y.trim()}).map(function(y){return '<li>'+esc(cap1(y.trim().replace(/\.$/,'')))+'</li>'}).join('')+'</ul>'+(src?'<p class="small">From '+esc(src)+'</p>':'')}
-   if(secs.length>1){if(secs[0].trim())h+='<p>'+esc(cap1(secs[0].trim()))+'</p>';for(var i=1;i<secs.length;i+=2){var lab=secs[i].replace(/:$/,'').replace(/,.*$/,'');var x=secs[i+1]||'';var cut=x.search(/\.\s+[A-Z]/);var lst=cut>0?x.slice(0,cut):x,after=cut>0?x.slice(cut+1).trim():'';h+='<p class="blab">'+esc(cap1(lab.toLowerCase()))+'</p>'+list(lst)+(after?'<p>'+esc(after)+'</p>':'')}}
-   else h+=list(body);c.innerHTML=h})})();
+ (function(){
+  var PIECES=[['ti-eye','See it as','The app as each kind of person sees it, for builders only'],['ti-stairs','The steps','One block of steps; each person’s path their own'],['ti-heart','Today and the heart','My day, the step chosen for me, and the heart'],['ti-heart-handshake','What I bring, first','Each part with its own choice of who sees it'],['ti-plant-2','My garden and our wood','Mine alone; and the standards as a wood'],['ti-gift','The gift map','Hopes and gifts, for peer leaders'],['ti-building-lighthouse','The lighthouse’s pictures','Life by place and week, never who']];
+  var road=$('#road');if(road&&!road._done){road._done=true;
+   var t=split(text(at(S,'1.11114'))||'').body||'',ai=t.indexOf('ALONGSIDE:');if(ai>=0)t=t.slice(0,ai);var parts=t.split(/\(\d\)\s+/);parts.shift();
+   var done=parts.map(function(x){var m=x.match(/done when\s*/i);var r=m?x.slice(m.index+m[0].length):x;return r.replace(/\.\s*$/,'').split(/;\s+(?:and\s+)?/).map(function(y){return cap1(y.replace(/^and\s+/,'').trim())}).filter(Boolean)});
+   var P=[[18,10],[62,22],[22,36],[66,50],[24,64],[64,78],[30,92]];
+   var path='M'+P.map(function(p){return (p[0]+6)+' '+(p[1]+3)}).join(' L');
+   road.innerHTML='<svg class="roadline" viewBox="0 0 100 106" preserveAspectRatio="none" aria-hidden="true"><path d="'+path+'" fill="none" stroke="#4a4237" stroke-width=".6" stroke-dasharray="1.2 1.6" vector-effect="non-scaling-stroke"/><circle class="walker" r="1.3" fill="#d9b24a" cx="0" cy="0"/></svg>'+
+    PIECES.map(function(q,i){return '<button class="stone'+(i===0?' now':'')+'" style="left:'+P[i][0]+'%;top:'+P[i][1]+'%" data-i="'+i+'" type="button" aria-label="'+(i+1)+', '+esc(q[1])+'"><span class="sic"><i class="ti '+q[0]+'" aria-hidden="true"></i></span><span class="sname"><b>'+(i+1)+'</b> '+esc(q[1])+(i===0?' <em>first</em>':'')+'</span></button>'}).join('');
+   var panel=$('#roadpanel'),cur=0,auto=true;
+   function show(i){cur=i;$$('.stone',road).forEach(function(b,j){b.classList.toggle('on',j===i)});var q=PIECES[i];
+    panel.innerHTML='<div class="rp-h"><span class="sic big"><i class="ti '+q[0]+'" aria-hidden="true"></i></span><div><p class="eyebrow">Piece '+(i+1)+' of 7</p><h3>'+esc(q[1])+'</h3><p class="rp-l">'+esc(q[2])+'</p></div></div><p class="blab">Done when</p><ul class="ticks">'+(done[i]||[]).map(function(d,k){return '<li style="animation-delay:'+(k*.25)+'s"><i class="ti ti-circle-check" aria-hidden="true"></i>'+esc(d)+'</li>'}).join('')+'</ul>'}
+   $$('.stone',road).forEach(function(b){b.onclick=function(){auto=false;show(+b.getAttribute('data-i'))}});show(0);
+   var pe=road.querySelector('path'),w=road.querySelector('.walker'),L=0;try{L=pe.getTotalLength()}catch(e){}
+   var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+   if(L&&!still){var t0=null;(function f(ts){if(!t0)t0=ts;var u=(Math.max(0,ts-t0)/14000)%1,p=pe.getPointAtLength(u*L);w.setAttribute('cx',p.x);w.setAttribute('cy',p.y);var seg=Math.min(6,Math.floor(u*7));if(auto&&seg!==cur)show(seg);requestAnimationFrame(f)})(performance.now())}}
+  var dm=$('#datamap');if(dm&&!dm._done){dm._done=true;var NS='http://www.w3.org/2000/svg';
+   var B={days:[60,128,'my days','now:<name>'],card:[60,166,'my card','passport:<name>'],room:[60,204,'my room','pool:<name>'],
+    notice:[180,128,'noticeboard','pool:community-recovery'],story:[180,160,'our story','pool:journey'],going:[180,192,'who’s going','going'],ww:[180,224,'where and when','where-and-when'],words:[180,256,'the app’s words','app-words'],
+    lead:[300,128,'leaders’ room','colour:leadership'],welc:[300,160,'welcomers','colour:welcomers'],notes:[300,192,'notebooks','agreement, learning…'],
+    steps:[60,256,'the steps','new',1],path:[60,288,'my path','new',1],sees:[300,240,'who sees what','new',1],visits:[300,280,'places visited','new',1]};
+   var SC=[['Today',['days','steps','path','words']],['What I bring',['card','sees']],['My garden',['days','path','card']],['Gift map',['card','sees','notes']],['Lighthouse',['visits','going','notice','story']]];
+   var svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 360 310');svg.setAttribute('role','img');svg.setAttribute('aria-label','Where the data lives: the screens across the top, and the blocks each one reads, grouped as mine, ours and private rooms; new blocks dashed.');dm.appendChild(svg);
+   function el(t,a,x,par){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;(par||svg).appendChild(e);return e}
+   [[0,'mine',8],[120,'ours',128],[240,'private rooms',248]].forEach(function(z){el('rect',{x:z[2],y:96,width:104,height:210,rx:6,fill:'none',stroke:'#3d3648'});el('text',{x:z[2]+52,y:112,'text-anchor':'middle','font-size':11,fill:'#ab9f8e','letter-spacing':1.5},z[1].toUpperCase())});
+   var lines=el('g',{}),nodes={};
+   Object.keys(B).forEach(function(k){var b=B[k],g=el('g',{});var r=el('rect',{x:b[0]-48,y:b[1]-11,width:96,height:24,rx:12,fill:'#110f16',stroke:b[4]?'#ef5d85':'#6e6353','stroke-dasharray':b[4]?'3 3':''},null,g);el('text',{x:b[0],y:b[1]+5,'text-anchor':'middle','font-size':11.5,fill:'#ede4d3'},b[2],g);g.setAttribute('data-k',k);nodes[k]=r;var tt=document.createElementNS(NS,'title');tt.textContent=b[2]+' · '+b[3];g.appendChild(tt)});
+   var scr=SC.map(function(s,i){var x=36+i*72,g=el('g',{style:'cursor:pointer',tabindex:0,role:'button','aria-label':s[0]});var r=el('rect',{x:x-32,y:20,width:64,height:40,rx:8,fill:'none',stroke:'#ede4d3'},null,g);el('text',{x:x,y:44,'text-anchor':'middle','font-size':11,fill:'#ede4d3'},s[0],g);g.onclick=function(){autoD=false;hi(i)};g.onkeydown=function(e){if(e.key==='Enter'){autoD=false;hi(i)}};return {x:x,r:r}});
+   el('text',{x:180,y:80,'text-anchor':'middle','font-size':11,fill:'#ab9f8e'},'tap a screen to see what it reads');
+   var autoD=true,ci=0,note=$('#datanote');
+   function hi(i){ci=i;lines.innerHTML='';scr.forEach(function(s,j){s.r.setAttribute('stroke',j===i?'#ef5d85':'#ede4d3');s.r.setAttribute('stroke-width',j===i?2:1)});Object.keys(nodes).forEach(function(k){nodes[k].setAttribute('stroke',B[k][4]?'#ef5d85':'#6e6353');nodes[k].setAttribute('stroke-width',1)});
+    SC[i][1].forEach(function(k){var b=B[k];el('path',{d:'M'+scr[i].x+' 60 C '+scr[i].x+' 90 '+b[0]+' '+(b[1]-40)+' '+b[0]+' '+(b[1]-11),fill:'none',stroke:'#d9b24a','stroke-width':1.2,opacity:.8},null,lines);nodes[k].setAttribute('stroke','#d9b24a');nodes[k].setAttribute('stroke-width',2)});
+    if(note)note.innerHTML='<b>'+esc(SC[i][0])+'</b> reads '+SC[i][1].map(function(k){return esc(B[k][2])+' <span class="addr" style="display:inline">'+esc(B[k][3])+'</span>'}).join(', ')+'.'}
+   hi(0);var still2=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;if(!still2)setInterval(function(){if(autoD)hi((ci+1)%SC.length)},3200)}
+ })();
  tiles(S);
 }
 function decParse(t){t=t.replace(/^DECIDE\s*—\s*/,'');var ans='',am=t.match(/\s*((?:ANSWERED|Answered|Matthew’s answer|Matthew's answer)[\s\S]*)$/);if(am){ans=am[1].replace(/^ANSWERED/,'Answered');t=t.slice(0,am.index).trim()}var words=['GO','CHANGE','NOT YET'],m=t.match(/([A-Z][A-Z’']*(?:,\s*[A-Z][A-Z’' ]*)*\s+or\s+NOT YET)\.?\s*$/);
@@ -814,6 +866,12 @@ var A={
   var V2=[['Greet: “How are you?”','','How are you?',''],['Greet as we do at','the Tuesday table','Come as you are.','The kettle’s on.']],k=0;(function nx(){var v=V2[k++%2];a.textContent=v[0];b.textContent=v[1];s1.textContent='';s2.textContent='';wait(svg,1000,function(){s1.textContent=v[2];s2.textContent=v[3];wait(svg,2300,nx)})})()},
  sun:function(svg){el(svg,'path',{d:'M30 150 Q170 -10 310 150',fill:'none',stroke:'#4a4237','stroke-dasharray':'2 5'});el(svg,'line',{x1:20,y1:150,x2:320,y2:150,stroke:'#4a4237'});var s=dot(svg,30,150,G,8);var sh=el(svg,'line',{x1:170,y1:150,x2:170,y2:150,stroke:I,'stroke-width':3,'stroke-linecap':'round',opacity:.4});el(svg,'line',{x1:170,y1:150,x2:170,y2:132,stroke:I,'stroke-width':2});lbl(svg,170,172,'the day’s rhythm, set by the sun',M);
   (function loop(){tween(svg,5000,function(u){var x=30+280*u,y=150-160*u*(1-u)*2;s.setAttribute('cx',x);s.setAttribute('cy',Math.max(20,y));var len=20+60*Math.abs(u-.5)*2;sh.setAttribute('x2',170-(x-170)/140*len)},function(){wait(svg,700,loop)})})()}
+,
+ who:function(svg){var N=[[170,44,'Matthew','what the app is|for its people',C],[84,138,'David','the beach’s standard|and the earth',I],[256,138,'weft','how it|is built',I]];
+  el(svg,'path',{d:'M170 44 L84 138 L256 138 Z',fill:'none',stroke:'#3d3648','stroke-dasharray':'2 4'});
+  N.forEach(function(n){ring(svg,n[0],n[1],26,n[4]);lbl(svg,n[0],n[1]+5,n[2],n[4]);var c=n[3].split('|');var y0=n[1]<100?n[1]-44:n[1]+44;lbl(svg,n[0]+(n[1]<100?110:0),n[1]<100?n[1]-2:y0,c[0],M);lbl(svg,n[0]+(n[1]<100?110:0),n[1]<100?n[1]+14:y0+15,c[1],M)});
+  lbl(svg,170,90,'where they differ,',I);lbl(svg,170,105,'Matthew decides, and writes why',I);
+  var d=dot(svg,84,138,G,4);(function loop(k){var s=k%2?[256,138]:[84,138];d.setAttribute('cx',s[0]);d.setAttribute('cy',s[1]);move(svg,d,[s,[170,44]],1300,function(){wait(svg,900,function(){loop(k+1)})})})(0)},
 };
 function start(fig){var svg=fig.querySelector('svg'),k=fig.getAttribute('data-anim');if(!A[k]||svg._built)return;svg._built=true;svg._on=true;A[k](svg,fig)}
 var io='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(x){var fig=x.target,svg=fig.querySelector('svg');if(x.isIntersecting){if(!svg._built)start(fig);else{svg._on=true;var r=svg._resume;svg._resume=null;r&&r()}}else if(svg)svg._on=false})},{rootMargin:'150px 0px',threshold:0}):null;
