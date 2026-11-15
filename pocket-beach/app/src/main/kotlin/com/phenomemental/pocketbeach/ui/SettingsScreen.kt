@@ -55,10 +55,9 @@ fun SettingsScreen(model: Model, nav: Nav) {
         Text("Her voice", style = Type.heading, color = ink.ink, modifier = Modifier.testTag("her-voice"))
         SmallerModel(model)
         Text(
-            "She is Gemma, running on this phone. Each of the companion's jobs has Edge's settings of its own. Jobs set to the same model, processor and context share one engine; " +
-                "a job set apart loads an engine of its own beside it, and both stay in the phone's memory while Ask is open. " +
-                "The phone runs one engine on its GPU at a time: Talk's. A job set to the GPU on another model or context runs on the CPU. " +
-                "A change is used from the next thing you say in Ask.",
+            "She is Gemma, running on this phone. Each of the companion's jobs has Edge's settings of its own. The phone keeps one engine, hers, on its GPU, " +
+                "and every conversation opens on it. A job set apart onto another model or context runs on the CPU: the engine is made again for it, " +
+                "and again for her after, which is slower. A change is used from the next thing you say in Ask.",
             style = Type.small, color = ink.soft,
         )
         val e4b by produceState<ModelStore.State?>(null) {

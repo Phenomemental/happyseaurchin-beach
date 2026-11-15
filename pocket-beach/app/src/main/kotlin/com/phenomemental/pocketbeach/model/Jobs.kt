@@ -6,8 +6,9 @@ import android.content.SharedPreferences
  * The jobs the companion does, each with Edge's settings of its own (0.5's
  * Stage 1, spine:pocket-beach 1.111171): model, processor, temperature,
  * top-k, top-p, context and longest reply. Jobs whose model, processor and
- * context are the same share one engine; a job set apart from the others has
- * an engine of its own, loaded beside theirs.
+ * context are the same share one engine. Sundial 0.10.5: the phone keeps one
+ * engine ([OneEngine]); a job set apart from the others has it made again for
+ * its own, the one before let go first.
  */
 enum class Job(val title: String, val about: String) {
     TALK("Talk", "Her reply to every message in Ask."),
@@ -27,7 +28,7 @@ data class JobSettings(
     val topP: Double,
     val longestReply: Int,
 ) {
-    /** The engine this job runs on: jobs with the same share one. */
+    /** The engine this job runs on: jobs with the same share it. */
     val engine: EngineKey get() = EngineKey(model, processor, context)
 
     /** Picking the likeliest word each time: the same reply to the same words. */
