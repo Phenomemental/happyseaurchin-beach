@@ -4,6 +4,63 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.10.5 is released (15 November): one engine for her, never a second on the CPU:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.5
+- **Install:** `sundial-v0.10.5.apk` over 0.10.4; his blocks stay. No
+  procedure changes, so nothing of his cook is brought up.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.10.5 (28), from main at `3963177` (PR #258), release run
+  266. APK SHA-256 `eefc4270…`. The procedures it carries are byte for
+  byte main's.
+- **Tests:** 317 core, the app's own 21 (7 new, `OneEngineTest`) and all 88
+  device tests (CI run 264 on `92e5a21`, and again in the release run).
+  The line in the sand, test 9, gains:
+  - a conversation, then +, and the second turn runs on the GPU with no
+    second engine made; the greeting and keeping use the same engine;
+  - her settings changed while her conversation is open: the old engine is
+    let go first, the new one is on the GPU, and there are never two on it.
+- **Why:** on his Pixel on 15 November at 08:58, after +, the workings said
+  "The GPU couldn't run it: another engine holds the GPU." She loaded on
+  the CPU (20.6 s), read 1,202 tokens in 31.3 s and wrote at 4.3 a second:
+  43.3 s to her whole reply, against about 9 s on the GPU minutes before.
+- **What caused it:**
+  - Gemma kept an engine for each model, processor and context asked for.
+  - Her engine was asked for under settings that didn't match the one in
+    memory, while her conversation was still open on that one. Since
+    0.10.2 her conversation stays open while he looks elsewhere in the app.
+  - The 0.6.2 rule wouldn't close an engine with a conversation open on
+    it, so it made a second on the CPU and kept that one as hers.
+  - Every conversation after went to the CPU engine, the new one after +
+    among them, though + had closed the conversation in the way.
+  - The 20.6 s load isn't inside the 43.3 s: the CPU engine was made before
+    he spoke, as the app readied her engine (Today opening again, Keep
+    today or the greeting).
+  - Only a change to her Talk model, context or processor in Settings asks
+    for her engine under other settings.
+- **What it changes:**
+  1. **One engine,** made when she is first asked and kept for the life of
+     the app. Every conversation opens on it: her talk, a new conversation,
+     the greeting, keeping. + opens a new conversation on it, never a new
+     engine.
+  2. **Made again only with the old one let go first,** so the GPU is free:
+     when her settings change, when Android is short of memory, or when the
+     GPU fails an answer. Every conversation on the old engine closes with
+     it and opens again on the new one, with its exchanges, as it is next
+     asked. Never let go while a call is under way.
+  3. **Never on the CPU silently.** If the GPU can't take her, it is tried
+     once more. Only then the CPU, and beneath her reply, with or without
+     the workings: "She's on the slower processor; closing and reopening
+     Sundial will fix it." An answer that fails on the GPU makes her engine
+     again on the GPU once, then on the CPU, with the same line.
+  4. Stopping her before her first word is never taken for the GPU failing.
+  5. A job set apart in Settings has the one engine made again for it, and
+     again for her after: slower, and Settings says so.
+- **Only his phone can confirm:**
+  - that after +, her reply comes on the GPU, in about the time of the
+    first conversation's;
+  - that the slower-processor line never shows on an ordinary day.
+
 **Sundial 0.10.4 is released (10 November): his lines run as his:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.4
 - **Install:** `sundial-v0.10.4.apk` over 0.10.3; his blocks stay. At first
