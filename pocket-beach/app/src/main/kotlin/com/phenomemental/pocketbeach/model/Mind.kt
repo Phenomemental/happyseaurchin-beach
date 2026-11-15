@@ -64,7 +64,11 @@ interface Mind {
     /** Load the engine [settings] run on now if it isn't loaded, saying how long that took (null: it was loaded already, or there is nothing to load). */
     suspend fun warm(settings: JobSettings = JobSettings.of(Job.WRITE)): Long? = null
 
-    /** Whether an answer on the GPU failed for the engine [settings] run on, so it runs on the CPU until the app starts again (0.6.2). */
+    /**
+     * Whether the GPU couldn't take the engine [settings] run on, so it runs
+     * on the CPU until the app starts again: an answer failed on it twice
+     * (0.6.2, Sundial 0.10.5), or it couldn't be made there twice.
+     */
     fun gpuFailed(settings: JobSettings): Boolean = false
 
     /** Run it on [processor] alone ("CPU"), or as ever (null: the GPU, else the CPU); it is let go, to load that way next. For the bench. */

@@ -10,11 +10,15 @@ import java.util.concurrent.CopyOnWriteArrayList
  * (the instruction and Matthew's words, then each message after) and wrote,
  * and how fast, as the engine counts them.
  */
-class Pace(processor: String?, val whyNotGpu: String?, val loadMs: Long?) {
+class Pace(processor: String?, whyNotGpu: String?, val loadMs: Long?) {
     class Turn(val read: Int, val readPerSecond: Double, val wrote: Int, val writePerSecond: Double, val firstTokenSeconds: Double? = null)
 
     /** Where it ran; "CPU" once an answer that failed on the GPU was answered on the CPU (0.6.2). */
     @Volatile var processor: String? = processor
+        private set
+
+    /** Why not on the GPU, when the GPU was asked for and couldn't take her. */
+    @Volatile var whyNotGpu: String? = whyNotGpu
         private set
 
     val turns: MutableList<Turn> = CopyOnWriteArrayList()
@@ -28,11 +32,27 @@ class Pace(processor: String?, val whyNotGpu: String?, val loadMs: Long?) {
         if (GPU_FAILED !in notes) notes.add(GPU_FAILED)
     }
 
+    /** Sundial 0.10.5: her engine was made again (let go for memory, or the GPU failing) and her conversation opened again on it: where it runs now. */
+    fun ranOn(processor: String, whyNotGpu: String?) {
+        this.processor = processor
+        this.whyNotGpu = whyNotGpu
+    }
+
+    /**
+     * Sundial 0.10.5: said beneath her reply, always, never only in the
+     * workings, when she ran on the CPU because the GPU couldn't take her;
+     * null when she ran where she was set to.
+     */
+    val slower: String? get() = if (processor == "CPU" && (whyNotGpu != null || GPU_FAILED in notes)) SLOWER else null
+
     /** As this one, loading timed only if [loadMs]; the turns left to add. */
     fun copy(loadMs: Long? = this.loadMs): Pace = Pace(processor, whyNotGpu, loadMs).also { it.notes.addAll(notes) }
 
     companion object {
         const val GPU_FAILED = "The GPU failed on this answer; she answered on the CPU."
+
+        /** Sundial 0.10.5: beneath her reply when the GPU couldn't take her, in his words. */
+        const val SLOWER = "She's on the slower processor; closing and reopening Sundial will fix it."
     }
 
     /** Beside the time: where it ran ("on the GPU"), or nothing when that isn't known. */
@@ -41,7 +61,7 @@ class Pace(processor: String?, val whyNotGpu: String?, val loadMs: Long?) {
     /** The rest in a line: why not the GPU, loading, reading and writing; null when nothing was counted. */
     fun detail(): String? = buildList {
         // On the CPU because the GPU couldn't, not because the CPU was asked for.
-        if (processor == "CPU" && whyNotGpu != null) add("The GPU couldn't run it: $whyNotGpu.")
+        if (processor == "CPU" && whyNotGpu != null) add("The GPU couldn't run it: ${whyNotGpu?.removeSuffix(".")}.")
         addAll(notes)
         loadMs?.let { add("Loading the model: ${secs(it / 1000.0)} s.") }
         if (turns.isNotEmpty()) {

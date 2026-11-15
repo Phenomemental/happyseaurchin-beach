@@ -220,6 +220,10 @@ class Asking(private val app: PocketApp) {
         /** Sundial 0.10.1: a plain line beneath her turn when her reply didn't come, or was stopped; never a blank. */
         var unfinished by mutableStateOf<String?>(null)
             internal set
+
+        /** Sundial 0.10.5: beneath her reply, always, when she ran on the CPU because the GPU couldn't take her ([Pace.SLOWER]). */
+        var slower by mutableStateOf<String?>(null)
+            internal set
         /** Rockpool: the walk his cook ran for this message, waiting on him or done; its trace, step by step (the film strip, in Details). */
         internal var walk: Cook.Walk? = null
         var trace by mutableStateOf<List<Cook.Trace>>(emptyList())
@@ -752,6 +756,7 @@ class Asking(private val app: PocketApp) {
             if (stage !is Stage.Thinking) return@launch
             e.took = (System.nanoTime() - started) / 1_000_000
             e.pace = pace
+            e.slower = pace?.slower
             e.firstShown = firstShown
             val (message, said) = talked.getOrElse { ex ->
                 // Sundial 0.10.1: what she had shown stays in view, and a plain line says she couldn't finish: never a blank.
@@ -1741,6 +1746,7 @@ class Asking(private val app: PocketApp) {
             e.steps.forEach { appendLine("  Step: $it") }
             e.kept?.let { appendLine("  Kept as its shell: ${it.title}") }
             e.unfinished?.let { appendLine("  $it") }
+            e.slower?.let { appendLine("  $it") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")

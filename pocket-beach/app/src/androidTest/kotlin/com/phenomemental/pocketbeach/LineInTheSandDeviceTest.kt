@@ -30,7 +30,8 @@ import org.junit.runner.RunWith
  * the places she marked in her reply, and she isn't asked again; his day and
  * his short answers take the routes cook 1.1.8.3 says; he takes a card off
  * his hand himself; and every yes, Keep yesterday's among them, has its own
- * entry in his history as it is written.
+ * entry in his history as it is written. Sundial 0.10.5: a new conversation
+ * runs on her one engine, on the GPU, and no second engine is ever made.
  */
 @RunWith(AndroidJUnit4::class)
 class LineInTheSandDeviceTest {
@@ -187,6 +188,87 @@ class LineInTheSandDeviceTest {
             compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.isNotEmpty() }
             assertTrue("his TALK line is her recipe", mind.talkInstructions.last().contains("The app: talk with me as yourself, warmly, in a few sentences."))
             assertTrue("his no-day line is handed her", mind.talkMessages.last().contains("If I seem to be struggling, ask gently whether I'd like to sit with it a moment."))
+        }
+    }
+
+    // ── Sundial 0.10.5 ──
+
+    /** Her one engine, its engines pretend: the pretend GPU takes one engine at a time, as his Pixel's does. */
+    private fun onOneEngine(): OnOneEngine = OnOneEngine(mind).also { app.mind = it }
+
+    /** Nothing beneath any reply says she ran slower, and nothing says another engine holds the GPU. */
+    private fun neverSlower() {
+        assertTrue("no plain line", compose.onAllNodes(hasTestTag("slower"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        assertTrue(compose.onAllNodes(androidx.compose.ui.test.hasText("another engine holds the GPU", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        assertTrue(app.asking.history.all { it.slower == null })
+    }
+
+    @Test
+    fun test9_aNewConversationRunsOnHerOneEngineOnTheGpu() {
+        // On his Pixel on 15 November, after +: "The GPU couldn't run it: another engine holds the GPU", 43.3 s on the CPU against about 9 s.
+        Fresh.hatched()
+        Fresh.ungreeted()
+        val her = onOneEngine()
+        mind.talkScript += "How did you sleep?"
+        ActivityScenario.launch(MainActivity::class.java).use {
+            // The greeting, as the dial opens, on her engine.
+            compose.waitFor("greet-question", "How did you sleep?", timeoutMs = 20_000)
+            compose.waitUntil(10_000) { !app.asking.lockedForTests }
+            assertEquals(1, her.one.made)
+            say("Good morning")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 2 }
+            assertEquals("GPU", app.asking.history.last().pace?.processor)
+            compose.tap("new-conversation")
+            compose.waitUntil(10_000) { app.asking.history.isEmpty() && !app.asking.lockedForTests }
+            say("stiff but free")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 3 }
+            // The second turn, the first of the new conversation: on her one engine, on the GPU.
+            val second = app.asking.history.last()
+            assertEquals("GPU", second.pace?.processor)
+            assertEquals(null, second.pace?.whyNotGpu)
+            assertEquals("no second engine made", 1, her.one.made)
+            // Keeping, on her one engine too.
+            compose.tap("keep-today")
+            compose.waitFor("keep-card", timeoutMs = 20_000)
+            assertEquals(listOf("Gemma 4 E2B at 8192 on the GPU (1)"), her.made.toList())
+            assertEquals(1, her.mostOnGpu)
+            assertEquals(0, her.letGo)
+            neverSlower()
+        }
+    }
+
+    @Test
+    fun test9_herEngineMadeAgainLetsTheOldOneGoFirstSoTheGpuIsFree() {
+        // What made the second engine on his Pixel: her engine asked for under other settings while her conversation was still open on it.
+        Fresh.hatched()
+        val her = onOneEngine()
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use {
+                compose.waitFor("dial")
+                say("Good morning")
+                compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 1 }
+                assertEquals(1, her.one.made)
+                // Away to Settings: her conversation stays open while he looks elsewhere. Her context changed there.
+                compose.menu("menu-settings")
+                compose.waitFor("her-voice")
+                compose.runOnUiThread { app.set(com.phenomemental.pocketbeach.model.Job.TALK, app.settings(com.phenomemental.pocketbeach.model.Job.TALK).copy(context = 16384)) }
+                compose.tap("back")
+                compose.waitFor("dial")
+                // Back on Today her engine is readied for the new settings: the old one let go first, her conversation with it.
+                compose.waitUntil(20_000) { her.one.made == 2 && !app.asking.lockedForTests }
+                assertEquals("GPU", her.one.held?.processor)
+                assertEquals(1, her.letGo)
+                compose.tap("new-conversation")
+                compose.waitUntil(10_000) { app.asking.history.isEmpty() && !app.asking.lockedForTests }
+                say("stiff but free")
+                compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 2 }
+                assertEquals("GPU", app.asking.history.last().pace?.processor)
+                assertEquals(listOf("Gemma 4 E2B at 8192 on the GPU (1)", "Gemma 4 E2B at 16384 on the GPU (2)"), her.made.toList())
+                assertEquals("never two on the GPU", 1, her.mostOnGpu)
+                neverSlower()
+            }
+        } finally {
+            app.set(com.phenomemental.pocketbeach.model.Job.TALK, com.phenomemental.pocketbeach.model.JobSettings.of(com.phenomemental.pocketbeach.model.Job.TALK))
         }
     }
 

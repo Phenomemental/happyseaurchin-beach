@@ -178,9 +178,9 @@ class PocketApp : Application() {
     /** [job]'s settings as it runs: on the CPU when it asks for the GPU and another job's engine holds it (0.6.2); on Talk's engine when he never set it apart (0.10.1). */
     fun running(job: Job): JobSettings = Gpu.running(effective(), job)
 
-    /** Why [job] runs on the CPU though set to the GPU: another job's engine holds it, or the GPU failed on one of its answers. Null when it runs as set. */
+    /** Why [job] runs on the CPU though set to the GPU: set apart from her engine, or the GPU couldn't take it. Null when it runs as set. */
     fun cpuWhy(job: Job): String? = Gpu.why(effective(), job)
-        ?: running(job).takeIf { it.processor == "GPU" && mind.gpuFailed(it) }?.let { "the GPU failed on one of its answers, so it stays on the CPU until the app starts again" }
+        ?: running(job).takeIf { it.processor == "GPU" && mind.gpuFailed(it) }?.let { "the GPU couldn't take it, so it stays on the CPU until Sundial is opened again" }
 
     fun set(job: Job, s: JobSettings) {
         jobs.value = jobs.value + (job to s)

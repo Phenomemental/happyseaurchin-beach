@@ -412,6 +412,8 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
         }
         // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
         e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
+        // Sundial 0.10.5: she ran on the CPU because the GPU couldn't take her: said plainly, with or without the workings.
+        e.slower?.let { Text(it, style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("slower")) }
         // Sundial 0.10.1: the help line, centred beneath her reply, only when his words show danger (the app's check, Talking.unsafe).
         if (e.safety != null && !thinking) HelpLine(model)
         if (thinking) {
