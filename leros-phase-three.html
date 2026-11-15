@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-proposal="leros-phase-three">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEROs on the Commons · Phase three — the place</title>
+<meta name="description" content="Phase three of LEROs on the Commons: one landscape every LERO's app stands on, so people find their way around their community, see where its life is and what each person brings. Community Recovery first.">
+<link rel="canonical" href="https://phenomemental.github.io/happyseaurchin-beach/leros-phase-three.html">
+<meta property="og:title" content="LEROs on the Commons · Phase three — the place">
+<meta property="og:description" content="One landscape every LERO's app stands on, so people find their way. Community Recovery first.">
+<meta property="og:image" content="https://happyseaurchin.com/animations/leros-phase-three.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@500&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#eee7d5;--ink:#1d1a17;--muted:#5a5147;--panel:#f6f1e6;--line:#b9ad9a;--crimson:#c21d4e;
+--n0:#110f16;--n1:#1a1720;--n2:#24202c;--nline:#3d3648;--nink:#ede4d3;--nmuted:#ab9f8e;--gold:#d9b24a;--ncrim:#ef5d85;
+--cr0:#1B1424;--cr1:#2A1F38;--crp:#7B3FBF;--crb:#9B5FE0;--crl:#C9A6F0;--crg:#F4C86A;
+--serif:"Cormorant Garamond",Georgia,serif;--app:"Nunito Sans",system-ui,sans-serif;--disp:Oswald,"Arial Narrow",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--crimson:#ef5d85}}
+:root[data-theme="dark"]{--ground:#16130f;--ink:#ede4d3;--muted:#a79c8b;--panel:#1d1914;--line:#4a4237;--crimson:#ef5d85}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:1.2rem;line-height:1.55}
+a{color:var(--crimson)}
+button{font-family:inherit}
+.wrap{max-width:74rem;margin:0 auto;padding:0 1.1rem}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:1rem 0 .4rem;flex-wrap:wrap}
+.wordmark{font-size:.8rem;letter-spacing:.5em;text-transform:uppercase;font-weight:500}
+.tools{display:flex;gap:.4rem;flex-wrap:wrap}
+.tool{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:2px;padding:.35rem .7rem;font-size:1rem;cursor:pointer;min-height:40px}
+.tool.door{border-color:var(--crimson);color:var(--crimson)}
+h1{font-weight:500;font-size:clamp(2rem,6vw,3.4rem);line-height:1.12;margin:.6rem 0 .8rem;max-width:22ch}
+h1 em,.turn{color:var(--crimson);font-style:italic}
+.lede{max-width:34rem;font-size:1.3rem}
+.small{font-size:.95rem;color:var(--muted)}
+.caps{font-variant:small-caps;letter-spacing:.12em}
+.eyebrow{color:var(--crimson);text-transform:uppercase;letter-spacing:.16em;font-size:.85rem;font-weight:600;margin:0}
+.rule{display:flex;align-items:center;gap:.8rem;margin:3rem 0 1.4rem;font-variant:small-caps;letter-spacing:.14em;color:var(--muted)}
+.rule:before,.rule:after{content:"";flex:1;border-top:1px solid var(--line)}
+.night{background:var(--n0);color:var(--nink);border:1px solid var(--line);border-radius:2px}
+.band{margin:1rem 0 .4rem;position:relative}
+.band svg{display:block;width:100%;height:auto;max-height:82vh;margin:0 auto}
+.cap{font-style:italic;font-size:1.05rem;color:var(--muted);margin:.4rem 0 0}
+.replay{background:none;border:0;color:var(--crimson);text-decoration:underline;font-size:1rem;cursor:pointer;padding:.2rem 0}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.8rem 1.4rem;margin:1rem 0}
+.gloss div{margin:0}.gloss dt{font-weight:600}.gloss dd{margin:0 0 .4rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem}
+.tile{border:1px solid var(--line);border-radius:2px;padding:.7rem .8rem;background:var(--panel);text-decoration:none;color:var(--ink);display:block}
+.tile b{display:block;font-weight:600}.tile span{font-size:.95rem;color:var(--muted)}
+.step{display:grid;grid-template-columns:1fr;gap:1.2rem;margin:0 0 2rem;scroll-margin-top:1rem}
+.words{max-width:34rem}
+.inshort{border-left:2px solid var(--crimson);padding-left:.7rem;font-style:italic;margin:.3rem 0 .8rem}
+h2{font-weight:500;font-size:clamp(1.6rem,4.5vw,2.3rem);line-height:1.15;margin:.2rem 0 .4rem}
+details{border-top:1px solid var(--line);padding:.45rem 0}
+details summary{cursor:pointer;font-weight:500;list-style:none}
+details summary::before{content:"+ ";color:var(--crimson)}
+details[open] summary::before{content:"– "}
+details p{margin:.4rem 0 0;font-size:1.1rem}
+.addr{display:none;font-family:ui-monospace,Menlo,monospace;font-size:.75rem;color:var(--muted);margin-left:.3rem}
+body.show-addr .addr{display:inline}
+.card{border:1px solid var(--crimson);border-radius:2px;padding:.9rem 1rem;margin:1rem 0;background:var(--panel)}
+.card .q{font-size:1.2rem;font-weight:500;margin:.2rem 0 .3rem}
+.card .who{color:var(--muted);font-size:1rem;margin:0 0 .6rem}
+.words-row{display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .5rem}
+.wbtn{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:2px;padding:.3rem .8rem;font-size:1rem;cursor:pointer;min-height:40px}
+.wbtn.on{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.meaning{font-size:.95rem;color:var(--muted);margin:.2rem 0 .6rem}
+.card input,.card textarea,.room textarea,.sheet textarea{width:100%;font-family:inherit;font-size:1.1rem;padding:.45rem .6rem;border:1px solid var(--line);border-radius:2px;background:var(--ground);color:var(--ink);margin:.2rem 0}
+.say{background:var(--ink);color:var(--ground);border:0;border-radius:2px;padding:.45rem 1rem;font-size:1.05rem;cursor:pointer;min-height:42px}
+.tally{font-size:.95rem;color:var(--muted);margin-top:.4rem}
+.inst{position:relative;padding:.8rem;min-width:0}
+.inst h3{font-family:var(--serif);font-weight:500;font-size:1.25rem;margin:.1rem 0 .5rem;color:var(--nink)}
+.inst .note{font-size:1.05rem;color:var(--nink);min-height:3.2em;margin:.5rem 0 0}
+.inst .note b{font-weight:600}
+.inst .illus{font-size:.9rem;color:var(--nmuted);font-style:italic;margin:.4rem 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 .6rem}
+.chip{background:transparent;border:1px solid var(--nline);color:var(--nink);border-radius:20px;padding:.25rem .75rem;font-size:.98rem;cursor:pointer;min-height:38px}
+.chip.on{background:var(--nink);color:var(--n0);border-color:var(--nink)}
+.inst svg{display:block;width:100%;height:auto}
+.hp{cursor:pointer}.hp:focus{outline:none}.hp:focus-visible>circle:nth-child(2),.hp:focus-visible>circle:first-child{stroke:#ef5d85;stroke-width:2.5}
+/* phone */
+.phone{width:min(300px,100%);margin:0 auto;background:var(--cr0);border-radius:30px;border:6px solid #000;height:540px;position:relative;overflow:hidden;font-family:var(--app);color:#F3EDF9;touch-action:none;user-select:none;-webkit-user-select:none}
+.ph-in{position:absolute;inset:0;padding:14px 14px 70px;overflow:hidden}
+.ph-eb{font-family:var(--disp);letter-spacing:.14em;font-size:11px;color:#A99BBB;text-align:right}
+.ph-h{font-family:var(--disp);font-size:22px;letter-spacing:.04em;margin:4px 0 8px}
+.ph-card{background:var(--cr1);border:1.5px solid #4A2275;border-radius:12px;padding:8px 10px;margin:0 0 7px;font-size:14px}
+.ph-card small{display:block;color:#DCD0EA;font-size:12.5px}
+.ph-wait{border:1.5px solid var(--crb);border-radius:18px;padding:6px 10px;margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:center}
+.ph-wait i{width:8px;height:8px;border-radius:50%;background:var(--crg);flex:none}
+.ph-ring{width:92px;height:92px;margin:4px auto 2px;position:relative}
+.ph-keep{background:var(--crp);border-radius:22px;text-align:center;padding:9px;font-weight:700;margin-top:8px}
+.ph-box{background:var(--cr1);border:1.5px solid #4A2275;border-radius:12px;height:56px;margin-top:6px}
+.ph-bar{position:absolute;left:0;right:0;bottom:0;height:62px;border-top:1px solid #4A2275;background:var(--cr0);display:flex;align-items:center;justify-content:space-around;font-size:11.5px;color:#A99BBB}
+.ph-bar span{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.ph-bar span.on{color:#F3EDF9;font-weight:700}
+.ph-heart{position:absolute;left:50%;bottom:10px;width:64px;height:64px;margin-left:-32px;border-radius:50%;background:#000;border:2px solid var(--crb);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;touch-action:none}
+.ph-heart svg{width:30px}
+.compass{position:absolute;inset:0;background:rgba(17,12,24,.86);z-index:2;display:none}
+.compass.open{display:block}
+.cp{position:absolute;transform:translate(-50%,-50%);background:var(--cr1);border:2px solid #4A2275;border-radius:16px;padding:10px 12px;text-align:center;min-width:92px;font-size:13px}
+.cp b{display:block;font-size:15px}
+.cp.hot{background:var(--crp);border-color:var(--crl)}
+.ph-hint{position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:12px;color:#C9A6F0;z-index:3;pointer-events:none}
+.ph-menu{position:absolute;inset:0;background:var(--cr0);z-index:4;padding:14px;display:none;font-size:13.5px}
+.ph-menu.open{display:block}
+.ph-menu p{margin:0 0 5px;padding:5px 0;border-bottom:1px solid #2A1F38}
+.ph-menu .sec{color:#C9A6F0;font-family:var(--disp);letter-spacing:.1em;font-size:11px;border:0;margin-top:8px}
+.now3{display:grid;grid-template-columns:1fr;gap:.4rem;margin-top:.6rem}
+.now3 div{border:1px solid var(--nline);border-radius:2px;padding:.5rem .6rem;font-size:1rem}
+.now3 b{color:var(--gold);font-variant:small-caps;letter-spacing:.12em;display:block;font-size:.85rem}
+.now3 .later b{color:var(--nmuted)}.now3 .next b{color:var(--ncrim)}
+.slider{width:100%;accent-color:var(--gold);margin:.4rem 0}
+.wl{display:flex;gap:.6rem;align-items:center;margin-top:.6rem;flex-wrap:wrap}
+.mini{width:150px;border-radius:18px;border:4px solid #000;padding:8px;font-family:var(--app);font-size:11px}
+.strip{display:flex;gap:1rem;justify-content:center;align-items:flex-start}
+.strip .col{width:120px;text-align:center;font-size:.95rem}
+.tall{height:300px;overflow:hidden;border-radius:12px;border:3px solid #000;background:var(--cr0);position:relative}
+.tall .mv{position:absolute;left:6px;right:6px;top:0}
+.tall .b{height:14px;border-radius:4px;background:var(--cr1);margin:5px 0}
+.tall .b.g{background:transparent;border:1.5px solid var(--crg)}
+.tall .b.p{background:var(--crp)}
+.room,.threads,.plain{border-top:1px solid var(--line);padding-top:1rem}
+.voice{border-left:2px solid var(--line);padding-left:.7rem;margin:.5rem 0;font-size:1.05rem}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:50;align-items:flex-end;justify-content:center}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--ground);color:var(--ink);width:100%;max-width:38rem;max-height:88vh;overflow:auto;border-radius:2px 2px 0 0;padding:1.1rem 1.2rem 1.6rem;border-top:3px solid var(--crimson)}
+.sheet ol{padding-left:1.3rem;margin:.4rem 0}
+.copy{background:transparent;border:1px solid var(--ink);color:var(--ink);border-radius:2px;padding:.3rem .8rem;cursor:pointer;font-size:1rem;min-height:40px}
+.rail{display:none}
+footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;font-size:1rem;color:var(--muted)}
+@media (min-width:960px){
+ .step{grid-template-columns:minmax(0,34rem) minmax(0,1fr);gap:2.4rem;align-items:start}
+ .step.flip .words{order:2}.step.flip .inst-wrap{order:1}
+ .inst-wrap{position:sticky;top:1rem}
+ .rail{display:flex;flex-direction:column;gap:.5rem;position:fixed;left:.8rem;top:40%;z-index:5}
+ .rail a{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);background:var(--panel);font-size:1rem}
+ .now3{grid-template-columns:repeat(3,1fr)}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.step>*{min-width:0}#i7>div{max-width:100%}
+</style>
+</head>
+<body>
+<nav class="rail" aria-label="Steps">
+<a href="#s1" title="The place">◎</a><a href="#s2" title="How it works for the people in it">☺</a><a href="#s1b" title="How it’s kept">▢</a><a href="#s3" title="The gift map">✿</a><a href="#s4" title="Every LERO">◉</a><a href="#s5" title="The build">▣</a><a href="#s6" title="The screens">▤</a><a href="#s7" title="Decided on 14 November">✓</a><a href="#talk" title="Talk">❝</a>
+</nav>
+<div class="wrap">
+<header class="top">
+ <span class="wordmark">LEROs on the Commons · Phase three</span>
+ <span class="tools">
+  <button class="tool door" id="btn-door" type="button">With your AI</button>
+  <button class="tool" id="btn-addr" type="button" aria-pressed="false">Addresses</button>
+  <button class="tool" id="btn-theme" type="button" aria-label="Light or dark">◐</button>
+ </span>
+</header>
+
+<p class="eyebrow">A proposal · Community Recovery first</p>
+<h1>The place: one landscape every LERO's app stands on, <em>so people find their way.</em></h1>
+<p class="lede">The third phase of LEROs on the Commons, from Matthew Bushell: lay the place out once, so every screen of a LERO's app is a view of it. Five steps, each with a picture to play and a decision to answer, then the app’s screens and what was decided on 14 November. Everything below reads live from the beach.</p>
+<p class="small" style="display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin:.6rem 0 0"><a href="#tiles">Answer the decisions</a><a href="#room">Talk in the room</a><a href="#s6">See the screens</a><a href="https://happyseaurchin.com/leros-phase-two">Phase two</a><a href="leros-on-the-commons.html">Phase one</a><a href="https://happyseaurchin.com/proposal/leros-phase-three">This proposal, plainly</a></p>
+
+<figure class="band night" style="margin:1.2rem 0 0">
+ <svg id="band" viewBox="0 0 400 520" role="img" aria-labelledby="bandT bandD"><title id="bandT">The living place</title><desc id="bandD">Community Recovery's neighbourhood at night: the common at the centre, four neighbourhoods round it, the gardens along the top, the gate and the lighthouse below. Small lights travel the paths as life moves through it.</desc></svg>
+</figure>
+<p class="cap">The neighbourhood seen from the lighthouse, drawn from its draft on the beach: the common at the centre, four neighbourhoods where the standards' four sections stand, the gardens along the top, the gate below. The travelling lights are life moving through it, in gold because they carry no names; the gardens stay shaded, because a garden lights only for its owner. <button class="replay" id="bandReplay" type="button">Play it again</button></p>
+
+<div class="rule">in plain words</div>
+<dl class="gloss">
+ <div><dt>A LERO</dt><dd>A lived experience recovery organisation: built by people in recovery, for people in recovery.</dd></div>
+ <div><dt>Community Recovery</dt><dd>A LERO in the making in Wellingborough, meeting at Salem Hall and the Allotments. Its app is the first to stand on this place.</dd></div>
+ <div><dt>The beach</dt><dd>The open ground where everything here is kept, a line at a time, each line in its place.</dd></div>
+ <div><dt>The landscape</dt><dd>One place, laid out once: every screen of the app is a view of it, from where a person stands.</dd></div>
+ <div><dt>A neighbourhood</dt><dd>One of four parts round the common, standing where the four sections of the national LERO standards stand.</dd></div>
+ <div><dt>My garden</dt><dd>Each member’s own place, private: their hope, their gifts, their days and the steps they’ve taken.</dd></div>
+ <div><dt>Our wood</dt><dd>The 33 standards as four groves, a tree for each, growing as the community shows them in what it does.</dd></div>
+ <div><dt>The lighthouse</dt><dd>The sign at the front, where a person sees where they are, what’s waiting for them and where life is happening.</dd></div>
+ <div><dt>A decision card</dt><dd>One question at the end of a step, answered with a word and a line of your own.</dd></div>
+</dl>
+
+<div class="rule">where it stands</div>
+<div class="tiles" id="tiles"></div>
+
+<div style="height:2.4rem"></div>
+<section class="step" id="s1">
+ <div class="words">
+  <p class="eyebrow">Step one · the place</p>
+  <h2 data-sp="1" data-part="title"></h2><span class="addr">1</span>
+  <p class="inshort">In short: lay the place out once, and let every screen be a view of it.</p>
+  <p data-sp="1" data-part="body"></p>
+  <div data-rooms="1"></div>
+  <div class="card" data-dec="1.8"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i1">
+  <h3>From a list of homes to a place</h3>
+  <div class="chips" role="group" aria-label="Show the map as"><button class="chip" data-v="list">Today: a list</button><button class="chip on" data-v="land">The landscape</button></div>
+  <div id="i1v"></div>
+  <p class="note" id="i1n" aria-live="polite">Tap a place to read it.</p>
+ </div><p class="cap">Every block on Community Recovery's beach has one home; the landscape gives each home a place you can stand in. The words under each place are the draft's own.</p></div>
+</section>
+
+<section class="step" id="s1b">
+ <div class="words">
+  <p class="eyebrow">Step one, its own decision · how it’s kept</p>
+  <h2 data-sp="1.3" data-part="title"></h2><span class="addr">1.3</span>
+  <p class="inshort">In short: a map the app draws, now; a world on the beach when it’s ready.</p>
+  <p data-sp="1.3" data-part="body"></p>
+  <div data-rooms="1.3"></div>
+  <div class="card" data-dec="1.38"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i1b">
+  <h3>Three ways to keep the landscape</h3>
+  <div class="now3"><div class="next"><b>Now · chosen</b>A map the app draws, from what Community Recovery’s beach already holds. Nothing new is added to a beach real people use.</div><div class="later"><b>Later</b>A world on Community Recovery’s live beach, once a member’s card and the standard’s other two parts are settled.</div><div class="later"><b>If wanted</b>A world tried apart first, with made-up members, before moving through the place is ever offered.</div></div>
+  <p class="note">Matthew’s answer, 14 November: a map the app draws.</p>
+ </div></div>
+</section>
+
+<section class="step flip" id="s2">
+ <div class="words">
+  <p class="eyebrow">Step two · the people in it</p>
+  <h2 data-sp="1.1" data-part="title"></h2><span class="addr">1.1</span>
+  <p class="inshort">In short: each person sees where they are, what's waiting for them, and where life is happening.</p>
+  <p data-sp="1.1" data-part="body"></p>
+  <div data-rooms="1.1"></div>
+  <div class="card" data-dec="1.18"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i2">
+  <h3>Finding the way, with one thumb</h3>
+  <div class="chips" role="group" aria-label="Way to move"><button class="chip" data-m="menu">A menu, before</button><button class="chip" data-m="bar">The bar, tried</button><button class="chip on" data-m="thumb">The thumb</button></div>
+  <div class="phone" id="phone"></div>
+  <p class="note" id="i2n" aria-live="polite">Hold the heart, then slide your thumb to a place. Or just tap it.</p>
+  <h3 style="margin-top:1rem">What it does for each person</h3>
+  <div class="chips" role="group" aria-label="Person" id="pchips"></div>
+  <div id="pwhat"></div>
+ </div><p class="cap">The thumb in Community Recovery's own colours: Today under the thumb, Us above, Me to one side, How we run to the other, More below. A plain list, Everything, stays beside it for anyone who prefers it. The bar was tried and taken out.</p></div>
+</section>
+
+<section class="step" id="s2b">
+ <div class="words">
+  <p class="eyebrow">From the lighthouse · the living within it</p>
+  <h2>What the lighthouse shows</h2><span class="addr">1.17</span>
+  <p class="inshort">In short: the life of the place, drawn so people can feel it, members only and never a name.</p>
+  <p data-sp="1.17" data-part="body"></p>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i3">
+  <h3>Five ways to see the life of the place</h3>
+  <div class="chips" role="group" aria-label="Insight"><button class="chip on" data-t="rhythm">The week's rhythm</button><button class="chip" data-t="pulse">Paths walked</button><button class="chip" data-t="flow">The golden flow</button><button class="chip" data-t="garden">Our wood growing</button><button class="chip" data-t="reach">The people we meet</button></div>
+  <div id="i3v"></div>
+  <p class="note" id="i3n" aria-live="polite"></p>
+  <p class="illus">Drawn from a week like this one, to show the shape of it. In the app these read the live place, members only, in gold because they carry no names, and dark until enough people have taken part.</p>
+ </div></div>
+</section>
+
+<section class="step flip" id="s3">
+ <div class="words">
+  <p class="eyebrow">Step three · the gift map</p>
+  <h2 data-sp="1.11" data-part="title"></h2><span class="addr">1.11</span>
+  <p class="inshort">In short: the first thing the place shows is what members bring, and who could meet whom.</p>
+  <p data-sp="1.11" data-part="body"></p>
+  <div data-rooms="1.11"></div>
+  <div class="card" data-dec="1.118"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i4">
+  <h3>The gift map</h3>
+  <div class="chips" role="group" aria-label="Show"><button class="chip on" data-g="both">Hopes and gifts</button><button class="chip" data-g="gifts">Gifts</button><button class="chip" data-g="needs">Hopes</button></div>
+  <div id="i4v"></div>
+  <p class="note" id="i4n" aria-live="polite">Tap an open ring, a hope, to see which gifts could meet it.</p>
+  <p class="illus">Illustration: hopes and gifts invented to show the shape. Seen by members only, each shared on its owner’s yes; the crimson one went wider. What someone could use stays on paper.</p>
+ </div></div>
+</section>
+
+<section class="step" id="s4">
+ <div class="words">
+  <p class="eyebrow">Step four · every LERO</p>
+  <h2 data-sp="1.111" data-part="title"></h2><span class="addr">1.111</span>
+  <p class="inshort">In short: the same place for every LERO, each set where it really is.</p>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i5">
+  <h3>From the country to the common</h3>
+  <input class="slider" id="zoom" type="range" min="0" max="4" step="1" value="0" aria-label="Zoom from the United Kingdom down to the neighbourhood">
+  <div id="i5v"></div>
+  <p class="note" id="i5n" aria-live="polite"></p>
+  <h3 style="margin-top:.8rem">The white label</h3>
+  <div class="chips" role="group" aria-label="Which LERO"><button class="chip on" data-w="cr">Community Recovery</button><button class="chip" data-w="other">Another LERO</button></div>
+  <div class="wl" id="wl"></div>
+ </div></div>
+</section>
+
+<section class="step flip" id="s5">
+ <div class="words">
+  <p class="eyebrow">Step five · the build</p>
+  <h2 data-sp="1.1111" data-part="title"></h2><span class="addr">1.1111</span>
+  <p class="inshort">In short: each piece useful alone, with a run-through of every screen alongside.</p>
+  <p data-sp="1.1111" data-part="body"></p>
+  <div data-rooms="1.1111"></div>
+  <div class="card" data-dec="1.11118"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i6">
+  <h3>The run-through: the Leadership Team page</h3>
+  <div class="chips" role="group" aria-label="Show"><button class="chip on" data-b="both">Before and after</button><button class="chip" data-b="play">Scroll them</button></div>
+  <div id="i6v"></div>
+  <p class="note" id="i6n">Before: one page of about two and a half minutes of scrolling. After: a hub of about three screens, each meeting and the notes behind their own doors.</p>
+ </div></div>
+</section>
+
+<section class="step" id="s6">
+ <div class="words">
+  <p class="eyebrow">The screens · decided 14 November</p>
+  <h2 data-sp="1.19" data-part="title"></h2><span class="addr">1.19</span>
+  <p class="inshort">In short: the app grows with what a person does, and nothing is counted.</p>
+  <p data-sp="1.19" data-part="body"></p>
+  <div data-kids="1.19"></div>
+ </div>
+ <div class="inst-wrap"><div class="inst night" id="i7">
+  <h3>Nine screens, drawn from the app as it stands</h3>
+  <div style="display:flex;gap:.8rem;overflow-x:auto;padding:.3rem 0 .6rem;scroll-snap-type:x mandatory;align-items:flex-start" tabindex="0" role="region" aria-label="The nine screens; scroll sideways"><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/1-today-member.png" alt="Today, a member in their first days" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">Today, a member in their first days</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/2-today-leader.png" alt="Today, a leader" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">Today, a leader</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/3-thumb-menu.png" alt="The thumb menu" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">The thumb menu</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/4-everything.png" alt="Everything, the plain list" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">Everything, the plain list</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/5-what-i-bring.png" alt="What I bring" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">What I bring</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/6-my-garden.png" alt="My garden" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">My garden</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/7-our-wood.png" alt="Our wood" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">Our wood</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/8-gift-map.png" alt="The gift map, for peer leaders" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">The gift map, for peer leaders</figcaption></figure><figure style="flex:none;width:190px;margin:0;scroll-snap-align:start"><img src="images/leros-phase-three/9-see-it-as.png" alt="See it as, for builders" style="width:190px;height:auto;border-radius:18px;border:3px solid #000;display:block"><figcaption class="small" style="margin-top:.35rem;color:#d8cdbb">See it as, for builders</figcaption></figure></div>
+  <p class="illus">In Community Recovery’s own look. The people on the gift map are samples and the grove sizes are illustrative; the words are for the Leadership Team to choose.</p>
+ </div></div>
+</section>
+
+<section class="step" id="s7">
+ <div class="words" style="max-width:46rem">
+  <p class="eyebrow">What was decided, each with its reason</p>
+  <h2 data-sp="4" data-part="title"></h2><span class="addr">4</span>
+  <p data-sp="4" data-part="body"></p>
+  <div data-kids="4"></div>
+ </div>
+</section>
+
+<div class="rule" id="talk">talk</div>
+<section class="threads" data-threads="leros-phase-three"><p class="small">No threads yet: each piece of work at the build becomes a thread once its decision stands.</p></section>
+<section class="room" id="room">
+ <h2 style="font-size:1.6rem">The room</h2>
+ <p>For talk that isn't a decision: questions, ideas, a reason to wait.</p>
+ <div id="roomLines"><p class="small">Nobody has spoken in the room yet.</p></div>
+ <p><a href="https://mirror.onen.ai/?pool=leros-phase-three">Talk in the room</a> · <button class="copy" type="button" data-copy="Use the beach connector. Read pool:leros-phase-three at beach.happyseaurchin.com and add my line there.">Copy a line for your own Claude</button></p>
+</section>
+<section class="plain">
+ <p>The plain page, drawn from the blocks alone: <a href="https://happyseaurchin.com/proposal/leros-phase-three">happyseaurchin.com/proposal/leros-phase-three</a>. Phase one is <a href="leros-on-the-commons.html">LEROs on the Commons</a>; phase two is <a href="https://happyseaurchin.com/leros-phase-two">privacy first</a>. The page on David’s site, drawn by weft: <a href="https://happyseaurchin.com/leros-phase-three">happyseaurchin.com/leros-phase-three</a>.</p>
+</section>
+<footer>
+ <p id="create-your-own"></p>
+ <p>With thanks to David Pinto, who built the ground these pages stand on: <a href="https://beach.happyseaurchin.com">the beach</a>.</p>
+ <p>Made by Matthew Bushell, with Claude.</p>
+</footer>
+</div>
+
+<div class="sheet-bg" id="doorBg" role="dialog" aria-modal="true" aria-labelledby="doorT">
+ <div class="sheet">
+  <p class="eyebrow">With your AI</p>
+  <h2 id="doorT" style="font-size:1.6rem">Read this with your own Claude</h2>
+  <ol>
+   <li>In Claude, open Settings, then Connectors, then Add custom connector.</li>
+   <li>Give it the beach's address: <b>https://bsp.hermitcrab.me/mcp/v1</b></li>
+   <li>Start a new chat and paste the message below.</li>
+  </ol>
+  <textarea id="doorMsg" rows="5" readonly></textarea>
+  <p><button class="copy" type="button" id="doorCopy">Copy the message</button> <button class="copy" type="button" id="doorClose">Close</button></p>
+  <p class="small">Everything else, including a connector that keeps your key from your AI: <a href="https://happyseaurchin.com/connect">happyseaurchin.com/connect</a></p>
+ </div>
+</div>
+
+
+<script>
+window.__PREVIEW__=false;window.__DATA__={"spine": {"1": {"1": {"1": {"1": {"1": {"2": "WHAT IT COSTS — the work: weft's building and David's time, which phase three names (4.6). It uses what the beach already has: its standard for places, the earth beach, and the app as it stands. Laid out this way, every possibility stays open, including one day an RPG with other players, without anyone building one now. (Until 14 November this line said 'nothing beyond the work'.)", "3": "WHAT IT CHANGES ON COMMUNITY RECOVERY'S BEACH — the landscape is kept as a map the app draws (4.7), so no world blocks are added yet. The meeting room stays off; it was never used. Each place's room for talk opens only as 4.4 says.", "8": "DECIDE — is this the order of work, with these owners? Asked of David, weft and Matthew. ANSWERED 14 November by Matthew: yes, with weft's three changes (leros-phase-three:weft), and weft as the one builder (1.19).", "_": "THE BUILD — weft is the one builder of the app for phase three (1.19). Weft builds See it as first, then the journey, on a private copy with made-up people in every ring; David and Matthew both walk it as every ring; then it goes live one screen at a time, with before and after screenshots, as the app's house rules say. The run-through of every screen (1.15) runs alongside, starting with the meeting notes. The gift map follows. Matthew keeps and steers; weft builds in the app and on the beach; David answers for the standard and the earth. Each piece is carried as a thread once its decision stands."}, "2": "THE OUTWARD MAP — Community Recovery's app already shows where it sits among the LEROs, from the United Kingdom down to Wellingborough, lit gold with 'We are here', read from the earth beach (earth.beach.happyseaurchin.com). Today that map stops at the town, and the neighbourhood inside it is a list.", "3": "THE GRAFT — by the beach's standard, a place joins a larger world by its address: a region fits where it stands one step from a named neighbour, and everything beneath inherits everything above (pscale:world-genome 2.4). A LERO's landscape joins the earth the same way, its keeper carrying the placing (pscale:world-genome 5).", "8": "DECIDE — should each LERO's place join the earth at its own town, its keeper carrying the placing? Asked of David. Matthew's answer, 14 November: NOT YET, for the reason at 1.111.", "_": "EVERY LERO — the same landscape for every LERO, each on a beach of its own: the common, the four neighbourhoods at the standards' four sections, the gate and the gardens, with that LERO's own places inside. Each LERO's place is set where it really is on the earth, so the app's outward map, 'We are here', walks straight into the neighbourhood, and CLERO can read one picture across many LEROs because the same places stand at the same addresses (leros-on-the-commons 1.16). Nothing is copied upward. Decided 14 November: the app is built now ready to be white-labelled, each LERO's name, logo, colours, venues and words kept in settings and blocks and out of the code; it is offered to other LEROs only once phase one's kit, agreement and ground are in place (leros-on-the-commons 1.1113 and 1.1115). Why: the offer isn't ready to go outward (Matthew, 9 November), and building it this way costs nothing extra."}, "2": "WHAT STANDS — What I bring already asks asset-based community development's head, hands and heart, and connections: something I know about, something I can do or make, something I care about, groups I'm part of. Hope was asked at Ask to join and dropped from What I bring on 13 November; it comes back (4.2). Introductions show gifts only. Learning together already gathers what members would like to learn.", "3": "THE GROUPS IN IT — who holds each place, members, volunteers, the Leadership Team, welcomers, supporters and visitors, is the register that answers what David named as a gap on the beach: groups, and how people stand in relation to one another and to the place (pscale:world-genome 2.3; the draft at community-recovery-design:Phenomemental 1.296). Supporters are people from partner organisations who help without a vote (4.1).", "8": "DECIDE — what should the map show first, inside the members' circle: gifts at places and times, what members would like to learn, or both? Asked of Matthew and David. GIFTS, LEARNING, BOTH or NOT YET. ANSWERED 14 November by Matthew: BOTH, with hope beside the gifts; needs stay on paper.", "_": "THE GIFT MAP — asset-based community development made practical (leros-on-the-commons 1.17), as the first thing the landscape shows: what members say they bring (hope, something they know about, something they can do or make, something they care about, groups they're part of), at which places and when, with what members would like to learn beside it, so peer leaders see who could meet whom and which gifts sit unused. Its loop is Matthew's golden flow, starting from hope: hope, gift, met, changed. Members only, and each part reaches the map only on its owner's yes, item by item. Needs stay on paper, in the welcome conversation. Beside the map stand the community's cards of things that need doing, put up by the Leadership Team, where gifts meet the work (the original proposal's 'wanting to help', brought back). Renamed on 14 November from 'the gift-and-need map': asset-based community development starts from people's gifts and dreams, and starting from need is the deficit lens it was made to replace."}, "2": "NOW — moving through the app. Tried on 14 November and taken out the same afternoon at Matthew's word: a bar at the foot of every screen (Me, Us, Today, How we run, More). It sat inside the page, above the help box, and scrolled away with it, so people didn't see it. What stands, decided 14 November: the thumb menu (community-recovery-design:Phenomemental 1.233), hold Today and slide to Us, Me, How we run or More, or just tap, with Everything, the plain list, always beside it; and Today holding my day, the step chosen for me and two side paths (1.19). The Leadership Team shapes the thumb menu before it is built. Any future bar is fixed to the bottom of the screen, stands out from the cards, and comes only if the leaders want one.", "3": "WHAT IT MUST HOLD — every gesture has a tap and a plain list beside it; words stay few, big and plain; nothing is counted and nothing is scored about a person; what is recorded and what is shown are said plainly in the privacy notice (1.17); the app speaks in I and we; and it meets WCAG 2.2 AA, as Community Recovery's accessibility policy promises.", "4": "THE PEOPLE IN IT TODAY — Community Recovery's Leadership Team, founders who appointed one another on 16 October 2026, came into the app on 13 November as its first people and co-producers; by that night seven of the ten founding seats were taken. How they are involved, decided 14 November: a basic standard is designed first by Matthew, David and weft, because there has to be something real to respond to; the leaders are then asked in the app, they name the places and walk the landscape on paper, and anything decided before they were asked stays open to change. Why: co-production is CLERO's second principle and the main principle here (leros-on-the-commons 1.152), and the app can already carry each leader's yes, suggested change or not sure in their own notebook. (Until 14 November this line said nothing in the proposal asked anything of them.)", "8": "DECIDE — is the view from the lighthouse right: each person sees where they are, what's waiting for them and where life is happening, and sees others only where they have acted in the open? Asked of David and Matthew. ANSWERED 14 November by Matthew: yes, with paths shown by place and by week (1.17).", "_": "HOW IT WORKS FOR THE PEOPLE IN IT — standing at the lighthouse, a person sees where they are, what is waiting for them, and where the life of the community is: who's going to Tuesday's social, a new note on the noticeboard, a word left for them. Others are seen only where they have acted in the open, on the noticeboard, in who's going, in Our story, in a word left on someone's page; a garden lights only for its owner. The app gets clearer now, and moving through the place itself comes as the app matures.", "5": "THE RUN-THROUGH — every screen walked in the order a person meets it, as a member, a leader, a welcomer and a visitor would: what it is for, what I can do there, where I go next, how it looks and reads, and what must stay. Each screen's keep list and changes are written beneath its design, and built a batch at a time to the app's house rule: before and after at phone width, nothing removed unless asked, never plainer or less alive than it was. The meeting notes come first, made readable and agreed in the app, because the Leadership Team is in it now. One builder per screen at a time (1.19).", "6": "WHAT IT IS FOR EACH PERSON — the product this phase serves, described person by person with what each can do now, what comes next and what comes later: someone curious, a member, volunteers, the Leadership Team, supporters, learning and development, the organisation and the network (community-recovery-design:Phenomemental 8.5). A LERO app, Community Recovery's first, to be white-labelled for any LERO once it is firm: the place, the screens and the standards belong to every LERO; the names, the real places, the brand and the words are each LERO's own.", "7": "WHAT THE LIGHTHOUSE SHOWS — the life of the place, drawn so people can feel it: the rhythm of the week, with the sessions and the life between them; the paths most walked and the places most lively; hopes meeting gifts, the golden flow; our wood growing as the evidence comes in; and the people we meet. Paths and liveliness are shown by place and by week, never who and never by the hour, and a place lights only once a few people have been there. Each picture comes from what actually happens and is seen by members only. A record is kept of which places in the app are visited, shown only as how lively each place is, and the privacy notice says so. Decided 14 November at Matthew's word: paths are shown because they show there is life. Claude's weighed concern, kept here: with only a few people a path can point to one person, which is why it is shown only by place and by week. Leaders and supporters see only the pattern across everyone; steps done in the open stay visible as now; one person's path stays in their own garden.", "9": {"1": "TODAY — keep today; one step chosen for me, shown big; two small side paths. The pick is first what someone is waiting on me for (for a leader, the meeting notes or the constitution), then What I bring until I've answered or chosen Later, then the next step on my path. Why: Today holds my day and what is waiting for me; links gathering on it showed a design problem.", "2": "MOVING — the thumb menu (1.12), with Everything, the plain list, beside every gesture, as WCAG 2.2 AA and Matthew's notes require.", "3": "THE STEPS — weft's journey, built the pscale way: one block holds the steps a person can take, in plain words (read our safeguarding policy; say yes to part one of the constitution; come to the next meeting), at the same addresses as the standards and the map, the common holding first steps, each step saying who it is for. Each person's path is their own mirror of it, in their garden. The Leadership Team changes the steps block, never the code. Why: the app used to open over a person's first nine days by counting kept days, which went on 11 November under 'nothing is counted'; opening by what a person has done keeps that rule and lets the app grow again.", "4": "WHAT I BRING, FIRST — offered first on Today, never required (4.2). These are the first questions, before any day is kept: the leaders become the first gift map, and answering is their first chance to say whether the questions are right.", "5": "MY GARDEN — each member's private place: their hope as a gold seed, their gifts, their days, and the steps they've taken drawn as flowers in the standards' four colours. Bare ground is room to grow; no numbers, no scores. Why the name: a garden is somewhere I tend, which says what I do there.", "6": "OUR WOOD — the standards drawn as four groves, a tree for each standard, growing as the community shows it in what it does; the same steps feed it only as community evidence, with no names. It replaces the standards garden built on 13 and 14 November, so each word keeps one meaning. Why a wood: Alan Rayner is a mycologist, and under a wood the trees are joined by threads, each its own centre and all held together, which is Natural Inclusion; a wood also grows at the pace a LERO grows.", "7": "THE GIFT MAP, as peer leaders see it (1.11): the helper notices who might meet whom, a peer leader decides and makes the introduction in person, and the cards of things to do stand beside it.", "8": "SEE IT AS — for builders only, Matthew and David: shows the app as someone outside, someone who has asked to join, a member from day one, a member, a welcomer, a leader or a supporter. It writes nothing as them and never opens anyone's days or notes, and builders stay out of members' lists as trial names already do. Built first, so every screen can be checked as each kind of person sees it. The leaders are told openly, as they were about supporters, and the builders' word 'janitor' never appears on screen.", "9": "WHO BUILDS — weft is the one builder of the app for phase three; Matthew's own Claude Code pauses on the app except for fixes they agree. Labels are drafted as the person's own question, in I and we, run through the language engine, and chosen by the Leadership Team. Why: two builders on one screen wrote over each other's words, and on 14 November the bar went in at noon and came out at four.", "_": "THE USER EXPERIENCE — decided 14 November by Matthew, from weft's proposal after weft and David's call, and from Claude's reading of the original proposal and all three phases. The app grows with what a person does, so nothing is counted and it still opens up as people take part. Screens drawn on 14 November in Community Recovery's own look, from the app as it stands. The people on the gift map are samples; the grove sizes in our wood are illustrative."}}, "2": "WHY A PLACE — today the app is a menu of pages, and each time something matters a link is added to the home screen. A place gives every page a home and lets people move through it knowing where they stand. Rings, positions and 'we are here' are how people already find their way in a community, and the screens can work the same way.", "3": {"_": "THE BEACH'S OWN STANDARD — places are kept the way the beach already keeps them (pscale:world-genome; block-conventions 4.7): spatial:<world> for the places, nested so each address says what holds it; identity:<world> for how each group holds each place; keeper:<world> for what the place is for. Community Recovery's beach is what that standard calls a compact world, one lived-in place where what happens builds up as its life. The lighthouse stays the sign at the front and points into the landscape.", "2": "A MAP THE APP DRAWS — the landscape kept as the app's own plan: the app draws the common, the four neighbourhoods, the gate and the gardens from what Community Recovery's beach already holds, the lighthouse, which keeps the same homes in the same four parts, and where-and-when, with Matthew's draft (community-recovery-design:Phenomemental 1.295 to 1.297) as the plan it follows. Nothing on the beach is read as a world, every member's passport stays as it is, and the app gets clearer now, which is the aim (community-recovery-design:Phenomemental 1.298). The same addresses can be written to the beach's standard whenever that is chosen.", "3": "A WORLD ON THE LIVE BEACH — spatial:community-recovery, identity:community-recovery and keeper:community-recovery on Community Recovery's own beach, as 1.11113 says: any AI holding bsp-mcp then reads it as a place, CLERO reads the same addresses across LEROs (1.111), and the earth graft works by the standard (1.1113). Three things are settled first. A person's place in a world is their passport's 3, and moving rewrites it (pscale:world-genome 1.2); in the app, 3 was 'What I could use' until 13 November, and what members wrote there stays. identity says how each group holds each place and locks nothing; the colours and keys keep doing that. keeper is the standard's held register, kept from what a person entering is handed (pscale:world-genome 4.1 and 5), while what 1.297 says is meant for every member.", "4": "A WORLD TRIED APART FIRST — the same three blocks on a beach of their own with made-up members, walked by David, Matthew and weft as a member would walk it, before anything is added to Community Recovery's beach; then MAP or WORLD, with what the walk showed.", "8": "DECIDE — how should the landscape be kept: as a map the app draws, as a world on Community Recovery's live beach, or tried as a world apart first? Asked of David, weft and Matthew. MAP, WORLD, APART or NOT YET. Matthew's answer, 14 November: MAP, with the reasons at 4.7."}, "4": "THE DRAFT — written on 14 November 2026 at community-recovery-design:Phenomemental 1.295 (the places), 1.296 (who holds each place) and 1.297 (what the place is for), with 1.298 naming what stays open: each place's room for talk, the boards on the common, and the depth of the landscape.", "5": "NATURAL INCLUSION — the shape is Alan Rayner's: each person a distinct centre, a garden of their own, included in a shared neighbourhood, with boundaries as places of relation. What is theirs stays theirs; what happens together is ours (leros-on-the-commons 4).", "8": "DECIDE — is this the foundation every LERO's app stands on: one landscape, laid out to the beach's standard for places, with every screen a view of it? Asked of David, weft and Matthew. Matthew's answer, 14 November: yes for Community Recovery now, kept as a map the app draws that follows the standard's addresses (4.7); for other LEROs once phase one's kit, agreement and ground are in place (1.111).", "_": "THE PLACE — one landscape, laid out once, that every screen is a view of. At the centre is the common, where everyone sits down together. Around it are four neighbourhoods, standing where the four sections of the national LERO standards stand: culture and values, support offer, volunteers, and running the place. The gate is on the open edge, where visitors come in and members arrive, and the gardens are each member's own place, private. Inside them sit each LERO's real places: for Community Recovery, Salem Hall and the Allotments. Every home a LERO keeps (its constitution, noticeboard, policies, standards) has one place here, and each new thing gets its place before it is built."}, "2": "THE PAGE — https://happyseaurchin.com/leros-phase-three is its crafted page, in Matthew's look, with the landscape drawn at its top and a drawing beside each step; https://happyseaurchin.com/proposal/leros-phase-three draws the same family plainly from its blocks.", "3": "WHERE IT CAME FROM — Matthew, on 14 November 2026, the morning after Community Recovery's Leadership Team came into its app: links were gathering on the home screen because people needed to see things, which showed a design problem. The neighbourhood he drew on 11 November (community-recovery-design:Phenomemental 1.2) had become a list of homes in the lighthouse, and the app's only map looked outward. The landscape was drafted that morning to the beach's standard for places (community-recovery-design:Phenomemental 1.295 to 1.298). It grows from leros-on-the-commons 1.17, asset-based community development across every ring, and stands on phase two's three circles (spine:leros-phase-two).", "9": "PROVENANCE — written on 14 November 2026, in the morning, by Claude working with Matthew Bushell (Phenomemental), on the proposal form (function:proposal) beside phase two, from what stood on the beach that day: function:proposal, function:document, pscale:world-genome, block-conventions 4.7, spatial:earth, the lighthouse and where-and-when on beach.communityrecovery.life, spine:leros-on-the-commons and spine:leros-phase-two. Under its own key, Matthew's to keep; David and weft answer in their own mirrors.", "_": "LEROs ON THE COMMONS, PHASE THREE — the place: one landscape that every LERO's app stands on, so people find their way around their community, see where its life is and what each person brings, and the app can grow without becoming a maze. Community Recovery first.", "4": {"1": "WHO HOLDS THE PLACE — the house key moves from weft to two caretakers the Leadership Team names, with Matthew holding it beside them as a supporter while they grow into it. The leaders agree to that, every use of the key is recorded where they can see it, and the caretakers say when Matthew's hold ends. Weft hands it over and keeps building through work the caretakers hand on. Supporters are a group of their own: people from partner organisations who help without a vote, Matthew and Willie now. 'Keeper' is not used for Community Recovery's people. Why: the place belongs to the people who answer to members (Matthew's card of 13 November); a skilled holder is needed until the caretakers are confident; and Matthew's hold must be visible and bounded, because he works for The Forward Trust and the constitution keeps partners' employees off the Leadership Team.", "2": "WHAT IS MINE — What I bring holds hope, something I know about, something I can do or make, something I care about, groups I'm part of, and what helps me take part. Each part has its own choice of who sees it: just me, the person who welcomed me, or all members. It is offered first, never required. What someone could use stays in the welcome conversation on paper, and health, treatment and legal matters are never written. Why: asset-based community development starts from people's gifts and dreams, and in recovery hope is often the first thing someone has, sometimes before they believe they have gifts. Recovery capital, when it comes, lives in My garden, framed by the ten-domain Assessment of Recovery Capital with the BARC-10 at intervals, the frame Matthew chose on 26 October; the bridge to the organisation's picture comes later, with a yes for each share, no names, and nothing shown until enough have taken part. Why: it is the frame the field and commissioners recognise; CHIME stays as how Community Recovery already talks about recovery.", "3": "PRIVACY AND AI — Matthew's position of 13 November stands: members' kept days, readable by nobody but the member, are enough privacy on Community Recovery's own beach. The hosting companies' terms on health data are a known risk, written here; phase two is corrected to match. The original proposal's 'helper in your pocket' lives on in Speak: anyone can talk rather than type. Inside the app the only AI helps the peer leaders see who might meet whom; the peer leaders make the introductions, and the AI never contacts members. A member may connect their own AI, such as Claude or ChatGPT, through a connector, or in future with their own API key (not encouraged); it reads only that member's own garden and shares, and the rest of the members' circle stays inside the app. Why: the peer is the spine of support, and other members' words should not pass to someone else's AI company. The privacy notice says all of this.", "4": "TALKING SAFELY — each place's room for talk opens once two things are true: the Leadership Team has adopted Community Recovery's safeguarding policy, first in the policy run-through, and rooms can be read by members only. Today's rooms carry on: the noticeboard with its replies, each person's own room, and the policies' room. Private talk between two members stays paused, as decided on 13 November; any private channel is a separate decision under the safeguarding policy. Every room, when it opens, has someone named to look after it and a clear way to raise a concern, and the membership form's promise holds in the app: volunteers may get advice or share what is needed, and will tell people where they can. Why: each room is another open thread to look after, and until the members' circle exists anything said in one can be read beyond the membership.", "5": "JOINING — part one of the membership form has two digital doors: Ask to join, for anyone, and an invitation from a member. Part two is always in person, on paper, with a welcoming volunteer, and nothing digital is attached to it. Part one in the app makes someone a participant; part two makes them a member with a vote. The welcomers' list, held by Liz and Jo-Jo, is the bridge between the two. Why: the welcome is a human relationship carried on face to face, and the constitution gives the vote to a signed membership form.", "6": "MONEY AND REACH — the work costs weft's building and David's time, and phase three says so. The original proposal's three conditions stand: Community Recovery earns, the beach is sustained, and volunteers and members pay nothing. James's offer of a small grant (13 November: Community Recovery the applicant, David the supplier) is the route once the basic standard exists, when there is something real to show a funder. Role-play and James's community studio are a future strand the landscape is ready for, offered to the community when they want it, the Leadership Team deciding. Other LEROs: 1.111. Why: 'costs nothing' hid David's and weft's time, and phase three asks more of them than the earlier phases.", "7": "HOW THE LANDSCAPE IS KEPT (the card at 1.38) — Matthew's answer: a map the app draws, now. A world on Community Recovery's beach waits until what a member's passport 3 holds is settled after What I bring, and until what identity and keeper would mean for Community Recovery is settled; any moving through the place is tried apart first. Why: the app gets clearer now, which is the aim, and nothing new is added to a beach real people are using before it must be.", "8": "KEEPING THE RECORD TRUE — the membership form and the privacy notice are brought into line with these decisions (What I bring and its choices, the two doors, paths recorded and shown only as liveliness, members' own AIs, the hosting risk), the leaders co-producing the wording and each change run through the language engine; this step is carried as a thread once phase three's decisions stand. Phases one and two are corrected to match, old lines kept visible with date and reason, and the three become one family as agreed on 2 November: phase one the vision, phase two the privacy ground, phase three the place and the app. Why: David asked on 14 November for the phases to be simpler to follow together, and readers of one proposal keep meeting old versions.", "_": "DECIDED ON 14 NOVEMBER 2026 — by Matthew, in conversation with Claude, after reading the original proposal (Matthew's Community Recovery page of 27 September 2026, written for David to carry to Sheffield), phase one, phase two and this phase side by side, and then weft's proposal. Each decision carries its reason. The decisions about the place and the app stand where they belong above: co-production (1.14), the gift map (1.11), moving (1.12), the lighthouse (1.17), other LEROs (1.111) and the user experience (1.19). The rest stand here. Where they change phase one or phase two, those are corrected to match, old lines kept visible with the date and reason."}}, "land": {"1": "CULTURE AND VALUES, the first neighbourhood — where we say who we are, what we stand for and how we decide together; the standards' section A. Our look and our words are the paint and the signs all through the place.", "11": "The constitution room — where the founders write our constitution together, clause by clause, each with a notebook of their own beside the shared draft.", "12": "The membership table — where a person becomes a member: the form in three parts, part one being how we look after each other. The same form also lives on paper.", "2": "SUPPORT OFFER, the second neighbourhood — where we meet and what happens when we do; the standards' section B.", "21": "Salem Hall — Salem Lane, Wellingborough NN8 4JT: Tuesday and Thursday socials, 11am to 1:30pm. Its rooms and corners are for the people who use it to name.", "22": "The Allotments — Community Recovery Allotments, Hillside Road, Wellingborough NN8 4AW: Wednesdays 10am to 12:30pm and Saturdays 11am to 1pm. Its plots and paths are for the people who work them to name.", "23": "Learning together — where we learn from and with each other, the courses on offer and who's interested. Where each course meets is said with the course.", "24": "The still centre — a quiet place to notice what is here now and what moves beneath it, from the P6 constellation of Louie Gardiner's Presence in Action.", "3": "VOLUNTEERS, the third neighbourhood — where the volunteers and the Leadership Team work; the standards' section C. In use now, with the parts that depend on the constitution still to come.", "31": "The Leadership Team's room — where the founding Leadership Team meets, open for every member to see who leads on what and what each meeting agreed.", "32": "The leaders' private room — behind a door only the leaders and their supporters open: the full meeting notes and each leader's answer.", "33": "The welcomers' window — where the welcomers see who's coming for the first time and to which session, private to them. It looks out over the gate.", "4": "RUNNING THE PLACE, the fourth neighbourhood — how the place is kept, its policies, care and quality; the standards' section D. Ground that comes into full use when the constitution is adopted.", "41": "Our policies — each policy in its own words, for the founders to read, change and adopt. The website shows the adopted words.", "42": "The standards — the 33 national standards we hold ourselves to, with the evidence of what we've done and members' own readings.", "43": "The keepers' office — the keys and the house rules: Community Recovery's own name on its beach, who may come in, what the beach refuses to keep and what a visitor may read.", "44": "The archive — dated copies of what was retired, kept and readable by members.", "5": "THE COMMON, at the centre — the open ground every path passes through, named for the Tuesday table at Salem Hall where everyone sits down together. Come as you are; every path to recovery is welcome.", "51": "The noticeboard — notes for all of us with replies beneath them; every member can read them, and they stay.", "52": "Our story — what we've done together since the first stepping stones, with members' own lines.", "53": "Who's going — each session's list by first name, standing by the paths to Salem Hall and the Allotments.", "54": "Who's joined — the book of arrivals, a name for each person who has come in. It stands where the path from the gate meets the common.", "6": "THE GATE, on the open edge — where visitors come in and members arrive. The lighthouse stands beside it, and a path leads from it to the common.", "61": "The way in — where everyone arrives, from the website, from an invitation or by asking to join. Two ways lead on: the path to the common, and the door to Introducing Community Recovery.", "62": "Introducing Community Recovery — who we are, shown a slide at a time for someone new, and followed live when we present.", "7": "THE GARDENS — each member's own place, private, and never named one by one. Their days, what they bring and their recovery capital grow there, with a letterbox at each garden gate for the words other members leave. A member reaches their own garden from their own name."}, "ident": {"1": "Every member holds this neighbourhood. A visitor reads only what the keepers mark.", "2": "Every member holds this neighbourhood. Salem Hall and the Allotments are also open to anyone who comes to a session.", "3": "Every member holds the open room. The leaders and their supporters alone hold the private room; the welcomers alone hold the window.", "4": "Every member holds this neighbourhood. The keepers alone hold the keys in the keepers' office.", "5": "Every member holds the common. Here each person is seen by first name, in what they've written or said they'll come to.", "6": "Everyone holds the gate: visitors, people with an invitation, and members coming back.", "7": "Each garden is held by its owner alone. Other members reach only its letterbox, which every member can read."}, "product": {"1": "SOMEONE CURIOUS — a spectrum with different needs, all met at the gate: someone wondering whether to come along, family and friends, a partner organisation, a commissioner or funder, CLERO and the people who look at LEROs nationally. NOW: the website (who we are, where and when, our policies, the way in), Introducing Community Recovery, and where we sit on the map of LEROs. NEXT: a clear way in for each of them, so a person thinking of coming and a commissioner each find what they came for. LATER: a partner or another LERO asking for an app of their own.", "2": "A MEMBER — keeping my journal, showing up, knowing what's on and where to go, finding learning and ways to get involved, and, if I choose, going on to volunteer. NOW: keep my day, private to me; where and when, and who's going; the noticeboard and its replies; words left for me; what I bring; Learning together; Our story; our agreement. NEXT: finding my way round easily, what's waiting for me on Today, and reading our story before I add to it. LATER: my recovery capital growing over time, staying mine; deeper learning; a way into volunteering when I'm ready.", "3": "VOLUNTEERS — Lived Experience Leader Volunteers and Peer Leader Volunteers are all volunteers, equal people with different responsibilities, and every one is vital. Right now the Lived Experience Leader Volunteers are organising the organisation, doing the basics, because there is no team beyond them; over time this grows more flexible, and some may move into peer leading. NOW: the welcomers' list (who's coming for the first time, I'll look out for them, Welcomed). NEXT: what peer leaders need for their sessions, a written plan of a session for the team to say yes to, and who's on at each one. LATER: each volunteer's own path made visible, as they choose.", "4": "THE LEADERSHIP TEAM — the Lived Experience Leader Volunteers together: meeting, agreeing the notes, reading and adopting the constitution and policies, seeing who leads on what, staying organised and carrying the actions, co-produced in the app in place of WhatsApp and paper. NOW: the Leadership Team page; the full notes private to the team; the constitution and policies to read and answer line by line; the standards. NEXT: the notes readable and agreed in the app; each action a card offered to the person it belongs to; the summary opening to members once everyone says yes. LATER: the constitution adopted in the app, co-chairs, and decisions named against the standards.", "5": "SUPPORTERS — the people we meet. Partners and people who help come into the app as supporters, never as members, and see something different: ways of helping, what the community needs, and room to say what they can offer, so the community's asset map grows. NOW: two supporters from The Forward Trust, with no vote. NEXT: partners coming in as supporters and saying what they offer. LATER: every partner who walks in recorded, so nobody is forgotten.", "6": "LEARNING AND DEVELOPMENT — running through everything: a library of things people can do and learn, courses, training and chances to take part, so each person can grow at their own pace. NOW: Learning together, where a tap says I'm interested. NEXT: the library, with groups forming around shared interests. LATER: a recovery college beside it, and courses read step by step and answered in each learner's own words.", "7": "THE ORGANISATION — its evidence against the 33 national standards gathers from what it actually does, and it shows the world its learning and development. NOW: the standards, the evidence notebook and members' own readings. NEXT: evidence gathering from meetings, sessions and decisions as they happen. LATER: reports drawn from it, without anyone writing them up by hand.", "8": "THE NETWORK — CLERO, commissioners and other LEROs: one picture across many LEROs, with nothing personal in it and nothing copied upward. NOW: the map of LEROs, with 'We are here'. LATER: CLERO reading the picture across every LERO that uses the app."}, "room": {}};
+(function(){
+'use strict';
+var D=window.__DATA__,PREVIEW=!!window.__PREVIEW__,NAME='leros-phase-three';
+var STILL=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var NS='http://www.w3.org/2000/svg';
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return [].slice.call((r||document).querySelectorAll(s))}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function at(b,a){var n=b;a=String(a).replace('.','');if(a==='')return n;for(var i=0;i<a.length;i++){if(!n||typeof n!=='object')return null;n=n[a[i]]}return n}
+function text(n){if(n==null)return '';if(typeof n==='string')return n;var u=n._;while(u&&typeof u==='object')u=u._;return typeof u==='string'?u:''}
+function cap1(t){return t?t.charAt(0).toUpperCase()+t.slice(1):t}
+function split(t){var i=t.indexOf(' — ');if(i<0){var m=t.match(/^([A-Z][A-Z'’ ]*[A-Z]),\s*/);return m?{title:m[1],body:t.slice(m[0].length)}:{title:'',body:t}}return {title:t.slice(0,i),body:t.slice(i+3)}}
+function soft(t){if(!t)return t;var first=true;return t.replace(/[A-Z][A-Z'’]*[A-Z]|\b[A-Z]\b/g,function(w){var keep={LERO:1,LEROS:'LEROs',CLERO:1,AI:1,I:1,WCAG:1,AA:1,BARC:1,ARC:1,CHIME:1};var r;if(keep[w])r=keep[w]===1?w:keep[w];else{r=w.toLowerCase();if(first)r=r.charAt(0).toUpperCase()+r.slice(1)}first=false;return r}).replace(/\bcommunity recovery\b/gi,'Community Recovery').replace(/\b(november|october|september)\b/g,function(m){return m.charAt(0).toUpperCase()+m.slice(1)}).replace(/\bsee it as\b/i,function(m){return m.charAt(0).toUpperCase()+m.slice(1)})}
+function rnd(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}}
+
+/* ---------- the words, from the spine ---------- */
+function paint(S){
+ $$('[data-sp]').forEach(function(e){var a=e.getAttribute('data-sp'),t=text(at(S,a)),s=split(t);
+  if(a===''){var r=t.indexOf(' — ');e.textContent=r<0?t:t.slice(r+3);e.textContent=e.textContent.charAt(0).toUpperCase()+e.textContent.slice(1);return}
+  e.textContent=e.getAttribute('data-part')==='title'?soft(s.title):cap1(s.body)});
+ $$('[data-rooms]').forEach(function(box){var a=box.getAttribute('data-rooms'),n=at(S,a);box.innerHTML='';if(!n||typeof n!=='object')return;
+  ['2','3','4','5','6','7'].forEach(function(k){var t=text(n[k]);if(!t)return;var s=split(t);var d=document.createElement('details');
+   d.innerHTML='<summary>'+esc(soft(s.title)||'More')+'<span class="addr">'+a+k+'</span></summary><p>'+esc(cap1(s.body))+'</p>';box.appendChild(d)})});
+ $$('[data-dec]').forEach(function(c){var a=c.getAttribute('data-dec');card(c,a,text(at(S,a)))});
+ $$('[data-kids]').forEach(function(box){var a=box.getAttribute('data-kids'),n=at(S,a);box.innerHTML='';if(!n||typeof n!=='object')return;
+  ['1','2','3','4','5','6','7','8','9'].forEach(function(k){var t=text(n[k]);if(!t)return;var s=split(t);var d=document.createElement('details');
+   d.innerHTML='<summary>'+esc(soft(s.title)||'More')+'<span class="addr">'+(a.indexOf('.')<0?a+'.':a)+k+'</span></summary><p>'+esc(cap1(s.body))+'</p>';box.appendChild(d)})});
+ tiles(S);
+}
+function decParse(t){t=t.replace(/^DECIDE\s*—\s*/,'');var ans='',am=t.match(/\s*((?:ANSWERED|Answered|Matthew’s answer|Matthew's answer)[\s\S]*)$/);if(am){ans=am[1].replace(/^ANSWERED/,'Answered');t=t.slice(0,am.index).trim()}var words=['GO','CHANGE','NOT YET'],m=t.match(/([A-Z][A-Z’']*(?:,\s*[A-Z][A-Z’' ]*)*\s+or\s+NOT YET)\.?\s*$/);
+ if(m){words=m[1].replace(/\s+or\s+/,', ').split(/,\s*/);t=t.slice(0,m.index).trim()}
+ var w=t.match(/(Asked of [^.]*\.)\s*$/),who=w?w[1]:'';if(w)t=t.slice(0,w.index).trim();return {q:cap1(t),who:who,words:words,ans:ans}}
+var MEAN={'GO':'goes ahead as written','CHANGE':'goes ahead with your suggestion, and whoever does the work answers it','NOT YET':'holds it until you come back to it'};
+function card(c,a,t){if(!t){c.style.display='none';return}var d=decParse(t);c.setAttribute('id','dec-'+a.replace('.','-'));
+ c.innerHTML='<p class="eyebrow">Decide <span class="addr">'+a+'</span></p><p class="q" data-part="q">'+esc(d.q)+'</p><p class="who" data-part="who">'+esc(d.who)+'</p>'+(d.ans?'<p class="meaning" style="color:var(--crimson,#b3263e)">'+esc(d.ans)+'</p>':'')+
+ '<div class="words-row" role="group" aria-label="Your answer">'+d.words.map(function(w){return '<button class="wbtn" type="button" data-w="'+esc(w)+'">'+esc(w)+'</button>'}).join('')+'</div>'+
+ '<p class="meaning">'+d.words.map(function(w){return '<b>'+esc(w)+'</b> '+(MEAN[w]||'goes ahead with that choice')}).join(' · ')+'.</p>'+
+ '<label class="small" for="h-'+a+'">Your name on the beach</label><input id="h-'+a+'" autocomplete="nickname"><label class="small" for="l-'+a+'">A line in your own words</label><textarea id="l-'+a+'" rows="2"></textarea>'+
+ '<button class="say" type="button">Say it</button><p class="tally" aria-live="polite"></p>';
+ var pick=null;$$('.wbtn',c).forEach(function(b){b.onclick=function(){pick=b.getAttribute('data-w');$$('.wbtn',c).forEach(function(o){o.classList.toggle('on',o===b)})}});
+ var h=$('#h-'+cssq(a),c),l=$('#l-'+cssq(a),c);try{h.value=localStorage.getItem('cr3:handle')||''}catch(e){}
+ if(window.keepDraft){try{keepDraft(l,NAME+':'+a)}catch(e){}}if(window.dictate){try{dictate(l)}catch(e){}}
+ $('.say',c).onclick=function(){var st=$('.tally',c);if(!pick){st.textContent='Choose a word first.';return}var who=(h.value||'').trim();if(!who){st.textContent='Your name on the beach, first.';h.focus();return}
+  try{localStorage.setItem('cr3:handle',who)}catch(e){}var line=pick+((l.value||'').trim()?' — '+l.value.trim():'');
+  if(PREVIEW||!window.beachVoice){st.textContent='This page doesn’t send yet. Answer through your own Claude (With your AI, at the top), into your own reading, leros-phase-three:'+who+', at '+a+'.';return}
+  st.textContent='Saying it…';Promise.resolve(beachVoice.say({field:NAME,at:a,text:line,name:who})).then(function(){st.textContent='Said, in your own reading.';readAnswers()},function(){st.textContent='That didn\'t reach the beach. Try again in a moment.'})};
+}
+function cssq(a){return a.replace('.','\\.')}
+function tiles(S){var box=$('#tiles');box.innerHTML='';[['1.8','The place'],['1.38','How it’s kept'],['1.18','The view from the lighthouse'],['1.118','The gift map'],['1.1118','Every LERO, on the earth'],['1.11118','The build']].forEach(function(x){var d=decParse(text(at(S,x[0]))||'');
+ var a=document.createElement('a');a.className='tile';a.href='#dec-'+x[0].replace('.','-');a.innerHTML='<b>'+x[1]+'</b><span data-tile="'+x[0]+'">'+esc((d.who||'Open').replace(/\.$/,''))+(d.ans?' · '+esc(d.ans.slice(0,60))+(d.ans.length>60?'…':''):' · nobody has answered yet')+'</span>';box.appendChild(a)})}
+function readAnswers(){if(PREVIEW)return;fetch('https://happyseaurchin.com/api/mirrors?family='+NAME).then(function(r){return r.json()}).then(function(j){var list=Array.isArray(j)?j:(j.mirrors||[]);
+ ['1.8','1.38','1.18','1.118','1.1118','1.11118'].forEach(function(a){var said=[];list.forEach(function(m){var b=m.block||m.content||m;var t=text(at(b,a));if(t)said.push((m.handle||m.who||'someone')+': '+t.split(/\s+—\s+/)[0])});
+  var tl=$('#dec-'+a.replace('.','-')+' .tally');if(tl&&said.length)tl.textContent=said.join(' · ');var tt=$('[data-tile="'+a+'"]');if(tt&&said.length)tt.textContent=said.length+' answered: '+said.join(', ')})}).catch(function(){})}
+
+/* ---------- the landscape ---------- */
+var P={
+ '11':[52,118,'Constitution room'],'12':[142,118,'Membership table'],
+ '21':[248,112,'Salem Hall'],'22':[338,112,'The Allotments'],'23':[250,196,'Learning together'],'24':[340,200,'The still centre'],
+ '31':[54,346,'Leadership Team'],'32':[136,346,'Private room'],'33':[120,428,'Welcomers’ window'],
+ '41':[250,340,'Our policies'],'42':[340,340,'The standards'],'43':[250,422,'Keepers’ office'],'44':[340,422,'The archive'],
+ '51':[160,258,'Noticeboard'],'52':[240,258,'Our story'],'53':[160,288,'Who’s going'],'54':[240,288,'Who’s joined'],
+ '61':[200,498,'The way in'],'62':[118,498,'Introducing']};
+var HOODS=[['1',8,70,188,190,'Culture and values'],['2',204,70,188,190,'Support offer'],['3',8,280,188,190,'Volunteers'],['4',204,280,188,190,'Running the place']];
+var PATHS=[[[200,484],[200,326]],[[200,216],[200,62]],[[150,236],[96,140]],[[250,236],[300,140]],[[150,306],[96,392]],[[250,306],[300,392]]];
+function land(opt){opt=opt||{};var s='<defs><pattern id="hatch'+(opt.id||'')+'" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#4a4237" stroke-width="1.2"/></pattern>'+
+ '<radialGradient id="glow'+(opt.id||'')+'"><stop offset="0" stop-color="#d9b24a" stop-opacity=".55"/><stop offset="1" stop-color="#d9b24a" stop-opacity="0"/></radialGradient></defs>';
+ s+='<g class="mk" data-o="0"><rect x="8" y="8" width="384" height="52" fill="none" stroke="#3d3648"/>';
+ for(var i=0;i<8;i++){var x=22+i*46;s+='<rect x="'+x+'" y="20" width="36" height="30" fill="url(#hatch'+(opt.id||'')+')" stroke="#5a5147" class="hp" data-k="7"/><rect x="'+(x+15)+'" y="46" width="6" height="6" fill="#ede4d3" class="hp" data-k="7"/>'}
+ s+='<text x="200" y="16" fill="#ab9f8e" font-size="9" text-anchor="middle" font-family="Cormorant Garamond" letter-spacing="2">THE GARDENS</text></g>';
+ HOODS.forEach(function(h,i){s+='<g class="mk" data-o="'+(i+1)+'"><rect x="'+h[1]+'" y="'+h[2]+'" width="'+h[3]+'" height="'+h[4]+'" fill="none" stroke="#3d3648"'+(h[0]==='4'?' stroke-dasharray="5 4"':'')+' class="hp" data-k="'+h[0]+'"/>'+
+  '<text x="'+(h[0]==='1'||h[0]==='3'?h[1]+10:h[1]+h[3]-10)+'" y="'+(h[2]+(h[0]<'3'?20:h[4]-10))+'" fill="#ede4d3" font-size="13" font-family="Cormorant Garamond" font-weight="500" text-anchor="'+(h[0]==='1'||h[0]==='3'?'start':'end')+'" class="hp" data-k="'+h[0]+'">'+h[5]+'</text></g>'});
+ s+='<g class="mk" data-o="5">'+PATHS.map(function(p){return '<line x1="'+p[0][0]+'" y1="'+p[0][1]+'" x2="'+p[1][0]+'" y2="'+p[1][1]+'" stroke="#5a5147" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/>'}).join('')+'</g>';
+ s+='<g class="mk" data-o="6"><circle cx="200" cy="272" r="62" fill="url(#glow'+(opt.id||'')+')"/><ellipse cx="200" cy="272" rx="86" ry="56" fill="none" stroke="#ede4d3" class="hp" data-k="5"/><text x="200" y="236" fill="#ede4d3" font-size="13" text-anchor="middle" font-family="Cormorant Garamond" font-weight="500" class="hp" data-k="5">The common</text></g>';
+ s+='<g class="mk" data-o="7">';Object.keys(P).forEach(function(k){var p=P[k],lab=opt.labels!==false;var r=(k==='21'?9:(k==='22'?8:6));
+  s+='<g class="hp home" data-k="'+k+'" tabindex="0" role="button" aria-label="'+p[2]+'"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="16" fill="transparent"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+r+'" fill="#110f16" stroke="'+(k==='32'||k==='33'?'#ab9f8e':'#ede4d3')+'" stroke-width="1.4"'+(k==='32'||k==='33'?' stroke-dasharray="2 2"':'')+'/><circle class="lit" cx="'+p[0]+'" cy="'+p[1]+'" r="'+(r-2.5)+'" fill="#d9b24a" opacity="0"/>'+
+  (lab?'<text x="'+p[0]+'" y="'+(p[1]+(k>='51'&&k<='54'?-10:20))+'" fill="#d8cdbb" font-size="10.5" text-anchor="middle" font-family="Cormorant Garamond">'+p[2]+'</text>':'')+'</g>'});
+ s+='</g><g class="mk" data-o="8"><path d="M258 512 L263 470 L271 470 L276 512 Z" fill="none" stroke="#ede4d3"/><rect x="261" y="462" width="12" height="8" fill="#d9b24a" class="beam"/><path d="M267 466 L332 446 L332 486 Z" fill="#d9b24a" opacity=".12" class="beam"/>'+
+  '<rect x="186" y="486" width="5" height="22" fill="#ede4d3"/><rect x="209" y="486" width="5" height="22" fill="#ede4d3"/></g>';
+ return s}
+function placeWords(k){var L=D.land,I=D.ident;var n=k.length===1?L[k]:L[k];var t=typeof n==='string'?n:'';var who=I[k.charAt(0)]||'';return {t:t,who:who}}
+
+/* band */
+var band=$('#band'),bandRun=0;
+function bandDraw(){var run=++bandRun;band.innerHTML=band.innerHTML.replace(/<g[\s\S]*$/,'')+land({id:'b'});var marks=$$('.mk',band);
+ if(STILL){marks.forEach(function(m){m.style.opacity=1});$$('.home .lit',band).forEach(function(l,i){if(i%3===0)l.setAttribute('opacity','.7')});return}
+ marks.forEach(function(m){m.style.opacity=0;m.style.transition='opacity .6s'});
+ marks.forEach(function(m,i){setTimeout(function(){if(run===bandRun)m.style.opacity=1},250+i*330)});
+ setTimeout(function(){if(run===bandRun)pulses(band,run,function(){return run===bandRun})},250+marks.length*330)}
+var ROUTES=[['61','51'],['51','53'],['53','21'],['53','22'],['52','11'],['54','61'],['51','31'],['52','23'],['51','41'],['53','42'],['54','12'],['52','24']];
+function pulses(svg,run,alive){var R=rnd(7),g=document.createElementNS(NS,'g');svg.appendChild(g);var live=[];
+ function spawn(){var r=ROUTES[Math.floor(R()*ROUTES.length)],a=P[r[0]],b=P[r[1]];var mid=[200,272];var c=document.createElementNS(NS,'circle');c.setAttribute('r','3.2');c.setAttribute('fill','#d9b24a');g.appendChild(c);
+  live.push({c:c,pts:[a,mid,b],t:0,sp:.006+R()*.004,to:r[1]})}
+ var last=0;function tick(ts){if(!alive())return;if(ts-last>700){spawn();last=ts}
+  live=live.filter(function(p){p.t+=p.sp;var u=p.t<.5?p.t*2:(p.t-.5)*2,A=p.t<.5?p.pts[0]:p.pts[1],B=p.t<.5?p.pts[1]:p.pts[2];
+   p.c.setAttribute('cx',A[0]+(B[0]-A[0])*u);p.c.setAttribute('cy',A[1]+(B[1]-A[1])*u);
+   if(p.t>=1){p.c.remove();var h=svg.querySelector('.home[data-k="'+p.to+'"] .lit');if(h){h.setAttribute('opacity','.9');setTimeout(function(){h.setAttribute('opacity','.25')},900)}return false}return true});
+  requestAnimationFrame(tick)}requestAnimationFrame(tick)}
+$('#bandReplay').onclick=bandDraw;
+
+/* ---------- 1: list or landscape ---------- */
+var LIST=[['Culture and values',['constitution','agreement','brand','app-words']],['Support offer',['where-and-when','learning','spine:p6','pool:meeting-room']],['Volunteers',['leadership']],['Running the place',['policies','standards','passport:community-recovery','index:community-recovery','archive:']],['The common',['pool:community-recovery','journey','going','arrivals']],['The gate',['the website','presentation']]];
+function i1(v){var box=$('#i1v'),note=$('#i1n');$$('#i1 .chip').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-v')===v)});
+ if(v==='list'){box.innerHTML='<div style="font-family:ui-monospace,Menlo,monospace;font-size:.85rem;color:#d8cdbb;line-height:1.7;padding:.4rem 0">'+LIST.map(function(x){return '<div style="color:#ede4d3;margin-top:.4rem">'+esc(x[0])+'</div>'+x[1].map(function(b){return '<div>&nbsp;&nbsp;· '+esc(b)+'</div>'}).join('')}).join('')+'</div>';
+  note.innerHTML='This is the map as the beach keeps it today: a list of homes under headings. It says what belongs where, and nothing about where anything is.';return}
+ box.innerHTML='<svg viewBox="0 0 400 520" role="img" aria-label="The landscape: tap a place">'+land({id:'1'})+'</svg>';note.textContent='Tap a place to read it.';
+ $$('#i1v .hp').forEach(function(e){e.addEventListener('click',function(){var k=e.getAttribute('data-k'),w=placeWords(k);var s=split(w.t);
+  $$('#i1v .home .lit').forEach(function(l){l.setAttribute('opacity','0')});var me=$('#i1v .home[data-k="'+k+'"] .lit');if(me)me.setAttribute('opacity','.9');
+  note.innerHTML='<b>'+esc(s.title?soft(s.title):(P[k]?P[k][2]:''))+'</b> '+esc(s.body||w.t)+(w.who?'<br><span style="color:#ab9f8e">Who holds it: '+esc(w.who)+'</span>':'')})})}
+$$('#i1 .chip').forEach(function(c){c.onclick=function(){i1(c.getAttribute('data-v'))}});
+
+/* ---------- 2: the phone ---------- */
+var PLACES={us:['Us',[['The noticeboard','Notes for all of us.'],['Where and when','Our sessions, and who’s going.'],['Our story','What we’ve done together so far.'],['Learning together','What we’re learning, and how to join in.']]],
+ me:['Me',[['My days','What I’ve kept, day by day. Private to me.'],['What I bring','What I can offer the rest of us.'],['For me','Words members have left for me.']]],
+ run:['How we run',[['The Leadership Team','Who leads on what, and our meetings.'],['The constitution','How Community Recovery is run, written together.'],['Our policies','How we keep people, information and money safe.'],['The standards','How we measure up, with the evidence.']]],
+ more:['More',[['The map','All of Community Recovery, and where I am in it.'],['Introducing Community Recovery','Who we are, for someone new.'],['Privacy and terms',''],['Contact','']]]};
+var heartSvg='<svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 21C5 15 0 11 0 6a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 5-5 9-12 15z" fill="#9B5FE0"/></svg>';
+function ring(){var s='<svg viewBox="0 0 100 100" width="92" height="92" aria-hidden="true"><circle cx="50" cy="50" r="32" fill="#000" stroke="#2A1F38" stroke-width="3"/><path transform="translate(38,39) scale(1)" d="M12 21C5 15 0 11 0 6a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 5-5 9-12 15z" fill="#9B5FE0"/>';
+ for(var i=0;i<9;i++){var a=(i*40-90)*Math.PI/180;s+='<circle cx="'+(50+Math.cos(a)*44).toFixed(1)+'" cy="'+(50+Math.sin(a)*44).toFixed(1)+'" r="2.6" fill="#C9A6F0" opacity=".6"/>'}return s+'</svg>'}
+function today(){return '<p class="ph-eb">SAT 14 NOV · COMMUNITY RECOVERY</p><div class="ph-ring">'+ring()+'</div><p style="text-align:center;font-family:var(--disp);font-size:20px;margin:0 0 8px">JO</p>'+
+ '<p style="color:#C9A6F0;font-size:13px;margin:0 0 5px;font-weight:700">Waiting for me</p><div class="ph-wait"><i></i>A word for me</div><p style="font-size:15px;font-weight:700;margin:10px 0 0">How’s today been?</p><div class="ph-box"></div><div class="ph-keep">Keep today</div>'}
+function place(k){var p=PLACES[k];return '<p class="ph-h">'+p[0].toUpperCase()+'</p>'+p[1].map(function(x){return '<div class="ph-card">'+esc(x[0])+(x[1]?'<small>'+esc(x[1])+'</small>':'')+'</div>'}).join('')}
+var mode='thumb',where='today';
+function phone(){var ph=$('#phone'),n=$('#i2n');var inner=where==='today'?today():place(where);
+ var h='<div class="ph-in">'+inner+'</div>';
+ if(mode==='bar'){h+='<div class="ph-bar">'+[['me','Me'],['us','Us'],['today','Today'],['run','How we run'],['more','More']].map(function(x){return '<span data-go="'+x[0]+'" class="'+(where===x[0]?'on':'')+'">'+(x[0]==='today'?'<svg viewBox="0 0 24 22" width="22">'+heartSvg.slice(heartSvg.indexOf('<path'),heartSvg.indexOf('</svg>'))+'</svg>':'<span style="font-size:17px">'+({me:'☺',us:'☷',run:'⌂',more:'⋯'})[x[0]]+'</span>')+x[1]+'</span>'}).join('')+'</div>';n.textContent='The bar: tried on 14 November and taken out that afternoon. It sat inside the page and scrolled away, so people didn’t see it.'}
+ if(mode==='menu'){h+='<div style="position:absolute;top:10px;left:12px;font-size:22px;cursor:pointer" data-go="menu" aria-label="Menu">☰</div>';n.textContent='Before: everything behind three lines. Tap them, then find your page in the list.'}
+ if(mode==='thumb'){h+='<div class="compass" id="cmp"><div class="cp" data-to="us" style="left:50%;top:22%"><b>Us</b>sessions, the noticeboard</div><div class="cp" data-to="me" style="left:24%;top:52%"><b>Me</b>my days, For me</div><div class="cp" data-to="run" style="left:76%;top:52%"><b>How we run</b>the team, the rules</div><div class="cp" data-to="more" style="left:50%;top:70%"><b>More</b>map, contact</div></div>'+
+  '<p class="ph-hint" id="hint">'+(where==='today'?'Hold the heart and slide · or tap':'Tap the heart for Today')+'</p><div class="ph-heart" id="heart" role="button" tabindex="0" aria-label="Today. Hold and slide to a place, or tap to choose">'+heartSvg+'</div>';
+  n.textContent=where==='today'?'Hold the heart, then slide your thumb to a place. Or just tap it, then tap a place.':'You are in '+PLACES[where][0]+'. The heart brings you home to Today, or slide from it to anywhere else.'}
+ h+='<div class="ph-menu" id="menu"><p class="sec">ME</p><p>Today</p><p>My days</p><p>What I bring</p><p>For me</p><p class="sec">US</p><p>Where and when</p><p>How we look after each other</p><p>Our story</p><p>Learning together</p><p>Who we are to each other</p><p>The noticeboard</p><p class="sec">HOW WE RUN</p><p>The Leadership Team</p><p>The constitution</p><p>Our policies</p><p>The standards</p><p class="sec">THE WIDER PICTURE</p><p>The map</p><p>Introducing Community Recovery</p></div>';
+ ph.innerHTML=h;
+ $$('[data-go]',ph).forEach(function(e){e.onclick=function(){var g=e.getAttribute('data-go');if(g==='menu'){$('#menu').classList.toggle('open');n.textContent='Eighteen pages in four lists. This is what every link on Today was trying to escape.';return}where=g;phone()}});
+ if(mode==='thumb')thumb()}
+function thumb(){var heart=$('#heart'),cmp=$('#cmp'),hint=$('#hint'),n=$('#i2n'),timer=null,held=false,open=false,hot=null,sx=0,sy=0;
+ function show(on){open=on;cmp.classList.toggle('open',on);hint.style.display=on?'none':'block'}
+ function pickAt(x,y){var r=$('#phone').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.bottom-42,dx=x-cx,dy=y-cy,d=Math.sqrt(dx*dx+dy*dy);var to=null;
+  if(d>40){var ang=Math.atan2(dy,dx)*180/Math.PI;if(ang>-135&&ang<-45)to=d>200?'us':(Math.abs(dx)<60?'us':(dx<0?'me':'run'));else if(ang<=-135||ang>150)to='me';else if(ang>=-45&&ang<30)to='run';else to='more';
+   if(to==='more'&&d<60)to=null}
+  if(dy<-150&&Math.abs(dx)<70)to='us';else if(dy<-60&&dx<-50)to='me';else if(dy<-60&&dx>50)to='run';else if(dy<-60&&Math.abs(dx)<=50&&dy>-150)to='more';
+  hot=to;$$('.cp',cmp).forEach(function(c){c.classList.toggle('hot',c.getAttribute('data-to')===to)});if(to)n.textContent='Let go to go to '+PLACES[to][0]+'.'}
+ heart.addEventListener('pointerdown',function(e){e.preventDefault();sx=e.clientX;sy=e.clientY;held=false;try{heart.setPointerCapture(e.pointerId)}catch(x){}
+  timer=setTimeout(function(){held=true;show(true);n.textContent='Now slide to a place.'},230)});
+ heart.addEventListener('pointermove',function(e){if(held)pickAt(e.clientX,e.clientY)});
+ heart.addEventListener('pointerup',function(e){clearTimeout(timer);if(held){held=false;if(hot){where=hot;phone();return}show(false);n.textContent='Slide a little further next time, or just tap.';return}
+  if(where!=='today'&&!open){where='today';phone();return}show(!open);if(open)n.textContent='Tap a place.'});
+ heart.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();show(!open)}var map={ArrowUp:'us',ArrowLeft:'me',ArrowRight:'run',ArrowDown:'more'};if(open&&map[e.key]){where=map[e.key];phone()}});
+ $$('.cp',cmp).forEach(function(c){c.onclick=function(){where=c.getAttribute('data-to');phone()}})}
+$$('#i2 .chip[data-m]').forEach(function(c){c.onclick=function(){mode=c.getAttribute('data-m');where='today';$$('#i2 .chip[data-m]').forEach(function(o){o.classList.toggle('on',o===c)});phone()}});
+/* people */
+var PEOPLE=[['1','Someone curious'],['2','A member'],['3','Volunteers'],['4','The Leadership Team'],['5','Supporters'],['6','Learning'],['7','The organisation'],['8','The network']];
+function pwhat(k){$$('#pchips .chip').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-p')===k)});var t=D.product[k]||'';
+ var parts={who:t,now:'',next:'',later:''};var m=t.match(/^([\s\S]*?)\s+NOW:\s*([\s\S]*?)(?:\s+NEXT:\s*([\s\S]*?))?(?:\s+LATER:\s*([\s\S]*))?$/);if(m){parts={who:m[1],now:m[2],next:m[3]||'',later:m[4]||''}}
+ var s=split(parts.who);$('#pwhat').innerHTML='<p class="note" style="min-height:0">'+esc(cap1(s.body||parts.who))+'</p><div class="now3">'+(parts.now?'<div><b>Now</b>'+esc(parts.now)+'</div>':'')+(parts.next?'<div class="next"><b>Next</b>'+esc(parts.next)+'</div>':'')+(parts.later?'<div class="later"><b>Later</b>'+esc(parts.later)+'</div>':'')+'</div>'}
+$('#pchips').innerHTML=PEOPLE.map(function(p){return '<button class="chip" data-p="'+p[0]+'">'+p[1]+'</button>'}).join('');
+$$('#pchips .chip').forEach(function(c){c.onclick=function(){pwhat(c.getAttribute('data-p'))}});
+
+/* ---------- 3: insights ---------- */
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var SESS=[[1,11,13.5,'#9B5FE0','Salem Hall social'],[3,11,13.5,'#9B5FE0','Salem Hall social'],[2,10,12.5,'#6fae7b','The Allotments'],[5,11,13,'#6fae7b','The Allotments']];
+function polar(cx,cy,r,h){var a=(h/24*360-90)*Math.PI/180;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]}
+function arc(cx,cy,r,h0,h1){var a=polar(cx,cy,r,h0),b=polar(cx,cy,r,h1),large=(h1-h0)>12?1:0;return 'M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+' A'+r+' '+r+' 0 '+large+' 1 '+b[0].toFixed(1)+' '+b[1].toFixed(1)}
+var LIFE=(function(){var R=rnd(11),out=[];for(var d=0;d<7;d++){var n=8+Math.floor(R()*8)+(d===1||d===3?10:0);for(var i=0;i<n;i++){var h;var u=R();if(u<.35)h=19+R()*4;else if(u<.6&&(d===1||d===3))h=13.5+R()*3;else if(u<.75)h=7+R()*2.5;else h=9+R()*10;
+ out.push({d:d,h:h,k:R()<.5?'day':(R()<.5?'note':'going')})}}return out})();
+var tab='rhythm',layer={s:1,l:1};
+function i3(t){tab=t;$$('#i3 .chip[data-t]').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-t')===t)});var v=$('#i3v'),n=$('#i3n');
+ if(t==='rhythm'){var s='<div class="chips"><button class="chip'+(layer.s?' on':'')+'" data-l="s">Sessions</button><button class="chip'+(layer.l?' on':'')+'" data-l="l">Life in the app</button></div><svg viewBox="0 0 400 400" role="img" aria-label="The week as a sundial: seven rings for the days, the hours round the dial">';
+  for(var d=0;d<7;d++){var r=58+d*20;s+='<circle cx="200" cy="200" r="'+r+'" fill="none" stroke="#2a2533"/><text x="204" y="'+(200-r+4)+'" fill="#7f7466" font-size="9" font-family="Cormorant Garamond">'+DAYS[d]+'</text>'}
+  [0,6,12,18].forEach(function(h){var a=polar(200,200,196,h),b=polar(200,200,52,h);s+='<line x1="'+b[0]+'" y1="'+b[1]+'" x2="'+a[0]+'" y2="'+a[1]+'" stroke="#2a2533"/>';var tp=polar(200,200,186,h);s+='<text x="'+tp[0]+'" y="'+(tp[1]+4)+'" fill="#ab9f8e" font-size="11" text-anchor="middle" font-family="Cormorant Garamond">'+(h===0?'midnight':h===12?'noon':h+':00')+'</text>'});
+  if(layer.s)SESS.forEach(function(x){s+='<path d="'+arc(200,200,58+x[0]*20,x[1],x[2])+'" stroke="'+x[3]+'" stroke-width="12" fill="none" stroke-linecap="round" class="hp" tabindex="0" role="button" data-n="'+esc(DAYS[x[0]]+': '+x[4]+', '+fmt(x[1])+' to '+fmt(x[2]))+'"/>'});
+  if(layer.l)LIFE.forEach(function(p,i){var q=polar(200,200,58+p.d*20,p.h);s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2.4" fill="#d9b24a" opacity=".85"><animate attributeName="opacity" values=".2;.95;.2" dur="'+(2+i%5)+'s" repeatCount="'+(STILL?0:'indefinite')+'"/></circle>'});
+  s+='<circle cx="200" cy="200" r="40" fill="none" stroke="#ef5d85" stroke-dasharray="2 3"/><text x="200" y="198" fill="#ede4d3" font-size="12" text-anchor="middle" font-family="Cormorant Garamond">a week</text><text x="200" y="212" fill="#ab9f8e" font-size="10" text-anchor="middle" font-family="Cormorant Garamond">like this one</text></svg>';
+  v.innerHTML=s;n.innerHTML='The week as a sundial. The <b style="color:#b98cf0">purple</b> arcs are the socials at Salem Hall, the <b style="color:#8fcf9b">green</b> ones the Allotments; the gold sparks are life in the app between them, a day kept, a note, someone saying they’re going. Tap an arc.';
+  $$('[data-l]',v).forEach(function(c){c.onclick=function(){var k=c.getAttribute('data-l');layer[k]=layer[k]?0:1;if(!layer.s&&!layer.l)layer[k]=1;i3('rhythm')}});
+  $$('path.hp',v).forEach(function(p){p.onclick=function(){n.textContent=p.getAttribute('data-n')}});return}
+ if(t==='pulse'){v.innerHTML='<input class="slider" id="pday" type="range" min="0" max="6" step="1" value="1" aria-label="Day of the week"><svg viewBox="0 0 400 520" role="img" aria-label="Which homes were visited, day by day">'+land({id:'3',labels:true})+'<g id="heat"></g></svg><button class="chip" id="pplay" type="button">Play the week</button>';
+  var heatFor=function(d){var w={};var R=rnd(31+d);Object.keys(P).forEach(function(k){w[k]=R()*.3});if(d===1||d===3){w['21']=1;w['53']=.9;w['51']=.7}if(d===2||d===5){w['22']=1;w['53']=.7}w['51']+=.3;w['52']+=.2;if(d===4){w['31']=.8;w['41']=.6}return w};
+  var drawHeat=function(d){var w=heatFor(d),g=$('#heat');g.innerHTML='';Object.keys(w).forEach(function(k){var p=P[k],x=Math.min(1,w[k]);if(x<.15)return;g.innerHTML+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(8+x*26)+'" fill="#d9b24a" opacity="'+(x*.35).toFixed(2)+'"/>'});
+   n.textContent=DAYS[d]+': '+(d===1||d===3?'Salem Hall is full, and the paths to Who’s going and the noticeboard are worn.':d===2||d===5?'the Allotments are busy; Who’s going lights up before the session.':d===4?'a quieter day: the Leadership Team’s room and the policies are visited.':'a quiet day in the place, a few notes and days kept.')};
+  drawHeat(1);$('#pday').oninput=function(){drawHeat(+this.value)};$('#pplay').onclick=function(){var d=0,sl=$('#pday');var go=function(){if(tab!=='pulse')return;sl.value=d;drawHeat(d);d++;if(d<7&&!STILL)setTimeout(go,900)};go()};return}
+ if(t==='flow'){var nodes=[['Hope',200,70],['Gift',330,200],['Met',200,330],['Changed',70,200]];var s2='<svg viewBox="0 0 400 400" role="img" aria-label="The golden flow: a hope, a gift, met, and what changed"><circle cx="200" cy="200" r="130" fill="none" stroke="#3d3648" stroke-dasharray="3 5"/>';
+  nodes.forEach(function(x,i){s2+='<circle cx="'+x[1]+'" cy="'+x[2]+'" r="34" fill="#110f16" stroke="'+(i===0?'#ab9f8e':'#ede4d3')+'"'+(i===0?' stroke-dasharray="3 3"':'')+'/><text x="'+x[1]+'" y="'+(x[2]+5)+'" fill="#ede4d3" font-size="15" text-anchor="middle" font-family="Cormorant Garamond" font-weight="500">'+x[0]+'</text>'});
+  s2+='<g id="flowp"></g><text x="200" y="196" fill="#d9b24a" font-size="30" text-anchor="middle" font-family="Cormorant Garamond" id="loops">0</text><text x="200" y="216" fill="#ab9f8e" font-size="11" text-anchor="middle" font-family="Cormorant Garamond">loops come round</text></svg>';
+  v.innerHTML=s2;n.innerHTML='Matthew’s golden flow, pointed at the community’s own words: a hope is said, someone’s gift meets it, and something changes. Each gold light is one loop going round. The count is held in the fold, with no names.';
+  var g=$('#flowp'),loops=0,ps=[];for(var i=0;i<9;i++)ps.push({t:i/9,s:.0018+(i%3)*.0006});var tick=function(){if(tab!=='flow')return;g.innerHTML='';ps.forEach(function(p){p.t+=STILL?0:p.s;if(p.t>=1){p.t-=1;loops++;$('#loops').textContent=loops}var a=(p.t*360-90)*Math.PI/180;g.innerHTML+='<circle cx="'+(200+Math.cos(a)*130).toFixed(1)+'" cy="'+(200+Math.sin(a)*130).toFixed(1)+'" r="4" fill="#d9b24a"/>'});if(!STILL)requestAnimationFrame(tick)};tick();return}
+ if(t==='garden'){var beds=[['A','Culture and values',1,10],['B','Support offer',11,21],['C','Staff and volunteers',22,27],['D','Operations and management',28,33]];
+  v.innerHTML='<input class="slider" id="gm" type="range" min="0" max="12" step="1" value="8" aria-label="Months"><div id="gbed"></div>';
+  var draw=function(mo){var R=rnd(5),s='<svg viewBox="0 0 400 330" role="img" aria-label="The four groves of our wood, trees growing as evidence comes in">';beds.forEach(function(b,bi){var y=14+bi*80;s+='<text x="8" y="'+(y+10)+'" fill="#ede4d3" font-size="13" font-family="Cormorant Garamond" font-weight="500">'+b[0]+' · '+b[1]+'</text>';
+    for(var n=b[2];n<=b[3];n++){var i=n-b[2],x=12+i*35,grow=Math.max(0,Math.min(1,(mo-(bi>1?6:0)-R()*5)/5));s+='<line x1="'+(x+10)+'" y1="'+(y+62)+'" x2="'+(x+10)+'" y2="'+(y+62-grow*30)+'" stroke="#6fae7b" stroke-width="2"/>'+(grow>.5?'<ellipse cx="'+(x+6)+'" cy="'+(y+62-grow*24)+'" rx="5" ry="2.6" fill="#6fae7b"/><ellipse cx="'+(x+14)+'" cy="'+(y+62-grow*28)+'" rx="5" ry="2.6" fill="#6fae7b"/>':'')+(grow>=1?'<circle cx="'+(x+10)+'" cy="'+(y+62-32)+'" r="3.5" fill="#d9b24a"/>':'')+'<text x="'+(x+10)+'" y="'+(y+76)+'" fill="#7f7466" font-size="9" text-anchor="middle" font-family="Cormorant Garamond">'+n+'</text>'}});
+   $('#gbed').innerHTML=s+'</svg>';n.innerHTML='The 33 national standards as the four groves of our wood. A tree grows as evidence comes in from what actually happens, meetings, sessions, decisions; a gold bud is a standard well rooted. Groves C and D come into full use once the constitution is adopted. Month '+mo+'.'};
+  draw(8);$('#gm').oninput=function(){draw(+this.value)};return}
+ if(t==='reach'){var rings=[['Members',70,40],['Volunteers',105,14],['Supporters',140,6],['Partners we meet',175,9]];var R=rnd(9),s3='<svg viewBox="0 0 400 400" role="img" aria-label="The people we meet, in rings, with no names">';
+  rings.slice().reverse().forEach(function(r){s3+='<circle cx="200" cy="200" r="'+r[1]+'" fill="none" stroke="#3d3648"/>'});
+  rings.forEach(function(r,ri){for(var i=0;i<r[2];i++){var a=R()*Math.PI*2,rr=r[1]-12+R()*10;s3+='<circle cx="'+(200+Math.cos(a)*rr).toFixed(1)+'" cy="'+(200+Math.sin(a)*rr).toFixed(1)+'" r="'+(ri===3?4:3)+'" fill="'+(ri===3?'none':'#d9b24a')+'" stroke="#d9b24a"/>'}s3+='<text x="200" y="'+(200-r[1]+4)+'" fill="#ede4d3" font-size="12.5" text-anchor="middle" font-family="Cormorant Garamond" stroke="#110f16" stroke-width="4" paint-order="stroke">'+r[0]+'</text>'});
+  s3+='<path d="M200 200 L200 30" stroke="#d9b24a" opacity=".25"/><circle cx="200" cy="200" r="22" fill="#110f16" stroke="#ef5d85"/><text x="200" y="204" fill="#ede4d3" font-size="11" text-anchor="middle" font-family="Cormorant Garamond">us</text></svg>';
+  v.innerHTML=s3;n.innerHTML='The people we meet, in rings out from the common: members, volunteers, supporters, and the partners who walk in. Partners are open rings until they come in as supporters and say what they offer. No names, only the shape of the community’s reach.';return}}
+function fmt(h){var m=Math.round((h%1)*60);return Math.floor(h)+(m?':'+(m<10?'0':'')+m:':00')}
+$$('#i3 .chip[data-t]').forEach(function(c){c.onclick=function(){i3(c.getAttribute('data-t'))}});
+
+/* ---------- 4: gifts and needs ---------- */
+var GIFTS=[['g1','21','cooking for a group'],['g2','21','a listening ear'],['g3','21','help with phones and forms',1],['g4','22','growing vegetables'],['g5','22','building with wood'],['g6','23','first aid'],['g7','23','crochet'],['g8','51','music']];
+var NEEDS=[['n1','22','to grow my own food',['g4','g5']],['n2','21','to cook for the group one day',['g1','g2']],['n3','23','to learn first aid',['g6']]];
+var gshow='both';
+function i4(){var s='<svg viewBox="0 0 400 520" role="img" aria-label="Hopes and gifts at their places">'+land({id:'4',labels:true})+'<g id="ties"></g>';
+ var off={'21':[[-24,34],[0,38],[24,34]],'22':[[-16,34],[16,34]],'23':[[30,-10],[42,6]],'51':[[-30,0]]},used={};
+ function pos(k){used[k]=(used[k]||0);var o=(off[k]||[[0,-26]])[used[k]++%(off[k]||[1]).length];return [P[k][0]+o[0],P[k][1]+o[1]]}
+ var GP={};if(gshow!=='needs')GIFTS.forEach(function(g){var p=pos(g[1]);GP[g[0]]=p;s+='<g class="hp" data-g="'+g[0]+'" tabindex="0" role="button" aria-label="A gift: '+g[2]+'"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="12" fill="transparent"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="6" fill="'+(g[3]?'#ef5d85':'#d9b24a')+'"/></g>'});else GIFTS.forEach(function(g){GP[g[0]]=pos(g[1])});
+ used={};var NP={};if(gshow!=='gifts')NEEDS.forEach(function(nd){var p=nd[1]==='22'?[338,170]:(nd[1]==='21'?[214,152]:[212,206]);NP[nd[0]]=p;s+='<g class="hp" data-n="'+nd[0]+'" tabindex="0" role="button" aria-label="A hope: '+nd[2]+'"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="14" fill="transparent"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" fill="none" stroke="#ede4d3" stroke-width="1.6" stroke-dasharray="3 2"/></g>'});
+ $('#i4v').innerHTML=s+'</svg>';var n=$('#i4n');
+ $$('#i4v [data-g]').forEach(function(e){e.onclick=function(){var g=GIFTS.filter(function(x){return x[0]===e.getAttribute('data-g')})[0];n.innerHTML='A gift: <b>'+esc(g[2])+'</b>, offered at '+esc(P[g[1]][2])+'.'+(g[3]?' Its owner said yes to sharing it beyond the members, so it shows in crimson.':'')}});
+ $$('#i4v [data-n]').forEach(function(e){e.onclick=function(){var nd=NEEDS.filter(function(x){return x[0]===e.getAttribute('data-n')})[0],t=$('#ties');t.innerHTML='';nd[3].forEach(function(gk){var a=NP[nd[0]],b=GP[gk];t.innerHTML+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#d9b24a" stroke-width="1.6"/>'});
+  n.innerHTML='A hope: <b>'+esc(nd[2])+'</b>. Gold threads show the gifts that could meet it: '+nd[3].map(function(gk){return esc(GIFTS.filter(function(x){return x[0]===gk})[0][2])}).join(' and ')+'. Our helper notices; a peer leader decides and makes the introduction in person. Nobody is named here.'}})}
+$$('#i4 .chip').forEach(function(c){c.onclick=function(){gshow=c.getAttribute('data-g');$$('#i4 .chip').forEach(function(o){o.classList.toggle('on',o===c)});i4()}});
+
+/* ---------- 5: every LERO ---------- */
+var ZL=[['The United Kingdom','Every LERO has its place on the earth. Community Recovery is lit gold.'],['The East Midlands','Closer in: the region, and the LEROs within it.'],['North Northamptonshire','The county, where Community Recovery meets.'],['Wellingborough','The town: Salem Hall and the Allotments stand here.'],['Community Recovery’s neighbourhood','And inside the town, the place itself: the common, the neighbourhoods, the gate. The outward map walks straight in.']];
+function i5(z){var s='<svg viewBox="0 0 400 300" role="img" aria-label="'+esc(ZL[z][0])+'">';
+ if(z<4){var R=rnd(3+z);for(var i=0;i<4;i++){var r=40+i*30;s+='<circle cx="200" cy="150" r="'+r+'" fill="none" stroke="'+(i===3-z?'#ede4d3':'#3d3648')+'"'+(i===3-z?'':' stroke-dasharray="2 4"')+'/>'}
+  for(var j=0;j<(4-z)*6+2;j++){var a=R()*Math.PI*2,rr=20+R()*110;s+='<circle cx="'+(200+Math.cos(a)*rr).toFixed(1)+'" cy="'+(150+Math.sin(a)*rr*.8).toFixed(1)+'" r="3" fill="none" stroke="#ab9f8e"/>'}
+  s+='<circle cx="212" cy="140" r="7" fill="#d9b24a"><animate attributeName="r" values="6;9;6" dur="2.4s" repeatCount="'+(STILL?0:'indefinite')+'"/></circle><text x="224" y="136" fill="#d9b24a" font-size="12" font-family="Cormorant Garamond">We are here</text>';
+  s+='<text x="200" y="290" fill="#ede4d3" font-size="15" text-anchor="middle" font-family="Cormorant Garamond" font-weight="500">'+esc(ZL[z][0])+'</text></svg>'}
+ else s='<svg viewBox="0 0 400 520" role="img" aria-label="Community Recovery’s neighbourhood">'+land({id:'5',labels:false})+'</svg>';
+ $('#i5v').innerHTML=s;$('#i5n').textContent=ZL[z][1]}
+$('#zoom').oninput=function(){i5(+this.value)};
+function wl(w){$$('#i5 .chip[data-w]').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-w')===w)});var cr=w==='cr';var bg=cr?'#1B1424':'#0f2422',card=cr?'#2A1F38':'#183a36',acc=cr?'#7B3FBF':'#1f8a7a',nm=cr?'COMMUNITY RECOVERY':'ANOTHER LERO',p1=cr?'Salem Hall':'The Hub',p2=cr?'The Allotments':'The Community Garden';
+ $('#wl').innerHTML='<div class="mini" style="background:'+bg+';color:#F3EDF9"><div style="font-family:var(--disp);letter-spacing:.12em;font-size:9px;color:#bbb">'+nm+'</div><div style="font-family:var(--disp);font-size:14px;margin:4px 0">WHERE AND WHEN</div><div style="background:'+card+';border-radius:8px;padding:5px;margin:3px 0">'+p1+'</div><div style="background:'+card+';border-radius:8px;padding:5px;margin:3px 0">'+p2+'</div><div style="background:'+acc+';border-radius:12px;text-align:center;padding:4px;margin-top:5px;font-weight:700">I’m going</div></div>'+
+  '<p style="flex:1;min-width:12rem;margin:0;color:#ede4d3;font-size:1.05rem">'+(cr?'Community Recovery’s names, places, brand and words.':'The same place, the same screens and the same standards, with another LERO’s own names, places, brand and words.')+'</p>'}
+$$('#i5 .chip[data-w]').forEach(function(c){c.onclick=function(){wl(c.getAttribute('data-w'))}});
+
+/* ---------- 6: the build ---------- */
+function bars(n,kind){var s='';for(var i=0;i<n;i++){var c=kind==='before'?(i%7===3?' g':''):(i===0?' p':(i===4||i===7?' g':''));s+='<div class="b'+c+'"></div>'}return s}
+function i6(play){$('#i6v').innerHTML='<div class="strip"><div class="col"><div class="tall"><div class="mv" id="mvA">'+bars(120,'before')+'</div></div><p style="color:#ede4d3;margin:.4rem 0 0">Before</p><p class="small" style="color:#ab9f8e;margin:0">one long page</p></div><div class="col"><div class="tall"><div class="mv" id="mvB">'+bars(16,'after')+'</div></div><p style="color:#ede4d3;margin:.4rem 0 0">After</p><p class="small" style="color:#ab9f8e;margin:0">a hub with doors</p></div></div>';
+ if(play&&!STILL){var A=$('#mvA'),B=$('#mvB'),t=0;var go=function(){t+=1;A.style.transform='translateY('+(-Math.min(t*6,A.scrollHeight-290))+'px)';B.style.transform='translateY('+(-Math.min(t*6,Math.max(0,B.scrollHeight-290)))+'px)';if(t<300)requestAnimationFrame(go)};go()}}
+$$('#i6 .chip').forEach(function(c){c.onclick=function(){$$('#i6 .chip').forEach(function(o){o.classList.toggle('on',o===c)});i6(c.getAttribute('data-b')==='play')}});
+
+/* ---------- the door, the room, the theme, addresses ---------- */
+function stepNow(){var best='the start',y=window.scrollY+120;[['s1','step one, the place'],['s2','step two, the people in it'],['s2b','what the lighthouse shows'],['s3','step three, the gift map'],['s4','step four, every LERO'],['s5','step five, the build'],['s6','the screens'],['s7','what was decided on 14 November']].forEach(function(x){var e=document.getElementById(x[0]);if(e&&e.offsetTop<=y)best=x[1]});return best}
+function door(){$('#doorMsg').value='Use the beach connector. Read the proposal leros-phase-three, spine:leros-phase-three at beach.happyseaurchin.com, with function:document and function:proposal. I’m reading '+stepNow()+'. Tell me what it proposes, then help me answer its decisions in my own reading, leros-phase-three:<my name>.';$('#doorBg').classList.add('open');$('#doorCopy').focus()}
+$('#btn-door').onclick=function(){if(window.beachDoor){try{beachDoor({way:'ways:proposal',family:NAME});return}catch(e){}}door()};
+$('#doorClose').onclick=function(){$('#doorBg').classList.remove('open')};$('#doorBg').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')});
+function copy(t,b){var done=function(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1400)};try{navigator.clipboard.writeText(t).then(done,function(){})}catch(e){}}
+$('#doorCopy').onclick=function(){copy($('#doorMsg').value,this)};$$('[data-copy]').forEach(function(b){b.onclick=function(){copy(b.getAttribute('data-copy'),b)}});
+$('#btn-addr').onclick=function(){var on=document.body.classList.toggle('show-addr');this.setAttribute('aria-pressed',String(on))};
+if(1){$('#btn-theme').addEventListener('click',function(){var r=document.documentElement,cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.setAttribute('data-theme',dark?'light':'dark')})}
+function room(){var box=$('#roomLines');var show=function(b){if(!b||typeof b!=='object')return;var ks=Object.keys(b).filter(function(k){return /^\d+$/.test(k)});var lines=[];(function walk(n){Object.keys(n).filter(function(k){return /^\d$/.test(k)}).forEach(function(k){var e=n[k];if(e&&typeof e==='object'){if(typeof e._==='string'&&typeof e['1']==='string')lines.push(e);else walk(e)}})})(b);
+ if(!lines.length)return;box.innerHTML=lines.slice(-3).map(function(e){return '<p class="voice">'+esc(e._)+' <span class="small">— '+esc(e['1'])+'</span></p>'}).join('')};
+ if(PREVIEW){show(D.room);return}fetch('https://beach.happyseaurchin.com/.well-known/pscale-beach?block=pool:leros-phase-three').then(function(r){return r.json()}).then(show).catch(function(){})}
+
+document.addEventListener('keydown',function(e){var el=e.target;if((e.key==='Enter'||e.key===' ')&&el.classList&&el.classList.contains('hp')){e.preventDefault();el.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+/* ---------- start ---------- */
+bandDraw();i1('land');phone();pwhat('2');i3('rhythm');i4();i5(0);wl('cr');i6(false);room();readAnswers();
+if(PREVIEW){paint(D.spine)}else{fetch('https://beach.happyseaurchin.com/.well-known/pscale-beach?block=spine:leros-phase-three').then(function(r){return r.json()}).then(function(b){var x=b&&(b['1']?b:(b.block||b.content));if(x&&x['1'])paint(x);else paint(D.spine)}).catch(function(){paint(D.spine)})}
+})();
+</script>
+<script src="beach.js?v=2026-10-26a"></script>
+<script>window.DOOR={place:'LEROs on the Commons · phase three',beach:'https://beach.happyseaurchin.com',home:'https://phenomemental.github.io/happyseaurchin-beach/leros-phase-three.html',room:'https://mirror.onen.ai/?pool=leros-phase-three'};</script>
+<script src="door.js?v=2026-10-27a"></script>
+</body>
+</html>
