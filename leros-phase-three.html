@@ -139,11 +139,16 @@ footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 .step>*{min-width:0}#i7>div{max-width:100%}
+.settled{margin:0 0 1rem}.lede2{max-width:46rem;font-size:1.08rem;line-height:1.6}
+.settled-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1rem;margin-top:1rem}
+.sc{border:1px solid var(--line,#cbbfa8);border-top:3px solid var(--crimson,#b3263e);padding:1rem 1.1rem;background:var(--panel,rgba(255,255,255,.35))}
+.sc h3{margin:0 0 .15rem;font-size:1.25rem;font-weight:500}.sc .from{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#7a6e5e);margin:0 0 .5rem}
+.sc p{margin:.35rem 0;line-height:1.55}.sc .why{border-left:2px solid var(--crimson,#b3263e);padding-left:.7rem;font-style:italic}
 </style>
 </head>
 <body>
 <nav class="rail" aria-label="Steps">
-<a href="#s1" title="The place">◎</a><a href="#s2" title="How it works for the people in it">☺</a><a href="#s1b" title="How it’s kept">▢</a><a href="#s3" title="The gift map">✿</a><a href="#s4" title="Every LERO">◉</a><a href="#s5" title="The build">▣</a><a href="#s6" title="The screens">▤</a><a href="#s7" title="Decided on 14 November">✓</a><a href="#talk" title="Talk">❝</a>
+<a href="#s7" title="Settled on 14 November">✓</a><a href="#s1" title="The place">◎</a><a href="#s2" title="How it works for the people in it">☺</a><a href="#s1b" title="How it’s kept">▢</a><a href="#s3" title="The gift map">✿</a><a href="#s4" title="Every LERO">◉</a><a href="#s5" title="The build">▣</a><a href="#s6" title="The screens">▤</a><a href="#talk" title="Talk">❝</a>
 </nav>
 <div class="wrap">
 <header class="top">
@@ -180,6 +185,12 @@ footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;
 
 <div class="rule">where it stands</div>
 <div class="tiles" id="tiles"></div>
+
+<div class="rule" id="s7">what was settled on 14 November</div>
+<section class="settled">
+ <p class="lede2">On 14 November Matthew went back through the original proposal (his Community Recovery page of 27 September, written for David to take to Sheffield), phase one and phase two, side by side with this phase, and answered every place where they differed, one question at a time, then weft's proposal. These are his answers, each with its reason. Phase one has been corrected to match, its old lines kept visible; weft is correcting phase two.</p>
+ <div class="settled-grid" id="settled"></div>
+</section>
 
 <div style="height:2.4rem"></div>
 <section class="step" id="s1">
@@ -318,15 +329,6 @@ footer{border-top:1px solid var(--line);margin-top:3rem;padding:1.2rem 0 2.4rem;
  </div></div>
 </section>
 
-<section class="step" id="s7">
- <div class="words" style="max-width:46rem">
-  <p class="eyebrow">What was decided, each with its reason</p>
-  <h2 data-sp="4" data-part="title"></h2><span class="addr">4</span>
-  <p data-sp="4" data-part="body"></p>
-  <div data-kids="4"></div>
- </div>
-</section>
-
 <div class="rule" id="talk">talk</div>
 <section class="threads" data-threads="leros-phase-three"><p class="small">No threads yet: each piece of work at the build becomes a thread once its decision stands.</p></section>
 <section class="room" id="room">
@@ -390,6 +392,11 @@ function paint(S){
  $$('[data-kids]').forEach(function(box){var a=box.getAttribute('data-kids'),n=at(S,a);box.innerHTML='';if(!n||typeof n!=='object')return;
   ['1','2','3','4','5','6','7','8','9'].forEach(function(k){var t=text(n[k]);if(!t)return;var s=split(t);var d=document.createElement('details');
    d.innerHTML='<summary>'+esc(soft(s.title)||'More')+'<span class="addr">'+(a.indexOf('.')<0?a+'.':a)+k+'</span></summary><p>'+esc(cap1(s.body))+'</p>';box.appendChild(d)})});
+ (function(){var box=$('#settled');if(!box)return;box.innerHTML='';
+  [['1.14','Co-production','the leaders'],['4.5','Joining','the membership form'],['4.2','What is mine','hope, gifts and recovery capital'],['1.11','The gift map','asset-based community development'],['4.3','Privacy and AI','the helper in your pocket'],['4.4','Talking safely','rooms and safeguarding'],['1.17','What the lighthouse shows','paths and life'],['1.12','Moving through the app','the thumb menu'],['4.1','Who holds the place','the house key'],['4.6','Money and reach','the original three conditions'],['1.111','Every LERO','the white label'],['4.7','How the landscape is kept','map or world'],['4.8','Keeping the record true','the form, the notice, the phases'],['1.19','The user experience','weft’s proposal']].forEach(function(x){
+   var t=text(at(S,x[0]));if(!t)return;var b=split(t).body,w=b.search(/\bWhy[^.]*?:\s/),dec=w<0?b:b.slice(0,w).trim(),why=w<0?'':b.slice(w).replace(/^Why[^:]*:\s*/,'');
+   var d=document.createElement('article');d.className='sc';
+   d.innerHTML='<h3>'+esc(x[1])+'</h3><p class="from">'+esc(x[2])+' <span class="addr">'+x[0]+'</span></p><p>'+esc(cap1(dec))+'</p>'+(why?'<p class="why">Why: '+esc(why)+'</p>':'');box.appendChild(d)})})();
  tiles(S);
 }
 function decParse(t){t=t.replace(/^DECIDE\s*—\s*/,'');var ans='',am=t.match(/\s*((?:ANSWERED|Answered|Matthew’s answer|Matthew's answer)[\s\S]*)$/);if(am){ans=am[1].replace(/^ANSWERED/,'Answered');t=t.slice(0,am.index).trim()}var words=['GO','CHANGE','NOT YET'],m=t.match(/([A-Z][A-Z’']*(?:,\s*[A-Z][A-Z’' ]*)*\s+or\s+NOT YET)\.?\s*$/);
@@ -598,7 +605,7 @@ function i6(play){$('#i6v').innerHTML='<div class="strip"><div class="col"><div 
 $$('#i6 .chip').forEach(function(c){c.onclick=function(){$$('#i6 .chip').forEach(function(o){o.classList.toggle('on',o===c)});i6(c.getAttribute('data-b')==='play')}});
 
 /* ---------- the door, the room, the theme, addresses ---------- */
-function stepNow(){var best='the start',y=window.scrollY+120;[['s1','step one, the place'],['s2','step two, the people in it'],['s2b','what the lighthouse shows'],['s3','step three, the gift map'],['s4','step four, every LERO'],['s5','step five, the build'],['s6','the screens'],['s7','what was decided on 14 November']].forEach(function(x){var e=document.getElementById(x[0]);if(e&&e.offsetTop<=y)best=x[1]});return best}
+function stepNow(){var best='the start',y=window.scrollY+120;[['s1','step one, the place'],['s2','step two, the people in it'],['s2b','what the lighthouse shows'],['s3','step three, the gift map'],['s4','step four, every LERO'],['s5','step five, the build'],['s6','the screens'],['s7','what was settled on 14 November']].forEach(function(x){var e=document.getElementById(x[0]);if(e&&e.offsetTop<=y)best=x[1]});return best}
 function door(){$('#doorMsg').value='Use the beach connector. Read the proposal leros-phase-three, spine:leros-phase-three at beach.happyseaurchin.com, with function:document and function:proposal. I’m reading '+stepNow()+'. Tell me what it proposes, then help me answer its decisions in my own reading, leros-phase-three:<my name>.';$('#doorBg').classList.add('open');$('#doorCopy').focus()}
 $('#btn-door').onclick=function(){if(window.beachDoor){try{beachDoor({way:'ways:proposal',family:NAME});return}catch(e){}}door()};
 $('#doorClose').onclick=function(){$('#doorBg').classList.remove('open')};$('#doorBg').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')});
