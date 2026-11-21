@@ -471,6 +471,11 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
                 ProposalParts(w.shown, details)
                 Text("Writing…", style = Type.aside, color = ink.soft)
             }
+            // Sundial 0.11: a block it writes changed since it was shown; nothing was written.
+            is Asking.Stage.Held -> {
+                ProposalParts(w.shown, details)
+                HeldNotice(w.carried.problem ?: "A block it writes has changed since this was set out. Nothing was written.", again = { asking.planAgain(e) }, letGo = { asking.letHeldGo(e) })
+            }
             is Asking.Stage.Written -> {
                 val postedBefore = w.carried.post?.let(model.app.posts::landed)
                 Written(model, w.shown.asked.proposal!!.seal, w.carried, asking.shellOpening())

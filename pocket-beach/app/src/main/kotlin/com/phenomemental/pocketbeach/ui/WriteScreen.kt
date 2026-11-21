@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import com.phenomemental.pocketbeach.bsp.Kind
 import com.phenomemental.pocketbeach.bsp.Plan
 import com.phenomemental.pocketbeach.bsp.PositionView
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.Seen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -31,8 +33,16 @@ import kotlinx.coroutines.withContext
 fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
     val ink = LocalInk.current
     val scope = rememberCoroutineScope()
-    val here by produceState<PositionView?>(null, screen) {
-        value = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, screen.block, screen.address) }
+    // Sundial 0.11: the block as this screen showed it, carried with the write: it lands only while the block still stands so.
+    var reload by remember(screen) { mutableIntStateOf(0) }
+    val loaded by produceState<Pair<PositionView?, Seen>?>(null, screen, reload) {
+        value = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, screen.block, screen.address) to model.pages.seen(screen.block) }
+    }
+    val here = loaded?.first
+    val seen = loaded?.second
+    // Changed outside while open (FolderWatch moves the version): said at once, before he saves.
+    val changedOutside by produceState(false, seen, model.version) {
+        value = seen != null && withContext(Dispatchers.IO) { model.pages.changedOutside(screen.block, seen) }
     }
     var text by rememberSaveable(screen) { mutableStateOf<String?>(null) }
     LaunchedEffect(here) {
@@ -73,7 +83,7 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
                     val chosen = p ?: return@Action
                     saving = true
                     scope.launch {
-                        val result = withContext(Dispatchers.IO) { model.pages.carryOut(chosen) }
+                        val result = withContext(Dispatchers.IO) { model.pages.carryOut(chosen, seen) }
                         saving = false
                         if (!result.ok) {
                             done = result
@@ -145,9 +155,18 @@ fun WriteScreen(model: Model, nav: Nav, screen: Screen.Write) {
             Label("The call")
             SelectionContainer { Text(Words.call(p), style = Type.call, color = ink.soft, modifier = Modifier.testTag("call")) }
         }
-        done?.let { d ->
-            Notice(d.problem ?: "It wasn't saved.", tag = "problem")
-            if (d.reply.isNotEmpty()) SelectionContainer { Text(d.reply, style = Type.call, color = ink.soft) }
+        val d = done
+        when {
+            d?.held == true || (d == null && changedOutside) -> HeldNotice(
+                if (d != null) "${screen.block} has changed since this was opened, so nothing was saved."
+                else "${screen.block} has changed since this was opened.",
+                again = { reload++; done = null },
+                letGo = { nav.back() },
+            )
+            d != null -> {
+                Notice(d.problem ?: "It wasn't saved.", tag = "problem")
+                if (d.reply.isNotEmpty()) SelectionContainer { Text(d.reply, style = Type.call, color = ink.soft) }
+            }
         }
     }
 }

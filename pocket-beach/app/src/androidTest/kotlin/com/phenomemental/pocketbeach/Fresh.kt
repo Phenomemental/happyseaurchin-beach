@@ -35,10 +35,31 @@ object Fresh {
             "the last exchange: ${a.history.lastOrNull()?.let { "${it.question.take(60)} / ${it.note}" }}. The bench: $bench."
     }
 
+    /**
+     * Sundial 0.11: the folder tests' own folder, Documents/Sundial-test. No
+     * test touches Documents/Sundial: should the tests ever run on his phone,
+     * his blocks stay where they are.
+     */
+    val testFolder: File
+        get() = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOCUMENTS), "Sundial-test")
+
+    /** Empty the tests' own folder, and only that one. */
+    fun clearTestFolder() {
+        val f = testFolder
+        check(f.name == "Sundial-test") { "the tests clear their own folder only" }
+        runCatching { f.deleteRecursively() }
+    }
+
     fun clear() {
         // Rockpool: the test before left Ask, and its close may still be writing his history into the pocket about to be cleared.
         app.asking.awaitClosing()
+        // Sundial 0.11: every test begins with the blocks in the app's own files, the tests' own folder in place of his, and emptied.
+        app.accessForTests = null
+        app.folderForTests = testFolder
+        app.ownFilesForTests()
+        clearTestFolder()
         File(app.filesDir, "regions").deleteRecursively()
+        File(app.filesDir, "copies-before-folder").deleteRecursively()
         // 0.8: the hidden region shut again, the hatch forgotten, and the copies saved before one.
         app.storage.shut()
         app.hatching.reset()

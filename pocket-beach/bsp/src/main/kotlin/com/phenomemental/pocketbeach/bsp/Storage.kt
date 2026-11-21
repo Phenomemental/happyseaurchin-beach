@@ -37,7 +37,26 @@ interface BlockStorage {
      * [stamps], or, if anything stops it part way, exactly what it held before.
      */
     fun replaceAll(blocks: Map<String, String>, stamps: Stamps)
+
+    /**
+     * Sundial 0.11: the files this storage holds that it can't read as blocks,
+     * left as they are and never written over, each with why. Only a folder
+     * he can see has any (FolderStorage); the app's own files never do.
+     */
+    fun setAside(): List<SetAside> = emptyList()
+
+    /**
+     * Sundial 0.11: whether [text], what [name] holds now (null: nothing), is
+     * what Sundial itself last wrote there. A storage only Sundial writes
+     * says yes to everything; a folder he can see says yes only to what it
+     * wrote itself, so a change made by another hand (a sync from the
+     * laptop, an edit elsewhere) is told apart from Sundial's own.
+     */
+    fun writtenHere(name: String, text: String?): Boolean = true
 }
+
+/** A file in his folder Sundial can't read as a block: its [file] name, the block [name] it would hold, and [why] in plain words. */
+data class SetAside(val file: String, val name: String, val why: String)
 
 /** When each block was last written (touched) and first written (born): block name to ISO instant. */
 data class Stamps(val touched: Map<String, String> = emptyMap(), val born: Map<String, String> = emptyMap())
@@ -172,6 +191,10 @@ class RoutedStorage(private val pocket: BlockStorage, private val hidden: BlockS
 
     override fun names(): List<String> = (pocket.names() + hidden.names()).distinct()
 
+    override fun setAside(): List<SetAside> = pocket.setAside()
+
+    override fun writtenHere(name: String, text: String?): Boolean = if (away(name)) hidden.writtenHere(name, text) else pocket.writtenHere(name, text)
+
     override fun stamps(): Stamps {
         val a = pocket.stamps()
         val b = hidden.stamps()
@@ -209,6 +232,36 @@ class RoutedStorage(private val pocket: BlockStorage, private val hidden: BlockS
         moved
     }
 }
+
+/**
+ * Sundial 0.11: the pocket's own storage, which can be switched between
+ * calls without the app closing: from the app's private files to his folder
+ * once the move has copied and checked every block (spine:pocket-beach
+ * 1.111178719933). While [barred] gives a reason (his folder is in use and
+ * Sundial has lost its access to it), every write is refused with that
+ * reason, so nothing is written to a folder Sundial can't see whole.
+ */
+class SwitchingStorage(initial: BlockStorage, private val barred: () -> String? = { null }) : BlockStorage {
+    @Volatile var target: BlockStorage = initial
+
+    private fun writable(): BlockStorage {
+        barred()?.let { throw Barred(it) }
+        return target
+    }
+
+    override fun read(name: String): String? = target.read(name)
+    override fun write(name: String, json: String) = writable().write(name, json)
+    override fun delete(name: String) = writable().delete(name)
+    override fun names(): List<String> = target.names()
+    override fun stamps(): Stamps = target.stamps()
+    override fun setStamps(stamps: Stamps) = writable().setStamps(stamps)
+    override fun replaceAll(blocks: Map<String, String>, stamps: Stamps) = writable().replaceAll(blocks, stamps)
+    override fun setAside(): List<SetAside> = target.setAside()
+    override fun writtenHere(name: String, text: String?): Boolean = target.writtenHere(name, text)
+}
+
+/** A write refused because Sundial can't reach the folder his blocks are kept in. */
+class Barred(message: String) : IllegalStateException(message)
 
 /** Blocks held in memory only, gone when the process ends. For tests, and for any front end that keeps nothing. */
 class MemoryStorage : BlockStorage {

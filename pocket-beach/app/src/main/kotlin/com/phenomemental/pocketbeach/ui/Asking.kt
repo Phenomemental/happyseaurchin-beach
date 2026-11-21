@@ -93,6 +93,8 @@ class Asking(private val app: PocketApp) {
         class Carrying(val shown: Shown) : Stage
         /** The writes landed (or one didn't); the post, if one was offered, waits on its own Yes. */
         class Written(val shown: Shown, val carried: Carried) : Stage
+        /** Sundial 0.11: he said yes, but a block it writes changed by another hand since it was shown, so nothing was written: planned again, or let go. */
+        class Held(val shown: Shown, val carried: Carried) : Stage
         class Posting(val written: Written, val message: PoolMessage) : Stage
         /** The exchange is over and logged: [note] says how it ended. */
         class Over(val shown: Shown?, val carried: Carried?, val posted: Posted?, val note: String) : Stage
@@ -1614,6 +1616,12 @@ class Asking(private val app: PocketApp) {
                         listOfNotNull(c.problem))
                 }
             }
+            // Sundial 0.11: held, nothing was written; it waits on him, planned again on this version or let go.
+            if (carried.held.isNotEmpty()) {
+                e.waiting = Stage.Held(s, carried)
+                changed()
+                return@launch
+            }
             // Rockpool: the walk that set it out goes on from the step after the one that waited: "On his yes, write it."
             if ((e.walk?.waiting as? Cook.Wait.Him)?.card.let { it is Cook.Card.Keep || it is Cook.Card.New || it is Cook.Card.Name }) {
                 e.walkProblem = carried.problem
@@ -1629,6 +1637,26 @@ class Asking(private val app: PocketApp) {
                 else -> e.waiting = Stage.Written(s, carried)
             }
         }
+    }
+
+    /** Sundial 0.11: a held proposal planned again on the pocket as it stands now, and shown again for his yes. */
+    fun planAgain(e: Exchange? = waitingOn<Stage.Held>()) {
+        val h = e?.waiting as? Stage.Held ?: return
+        val asked = h.shown.asked
+        val answer = asked.answer ?: return
+        val seal = asked.proposal?.seal ?: HelloWorld.seal()
+        scope.launch {
+            val again = withContext(Dispatchers.IO) { Asks.propose(answer, app.storage, app.shelf, shellOpening(), seal, System.currentTimeMillis()) }
+            e.waiting = Stage.Shown(Asked(asked.exchanges, asked.found, answer, again, null, asked.unasked), h.shown.took, h.shown.pace, h.shown.firstShown)
+            changed()
+        }
+    }
+
+    /** Sundial 0.11: a held proposal let go: nothing is written. */
+    fun letHeldGo(e: Exchange? = waitingOn<Stage.Held>()) {
+        val h = e?.waiting as? Stage.Held ?: return
+        walkOn(e) { it.notNow() }
+        finish(e, h.shown, "Matthew said yes, but ${h.carried.held.joinToString(", ")} had changed since it was set out, so nothing was written; he let it go.", h.carried)
     }
 
     fun post(e: Exchange? = waitingOn<Stage.Written>()) {

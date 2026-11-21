@@ -355,6 +355,26 @@ object Hidden {
 }
 
 /**
+ * Sundial 0.11 (spine:pocket-beach 1.111178719942): what stays in the app's
+ * private files, never in his folder: the app's own blocks ([Hidden]), and
+ * his shell and his history, so a sync's slip can never take away her
+ * safety, his heart and her ways, or alter his record. His shell and history
+ * are still his to see on Your pocket: only where they are kept differs.
+ */
+object Private {
+    fun routes(name: String): Boolean = Hidden.routes(name) || name.startsWith("shell:") || name.startsWith("history:")
+
+    /**
+     * Whether the private region is open: decided from the private region
+     * itself (it holds anything once he has hatched), or, on a phone whose
+     * blocks are all still in its own files, from the hatch. Never from his
+     * folder alone, so a block gone from it can't shut her safety away.
+     */
+    fun open(pocket: BlockStorage, hidden: BlockStorage): Boolean =
+        hidden.names().isNotEmpty() || Hatch.hatched(RoutedStorage(pocket, hidden, ::routes, openNow = true)) != null
+}
+
+/**
  * 0.8, the close (spine:pocket-beach 1.1111787133 and his fourth answer,
  * 1.1111787131): when a conversation closes (a new day, six messages, a
  * write, as 0.7 reopens it), the app appends one entry to his history,

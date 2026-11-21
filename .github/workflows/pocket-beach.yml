@@ -16,9 +16,10 @@
 #             it) built and tested on Windows with the Android app left out:
 #             the golden replay in files and in memory, and every other core
 #             test.
-#   emulator  installs the app on a Pixel-class emulator, opens it, and runs
-#             the on-device tests (the whetstone from the shelf, a write read
-#             back from its own file, the test screen, the golden replay).
+#   emulator  installs the app on a Pixel-class emulator, gives it all-files
+#             access, opens it, and runs the on-device tests (the whetstone
+#             from the shelf, a write read back from its own file, the test
+#             screen, the golden replay, the folder in Documents/Sundial-test).
 #   release   a started release or a version tag only: the signed APK,
 #             attached to the Release.
 
@@ -144,11 +145,16 @@ jobs:
           working-directory: pocket-beach
           # After the tests (which uninstall the app), the screen tour runs once
           # more on its own so its pictures can be copied off the emulator.
+          # Sundial 0.11: the emulator gives the app all-files access, as his
+          # phone's settings do, each time it is installed (the folder tests
+          # give it again themselves, since the test run installs the app anew).
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell appops set --uid com.phenomemental.pocketbeach MANAGE_EXTERNAL_STORAGE allow
             adb shell am start -W -n com.phenomemental.pocketbeach/.MainActivity
             ./gradlew :app:connectedDebugAndroidTest
             ./gradlew :app:installDebug :app:installDebugAndroidTest
+            adb shell appops set --uid com.phenomemental.pocketbeach MANAGE_EXTERNAL_STORAGE allow
             adb shell am instrument -w -e class com.phenomemental.pocketbeach.ScreenTour com.phenomemental.pocketbeach.test/androidx.test.runner.AndroidJUnitRunner
             adb exec-out run-as com.phenomemental.pocketbeach tar -cf - -C files screens > app/build/screens.tar
       - uses: actions/upload-artifact@v7

@@ -13,8 +13,13 @@
   roughly, so the dial follows the real sun; the app keeps it to a tenth of a
   degree, on the phone, and sends it nowhere. Declined, a town from the list
   shipped with the app does instead.
+  MANAGE_EXTERNAL_STORAGE (Sundial 0.11) is all-files access, asked in
+  Settings with a plain line on why, for his blocks to be kept in a folder he
+  can see, Documents/Sundial. It reaches all of shared storage; Sundial
+  touches only that folder. His own signed app; Google Play limits it.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -22,6 +27,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
 
     <queries>
         <intent>

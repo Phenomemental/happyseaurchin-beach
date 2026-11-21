@@ -3,12 +3,15 @@ package com.phenomemental.pocketbeach
 import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.res.AssetManager
+import android.os.Environment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.phenomemental.pocketbeach.bsp.FileStorage
-import com.phenomemental.pocketbeach.bsp.Hatch
-import com.phenomemental.pocketbeach.bsp.Hidden
+import com.phenomemental.pocketbeach.bsp.FolderStorage
+import com.phenomemental.pocketbeach.bsp.Move
+import com.phenomemental.pocketbeach.bsp.Private
+import com.phenomemental.pocketbeach.bsp.SwitchingStorage
 import com.phenomemental.pocketbeach.bsp.RoutedStorage
 import com.phenomemental.pocketbeach.bsp.Pages
 import com.phenomemental.pocketbeach.bsp.PocketBsp
@@ -29,13 +32,15 @@ import com.phenomemental.pocketbeach.net.HttpsWire
 import com.phenomemental.pocketbeach.ui.Asking
 import com.phenomemental.pocketbeach.ui.Benching
 import com.phenomemental.pocketbeach.ui.Received
+import java.io.File
 import java.io.FileNotFoundException
 
 /**
  * The one pocket on this phone. The core (the bsp module) knows nothing of
  * Android: the app hands it a storage for the blocks — files under its private
- * filesDir, as regions/pocket/<name>.json — and the teaching shelf read from
- * its own assets. The pages the screens show are read and written through it.
+ * filesDir, as regions/pocket/<name>.json, or, once he has moved them (Sundial
+ * 0.11), his folder, Documents/Sundial — and the teaching shelf read from its
+ * own assets. The pages the screens show are read and written through it.
  * The companion's model, and the one way out, are held here too.
  */
 class PocketApp : Application() {
@@ -45,9 +50,87 @@ class PocketApp : Application() {
      * before, never in his map or hers.
      */
     val storage: RoutedStorage by lazy {
-        val pocket = FileStorage(filesDir)
-        RoutedStorage(pocket, FileStorage(filesDir, "app"), Hidden::routes, openNow = Hatch.hatched(pocket) != null)
+        RoutedStorage(switching, privateRegion, Private::routes, openNow = runCatching { Private.open(switching, privateRegion) }.getOrDefault(false))
     }
+
+    // ── Sundial 0.11: where his blocks are kept (spine:pocket-beach 1.111178719942) ──
+
+    /** His blocks in the app's own files, as every version before 0.11 kept them; after the move, the copy kept inside the app. */
+    val privatePocket by lazy { FileStorage(filesDir) }
+
+    /** The private region (regions/app): the app's own blocks, and from 0.11 his shell and his history. Never in his folder. */
+    val privateRegion by lazy { FileStorage(filesDir, "app") }
+
+    /** The device tests' own folder in place of his (Documents/Sundial-test): no test touches Documents/Sundial. */
+    @Volatile var folderForTests: File? = null
+
+    /** His folder: Documents/Sundial on this phone. */
+    val folderDir: File
+        get() = folderForTests ?: File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), FOLDER)
+
+    /** Whether his blocks are kept in his folder (after the move), not in the app's own files. */
+    val inFolder: Boolean get() = prefs.getBoolean(IN_FOLDER, false)
+
+    /** The device tests say whether Sundial has all-files access, whatever Android says. */
+    @Volatile var accessForTests: Boolean? = null
+
+    /** Whether Android lets Sundial reach shared storage: what his folder needs. */
+    fun allFilesAccess(): Boolean = accessForTests ?: runCatching { Environment.isExternalStorageManager() }.getOrDefault(false)
+
+    /** Why no write may go now, or null: his blocks are in his folder, and Sundial has lost its access to it. */
+    fun barred(): String? = if (inFolder && !allFilesAccess()) BARRED else null
+
+    private val switching by lazy { SwitchingStorage(if (inFolder) FolderStorage(folderDir) else privatePocket, ::barred) }
+
+    /** His folder as the pocket reads it, once his blocks are there; null while they are in the app's own files. */
+    val folder: FolderStorage? get() = switching.target as? FolderStorage
+
+    /** What the move would do now, writing nothing: which blocks go, which stay inside the app, and why it can't start, if it can't. */
+    fun moveCheck(): Move.Check = Move.check(privatePocket, FolderStorage(folderDir), Private::routes)
+
+    /**
+     * The move (spine:pocket-beach 1.111178719933): a whole copy saved, every
+     * block copied and checked, and only then the switch, between writes.
+     * Blocking: call it off the main thread.
+     */
+    fun move(): Move.Moved = synchronized(pocket) {
+        if (inFolder) return Move.Moved(emptyList(), emptyList(), null, "Your blocks are in Documents/Sundial already.")
+        if (!storage.isOpen) return Move.Moved(emptyList(), emptyList(), null, "Your blocks move once you have a shell on this phone, so the app's own blocks stay inside the app.")
+        if (!allFilesAccess()) return Move.Moved(emptyList(), emptyList(), null, "Sundial needs all-files access first.")
+        val folder = FolderStorage(folderDir)
+        val now = System.currentTimeMillis()
+        val copy = File(File(filesDir, MOVE_COPIES), "before-the-folder-${com.phenomemental.pocketbeach.bsp.isoString(now).replace(':', '-')}.json")
+        val moved = Move.carryOut(privatePocket, privateRegion, folder, Private::routes, storage, copy, now)
+        if (moved.ok) {
+            prefs.edit().putBoolean(IN_FOLDER, true).commit()
+            switching.target = folder
+        }
+        moved
+    }
+
+    /** Whether the copy kept inside the app from before the move still stands. */
+    val privateCopyStands: Boolean
+        get() = inFolder && File(filesDir, "regions/pocket").list()?.isNotEmpty() == true
+
+    /** Remove the copy kept inside the app, on his word: his blocks stay in his folder. */
+    fun removePrivateCopy() {
+        if (!inFolder) return
+        File(filesDir, "regions/pocket").deleteRecursively()
+        File(filesDir, "regions/pocket.meta.json").delete()
+    }
+
+    /** The device tests begin with his blocks in the app's own files, as a fresh phone keeps them. */
+    fun ownFilesForTests() = synchronized(pocket) {
+        prefs.edit().putBoolean(IN_FOLDER, false).putBoolean(FOLDER_OFFERED, true).commit()
+        switching.target = privatePocket
+    }
+
+    /** Whether Your pocket has offered the folder already: it asks once. */
+    var folderOffered: Boolean
+        get() = prefs.getBoolean(FOLDER_OFFERED, false)
+        set(v) {
+            prefs.edit().putBoolean(FOLDER_OFFERED, v).apply()
+        }
     val shelf by lazy { Shelf(AssetShelfSource(assets)) }
     /** Rockpool: the app's own procedures as shipped (cook, kernel, spine:p6), read only. */
     val procedures by lazy { Shelf(AssetShelfSource(assets, "procedures/")) }
@@ -214,6 +297,13 @@ class PocketApp : Application() {
             prefs.edit().apply { if (ms == null) remove("lastSavedMs") else putLong("lastSavedMs", ms) }.apply()
         }
 }
+
+/** Sundial 0.11: his folder's name in Documents, the preferences that say where his blocks are, and what the plain page says. */
+const val FOLDER = "Sundial"
+private const val IN_FOLDER = "blocksInFolder"
+private const val FOLDER_OFFERED = "folderOffered"
+private const val MOVE_COPIES = "copies-before-folder"
+const val BARRED = "Sundial can't reach Documents/Sundial, where your blocks are kept, so nothing is written until Android lets it again."
 
 /** The teaching shelf as the app bundles it, at the root of its assets. */
 class AssetShelfSource(private val assets: AssetManager, private val folder: String = "") : ShelfSource {
