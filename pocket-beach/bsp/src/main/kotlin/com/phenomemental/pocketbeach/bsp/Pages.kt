@@ -6,7 +6,13 @@ enum class Region(val agentId: String) { POCKET("pocket"), TEACHING("pscale") }
 /** A block as the Shore lists it. */
 class BlockSummary(val region: Region, val name: String, val opening: String?, val touched: String?, val born: String?)
 
-class ShoreView(val mine: List<BlockSummary>, val teaching: List<BlockSummary>, val hidden: List<BlockSummary> = emptyList())
+class ShoreView(
+    val mine: List<BlockSummary>,
+    val teaching: List<BlockSummary>,
+    val hidden: List<BlockSummary> = emptyList(),
+    /** Sundial 0.11: the files in his folder Sundial can't read as blocks, left as they are. */
+    val setAside: List<SetAside> = emptyList(),
+)
 
 /** One line of a block: where it stands, what it says, its arrival stamp if it was appended, and how many lines stand one step beneath it. */
 class Line(val address: String, val text: String?, val stamp: String?, val beneath: Int)
@@ -60,8 +66,21 @@ class Plan internal constructor(
     internal val before: String? = null,
 )
 
-/** What carrying out a plan did: bsp()'s own [reply], and a [problem] in plain words if it did not land as planned. */
-class Done(val ok: Boolean, val reply: String, val landsAt: String?, val wraps: Boolean, val problem: String?)
+/**
+ * What carrying out a plan did: bsp()'s own [reply], and a [problem] in plain
+ * words if it did not land as planned. [held] (Sundial 0.11): nothing was
+ * written because the block no longer stands as he saw it; the write waits
+ * for him to plan it again on this version, or let it go.
+ */
+class Done(val ok: Boolean, val reply: String, val landsAt: String?, val wraps: Boolean, val problem: String?, val held: Boolean = false)
+
+/**
+ * Sundial 0.11 (spine:pocket-beach 1.111178719943): a block as he saw it,
+ * its stored text when a screen showed it (null: there was none). A write
+ * that carries it lands only while the block still stands so; otherwise it
+ * is held and shown to him.
+ */
+class Seen(val text: String?)
 
 /**
  * What a front end shows of the pocket, and the writes it offers.
@@ -84,7 +103,8 @@ class Pages(
     fun shore(): ShoreView {
         val stamps = storage.stamps()
         val all = storage.names().distinct().mapNotNull { name ->
-            val block = beach.loadBlock(name) ?: return@mapNotNull null
+            // Sundial 0.11: no one block, however it came to be as it is, stops the listing.
+            val block = runCatching { beach.loadBlock(name) }.getOrNull() ?: return@mapNotNull null
             BlockSummary(Region.POCKET, name, collectUnderscore(block), stamps.touched[name], stamps.born[name])
         }.sortedWith(compareByDescending<BlockSummary> { it.touched ?: it.born ?: "" }.thenBy { it.name })
         val teaching = shelf.shelved().mapNotNull { name ->
@@ -93,10 +113,24 @@ class Pages(
         // 0.8: once he has hatched, the app's own blocks are in the hidden region: never in his map, never in hers.
         val hatched = Hatch.hatched(storage) != null
         val (hidden, mine) = all.partition { hatched && Hidden.routes(it.name) }
-        return ShoreView(mine, teaching, hidden)
+        return ShoreView(mine, teaching, hidden, storage.setAside())
     }
 
     fun exists(name: String): Boolean = beach.loadBlock(name) != null
+
+    /** The block [name] as it stands now, to carry with a write he is about to see (Sundial 0.11). */
+    fun seen(name: String): Seen = Seen(storage.read(name))
+
+    /**
+     * Whether [name] was changed by another hand since he saw it: it no
+     * longer stands as [seen] shows it, and what stands is not what Sundial
+     * itself last wrote there. A change of Sundial's own is met as before,
+     * by planning again and landing only where it was shown.
+     */
+    fun changedOutside(name: String, seen: Seen): Boolean {
+        val now = storage.read(name)
+        return now != seen.text && !storage.writtenHere(name, now)
+    }
 
     /** The floor of the pocket block [name] (10 for a clock), or 0 when there is none. */
     fun floorOf(name: String): Int = beach.loadBlock(name)?.let(::floorDepth) ?: 0
@@ -269,8 +303,17 @@ class Pages(
      * born when it was born and touched now. It is written under the new name
      * before the old is removed, so a stop part way leaves two, never none.
      */
-    fun rename(name: String, typed: String): Done = synchronized(bsp) {
+    fun rename(name: String, typed: String, seen: Seen? = null): Done = synchronized(bsp) {
         renameRefusal(name, typed)?.let { return Done(false, "", null, false, it) }
+        if (seen != null && changedOutside(name, seen)) return Done(false, "", null, false, CHANGED, held = true)
+        try {
+            renameNow(name, typed)
+        } catch (e: IllegalStateException) {
+            Done(false, "", null, false, e.message ?: "$name wasn't renamed.")
+        }
+    }
+
+    private fun renameNow(name: String, typed: String): Done {
         val to = typed.trim()
         val block = storage.read(name)!!
         if (to.equals(name, ignoreCase = true)) {
@@ -289,16 +332,21 @@ class Pages(
         val born = s.born - name + listOfNotNull(s.born[name]?.let { to to it })
         storage.setStamps(Stamps(touched, born))
         if (!to.equals(name, ignoreCase = true)) storage.delete(name)
-        Done(true, "", null, false, null)
+        return Done(true, "", null, false, null)
     }
 
     /** Remove a pocket block from this phone. Only a copy saved before holds it after. */
-    fun remove(name: String): Done = synchronized(bsp) {
+    fun remove(name: String, seen: Seen? = null): Done = synchronized(bsp) {
         if (storage.read(name) == null) return Done(false, "", null, false, "There's no block called $name.")
-        storage.delete(name)
-        val s = storage.stamps()
-        storage.setStamps(Stamps(s.touched - name, s.born - name))
-        Done(true, "", null, false, null)
+        if (seen != null && changedOutside(name, seen)) return Done(false, "", null, false, CHANGED, held = true)
+        try {
+            storage.delete(name)
+            val s = storage.stamps()
+            storage.setStamps(Stamps(s.touched - name, s.born - name))
+            Done(true, "", null, false, null)
+        } catch (e: IllegalStateException) {
+            Done(false, "", null, false, e.message ?: "$name wasn't removed.")
+        }
     }
 
     /**
@@ -324,20 +372,23 @@ class Pages(
 
     /**
      * Carry out a plan Matthew has seen. It is planned again at this instant;
-     * if it would now land anywhere else, nothing is written.
+     * if it would now land anywhere else, nothing is written. With [seen]
+     * (Sundial 0.11), the block as a screen showed it to him: if it no longer
+     * stands so, nothing is written and the write is held.
      */
-    fun carryOut(plan: Plan): Done = synchronized(bsp) {
+    fun carryOut(plan: Plan, seen: Seen? = null): Done = synchronized(bsp) {
         if (plan.call == null) return Done(false, "", null, false, plan.refusal)
+        if (seen != null && changedOutside(plan.block, seen)) return Done(false, "", null, false, CHANGED, held = true)
         val fresh = when (plan.kind) {
             Kind.CHANGE -> planChange(plan.block, plan.address, plan.text)
             Kind.ADD -> planAddOf(plan.block, plan.address, plan.text, plan.content ?: str(plan.text))
             Kind.NEW_BLOCK -> plan.content?.let { planKeep(plan.block, it) } ?: planNewBlock(plan.block)
-            Kind.WHOLE -> if (beach.loadBlock(plan.block)?.let(::stringify) != plan.before) refused(Kind.WHOLE, plan.block, "", "", CHANGED)
+            Kind.WHOLE -> if (beach.loadBlock(plan.block)?.let(::stringify) != plan.before) return Done(false, "", null, false, CHANGED, held = true)
                 else planWhole(plan.block, plan.content as JsObj)
         }
         val call = fresh.call ?: return Done(false, "", null, false, fresh.refusal)
         if (fresh.landsAt != plan.landsAt || fresh.wraps != plan.wraps) {
-            return Done(false, "", null, false, CHANGED)
+            return Done(false, "", null, false, CHANGED, held = true)
         }
         val reply = bsp.call(call, fresh.nowMs)
         val after = beach.loadBlock(plan.block)

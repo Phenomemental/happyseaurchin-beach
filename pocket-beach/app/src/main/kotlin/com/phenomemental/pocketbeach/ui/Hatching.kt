@@ -199,6 +199,12 @@ class Hatching(private val app: PocketApp) {
     /** His answer to an offer: the new sentence written at its place in his block, through the guards; null when done, else why not. */
     fun useTheNewOne(y: Cook.Yours): String? {
         val text = y.shipped ?: return "There is no new sentence to use."
+        // Sundial 0.11: his cook may be in his folder; a place changed elsewhere since the offer was shown is never written over.
+        val standing = runCatching { app.storage.read(y.block)?.let { Cook.places(com.phenomemental.pocketbeach.bsp.parseJson(it))[y.at] } }.getOrNull()
+        if (y.his != null && standing != y.his) {
+            offers = offers - y
+            return "That place of ${y.block} has changed since this was shown, so the new sentence wasn't used. Nothing was written."
+        }
         val done = app.pages.carryOut(app.pages.planChange(y.block, Cook.spindleOf(y.at), text))
         offers = offers - y
         app.asking.hatchedNow()

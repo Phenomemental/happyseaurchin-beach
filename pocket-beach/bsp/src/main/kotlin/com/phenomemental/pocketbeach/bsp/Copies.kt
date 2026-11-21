@@ -24,7 +24,8 @@ object Copies {
     fun make(storage: BlockStorage, nowMs: Long, waiting: String? = null): String {
         val blocks = JsObj()
         for (name in storage.names().distinct().sorted()) {
-            val block = storage.read(name)?.let(::parseJson)?.takeUnless { it == JsNull } ?: continue
+            // Sundial 0.11: a block that can't be read is left out, never the whole copy.
+            val block = runCatching { storage.read(name)?.let(::parseJson) }.getOrNull()?.takeUnless { it == JsNull } ?: continue
             blocks[name] = block
         }
         val stamps = storage.stamps()

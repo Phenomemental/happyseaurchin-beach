@@ -61,6 +61,12 @@ class Proposal(
     val refusal: String?,
     val post: PoolMessage?,
     val postRefusal: String?,
+    /**
+     * Sundial 0.11: each block the writes touch, as it stood when they were
+     * planned (null: it wasn't there). They land only while every one still
+     * stands so; otherwise nothing is written and the proposal is held.
+     */
+    val seen: Map<String, String?> = emptyMap(),
 ) {
     /** Whether there is anything to say yes to. */
     val asks: Boolean get() = refusal == null && (writes.isNotEmpty() || post != null)
@@ -86,8 +92,12 @@ class Asked(
     val unasked: Offer? = null,
 )
 
-/** What saying yes did: the writes that landed, in order, a problem if one didn't, and the post as it now stands to go. */
-class Carried(val landed: List<Planned>, val problem: String?, val post: PoolMessage?, val postRefusal: String?, val made: String?)
+/**
+ * What saying yes did: the writes that landed, in order, a problem if one
+ * didn't, and the post as it now stands to go. [held] (Sundial 0.11): the
+ * blocks that changed since the proposal was shown, so nothing was written.
+ */
+class Carried(val landed: List<Planned>, val problem: String?, val post: PoolMessage?, val postRefusal: String?, val made: String?, val held: List<String> = emptyList())
 
 object Asks {
     const val LOG = "ask-log"
@@ -275,7 +285,8 @@ object Asks {
      */
     fun propose(answer: Answer, storage: BlockStorage, shelf: Shelf, shellOpening: String, seal: String, nowMs: Long): Proposal {
         val trial = MemoryStorage()
-        for (name in storage.names()) storage.read(name)?.let { trial.write(name, it) }
+        val before = HashMap<String, String>()
+        for (name in storage.names()) storage.read(name)?.let { before[name] = it; trial.write(name, it) }
         trial.setStamps(storage.stamps())
         trial.standInRoom = (storage as? MemoryStorage)?.standInRoom
         val run = Run(Pages(trial, shelf, PocketBsp(trial, shelf), clock = { nowMs }), trial, shellOpening, seal)
@@ -290,8 +301,17 @@ object Asks {
             run.sealAndFingerprint()?.let { why -> return Proposal(answer, seal, run.done, "$APP_WRITE ${HelloWorld.BLOCK}: $why", null, null) }
         }
         val (post, postRefusal) = run.post(answer.post, hello)
-        return Proposal(answer, seal, run.done, null, post, postRefusal)
+        return Proposal(answer, seal, run.done, null, post, postRefusal, seenOf(run.done, before))
     }
+
+    /** Sundial 0.11: each block [done] writes, as it stood in [before] when they were planned. */
+    internal fun seenOf(done: List<Planned>, before: Map<String, String>): Map<String, String?> =
+        done.map { it.step.block }.distinct().associateWith { before[it] }
+
+    /** Why a proposal was held: the blocks that changed since it was shown, in plain words. */
+    fun heldWhy(blocks: List<String>): String =
+        (if (blocks.size == 1) "${blocks[0]} has changed" else "${blocks.dropLast(1).joinToString(", ")} and ${blocks.last()} have changed") +
+            " since this was set out. Nothing was written."
 
     /** Whether an answer is the hello world's: it writes to `hello-world`, or offers a post that speaks of it. */
     internal fun isHello(answer: Answer): Boolean =
@@ -305,6 +325,9 @@ object Asks {
     fun carryOut(proposal: Proposal, pages: Pages, storage: BlockStorage, shellOpening: String): Carried {
         val run = Run(pages, storage, shellOpening, proposal.seal)
         if (proposal.refusal != null) return Carried(emptyList(), proposal.refusal, null, null, null)
+        // Sundial 0.11: a block it writes changed by another hand since he was shown it, and nothing is written.
+        val moved = proposal.seen.filter { (block, text) -> storage.read(block).let { now -> now != text && !storage.writtenHere(block, now) } }.keys.sorted()
+        if (moved.isNotEmpty()) return Carried(emptyList(), heldWhy(moved), null, null, null, moved)
         for (shown in proposal.writes) {
             when (val r = run.step(shown.step, shown)) {
                 is Outcome.Stopped -> {

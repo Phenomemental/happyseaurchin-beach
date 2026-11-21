@@ -30,9 +30,11 @@ import com.phenomemental.pocketbeach.bsp.Copies
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Plan
 import com.phenomemental.pocketbeach.bsp.Region
+import com.phenomemental.pocketbeach.bsp.Seen
 import com.phenomemental.pocketbeach.bsp.ShoreView
 import com.phenomemental.pocketbeach.bsp.Stamps
 import com.phenomemental.pocketbeach.bsp.parseIsoMs
+import com.phenomemental.pocketbeach.FOLDER
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -85,10 +87,11 @@ fun ShoreScreen(model: Model, nav: Nav) {
             Text("Your pocket", style = Type.title, color = ink.ink)
             Stroke()
         }
-        CopyLine(model.lastSavedMs, Copies.reminderDue(model.lastSavedMs, stamps, System.currentTimeMillis()), Copies.changedSince(model.lastSavedMs, stamps)) {
+        CopyLine(model.lastSavedMs, Copies.reminderDue(model.lastSavedMs, stamps, System.currentTimeMillis()), Copies.changedSince(model.lastSavedMs, stamps), model.app.inFolder) {
             saveTo.launch("pocket-beach-copy-${LocalDate.now()}.json")
         }
         Waiting(model)
+        FolderOffer(model, nav)
         TextLink("Ask the companion", { nav.go(Screen.Ask) }, style = Type.body, tag = "ask-companion")
 
         val loaded = shore ?: return@Page
@@ -115,6 +118,8 @@ fun ShoreScreen(model: Model, nav: Nav) {
             { tidying = !tidying },
             tag = "tidy",
         )
+        // Sundial 0.11: the files in his folder Sundial can't read as blocks, left as they are.
+        SetAsideFiles(loaded.setAside)
 
         Label("Teaching blocks", Modifier.padding(top = 6.dp))
         Sheet {
@@ -171,12 +176,11 @@ fun ShoreScreen(model: Model, nav: Nav) {
     }
 
     removing?.let { name ->
-        RemoveDialog(name, model.lastSavedMs, onCancel = { removing = null }) {
+        RemoveDialog(model, name, model.lastSavedMs) { said ->
             removing = null
-            scope.launch {
-                val done = withContext(Dispatchers.IO) { model.pages.remove(name) }
+            if (said != null) {
                 model.changed()
-                model.say(Screen.Shore, if (done.ok) "Removed $name." else "$name wasn't removed: ${done.problem}")
+                model.say(Screen.Shore, said)
             }
         }
     }
@@ -200,11 +204,14 @@ fun ShoreScreen(model: Model, nav: Nav) {
 
 /** When a copy was last saved, and, once three days have passed with changes since, the reminder. */
 @Composable
-private fun CopyLine(lastSavedMs: Long?, due: Boolean, changed: Boolean, save: () -> Unit) {
+private fun CopyLine(lastSavedMs: Long?, due: Boolean, changed: Boolean, inFolder: Boolean, save: () -> Unit) {
     val ink = LocalInk.current
+    // Sundial 0.11: in his folder, his blocks may be in step with his laptop too, so "only on this phone" isn't said.
     val said = when {
         lastSavedMs == null && !changed -> "No copy saved yet. There is nothing to save."
+        lastSavedMs == null && inFolder -> "No copy saved yet. Your blocks are in Documents/$FOLDER on this phone."
         lastSavedMs == null -> "No copy saved yet. Your blocks are kept only on this phone."
+        changed && inFolder -> "Last copy saved ${Words.at(lastSavedMs)}. Changes since then aren't in a copy yet."
         changed -> "Last copy saved ${Words.at(lastSavedMs)}. Changes since then are only on this phone."
         else -> "Last copy saved ${Words.at(lastSavedMs)}. Nothing has changed since."
     }
@@ -212,6 +219,7 @@ private fun CopyLine(lastSavedMs: Long?, due: Boolean, changed: Boolean, save: (
         val days = lastSavedMs?.let { Words.days(it) }
         Notice(
             if (days != null) "It's ${Words.count(days, "day")} since the last copy, and blocks have changed. Save a copy to keep them safe."
+            else if (inFolder) "No copy of your blocks has been saved yet."
             else "Your blocks are kept only on this phone, and no copy has been saved yet.",
             link = "Save a copy" to save,
             tag = "copy-reminder",
@@ -256,6 +264,11 @@ private fun RenameDialog(model: Model, name: String, onDone: (String?) -> Unit) 
     val scope = rememberCoroutineScope()
     var typed by rememberSaveable { mutableStateOf(name) }
     var refusal by remember { mutableStateOf<String?>(null) }
+    // Sundial 0.11: the block as it stood when the dialog opened; renamed only while it still stands so.
+    var seen by remember { mutableStateOf<Seen?>(null) }
+    var held by remember { mutableStateOf(false) }
+    var opening by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) { seen = withContext(Dispatchers.IO) { model.pages.seen(name) } }
     LaunchedEffect(typed) {
         delay(150)
         refusal = withContext(Dispatchers.IO) { model.pages.renameRefusal(name, typed) }
@@ -267,12 +280,24 @@ private fun RenameDialog(model: Model, name: String, onDone: (String?) -> Unit) 
             Action("Not now", { onDone(null) })
             Action("Rename it", {
                 scope.launch {
-                    val done = withContext(Dispatchers.IO) { model.pages.rename(name, typed) }
-                    if (done.ok) onDone(typed.trim()) else refusal = done.problem
+                    val done = withContext(Dispatchers.IO) { model.pages.rename(name, typed, seen) }
+                    when {
+                        done.ok -> onDone(typed.trim())
+                        done.held -> held = true
+                        else -> refusal = done.problem
+                    }
                 }
-            }, enabled = refusal == null && typed.trim() != name && typed.isNotBlank(), strong = true, tag = "rename-block")
+            }, enabled = !held && refusal == null && typed.trim() != name && typed.isNotBlank(), strong = true, tag = "rename-block")
         },
     ) {
+        if (held) HeldNotice("$name has changed since this was opened, so it wasn't renamed.", again = {
+            scope.launch {
+                seen = withContext(Dispatchers.IO) { model.pages.seen(name) }
+                opening = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, name)?.text }
+                held = false
+            }
+        }, letGo = { onDone(null) })
+        opening?.let { Text("It opens now: ${Words.quoted(it, 120)}", style = Type.small, color = ink.ink) }
         Text("Only the name changes. Every line stays as it is, its opening line too, which you can change.", style = Type.small, color = ink.soft)
         PaperField(typed, { typed = it }, "a new name", singleLine = true, focus = true, tag = "rename-name")
         refusal?.takeIf { typed.trim() != name }?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("refusal")) }
@@ -280,18 +305,46 @@ private fun RenameDialog(model: Model, name: String, onDone: (String?) -> Unit) 
     }
 }
 
+/** Remove a block, on his word: [onDone] with what to say, or null when nothing was removed and nothing need be said. */
 @Composable
-private fun RemoveDialog(name: String, lastSavedMs: Long?, onCancel: () -> Unit, onRemove: () -> Unit) {
+private fun RemoveDialog(model: Model, name: String, lastSavedMs: Long?, onDone: (String?) -> Unit) {
     val ink = LocalInk.current
+    val scope = rememberCoroutineScope()
+    // Sundial 0.11: the block as it stood when the dialog opened; removed only while it still stands so.
+    var seen by remember { mutableStateOf<Seen?>(null) }
+    var held by remember { mutableStateOf(false) }
+    var opening by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) { seen = withContext(Dispatchers.IO) { model.pages.seen(name) } }
     PaperDialog(
         "Remove $name?",
-        onDismiss = onCancel,
+        onDismiss = { onDone(null) },
         actions = {
-            Action("Keep it", onCancel)
-            Action("Remove it", onRemove, strong = true, tag = "remove-block")
+            Action("Keep it", { onDone(null) })
+            Action("Remove it", {
+                scope.launch {
+                    val done = withContext(Dispatchers.IO) { model.pages.remove(name, seen) }
+                    when {
+                        done.ok -> onDone("Removed $name.")
+                        done.held -> held = true
+                        else -> onDone("$name wasn't removed: ${done.problem}")
+                    }
+                }
+            }, enabled = !held, strong = true, tag = "remove-block")
         },
     ) {
-        Text("It leaves this phone, every line of it.", style = Type.body, color = ink.ink)
+        if (held) HeldNotice("$name has changed since this was opened, so it wasn't removed.", again = {
+            scope.launch {
+                seen = withContext(Dispatchers.IO) { model.pages.seen(name) }
+                opening = withContext(Dispatchers.IO) { model.pages.position(Region.POCKET, name)?.text }
+                held = false
+            }
+        }, letGo = { onDone(null) })
+        opening?.let { Text("It opens now: ${Words.quoted(it, 120)}", style = Type.small, color = ink.ink) }
+        Text(
+            if (model.app.inFolder) "It leaves Documents/$FOLDER, every line of it, and any copy your sync keeps in step with that folder."
+            else "It leaves this phone, every line of it.",
+            style = Type.body, color = ink.ink,
+        )
         Text(
             if (lastSavedMs == null) "No copy has been saved, so once it's removed it can't be brought back."
             else "Only a copy saved before now can bring it back (the last was saved ${Words.at(lastSavedMs)}), and restoring a copy replaces every block.",

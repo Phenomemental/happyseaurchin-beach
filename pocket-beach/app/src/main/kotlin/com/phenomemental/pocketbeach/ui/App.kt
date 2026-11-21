@@ -109,6 +109,9 @@ class Model(val app: PocketApp) {
     /** Sundial 0.10: Your places asked for the conversation saved as a file; Today hears it and asks where. */
     var saveConversation by mutableIntStateOf(0)
 
+    /** Sundial 0.11: how his folder last looked, so a change made outside the app is noticed (FolderWatch). */
+    var folderPrint: String? = null
+
     fun changed() { version++ }
 
     init { app.asking.changed = { changed() } }
@@ -128,6 +131,15 @@ fun PocketScreens(app: PocketApp) {
         Nav(if (runCatching { com.phenomemental.pocketbeach.bsp.Hatch.hatched(app.storage) }.getOrNull() != null) listOf(Screen.Shore, Screen.Ask) else listOf(Screen.Shore))
     }
     val model = remember { Model(app) }
+    // Sundial 0.11 (spine:pocket-beach 1.111178719943): the permission checked at every start and return. Without it,
+    // while his blocks are in his folder, one plain page and no writes, never an empty pocket.
+    val life = rememberLife()
+    val barred = remember(life.resumes) { app.barred() != null }
+    if (barred) {
+        BarredPage()
+        return
+    }
+    FolderWatch(model, life)
     // Sundial 0.10: the three lines on every screen open Your places, Sundial's own menu.
     var places by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = places) { places = false }

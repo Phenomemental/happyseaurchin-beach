@@ -222,7 +222,8 @@ object Acts {
         guard: Guard? = null,
     ): Planned {
         val trial = MemoryStorage()
-        for (name in storage.names()) storage.read(name)?.let { trial.write(name, it) }
+        val before = HashMap<String, String>()
+        for (name in storage.names()) storage.read(name)?.let { before[name] = it; trial.write(name, it) }
         trial.setStamps(storage.stamps())
         trial.standInRoom = (storage as? MemoryStorage)?.standInRoom
         val pages = Pages(trial, shelf, PocketBsp(trial, shelf), clock = { nowMs })
@@ -341,6 +342,6 @@ object Acts {
             run.sealAndFingerprint()?.let { why -> return Planned(Proposal(answer, seal, run.done, "${Asks.APP_WRITE} ${HelloWorld.BLOCK}: $why", null, null), null, null, reads) }
         }
         val (offered, postRefusal) = run.post(post, hello)
-        return Planned(Proposal(answer, seal, run.done, null, offered, postRefusal), null, null, reads, dropped)
+        return Planned(Proposal(answer, seal, run.done, null, offered, postRefusal, Asks.seenOf(run.done, before)), null, null, reads, dropped)
     }
 }

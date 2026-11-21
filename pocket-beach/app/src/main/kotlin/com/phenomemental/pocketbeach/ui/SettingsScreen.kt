@@ -50,6 +50,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         WhereYouAre(model)
         NameAndRoom(model)
         SaveAndRestore(nav)
+        WhereKept(model)
         Workings(model)
         Rule()
         Text("Her voice", style = Type.heading, color = ink.ink, modifier = Modifier.testTag("her-voice"))
