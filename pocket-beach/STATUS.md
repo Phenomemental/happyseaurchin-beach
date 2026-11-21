@@ -4,6 +4,92 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.11 is released (21 November): his blocks in a folder he can see:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.11
+- **Install:** `sundial-v0.11.apk` over 0.10.5. His blocks stay where they
+  were, inside the app, until he moves them. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK.
+- **Version** 0.11 (29), from main at `486fb99` (PR #261), release run
+  273. APK SHA-256 `4cb32ce1…`. The procedures it carries are byte for byte
+  main's.
+- **Tests:** 346 core (29 new), the app's own 21 and all 96 device tests
+  (8 new, `FolderDeviceTest`, in the tests' own folder, Documents/
+  Sundial-test). CI run on `d428b07`, and again in the release run.
+- **What it is:** the plan's parts 2, 3 and 4 (spine:pocket-beach
+  1.111178719932 to 1.111178719934) as the decisions settle them
+  (1.111178719941 to 1.111178719943), shipped together because each alone
+  is unsafe.
+- **What it builds:**
+  1. **His folder, Documents/Sundial** (FolderStorage).
+     - One readable file per block, directly in the folder: garden.json,
+       Garden.json, passport%3APhenomemental.json. Only what file systems
+       refuse is encoded, so a file he makes on the laptop is a block on
+       the phone, and written to as the file it is.
+     - Sundial's own housekeeping in a hidden folder inside it,
+       Documents/Sundial/.sundial: the stamps, every write's temporary
+       file, a restore's journal.
+     - Reads never stop. A file that isn't a well-formed block, a sync's
+       second version of a block, and a second file for one block are set
+       aside: listed on Your pocket under "Files Sundial can't read", each
+       with why, and never written over. Files that aren't .json, and
+       hidden files, are never touched.
+     - A restore goes file by file and leaves every other file. Stopped
+       part way, it is finished at the next start.
+     - FileStorage stays for the private region, the laptop trial and its
+       tests.
+  2. **His shell and his history stay private,** inside the app with the
+     app's own blocks. The private region is opened by what it holds,
+     never by the folder, so a block gone from the folder can't shut her
+     safety, his heart or her ways away.
+  3. **The move,** in Settings, under "Where your blocks are kept":
+     - the plain line says what all-files access reaches: all of shared
+       storage, though Sundial touches only its own folder;
+     - a whole copy saved first (in the app's files, copies-before-folder),
+       then each block copied into the folder and read back, his shell and
+       history kept inside the app, and only then the switch;
+     - refused before anything is written when a name is taken in the
+       folder, whatever its capitals, or a block can't be read; the names
+       are listed;
+     - the copy inside the app stays until he taps "Remove the copy kept
+       inside the app";
+     - Your pocket offers it once; Settings at any time.
+  4. **The permission,** checked at every start and every return. While his
+     blocks are in the folder and Sundial can't reach it, one plain page,
+     "Sundial can't reach your blocks", with Android's settings a tap away,
+     and nothing written. Never an empty pocket.
+  5. **The guard.** A write he saw carries the block as he saw it, and
+     lands only while no other hand has changed it since. Otherwise
+     nothing is written, and the write is held, with "Plan it again on this
+     version" and "Let it go":
+     - the Write screen, which also says so at once when the block changes
+       while it is open;
+     - her proposals, on their card, planned again and shown for his yes;
+     - rename and remove;
+     - "Use the new one" on his cook.
+     A change Sundial made itself in between is met as before: planned
+     again, and written only where it was shown.
+  6. **The watching.** The folder is looked at on every return and every
+     three seconds while Sundial is in front; when anything in it moved,
+     every page reads again.
+  7. **Words:** the copy line no longer says "only on this phone" of a
+     folder that may sync; removing a block says it leaves the folder and
+     any copy his sync keeps in step.
+- **Only his phone can confirm:**
+  - all-files access turned on from Settings on his Pixel's Android, and
+    the move with his real pocket: how many blocks, his shell and history
+    still inside the app, readable names in Files;
+  - an edit on the laptop arriving through his sync: noticed within a few
+    seconds, and a write over it held;
+  - the second-version names of the sync app he chooses (the tests cover
+    Syncthing, Dropbox, Nextcloud and ownCloud, Seafile, case conflicts and
+    numbered copies);
+  - the plain page after he takes the access back (Android closes Sundial
+    when it is taken back; opening it shows the page);
+  - a copy restored once on the folder, and how quickly Your pocket lists
+    his blocks there;
+  - that her talk and keeping run as before, the line in the sand.
+
 **Sundial 0.10.5 is released (15 November): one engine for her, never a second on the CPU:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.10.5
 - **Install:** `sundial-v0.10.5.apk` over 0.10.4; his blocks stay. No
