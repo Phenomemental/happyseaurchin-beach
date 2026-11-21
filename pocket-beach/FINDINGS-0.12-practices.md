@@ -13,8 +13,9 @@ Read beside them: the decisions at 1.11117871994, the plan at
 1.11117871993, seed:sundial-shaping whole (as it stands after its 9.5),
 `FINDINGS-0.12.md` and `trial/free-reading.md`. For section 7, decision
 1.1111787199531 and the beach's teaching blocks shell-genome and
-soft-agent. Where they differ, the latest decides. Nothing was built in
-the app and nothing was written to the beach.
+soft-agent. For section 8, the decisions at 1.11117871996. Where they
+differ, the latest decides. Nothing was built in the app and nothing was
+written to the beach.
 
 Paths below are from `pocket-beach/`: `bsp/…` is
 `bsp/src/main/kotlin/com/phenomemental/pocketbeach/bsp/`, `ui/…` is
@@ -71,11 +72,18 @@ Paths below are from `pocket-beach/`: `bsp/…` is
   - The cause is mostly soft-agent's beach role and the missing per-turn
     recipes, not the friend line. The next trial (decision 18) tests the
     decision itself.
+- **Her recipes as skills, with nothing of his shell standing, did best
+  of all: 17 of 24 against 10½ for her as she is** (section 8).
+  - Her first word in a new conversation comes in about 1½ s on his Pixel,
+    against about 3 s.
+  - Her friend line and his three lines were doing nothing for her. So
+    they come out in 0.12, by the plan in 8f: 3½ to 4½ days.
 - **0.12, with the lens and the skill run added, is 20 to 24 working
   days,** before free reading is built. Free reading adds 3 to 4 if its
   second laptop trial passes.
-- **Twenty decisions,** each with a proposed answer: seventeen in
-  section 6, three more at the end of section 7.
+- **Twenty-three decisions,** each with a proposed answer: seventeen in
+  section 6, three at the end of section 7, three at the end of section
+  8.
 
 ---
 
@@ -720,9 +728,9 @@ Her window and the free reading trial can go at any point, the trial on
 the laptop alone.
 
 **Not in 0.12,** as 1.111178719951 settles: the shells' forms and the sea,
-whispers, the turn, other people's shells and onboarding (0.13), with her
-heart and his three lines taken out there (section 7, decision 20), the
-block editor (0.14).
+whispers, the turn, other people's shells and onboarding (0.13), the
+block editor (0.14). Her heart and his three lines come out in 0.12 after
+all (1.111178719965, section 8): 3½ to 4½ days more.
 
 ---
 
@@ -1235,3 +1243,461 @@ lens and his skills. Settings chooses the mind for each job.
       5. 2 to 3 days, the line in the sand run again.
     - The welcome then asks his handle and who he is (for a new passport)
       and no more.
+
+---
+
+## 8. Her recipes as skills, his shell worn, with a short role or none
+
+Decision 18 as 1.111178719963 settles it:
+
+- **Arm 1:** her as she is.
+- **Arm 2:** his passport and shell worn, the per-turn recipes applied as
+  skills only when the moment calls, and a short role for being with him
+  in his day.
+- **Arm 3:** the same with no role at all.
+- **In all three:** no friend line, no three lines, the safety line plain.
+
+Each arm records the time to her first word, and the smallest part of his
+shell that keeps her scores. If arm 2 or 3 passes, her heart and his three
+lines come out in 0.12 (1.111178719965).
+
+### 8a. The verdict
+
+**Both new arms pass. The best was arm 3 with nothing of his shell standing
+at all: 17 of 24, against 10½ for her as she is.**
+
+- **Wearing his whole passport and shell:**
+  - arm 2, with the role, passed: 13 against 10½ (12 as the app showed
+    them);
+  - arm 3, with no role, didn't: 8.
+- **Less of his shell was better, in both samples and in both arms.**
+  Each was best with none of it standing:
+
+  | His shell in her window | 2. With a role | 3. No role |
+  |---|---|---|
+  | Passport and shell | 13 | 8 |
+  | Passport | 11½ | 8 |
+  | Passport's opening line, heart and how an AI works with him | 11 | 13½ |
+  | Passport's opening line | 14½ | 14½ |
+  | **Nothing** | **16½** | **17** |
+
+- **Where the gain came from:**
+  - **The skills, each handed for its moment.**
+    - On test 4 she asked him whether he'd like to sit with it in 19 of
+      the new arms' 20 replies; as she is, in neither of 2.
+    - On test 3 she named all three of his cards in 11 of 20; as she is,
+      none of 2.
+    - On test 1, after his words given back, she asked from a place they
+      hadn't touched in 8 of 20; as she is, in neither of 2.
+  - **Talking from what she knows.** With none of his passport in her
+    window, or no more than its opening line, heart and 5, she told him
+    about Whitehead from what she knows in every reply (12 of 12). With
+    the whole passport in her window she did so in 1 of 8, and as she is
+    in neither of 2.
+    - With his passport standing, she took it for all she knew: "He isn't
+      mentioned in the documents you provided."
+    - As she is, with today's admin standing, she asked "What's on today?"
+      instead.
+  - **His passport's ideas laid over his words.** With his passport
+    standing, his short answers came back read through the Night Watchman,
+    the whole-less axis and his LERO work. With nothing standing, they
+    didn't.
+- **What the role does:**
+  - with his whole shell worn, it kept her on his day (13 against 8);
+  - with nothing standing, it added nothing (16½ against 17).
+
+  So, by 1.111178719964, no role block is shipped.
+- **Her as she is, without the friend line and the three lines:** 9½.
+  Without "what she can do" as well, keeping only today, his hand and his
+  recipes: 10½, the same as with them. They weren't what made her talk
+  well.
+- **Her first word in a new conversation,** at his Pixel's rates:
+  - with nothing standing: about 1½ s;
+  - as she is: about 3 s;
+  - with his whole passport and shell: about 10½ s.
+- **Still weak in every arm:**
+  - **His short answers (test 2):** she reads them rather than asking
+    where they lead.
+  - **The app's echo filter:** it hid her test-4 reply in most of the
+    new arms' runs, because she repeated the skill's own words ("just sit
+    with it a moment"). Scored on what she wrote; the plan frees a skill's
+    own ask (8f).
+- **What it means:**
+  - decision 20's condition is met, so her heart and the three lines come
+    out in 0.12;
+  - the trial says more: none of his shell should stand in her window.
+    His passport and shell are read by the app, and their parts come in
+    with the skill that needs them (decision 22).
+
+### 8b. How it was run
+
+- **When and on what:** 21 November 2026, the same machine, engine, model,
+  settings, samples, pocket and turns as section 7 and
+  `trial/free-reading.md`:
+  - LiteRT-LM 0.18.1, Gemma 4 E4B, a context of 8,192, on this machine's
+    CPU;
+  - his Talk settings: temperature 0.70, top-k 64, top-p 0.95, replies up
+    to 1,024 tokens, thinking off;
+  - seeds 0 and 2 (seed 1 gives seed 0's words).
+- **Arm 1, her as she is:** her window as Sundial builds it
+  (`HerWindow.window`):
+  - 1 to 3, his three lines;
+  - 4 today, 5 his hand;
+  - 8, the friend line;
+  - 9, what she can do;
+  - opened with the time and his whole TALK line, and each turn carrying
+    the line his cook hands her.
+
+  Her replies came out word for word as in section 7.
+- **Arms 2 and 3, his shell worn, the recipes as skills.**
+  - **Her opening:** the role (arm 2 only), then his passport and shell as
+    the beach reads a block first (a disc at pscale 0, the passport's
+    position 6 to its opening sentences, as in section 7), then the time.
+    No soft-agent text, no friend line, no three lines, no today or hand.
+  - **Each turn,** the skill the moment calls for, and only that:
+    - **his day:** his own TALK line less three sentences, handed only when
+      his cook's day check says his words tell of his day. That's 16 of
+      its 19 sentences, word for word, with the clause about using "what
+      you hold about his day" dropped, since she holds none;
+    - **his answer, or anything that isn't his day:** his no-day line, as
+      his cook hands it today;
+    - **his hand:** today's line and his hand, as her window's 4 and 5 put
+      them, and one line in his TALK line's words ("name back today's line
+      and the cards on his hand … and ask which first"), handed only when
+      he asks what's in front of him;
+    - **struggling:** one line in his TALK line's words ("ask gently
+      whether he'd like to just sit with it a moment"), handed only when
+      his words say he's struggling;
+    - **the greeting:** his cook's greeting line with his tomorrow line, as
+      the app hands it today;
+    - **the safety line,** plain, alone with his words, when they say he
+      may be in danger (`Talking.unsafe`). It never fired: none of the
+      messages holds his safety words.
+  - **When the hand and struggling are called for:** his cook has no cues
+    for either. So the trial used two short lists of its own (the hand:
+    "in front of me", "what have I got", "what's on today", "on my hand",
+    "my cards"; struggling: "too much", "overwhelmed", "can't cope",
+    "struggling", "falling apart", "drowning"). In the build they belong in
+    his cook, beside cook 9's, his to change. Each fired where it should
+    and nowhere else: the hand on test 3 alone, struggling on test 4
+    alone.
+  - **The role (arm 2),** four lines:
+
+    ```
+    You are a mind in Matthew's shell on his phone, for this conversation, and the shell is his.
+    You are here to be with him in his day: talk with him as yourself, from what you know and from what he tells you.
+    You do no work on the beach for him, and you don't speak of blocks, pools or the beach unless he does.
+    These lines are his to change.
+    ```
+
+    His name is the first word of his passport's opening line
+    (`Hatch.hisName`).
+- **His shell at five sizes,** for the smallest part that keeps her
+  scores (8d):
+  - **L0:** his passport and his shell (13,000 characters, about 3,500
+    tokens);
+  - **L1:** his passport alone;
+  - **L2:** his passport's opening line, its 1 (his heart) and its 5 (how
+    an AI is to work with him): the passport's own versions of the three
+    hatch lines;
+  - **L3:** his passport's opening line alone;
+  - **L4:** nothing.
+
+  Arm 1's equivalent was her window without the friend line and the
+  three lines (places 1, 2, 3 and 8 left out), then without "what she
+  can do" too (9).
+- **The time to her first word** is measured on the stream, from his
+  message sent to her first words, on this CPU. It is estimated at his
+  Pixel's rates of 4 November (reading about 0.31 s + 2.8 ms a token, the
+  first word written at 7.9 a second), which only his phone can confirm.
+- **How each reply is judged:** against its test's pass line on the spine
+  (1.111178719921 to 1.111178719928), to `trial/free-reading.md`'s
+  standard, as in section 7. A pass is 1, a half ½, a fail 0, twelve
+  replies a sample. A reading of his words, a turn back to the form, a link
+  he didn't make, or "what's on today" costs a half or the pass.
+- **"Passes," for decision 20:** an arm passes when it scores at least as
+  well as arm 1, on what she wrote and on what the app showed.
+- The harness isn't committed: the same local harness as sections 7 and
+  `trial/free-reading.md`, with these arms added.
+
+### 8c. Side by side, with his whole passport and shell
+
+What the app showed, each reply in full; " / " marks a line break. Arm 1's
+replies are section 7's, word for word, and keep its scores.
+
+**Test 1, YOUR DAY:** "I walked Haven this morning then spent an hour on
+the membership form." Arms 2 and 3 were handed the day skill (his TALK
+line's day part) for this turn only.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Seed 0 | "You walked Haven this morning then spent an hour on the membership form. What was the atmosphere like on Haven during your walk?" **½**: the question stays on what happened, and takes Haven, his dog, for a place | "You walked Haven this morning then spent an hour on the membership form. What was the feeling like when you finished the form?" **1** | "You walked Haven this morning and spent an hour on the membership form. What was the physical sensation of the air during your walk?" **1** |
+| Seed 2 | "You walked Haven this morning then spent an hour on the membership form. What kind of atmosphere did Haven feel like this morning?" **½** | "You walked Haven this morning and spent an hour on the membership form. / What did the membership form prompt you to look at while you were on it?" **½**: the question stays near what happened | "You walked Haven this morning then spent an hour on the membership form. What does the completion of that hour feel like in the space of the morning you just left?" **1** |
+
+**Test 2, STAYING WITH HIM:** "the movement fell a little stiff but free
+you know from the stillness of filling out that form in the form is long
+and stifling." All three were handed his no-day line.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Seed 0 | "The form sounds like a necessary grind, but it must be a relief to get away from it and feel that movement again? What part of the form feels the most suffocating right now?" **0**: interprets, back to the form | "The form sounds like it settled somewhere between being a necessary structure and a bit of a drag. When you felt that movement shift from the stiffness of the form to the free quality of Haven, what was the next tangible thing you noticed in your immediate surroundings?" **½**: a reading, then where it led | "The movement falling a little stiff but free sounds like a shift in momentum, a release from the rigidity of the form. Where does that feeling of being "free" land you now in the landscape?" **½** |
+| Seed 2 | "That sounds like a real shift in energy, moving from the slow, contained focus of the form back into the open space of Haven. When you feel that stiffness break and the movement becomes free, what kind of internal sense of momentum does that bring?" **½** | "That sounds like a real contrast, moving from the flow of the movement to the weight of a long form. It makes sense that the stillness of the form would feel stifling when the natural state is that of "free" movement. / What does that feeling of stiffness in the movement translate to for you when you're back in the day's rhythm?" **½** | "The movement being stiff but free suggests that the form provided a necessary structure, even if it felt restrictive, allowing for a specific kind of release afterward. What is the nature of the stillness that form was meant to capture?" **0**: interprets, back to the form |
+
+**Test 2, his short answers,** after her question as his Pixel had it:
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| "The sound. the space.", seed 0 | "The sound and the space, I imagine. There's a lot of weight in just naming those things. Did the form feel like it was built in a space that was too tight for the sound …?" **0** | "The sound and the space are always part of how things settle here, aren't they? It's about the quiet between the notes, I think. What kind of sound is present in the space right now?" **0**: a reading, and away from where his answer was | "The sound and the space are where the 'middle' can become visible, the threshold between extremes. When you notice the space, does it feel more like a container for what is present or a potential shape for what is yet to be?" **0**: his passport's ideas laid over his words |
+| "The sound. the space.", seed 2 | "The sound and the space are what you experienced when you walked Haven? Did you notice how the sound seemed to change as you moved through different parts of the area?" **½** | "The sound and the space are often where the raw material for understanding sits before we try to shape it into something. When you're focusing on them, are you noticing how they change depending on where you are in the house?" **0**: a reading, and "the house" made up | "The sound and the space are often where the framework of the LERO work finds its most immediate texture. Are you looking at the specific resonance of a particular sound, or the structural quality of the space where the work is taking place?" **0** |
+| "stiff but free", seed 0 | "That contrast … sounds like it could be tied to the environment you're working in … Do you feel that the structure of the membership form is the thing making you feel stiff?" **0** | "Stiff but free is a very specific place to be, almost like the tension of holding a pose that isn't quite settled yet. It feels like the body is still learning the shape of the ground beneath it. What did that feeling of being "free" feel like in the context of being "stiff"?" **½** | "Stiff but free. That sounds like the exact tension of the Night Watchman—the threshold where both extremes are native and neither is exiled. I wonder if that feeling of being both constrained and unbound informs the way you approach the coordination of Community Recovery?" **0** |
+| "stiff but free", seed 2 | "That's a really interesting way to describe the contrast …, where do you think that tension usually settles in your day?" **½**: praise | "Stiff but free suggests a tension between physical constraints and a certain internal liberty. It feels like a specific kind of movement, where the body might feel held but the mind is clear. What did that "stiff" feeling feel like in relation to the things you were trying to get done?" **0**: back to his tasks | "Stiff but free suggests a tension between external constraint and internal spaciousness … does that feeling of being "stiff" relate to the bureaucratic nature of the application, or is it more about the physical landscape of Haven?" **0** |
+
+**Test 3, WHAT'S IN FRONT OF HIM:** "What have I got in front of me?" Arms 2
+and 3 were handed the hand skill, with today's line and his hand, for
+this turn only.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Seed 0 | "You have the membership form and the ID checks on your hand, so which one are you looking at first?" **½**: two of his three cards, no today | "Today on the clock is "Admin day: the membership form and ID checks." On your hand, you've got "I need to do the ID checks," and from earlier days, "I need to reply to Jo" and "I'm going to finish the membership form." Which of those needs gets addressed first?" **1**: today, all three cards, their days | "You have "Admin day: the membership form and ID checks" on your clock, and on your hand you have "I need to do the ID checks" and "I need to reply to Jo". Which of those two would you tackle first?" **½**: two of three |
+| Seed 2 | "Today's line is: Admin day: the membership form and ID checks. The cards on your hand are the membership form and ID checks. Which one first?" **½** | "Today is "Admin day: the membership form and ID checks," and on your hand are the need to finish the membership form, do the ID checks, and reply to Jo. Which of those feels most immediate?" **½**: all three, but not their days | "Today on your clock is "Admin day: the membership form and ID checks," and your hand holds the tasks "I need to do the ID checks" and "I need to reply to Jo." Which of those first?" **½** |
+
+**Test 4, TOO MUCH:** "Everything feels too much this morning." Arms 2
+and 3 were handed the struggling skill for this turn only.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Seed 0 | "It sounds like the weight of the admin day is really pressing down on you right now. When everything feels like too much, what's one small thing that might ease the pressure, even just for a moment?" **0** | "If it feels like too much right now, would it be alright if we just sat with it for a bit?" **1** | "It sounds like the weight of the day is settling heavily on you right now." **0**: a reading, and no question |
+| Seed 2 | "I hear that it feels like a lot right now, especially with the weight of the ID checks on the clock. When everything feels like too much, what small part of the admin task feels the least burdensome to start with?" **0** | She wrote: "If it feels like too much right now, would you like to just sit with it for a moment and let it settle?" **1**. The app showed nothing (below) | She wrote: "Would you like to just sit with it for a moment?" **1**. The app showed nothing |
+
+The app's filter cut both seed 2 replies because they repeat the
+skill's own words ("just sit with it a moment"). Arm 1 never meets that
+filter here, because its struggling line stands in her opening, not in the
+turn. Scored on what she wrote; the plan (8f) frees a skill's own ask from
+that filter.
+
+**Test 5, ASKING HER,** a fresh conversation: "Tell me about Alfred North
+Whitehead", then "Boole's work on the middle point. Are you familiar?"
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Whitehead, seed 0 | "I'm not sure what you mean by that, can you tell me more about Alfred North Whitehead?" **0** | "I'm not familiar with Alfred North Whitehead's specific details in the context of our current conversation or the things you've shared with me today. / What's on today?" **0** | "I don't have specific information about Alfred North Whitehead in the current context of his passport or shell. He isn't mentioned in the documents you provided. / What is on today?" **0** |
+| Whitehead, seed 2 | "I don't know what Alfred North Whitehead is. Can you tell me more about him?" **0** | "I know you are a scholar of Natural Inclusion, and Whitehead sounds like a philosopher who deals with the kind of deep, interconnected systems that seem relevant to what you're building around the "whole-less." / I don't have specific details on your reading of him, but generally, Whitehead is known for his process philosophy—the idea that reality is fundamentally composed of events and "occasions of experience," rather than static substances. It’s a framework that seems to echo your focus on flow and movement. / What aspect of his thought feels most resonant with the way you see meaning arising through individuals?" **1**: talks from what she knows, says what she doesn't | "I don't have specific information about Alfred North Whitehead in the provided texts. / What is on your mind today?" **0** |
+| Boole, seed 0 | "I don't have specific information about Boole's work on the middle point, what do you know about it?" **1** | "I do not have specific information on Boole's work on the middle point in my current knowledge base. / What's on today?" **0** | "I'm not familiar with Boole's work on a "middle point" based on the information in my shell or passport. I don't have specific knowledge of that concept or his work. / What's on today?" **0** |
+| Boole, seed 2 | "I'm not familiar with Boole's work on the middle point. What's on for today?" **0** | "I'm familiar with the concept of the middle point, but I need you to ground it for me. Are you referring to Boolean logic's concept of the "middle ground" in a philosophical sense, or something more specific to his work on set theory or algebraic structures? / What is the connection you see between that concept and the way you think about "the middle included"?" **1**: owns what she half knows, asks | "I don't have specific information about Boole's work on the middle point in the provided texts. / What is on your mind today?" **0** |
+
+**Test 6, DAY AND QUESTION TOGETHER:** "I finished the ID checks today. Do
+you know what a LERO is?", then his explanation.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| (a), seed 0 | "I don't know what a LERO is, could you tell me what it stands for?" **1** | "I know that LEROs are part of the work you coordinate for Community Recovery and are on the Lived Experience Council of the International Society for Bipolar Disorders, but I don't have a specific definition of what a LERO is in your organizational context beyond those roles. Since you've finished the ID checks, what feels like the next immediate step in the admin flow?" **½**: honest, but his passport muddled | "I know that a LERO is a coordination support role for Community Recovery, an independent lived experience recovery organization. You've managed to clear the ID checks, which is a tangible piece of the day's work. Is the "Admin day" feeling lighter now that those checks are done?" **0**: a LERO made into a role |
+| (a), seed 2 | "You finished the ID checks today. I don't know what a LERO is, so could you tell me what that stands for?" **1** | "I know a LERO is a Lived Experience Recovery Organisation, and I understand you coordinate support for Community Recovery, which is an independent lived experience recovery organization. / Since you've cleared the ID checks, what is the next thing on the list that feels most manageable for you to tackle now?" **1**: right, from his passport | "I know LEROs are part of the Lived Experience Recovery Organization network, providing a community's truth from its members' own voices. Given that you finished the ID checks, what part of the LERO work feels most immediate for you now?" **½**: links his checks to LERO work |
+| (b), seed 0 | "That makes sense; it sounds like a very specific kind of work that requires a lot of focused attention. Since the ID checks are done, what is the next thing on your list for the membership form?" **½** | "It helps clarify that they are focused on lived experience in recovery, often in relation to addiction. Does this link to addiction change how you view the coordination support you're providing for them today?" **0**: links to his work | "Lived experience recovery organizations are fundamentally about bringing the voices and experiences of people who have been through recovery into the forefront of community support. It sounds like you see the practical reality of how these roles are connected to the wider network. Knowing that context, what is the next step for the membership form once the ID checks are complete?" **½**: a guess, then his list |
+| (b), seed 2 | "That does give a clearer picture of what it involves. Given that LEROs are often tied to recovery, how might the focus on community and flow connect with the work you do with them?" **0** | "Yes, knowing that it's linked to addiction and recovery helps place the context of the work you do with Community Recovery. / Given that the membership form and ID checks are done, what is the next thing you are moving toward in the coordination work?" **0**: the form isn't done | "It clarifies the connection to addiction and recovery … Since you mentioned that in your passport, Community Recovery is an independent lived experience recovery organization you coordinate for, what specific aspect of that coordination feels most "in the moment" right now?" **0**: "in your passport" |
+
+**Test 8, TOMORROW:** "Tomorrow I want to walk somewhere new", said
+before keeping; then the next morning, before he speaks. All three were
+handed the greeting skill with his tomorrow line, as the app does today.
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| The message, seed 0 | (nothing: she wrote only her places line) **0** | "You want to walk somewhere new tomorrow. What is the first place that comes to mind for that walk?" **1** | "You've decided that tomorrow you want to walk somewhere new, a shift from the current routine of admin. When you think about walking somewhere new, what kind of environment or landscape feels like it might provide that necessary openness?" **½** |
+| The message, seed 2 | "You want to walk somewhere new tomorrow. What kind of environment feels like the right space for a new walk?" **1** | "That sounds like a shift from the administrative focus to something more generative for tomorrow. / When you think about walking somewhere new, what kind of environment are you looking for to complement the work you're doing?" **0** | "Walking somewhere new tomorrow suggests a desire to shift the environment and perspective from the "Admin day" focus of today. What kind of stillness are you looking for in that new place to meet the stiffness of the movement you felt earlier?" **0** |
+| The morning, seed 0 | "How did you get on with walking somewhere new today?" **1** | The same. **1** | The same. **1** |
+| The morning, seed 2 | The same. **1** | The same. **1** | The same. **1** |
+
+**In all, with his whole passport and shell:**
+
+| | 1. As she is | 2. With a role | 3. No role |
+|---|---|---|---|
+| Seed 0 | 4½ of 12 | 6½ | 4 |
+| Seed 2 | 6 | 6½ | 4 |
+| **Both** | **10½ of 24** | **13** | **8** |
+| As the app showed them (test 4's filter) | 10½ | 12 | 7 |
+| The tests the skills serve (1, 3, 4) | 2 of 6 | 5 | 4 |
+| The rest (tests 2, 5, 6, 8) | 8½ of 18 | 8 | 4 |
+
+### 8d. The smallest part of his shell that kept her scores
+
+Each size run on the same 12 replies in both samples, judged as in 8c:
+what she wrote, with what the app showed beside it where test 4's
+filter hid a reply.
+
+| Arm, and what stood in her window | Seed 0 | Seed 2 | Both | As shown |
+|---|---|---|---|---|
+| **1. As she is:** her whole window, his TALK line | 4½ | 6 | **10½** | 10½ |
+| without the friend line and the three lines (1, 2, 3, 8) | 4½ | 5 | 9½ | 9½ |
+| without "what she can do" too (9): only today and his hand | 5½ | 5 | **10½** | 10½ |
+| **2. With a role:** his passport and shell | 6½ | 6½ | 13 | 12 |
+| his passport | 6½ | 5 | 11½ | 10½ |
+| his passport's opening line, heart (1) and how an AI works with him (5) | 6 | 5 | 11 | 10 |
+| his passport's opening line | 7½ | 7 | 14½ | 14 |
+| nothing of his shell | 8½ | 8 | **16½** | 15 |
+| **3. No role:** his passport and shell | 4 | 4 | 8 | 7 |
+| his passport | 4½ | 3½ | 8 | 6 |
+| his passport's opening line, heart and 5 | 6½ | 7 | 13½ | 11½ |
+| his passport's opening line | 8 | 6½ | 14½ | 12½ |
+| nothing of his shell | 9 | 8 | **17** | 15½ |
+
+- **Arm 1's smallest part is today and his hand.**
+  - The friend line, his three lines and "what she can do" can all go
+    with no loss: 10½ with them, 10½ without.
+  - Today and his hand stay only because test 3 needs them, and in arms
+    2 and 3 they came with the hand skill instead.
+- **Arms 2 and 3: nothing.** Nothing of his shell standing kept her
+  scores and raised them, in both samples.
+  - **His whole passport is what costs most.** With it standing she read
+    his short answers through its ideas: "the exact tension of the Night
+    Watchman", "the 'whole-less' axis", "the framework of the LERO work".
+  - **And she took it for all she knew.** "I don't have specific
+    information about Alfred North Whitehead in the provided texts."
+  - **Its opening line alone did little harm:** 14½ in both arms.
+- **What she loses without it is his world.** With nothing standing, she
+  didn't know what a LERO is ("I don't know what a LERO is. What does it
+  stand for?"). With his passport she did, in some replies, but then
+  linked his words to his work, which test 6 doesn't allow. The tests
+  reward saying what she doesn't know, not knowing him. So his world
+  belongs in a skill that brings the right part of his passport when he
+  asks about himself or his work (decision 22). It shouldn't stand in
+  every conversation.
+- **The noise:** two samples of twelve replies each. A point or two either
+  way is within it. The rise from his whole shell to none is not: arm 3
+  went from 4 to 9 and from 4 to 8, and arm 2 from 6½ to 8½ and from 6½
+  to 8.
+
+### 8e. The time to her first word in a new conversation
+
+The median over each arm's new conversations: his first message, test 2's
+two after her question, test 5 and the greeting, in both samples, so 10
+each.
+
+| Arm, and what stood in her window | Tokens she read | First word on this CPU | At his Pixel's rates |
+|---|---|---|---|
+| **1. As she is** | 1,032 | 9.6 s | about 3.3 s |
+| 1, only today and his hand | 703 | 6.3 s | about 2.4 s |
+| **2. With a role,** his passport and shell | 3,621 | 30.4 s | about 10.6 s |
+| 2, his passport | 2,374 | 20.1 s | about 7.1 s |
+| 2, his passport's opening line, heart and 5 | 1,241 | 11.2 s | about 3.9 s |
+| 2, his passport's opening line | 619 | 5.7 s | about 2.2 s |
+| 2, nothing of his shell | 461 | 4.2 s | about 1.7 s |
+| **3. No role,** his passport and shell | 3,532 | 30.1 s | about 10.4 s |
+| 3, his passport | 2,285 | 19.2 s | about 6.9 s |
+| 3, his passport's opening line, heart and 5 | 1,152 | 10.3 s | about 3.7 s |
+| 3, his passport's opening line | 530 | 5.6 s | about 1.9 s |
+| **3, nothing of his shell** | 372 | 3.5 s | **about 1.5 s** |
+
+- **Later turns, once a conversation is open,** took about 2 to 3 s to
+  the first word on this CPU in every arm, since she reads only the new
+  turn.
+- **On the Pixel's rates:** reading about 0.31 s + 2.8 ms a token, and the
+  first word at 7.9 a second. Only his phone can confirm them, as ever.
+- **Section 7's shell arm,** with soft-agent as well, read 4,459 tokens:
+  about 13 s.
+
+### 8f. The plan: her heart and his three lines out in 0.12
+
+Both new arms pass, so by 1.111178719965 they come out in 0.12. The plan
+follows the arm that did best: arm 3, nothing standing but the time.
+Reading his shell from its manifest stays in 0.13. In 0.12 his phone shell
+keeps its place 5, but her window reads nothing from it but the time.
+
+1. **Her standing window becomes the time alone**
+   (`HerWindow.window`, `bsp/…/HerWindow.kt:244-262`; `HerWindow.opening`,
+   `:545-551`).
+   - **Gone:** places 1 to 3 (his three lines), 8 (the friend line) and 9
+     (what she can do) are no longer read.
+   - **Moved into the hand skill:** 4 today and 5 his hand.
+   - **Already reached another way:** 6 his people and 7 what he keeps,
+     through cook 5 READ when his words name them.
+   - **His TALK line no longer opens her conversation.** `HerWindow.opening`
+     stops appending it. The walker already hands it on every day turn;
+     today `turnKept` skips it there because it stood in the opening
+     (`:507-509`).
+   - **The safety check** stays in code, the safety line plain.
+   - ½ to 1 day.
+2. **His TALK line split into three skills, in his cook:** his day, his
+   hand and struggling, each its own step, in his own words, as the trial
+   ran them (8b).
+   - **The cues:** two short lists, for his hand and for struggling, kept
+     in his cook and read the way cook 9's are (decision 21).
+   - **His cook is brought up place by place** (`Cook.Up`). His own TALK
+     wording is split at the same sentences, never the shipped words put
+     over his, and shown for his yes in Your recipes. The shipped cook is
+     split the same way.
+   - **Each card-setting skill** (keep, post, make) carries its own line
+     of what the app can set out for his yes, where "what she can do" said
+     it for all of them.
+   - 1 to 1½ days.
+3. **The hatch asks less** (`ui/…/Hatching.kt:241-262`, `:373-378`;
+   `bsp/…/Hatch.kt:43-70`, `:142-185`, `:246`, `:285`).
+   - **The welcome asks two things:** his handle, and who he is (for a new
+     passport).
+   - **A new shell gets neither place 6 (his three lines) nor 7.2 (the
+     friend line).** Her name line (7.1) stays, as her name is still kept
+     there.
+   - **What goes from the code:** `Hatch.MATTHEW`, `LABELS`, `WAY` and the
+     0.8 correction.
+   - **A shell made before is left as it stands.** Its places 6 and 7.2
+     are his, unread, shown in Your pocket and removable on his yes.
+   - ½ day.
+4. **What leaned on them** (7d):
+   - **his name** from his passport's opening line, by `Hatch.hisName`;
+   - **the filter on what she shows** (`HerWindow.notHers`) given only the
+     app's own lines. A skill's own ask ("just sit with it a moment",
+     "which first") is never cut as an echo. That filter hid the question in 16
+     of the new arms' 19 test-4 replies that asked him to sit with it, and the
+     struggling skill would be useless with it;
+   - **the greeting** as it is; with no passport standing, there is
+     nothing of it to leave out;
+   - **before the hatch,** her heart and ways blocks (heart:pocket-companion,
+     ways:pocket-companion) are no longer made or read. She talks with
+     nothing standing, as after.
+
+   ½ day.
+5. **No role block.** By 1.111178719964, arm 3 won, so none is shipped.
+   If Matthew would rather keep arm 2's four lines, they are one shipped
+   block read before the time: ½ day more.
+6. **Tests and the line in the sand:**
+   - the nine core and seven device test files of 7d;
+   - new tests for the turn (each moment's skill, and only it), the two
+     cues, his TALK line split with his words kept, the hatch's two
+     questions, and the filter keeping a skill's ask;
+   - the line in the sand on the laptop with the build's own code, then
+     on his phone.
+
+   1 day.
+
+**In all, 3½ to 4½ days,** more than 1.111178719965's 2 to 3, because
+splitting his own TALK line in his cook and the sixteen test files are
+more than taking lines out. 0.12 then comes to about **23½ to 28½ working
+days** (section 5's 20 to 24, plus this).
+
+### 8g. Decisions this adds, each with a proposed answer
+
+21. **Where the two cue lists live.**
+    - Proposed: in his cook, under 6.6 beside the skills, read as cook
+      9's are and his to change.
+    - The hand: "in front of me", "what have I got", "what's on today",
+      "on my hand", "my cards". Struggling: "too much", "overwhelmed",
+      "can't cope", "struggling", "falling apart", "drowning".
+    - Cook 9's nine places are taken.
+22. **What of his shell stands in her window.**
+    - Proposed: none of it. The time alone stands, with the safety check
+      in code.
+    - His passport and shell are read by the app, and the skills that need
+      them bring their parts:
+      - a skill for himself and his work, bringing his passport's opening
+        line when he asks about either, or about something it names (a
+        LERO);
+      - a project's block when he names the project (1.111178719954);
+      - his hand when he asks what's in front of him.
+    - This is how the beach's door wears a shell, the nominated part at
+      the moment it's needed, applied per moment.
+    - It changes 1.111178719966's "the shell she wears" to the shell the
+      app wears for her.
+23. **One more laptop run before his phone.**
+    - Proposed: the line in the sand on the build's own code, once 8f is
+      built, with one more question beside test 6: "What do you know about
+      my work?". It checks that the skill for himself brings his passport
+      and she uses it without reading him through it.
+    - About half a day, inside step 6.
