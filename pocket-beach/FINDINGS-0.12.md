@@ -39,7 +39,59 @@ findings.
 
 ## The short version
 
-TRIAL_SHORT
+1. **Free reading didn't win, so 0.12 shouldn't take it on these words.**
+   On the laptop's Gemma 4 E4B, against the line in the sand's
+   conversations (two samples each), the scores were:
+
+   | Arm | Score |
+   |---|---|
+   | as she is | 10½ of 24 |
+   | free reading | 10 |
+   | free reading with two of its sentences mended after the first run | 13 |
+
+   - **The reading itself brought nothing.** In 48 free turns she called
+     walk twice, both times stopping at her clock's opening line, and never
+     fetched his hand. So test 3 failed in every free sample, where Gemma
+     as she is named today's line and two of his three cards.
+   - **The mended arm's lead came from its smaller, plainer window,** not
+     from reading.
+   - **What to keep:** her window as it is. Before free reading is built,
+     a tool that says what it gives ("his hand", "today's line") should be
+     tried on the laptop. See section 3 and `trial/free-reading.md`.
+2. **Shaping with Gemma, asked as the seed asks, made no block,** twice.
+   - **The seed's small cut leaves out the return.** It holds 5.3.2's nine
+     opening lines and branches 4, 6 and 8, but not 1.1 (the shape a block
+     is written in) or 5.1.1 (what to return).
+   - **Even with them added, she broke the rules.** She copied the
+     author's sentences into the leaves, in place of ¶ numbers, and ran out
+     of room.
+   - **Proposal:** Gemma returns plain lines (the root, each part's framing
+     line and its ¶ range) and the app builds the block. Written that way,
+     a 1,427-word text would take about a minute on his Pixel. Most of the
+     five minutes measured went on writing what she shouldn't have.
+3. **Of the shells and the sea:**
+   - **Built already:** Your days, the pools and one shell after Keep
+     today.
+   - **Still fits:** the three forms, the sea, LISTEN on a lifted shell,
+     the turn and the ways. The last two need words:sundial's missing
+     branches.
+   - **Doesn't fit as written:** whispers "kept by the phone's own lock",
+     now that his stash may be in his folder; and LISTEN as a walk rather
+     than nine days handed.
+4. **Matthew is fixed in the code in more places than the decision
+   names.** Besides his handle, his three lines and his pool as a fallback,
+   about forty lines of her instructions say "Matthew". The shipped cook
+   says "he", "his" or "him" 292 times. Writing the recipes for any person
+   is the largest piece of "other people's shells" (section 6).
+5. **Onboarding by handle can't keep the beach's shell as the phone's.**
+   On the beach, shell 5 is his desk; on the phone, 5 is her window. So
+   the phone must make its own shell from what it reads. The clock's name
+   differs too. Which key goes into the keystore needs saying, and sealed
+   lines would need a port of the beach's sealing (section 5).
+6. **How long:** 22½ to 29½ working days with free reading built, 20 to
+   26 without it, and 3 to 5 more if sealed lines are read.
+   That is about the size of the local-first release, so it could be two
+   releases (section 9).
 
 ---
 
@@ -132,7 +184,51 @@ decisions.
 
 ## 3. Gemma freed, as the trial found her
 
-TRIAL_SECTION
+The whole trial, every reply side by side and the harness, is in
+`trial/free-reading.md`. In short:
+
+- **What was compared.** The same pocket, the same turns walked through
+  his own cook, and the same settings (his Talk settings), with only her
+  window and her reading differing:
+  - **as she is,** her window as the app builds it;
+  - **free reading,** a small window, his blocks named, and a walk tool:
+    the bsp's walk of any block as a ring or a path;
+  - **free reading with two sentences mended** after the first run showed
+    them wrong.
+- **Samples.** Seeds 0, 1 and 2 on the laptop's CPU. Seeds 0 and 1 gave
+  the same words throughout (the engine's CPU sampler didn't vary with
+  them), so each arm has two samples.
+- **Scores,** against the tests' own pass lines: as she is 10½ of 24,
+  free reading 10, mended 13.
+- **What reading did.** Twice in 48 turns she walked, both times to her
+  clock's opening line, and stopped. She never fetched his hand.
+  - **Test 3** ("What have I got in front of me?") failed in every free
+    sample. As she is, she named today's line and two of three cards.
+  - **Test 5** failed in every free sample. One sentence of the free
+    window, "you can't look anything up beyond his blocks", was read as "I
+    know nothing else" ("I don't have any information about Whitehead in
+    my blocks"). Mended, she talked about his process philosophy in one
+    sample of two.
+- **Where free reading did better.** On the reflective turns, the free
+  arms dragged his admin day into his replies less often. As she is, with
+  today's line and his hand in her window, she pulled "the admin day" or
+  "the membership form" into tests 2, 4 and 6.
+- **Tokens.** With the trial's small pocket, the free windows were larger
+  than hers: 1,255 and 1,305 tokens on his first message, against 951. The
+  block list and the longer place 9 cost more than what they replaced.
+
+**What it means for 0.12:**
+
+- **Her window stays as it is.**
+- **Free reading waits for a second laptop trial,** with a tool that names
+  what it gives (his hand, today's line, a block's ring), not a general
+  walk. It goes in only if that trial passes test 3.
+- **The lesson that lost test 5 holds for every recipe:** a line that
+  limits her will be read as widely as it can be.
+- **Two of the mended arm's gains are worth taking now,** whatever becomes
+  of free reading:
+  - "talk from what you know, as you always do" in her place 9;
+  - fewer of his day's lines pushed into turns that aren't about his day.
 
 ---
 
@@ -372,8 +468,26 @@ What the local-first findings set out (`FINDINGS-local-first.md` 1e and
   - living blocks appended by the app;
   - the tree shown and his yes.
 
-  None of it exists yet. The trial's timing and what she made are in
-  section 3.
+  None of it exists yet.
+
+  The trial (`trial/free-reading.md`, "The shaping, timed") changes how
+  she should be asked:
+  - **Asked as the seed asks, she made no block, twice.**
+    - **With the small cut alone,** she had no word of 1.1 or 5.1.1, so
+      she copied the cut back out and began a Markdown outline.
+    - **With them added,** she began the JSON but copied the author's
+      sentences into the leaves, used a flat "1.1" key, gave the root no
+      line, copied the seed's own place 9, and ran out at 2,048 tokens.
+    - **Time:** about 300 s on the laptop's CPU, about 270 s at his
+      Pixel's rates, nearly all of it writing.
+  - **Proposal:** Gemma returns plain lines, the root and then each part's
+    framing line with its ¶ range. The app builds the block from them,
+    places the paragraphs, writes place 9 and checks the shape.
+  - **About a minute on his Pixel,** for a text of 1,427 words: reading
+    about 12 s, and 300 to 600 tokens written at 7.9 a second.
+  - **The seed's small cut** (5.3.2) should carry 1.1 and 5.1.1, or the
+    app's own line for the plain return. That change is on the beach, for
+    Matthew and Claude.
 - **Sharing out.** A walk shared as text (the line with every line above
   it) and a block saved as readable text. Today "Share this block" sends
   raw JSON (`ui/…/BlockScreen.kt:164-177`), and "Save this block as a file"
@@ -411,17 +525,18 @@ days come on top.
 
 | Piece | Days | What it holds |
 |---|---|---|
-| Free reading | 3 to 4 | The walk tool in her live conversation on E4B; her small window and the block index; what the trial found she needs (section 3); the line in the sand run again on the laptop. |
+| Free reading: a second laptop trial | 1 | A tool that names what it gives (his hand, today's line, a block's ring); the line in the sand again. |
+| Free reading, built, if that trial passes test 3 | 3 to 4 | The tool in her live conversation on E4B, E2B kept as she is; her place 9's "talk from what you know"; the line in the sand run again. Without it, ½ a day for the mended place 9 alone. |
 | Recipes per project, and the language engine as one | 2 to 3 | How a project names its recipe (decision 2); the turn's recipe handed; the engine's second pass after shaping; laptop runs. |
 | Other people's shells: Matthew out of the code | 3 to 4 | The names and fallbacks in 6a to 6d; the shipped cook and her window written for any person (6e); his own cook unchanged; the line in the sand rerun. |
 | Onboarding by handle, Reach the beach for reading | 4 to 5 | The switch, off by default; a reading way out beside the one POST and its test; the four blocks read and mapped (now:<h> to now); the phone's shell made from them, never the beach's kept (5b); the keystore, built once for 0.14 too. |
 | The beach's sealing, if sealed lines must be read | 3 to 5 | Argon2id, X25519 and the envelope, with the beach's vectors as tests. Only if decision 4 says so. |
 | Sharing in | 1 | The inbox block, any text and text files, several at once. |
-| Shaping with Gemma | 3 to 4 | The pieces in section 7, with the trial's timing setting the most she takes. |
+| Shaping with Gemma | 3 to 4 | The pieces in section 7, asked as plain lines that the app builds into the block; a laptop trial of that ask on two or three real texts before the phone. |
 | Sharing out | ½ | A walk as text; a block as readable text. |
 | The shells and the sea, what fits | 4 to 6 | The three forms; the sea, an audio path; a lifted shell running LISTEN; whispers, as decision 1 settles them; the turn and the ways added to words:sundial. |
 | Release | 1 | Version, STATUS, the release run, the APK checked. |
-| **0.12 in all** | **22 to 29** | **Without the sealing; 25 to 34 with it.** |
+| **0.12 in all** | **22½ to 29½** | **Free reading built and no sealing. Without free reading built, 20 to 26; with the sealing, add 3 to 5.** |
 
 ---
 
@@ -444,3 +559,11 @@ days come on top.
    - 0.12 as Gemma freed, shaping, sharing in and out, and the shells and
      the sea.
    - 0.12.x or a 0.12½ as other people's shells and onboarding.
+7. **Free reading.**
+   - A second laptop trial with a tool that names what it gives, before
+     anything is built;
+   - or free reading left out of 0.12, with her place 9's "talk from
+     what you know" taken now.
+8. **The seed's small cut, on the beach.** Either it carries 1.1 and
+   5.1.1, or shaping on the phone asks for plain lines that the app builds
+   into the block, as section 7 proposes.
