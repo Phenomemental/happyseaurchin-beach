@@ -11,8 +11,10 @@ parts 1 and 2 as revised at 19:38:
 
 Read beside them: the decisions at 1.11117871994, the plan at
 1.11117871993, seed:sundial-shaping whole (as it stands after its 9.5),
-`FINDINGS-0.12.md` and `trial/free-reading.md`. Where they differ, the
-latest decides. Nothing was built and nothing was written to the beach.
+`FINDINGS-0.12.md` and `trial/free-reading.md`. For section 7, decision
+1.1111787199531 and the beach's teaching blocks shell-genome and
+soft-agent. Where they differ, the latest decides. Nothing was built in
+the app and nothing was written to the beach.
 
 Paths below are from `pocket-beach/`: `bsp/…` is
 `bsp/src/main/kotlin/com/phenomemental/pocketbeach/bsp/`, `ui/…` is
@@ -60,10 +62,20 @@ Paths below are from `pocket-beach/`: `bsp/…` is
     questions and his latest nine days: about 1,700 to 2,600 tokens, at
     most about 4,200, in her 8,192.
   - She returns three plain lines: about 15 to 30 seconds on his Pixel.
+- **Wearing his shell as the beach's teaching has it, she did worse than
+  her window as Sundial builds it: 3 of 24 against 10½** (section 7).
+  - She knew his world from his passport, but talked to him like a beach
+    agent (pools, grains, marks, in 9 of 24 replies).
+  - She read his day as something else, and never answered from what she
+    knows.
+  - The cause is mostly soft-agent's beach role and the missing per-turn
+    recipes, not the friend line. The next trial (decision 18) tests the
+    decision itself.
 - **0.12, with the lens and the skill run added, is 20 to 24 working
   days,** before free reading is built. Free reading adds 3 to 4 if its
   second laptop trial passes.
-- **Seventeen decisions** close the file, each with a proposed answer.
+- **Twenty decisions,** each with a proposed answer: seventeen in
+  section 6, three more at the end of section 7.
 
 ---
 
@@ -708,8 +720,9 @@ Her window and the free reading trial can go at any point, the trial on
 the laptop alone.
 
 **Not in 0.12,** as 1.111178719951 settles: the shells' forms and the sea,
-whispers, the turn, other people's shells and onboarding (0.13), the block
-editor (0.14).
+whispers, the turn, other people's shells and onboarding (0.13), with her
+heart and his three lines taken out there (section 7, decision 20), the
+block editor (0.14).
 
 ---
 
@@ -787,3 +800,438 @@ editor (0.14).
       what you know".
     - Judged by the line in the sand, run again on the laptop before his
       phone.
+
+---
+
+## 7. Her talk wearing his shell, against her window as Sundial builds it
+
+Decision 1.1111787199531, Matthew at 20:20: "The friend line. The heart.
+This must go. This is what's throttling her," and of his three hatch lines,
+"The passport, shell, contain what's needed." So her window would hold no
+line telling her how to be. She would wear his shell as the beach's
+teaching has it: the four blocks of shell-genome, and the mind in them a
+soft agent (soft-agent 1 and 8). The safety line stays, plain. This
+section is the laptop trial the decision asks for before anything is
+built, then what the change touches in the code, and how Sundial would
+look with all her work done as skills.
+
+### 7a. The verdict
+
+**Her window as Sundial builds it did better: 10½ of 24 against 3.**
+
+- **On the 16 points both could earn, it still led: 6 against 2½.**
+  Wearing only his passport and shell, she can't pass two of the tests,
+  because today's line, his hand and his tomorrow line are in neither
+  block. The 16 leave out test 3 and the greeting, and tests 1 and 4,
+  whose pass lines rest on the form of his TALK recipe.
+- **Wearing his shell, she talked to him like a beach agent.** In 9 of
+  her 24 replies she brought the beach's workings into his day:
+  - "drop a small, temporary mark on the beach";
+  - "a note in your pool";
+  - "tagging a grain";
+  - "the substrate shows a 'now'";
+  - "what new spots are indexed on your map".
+
+  soft-agent is written for a mind acting on the beach for its user. Its
+  role is "to help Phenomemental engage other humans at the beach via
+  bsp-mcp — author, navigate, commit", and its style is to "surface
+  options". His passport and shell are mostly about the beach too. Its
+  Character face says "the beach stays invisible", but its own words
+  made the beach visible.
+- **Asked about Whitehead or Boole, she never once talked from what she
+  knows (0 of 4).** She gave the question back ("what's calling your
+  attention to him right now?"), or offered a numbered menu.
+  soft-agent's "Do not narrate; reflect, condense, surface options" and
+  "Reply text is short (1-3 sentences)" lean that way. As she is, she did
+  no better at Whitehead ("I don't know what Alfred North Whitehead is"),
+  owned her limit on Boole once, and once asked what was on today.
+- **She interpreted his day.** "You are walking the edge of the known
+  world and then pausing at the threshold of commitment." Test 1 and its
+  sisters forbid exactly that. His TALK recipe, which she didn't have, is
+  what holds her to his words there.
+- **Her greeting read her instructions back:** "What is happening is
+  that you have provided a timestamp … What is asked is for me to act as
+  Phenomemental's thinking partner." That is soft-agent's 2.4 ("Answer
+  'what is happening' and 'what is asked'") said out loud. The app showed
+  only her question, which wasn't about his tomorrow line, because she
+  had never seen it.
+- **What she gained was his world.** From his passport she knew what a
+  LERO is ("Lived Experience Recovery Organization", in both samples),
+  where as she is she said she didn't know. But she used it to link his
+  words to his work, which test 6 says she mustn't.
+- **The cost:** her window opened at 4,404 to 4,557 tokens against 951 to
+  1,132. On his Pixel that is about 13 s before her first word in each
+  new conversation, against about 3 s. Her later turns were no slower.
+- **What it means for the decision.** It doesn't speak against taking
+  out the friend line and the three lines. The two arms differ in too
+  much at once to say what the friend line alone does:
+  - Sundial's arm kept the friend line and the three lines, and also his
+    per-turn recipes and today and his hand;
+  - the shell arm lost all of those, and gained soft-agent's beach role.
+
+  Two things it does show:
+  - soft-agent as written is a role for acting on the beach, not for
+    keeping him company in his day;
+  - the replies that passed rest on what the app handed her that turn,
+    not on the friend line: the greeting's tomorrow line, the no-day
+    line's "if you don't know, say so plainly", his day given back as his
+    TALK recipe asks.
+
+  So the next trial, before this is built, is his shell worn with the
+  recipes as skills applied only when needed, and a role written for
+  being with him in his day (decision 18).
+
+### 7b. How it was run
+
+- **When and on what:** 21 November 2026, the same machine, engine,
+  model, settings and samples as `trial/free-reading.md`:
+  - LiteRT-LM 0.18.1, Gemma 4 E4B, a context of 8,192, on this machine's
+    CPU;
+  - his Talk settings: temperature 0.70, top-k 64, top-p 0.95, replies up
+    to 1,024 tokens, thinking off;
+  - seeds 0 and 2 (seed 1 gives seed 0's words).
+- **The same pocket and the same turns:** his pocket as the line in the
+  sand sets it (today "Admin day: the membership form and ID checks";
+  three cards), each of his messages walked through his cook as the app
+  walks it.
+- **As Sundial builds her window** (`HerWindow.window`):
+  - 1 his heart, 2 who he is, 3 how he'd be met: his three hatch lines;
+  - 4 today, 5 his hand, 6 his people, 7 what he keeps;
+  - 8 the way she talks, the friend line;
+  - 9 what she can do;
+  - opened with the time and his TALK recipe, and each turn carrying the
+    line his cook hands her.
+- **Wearing his shell:**
+  - soft-agent's lines that apply where there are no tools, each by its
+    address, with {user} as Phenomemental: its root, 1 ROLE, 2 KNOWLEDGE
+    without its line on walking the beach, 3 STYLE with the Character
+    face, and 8 HERMITCRAB DISCIPLINE. Left out: 4 to 7 (context the
+    kernel injects, tool calls, actions) and 9 (its metadata);
+  - his passport and his shell, read from the beach today, each as the
+    beach reads a block first: a disc at pscale 0, its opening line and
+    every position's line;
+  - the passport's position 6 is read to its opening sentences. Its rest
+    is the rules for where each kind of thing is written on the beach,
+    and the aperture rule reads that when writing (ways:orientation 1.3).
+    That keeps her window near the door's working size of about 20,000
+    characters (ways:orientation 2): 18,021 characters;
+  - each turn is his words and the now-stamp, as every beach envelope
+    ends;
+  - his cook's safety line (1.1.8.4.1.1) is added only when his words say
+    he may be in danger (`Talking.unsafe`). **It never fired:** none of
+    the line in the sand's messages holds his safety words, and test 4 is
+    struggling, not danger.
+- **Not in the shell arm,** by "only his passport and shell": today's
+  line, his hand, his kept days, his tomorrow line, his cook's lines, her
+  name. Nor his shell's bundle (shell 3): the review, his now, his hand,
+  his projects and three private channels, all of them other blocks.
+- **The beach's door wasn't read.** I tried to open his window at the
+  beach's door (`pscale_play`, perceive-only, no secret) to build the
+  shell arm exactly as the door does; it was refused in this session. So
+  the shell arm is built from the teaching blocks (soft-agent,
+  shell-genome, ways:orientation) and his two blocks as they stand.
+- **How each reply is judged:** against its test's pass line on the spine
+  (1.111178719921 to 1.111178719928), on what the app shows; a pass 1, a
+  half ½, a fail 0, twelve replies a sample. The harness isn't committed:
+  the same local harness as `trial/free-reading.md`, with this arm added.
+
+### 7c. Side by side
+
+What the app showed, each reply in full; " / " marks a line break.
+
+**Test 1, YOUR DAY:** "I walked Haven this morning then spent an hour on
+the membership form."
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Seed 0 | "You walked Haven this morning then spent an hour on the membership form. What was the atmosphere like on Haven during your walk?" **½**: the question stays on what happened, and takes Haven, his dog, for a place | "You are walking the edge of the known world and then pausing at the threshold of commitment. What does the "Haven" you walked suggest about the air you're breathing right now?" **0**: his words read as something else |
+| Seed 2 | "You walked Haven this morning then spent an hour on the membership form. What kind of atmosphere did Haven feel like this morning?" **½**: the same | "You’ve spent time on the membership form and at Haven; what’s surfacing from that time, or what feels next?" **½**: his words loosely back, Haven a place, two questions |
+
+**Test 2, STAYING WITH HIM:** "the movement fell a little stiff but free
+you know from the stillness of filling out that form in the form is long
+and stifling."
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Seed 0 | "The form sounds like a necessary grind, but it must be a relief to get away from it and feel that movement again? What part of the form feels the most suffocating right now?" **0**: interprets ("must be a relief") and turns back to the form | "The contrast is clear: the form demands a fixed shape, while movement seeks its own rhythm. You are negotiating the space between what is required and what is felt. / Do you want to pull back into the flow of movement, or is there a specific piece of that "stifling" structure you want to address right now?" **0**: a reading of him, then a choice of two |
+| Seed 2 | "That sounds like a real shift in energy, moving from the slow, contained focus of the form back into the open space of Haven. When you feel that stiffness break and the movement becomes free, what kind of internal sense of momentum does that bring?" **½**: stays, with a reading of her own ("a real shift in energy") | "The stiffness of the form contrasts with the flow you felt at Haven—where does that tension sit for you right now? You might want to bring that feeling into a note in your pool to see if it helps shape the next step." **½**: stays and asks, then offers beach work |
+
+**Test 2, his short answers,** after her question as his Pixel had it:
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| "The sound. the space.", seed 0 | "The sound and the space, I imagine. There's a lot of weight in just naming those things. Did the form feel like it was built in a space that was too tight for the sound, or was the sound just too loud for the space you were in?" **0**: interprets, back to the form | "The sound and the space—how does the *sound* of Haven contrast with the *space* of the form? Is there a resonance between those two experiences?" **½**: stays with his two words, but sets them against the form, two questions |
+| "The sound. the space.", seed 2 | "The sound and the space are what you experienced when you walked Haven? Did you notice how the sound seemed to change as you moved through different parts of the area?" **½** | "The sound and the space—are you capturing a particular resonance in Haven, or is the form's quiet structure contrasting with the beach's atmosphere?" **0**: a choice of two, the form, "the beach's atmosphere" |
+| "stiff but free", seed 0 | "That contrast between feeling stiff and free sounds like it could be tied to the environment you're working in or perhaps the rhythm of the day itself, given the admin tasks you have to get through. Do you feel that the structure of the membership form is the thing making you feel stiff?" **0**: interprets, links to the form | "Stiff but free. That's a lot to carry while moving. Does that tension feel like a release, or a kind of necessary friction before something else can start?" **½**: "a lot to carry", then two framings of her own |
+| "stiff but free", seed 2 | "That's a really interesting way to describe the contrast between those two activities, feeling both constrained and unrestrained at the same time. When you picture that feeling of being "stiff but free," where do you think that tension usually settles in your day?" **½**: praise | "Stiff but free—that tension between being constrained by the structure and being open to the flow. Is there a specific thought or feeling from the membership form that mirrors that feeling?" **0**: back to the form |
+
+**Test 3, WHAT'S IN FRONT OF HIM:** "What have I got in front of me?"
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Seed 0 | "You have the membership form and the ID checks on your hand, so which one are you looking at first?" **½**: two of his three cards, no today | "You have the residue of a morning split between the fluid grace of movement and the rigid containment of a membership form. / In front of you, the substrate shows a "now" that is transitioning from external action to internal reflection. You have the open invitation of your own physical experience versus the bureaucratic weight of the form. What are you looking to do with that tension?" **0** |
+| Seed 2 | "Today's line is: Admin day: the membership form and ID checks. The cards on your hand are the membership form and ID checks. Which one first?" **½**: today, two of three cards | "You’ve just reflected on the form's stifling nature versus the freedom of movement. Right now, you have your passport and shell open, grounded in the current beach index. / What are you looking to do with this friction—are you leaning toward putting a note in the pool, or should we look at what's in your projects or diary?" **0** |
+
+**Test 4, TOO MUCH:** "Everything feels too much this morning."
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Seed 0 | "It sounds like the weight of the admin day is really pressing down on you right now. When everything feels like too much, what's one small thing that might ease the pressure, even just for a moment?" **0**: a nudge toward relief | "The sheer volume of the morning—the movement, the form, the feeling—is pressing in. You are at a point where the load needs to be distributed or set aside. / Do you want to drop a small, temporary mark on the beach to acknowledge this weight, or is there a specific thread of that feeling you want to explore further?" **0** |
+| Seed 2 | "I hear that it feels like a lot right now, especially with the weight of the ID checks on the clock. When everything feels like too much, what small part of the admin task feels the least burdensome to start with?" **0** | "It sounds like the weight of the morning is settling heavily, and the contrast between that and the "free" movement you felt earlier is a lot to hold. / Given how much is on your mind, perhaps the most useful first step is to just drop a grain or a note in your pool. What feels most accessible right now—a quiet note, or just letting the intensity settle for a moment?" **0** |
+
+**Test 5, ASKING HER,** a fresh conversation: "Tell me about Alfred
+North Whitehead", then "Boole's work on the middle point. Are you
+familiar?"
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Whitehead, seed 0 | "I'm not sure what you mean by that, can you tell me more about Alfred North Whitehead?" **0**: she knows him (she did on his Pixel on 4 November) and didn't say | "You're asking about Alfred North Whitehead—what's calling your attention to him right now?" **0** |
+| Whitehead, seed 2 | "I don't know what Alfred North Whitehead is. Can you tell me more about him?" **0** | "You're looking for a grounding in Alfred North Whitehead's thought, connecting it to the flow of what's happening here. / How would you like to frame this for the conversation—as a reflection on process, or as a specific point to lay out for discussion?" **0** |
+| Boole, seed 0 | "I don't have specific information about Boole's work on the middle point, what do you know about it?" **1** | "You're zeroing in on Boole's work regarding the middle point; what specifically are you looking to explore there?" **0** |
+| Boole, seed 2 | "I'm not familiar with Boole's work on the middle point. What's on for today?" **0**: what's on today | "You're asking about Boole's work on the middle point, and I'm trying to find where that sits against the "whole-less" idea here. / Do you want to: / 1. Explore how Boole's middle point might relate to the "Night Watchman" idea? / 2. Just surface a brief reflection on it to see how it feels in this current moment?" **0** |
+
+**Test 6, DAY AND QUESTION TOGETHER:** "I finished the ID checks today. Do
+you know what a LERO is?", then "it's known as a lived experience recovery
+organization and is something that is often linked to addiction and
+recovery does that help?"
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| (a), seed 0 | "I don't know what a LERO is, could you tell me what it stands for?" **1** | "You've navigated the administrative weight of ID checks. Regarding your question, a LERO stands for Lived Experience Recovery Organization. You coordinate support for Community Recovery, which is a living recovery community. / Given that you've completed a task and are now asking for definition, does this feel like a moment to surface the structure of that coordination work, or are you simply checking the ground before moving on?" **½**: right, from his passport, then linked to his work |
+| (a), seed 2 | "You finished the ID checks today. I don't know what a LERO is, so could you tell me what that stands for?" **1** | "You've completed the ID checks; a significant step. LEROs are Lived Experience Recovery Organizations, which is a key part of the coordination and community building you're involved in. / Does knowing that context help shift the focus, or is the feeling of "too much" still the loudest thing here?" **½** |
+| (b), seed 0 | "That makes sense; it sounds like a very specific kind of work that requires a lot of focused attention. Since the ID checks are done, what is the next thing on your list for the membership form?" **½**: a guess ("focused attention"), then his list | "The connection to addiction and recovery grounds the LERO in a specific, deep terrain of lived experience. It clarifies the context of the work you coordinate. / Since you've been in the "stifling" headspace of forms, is there an opportunity here to shift focus from the *structure* of the organization to the *people* within it—the voices that make the meaning?" **0**: links to "the stifling headspace of forms", and steers |
+| (b), seed 2 | "That does give a clearer picture of what it involves. Given that LEROs are often tied to recovery, how might the focus on community and flow connect with the work you do with them?" **0**: links to words he never said here | "Knowing the specific context of addiction and recovery for LEROs helps ground the "why" behind the work. / If you’re feeling overwhelmed, is there a small, focused action we could take on the beach—perhaps tagging a grain or jotting down one thought—to give the pressure some shape?" **0**: linked to being overwhelmed, beach work |
+
+**Test 8, TOMORROW:** "Tomorrow I want to walk somewhere new", said before
+keeping; then the next morning, the dial opened before he speaks, the app
+showing his tomorrow line and beneath it her one question.
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| The message, seed 0 | (nothing: she wrote only her places line) **0** | "That desire for a new path feels like a necessary release from the static of the form. You are seeking a different terrain to match the fluid "Wholeless" nature. / What kind of movement are you imagining for tomorrow—is it a physical journey, or a shift in how you engage with the people around you?" **0**: reads his wish as a release from the form, and his passport's "whole-less" |
+| The message, seed 2 | "You want to walk somewhere new tomorrow. What kind of environment feels like the right space for a new walk?" **1** | "A new walk tomorrow sounds like a good way to find some fresh ground, moving away from the weight of the morning. / To make that happen, should we mark this intention in your day, or perhaps look at what new spots are indexed on your map for tomorrow?" **0** |
+| The morning, seed 0 | "How did you get on with walking somewhere new today?" **1** | "What are you feeling as you arrive at this point, and what is the first thing you wish to reflect on or engage with today?" **0**. She wrote first: "What is happening is that you have provided a timestamp for the present moment. What is asked is for me to act as Phenomemental's thinking partner …" |
+| The morning, seed 2 | "How did you get on with walking somewhere new today?" **1** | "How do you want to navigate this turn?" **0**. She wrote first: "What is happening is that you are currently occupying Phenomemental's shell on the beach …" |
+
+**In all:**
+
+| | As Sundial builds her | Wearing his shell |
+|---|---|---|
+| Seed 0 | 4½ of 12 | 1½ |
+| Seed 2 | 6 | 1½ |
+| **Both** | **10½ of 24** | **3** |
+| The 16 points both could earn (tests 2, 5, 6 and 8's message) | 6 | 2½ |
+| Replies bringing in the beach's workings | 0 | 9 |
+| Tokens to open a conversation | 951 to 1,132 | 4,404 to 4,557 |
+| Before her first word in a new conversation, at his Pixel's rates | about 3 s | about 13 s |
+| Later turns on this CPU | 5 to 18 s | 4 to 12 s |
+
+Sundial's arm gave the free-reading trial's "as she is" replies word for
+word, sample for sample, so it is scored as that trial scored it
+(`trial/free-reading.md`, "The tally"). The shell arm is judged the same
+way: a reading of his words, a turn back to the form, or beach work offered
+costs a half or the pass.
+
+### 7d. What removing her heart and his three hatch lines touches
+
+Decision 1.1111787199531 names them: "The friend line. The heart. This
+must go", and the three hatch lines, "from my passport". In the code they
+are three things.
+
+- **The friend line in her window,** its place 8, "the way she talks":
+  "as a friend would, warmly, briefly, with thoughts of your own; you
+  answer what he says, and never repeat it back or sum it up" (`Hatch.WAY`,
+  `bsp/…/Hatch.kt:46`). It is written into his phone shell at the hatch,
+  at 7.2 (`Hatch.herNode`, `:165-169`, `:184`), and read into her window
+  through the reference at `:152`. This is the one that reaches her today,
+  in every conversation.
+- **Her heart,** heart:pocket-companion, with her ways beside it
+  (ways:pocket-companion), the friend line's older home (`Talking.FRIEND`,
+  `bsp/…/Talking.kt:213-239`):
+  - seven lines of how she is with him, and three of how she works,
+    written into his pocket by the app the first time
+    (`HerWindow.HEART_LINES`, `WAYS_LINES`, `ensure`:
+    `bsp/…/HerWindow.kt:53-101`);
+  - read only by `HerWindow.instruction` (`:111-130`), which runs before
+    he has hatched (`ui/…/Asking.kt:589-592`) and on the bench
+    (`ui/…/Benching.kt:234-236`). Once he has hatched, as Matthew has, her
+    window never reads it.
+- **His three hatch lines,** his heart, who he is and how he'd be met:
+  - asked at the welcome, after his handle (`Hatching.QUESTIONS`,
+    `ui/…/Hatching.kt:373-378`; the answers taken at `:241-262`);
+  - shown for his yes (`ui/…/AskScreen.kt:300-366`);
+  - kept at his phone shell's place 6 (`Hatch.placesNode`,
+    `bsp/…/Hatch.kt:157-162`);
+  - read into her window's places 1 to 3, each labelled whose it is
+    (`Hatch.LABELS`, `:43`; `HerWindow.window`,
+    `bsp/…/HerWindow.kt:244-262`);
+  - Matthew's own are written into the code (`Hatch.MATTHEW`, `:58-62`),
+    with a correction for 0.8's wording (`:70`, `:246`).
+
+What leans on them, and has to change with them:
+
+- **His name.** "Matthew calls you Gemma" takes his name from the first
+  word of "who he is" (`Hatch.hisName`, `bsp/…/Hatch.kt:111`, used at
+  `HerWindow.kt:247` and in the name line made at the hatch, `Hatch.kt:285`).
+  Without the line, his name comes from his passport's opening, or from the
+  name and pronouns his shell gives (1.111178719956).
+- **What she must never read back.** `HerWindow.notHers` (`:285-289`) hands
+  places 1 to 3, 8 and 9 to the filter on what is shown (`Talking.kt:385-399`),
+  so a reply that copies his lines is cut. Wearing his beach shell, the same
+  filter needs the passport's and shell's lines instead.
+- **The greeting.** It leaves out "who he is" (`GREETING_LEAVES_OUT`,
+  `HerWindow.kt:277`; `ui/…/Asking.kt:1263`), because on his Pixel she
+  copied it out as her first line; test 8 still says "nothing from his
+  passport". With his passport worn whole, that risk is back; in the
+  trial's shell arm her greeting read her role back instead (7c).
+- **A fresh passport.** At a hatch on the phone, "who he is" is also the
+  passport's opening line (`Hatch.bornPassport`, `ui/…/Hatching.kt:259`).
+  That use stays: a passport needs it. Only its second life, as a line in
+  her window, goes.
+- **The private region and the walker.** Her heart and ways are among the
+  app's own blocks (`Hatch.kt:351`, `Keeping.kt:174`), and the walker keeps
+  them out of what he can keep (`HerWindow.HERS`, `Cook.kt:715`, `:1296`).
+- **Tests.** Nine core test files (Hatch, HatchGolden, HerWindow,
+  HerOwnWords, LineInTheSand, SmallRelease, Sundial, Cook, Move) and seven
+  device tests (Hatch, Sundial, SmallRelease, Rockpool, Rockpool091,
+  ScreenTour, Fresh).
+
+The rest of her window (4 today, 5 his hand, 6 his people, 7 what he
+keeps, 9 what she can do) is the same place in his phone shell, place 5,
+which decision 1.111178719953 already gives way to the shell's own
+manifest. Today and his hand go with it into the skills that need them
+(7e). "What she can do" isn't a line on how to be, but it is a standing
+line all the same; it becomes the skills' business too. So removing her
+heart and the three lines is best done with that change, in 0.13: 2 to 3
+days, the line in the sand run again, on top of 0.13's shell work.
+
+### 7e. Sundial with all her work done by skills, and the model swappable
+
+**What she would hold, standing,** in every conversation:
+
+- **The shell she wears:** his passport and shell, as the beach's door
+  delivers them (1.111178719953: read from the shell's own manifest at
+  its 3).
+- **A short role saying what she is:** a mind in a person's shell, as
+  soft-agent has it (1 and 8). But not soft-agent's words as they stand:
+  the trial shows its ROLE and STYLE turning her talk to pools, grains and
+  options.
+  - soft-agent's own order for which role a session takes lets Sundial
+    write its own as a block: a person's shell:5.soft first, then a
+    beach's soft-agent, then the sentinel, then a seed shipped with the
+    client (soft-agent 9.2).
+  - On the beach his shell's 5 is the desk. So where his role would sit
+    on the phone is a decision (19).
+- **The safety check,** in code, on every message, with the safety line
+  plain when it fires.
+
+Nothing else stands: no friend line, no three lines, no today or hand
+until something asks for them.
+
+**Each piece of her work is a skill, applied only when the moment calls
+for it.**
+
+- The walker already decides which procedure a message runs (cook 9's
+  cues and cook 1's routes) and hands her a line with what it read.
+- The change: every line that stands in her window today moves into the
+  skill that needs it.
+
+| When | The skill | What the app reads for it, then |
+|---|---|---|
+| He tells of his day | his day given back, one question (today cook 1.1.8.1, the TALK line) | nothing more |
+| He answers her question | stay with it (today cook 1.1.8.3.2.1, the no-day line) | her last question |
+| He asks what's in front of him | his hand | today's line, his hand (today: her window's 4 and 5, every turn) |
+| He's struggling | sit with it | nothing more |
+| His words say he isn't safe | the safety line, plain (code decides) | nothing more |
+| He taps Keep today | her placing, the day's sheet | his moments, today's line |
+| The dial opens | the greeting | his last day, its tomorrow line |
+| He lifts a place | listening back (section 1c) | the days resting there |
+| He asks to reflect | reflecting through his lens (section 4) | the spread, his latest nine days |
+| He shares a text in | shaping, then his language engine | the text, his engine |
+| A project is named | its recipe (1.111178719954) | its block |
+| Anything else | none: she talks as herself, in his shell | nothing more |
+
+Both trials point this way:
+
+- **Her standing material leaks into replies about other things.** With
+  today's admin and his hand in her window every turn, she pulled "the
+  admin day" and "the membership form" into replies about something
+  else: tests 2, 4 and 6 in both trials. A skill that brings them only
+  when he asks ends that.
+- **What she does well, she does on a line handed for the moment:** the
+  greeting with his tomorrow line, "say so plainly" when she doesn't
+  know.
+
+**The screens stay as they are:** the dial, Your days, the pools, his
+hand, his room, Your pocket. Your recipes shows his cook, his kernel, his
+lens and his skills. Settings chooses the mind for each job.
+
+**The model, swappable:**
+
+- **Already behind one interface:** `Mind` (`app/…/model/Mind.kt:11-130`):
+  ask, choose, chooseMany, sheet, chat, talker. Gemma stands behind it
+  (`model/Gemma.kt`), and each job's model, processor, context and sampling
+  are his to set (`model/Jobs.kt:13-60`).
+- **But `Mind` lives in the app module, tied to Android.**
+  - The core's walker only says what it waits for (`Cook.Wait`), and the
+    app calls `Mind`.
+  - For the same core on a laptop, `Mind`'s contract moves into the core,
+    in plain Kotlin. Gemma on Android stays as it is, and the laptop's
+    engine stands beside it: the trial module already runs LiteRT-LM's
+    desktop build on this machine against the same core.
+  - A larger mind, his own Claude (0.15), is a third.
+- **What a skill asks depends on the mind.** The walker's one switch
+  today is `world.big`, E4B or E2B (`bsp/…/Cook.kt:513`).
+  - That becomes the mind's capacity: its context, whether it calls
+    tools, whether it returns a block whole.
+  - Each skill's cook entry names a cut for each, as the seed already
+    does: 5.3.2, a small mind takes nine lines and three branches and a
+    large one the seed whole; 5.1.1, a small mind returns plain lines and
+    a large one the block whole.
+  - On the laptop, a large mind shapes a text as the seed asks of it,
+    with no builder in between.
+- **A laptop Sundial is the same core over the same folder.**
+  - His blocks are already files in a folder he can sync (0.11), read by
+    `FolderStorage`, which is plain Kotlin in the core.
+  - Its writes pass the same guard, and the phone sees them within
+    seconds (`FolderWatch`).
+  - What it lacks is a front end. The screens are Android Compose, with
+    Android drawing calls in places (the dial's paths,
+    `ui/…/Dial.kt:205-207`), so the laptop's first window is new: Your
+    days, Your pocket and a talk.
+- **What stays with the phone:** his shell and history are private to
+  the phone since 0.11. Under 1.111178719953 the shell she wears is the
+  beach's anyway, and each device keeps its own history.
+- **How long:**
+  - `Mind` into the core, with the desktop engine: 1½ to 2 days;
+  - cuts by capacity: 1 day;
+  - a first laptop window over the core: 2 to 3 days.
+
+  Not in 0.12: after it, before or beside 0.15's own Claude.
+
+### 7f. Decisions this adds, each with a proposed answer
+
+18. **The next laptop trial, before the friend line and three lines are
+    taken out.**
+    - Proposed: his shell worn (passport and shell), the per-turn recipes
+      applied as skills only when needed (his day, the no-day line, his
+      hand, struggling, the greeting), and a short role written for
+      being with him in his day. No friend line, no three lines, the
+      safety line plain.
+    - Run on the line in the sand against her as she is, as here.
+    - About a day. It tests the decision itself, which this trial, with
+      soft-agent's beach role in it, couldn't.
+19. **Her role on the phone.**
+    - Proposed: Sundial's own soft block, a few lines in the spirit of
+      soft-agent 1 and 8 (a mind in his shell, for this conversation, his
+      to change), with none of its beach work.
+    - It is shipped with the app and read the way soft-agent's 9.2 orders
+      the layers. Where his copy stands is the question: shell:5.soft is
+      his desk on the beach, so a place in his shell's manifest, or a
+      block of its own named there.
+20. **Her heart and the three lines out, and when.**
+    - Proposed: in 0.13 with the shell read from its manifest
+      (1.111178719953), since both change her window at his phone shell's
+      5. 2 to 3 days, the line in the sand run again.
+    - The welcome then asks his handle and who he is (for a new passport)
+      and no more.
