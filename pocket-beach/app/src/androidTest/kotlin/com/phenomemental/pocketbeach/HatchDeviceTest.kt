@@ -124,7 +124,8 @@ class HatchDeviceTest {
             compose.waitFor("yes", timeoutMs = 20_000)
             compose.tap("yes")
             compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your yes."))
+            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
+            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your yes.") && mind.talkMessages.last().endsWith(")\nKeep that for me please"))
             // Sundial 0.10.3 (spine:pocket-beach 1.111178719929): his yes has its own history entry, written as it lands.
             compose.waitUntil(20_000) { block("history:Phenomemental").has("1") }
             val yes = block("history:Phenomemental")["1"] as JsObj

@@ -94,7 +94,8 @@ class Rockpool091DeviceTest {
             // His day set out with her reply, no "Sort as my day" between; on E2B each piece waits for him to place it.
             // Sundial 0.10: on the keep card. 0.10.1 (item 11): his words asking for it do what Keep today does: the one keep card, where it sets it out.
             compose.waitFor("keep-card", timeoutMs = 20_000)
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Begin your reply with these words: “It's set out for your yes.”"))
+            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
+            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("Begin your reply with these words"))
             assertTrue("the one keep card, Keep today's", app.asking.keepCard != null)
             // Sundial 0.10.3: a card is only the piece holding the words at cook 9.9; the pieces after it, with none, are no card.
             compose.waitUntil(5_000) { compose.onAllNodes(hasText("for example I need to update some meeting minutes and print them out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }

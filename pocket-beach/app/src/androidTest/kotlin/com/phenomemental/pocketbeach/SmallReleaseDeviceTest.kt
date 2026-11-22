@@ -81,7 +81,8 @@ class SmallReleaseDeviceTest {
             compose.waitFor("post", timeoutMs = 20_000)
             compose.waitFor("post-message", "I've had a relaxing weekend.")
             assertEquals("no writing check, no model call for the post", 0, mind.writeMessages)
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your tap."))
+            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
+            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your tap."))
             assertTrue("nothing goes until he taps", wire.sent.isEmpty())
         }
     }
@@ -94,7 +95,8 @@ class SmallReleaseDeviceTest {
             compose.waitFor("top-bar")
             say("Send a post to my room.")
             compose.waitFor("over", "Nothing was set out: your words held no message of your own", timeoutMs = 20_000)
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Ask him, in a few words, what he'd like to say"))
+            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
+            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("Ask him, in a few words"))
             assertEquals(0, mind.writeMessages)
             assertTrue(compose.onAllNodes(hasTestTag("post")).fetchSemanticsNodes().isEmpty())
         }
@@ -108,10 +110,8 @@ class SmallReleaseDeviceTest {
             say("Read my passport")
             compose.waitFor("say", timeoutMs = 20_000)
             val turn = mind.talkMessages.last()
-            // Rockpool: READ, from his cook: his passport's places, as a ring.
-            assertTrue(turn, turn.contains("(His passport, its places by their opening lines:)"))
-            for (place in listOf("1. The heart.", "2. The other side of the &: people who will meet me in the middle and build with, not at.", "6. WHERE THINGS GO — for an AI working with me."))
-                assertTrue("“$place” in: $turn", turn.contains(place))
+            // Sundial 0.12, Gemma released: what his cook reads is no longer handed her; her turn is the time and his words.
+            assertTrue(turn, !turn.contains("(His passport, its places by their opening lines:)") && turn.endsWith(")\nRead my passport"))
         }
     }
 
