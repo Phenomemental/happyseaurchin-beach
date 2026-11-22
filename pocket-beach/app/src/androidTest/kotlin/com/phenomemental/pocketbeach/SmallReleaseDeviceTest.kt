@@ -23,10 +23,9 @@ import org.junit.runner.RunWith
 
 /**
  * 0.8.1, the small release after 0.8 (spine:pocket-beach 1.1111787136), on
- * the phone with a stand-in for the model. Each fix has its check:
- * - a post set out from his own words with no model call;
- * - "Read my passport" giving her its places;
- * - the standard chat on the screen, opened on once he has hatched.
+ * the phone with a stand-in for the model: the standard chat on the screen,
+ * opened on once he has hatched. Sundial 0.12 took the chat's posts and
+ * reads out (the recipes are held), and their checks with them.
  */
 @RunWith(AndroidJUnit4::class)
 class SmallReleaseDeviceTest {
@@ -70,49 +69,6 @@ class SmallReleaseDeviceTest {
         compose.waitFor("question")
         compose.onNodeWithTag("question").performTextInput(words)
         compose.tap("ask")
-    }
-
-    @Test
-    fun aPostOfHisOwnWordsIsSetOutWithNoModelCall() {
-        hatched()
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Post this message to my room: \"I've had a relaxing weekend.\"")
-            compose.waitFor("post", timeoutMs = 20_000)
-            compose.waitFor("post-message", "I've had a relaxing weekend.")
-            assertEquals("no writing check, no model call for the post", 0, mind.writeMessages)
-            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
-            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your tap."))
-            assertTrue("nothing goes until he taps", wire.sent.isEmpty())
-        }
-    }
-
-    @Test
-    fun withNoWordsOfHisNothingIsSetOutAndWhyShowsAlways() {
-        hatched()
-        app.showDetails = false
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Send a post to my room.")
-            compose.waitFor("over", "Nothing was set out: your words held no message of your own", timeoutMs = 20_000)
-            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
-            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("Ask him, in a few words"))
-            assertEquals(0, mind.writeMessages)
-            assertTrue(compose.onAllNodes(hasTestTag("post")).fetchSemanticsNodes().isEmpty())
-        }
-    }
-
-    @Test
-    fun readMyPassportGivesHerItsPlaces() {
-        hatched()
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Read my passport")
-            compose.waitFor("say", timeoutMs = 20_000)
-            val turn = mind.talkMessages.last()
-            // Sundial 0.12, Gemma released: what his cook reads is no longer handed her; her turn is the time and his words.
-            assertTrue(turn, !turn.contains("(His passport, its places by their opening lines:)") && turn.endsWith(")\nRead my passport"))
-        }
     }
 
     @Test

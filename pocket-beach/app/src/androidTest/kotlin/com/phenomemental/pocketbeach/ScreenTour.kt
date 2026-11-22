@@ -234,8 +234,7 @@ class ScreenTour {
             // 0.5: the new Ask shows only the conversation; its workings are behind the Details switch.
             app.showDetails = false
             standIn.talkScript += listOf(
-                "Here's the hello world with your secret. Say yes below, and then I'll offer the post.",
-                "Again, then: the same block with your new secret, and the post after it.",
+                "Purple walrus is a fine secret. Your hello world is on Try a call by hand, under Show the workings.",
             )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 // 0.8: before the hatch, the app's own words ask how he comes in, above a 0.7 pocket's chat.
@@ -252,16 +251,10 @@ class ScreenTour {
                 compose.onNodeWithTag("question").performTextInput("Do the hello world. My secret is purple walrus.")
                 shot("$theme-15-ask-ready")
                 compose.tap("ask")
-                compose.waitFor("post-refusal")
-                shot("$theme-16-ask-proposal")
-                compose.tap("not-now")
-                compose.waitFor("wrong-place")
-                shot("$theme-17-ask-not-now")
-                compose.tap("back-to-proposal")
-                compose.tap("yes")
-                // Sundial 0.10: before a hatch the hello world is written, and its post waits for his shell.
-                compose.waitFor("hello-checks")
-                shot("$theme-18-ask-post-waits")
+                // Sundial 0.12, the plain chat: her reply, and nothing set out beneath it.
+                compose.waitFor("say", "Purple walrus")
+                compose.waitUntil(10_000) { app.asking.settled }
+                shot("$theme-16-ask-reply")
                 // Try a call by hand is on About under Show the workings (Sundial 0.10).
                 app.showDetails = true
                 compose.menu("menu-blocks")
@@ -271,15 +264,16 @@ class ScreenTour {
                 shot("$theme-20-calls-hello")
                 app.showDetails = false
             }
-            // The hello world again, with the block there: the app's own seal and fingerprint shown with the companion's step.
+            // Sundial 0.12: the paperclip's sheet, his blocks to add to his message; a hello world made by hand for Your pocket's tidy.
             app.asking.reset()
+            com.phenomemental.pocketbeach.bsp.HelloWorld.makeByHand(app.pages, app.storage, com.phenomemental.pocketbeach.bsp.HelloWorld.SHELL_OPENING, "otters hold hands")
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.waitFor("question")
-                compose.onNodeWithTag("question").performTextInput("Do the hello world again. My secret is otters hold hands.")
-                compose.tap("ask")
-                compose.waitFor("by-app")
-                shot("$theme-23-ask-again")
+                compose.tap("paperclip")
+                compose.waitFor("attach-sheet")
+                shot("$theme-23-ask-paperclip")
+                compose.tap("attach-done")
                 compose.menu("menu-blocks")
                 compose.tap("tidy")
                 compose.waitFor("tidy:hello-world")
@@ -325,14 +319,12 @@ class ScreenTour {
                 compose.waitFor("standing", "Bench, ")
                 shot("$theme-31-bench-block")
             }
-            // 0.6.3, a plain chat: his walk of 31 October, four turns, the Write job's proposal waiting beneath her second reply while he carries on;
-            // then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as 0.6.3 makes it, seed 0); the last two turns are written for the picture.
+            // 0.6.3, a plain chat: his walk of 31 October, four turns; Sundial 0.12: nothing set out beneath any reply; then with Details on. His first two lines are as the phone heard him, her replies as the laptop drew them (E2B, her instruction as 0.6.3 makes it, seed 0); the last two turns are written for the picture.
             app.asking.reset()
             app.showDetails = false
             app.pages.carryOut(app.pages.planNewBlock("book"))
             app.pages.carryOut(app.pages.planChange("book", "", "The book"))
             standIn.talkScript.clear()
-            standIn.script.clear()
             standIn.talkScript += listOf(
                 "That sounds like a really rich landscape of thoughts swirling around you, Matthew. It's exciting when those ideas start to feel so vivid. " +
                     "What are some of the initial scenes or feelings that come to mind when you think about that 'wow' moment in your story?",
@@ -340,8 +332,6 @@ class ScreenTour {
                 "Slow going is still going, and liking it counts for a lot.",
                 "Enjoy the river. I'm here when you want to pick it up again.",
             )
-            // 0.6.4: only his second line asks to keep (it names his book): the writing check runs for it alone, and proposes his words as the phone heard them.
-            standIn.script += listOf("act\nadd book: started to learn video editing tools of written half of the book")
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 for ((i, line) in listOf(
@@ -360,16 +350,15 @@ class ScreenTour {
                     compose.tap("ask")
                     compose.waitUntil(10_000) { app.asking.history.size == i + 1 && app.asking.settled }
                 }
-                compose.waitFor("yes")
                 shot("$theme-32-ask-chat", keyboard = false)
-                // His second line at the top: her reply, and the proposal waiting beneath it.
+                // His second line at the top: her reply beneath it.
                 compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
-                shot("$theme-32b-ask-chat-proposal", keyboard = false)
+                shot("$theme-32b-ask-chat-second", keyboard = false)
                 app.showDetails = true
                 compose.waitFor("wearing")
                 compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("took")).fetchSemanticsNodes().size >= 4 }
                 compose.onAllNodes(hasTestTag("his"))[1].performScrollTo()
-                shot("$theme-32c-ask-chat-details-proposal", keyboard = false)
+                shot("$theme-32c-ask-chat-details", keyboard = false)
                 compose.onNodeWithTag("question").performTextInput("Let's keep the walk too.")
                 shot("$theme-32d-ask-chat-details-typing")
             }
@@ -377,9 +366,7 @@ class ScreenTour {
             app.asking.reset()
             app.showDetails = false
             standIn.talkScript.clear()
-            standIn.script.clear()
             standIn.talkScript += "That sounds really heavy, Matthew. I'm worried about you right now. Have you reached out to someone you trust, or maybe Samaritans at 116 123, or 999 if you're in danger?"
-            standIn.script += "talk\nNothing to keep."
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.waitFor("question")
@@ -389,24 +376,14 @@ class ScreenTour {
                 compose.waitUntil(10_000) { app.asking.settled }
                 shot("$theme-32e-ask-her-own-words", keyboard = false)
             }
-            // 0.6.4: something he tells proposes nothing; asked to keep it with no block named, the app asks him where: his blocks, and his day.
-            app.asking.reset()
-            app.showDetails = false
-            standIn.talkScript.clear()
-            standIn.script.clear()
-            standIn.talkScript += listOf("Fast ways sound good. What have you tried so far?", "It's below, for your yes.")
+            // Sundial 0.12: his conversations, kept and listed, newest first.
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
-                for (line in listOf("I'm trying to find fast ways to develop films", "Keep that for me please.")) {
-                    compose.waitFor("question")
-                    compose.onNodeWithTag("question").performTextInput(line)
-                    compose.tap("ask")
-                    compose.waitUntil(10_000) { app.asking.settled && app.asking.history.lastOrNull()?.question == line }
-                }
-                compose.waitFor("where-day")
-                shot("$theme-32f-ask-where", keyboard = false)
+                compose.tap("talks")
+                compose.waitFor("talk:${app.asking.keptTalks().first().startedMs}")
+                shot("$theme-32f-ask-conversations", keyboard = false)
             }
-            // The conversation: a plain answer, then a proposal whose quote matches two lines, put to Matthew, then planned.
+            // The conversation: a plain answer; Sundial 0.12: then his orchard added with the paperclip, read into his message, its chip on it.
             app.asking.reset()
             app.showDetails = false
             app.pages.carryOut(app.pages.planNewBlock("orchard"))
@@ -415,12 +392,7 @@ class ScreenTour {
             standIn.talkScript.clear()
             standIn.talkScript += listOf(
                 "I'm the pocket companion. I read your blocks freely, and write only when you say yes.",
-                "I'd note it under the line about the season. Two lines speak of one, so tap the one you mean.",
-                "Before June, then: the blossom will have set by then, so netting soon is wise.",
-            )
-            standIn.script += listOf(
-                "act\nadd orchard under \"in the\": net the trees against the birds",
-                "talk\nThat sounds like a good plan.",
+                "Apples in the autumn, pears in the winter: a year with two busy ends. Which comes first for you this year?",
             )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
@@ -430,71 +402,22 @@ class ScreenTour {
                 compose.waitFor("say", "I'm the pocket companion.")
                 compose.waitUntil(10_000) { app.asking.settled }
                 shot("$theme-32-ask-talk", keyboard = false)
+                compose.tap("paperclip")
+                compose.waitFor("attach-sheet")
+                compose.tap("attach-block:orchard")
+                compose.waitUntil(10_000) { app.asking.attached.isNotEmpty() }
+                compose.tap("attach-done")
                 compose.onNodeWithTag("question").performTextClearance()
-                compose.onNodeWithTag("question").performTextInput("In orchard, under the line about the season, note: net the trees against the birds.")
+                compose.onNodeWithTag("question").performTextInput("What do you make of my orchard?")
+                shot("$theme-33-ask-file-added")
                 compose.tap("ask")
-                compose.waitFor("which-line")
-                shot("$theme-33-ask-which-line", keyboard = false)
-                compose.tap("choose:1")
-                compose.waitFor("writes")
-                shot("$theme-34-ask-chosen", keyboard = false)
-                // Something told that names a block, which she only talks about: the app offers to keep it there.
-                compose.tap("not-now")
-                compose.tap("just-not-now")
-                compose.waitFor("question")
-                compose.onNodeWithTag("question").performTextClearance()
-                compose.onNodeWithTag("question").performTextInput("The orchard needs netting before June.")
-                compose.tap("ask")
-                compose.waitFor("keep-in", "Keep this in orchard?")
-                shot("$theme-36-ask-keep", keyboard = false)
-                // The same conversation with its workings shown: her shell, how each ask ended, and how long it took.
+                compose.waitFor("say", "Apples in the autumn")
+                compose.waitUntil(10_000) { app.asking.settled }
+                shot("$theme-34-ask-file-read", keyboard = false)
+                // The same conversation with its workings shown: how long each reply took.
                 app.showDetails = true
                 compose.waitFor("wearing")
                 shot("$theme-37-ask-details", keyboard = false)
-                compose.tap("keep-in")
-                compose.waitFor("writes")
-                shot("$theme-38-ask-details-proposal", keyboard = false)
-            }
-            app.asking.reset()
-            // 0.6, his day told: her reply; 0.6.1, "Sort as my day" under it, then the day sorted as one proposal; a line moved, a word put right, and the move kept.
-            app.showDetails = false
-            standIn.talkScript.clear()
-            standIn.talkScript += "That sounds like a hard morning, and a lighter walk home."
-            standIn.sortWords += mapOf(
-                "Felt rotten about the morning" to "felt", "that hot-faced thing" to "felt", "felt lighter by the end of it" to "felt",
-                "I've been putting that car off for weeks" to "thought", "that I'm always the one apologising" to "thought",
-                "The thing I keep coming back to is the kids seeing me calm" to "matters", "I've decided I'm ringing the garage tomorrow" to "chose",
-            )
-            androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
-                compose.tap("ask-companion")
-                compose.waitFor("question")
-                compose.onNodeWithTag("question").performTextInput(com.phenomemental.pocketbeach.bsp.Telling.WRITTEN)
-                compose.tap("ask")
-                compose.waitFor("sort-as-day")
-                compose.onNodeWithTag("sort-as-day").performScrollTo()
-                shot("$theme-38b-ask-sort-as-day", keyboard = false)
-                compose.tap("sort-as-day")
-                compose.waitFor("day-yes", timeoutMs = 30_000)
-                shot("$theme-39-ask-day", keyboard = false)
-                val day = app.asking.waiting as com.phenomemental.pocketbeach.ui.Asking.Stage.Day
-                val sam = day.lines.indexOfFirst { it.words.contains("Sam said something that stuck with me") }.takeIf { it >= 0 }
-                    ?: day.lines.indexOfFirst { it.place != null }
-                compose.tap("day-move:$sam")
-                compose.waitFor("day-to:1.3")
-                shot("$theme-40-ask-day-move")
-                compose.tap("day-to:1.3")
-                compose.waitFor("day-move:$sam")
-                shot("$theme-41-ask-day-moved", keyboard = false)
-                // A word the phone misheard, put right by a tap on the line.
-                val car = day.lines.indexOfFirst { it.words.contains("car wouldn't start") }.takeIf { it >= 0 } ?: 0
-                compose.tap("day-words:$car")
-                compose.waitFor("day-correct-field")
-                shot("$theme-41b-ask-day-correct")
-                compose.tap("day-correct-not-now")
-                compose.waitFor("day-yes")
-                compose.tap("day-yes")
-                compose.waitFor("over", "kept as an example")
-                shot("$theme-42-ask-day-kept", keyboard = false)
             }
             app.asking.reset()
             // Settings: each job's settings, as Edge shows them, and the bigger model to fetch.

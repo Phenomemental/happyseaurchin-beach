@@ -340,7 +340,7 @@ fun RoomScreen(model: Model, nav: Nav) {
                 }
             }, Modifier.fillMaxWidth(), enabled = words.isNotBlank() && !posting, strong = true, tag = "room-post")
             note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("room-note")) }
-            Text(Words.sundial(app, "5.1", "Write a note and tap Post. Or tell her any time, 'post this to my room', and she'll set it ready for you to send."), style = Type.small, color = ink.soft)
+            Text(Words.sundial(app, "5.1", "Write a note and tap Post."), style = Type.small, color = ink.soft)
             val sent = app.notesSent.all
             if (sent.isNotEmpty()) {
                 Label(Words.sundial(app, "5.5", "Notes you have sent"))

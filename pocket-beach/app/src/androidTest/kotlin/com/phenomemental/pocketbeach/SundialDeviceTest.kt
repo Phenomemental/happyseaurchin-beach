@@ -291,7 +291,6 @@ class SundialDeviceTest {
             assertTrue("Keep today, the one way", !none("keep-today"))
             assertTrue("no help line beneath an ordinary day", none("help-line"))
             // Fix 9: every step timed, in the workings.
-            compose.waitFor("step", "his cook walked (TALK)")
             compose.waitFor("step", "her first words on screen, from his message")
             assertTrue(none("unfinished"))
             val turn = mind.talkMessages.last()
@@ -318,7 +317,7 @@ class SundialDeviceTest {
 
     private val glum = "no I'm not focused at all. I'm feeling glum"
 
-    /** Item 1: on E4B her reply is written free; her places line is the app's, taken off before showing; the workings say what she wrote and the shape the split found. */
+    /** Item 1: on E4B her reply is written free; a places line, if she writes one, is never shown. Sundial 0.12: the plain chat reads nothing from it. */
     @Test
     fun onE4BHerReplyIsWrittenFreeAndHerPlacesLineIsTakenOff() {
         Fresh.hatched()
@@ -332,11 +331,6 @@ class SundialDeviceTest {
             compose.waitUntil(20_000) { app.asking.settled }
             assertTrue(shows("say", question))
             assertFalse("her places line is never shown", shows("say", "Places"))
-            compose.waitFor("raw", "Places: what happened, what's ahead")
-            compose.waitFor("places-line", "Her places line, taken off before showing: \u201cPlaces: what happened, what's ahead\u201d")
-            compose.waitFor("shape", "The split found REFLECT")
-            compose.waitFor("placed", "She named what happened, what\u2019s ahead.")
-            assertEquals("REFLECT", app.asking.history.last().shape)
             // No tool call: she was asked once, free. Sundial 0.12, Gemma released: her turn no longer asks for a places line.
             assertEquals(1, mind.talkMessages.size)
             assertFalse(mind.talkMessages.last(), mind.talkMessages.last().contains("Places:"))
@@ -356,7 +350,6 @@ class SundialDeviceTest {
             say(glum)
             compose.waitFor("say", "You're feeling not focused at all", timeoutMs = 20_000)
             compose.waitUntil(20_000) { app.asking.settled }
-            compose.waitFor("places-line", "No places line.")
             say(idChecks)
             compose.waitFor("say", "You've done some of the id checks today", timeoutMs = 20_000)
             compose.waitUntil(20_000) { app.asking.settled }
@@ -391,7 +384,6 @@ class SundialDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             say(whitehead)
             compose.waitFor("say", "the philosopher of process", timeoutMs = 20_000)
-            compose.waitFor("shape", "The split found ANSWER")
             assertEquals(answer, app.asking.history.last().said)
             assertFalse(mind.talkMessages.single(), mind.talkMessages.single().contains("The app:"))
             compose.waitUntil(10_000) { app.asking.settled }

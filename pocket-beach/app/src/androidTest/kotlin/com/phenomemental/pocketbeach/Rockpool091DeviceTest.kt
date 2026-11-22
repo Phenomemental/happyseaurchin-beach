@@ -32,8 +32,7 @@ import org.junit.runner.RunWith
 
 /**
  * Rockpool 0.9.1 (spine:pocket-beach 1.111178716) on the phone, with a
- * stand-in for the model: "Put this in my now:" sets his day out with her
- * reply; his cook brought up place by place, the places he changed kept his
+ * stand-in for the model: his cook brought up place by place, the places he changed kept his
  * with the new sentence offered beside them once; his now opens at today.
  */
 @RunWith(AndroidJUnit4::class)
@@ -84,36 +83,6 @@ class Rockpool091DeviceTest {
     }
 
     private fun none(tag: String) = compose.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().isEmpty()
-
-    @Test
-    fun putThisInMyNowSetsHisDayOutWithHerReply() {
-        hatched()
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Put this in my now: $telling")
-            // His day set out with her reply, no "Sort as my day" between; on E2B each piece waits for him to place it.
-            // Sundial 0.10: on the keep card. 0.10.1 (item 11): his words asking for it do what Keep today does: the one keep card, where it sets it out.
-            compose.waitFor("keep-card", timeoutMs = 20_000)
-            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
-            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("Begin your reply with these words"))
-            assertTrue("the one keep card, Keep today's", app.asking.keepCard != null)
-            // Sundial 0.10.3: a card is only the piece holding the words at cook 9.9; the pieces after it, with none, are no card.
-            compose.waitUntil(5_000) { compose.onAllNodes(hasText("for example I need to update some meeting minutes and print them out", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
-            assertTrue("no Sort as my day: he asked", none("sort-as-day"))
-            compose.tap("day-yes")
-            // His yes writes his day block by block (his now, then his ahead; no P6 from Sundial on): wait for both he is shown.
-            val cards = listOf("for example I need to update some meeting minutes and print them out")
-            compose.waitUntil(20_000) {
-                app.storage.read(Days.NOW)?.contains("phase two proposal") == true &&
-                    app.storage.read(Days.aheadOf(h)).orEmpty().let { a -> cards.all { a.contains(it) } }
-            }
-            val ahead = app.storage.read(Days.aheadOf(h)).orEmpty()
-            for (card in cards) assertTrue(ahead, ahead.contains(card))
-            assertTrue("one intention a card: $ahead", !ahead.contains("these are some of the things") && !ahead.contains("phase two proposal") && !ahead.contains("later today"))
-            assertTrue("no card for a piece without the words at cook 9.9: $ahead", !ahead.contains("and need to update a membership agreement") && !ahead.contains("as well as respond to emails"))
-            assertTrue("the meeting a booking at today", app.storage.read(Days.NOW)!!.contains("and I also have a meeting later today as well."))
-        }
-    }
 
     /** Sundial 0.10: his own TALK line, as a changed 1.1.8.1 would stand, and a line of his old cook 6 he rewrote. */
     private val hisTalk = "Hand her this line: “The app: nothing is being kept or set out from this. Just talk with him, in a sentence or two, and ask one thing back. Speak to him as you, never by his name.”"
