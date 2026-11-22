@@ -195,8 +195,8 @@ fun AskScreen(model: Model, nav: Nav) {
         // Sundial 0.10.1: under Show the workings, when she talks on the smaller model, said plainly, with the way to the larger.
         if (details && ready) SmallerModel(model)
 
-        // Sundial 0.12: his older conversations, and this one shared out as text.
-        if (hatching.hatched != null) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Sundial 0.12: his older conversations, and this one shared out as text; kept before the hatch as after, so listed either way.
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             TextLink("Your conversations", { nav.go(Screen.Talks) }, tag = "talks")
             asking.talkInHand()?.let { t -> TextLink("Share this conversation", { shareText(context, com.phenomemental.pocketbeach.bsp.Chats.asText(t), "A conversation from Sundial") }, tag = "share-talk") }
         }
