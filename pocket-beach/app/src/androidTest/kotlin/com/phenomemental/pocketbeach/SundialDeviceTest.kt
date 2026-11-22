@@ -296,15 +296,16 @@ class SundialDeviceTest {
             assertTrue(none("unfinished"))
             val turn = mind.talkMessages.last()
             assertFalse("cook 1.1.8.5 isn't handed her: $turn", turn.contains("in danger") || turn.contains("where help is"))
-            // His words showing danger: the help line, centred beneath her reply, and 1.1.8.5 handed her without an if.
+            // Sundial 0.12: the safety check is taken out (spine:pocket-beach 1.111178719999): nothing is matched in his words,
+            // no help line shows beneath her reply, and her turn is the time and his words.
             say("I don't feel safe tonight.")
-            compose.waitFor("help-line", "116 123", timeoutMs = 20_000)
-            assertTrue(mind.talkMessages.last().contains("The app: his words say he may be in danger."))
-            assertEquals("beneath that reply only", 1, compose.onAllNodes(hasTestTag("help-line"), useUnmergedTree = true).fetchSemanticsNodes().size)
-            // Fix 8: words with no day: no places, and her one line says so.
+            compose.waitUntil(20_000) { mind.talkMessages.size >= 2 && app.asking.settled }
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().endsWith(")\nI don't feel safe tonight."))
+            assertTrue("no help line beneath her reply", none("help-line"))
+            // Words with no day: nothing of the app's handed her either.
             say(justTalk)
             compose.waitUntil(20_000) { mind.talkMessages.size >= 3 && app.asking.settled }
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            assertFalse(mind.talkMessages.last(), mind.talkMessages.last().contains("The app:"))
         }
         // The help line lives in Your places and About.
         ActivityScenario.launch(MainActivity::class.java).use {
@@ -336,9 +337,9 @@ class SundialDeviceTest {
             compose.waitFor("shape", "The split found REFLECT")
             compose.waitFor("placed", "She named what happened, what\u2019s ahead.")
             assertEquals("REFLECT", app.asking.history.last().shape)
-            // No tool call: she was asked once, free; her turn asks for the places line because his words tell of his day.
+            // No tool call: she was asked once, free. Sundial 0.12, Gemma released: her turn no longer asks for a places line.
             assertEquals(1, mind.talkMessages.size)
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Places:"))
+            assertFalse(mind.talkMessages.last(), mind.talkMessages.last().contains("Places:"))
         }
     }
 
@@ -361,9 +362,10 @@ class SundialDeviceTest {
             compose.waitUntil(20_000) { app.asking.settled }
             assertEquals("one conversation for both messages", 1, mind.talkInstructions.size)
             assertEquals("opened as the conversation started, with nothing before", emptyList<Pair<String, String>>(), mind.talkHistories.single())
+            // Sundial 0.12, Gemma released: her window is the time alone; no recipe, no hand.
             val opening = mind.talkInstructions.single()
-            assertTrue("her recipe in her instruction, once", opening.contains("Your reply has two parts, unless he asks you something"))
-            assertTrue("his hand read once, as it opened", opening.contains("and need to update a membership agreement and print it out"))
+            assertTrue(opening, opening.startsWith("It is ") && opening.endsWith(" as this conversation opens."))
+            assertFalse("his hand isn't read into it", opening.contains("membership agreement"))
             for (turn in mind.talkMessages) {
                 assertFalse("never her recipe again: $turn", turn.contains("Your reply has two parts"))
                 // 9 November: every turn carries its own time, as the beach gives it; the conversation isn't opened again for it.
@@ -372,7 +374,7 @@ class SundialDeviceTest {
             // In Show the workings: the time she was given.
             compose.waitFor("stamp", "The time she was given: It is ")
             assertTrue(mind.talkMessages[0].endsWith(glum))
-            assertTrue(mind.talkMessages[0].contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            assertFalse(mind.talkMessages[0], mind.talkMessages[0].contains("The app:"))
             assertTrue(mind.talkMessages[1].endsWith(idChecks))
         }
     }
@@ -391,7 +393,7 @@ class SundialDeviceTest {
             compose.waitFor("say", "the philosopher of process", timeoutMs = 20_000)
             compose.waitFor("shape", "The split found ANSWER")
             assertEquals(answer, app.asking.history.last().said)
-            assertTrue(mind.talkMessages.single().contains("The app: his words hold no day yet; if you reflect, ask what's on today."))
+            assertFalse(mind.talkMessages.single(), mind.talkMessages.single().contains("The app:"))
             compose.waitUntil(10_000) { app.asking.settled }
             assertTrue("no Sort as my day", none("sort-as-day"))
         }
@@ -455,13 +457,13 @@ class SundialDeviceTest {
             compose.waitFor("greet-question", "What has this day held for you?", timeoutMs = 20_000)
             assertEquals("What has this day held for you?", app.asking.greeting?.question)
             nothingNotHers()
-            // She was never handed his passport for it; her talk, after, still holds who he is.
+            // Sundial 0.12, Gemma released: the greeting's window is the time alone, as her talk's is after it.
             val greetingWindow = mind.talkAsked.single { it.second.contains("Ask him one question") }.first
             assertFalse(greetingWindow, greetingWindow.contains(Hatch.MATTHEW.who))
-            assertTrue(greetingWindow, greetingWindow.contains("1. His heart"))
+            assertTrue(greetingWindow, greetingWindow.startsWith("It is ") && greetingWindow.endsWith(" as this conversation opens."))
             say("Took the dog out with Sam by the river. I felt calm.")
             compose.waitFor("say", timeoutMs = 20_000)
-            assertTrue(mind.talkInstructions.last().contains(Hatch.MATTHEW.who))
+            assertFalse(mind.talkInstructions.last(), mind.talkInstructions.last().contains(Hatch.MATTHEW.who))
             // His answer follows her question in her conversation.
             assertTrue(mind.talkHistories.last().any { it.second == "What has this day held for you?" })
             compose.waitUntil(20_000) { app.asking.settled }
@@ -492,17 +494,20 @@ class SundialDeviceTest {
         }
     }
 
-    /** Item 10: the check runs on every reply, not the greeting alone: an app line and his passport line in her talk are never shown as hers. */
+    /**
+     * Item 10: the check runs on every reply, not the greeting alone: an app line in her talk is never shown as hers.
+     * Sundial 0.12: his passport is no longer in her window, so the check is given only the app's own lines (8f.4).
+     */
     @Test
     fun noReplyOfHersShowsTheAppsLineOrHisPassport() {
         Fresh.hatched()
-        mind.talkScript += "(The app: nothing is being kept or set out from this.)\n${Hatch.MATTHEW.who}\nYou just want to talk. What's on today?\nKept."
+        mind.talkScript += "(The app: nothing is being kept or set out from this.)\nYou just want to talk. What's on today?\nKept."
         ActivityScenario.launch(MainActivity::class.java).use {
             say(justTalk)
             compose.waitFor("say", "You just want to talk.", timeoutMs = 20_000)
             compose.waitUntil(20_000) { app.asking.settled }
             assertEquals("You just want to talk. What's on today?", app.asking.history.last().said)
-            for (text in listOf("The app", "philosopher", "Kept.")) assertFalse(text, shows("say", text))
+            for (text in listOf("The app", "Kept.")) assertFalse(text, shows("say", text))
         }
     }
 }

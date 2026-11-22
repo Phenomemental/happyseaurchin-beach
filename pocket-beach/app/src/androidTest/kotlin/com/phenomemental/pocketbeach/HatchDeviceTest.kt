@@ -85,11 +85,11 @@ class HatchDeviceTest {
             for (n in Hatch.fourOf("ana")) assertTrue("$n made", app.pages.exists(n))
             assertEquals("ana — Ana — a gardener in Leeds.", collectUnderscore(block("passport:ana")))
             assertTrue("a whole copy saved first", File(app.filesDir, Hatching.COPIES).listFiles()!!.any { it.name.startsWith("before-the-hatch-") })
-            // She wears his shell: her window is its nine places.
+            // Sundial 0.12, Gemma released: her window is the time alone, nothing of his shell read into it.
             answer("Hello")
             compose.waitFor("say")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart (his words, about him, not you): “Grow what feeds people.”"))
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("8. ${Hatch.WAY}"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("It is ") && mind.talkInstruction.endsWith(" as this conversation opens."))
+            assertFalse(mind.talkInstruction, mind.talkInstruction.contains("Grow what feeds people."))
         }
     }
 
@@ -118,7 +118,7 @@ class HatchDeviceTest {
             // Keep that, with no block named: set out for his stash, his yes.
             answer("I've been making huge progress with my film making.")
             compose.waitFor("say")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("1. His heart (his words, about him, not you): “${Hatch.MATTHEW.heart}”"))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("It is "))
             answer("Keep that for me please")
             // Rockpool 0.9.1: KEEP, from his cook: no block named, so his stash, for his yes.
             compose.waitFor("yes", timeoutMs = 20_000)
