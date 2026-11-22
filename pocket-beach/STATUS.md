@@ -4,6 +4,80 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.12 is released (22 November): back to the essence:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.12
+- **Install:** `sundial-v0.12.apk` over 0.11. His blocks stay where they
+  are. His cook isn't changed (its recipes are held); of the app's own
+  words, Your room's line and About's line on what leaves the phone are
+  new.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.12 (30), from main at `e4d9372` (PR #272), release run
+  304. APK SHA-256 `8cac9937…`.
+- **Tests:** 362 core, the app's own 21 and all 87 device tests, on every
+  part's own CI run and again in the release run.
+  - **Core:** 16 more than 0.11 (346).
+  - **Device:** 9 fewer than 0.11 (96). The tests of the chat's cards went
+    with the cards; new tests cover the chat with files, the editor, the
+    walker and his text files.
+- **What it is:** the plan of spine:pocket-beach 1.11117871999, parts 1 to 7,
+  each its own PR merged once CI was green (#266 to #272). The skills, the
+  recipes, the lens and the skill run are held for 0.13.
+- **What it builds:**
+  1. **Gemma released** (#266).
+     - Her window is the time alone, before the hatch and after.
+     - Each turn is the time and his words.
+     - Her heart and ways blocks are no longer made or read.
+     - **The safety check is taken out:** no words matched, no help line
+       beneath her reply. It returns as a trial before anyone else uses
+       Sundial (1.111178719999).
+  2. **The app's own welcome, with no model** (#267).
+     - It asks his handle and who he is, then makes or adopts his passport.
+     - No model is loaded before he has hatched.
+     - His three hatch lines are gone, and so is the friend line.
+     - A shell made before keeps its places 6 and 7.2 until he removes
+       them, on his yes, from Your pocket.
+  3. **The plain chat, with the paperclip** (#268).
+     - One column, her reply streamed, his conversations listed and
+       shared out as text.
+     - No card beneath her reply.
+     - The paperclip adds his blocks, his folder's text files and a file
+       from elsewhere. A block goes to her as readable text, never JSON;
+       one too big for her window goes as its root and each part's opening
+       line, and its chip says so.
+     - Text shared in lands as a file added.
+  4. **The editor** (#269).
+     - Your pocket finds a block by its name or words.
+     - A block opens in pscale structure, his words changed in place.
+     - Adding, moving or removing a part waits for his yes, through 0.11's
+       guard.
+     - A new block starts as its opening line.
+     - His folder's text files open as plain text.
+  5. **The walker** (#270).
+     - Any block walked as the beach's bsp prints it.
+     - **Reach the beach,** off by default: the beach's blocks read over
+       HTTPS, read only.
+     - A block copied into his pocket on his yes.
+     - The mind isn't given the walker as a tool (findings section 9).
+  6. **The mind's contract in the core** (#271), and the lean audit
+     (findings section 10).
+  7. **Kept as they are:** the dial, Your days, the pools, his hand, his
+     room, Keep today (#272).
+- **The line in the sand on the laptop, on 0.12's own code** (findings 9f):
+  - **4 of 24.** The recipe tests rest on a line handed to her, and 0.12
+    hands none until the skills come back.
+  - **The greeting** passes but for quote marks.
+  - **Keep today's code passes,** with its sheet in the second person, as
+    the shipped line asks.
+  - **His phone's run comes next.**
+- **Only his phone can confirm:**
+  - her first words on his Pixel (about 2½ s at its rates);
+  - the paperclip and Android's file picker;
+  - Reach the beach over his connection;
+  - the tool's spindle on the Pixel's GPU (section 9: this laptop's GPU
+    couldn't run her).
+
 **Sundial 0.11 is released (21 November): his blocks in a folder he can see:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.11
 - **Install:** `sundial-v0.11.apk` over 0.10.5. His blocks stay where they
