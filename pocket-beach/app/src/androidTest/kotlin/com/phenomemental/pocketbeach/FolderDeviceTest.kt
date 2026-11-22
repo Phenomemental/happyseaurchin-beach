@@ -133,6 +133,21 @@ class FolderDeviceTest {
         }
     }
 
+    /** Sundial 0.12: a text file in his folder is listed in Your pocket, opened as plain text, added with the paperclip; never written. */
+    @Test
+    fun aTextFileInTheFolderOpensAsPlainText() {
+        hatchedWithGarden()
+        moved()
+        File(folder, "notes.txt").writeText("Bring the seeds and the twine.")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.menu("menu-blocks")
+            compose.waitFor("block-file:garden", "garden.json")
+            compose.tap("textfile:notes.txt")
+            compose.waitFor("text-file", "Bring the seeds and the twine.")
+        }
+        assertEquals("Bring the seeds and the twine.", File(folder, "notes.txt").readText())
+    }
+
     @Test
     fun aChangeMadeOutsideIsNoticedAndHisWriteHeldThenPlannedAgain() {
         hatchedWithGarden()
@@ -140,6 +155,7 @@ class FolderDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.menu("menu-blocks")
             compose.tap("block:garden")
+            compose.tap("walk-block")
             compose.tap("line:1")
             compose.tap("change")
             compose.waitFor("line-text")
@@ -165,6 +181,7 @@ class FolderDeviceTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.menu("menu-blocks")
             compose.tap("block:garden")
+            compose.tap("walk-block")
             compose.tap("line:1")
             compose.tap("change")
             compose.waitFor("line-text")

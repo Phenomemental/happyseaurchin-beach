@@ -43,6 +43,10 @@ sealed interface Screen {
     data object Talks : Screen
     /** Sundial 0.12: one older conversation, begun at [startedMs]. */
     data class Talk(val startedMs: Long) : Screen
+    /** Sundial 0.12: one of his blocks in pscale structure, to edit. */
+    data class Editor(val name: String) : Screen
+    /** Sundial 0.12: a text file in his Sundial folder, read as plain text. */
+    data class TextFile(val name: String) : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -74,6 +78,8 @@ class Nav(initial: List<Screen>) {
             is Screen.Day -> listOf("day", s.address).joinToString(SEP)
             Screen.Talks -> "talks"
             is Screen.Talk -> listOf("talk", s.startedMs.toString()).joinToString(SEP)
+            is Screen.Editor -> listOf("editor", s.name).joinToString(SEP)
+            is Screen.TextFile -> listOf("textfile", s.name).joinToString(SEP)
         }
 
         private fun decode(text: String): Screen? {
@@ -95,6 +101,8 @@ class Nav(initial: List<Screen>) {
                 "day" -> Screen.Day(p[1])
                 "talks" -> Screen.Talks
                 "talk" -> p.getOrNull(1)?.toLongOrNull()?.let { Screen.Talk(it) }
+                "editor" -> p.getOrNull(1)?.let { Screen.Editor(it) }
+                "textfile" -> p.getOrNull(1)?.let { Screen.TextFile(it) }
                 else -> null
             }
         }
@@ -168,6 +176,8 @@ fun PocketScreens(app: PocketApp) {
             is Screen.Day -> DayScreen(model, nav, s.address)
             Screen.Talks -> TalksScreen(model, nav)
             is Screen.Talk -> TalkScreen(model, nav, s.startedMs)
+            is Screen.Editor -> EditorScreen(model, nav, s.name)
+            is Screen.TextFile -> TextFileScreen(model, nav, s.name)
             Screen.Room -> RoomScreen(model, nav)
             Screen.Hand -> HandScreen(model, nav)
             Screen.Recipes -> RecipesScreen(model, nav)
