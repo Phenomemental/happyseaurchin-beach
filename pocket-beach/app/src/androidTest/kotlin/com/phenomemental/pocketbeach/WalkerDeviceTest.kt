@@ -72,11 +72,12 @@ class WalkerDeviceTest {
             compose.tap("open-walker")
             walk("orchard")
             compose.waitFor("walk-out", "[disc @ pscale 0")
-            walk("orchard", "1")
+            // A walk to an address, no pscale: the path down to it, as the beach's bsp walks (its children need a pscale).
+            walk("orchard", "1.1")
             compose.waitFor("walk-out", "pick the apples")
             val config = compose.onNodeWithTag("walk-out", useUnmergedTree = true).fetchSemanticsNode().config
             val shown = config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString("") { t -> t.text }
-            assertEquals(Reach.walkPocket(app.pocket, "orchard", "1", null), shown)
+            assertEquals(Reach.walkPocket(app.pocket, "orchard", "1.1", null), shown)
             assertTrue("his walk asks nothing of the beach", asked.isEmpty())
         }
     }
@@ -104,7 +105,7 @@ class WalkerDeviceTest {
             compose.waitFor("walk-out", "The second.")
             assertEquals(listOf(Reach.indexUrl(), Reach.blockUrl("spine:demo")), asked.toList())
             // Walked again at an address: read once, walked here.
-            compose.onNodeWithTag("walk-spindle").performTextInput("2")
+            compose.onNodeWithTag("walk-spindle").performTextInput("2.1")
             compose.tap("walk-go")
             compose.waitFor("walk-out", "Its reason.")
             assertEquals("the block was read once", 2, asked.size)
