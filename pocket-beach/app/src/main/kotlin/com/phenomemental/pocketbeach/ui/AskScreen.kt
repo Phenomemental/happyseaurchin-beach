@@ -299,14 +299,13 @@ private fun HatchCard(model: Model) {
             is Hatching.Step.Welcome -> {
                 Text(Hatching.QUESTIONS[s.asked], style = Type.body, color = ink.ink, modifier = Modifier.testTag("hatch-question"))
                 hatching.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("hatch-note")) }
-                s.answers.forEachIndexed { i, a -> Text("${if (s.adopting != null && i == 0) "Handle" else listOf("Handle", "Who you are", "Your heart", "How you'd be met")[i]}: ${Words.quoted(a, 200)}", style = Type.small, color = ink.soft) }
+                s.answers.forEachIndexed { i, a -> Text("${listOf("Handle", "Who you are")[i]}: ${Words.quoted(a, 200)}", style = Type.small, color = ink.soft) }
                 Text("Write it in the box below and tap Answer.", style = Type.small, color = ink.soft)
                 TextLink("Back", { hatching.back() }, tag = "hatch-back")
             }
             is Hatching.Step.Born -> {
                 Label("Your passport, set out whole")
                 Places(listOf("" to (com.phenomemental.pocketbeach.bsp.collectUnderscore(s.passport) ?: "")) + com.phenomemental.pocketbeach.bsp.HerWindow.linesOf(s.passport))
-                Three(s.three)
                 if (!s.yes) Action("Yes, this is my passport", { hatching.yesToPassport() }, Modifier.fillMaxWidth(), strong = true, tag = "hatch-yes-passport")
                 else {
                     Text("Make my shell writes four new blocks: ${Hatch.fourOf(s.handle).joinToString(", ")}.", style = Type.small, color = ink.soft)
@@ -320,23 +319,14 @@ private fun HatchCard(model: Model) {
                 Places(s.read.places)
                 PaperField(s.handle, { hatching.handle(it) }, "Your handle", modifier = Modifier.fillMaxWidth(), tag = "hatch-handle")
                 hatching.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("hatch-note")) }
-                val three = s.three
-                if (three != null) {
-                    Text(
-                        if (s.handle == Hatch.MATTHEW_HANDLE && three == Hatch.MATTHEW) "Her window's first three places, drafted with Claude from your passport, in your words only:" else "Her window's first three places, in your words:",
-                        style = Type.small, color = ink.soft,
-                    )
-                    Three(three)
-                    TextLink("Write my own three lines", { hatching.ownLines() }, tag = "hatch-own-lines")
-                    Text("Adopting writes four new blocks: ${Hatch.fourOf(s.handle.ifBlank { "…" }).joinToString(", ")}.", style = Type.small, color = ink.soft)
-                    Action("Adopt this as my shell on this phone", { make() }, Modifier.fillMaxWidth(), enabled = Hatch.handleRefusal(s.handle) == null, strong = true, tag = "hatch-adopt")
-                } else Action("Write her window's three lines", { hatching.ownLines() }, Modifier.fillMaxWidth(), tag = "hatch-own-lines")
+                Text("Adopting writes four new blocks: ${Hatch.fourOf(s.handle.ifBlank { "…" }).joinToString(", ")}.", style = Type.small, color = ink.soft)
+                Action("Adopt this as my shell on this phone", { make() }, Modifier.fillMaxWidth(), enabled = Hatch.handleRefusal(s.handle) == null, strong = true, tag = "hatch-adopt")
                 TextLink("Back", { hatching.back() }, tag = "hatch-back")
             }
             Hatching.Step.Working -> Text("Making your shell…", style = Type.body, color = ink.soft, modifier = Modifier.testTag("hatch-working"))
             is Hatching.Step.Done -> Done(
                 "Your shell is made: ${Hatch.shellOf(s.handle)}.",
-                detail = "She wakes holding its nine places now. A whole copy of the pocket was saved first (${s.copy}); the Shore can bring it back." +
+                detail = "A whole copy of the pocket was saved first (${s.copy}); the Shore can bring it back." +
                     (if (s.hidden.isEmpty()) "" else " The app's own blocks moved where she never sees them: ${s.hidden.joinToString(", ")}."),
                 tag = "hatch-done",
             )
@@ -355,15 +345,6 @@ private fun Places(places: List<Pair<String, String>>) {
             Words.quoted(t, 240), style = Type.small, color = ink.ink,
             modifier = Modifier.padding(start = (12 * a.count { it == '.' } + if (a.isEmpty()) 0 else 12).dp),
         )
-    }
-}
-
-/** His three lines for her window, each beside its place. */
-@Composable
-private fun Three(three: Hatch.Three) {
-    val ink = LocalInk.current
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.semantics(mergeDescendants = true) {}.testTag("hatch-three")) {
-        for ((label, line) in Hatch.LABELS.zip(three.lines)) Text("$label: ${Words.quoted(line, 400)}", style = Type.small, color = ink.ink)
     }
 }
 

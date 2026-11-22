@@ -43,8 +43,8 @@ class HatchTest {
         return Triple(routed, pages, hidden)
     }
 
-    private fun hatch(storage: BlockStorage, pages: Pages, three: Hatch.Three = Hatch.MATTHEW): Hatch.Hatched {
-        val planned = Hatch.plan(h, passport, three, pages, storage, nowMs, "Adopted on this phone from passport-$h.json, read at ${isoString(nowMs)}.")
+    private fun hatch(storage: BlockStorage, pages: Pages): Hatch.Hatched {
+        val planned = Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone from passport-$h.json, read at ${isoString(nowMs)}.")
         assertTrue(planned.ok, planned.refusal)
         return Hatch.carryOut(planned, pages, storage)
     }
@@ -103,7 +103,8 @@ class HatchTest {
         val done = hatch(storage, pages)
         val her = block(storage, "shell:$h")[Hatch.HER] as JsObj
         assertEquals(str("Matthew calls me Gemma."), her["1"], "her name, carried from her shell")
-        assertEquals(str(Hatch.WAY), her["2"])
+        assertNull(her["2"], "Sundial 0.12: a new shell has no line on how she talks")
+        assertNull(block(storage, "shell:$h")[Hatch.PLACES], "Sundial 0.12: and no three lines")
         assertEquals("Gemma", HerWindow.herName(h, pages))
         for (n in listOf(HelloWorld.SHELL, HerWindow.HEART, HerWindow.WAYS, Asks.LOG)) {
             assertTrue(n in done.hidden, "$n moved")
@@ -120,10 +121,10 @@ class HatchTest {
     fun aSecondHatchAndATakenNameAreRefused() {
         val (storage, pages, _) = pocket()
         hatch(storage, pages)
-        assertTrue(Hatch.plan("Another", passport, Hatch.MATTHEW, pages, storage, nowMs, "").refusal!!.contains("already holds a shell"))
+        assertTrue(Hatch.plan("Another", passport, pages, storage, nowMs, "").refusal!!.contains("already holds a shell"))
         val (s2, p2, _) = pocket()
         check(p2.carryOut(p2.planNewBlock("stash:$h")).ok)
-        assertTrue(Hatch.plan(h, passport, Hatch.MATTHEW, p2, s2, nowMs, "").refusal!!.contains("stash:$h already stands"))
+        assertTrue(Hatch.plan(h, passport, p2, s2, nowMs, "").refusal!!.contains("stash:$h already stands"))
         assertNotNull(Hatch.handleRefusal("two words"))
         assertNull(Hatch.handleRefusal("Phenomemental"))
     }
@@ -134,7 +135,8 @@ class HatchTest {
         assertEquals("ana — Ana — a gardener in Leeds.", collectUnderscore(p))
         assertTrue(collectUnderscore(p["1"])!!.startsWith("Offers — what ana provides at the pocket on this phone."))
         assertEquals("Ana", Hatch.hisName("Ana — a gardener in Leeds."))
-        assertEquals("Matthew", Hatch.hisName(Hatch.MATTHEW.who))
+        assertEquals("Ana", Hatch.nameFromPassport("ana — Ana — a gardener in Leeds.", "ana"))
+        assertEquals("Matthew", Hatch.nameFromPassport("Matthew Bushell — digital social innovator.", "Phenomemental"))
     }
 
     @Test
@@ -149,19 +151,36 @@ class HatchTest {
         assertTrue(runCatching { Hatch.readPassport("""{"_word": "x"}""") }.exceptionOrNull() is Copies.Unreadable)
     }
 
+    /** Sundial 0.12 (spine:pocket-beach 1.111178719991): her window is the time alone; the window place of his shell is no longer read. */
     @Test
-    fun herWindowIsNinePlacesHisThreeLinesExactlyAsTheyStand() {
+    fun herWindowReleasedIsTheTimeAlone() {
         val (storage, pages, _) = pocket()
         hatch(storage, pages)
+        assertEquals("It is Sunday 1 November 2026, 08:40 as this conversation opens.", HerWindow.released(now))
         val w = HerWindow.window(h, pages, storage, shelf, now)
-        val lines = w.lines()
-        assertEquals("Matthew calls you Gemma: that is your name, just Gemma. You wear his shell on his phone for this conversation; it is his, and these are its places.", lines[0])
-        assertEquals("1. His heart (his words, about him, not you): “One axis with two ends, and nowhere outside it to be sent.”", lines[1])
-        assertEquals("2. Who he is (his words, about him, not you): “Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.”", lines[2])
-        assertEquals("3. How he'd be met (his words, to you): “I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.”", lines[3])
-        assertEquals("8. ${Hatch.WAY}", lines[lines.size - 2])
-        assertEquals("9. ${HerWindow.CAN_DO}", lines.last())
-        for (never in listOf("garden", "shell:", "passport:", "stash:", "pocket-companion", "{{")) assertFalse(w.contains(never), "never “$never” in her window")
+        for (gone in listOf("His heart", "Who he is", "How he'd be met", "as a friend would")) assertFalse(w.contains(gone), "no “$gone” in a new shell's window")
+    }
+
+    /** Sundial 0.12 (1.111178719992): a shell made before keeps its three lines and the friend line until he removes them on his yes. */
+    @Test
+    fun aShellMadeBeforeKeepsItsOldPlacesUntilHeRemovesThem() {
+        val (storage, pages, _) = pocket()
+        hatch(storage, pages)
+        assertEquals(emptyList(), Hatch.oldPlaces(storage), "a new shell has none")
+        assertNull(Hatch.withoutOldPlaces(storage))
+        val shell = Hatch.shellOf(h)
+        val old = (parseJson(storage.read(shell)!!) as JsObj).also {
+            it[Hatch.PLACES] = JsObj.of("_" to str("His places in her window."), "1" to str("One axis with two ends."))
+            (it[Hatch.HER] as JsObj)["2"] = str("The way you talk with him: as a friend would.")
+        }
+        check(pages.carryOut(pages.planWhole(shell, old)).ok)
+        assertEquals(listOf(Hatch.PLACES, "${Hatch.HER}.2"), Hatch.oldPlaces(storage))
+        val seen = pages.seen(shell)
+        val without = Hatch.withoutOldPlaces(storage)!!
+        assertNull(without[Hatch.PLACES])
+        assertEquals(str("Matthew calls me Gemma."), (without[Hatch.HER] as JsObj)["1"], "her name stays")
+        assertTrue(pages.carryOut(pages.planWhole(shell, without), seen).ok)
+        assertEquals(emptyList(), Hatch.oldPlaces(storage))
     }
 
     @Test
@@ -238,7 +257,7 @@ class HatchTest {
         assertEquals("Matthew calls me Robin.", w.plan.text)
         // Unnamed: her name is added at her place.
         val (fresh, freshPages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
-        assertTrue(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, freshPages, fresh, nowMs, "born"), freshPages, fresh).problem == null)
+        assertTrue(Hatch.carryOut(Hatch.plan(h, passport, freshPages, fresh, nowMs, "born"), freshPages, fresh).problem == null)
         val added = Acts.propose("", listOf(Hatch.nameAction(h, freshPages, "Gemma")), fresh, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs).proposal!!.writes.single()
         assertEquals(Kind.ADD, added.plan.kind)
         assertTrue(added.plan.landsAt!!.startsWith("7."), added.plan.landsAt)

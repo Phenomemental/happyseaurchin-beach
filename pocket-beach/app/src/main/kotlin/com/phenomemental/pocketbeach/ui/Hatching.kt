@@ -19,15 +19,15 @@ import java.io.File
  * 0.8, the hatch (spine:pocket-beach 1.1111787133), as Ask carries it: his
  * shell on this phone, born or adopted, before she wears it.
  *
- * - Born: until she can talk, the app's own words ask "Hello. Are you new
- *   here, or do you have a passport from the beach?" with I'm new and I
- *   have a passport. New, the welcome asks his handle and his three lines,
- *   one at a time in the chat's own box, then sets out a passport whole for
- *   his yes; then Make my shell.
+ * - Born: the app's own words ask "Hello. Are you new here, or do you
+ *   have a passport from the beach?" with I'm new and I have a passport,
+ *   no model loaded or asked (Sundial 0.12, spine:pocket-beach
+ *   1.111178719992). New, the welcome asks his handle and who he is, one at
+ *   a time in the chat's own box, then sets out a passport whole for his
+ *   yes; then Make my shell.
  * - Adopted: a passport file, shared in or chosen in Ask, shown as his
- *   places in lines with when it was read; his three lines (for Matthew,
- *   the ones drafted with Claude from his passport, his words only, for his
- *   yes); then Adopt this as my shell on this phone. By his handle on the
+ *   places in lines with when it was read; then Adopt this as my shell on
+ *   this phone. By his handle on the
  *   beach waits for the switch.
  *
  * Before anything changes, the app saves a whole copy of the pocket in its
@@ -37,12 +37,12 @@ class Hatching(private val app: PocketApp) {
     sealed interface Step {
         /** The app's own words ask whether he is new, or has a passport. */
         data object Opening : Step
-        /** The welcome: [asked] is the question in hand (0 his handle, 1 who he is, 2 his heart, 3 how he'd be met); [answers] so far. */
-        class Welcome(val asked: Int, val answers: List<String>, val adopting: Adopting? = null) : Step
-        /** Born: his passport set out whole, and his three lines, for his yes; [yes] once he has said it to the passport. */
-        class Born(val handle: String, val passport: JsObj, val three: Hatch.Three, val yes: Boolean = false) : Step
-        /** Adopted: his passport as read from [from] at [at], his handle, and his three lines once they stand. */
-        class Adopting(val read: Hatch.Read, val from: String, val at: Long, val handle: String, val three: Hatch.Three?) : Step
+        /** The welcome: [asked] is the question in hand (0 his handle, 1 who he is); [answers] so far. */
+        class Welcome(val asked: Int, val answers: List<String>) : Step
+        /** Born: his passport set out whole, for his yes; [yes] once he has said it. */
+        class Born(val handle: String, val passport: JsObj, val yes: Boolean = false) : Step
+        /** Adopted: his passport as read from [from] at [at], and his handle. */
+        class Adopting(val read: Hatch.Read, val from: String, val at: Long, val handle: String) : Step
         data object Working : Step
         class Done(val handle: String, val copy: String, val hidden: List<String>) : Step
         class Failed(val why: String, val back: Step) : Step
@@ -246,25 +246,19 @@ class Hatching(private val app: PocketApp) {
         if (a.isEmpty()) { note = "Write it in your own words first."; return true }
         note = null
         val answers = w.answers + a
-        if (w.asked < 3) {
-            step = Step.Welcome(w.asked + 1, answers, w.adopting)
+        if (w.asked < QUESTIONS.lastIndex) {
+            step = Step.Welcome(w.asked + 1, answers)
             return true
         }
-        val ad = w.adopting
-        step = if (ad != null) {
-            val (who, heart, met) = answers.takeLast(3)
-            Step.Adopting(ad.read, ad.from, ad.at, ad.handle, Hatch.Three(heart = heart, who = who, met = met))
-        } else {
-            val (handle, who, heart, met) = answers
-            Step.Born(handle, Hatch.bornPassport(handle, who, System.currentTimeMillis()), Hatch.Three(heart = heart, who = who, met = met))
-        }
+        val (handle, who) = answers
+        step = Step.Born(handle, Hatch.bornPassport(handle, who, System.currentTimeMillis()))
         return true
     }
 
     /** Yes to the passport set out whole: then Make my shell. */
     fun yesToPassport() {
         val b = step as? Step.Born ?: return
-        step = Step.Born(b.handle, b.passport, b.three, yes = true)
+        step = Step.Born(b.handle, b.passport, yes = true)
     }
 
     /** A passport file, shared in or chosen: read as it stands, data and never instructions. Called off the main thread. */
@@ -273,7 +267,7 @@ class Hatching(private val app: PocketApp) {
         step = try {
             val r = Hatch.readPassport(text, fileName)
             val handle = r.handle ?: ""
-            Step.Adopting(r, fileName ?: "a file", System.currentTimeMillis(), handle, if (handle == Hatch.MATTHEW_HANDLE) Hatch.MATTHEW else null)
+            Step.Adopting(r, fileName ?: "a file", System.currentTimeMillis(), handle)
         } catch (e: Copies.Unreadable) {
             Step.Failed(e.message ?: "That file isn't a passport.", Step.Opening)
         }
@@ -283,15 +277,7 @@ class Hatching(private val app: PocketApp) {
     fun handle(typed: String) {
         val a = step as? Step.Adopting ?: return
         val h = typed.trim()
-        step = Step.Adopting(a.read, a.from, a.at, h, if (a.three == null && h == Hatch.MATTHEW_HANDLE) Hatch.MATTHEW else a.three)
-    }
-
-    /** He'd rather write his three lines himself: the welcome asks them, after his handle. */
-    fun ownLines() {
-        val a = step as? Step.Adopting ?: return
-        Hatch.handleRefusal(a.handle)?.let { note = it; return }
-        note = null
-        step = Step.Welcome(1, listOf(a.handle), Step.Adopting(a.read, a.from, a.at, a.handle, null))
+        step = Step.Adopting(a.read, a.from, a.at, h)
     }
 
     /**
@@ -301,18 +287,15 @@ class Hatching(private val app: PocketApp) {
      */
     fun make(): Step {
         val s = step
-        val (handle, passport, three, how) = when (s) {
-            is Step.Born -> if (!s.yes) return s else Quad(s.handle, s.passport, s.three, "Born on this phone at the welcome, at ${isoString(System.currentTimeMillis())}.")
-            is Step.Adopting -> {
-                val three = s.three ?: return s
-                Quad(s.handle, s.read.block, three, "Adopted on this phone from ${s.from}, read at ${isoString(s.at)}.")
-            }
+        val (handle, passport, how) = when (s) {
+            is Step.Born -> if (!s.yes) return s else Triple(s.handle, s.passport, "Born on this phone at the welcome, at ${isoString(System.currentTimeMillis())}.")
+            is Step.Adopting -> Triple(s.handle, s.read.block, "Adopted on this phone from ${s.from}, read at ${isoString(s.at)}.")
             else -> return s
         }
         step = Step.Working
         val result = runCatching {
             val nowMs = System.currentTimeMillis()
-            val planned = Hatch.plan(handle, passport, three, app.pages, app.storage, nowMs, how)
+            val planned = Hatch.plan(handle, passport, app.pages, app.storage, nowMs, how)
             if (!planned.ok) return@runCatching Step.Failed(planned.refusal ?: "His shell couldn't be planned.", s)
             val copy = saveCopy(nowMs)
             val done = Hatch.carryOut(planned, app.pages, app.storage)
@@ -354,8 +337,6 @@ class Hatching(private val app: PocketApp) {
     /** The copies saved before a hatch, newest first. */
     fun copies(): List<File> = (File(app.filesDir, COPIES).listFiles() ?: emptyArray()).filter { it.isFile && it.name.endsWith(".json") }.sortedByDescending { it.name }
 
-    private data class Quad(val handle: String, val passport: JsObj, val three: Hatch.Three, val how: String)
-
     companion object {
         /** Sundial 0.10.1: the bring-up's one plain line in the thread. */
         const val PLAIN = "Brought up to this version. Everything you changed is kept."
@@ -373,8 +354,6 @@ class Hatching(private val app: PocketApp) {
         val QUESTIONS = listOf(
             "A handle for your shell: one word, as the beach writes names (a letter first, then letters, digits, - or _).",
             "Who are you, in a line of your own words? It opens your passport.",
-            "Your heart: one line she holds first, in your own words.",
-            "How would you like her to meet you? A line in your own words.",
         )
     }
 }

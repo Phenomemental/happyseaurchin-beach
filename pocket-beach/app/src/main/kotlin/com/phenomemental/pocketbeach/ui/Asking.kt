@@ -442,6 +442,8 @@ class Asking(private val app: PocketApp) {
     fun hatchedNow() {
         conversation = Conversation()
         stale += MindJob.values()
+        // Sundial 0.12: her model is loaded only once he has hatched.
+        opened()
     }
 
     /** The app's copies of his blocks as she last saw them: what tells her what's changed since. The app's own file, never a block. */
@@ -493,11 +495,11 @@ class Asking(private val app: PocketApp) {
         scope.launch(Dispatchers.IO) {
             runCatching {
                 talking.withLock {
+                    // Sundial 0.12 (spine:pocket-beach 1.111178719992): the welcome is the app's own; no model is loaded before he has hatched.
+                    if (hatched() == null) return@withLock
                     app.mind.warm(app.running(MindJob.TALK))
-                    // Sundial 0.10.2: once he has hatched, her one conversation opens with his first message (or her greeting): opening one
-                    // is instant, and the engine reads her window at the first message either way. Opened ahead, it read his cook while the
-                    // app could still be bringing it in, and was opened again at his first message. Before the hatch, the Write job's, as before.
-                    if (hatched() == null && together) talker(MindJob.WRITE)
+                    // Sundial 0.10.2: her one conversation opens with his first message (or her greeting): opening one is instant, and the
+                    // engine reads her window at the first message either way.
                 }
             }
         }

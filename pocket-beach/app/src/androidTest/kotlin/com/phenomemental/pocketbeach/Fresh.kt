@@ -110,7 +110,7 @@ object Fresh {
         clear()
         com.phenomemental.pocketbeach.bsp.HelloWorld.makeShell(app.pages, com.phenomemental.pocketbeach.bsp.Talks.SHELL_RECIPE)
         check(app.pages.carryOut(app.pages.planAdd(com.phenomemental.pocketbeach.bsp.HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        val planned = com.phenomemental.pocketbeach.bsp.Hatch.plan(handle, passport, com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
+        val planned = com.phenomemental.pocketbeach.bsp.Hatch.plan(handle, passport, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
         com.phenomemental.pocketbeach.bsp.Hatch.carryOut(planned, app.pages, app.storage).problem?.let { error("The hatch: $it") }
     }
 }

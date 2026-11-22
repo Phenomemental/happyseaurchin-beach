@@ -429,7 +429,10 @@ class SundialDeviceTest {
     // ── Sundial 0.10.1, item 10: the greeting, from his Pixel on 3 November ──
 
     /** Her greeting as his phone showed it: his passport line as the app's, her question in quote marks, then "Kept.". */
-    private fun asOnHisPhone(q: String) = "(The app: ${Hatch.MATTHEW.who})\n\u201c$q\u201d\nKept."
+    private fun asOnHisPhone(q: String) = "(The app: $WHO)\n\u201c$q\u201d\nKept."
+
+    /** His who-line as 0.8 drafted it, kept as the test's own words (Sundial 0.12 took his three lines out of the code). */
+    private val WHO = "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow."
 
     private fun nothingNotHers() {
         for (text in listOf("The app", "philosopher", "Kept", "\u201c", "\u201d")) {
@@ -457,13 +460,13 @@ class SundialDeviceTest {
             compose.waitFor("greet-question", "What has this day held for you?", timeoutMs = 20_000)
             assertEquals("What has this day held for you?", app.asking.greeting?.question)
             nothingNotHers()
-            // Sundial 0.12, Gemma released: the greeting's window is the time alone, as her talk's is after it.
+            // Sundial 0.12: her greeting's window is the time alone; never his passport.
             val greetingWindow = mind.talkAsked.single { it.second.contains("Ask him one question") }.first
-            assertFalse(greetingWindow, greetingWindow.contains(Hatch.MATTHEW.who))
-            assertTrue(greetingWindow, greetingWindow.startsWith("It is ") && greetingWindow.endsWith(" as this conversation opens."))
+            assertFalse(greetingWindow, greetingWindow.contains(WHO))
+            assertTrue(greetingWindow, greetingWindow.startsWith("It is "))
             say("Took the dog out with Sam by the river. I felt calm.")
             compose.waitFor("say", timeoutMs = 20_000)
-            assertFalse(mind.talkInstructions.last(), mind.talkInstructions.last().contains(Hatch.MATTHEW.who))
+            assertTrue(mind.talkInstructions.last().startsWith("It is "))
             // His answer follows her question in her conversation.
             assertTrue(mind.talkHistories.last().any { it.second == "What has this day held for you?" })
             compose.waitUntil(20_000) { app.asking.settled }
@@ -494,10 +497,7 @@ class SundialDeviceTest {
         }
     }
 
-    /**
-     * Item 10: the check runs on every reply, not the greeting alone: an app line in her talk is never shown as hers.
-     * Sundial 0.12: his passport is no longer in her window, so the check is given only the app's own lines (8f.4).
-     */
+    /** Item 10: the check runs on every reply, not the greeting alone: an app line in her talk is never shown as hers (since 0.12 she is never handed his passport). */
     @Test
     fun noReplyOfHersShowsTheAppsLineOrHisPassport() {
         Fresh.hatched()

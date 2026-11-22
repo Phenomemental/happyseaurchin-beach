@@ -19,6 +19,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -73,10 +74,7 @@ class HatchDeviceTest {
             answer("ana")
             compose.waitFor("hatch-question", "Who are you")
             answer("Ana — a gardener in Leeds.")
-            compose.waitFor("hatch-question", "Your heart")
-            answer("Grow what feeds people.")
-            compose.waitFor("hatch-question", "How would you like her to meet you")
-            answer("Plainly, and briefly.")
+            // Sundial 0.12 (spine:pocket-beach 1.111178719992): the welcome asks his handle and who he is, and no more.
             compose.waitFor("hatch-yes-passport")
             assertFalse("nothing written before his yes", app.pages.exists("passport:ana"))
             compose.tap("hatch-yes-passport")
@@ -85,11 +83,12 @@ class HatchDeviceTest {
             for (n in Hatch.fourOf("ana")) assertTrue("$n made", app.pages.exists(n))
             assertEquals("ana — Ana — a gardener in Leeds.", collectUnderscore(block("passport:ana")))
             assertTrue("a whole copy saved first", File(app.filesDir, Hatching.COPIES).listFiles()!!.any { it.name.startsWith("before-the-hatch-") })
-            // Sundial 0.12, Gemma released: her window is the time alone, nothing of his shell read into it.
+            // Sundial 0.12: her window is the time alone; nothing of his shell, no friend line.
             answer("Hello")
             compose.waitFor("say")
-            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("It is ") && mind.talkInstruction.endsWith(" as this conversation opens."))
-            assertFalse(mind.talkInstruction, mind.talkInstruction.contains("Grow what feeds people."))
+            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("It is "))
+            assertFalse(mind.talkInstruction, mind.talkInstruction.contains("His heart") || mind.talkInstruction.contains("as a friend would"))
+            assertNull("a new shell has no three lines", block("shell:ana")[Hatch.PLACES])
         }
     }
 
@@ -106,7 +105,6 @@ class HatchDeviceTest {
             val passport = JsObj.of("_" to str("Matthew Bushell — digital social innovator."), "1" to str("The heart."))
             app.hatching.read(stringify(JsObj.of("passport:Phenomemental" to passport))!!, "passport-Phenomemental.json")
             compose.waitFor("hatch-read-at", "From passport-Phenomemental.json")
-            compose.waitFor("hatch-three", Hatch.MATTHEW.heart)
             compose.tap("hatch-adopt")
             compose.waitFor("hatch-done", "shell:Phenomemental", timeoutMs = 20_000)
             assertEquals(stringify(passport), stringify(block("passport:Phenomemental")))

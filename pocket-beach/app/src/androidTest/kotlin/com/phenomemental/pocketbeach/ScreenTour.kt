@@ -121,7 +121,7 @@ class ScreenTour {
             // Sundial 0.10.1 (item 10): her greeting as his phone had it: his passport line as the app's, her question in quote marks, "Kept.".
             Fresh.ungreeted()
             standIn.talkScript += listOf(
-                "(The app: ${com.phenomemental.pocketbeach.bsp.Hatch.MATTHEW.who})\n\u201cWhat came of ringing Jo about the music?\u201d\nKept.",
+                "(The app: Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.)\n\u201cWhat came of ringing Jo about the music?\u201d\nKept.",
                 "A walk in the cold, and the ideas coming as you went. What stayed with you?",
             )
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {

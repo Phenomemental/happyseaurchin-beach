@@ -62,7 +62,7 @@ class SmallReleaseDeviceTest {
         Fresh.clear()
         HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
         check(app.pages.carryOut(app.pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        val planned = Hatch.plan(Hatch.MATTHEW_HANDLE, passport, Hatch.MATTHEW, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
+        val planned = Hatch.plan(Hatch.MATTHEW_HANDLE, passport, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
         check(Hatch.carryOut(planned, app.pages, app.storage).problem == null)
     }
 

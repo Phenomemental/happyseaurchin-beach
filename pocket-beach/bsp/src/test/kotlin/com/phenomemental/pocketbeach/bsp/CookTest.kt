@@ -35,7 +35,7 @@ class CookTest {
     private fun hatched(): Pair<MemoryStorage, Pages> {
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        val done = Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted for the test."), pages, storage)
+        val done = Hatch.carryOut(Hatch.plan(h, passport, pages, storage, nowMs, "Adopted for the test."), pages, storage)
         check(done.problem == null) { done.problem!! }
         for (b in listOf("films", "book")) check(pages.carryOut(pages.planNewBlock(b)).ok)
         return storage to pages

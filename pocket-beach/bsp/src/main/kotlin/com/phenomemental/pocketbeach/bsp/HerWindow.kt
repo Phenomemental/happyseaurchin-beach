@@ -249,7 +249,6 @@ object HerWindow {
         append(if (name != null) "$his calls you $name: that is your name, just $name. " else "You are $his's companion on his phone. ")
         append("You wear his shell on his phone for this conversation; it is his, and these are its places.")
         val places = mutableListOf<Pair<Int, String>>()
-        for ((i, label) in Hatch.LABELS.withIndex()) point(bySlot["${i + 1}"])?.let { places += (i + 1) to "$label: ${quoted(it)}" }
         if (bySlot["4"]?.let { !it.absent } == true) today(storage, now)?.let { places += 4 to it }
         if (bySlot["5"]?.let { !it.absent } == true) hand(storage, now)?.let { places += 5 to it }
         bySlot["6"]?.takeIf { !it.absent && it.ref != null }?.let { m -> people(mapOf((m.name ?: "people") to memberLines(m)))?.let { places += 6 to it } }
