@@ -1701,3 +1701,67 @@ days** (section 5's 20 to 24, plus this).
       my work?". It checks that the skill for himself brings his passport
       and she uses it without reading him through it.
     - About half a day, inside step 6.
+
+---
+
+## The fit check for 0.12: parts 3 to 5 against the code
+
+Read on 22 November 2026 against spine:pocket-beach 1.111178719993 to
+1.111178719995, before anything was built. **All three fit; nothing stops
+the build.** What each finds, and what is new:
+
+- **Part 3, the plain chat with the paperclip.**
+  - **Today, her conversation lives in `Asking`** (`ui/…/Asking.kt`, 1,878
+    lines). Each of his messages walks his cook (`:655-668`), and her turn
+    is built from what the walk hands her (`HerWindow.turnKept`). The Today
+    screen draws the dial above that thread (`ui/…/AskScreen.kt:80`).
+  - **The plain chat is new and small, beside it.** Her window is the
+    time alone (part 1), each turn is his words, with any files added and
+    the time, and her reply streams through the `Mind` talker as now.
+  - **His messages still wait for Keep today** (`app.waiting.add`,
+    `Asking.kt:651`), so Keep today keeps working as it is.
+  - **What leaves the chat** is the cook's per-message cards (keep, post,
+    make, her name), since the recipes are held. Posting stays on Your
+    room; keeping stays on Keep today and in the editor.
+  - **The paperclip reads files read-only.** FolderStorage reads blocks
+    (`.json`) and by design leaves every other file untouched, so text
+    files are read by a small lister of their own.
+  - **Before he moves his blocks, Documents/Sundial can't be reached.**
+    The paperclip then offers his blocks wherever they're kept, and
+    Android's file picker for a text file.
+  - **Older conversations** are kept inside the app, like his history,
+    one small file each, and listed.
+  - **Text shared in** from other apps arrives today through the share
+    intents (`AndroidManifest.xml`, text and JSON) on the Received screen.
+    It lands in the chat instead, as files added.
+- **Part 4, the editor.**
+  - **Your pocket** (`ui/…/ShoreScreen.kt`) lists his blocks by name and
+    opening line. It has no search yet, so one is added.
+  - **Today, `BlockScreen` shows one place at a time,** and `WriteScreen`
+    changes or adds one line through the guard.
+  - **The editor shows the whole tree,** built from `Pages.position` place
+    by place, which already reads wrapped blocks and their floors.
+  - **His words are changed with `Pages.planChange`; a structure change
+    with `Pages.planWhole`.** Both are carried out with the block as he
+    saw it, so 0.11's guard holds a write when another hand has changed the
+    block (`Pages.carryOut`, `bsp/…/Pages.kt:379-401`).
+  - **Adding a part is `planAdd`. Removing or moving one needs a small
+    helper in the core:** Pages has no plan for either today, so the new
+    block is worked out there and written whole on his yes.
+  - **A new block's root line** is written with `planKeep`, since
+    `planNewBlock` writes the beach's own opening ("garden at pocket.").
+  - **Text files open read-only,** as plain text.
+- **Part 5, the walker.**
+  - **On the phone:** `PocketBsp.call` (`bsp/…/Pocket.kt:18-45`) runs bsp()
+    through the ported Router. Its text is the beach's bsp printed
+    character for character, held so by the golden tests (`formatRead`,
+    `bsp/…/Walker.kt:692`).
+  - **Via the beach:** `HttpsWire` (`app/…/net/HttpsWire.kt`) only posts to
+    a pool, so a read-only GET of one block is added, and its block is
+    walked by the same port over an in-memory copy. The network config
+    already allows only HTTPS.
+  - **A block copied into his folder** is written with `planKeep` on his
+    yes. A name already in his pocket is refused, and named.
+  - **For the mind,** Gemma's engine already passes her a tool (her reply's
+    parts on E4B, `model/Gemma.kt`). A bsp tool would go in the same way,
+    held until part 8 says.
