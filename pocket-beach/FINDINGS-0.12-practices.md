@@ -1765,3 +1765,126 @@ the build.** What each finds, and what is new:
   - **For the mind,** Gemma's engine already passes her a tool (her reply's
     parts on E4B, `model/Gemma.kt`). A bsp tool would go in the same way,
     held until part 8 says.
+
+## 10. The lean audit, after part 6 (read only)
+
+Counted on 22 November 2026 at the commit that moves the mind's contract
+into the core (part 6), by `wc -l` on every Kotlin source file the app and
+the core ship (tests not counted). Nothing was changed for it. Where a file
+does two jobs it is split by its functions, and those splits are marked
+"about".
+
+**In all, 25,336 lines:** the core 14,331, the app 11,005.
+
+| Kind | Core | App | All | Share |
+|---|---:|---:|---:|---:|
+| Storage and bsp | 4,477 | 756 | 5,233 | 21% |
+| Screens | 301 | 6,652 | 6,953 | 27% |
+| The mind's slot | 354 | 1,305 | 1,659 | 7% |
+| Guard and yes card | 683 | 650 | 1,333 | 5% |
+| Converter | 1,983 | 0 | 1,983 | 8% |
+| Generic runner | 2,287 | 1,208 | 3,495 | 14% |
+| Practice written in code | 4,246 | 434 | 4,680 | 18% |
+
+### 10a. Each part, sorted
+
+- **Storage and bsp (5,233).**
+  - Core: the walker and its port (`Walker` 763, `Router` 475, `Beach`
+    424, `Js` 472, `Pocket` 101), storage (`Storage` 332, `FolderStorage`
+    396, `Shelf` 36, `Copies` 92, `Move` 119, `Waiting` 78, `Chats` 102),
+    Pages' reads and plans (about 520 of `Pages` 626), the sundial's
+    addresses (`Clock` 101, `Temporal` 138), the beach's own templates
+    (`Templates` 47), the post and the walker's read (`PoolPost` 129,
+    `Reach` 76) and the golden replay (`Conformance` 76).
+  - App: `PocketApp` 329, `Sundial` 171 (the moments file), `Unsent` 77,
+    `Posts` 24, `MainActivity` 31, `net/HttpsWire` 124.
+- **Screens (6,953).**
+  - App: every screen (`AskScreen` 915, `SundialScreens` 573,
+    `ShoreScreen` 503, `SettingsScreen` 473, `Dial` 349, `CallsScreen` 322,
+    `Folder` 292, `BlockScreen` 289, `Today` 247, `EditorScreen` 230,
+    `Paperclip` 211, `WriteScreen` 172, `ReceivedScreen` 171, `ChatFrame`
+    159, `WalkerScreen` 157, `BenchScreen` 106, `AboutScreen` 105,
+    `Waiting` 90, `Heart` 36), the kit they share (`Parts` 292, `Theme` 110,
+    `Words` 90, `App` 208), the voice (`Speech` 352) and the welcome's
+    screen (about 200 of `Hatching` 359).
+  - Core: what the dial draws (`Sun` 134, `HeartInk` 167).
+- **The mind's slot (1,659).**
+  - Core (part 6): `Mind` 157, `Jobs` 97, `Pace` 80, `ModelState` 20.
+  - App: Gemma's engine (`Gemma` 586, `OneEngine` 187), the model's file
+    (`ModelStore` 191, `FetchService` 91, `net/ModelFetch` 220) and how the
+    settings are kept (`JobPrefs` 30).
+- **Guard and yes card (1,333).**
+  - Core: the Write job's proposals (`Asks` 577) and Pages' guard (about
+    106: `carryOut`, `seen`, `changedOutside` and the dry run's checks).
+  - App: the cards in `Asking` (about 650). **About 550 of them are no
+    longer reached from the chat** since part 3: the keep, post, make, name,
+    ring and Sort-as-my-day cards and the Write job's queue. The editor's
+    yes card is in its screen.
+- **Converter (1,983).** `Talks` 405 (her answer's route words), `Mark` 390
+  (Sundial's day text, from mark.js), `Acts` 347 (the action language),
+  `Keep` 346 (a day's line in Sundial's form), `Landing` 302 (a told day
+  as one proposal), `HerReply` 193 (her reply's parts).
+- **Generic runner (3,495).**
+  - Core: the cook's walker (about 1,300 of `Cook` 1,800), the shell put on
+    (`Bundle` 444, `Shells` 113, `Seat` 130) and the bench's runner (about
+    300 of `Bench` 599).
+  - App: the conversation (about 900 of `Asking` 1,825: the turn, her
+    talker, opening and closing, the transcript) and the bench's
+    (`Benching` 308).
+- **Practice written in code (4,680).** Each in 10b.
+
+### 10b. Each practice in code, and the block it would become
+
+1. **Sorting a told day** (`Telling` 860): the pieces cut, each placed
+   among the six, the rungs. **Becomes** a recipe block, a skill held for
+   0.13, its cues and rungs in his cook at 6.
+2. **Her window** (`HerWindow` 654): since part 1 the window it built is
+   unread. The time and the turn's stamp stay as the runner's; the rest
+   **becomes** his shell's manifest (0.13), naming the part a skill brings
+   at the moment it's needed.
+3. **How she talks** (`Talking` 441): the friend line, MEET, KEEPING, her
+   name. **Becomes** nothing: ways:pocket-companion is no longer made. The
+   filter on what she shows (`Talking.Shown`) is a guard and stays code.
+4. **The hatch** (`Hatch` 429): his four blocks from the beach's
+   templates. **Becomes** the beach's shell-genome, read as the recipe, with
+   the templates it already copies byte for byte.
+5. **His days and his hand** (`Days` 478): his now as one clock, the hand's
+   piles by rung. **Becomes** function:ahead, read as the rule, the piles
+   named by its places.
+6. **The cook's verbs** (about 500 of `Cook` 1,800): what KEEP, POST, MAKE,
+   DAY, READ and RING each do once a step names them. **Becomes** skill
+   blocks beneath cook 6; the cook already holds the steps.
+7. **The gate** (`Keeping` 245): which words ask to keep, change, make or
+   post. **Becomes** cook 9's cue lists, his to change, as several already
+   are.
+8. **The bench's fixed asks** (about 300 of `Bench` 599): the telling test,
+   the asks and their marks. **Becomes** a bench block of asks and marks.
+9. **The hello world** (`HelloWorld` 192). **Becomes** a recipe block (its
+   recipe is already text, `Talks.SHELL_RECIPE`).
+10. **Time words** (`Whens` 95): the words already come from a block he can
+    change; the arithmetic stays code. **Becomes** nothing more.
+11. **Her places, asked once** (`Placing` 53). **Becomes** a skill block,
+    held.
+12. **The welcome's two questions** (about 159 of `Hatching` 359).
+    **Becomes** places in words:sundial, beside the app's other words.
+13. **The greeting and Keep today's flow** (about 275 of `Asking`): his
+    tomorrow line, then her one question; the keep card's steps. **Becomes**
+    kernel steps (GREET and KEEP already stand there), their wording in
+    words:sundial.
+
+### 10c. What it says
+
+- **Practice in code is the second largest kind after screens:** 4,680
+  lines, about one line in five. Its largest parts (Telling, the cook's
+  verbs, HerWindow) are the ones 0.12 stopped reaching from the chat.
+- **At least about 1,000 lines are no longer reached** from what 0.12
+  shows: about 550 of the cards in `Asking`, the window `HerWindow` built
+  before part 1 (about 300) and the friend lines in `Talking` (about 150).
+  `Telling` and `Landing` are still reached by the bench and by Keep
+  today's sorting, and Keep today still walks the cook, so the cook's
+  runner and its DAY verb stay in use.
+- **The storage and the walker, the mind's slot and the screens are what an
+  app of skills keeps** (13,845 lines, 55%). Moving the practices into
+  blocks would leave the runner to read them and the converters to carry
+  their results.
+- Nothing is removed here: the audit is read only, as asked.
