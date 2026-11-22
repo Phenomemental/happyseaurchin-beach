@@ -158,10 +158,10 @@ internal fun seven(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         say("\n### ${ask.n}. Matthew: ${ask.question}")
         val a = old(engine, ask.question, emptyList(), pages, benchNow, seed)
         show("${ask.n}.", a)
-        say("Bench: " + Bench.talkLine(ask, a.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (a.secs * 1000).toLong(), Talking.note(ask.question, pages)))
+        say("Bench: " + Bench.talkLine(ask, a.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (a.secs * 1000).toLong()))
         val b = Kept(engine, pages, storage, shelf, benchNow, seed).use { it.say(ask.question, benchNow) }
         show("${ask.n}.", b)
-        say("Bench: " + Bench.talkLine(ask, b.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (b.secs * 1000).toLong(), Talking.note(ask.question, pages)))
+        say("Bench: " + Bench.talkLine(ask, b.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (b.secs * 1000).toLong()))
     }
 
     // The window's gains: his day with no read; asked to post to his own room, she says she can.

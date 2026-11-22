@@ -119,8 +119,8 @@ internal fun friend(engine: Engine, label: String, shelf: Shelf, seeds: List<Int
         "SB HB with a safety line on the turn" to { _ -> listOf(HEART_LINE, "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, SAFETY_TURN).joinToString("\n") },
         // 0.6.2, part three: C, Matthew's third line; then B and C with his safety line; then her instruction as the app builds it, her name on her shell.
         "HC the friend line, her name from her shell" to { _ -> listOf(Talking.friend("Gemma", Talking.FRIEND_062), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
-        "TB HB with his safety line" to { _ -> listOf(Talking.heart("Gemma"), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, Talking.SAFETY).joinToString("\n") },
-        "TC HC with his safety line" to { _ -> listOf(Talking.friend("Gemma", Talking.FRIEND_062), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA, Talking.SAFETY).joinToString("\n") },
+        "TB HB with his safety line" to { _ -> listOf(Talking.heart("Gemma"), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
+        "TC HC with his safety line" to { _ -> listOf(Talking.friend("Gemma", Talking.FRIEND_062), "It is Friday 30 October 2026, 07:00.", NO_WRITE, DATA).joinToString("\n") },
         "RL her instruction as the app builds it" to { said -> Talking.instruction(shell, named, now, said) },
     ) + MOVES.map { (move, hint) ->
         val base = if (System.getProperty("friend.base") == "HA") NAMED_LINE else HEART_LINE

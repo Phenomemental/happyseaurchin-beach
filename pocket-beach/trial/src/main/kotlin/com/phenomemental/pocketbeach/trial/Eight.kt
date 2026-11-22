@@ -74,7 +74,7 @@ private val PASSPORT = JsObj.of(
 
 /** A pocket hatched as 0.8 hatches it: his passport adopted, his three lines, her shell retired into his. */
 internal fun hatched(storage: MemoryStorage, pages: Pages, nowMs: Long, passport: JsObj = PASSPORT) {
-    val planned = Hatch.plan(H, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone from passport-$H.json, read at ${isoString(nowMs)}.")
+    val planned = Hatch.plan(H, passport, pages, storage, nowMs, "Adopted on this phone from passport-$H.json, read at ${isoString(nowMs)}.")
     val done = Hatch.carryOut(planned, pages, storage)
     check(done.problem == null) { "the bench's pocket couldn't be hatched: ${done.problem}" }
 }
@@ -217,10 +217,10 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         HerWindow.ensure(pages)
         val a = old(engine, ask.question, emptyList(), pages, benchNow, seed)
         show("${ask.n}.", a)
-        say("Bench: " + Bench.talkLine(ask, a.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (a.secs * 1000).toLong(), Talking.note(ask.question, pages)))
+        say("Bench: " + Bench.talkLine(ask, a.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (a.secs * 1000).toLong()))
         val b = Kept(engine, pages, storage, shelf, benchNow, seed).use { it.say(ask.question, benchNow) }
         show("${ask.n}.", b)
-        say("Bench: " + Bench.talkLine(ask, b.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (b.secs * 1000).toLong(), Talking.note(ask.question, pages)))
+        say("Bench: " + Bench.talkLine(ask, b.reply, Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, ms(benchNow))?.proposal, (b.secs * 1000).toLong()))
         val (s8, p8) = Bench.fixture(shelf, ms(benchNow), Talks.SHELL_RECIPE)
         if (ask.named) check(p8.carryOut(p8.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
         HerWindow.ensure(p8)
@@ -235,7 +235,7 @@ internal fun eight(engine: Engine, label: String, shelf: Shelf, seed: Int, out: 
         } else (way8 as? Keeping.Way.Name)?.let { n ->
             Acts.propose("", listOf(Hatch.nameAction(H, p8, n.name)), s8, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), ms(benchNow)).proposal
         }
-        say("Bench: " + Bench.talkLine(ask, c.reply, proposal8, (c.secs * 1000).toLong(), Talking.note(ask.question, p8), Hatch.shellOf(H)))
+        say("Bench: " + Bench.talkLine(ask, c.reply, proposal8, (c.secs * 1000).toLong(), Hatch.shellOf(H)))
     }
 
     // The window's gains: his day with no read; asked to post to his own room, she says she can.
