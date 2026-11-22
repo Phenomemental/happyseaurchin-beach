@@ -7,10 +7,11 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Decision 18 and the model's download: two narrow ways out and nothing else.
- * Only net/HttpsWire.kt (the one post, and whether the phone is connected, so
- * a kept post's "Post now" waits for a connection) and net/ModelFetch.kt (the
- * model's one download) name a network API; nothing hands Android's download
+ * Decision 18 and the model's download: narrow ways out and nothing else.
+ * Only net/HttpsWire.kt (the one post, Sundial 0.12's read of the beach for
+ * the walker, and whether the phone is connected, so a kept post's "Post now"
+ * waits for a connection) and net/ModelFetch.kt (the model's one download)
+ * name a network API; nothing hands Android's download
  * manager anything; and the network security config trusts the beach and the
  * download's hosts, and no others.
  */
@@ -48,13 +49,25 @@ class OneWayOutTest {
         assertEquals("one connection opened", 1, Regex("""openConnection\(""").findAll(fetch).count())
     }
 
+    /**
+     * The post goes only to a pool; Sundial 0.12's walker reads only the
+     * beach's surface (a block of it, or its index), and only while Reach the
+     * beach is on (spine:pocket-beach 1.111178719995). Two connections, each
+     * fenced, neither following a redirect.
+     */
     @Test
-    fun theWireGoesOnlyToThePool() {
+    fun theWireGoesOnlyToThePoolAndReadsOnlyTheBeach() {
         val wire = read("net/HttpsWire.kt")
         assertTrue(wire.contains("PoolPost.BEACH + \"/.well-known/pscale-beach?block=pool:\""))
         assertTrue(wire.contains("require(url.startsWith(PREFIX)"))
-        assertTrue(wire.contains("instanceFollowRedirects = false"))
-        assertEquals("one connection opened", 1, Regex("""openConnection\(""").findAll(wire).count())
+        assertTrue("the walker's read, fenced to the beach", wire.contains("require(com.phenomemental.pocketbeach.bsp.Reach.readable(url))"))
+        assertEquals("never a redirect", 2, Regex("""instanceFollowRedirects = false""").findAll(wire).count())
+        assertEquals("two connections opened: the post and the read", 2, Regex("""openConnection\(""").findAll(wire).count())
+        assertTrue(wire.contains("requestMethod = \"GET\""))
+        val app = read("PocketApp.kt")
+        assertTrue("the read is the walker's one way to the beach", app.contains("BeachReader { HttpsWire.get(it) }"))
+        val walker = read("ui/WalkerScreen.kt")
+        assertTrue("asked only while Reach the beach is on", walker.contains("check(app.reachBeach)"))
     }
 
     @Test

@@ -70,6 +70,9 @@ object Fresh {
         // 0.7: the app's copies of what she last saw.
         File(app.filesDir, com.phenomemental.pocketbeach.ui.Asking.COPIES).delete()
         app.lastSavedMs = null
+        // Sundial 0.12: Reach the beach off, as on a fresh phone; the conversations kept inside the app forgotten.
+        app.reachBeach = false
+        File(app.filesDir, com.phenomemental.pocketbeach.ui.Asking.TALKS).deleteRecursively()
         app.asking.reset()
         app.benching.reset()
         app.inbox = null

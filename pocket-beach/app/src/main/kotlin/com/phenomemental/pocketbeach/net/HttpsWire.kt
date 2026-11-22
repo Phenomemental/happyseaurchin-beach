@@ -16,7 +16,8 @@ import javax.net.ssl.HttpsURLConnection
 
 /**
  * The app's one way out (decision 18): one POST of one message to a pool on
- * the beach, made only after Matthew has tapped to confirm it. It takes no
+ * the beach, made only after Matthew has tapped to confirm it. Sundial 0.12
+ * adds one read, [get], for the walker, only while Reach the beach is on. It takes no
  * address but the beach's pool append, follows no redirect, keeps no cookie
  * or cache, and reads back at most a short answer. Plain HTTP is refused
  * everywhere. The model's one download (`ModelFetch.kt`) is the only other
@@ -55,6 +56,42 @@ object HttpsWire : Wire {
                 val buffer = ByteArray(8192)
                 while (out.size() < MOST) {
                     val n = input.read(buffer, 0, minOf(buffer.size, MOST - out.size()))
+                    if (n < 0) break
+                    out.write(buffer, 0, n)
+                }
+                out.toString(Charsets.UTF_8.name())
+            }.orEmpty()
+            return WireReply(status, text)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    /** At most this much of a block read from the beach (Sundial 0.12's walker). */
+    private const val MOST_READ = 4 * 1024 * 1024
+
+    /**
+     * Sundial 0.12, the walker: one GET of a block of the beach, or of its
+     * index, read only, while Reach the beach is on. Nothing else is asked:
+     * no other address, no redirect, no cookie or cache.
+     */
+    fun get(url: String): WireReply {
+        require(com.phenomemental.pocketbeach.bsp.Reach.readable(url)) { "The walker reads only the beach's blocks." }
+        val connection = URI(url).toURL().openConnection() as HttpsURLConnection
+        try {
+            connection.requestMethod = "GET"
+            connection.instanceFollowRedirects = false
+            connection.useCaches = false
+            connection.connectTimeout = 15_000
+            connection.readTimeout = 20_000
+            connection.setRequestProperty("Accept", "application/json")
+            val status = connection.responseCode
+            val stream = if (status >= 400) connection.errorStream else connection.inputStream
+            val text = stream?.use { input ->
+                val out = java.io.ByteArrayOutputStream()
+                val buffer = ByteArray(8192)
+                while (out.size() < MOST_READ) {
+                    val n = input.read(buffer, 0, minOf(buffer.size, MOST_READ - out.size()))
                     if (n < 0) break
                     out.write(buffer, 0, n)
                 }

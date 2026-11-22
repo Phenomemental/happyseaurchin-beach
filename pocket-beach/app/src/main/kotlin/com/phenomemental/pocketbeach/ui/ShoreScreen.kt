@@ -104,8 +104,10 @@ fun ShoreScreen(model: Model, nav: Nav) {
         TextLink("Ask the companion", { nav.go(Screen.Ask) }, style = Type.body, tag = "ask-companion")
 
         val loaded = shore ?: return@Page
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Label("Your blocks", Modifier.weight(1f))
+            // Sundial 0.12: the walker, his blocks and (with Reach the beach on) the beach's.
+            TextLink("Walk a block", { nav.go(Screen.Walker(false, "")) }, tag = "open-walker")
             TextLink("Make a new block", { naming = true }, tag = "new-block")
         }
         val all = loaded.mine
