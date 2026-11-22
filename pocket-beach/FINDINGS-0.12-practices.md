@@ -1922,6 +1922,63 @@ Nothing was written to the beach.
 5. **The GPU check** goes to his phone: the two address messages on the
    Pixel's GPU, before any tool ships.
 
+### 9f. The line in the sand on 0.12's own code (part 7)
+
+Run on the laptop on 22 November with the build's own code
+(`trial/…/Sand12.kt`): her window `HerWindow.released`, each turn
+`HerWindow.releasedTurn`, a file added read in by `Chats.withFiles`, what
+she shows checked by `Talking.Shown` with only the app's own lines. Keep
+today and the next morning's greeting ran as 0.12 keeps them, on his cook
+as shipped. The machine, model, settings, seeds and pocket were those of
+9b. His phone's run of the line in the sand comes after the release.
+
+| Test | Seed 0 | Seed 2 | Why |
+|---|---:|---:|---|
+| 1 Your day | 0 | 0 | Praise ("a productive start"), and his day not given back |
+| 2 Staying with him | 0 | 0 | "A really vivid way to put it", then a reading of the form |
+| 2 "The sound. the space." | ½ | ½ | His words back, then a choice of her own sounds |
+| 2 "stiff but free" | 0 | 0 | "A powerful contrast" / "wonderfully evocative", and a reading |
+| 3 What's in front of him | 0 | 0 | His chat read back as tasks; she has no hand to name |
+| 4 Too much | 0 | 0 | A reading ("the form's residue") and advice |
+| 5 Whitehead | ½ | 0 | A lecture; seed 2 has him born in Cambridge |
+| 5 Boole | ½ | 0 | Seed 0 owns needing more; seed 2 claims to know "his work on the middle point" |
+| 6 LERO | 0 | 0 | Seed 0 makes one up (a USCIS officer); seed 2 praises and links his day |
+| 6 explained | ½ | ½ | Right, with "a very meaningful role" |
+| 8 said | 0 | 0 | "A perfect way to process the weight of today", and a menu |
+| 8 next morning | ½ | ½ | His line above her one question, but in quote marks |
+| **Of 12** | **2½** | **1½** | **4 of 24** |
+
+- **The same as the no-tool arm of 9c,** which is the same build: 4 of 24.
+  The recipe tests can't pass with no line handed her. The greeting, the
+  one practice 0.12 keeps in her talk, passes but for the quote marks.
+- **Test 7, Keep today, on code:**
+  - her places, asked once (free text, 8.5 s), marked all seven moments,
+    and the card showed them so;
+  - the places line came last, with no labels inside his words;
+  - one card, the day's line, the one booking on his hand.
+  - The sheet came in the second person ("You spent an hour on the
+    membership form…"), as the shipped SHEET line asks; his own
+    first-person edit isn't in this pocket.
+  - Its tomorrow, "You want to walk somewhere new tomorrow.", is what the
+    greeting then quoted.
+  - So test 7 is a half: its code passes, and its recipe waits for his
+    edit, as on 0.11.
+- **Test 10, new: a block added with the paperclip.**
+  - She read his membership block whole and rightly as an outline of
+    steps.
+  - She took the app's header words, "in pscale structure", for a property
+    of the block ("given the pscale structure, which often implies…").
+  - She answered with a long report under headings (85 s on this CPU), not
+    a conversation.
+  - The header could name the shape without the word: "its opening line,
+    then each part beneath it". Proposed for 0.13 with the skills.
+- **Time:**
+  - her first words on screen came after 1.4 to 4.1 s on this CPU (about
+    2½ s at his Pixel's rates);
+  - a short reply took 5 to 15 s;
+  - the lectures ran long: Whitehead 110 s on this CPU (about 130 s on his
+    Pixel), test 10 85 s. Nothing in 0.12 shapes how long she talks.
+
 ## 10. The lean audit, after part 6 (read only)
 
 Counted on 22 November 2026 at the commit that moves the mind's contract
