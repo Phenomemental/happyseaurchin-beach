@@ -265,7 +265,6 @@ class CompanionTest {
             compose.waitForIdle()
             Thread.sleep(1500)
             assertTrue("coming back online sends nothing", wire.sent.isEmpty())
-            compose.menu("menu-blocks")
             compose.waitFor("waiting")
             compose.tap("post-now")
             compose.waitFor("posted-later", "Posted to your pool at entry 7")

@@ -255,7 +255,9 @@ class ScreenTour {
                 compose.waitFor("say", "Purple walrus")
                 compose.waitUntil(10_000) { app.asking.settled }
                 shot("$theme-16-ask-reply")
-                // Try a call by hand is on About under Show the workings (Sundial 0.10).
+                // Try a call by hand is on About under Show the workings (Sundial 0.10). Sundial 0.12: the chat makes no hello world,
+                // so the tour makes one by hand, as the test screen does, for the call and for Your pocket's tidy after.
+                com.phenomemental.pocketbeach.bsp.HelloWorld.makeByHand(app.pages, app.storage, com.phenomemental.pocketbeach.bsp.HelloWorld.SHELL_OPENING, "otters hold hands")
                 app.showDetails = true
                 compose.menu("menu-blocks")
                 compose.tap("about")
@@ -264,9 +266,8 @@ class ScreenTour {
                 shot("$theme-20-calls-hello")
                 app.showDetails = false
             }
-            // Sundial 0.12: the paperclip's sheet, his blocks to add to his message; a hello world made by hand for Your pocket's tidy.
+            // Sundial 0.12: the paperclip's sheet, his blocks to add to his message.
             app.asking.reset()
-            com.phenomemental.pocketbeach.bsp.HelloWorld.makeByHand(app.pages, app.storage, com.phenomemental.pocketbeach.bsp.HelloWorld.SHELL_OPENING, "otters hold hands")
             androidx.test.core.app.ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("ask-companion")
                 compose.waitFor("question")

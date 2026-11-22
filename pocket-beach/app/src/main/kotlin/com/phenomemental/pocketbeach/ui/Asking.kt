@@ -1674,6 +1674,8 @@ class Asking(private val app: PocketApp) {
     fun reset() {
         job?.cancel()
         writer?.cancel()
+        // Sundial 0.12: the files waiting for his next message go with the Ask in hand.
+        attached.clear()
         writes.clear()
         writingNow = null
         yielded = false
