@@ -1766,6 +1766,162 @@ the build.** What each finds, and what is new:
     parts on E4B, `model/Gemma.kt`). A bsp tool would go in the same way,
     held until part 8 says.
 
+## 9. Part 8: her reading his blocks with the real bsp, thinking off and on
+
+The laptop trial of spine:pocket-beach 1.111178719998, with its revision of
+22 November 10:50: the real bsp() as a native tool, thinking off against
+on, the whetstone's opening given or not, constrained decoding off against
+on, and whether the spindle she sends arrives intact. Run on 22 November.
+Nothing was written to the beach.
+
+### 9a. The verdict
+
+- **When his words name a block or an address, she walks and reads it
+  right.** Of ten such messages per arm, thinking off answered six from the
+  right walk and thinking on eight. Every spindle she sent arrived as he
+  wrote it: "2.2" twenty times and "1.111178719993" twenty times. None
+  arrived as a number, and none was altered or malformed on the way.
+- **When nothing needs a walk, the tool makes her worse.** On the line in
+  the sand's twelve messages she walked four or five times unasked, taking
+  his words ("sound. the space.") for a block's name, and talk of blocks and
+  bsp showed in 6 to 8 of 24 replies (none without the tool). Her score fell
+  from 4 of 24 without the tool to 3 with it.
+- **The whetstone's opening does most harm.** Given it, she read his day
+  through the beach (keys, composition, pscale) in 15 to 20 of 24 replies:
+  2½ and 4 of 24.
+- **Thinking on is a little better and far slower.** With the tool, 5 of 24
+  against 3; on the walks, 8 of 10 right against 6. Almost all the gain is
+  in staying with his short answers. It fixed none of what sinks the run,
+  and it takes about three times as long: a median 63 s a reply against 19
+  on this CPU. On his Pixel her first word would wait behind her thinking
+  (her first reply wrote about 180 tokens of it: about 23 s at 7.9 a second).
+  Seven of the eight replies cut off at 1,024 tokens were thinking on.
+- **Constrained decoding changed nothing.** With it on, she wrote the same
+  calls and the same words as with it off, at both seeds: her calls were
+  already well formed. One address came in a form the walker refuses,
+  "2._" (thinking on, with the whetstone), and the walker refused it.
+- **The GPU check waits for his Pixel.** This machine's GPU couldn't run
+  her (the engine couldn't be made on it), so the spindle's arrival is
+  checked here on the CPU alone. A Gemma 4 E2B test on a Mali GPU reported
+  numbers corrupted in JSON; the spindle is sent as text in the tool's
+  schema, and on the CPU it arrived intact every time.
+- **So part 5's tool stays off in 0.12.** She uses it well only when his
+  words call for it, and an always-present tool costs the chat. In 0.13
+  the walk is better handed as a skill: offered when his words name a block
+  of his or an address, thinking off, no whetstone in her window, and its
+  result given her as readable text, never JSON (the tool's "whole block"
+  shape handed her raw JSON, which she twice read back to him).
+- **And the line in the sand without its recipes:** with no tool (her
+  window the time alone, as 0.12 builds it), she scored 4 of 24. Section 8's
+  arms, handed a skill a turn, scored 16½ to 17. The recipe tests rest on a
+  line handed to her; until the skills come back (0.13), the released chat
+  can't meet them. 9f gives the run on 0.12's own code.
+
+### 9b. How it was run
+
+- **Machine and settings:** this machine's CPU (4 cores), LiteRT-LM
+  0.18.1, Gemma 4 E4B, a context of 8,192; his Talk settings, temperature
+  0.70, top-k 64, top-p 0.95, replies up to 1,024 tokens; seeds 0 and 2. The
+  same pocket and turns as sections 7 and 8.
+- **Her window,** in every arm: the time alone ("It is Wednesday 4
+  November 2026, 09:54 as this conversation opens."), as part 1 has it;
+  with the whetstone, its disc at pscale 0 beneath, as bsp gives it first.
+  **Each turn:** the time, then his words. No line of his cook was handed
+  her.
+- **The tool:** the real bsp() through the pocket's port, agent_id pocket
+  (his blocks) or pscale (the teaching), read only; four rounds at most.
+  Thinking, when on, was kept in her conversation and dropped from what he
+  sees.
+- **The arms:** no tool; the tool, thinking off; the tool, thinking on;
+  each of those two with the whetstone; and the tool, thinking off, with
+  LiteRT-LM's constrained decoding on (`ExperimentalFlags.
+  enableConversationConstrainedDecoding`, its one switch).
+- **Two runs:**
+  - the line in the sand's twelve replies (tests 1 to 8, as sections 7
+    and 8 judged them) for the first five arms;
+  - five messages that need a walk, for all six:
+    - what's left on his membership block;
+    - what it says about the ID checks;
+    - what's at 2.2;
+    - what he decided at 1.111178719993 in his decisions block (a block
+      made with a line at that address, so the spindle has twelve digits
+      after its point);
+    - what the whetstone says about selection shapes.
+- **Each call was recorded** with its spindle as it arrived (as text, as a
+  number, or malformed), any call written into her words instead of made,
+  and any call the engine couldn't read.
+- **The GPU:** the same engine asked for on `Backend.GPU()`, to repeat the
+  two address messages with constrained decoding off and on.
+- **Judged** against each test's pass line (1.111178719921 to
+  1.111178719928), to `trial/free-reading.md`'s standard, as sections 7 and
+  8. The harness isn't committed; it is the same local harness.
+
+### 9c. The line in the sand, by arm
+
+| Arm | Seed 0 | Seed 2 | Of 24 | Walks unasked | Beach talk shown | Median s a reply |
+|---|---:|---:|---:|---:|---:|---:|
+| No tool | 2 | 2 | **4** | 0 | 0 | 17.0 |
+| Tool, thinking off | 1½ | 1½ | **3** | 4 | 8 | 19.3 |
+| Tool, thinking on | 2½ | 2½ | **5** | 4 | 6 | 63.2 |
+| Tool, thinking off, whetstone | 1 | 1½ | **2½** | 1 | 20 | 30.9 |
+| Tool, thinking on, whetstone | 2 | 2 | **4** | 5 | 15 | 95.9 |
+
+- **No arm passes** test 1 (she never gives his day back), test 3 (she has
+  no hand to name), test 4 (she never only offers to sit), 6a or 8 said.
+- **Every arm passes** the next morning's greeting: his tomorrow line, then
+  her one question to him. The one exception is a half twice, for quote
+  marks.
+- **Test 5a is the strictest call.** If her confident errors about
+  Whitehead were excused as the model's limits, every arm but the
+  whetstone with thinking off would gain 1; the order wouldn't change.
+- **The filter** took words out of eight replies: seven her echo of the
+  time, one a bold lead-in line with it. No score changed. Her places line
+  was never shown.
+
+### 9d. When his words need a walk
+
+| Arm | Right of 10 | Walks | Spindles arrived intact | Malformed | Median s |
+|---|---:|---:|---|---:|---:|
+| No tool | 0 (says she has no access) | 0 | none sent | 0 | 18.6 |
+| Tool, thinking off | 6 | 10 | 2.2 ×2, 1.111178719993 ×2 | 0 | 14.4 |
+| Tool, thinking on | 8 | 10 | 2.2 ×2, 1.111178719993 ×2 | 0 | 36.5 |
+| Tool, thinking off, whetstone | 7 | 9 | 2.2 ×2, 1.111178719993 ×2, 2.1, 2 | 0 | 13.7 |
+| Tool, thinking on, whetstone | 8 | 10 | 2.2 ×2, 1.111178719993 ×2; "2._" refused | 1 refused | 46.7 |
+| Tool, thinking off, constrained | 6 | 10 | the same as thinking off, word for word | 0 | 15.2 |
+
+- **Both addresses, every time:** every arm with the tool read 2.2 and
+  1.111178719993 and gave him the line that stands there.
+- **"What's left on my membership block":**
+  - thinking off listed his blocks and read none: once it called
+    membership "not a list of tasks", once it asked whether to read it;
+  - thinking on listed his blocks, then read membership, and answered
+    right at both seeds.
+- **The whetstone, without its opening in her window:**
+  - thinking off read his shell instead;
+  - thinking on looked for it in his pocket, not the teaching;
+  - with the opening in her window, she answered from it.
+- **Raw JSON:** the tool hands back a small block whole as raw JSON. She
+  read it back to him twice, once with its braces and once with its "_".
+
+### 9e. What it decides
+
+1. **Part 5's tool stays off in 0.12**, as part 5 says unless she uses it
+   well. She does, when his words call for it; given it on every turn, she
+   reaches for it when nothing does, and the chat suffers.
+2. **For 0.13, the walk as a skill:**
+   - offered when his words name a block of his or an address;
+   - thinking off;
+   - no whetstone in her window;
+   - its result handed her as readable text, as the paperclip hands a
+     block: root line and parts indented, never JSON.
+3. **Thinking stays off.** Its gain is small, and on his Pixel it would cost
+   tens of seconds before her first word.
+4. **Constrained decoding** can be left off; it changed nothing here. It
+   may be worth turning on for E2B on the Pixel, where the report of
+   corrupted numbers came from.
+5. **The GPU check** goes to his phone: the two address messages on the
+   Pixel's GPU, before any tool ships.
+
 ## 10. The lean audit, after part 6 (read only)
 
 Counted on 22 November 2026 at the commit that moves the mind's contract
