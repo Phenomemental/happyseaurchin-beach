@@ -173,10 +173,13 @@ fun EditorScreen(model: Model, nav: Nav, name: String) {
                                 Action("Not now", { doing = Doing.NOTHING }, Modifier.weight(1f), tag = "part-not-now")
                             }
                         }
-                        else -> Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                            TextLink("Change its words", { words = l.text.orEmpty(); doing = Doing.WORDS }, tag = "change-words")
-                            TextLink("Add a part beneath", { words = ""; doing = Doing.ADD }, tag = "add-part")
-                            if (l.address.isNotEmpty()) {
+                        // Two rows, so every action fits a phone's width.
+                        else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                                TextLink("Change its words", { words = l.text.orEmpty(); doing = Doing.WORDS }, tag = "change-words")
+                                TextLink("Add a part beneath", { words = ""; doing = Doing.ADD }, tag = "add-part")
+                            }
+                            if (l.address.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                                 TextLink("Move", { note = null; doing = Doing.MOVE }, tag = "move-part")
                                 TextLink("Remove", {
                                     val p = pages.planRemove(name, l.address)

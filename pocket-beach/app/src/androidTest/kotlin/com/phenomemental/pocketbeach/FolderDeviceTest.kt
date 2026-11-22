@@ -141,7 +141,8 @@ class FolderDeviceTest {
         File(folder, "notes.txt").writeText("Bring the seeds and the twine.")
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.menu("menu-blocks")
-            compose.waitFor("block-file:garden", "garden.json")
+            // The file's name shows on his block's row (one node, its words merged).
+            compose.waitFor("block:garden", "garden.json")
             compose.tap("textfile:notes.txt")
             compose.waitFor("text-file", "Bring the seeds and the twine.")
         }
