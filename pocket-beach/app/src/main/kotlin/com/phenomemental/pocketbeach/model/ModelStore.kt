@@ -65,19 +65,6 @@ class ModelStore(private val context: Context, val spec: Spec = E2B) {
         val SPECS = listOf(E2B, E4B)
     }
 
-    sealed interface State {
-        class TooLittleMemory(val has: Long) : State
-        class TooLittleRoom(val free: Long, val needs: Long) : State
-        data object Absent : State
-        /** Fetching now: [done] of [SIZE], at [bytesPerSecond]; [note] says what it is doing when it isn't plain fetching. */
-        class Fetching(val done: Long, val bytesPerSecond: Long, val note: String?) : State
-        /** Part of it is on the phone, and nothing is fetching: it carries on from [done]. */
-        class Paused(val done: Long) : State
-        data object Checking : State
-        /** It stopped for [why], with [done] bytes kept to carry on from. */
-        class Failed(val why: String, val done: Long) : State
-        data object Ready : State
-    }
 
     private val dir get() = File(context.getExternalFilesDir(null) ?: context.filesDir, "models")
     val file: File get() = File(dir, spec.file)
@@ -101,19 +88,19 @@ class ModelStore(private val context: Context, val spec: Spec = E2B) {
 
     fun memory(): Long = ActivityManager.MemoryInfo().also { context.getSystemService(ActivityManager::class.java).getMemoryInfo(it) }.totalMem
 
-    fun state(): State {
-        if (prefs.getBoolean("checked", false) && file.length() == spec.size) return State.Ready
-        if (checking) return State.Checking
-        progress?.let { return State.Fetching(it.done, it.bytesPerSecond, it.note) }
+    fun state(): ModelState {
+        if (prefs.getBoolean("checked", false) && file.length() == spec.size) return ModelState.Ready
+        if (checking) return ModelState.Checking
+        progress?.let { return ModelState.Fetching(it.done, it.bytesPerSecond, it.note) }
         val have = part.length()
-        prefs.getString("failed", null)?.let { return State.Failed(it, have) }
-        if (have > 0) return State.Paused(have)
+        prefs.getString("failed", null)?.let { return ModelState.Failed(it, have) }
+        if (have > 0) return ModelState.Paused(have)
         val has = memory()
-        if (has < spec.memoryNeeded) return State.TooLittleMemory(has)
+        if (has < spec.memoryNeeded) return ModelState.TooLittleMemory(has)
         val free = StatFs(dir.apply { mkdirs() }.path).availableBytes
         val needs = spec.size - have + SPARE
-        if (free < needs) return State.TooLittleRoom(free, needs)
-        return State.Absent
+        if (free < needs) return ModelState.TooLittleRoom(free, needs)
+        return ModelState.Absent
     }
 
     /**
@@ -159,7 +146,7 @@ class ModelStore(private val context: Context, val spec: Spec = E2B) {
     }
 
     /** Once fetched: check every byte against the pinned SHA-256, and only then keep it as the model. Slow; call it off the main thread. */
-    fun check(): State {
+    fun check(): ModelState {
         checking = true
         try {
             if (part.length() != spec.size) return fail("The download came to ${gb(part.length())}, not ${gb(spec.size)}.")
@@ -179,7 +166,7 @@ class ModelStore(private val context: Context, val spec: Spec = E2B) {
             }
             if (!part.renameTo(file)) return fail("The model couldn't be put in place.")
             prefs.edit().putBoolean("checked", true).apply()
-            return State.Ready
+            return ModelState.Ready
         } finally {
             checking = false
         }
@@ -197,8 +184,8 @@ class ModelStore(private val context: Context, val spec: Spec = E2B) {
         prefs.edit().remove("failed").apply()
     }
 
-    private fun fail(why: String): State {
+    private fun fail(why: String): ModelState {
         prefs.edit().putString("failed", why).apply()
-        return State.Failed(why, part.length())
+        return ModelState.Failed(why, part.length())
     }
 }

@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach.ui
 
+import com.phenomemental.pocketbeach.model.ModelState
 import android.app.ActivityManager
 import android.os.Build
 import androidx.compose.runtime.getValue
@@ -155,7 +156,7 @@ class Benching(private val app: PocketApp) {
     /** One model's lines: nine at most, a place keeps nine; its Keep asks, to [kept]. */
     private suspend fun model(mind: Mind, spec: ModelStore.Spec, kept: (List<String>) -> Unit): List<String> = buildList {
         run {
-            if (mind.state(spec.name) !is ModelStore.State.Ready) {
+            if (mind.state(spec.name) !is ModelState.Ready) {
                 add("${spec.name}: not on this phone" + if (spec == ModelStore.E4B) " (get it in Settings)." else ".")
                 return@run
             }

@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach.ui
 
+import com.phenomemental.pocketbeach.model.ModelState
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -61,15 +62,15 @@ fun SettingsScreen(model: Model, nav: Nav) {
                 "and again for her after, which is slower. A change is used from the next thing you say in Ask.",
             style = Type.small, color = ink.soft,
         )
-        val e4b by produceState<ModelStore.State?>(null) {
+        val e4b by produceState<ModelState?>(null) {
             while (true) {
                 val st = withContext(Dispatchers.IO) { app.e4b.state() }
                 value = st
-                delay(if (st is ModelStore.State.Fetching) 1000 else 3000)
+                delay(if (st is ModelState.Fetching) 1000 else 3000)
             }
         }
         // The models a job can be set to: those on this phone.
-        val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelStore.State.Ready }
+        val ready = JobSettings.MODELS.filter { it == JobSettings.GEMMA_E2B || it == JobSettings.GEMMA_E4B && e4b is ModelState.Ready }
         BiggerModel(app, e4b)
         for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job), follows = if (app.followsTalk(job)) app.settings(Job.TALK).model else null) { app.set(job, it) }
 
@@ -329,12 +330,12 @@ fun rememberE4bFetch(): () -> Unit {
 
 /** Gemma 4 E4B's state on this phone, looked at every few seconds (each second while it comes). */
 @Composable
-fun e4bState(app: com.phenomemental.pocketbeach.PocketApp): ModelStore.State? {
-    val st by produceState<ModelStore.State?>(null) {
+fun e4bState(app: com.phenomemental.pocketbeach.PocketApp): ModelState? {
+    val st by produceState<ModelState?>(null) {
         while (true) {
             val now = withContext(Dispatchers.IO) { runCatching { app.e4b.state() }.getOrNull() }
             value = now
-            delay(if (now is ModelStore.State.Fetching) 1000 else 3000)
+            delay(if (now is ModelState.Fetching) 1000 else 3000)
         }
     }
     return st
@@ -358,31 +359,31 @@ fun SmallerModel(model: Model) {
     Column(Modifier.fillMaxWidth().testTag("smaller-model"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         when (state) {
             null -> {}
-            ModelStore.State.Ready -> {
+            ModelState.Ready -> {
                 Text("She's using the smaller model, as her talk is set below. The larger one is on your phone.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"))
                 Action("Use the larger model for her talk", { app.set(Job.TALK, talk.copy(model = JobSettings.GEMMA_E4B)) }, Modifier.fillMaxWidth(), tag = "smaller-model-use")
             }
-            is ModelStore.State.TooLittleMemory -> Text(
+            is ModelState.TooLittleMemory -> Text(
                 "She's using the smaller model because this phone hasn't the memory for the larger one: it has ${ModelStore.gb(state.has)}, and the larger one needs a phone with 12 GB.",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
             )
-            is ModelStore.State.Fetching -> Text(
+            is ModelState.Fetching -> Text(
                 "She's using the smaller model because the larger one isn't on your phone yet. It's coming: ${ModelStore.gb(state.done)} of $size.",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
             )
-            ModelStore.State.Checking -> Text(
+            ModelState.Checking -> Text(
                 "She's using the smaller model because the larger one isn't on your phone yet. It has come, and is being checked.",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
             )
-            is ModelStore.State.TooLittleRoom -> Text(
+            is ModelState.TooLittleRoom -> Text(
                 "She's using the smaller model because the larger one isn't on your phone yet. It needs ${ModelStore.gb(state.needs)} of room, and the phone has ${ModelStore.gb(state.free)} free.",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"),
             )
             else -> {
                 Text("She's using the smaller model because the larger one isn't on your phone yet.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("smaller-model-why"))
                 Action(
-                    if (state is ModelStore.State.Paused) "Carry on getting the larger model" else "Get the larger model, $size over Wi-Fi",
-                    { if (state is ModelStore.State.Failed) scope.launch(Dispatchers.IO) { app.e4b.dismissFailure() }; fetch() },
+                    if (state is ModelState.Paused) "Carry on getting the larger model" else "Get the larger model, $size over Wi-Fi",
+                    { if (state is ModelState.Failed) scope.launch(Dispatchers.IO) { app.e4b.dismissFailure() }; fetch() },
                     Modifier.fillMaxWidth(), tag = "smaller-model-get",
                 )
                 Text("Once it's on your phone, set her talk to it here.", style = Type.small, color = ink.soft)
@@ -393,7 +394,7 @@ fun SmallerModel(model: Model) {
 
 /** Gemma 4 E4B: offered when the phone has the memory, fetched on a tap, checked byte for byte, then a choice for each job. */
 @Composable
-private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: ModelStore.State?) {
+private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: ModelState?) {
     val ink = LocalInk.current
     val scope = rememberCoroutineScope()
     val size = ModelStore.gb(ModelStore.E4B.size)
@@ -404,16 +405,16 @@ private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: Mod
         Text("Gemma 4 E4B", style = Type.heading, color = ink.ink)
         when (state) {
             null -> {}
-            ModelStore.State.Ready -> Text("On this phone, checked: a choice for each job below.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-ready"))
-            is ModelStore.State.TooLittleMemory -> Text(
+            ModelState.Ready -> Text("On this phone, checked: a choice for each job below.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-ready"))
+            is ModelState.TooLittleMemory -> Text(
                 "This phone has ${ModelStore.gb(state.has)} of memory, and E4B needs a phone with 12 GB, so it isn't offered here.",
                 style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-too-little-memory"),
             )
-            is ModelStore.State.TooLittleRoom -> Text(
+            is ModelState.TooLittleRoom -> Text(
                 "E4B needs ${ModelStore.gb(state.needs)} of room and this phone has ${ModelStore.gb(state.free)} free.",
                 style = Type.small, color = ink.soft, modifier = Modifier.testTag("e4b-too-little-room"),
             )
-            ModelStore.State.Absent -> {
+            ModelState.Absent -> {
                 Text(
                     "The bigger Gemma: slower, and on the laptop it sorted your day a little better. One download of $size from Hugging Face, " +
                         "over Wi-Fi only, checked byte for byte before it is used. Gemma 4 E2B stays as it is.",
@@ -421,7 +422,7 @@ private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: Mod
                 )
                 Action("Get Gemma 4 E4B, $size over Wi-Fi", { fetch() }, Modifier.fillMaxWidth(), tag = "get-e4b")
             }
-            is ModelStore.State.Fetching -> {
+            is ModelState.Fetching -> {
                 Text(
                     "${ModelStore.gb(state.done)} of $size (${state.done * 100 / ModelStore.E4B.size}%)" +
                         if (state.bytesPerSecond > 0) ", at %.1f MB/s".format(state.bytesPerSecond / 1e6) else "",
@@ -430,13 +431,13 @@ private fun BiggerModel(app: com.phenomemental.pocketbeach.PocketApp, state: Mod
                 state.note?.let { Text(it, style = Type.small, color = ink.crimson) }
                 TextLink("Stop fetching", { act { app.e4b.stop() } }, tag = "e4b-stop")
             }
-            is ModelStore.State.Paused -> {
+            is ModelState.Paused -> {
                 Text("Paused at ${ModelStore.gb(state.done)} of $size. It carries on from there.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("e4b-paused"))
                 Action("Carry on", { fetch() }, Modifier.fillMaxWidth(), tag = "e4b-carry-on")
                 TextLink("Discard what has come", { act { app.e4b.discard() } }, tag = "e4b-discard")
             }
-            ModelStore.State.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft)
-            is ModelStore.State.Failed -> {
+            ModelState.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft)
+            is ModelState.Failed -> {
                 Notice(state.why, tag = "e4b-failed")
                 Action(if (state.done > 0) "Carry on from ${ModelStore.gb(state.done)}" else "Try again", { act { app.e4b.dismissFailure() }; fetch() }, Modifier.fillMaxWidth(), tag = "e4b-try-again")
             }

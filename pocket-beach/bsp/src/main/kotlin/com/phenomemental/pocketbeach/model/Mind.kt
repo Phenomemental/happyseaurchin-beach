@@ -6,14 +6,16 @@ import java.io.Closeable
 /**
  * What the Ask screen asks: on the phone, Gemma; in the device tests, a
  * stand-in that answers as the shell's recipe does, since no test can run
- * the model.
+ * the model. Sundial 0.12 (spine:pocket-beach 1.111178719996): the contract
+ * is the core's, plain Kotlin with no Android in it, so any model a front
+ * end can run, a larger one on a laptop among them, stands behind it.
  */
 interface Mind {
     /** Whether it can be asked yet: the model's state on this phone. */
-    fun state(): ModelStore.State
+    fun state(): ModelState
 
     /** The state of the model named [model] on this phone (Gemma 4 E2B or E4B). */
-    fun state(model: String): ModelStore.State = state()
+    fun state(model: String): ModelState = state()
 
     /** One reply to one message: her words, how long they took, and the engine's count, where it ran. */
     class Answer(val text: String, val ms: Long, val turn: Pace.Turn?, val processor: String?, val whyNotGpu: String?, val loadMs: Long?, val gpuFailed: Boolean = false)

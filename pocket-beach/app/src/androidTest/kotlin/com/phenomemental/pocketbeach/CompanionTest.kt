@@ -1,5 +1,7 @@
 package com.phenomemental.pocketbeach
 
+import com.phenomemental.pocketbeach.model.JobPrefs
+import com.phenomemental.pocketbeach.model.ModelState
 import android.content.Intent
 import android.security.NetworkSecurityPolicy
 import androidx.compose.ui.test.hasTestTag
@@ -182,7 +184,7 @@ class StandIn : Mind {
         val lines = again.ifEmpty { told.substringAfter("changing nothing else: ", "").substringBefore(". (Each", "") }
         return lines.replace(" / ", "\n").replace(HelloWorld.SECRET_SLOT, secret)
     }
-    override fun state(): ModelStore.State = ModelStore.State.Ready
+    override fun state(): ModelState = ModelState.Ready
     override val loaded = true
     override val processor = "stand-in"
     override suspend fun chat(instruction: String): Mind.Chat {
@@ -583,7 +585,7 @@ class CompanionTest {
             compose.onNodeWithTag("job-write-temperature-less").assertIsNotEnabled()
             assertEquals(0.9, app.settings(Job.TALK).temperature, 1e-9)
             assertEquals(40, app.settings(Job.TALK).topK)
-            assertEquals("kept on the phone", 40, JobSettings.read(app.getSharedPreferences("pocket", 0), Job.TALK).topK)
+            assertEquals("kept on the phone", 40, JobPrefs.read(app.getSharedPreferences("pocket", 0), Job.TALK).topK)
             compose.tap("back")
             compose.tap("ask-companion")
             asked("Hello")
