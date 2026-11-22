@@ -74,6 +74,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job), follows = if (app.followsTalk(job)) app.settings(Job.TALK).model else null) { app.set(job, it) }
 
         AskLog(model)
+        ReachTheBeach(model)
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
@@ -198,6 +199,29 @@ private fun Workings(model: Model) {
     }
 }
 
+
+/** Sundial 0.12 (spine:pocket-beach 1.111178719995): whether the walker may read the beach's blocks, read only; off unless he turns it on. */
+@Composable
+private fun ReachTheBeach(model: Model) {
+    val ink = LocalInk.current
+    Column(Modifier.fillMaxWidth().testTag("reach-part"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Reach the beach", style = Type.heading, color = ink.ink, modifier = Modifier.weight(1f))
+            androidx.compose.material3.Switch(
+                checked = model.app.reachBeach,
+                onCheckedChange = { model.app.reachBeach = it },
+                colors = androidx.compose.material3.SwitchDefaults.colors(checkedTrackColor = ink.crimson),
+                modifier = Modifier.testTag("reach-beach"),
+            )
+        }
+        Text(
+            "When on, the walker can read the blocks at beach.happyseaurchin.com, read only: it asks for the block you name, and sends nothing of yours. " +
+                "A block you want is copied into your pocket on your yes. Off, nothing is asked of the beach.",
+            style = Type.small, color = ink.soft,
+        )
+    }
+}
 
 /** 0.6.4: whether each exchange in Ask is kept in the ask log; off unless he turns it on. The saved conversation keeps everything either way. */
 @Composable

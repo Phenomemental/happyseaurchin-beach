@@ -94,7 +94,10 @@ fun EditorScreen(model: Model, nav: Nav, name: String) {
     Page(
         onBack = { nav.back() },
         top = { Text(name, style = Type.name, color = ink.ink, maxLines = 1, modifier = Modifier.testTag("editor-name")) },
-        end = { TextLink("Walk it", { nav.go(Screen.Block(Region.POCKET, name, "")) }, tag = "walk-block") },
+        end = {
+            TextLink("Walk it", { nav.go(Screen.Block(Region.POCKET, name, "")) }, tag = "walk-block")
+            TextLink("bsp", { nav.go(Screen.Walker(false, name)) }, tag = "walk-bsp")
+        },
     ) {
         if (clock != false) return@Page
         val (lines, seen) = loaded ?: return@Page

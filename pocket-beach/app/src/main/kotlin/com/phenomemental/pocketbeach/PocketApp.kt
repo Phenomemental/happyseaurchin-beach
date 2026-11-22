@@ -166,6 +166,9 @@ class PocketApp : Application() {
     /** What carries the one post. The device tests put a wire here that goes nowhere: no test posts to the beach. */
     @Volatile var wire: Wire = HttpsWire
 
+    /** Sundial 0.12: the walker's read of the beach, a GET only, made only while Reach the beach is on. */
+    @Volatile var reader: com.phenomemental.pocketbeach.bsp.BeachReader = com.phenomemental.pocketbeach.bsp.BeachReader { HttpsWire.get(it) }
+
     /** What has been posted already, and where it landed. */
     val posts by lazy { Posts(this) }
 
@@ -278,6 +281,16 @@ class PocketApp : Application() {
         set(on) {
             details.value = on
             prefs.edit().putBoolean("showDetails", on).apply()
+        }
+
+    private val reach by lazy { mutableStateOf(prefs.getBoolean("reachBeach", false)) }
+
+    /** Sundial 0.12 (spine:pocket-beach 1.111178719995): whether the walker may read the beach's blocks, read only; off unless he turns it on in Settings. */
+    var reachBeach: Boolean
+        get() = reach.value
+        set(on) {
+            reach.value = on
+            prefs.edit().putBoolean("reachBeach", on).apply()
         }
 
     private val askLog by lazy { mutableStateOf(prefs.getBoolean("keepAskLog", false)) }

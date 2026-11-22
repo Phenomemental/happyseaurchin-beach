@@ -118,7 +118,7 @@
   },
   "6": {
    "_": "WHERE YOUR WORDS GO",
-   "1": "Everything you say and keep stays on this phone. The phone turns your voice into text itself, and Gemma, the companion, runs here too, so nothing you tell her is sent anywhere. One thing can leave, and only when you choose: a note you post to your room, sent when you tap Post. Your days are kept in an open form, so you can save them, take them with you, and later, if you choose, bring them to the beach.",
+   "1": "Everything you say and keep stays on this phone. The phone turns your voice into text itself, and Gemma, the companion, runs here too, so nothing you tell her is sent anywhere. One thing can leave, and only when you choose: a note you post to your room, sent when you tap Post. And only if you turn on Reach the beach in Settings, the walker asks the beach for the blocks you name, to read; nothing of yours goes with it. Your days are kept in an open form, so you can save them, take them with you, and later, if you choose, bring them to the beach.",
    "9": {
     "_": "HELD FOR 0.12, when choosing your own Claude as her voice arrives (spine:pocket-beach 1.111178719919): this sentence then takes the place of the one beginning “One thing can leave”. Not shown in 0.10.",
     "1": "Two things can leave, and only when you choose: a note you post to your room, sent when you tap Post; and, if you choose your own Claude as her voice, your words go to Anthropic each time she answers."
