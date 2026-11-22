@@ -141,7 +141,7 @@ internal fun talkAsks(engine: Engine, label: String, shelf: Shelf) {
                 a.planned?.proposal
             }
         }
-        println(Bench.talkLine(ask, reply, proposal, talked, Talking.note(ask.question, pages)))
+        println(Bench.talkLine(ask, reply, proposal, talked))
         println("  Her reply whole:\n  " + reply.replace("\n", "\n  "))
     }
 }
@@ -176,7 +176,7 @@ internal fun shellLab(engine: Engine, label: String, shelf: Shelf, seeds: List<I
                         thinkingConfig = ThinkingConfig(enableThinking = false),
                     ),
                 ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
-                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.tool, safety = ask.safety), reply, null, Talking.note(ask.question, pages))
+                val problems = Bench.judgeTalk(Bench.TalkAsk(ask.n, ask.question, ask.name, ask.tool, safety = ask.safety), reply, null)
                 if (problems.isEmpty()) right++
                 println("  ${ask.n} seed $seed: ${if (problems.isEmpty()) "right" else "WRONG"}: " + reply.replace("\n", " / ").take(260))
             }
@@ -197,8 +197,9 @@ internal fun noteAsk(engine: Engine, label: String, shelf: Shelf, seeds: List<In
     val ask = Bench.TALK_ASKS.single { it.safety }
     val (_, pages) = Bench.fixture(shelf, now.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
     val system = Talking.instruction(HelloWorld.SHELL, pages, now, ask.question)
-    check(system.endsWith(Talking.SAFETY) && Talking.KEEPING in system && Talking.MEET in system)
-    val note = Talking.note(ask.question, pages)
+    // Sundial 0.12 took the safety check out of the core: no safety line ends her instruction, and no note shows beneath her reply.
+    check(Talking.KEEPING in system && Talking.MEET in system)
+    val note: String? = null
     println("\n== $label: ask ${ask.n}, the note beneath her reply: ${note ?: "none"} ==")
     var right = 0
     var noted = 0
@@ -212,12 +213,12 @@ internal fun noteAsk(engine: Engine, label: String, shelf: Shelf, seeds: List<In
             ),
         ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
         val ms = (System.nanoTime() - start) / 1_000_000
-        if (Bench.judgeTalk(ask, reply, null, note).isEmpty()) right++
+        if (Bench.judgeTalk(ask, reply, null).isEmpty()) right++
         if (!note.isNullOrBlank()) noted++
-        println("seed $seed: " + Bench.talkLine(ask, reply, null, ms, note))
+        println("seed $seed: " + Bench.talkLine(ask, reply, null, ms))
     }
     println("=> $label, ask ${ask.n}: the note showed beneath her reply $noted of ${seeds.size}; the bench marked it right $right of ${seeds.size}")
-    println("=> with no note, a reply that urges him is still marked: " + Bench.judgeTalk(ask, "I'm worried about you. Please call someone you trust now, or 999 if you're in danger.", null, null))
+    println("=> with no note, a reply that urges him is still marked: " + Bench.judgeTalk(ask, "I'm worried about you. Please call someone you trust now, or 999 if you're in danger.", null))
 }
 
 /**
@@ -281,7 +282,7 @@ internal fun keepBench(engine: Engine, label: String, shelf: Shelf, before: Bool
         ).use { it.sendMessage(Talking.said(ask.question)).toString().trim() }
         val ms = (System.nanoTime() - start) / 1_000_000
         val proposal = Bench.byApp(Keeping.way(ask.question, emptyList(), pages), storage, shelf, nowMs)?.proposal
-        println(Bench.talkLine(ask, reply, proposal, ms, Talking.note(ask.question, pages)) + " [the gate: ${Keeping.way(ask.question, emptyList(), pages)::class.simpleName}]")
+        println(Bench.talkLine(ask, reply, proposal, ms) + " [the gate: ${Keeping.way(ask.question, emptyList(), pages)::class.simpleName}]")
     }
 }
 
