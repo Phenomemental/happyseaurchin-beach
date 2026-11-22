@@ -18,6 +18,7 @@ import com.phenomemental.pocketbeach.bsp.str
 import com.phenomemental.pocketbeach.net.HttpsWire
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -110,7 +111,8 @@ class LineInTheSandDeviceTest {
             compose.waitFor("dial")
             say(hisDay)
             compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.isNotEmpty() }
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("Places:"))
+            // Sundial 0.12, Gemma released: whatever route his words take, her turn is the time and his words, and no line asks her for places.
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().startsWith("(It is ") && mind.talkMessages.last().endsWith(")\n$hisDay"))
             say("stiff but free")
             compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 2 }
             assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("Places:"))
@@ -186,8 +188,9 @@ class LineInTheSandDeviceTest {
             compose.waitFor("dial")
             say("stiff but free")
             compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.isNotEmpty() }
-            assertTrue("his TALK line is her recipe", mind.talkInstructions.last().contains("The app: talk with me as yourself, warmly, in a few sentences."))
-            assertTrue("his no-day line is handed her", mind.talkMessages.last().contains("If I seem to be struggling, ask gently whether I'd like to sit with it a moment."))
+            // Sundial 0.12, Gemma released: his lines stay his, in his cook; none opens her conversation or is handed her.
+            assertFalse(mind.talkInstructions.last(), mind.talkInstructions.last().contains("The app: talk with me as yourself"))
+            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().startsWith("(It is ") && mind.talkMessages.last().endsWith(")\nstiff but free"))
         }
     }
 
@@ -284,10 +287,11 @@ class LineInTheSandDeviceTest {
             compose.waitFor("dial")
             say("What have I got in front of me?")
             compose.waitUntil(20_000) { app.asking.settled && mind.talkInstructions.isNotEmpty() }
+            // Sundial 0.12, Gemma released: his hand is no longer read into her window, so no card can reach her as today's;
+            // her window is the time alone, and Your hand shows the earlier day (hand-card-day).
             val window = mind.talkInstructions.last()
-            assertTrue(window, window.contains("From earlier days, not today's: “These are the things I need to get done around the membership work and the LERO proposal.” (from Monday 2 November"))
-            assertTrue(window, window.contains("Today: “I'm going to finish the membership form”"))
-            assertTrue("shortened to its first sentence", !window.contains("First the agreement"))
+            assertTrue(window, window.startsWith("It is ") && window.endsWith(" as this conversation opens."))
+            assertFalse(window, window.contains("membership"))
         }
     }
 }

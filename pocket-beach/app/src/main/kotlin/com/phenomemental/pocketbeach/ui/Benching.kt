@@ -230,19 +230,16 @@ class Benching(private val app: PocketApp) {
             val (storage, pages) = Bench.fixture(app.shelf, nowMs, Talks.SHELL_RECIPE)
             // 0.6.2: ask 23, her shell already saying the name: nothing is proposed.
             if (ask.named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me ${ask.name}.")).ok)
-            // 0.7: as Ask asks her now: her window, then the turn with the time and the app's line.
-            HerWindow.ensure(pages)
+            // Sundial 0.12: as she is asked now, released: her window the time alone, her turn the time and his words.
             val way = Keeping.way(ask.question, emptyList(), pages)
-            val a = mind.ask(HerWindow.instruction(HelloWorld.SHELL, pages, storage, app.shelf, now), HerWindow.turn(ask.question, now, pages, storage, HerWindow.appLine(way, ask.question)), talk)
+            val a = mind.ask(HerWindow.released(now), HerWindow.releasedTurn(ask.question, now), talk)
             val proposal = when (way) {
                 is Keeping.Way.Write -> mind.talker(Talks.lean(HelloWorld.SHELL, pages), Talks.opening(emptyList()), settings = write).use { t ->
                     Talks.ask(ask.question, t.stream, pages, storage, app.shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), { nowMs }, before = Talks.forMessage(HelloWorld.SHELL, pages, ask.question), answerReads = false, guard = Acts.Guard(listOf(ask.question), ask.question)).planned?.proposal
                 }
                 else -> Bench.byApp(way, storage, app.shelf, nowMs)?.proposal
             }
-            // 0.6.3: the safety note Ask would show him beneath her reply, from his own safety words and note (read, never written).
-            val note = if (ask.safety) Talking.note(ask.question, app.pages) else null
-            add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms, note))
+            add("$model, the Talk job's fixed ask " + Bench.talkLine(ask, a.text, proposal, a.ms))
         }
     }
 

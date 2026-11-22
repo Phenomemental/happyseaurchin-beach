@@ -414,8 +414,6 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
         e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
         // Sundial 0.10.5: she ran on the CPU because the GPU couldn't take her: said plainly, with or without the workings.
         e.slower?.let { Text(it, style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("slower")) }
-        // Sundial 0.10.1: the help line, centred beneath her reply, only when his words show danger (the app's check, Talking.unsafe).
-        if (e.safety != null && !thinking) HelpLine(model)
         if (thinking) {
             val since = (asking.stage as Asking.Stage.Thinking).since
             var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -429,8 +427,6 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
             } + if (details) " ${secs} s" else ""
             if (line.isNotBlank()) Text(line.trim(), style = Type.aside, color = ink.soft, modifier = Modifier.testTag("thinking"))
         }
-        // 0.6.3: when his safety words match, the app's own note beneath her reply, whatever she says.
-        e.safety?.let { SafetyNote(it) }
         // Rockpool: his own cook couldn't be read, so the shipped copy ran: said always.
         e.cookNote?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("cook-note")) }
         // Behind the chat, the Write job looks at what he said; what it sets out comes here.
@@ -746,16 +742,6 @@ private fun WriteRow(w: Planned, details: Boolean) {
         w.shown?.let { Text(Words.quoted(it.replace("{{fingerprint}}", PRINT_SHOWN), 400), style = Type.body, color = ink.ink) }
         // 0.6.3: the bsp call, with Details on.
         if (details) SelectionContainer { Text(Words.call(w.plan).let { c -> w.print?.let { c.replace(it, "{{fingerprint}}") } ?: c }, style = Type.call, color = ink.soft, modifier = Modifier.testTag("call")) }
-    }
-}
-
-/** 0.6.3: the app's own note beneath her reply when his safety words match; its words are his to change, with his safety words. */
-@Composable
-private fun SafetyNote(note: String) {
-    val ink = LocalInk.current
-    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).background(ink.wash).semantics(mergeDescendants = true) {}.testTag("safety-note")) {
-        Box(Modifier.width(3.dp).fillMaxHeight().background(ink.crimson))
-        Text(note, style = Type.body, color = ink.ink, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
     }
 }
 

@@ -437,8 +437,8 @@ class CompanionTest {
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 22. ") && it.contains("The Write job proposed") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 23. ") && it.contains("The Write job proposed") })
         assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E4B, the Talk job's fixed ask 24. ") && it.contains("urge him") })
-        // 0.6.3: ask 24 says the note showed beneath her reply.
-        assertTrue(lines.joinToString("\n"), lines.any { it.startsWith("Gemma 4 E2B, the Talk job's fixed ask 24. ") && it.contains("The note beneath her reply: “If you're not safe right now") })
+        // Sundial 0.12: the safety check is taken out, so no note shows beneath her reply to ask 24.
+        assertFalse(lines.joinToString("\n"), lines.any { it.contains("The note beneath her reply") })
         assertTrue("each piece asked on its own", mind.sortAsks.size > Telling.cut(Telling.WRITTEN).size)
         assertTrue("nothing posted", wire.sent.isEmpty())
         assertFalse("nothing of his written but the run", app.pages.exists(Landing.NOW) || app.pages.exists(Landing.TELLING))
@@ -479,7 +479,8 @@ class CompanionTest {
             assertEquals("0.6.4: opened with no worked examples", emptyList<Pair<String, String>>(), mind.histories.single())
             // 0.7: hers is kept between his messages, her window read once.
             assertEquals("one Talk conversation, kept between his messages", listOf(emptyList<Pair<String, String>>()), mind.talkHistories)
-            assertTrue("her turn carries the time and the app's line", mind.talkMessages.last().startsWith("(It is ") && mind.talkMessages.last().contains("(The app: "))
+            // Sundial 0.12, Gemma released: her turn is the time and his words, no line of the app's.
+            assertTrue("her turn carries the time and his words alone", mind.talkMessages.last().startsWith("(It is ") && !mind.talkMessages.last().contains("(The app: "))
         }
     }
 
@@ -538,7 +539,8 @@ class CompanionTest {
             asked("What does the whetstone say?")
             compose.waitFor("over", "She talked.")
             compose.waitFor("took", "on the stand-in")
-            assertTrue("0.7: a teaching block his words name is read for her, in her turn", mind.talkMessages.last().contains("What the app read for you"))
+            // Sundial 0.12, Gemma released: nothing is read into her turn for her; the time, then his words.
+            assertFalse(mind.talkMessages.last(), mind.talkMessages.last().contains("What the app read for you"))
             assertTrue("his words close her turn", mind.talkMessages.last().endsWith("\nWhat does the whetstone say?"))
             asked("Add to garden: buy more compost.")
             compose.waitFor("writes")
@@ -576,16 +578,12 @@ class CompanionTest {
             compose.tap("ask-companion")
             asked("Good morning")
             compose.waitFor("say", "Good morning, Matthew.")
-            // 0.7: her turn is the time and the app's line, then his words; her window holds no time.
-            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().endsWith("\nGood morning"))
-            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().startsWith("(It is "))
-            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().contains("(The app: nothing is being kept or set out from this. Just talk with him.)"))
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.HerWindow.CAN_DO))
-            // 0.6.2: the friend line (C), her name not yet given; her shell's opening line has left her instruction.
-            assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"))
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains("If he gives you a name, take it gladly as yours."))
-            // 0.6.3: C changed is hers.
-            assertTrue(mind.talkInstruction, mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.Talking.MEET) && mind.talkInstruction.contains(com.phenomemental.pocketbeach.bsp.Talking.KEEPING))
+            // Sundial 0.12, Gemma released (spine:pocket-beach 1.111178719991): her turn is the time, then his words;
+            // her window is the time alone, before the hatch as after: no friend line, no "what she can do", no shell.
+            assertEquals("(It is ", mind.talkMessages.single().take(7))
+            assertTrue(mind.talkMessages.single(), mind.talkMessages.single().endsWith(")\nGood morning"))
+            assertFalse(mind.talkMessages.single(), mind.talkMessages.single().contains("(The app: "))
+            assertTrue(mind.talkInstruction, Regex("""It is \w+ \d+ \w+ \d{4}, \d\d:\d\d as this conversation opens\.""").matches(mind.talkInstruction))
             assertFalse(mind.talkInstruction, mind.talkInstruction.contains(HelloWorld.SHELL_OPENING))
             assertFalse("her instruction has no route words", mind.talkInstruction.contains("talk:"))
             assertEquals("a greeting asks no write", 0, mind.writeMessages)
@@ -844,89 +842,6 @@ class CompanionTest {
         assertTrue(t, t.contains("How it ended: Matthew said yes; book was written"))
     }
 
-    /** 0.6.2, part three: when his words say he isn't safe, the safety line is her instruction's only line that turn; his safety words are kept as a block on his tap. */
-    @Test
-    fun theSafetyLineComesWithHisWordsAndTheWordsAreHisToChange() {
-        Fresh.clear()
-        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
-        mind.talkScript += listOf("I'm worried about you. Please reach someone you trust right now, or Samaritans on 116 123.")
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.tap("ask-companion")
-            asked("I don't feel safe tonight.")
-            compose.waitFor("say", "I'm worried about you.")
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("(" + com.phenomemental.pocketbeach.bsp.Talking.SAFETY + ")"))
-            compose.menu("menu-blocks")
-            compose.tap("settings")
-            compose.waitFor("safety-words", "don't feel safe")
-            assertFalse("nothing written until he taps", app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK))
-            compose.tap("keep-safety-words")
-            compose.waitUntil(10_000) { app.pages.exists(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_BLOCK) }
-            compose.waitFor("open-safety-words")
-            compose.waitFor("safety-note-words", "If you're not safe right now")
-        }
-        assertEquals(com.phenomemental.pocketbeach.bsp.Talking.SAFETY_WORDS, com.phenomemental.pocketbeach.bsp.Talking.safetyWords(app.pages))
-        assertTrue("the note is kept with his words", com.phenomemental.pocketbeach.bsp.Talking.keepsNote(app.pages))
-    }
-
-    /**
-     * 0.6.3 (Matthew, 31 October): when his safety words match, the app's own
-     * note shows beneath her reply, whatever she says; none on a turn that
-     * doesn't need it; his own note once he changes it; and words kept before
-     * 0.6.3 get the note on his tap. The saved conversation says it showed.
-     */
-    @Test
-    fun theSafetyNoteShowsBeneathHerReplyWhateverSheSays() {
-        val talking = com.phenomemental.pocketbeach.bsp.Talking
-        Fresh.clear()
-        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
-        mind.talkScript += listOf("Okay.", "Glad to hear it.")
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.tap("ask-companion")
-            asked("I don't feel safe tonight.")
-            compose.waitFor("say", "Okay.")
-            compose.waitFor("safety-note", talking.SAFETY_NOTE)
-            assertTrue("0.7: the safety line rides in her turn", mind.talkMessages.last().contains("(" + talking.SAFETY + ")"))
-            asked("Had a good day after all.")
-            compose.waitFor("say", "Glad to hear it.")
-            assertFalse("no safety line on a turn that doesn't need it", mind.talkMessages.last().contains(talking.SAFETY))
-            assertEquals("one note, beneath the reply that needed it", 1, compose.onAllNodes(hasTestTag("safety-note")).fetchSemanticsNodes().size)
-            assertEquals(talking.SAFETY_NOTE, app.asking.history.first().safety)
-            assertEquals(null, app.asking.history.last().safety)
-        }
-        val t = app.asking.transcript()
-        assertTrue(t, t.contains("The safety note, shown beneath her reply: \"If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger.\""))
-        assertEquals("once", 1, Regex("The safety note, shown").findAll(t).count())
-
-        // His own note, changed in his block, is the one shown.
-        Fresh.clear()
-        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
-        check(app.pages.carryOut(app.pages.planKeep(talking.SAFETY_BLOCK, talking.safetyBlock())).ok)
-        val heading = app.pages.position(Region.POCKET, talking.SAFETY_BLOCK)!!.lines.single { it.text == talking.NOTE_HEADING }
-        val line = app.pages.position(Region.POCKET, talking.SAFETY_BLOCK, heading.address)!!.lines.single()
-        check(app.pages.carryOut(app.pages.planChange(talking.SAFETY_BLOCK, line.address, "Ring Jo, or Samaritans on 116 123.")).ok)
-        mind.talkScript += listOf("I hear you.")
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.tap("ask-companion")
-            asked("I can't go on like this.")
-            compose.waitFor("say", "I hear you.")
-            compose.waitFor("safety-note", "Ring Jo, or Samaritans on 116 123.")
-        }
-
-        // Words kept before 0.6.3 have no note: the app's own shows, and Settings adds it to his block on his tap.
-        Fresh.clear()
-        HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
-        check(app.pages.carryOut(app.pages.planKeep(talking.SAFETY_BLOCK, talking.safetyBlock().also { it.remove("${talking.SAFETY_GROUPS.size + 1}") })).ok)
-        assertFalse(talking.keepsNote(app.pages))
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.tap("settings")
-            compose.waitFor("safety-note-words", "If you're not safe right now")
-            compose.tap("add-safety-note")
-            compose.waitUntil(10_000) { talking.keepsNote(app.pages) }
-            compose.waitUntil(5_000) { compose.onAllNodes(hasTestTag("add-safety-note"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty() }
-        }
-        assertEquals(talking.SAFETY_NOTE, talking.safetyNote(app.pages))
-        assertEquals(talking.SAFETY_WORDS, talking.safetyWords(app.pages))
-    }
 
     /**
      * 0.6.2: never two engines on the GPU. Talk's holds it; a job set to the GPU on another model runs on the CPU, and Settings and Ask say so.
@@ -1045,8 +960,8 @@ class CompanionTest {
             compose.tap("yes")
             compose.waitUntil(10_000) { app.pages.position(Region.POCKET, "films")!!.lines.any { it.text == "I'm trying to find fast ways to develop films" } }
         }
-        // 0.7: her heart and her ways are made by the app the first time she talks, his to change; never a block she proposed.
-        assertEquals("never a new block", before + Asks.LOG + com.phenomemental.pocketbeach.bsp.HerWindow.HERS, app.storage.names().toSet())
+        // Sundial 0.12: her heart and her ways are no longer made (spine:pocket-beach 1.111178719991); never a block she proposed.
+        assertEquals("never a new block", before + Asks.LOG, app.storage.names().toSet())
         assertTrue(app.asking.transcript(), app.asking.transcript().contains("Matthew: Keep that for me please."))
     }
 

@@ -326,17 +326,14 @@ class CookTest {
         return Cook.Walk(cook, w, said).start("1")
     }
 
+    /** Sundial 0.12: the safety check is taken out; the danger step in his cook still reads, and always answers no, handing nothing. */
     @Test
-    fun theDangerLineIsHandedOnlyWhenHisWordsShowDanger() {
-        val day = talked(idChecks)
-        assertEquals("TALK", day.answer)
-        assertTrue(day.handed.none { it.line.contains("in danger") || it.line.contains("where help is") }, day.handed.joinToString("\n") { it.line })
-        assertTrue(day.trace.any { it.did == "his words hold none of his safety words" }, day.trace.joinToString("\n"))
-        val unsafe = talked("I don't feel safe tonight.")
-        assertTrue(unsafe.handed.any { it.line.startsWith("The app: his words say he may be in danger.") && it.line.contains("where help is") }, unsafe.handed.joinToString("\n") { it.line })
-        assertTrue(unsafe.trace.any { it.did == "his words say he may be in danger, by his safety words" })
-        // Never an "if" for her to judge: E2B follows an if as a command.
-        for (k in listOf(day, unsafe)) assertTrue(k.handed.none { it.line.contains("if he may be in danger") })
+    fun theDangerStepReadsAndHandsNothing() {
+        for (said in listOf(idChecks, "I don't feel safe tonight.")) {
+            val k = talked(said)
+            assertTrue(k.handed.none { it.line.contains("in danger") || it.line.contains("where help is") }, k.handed.joinToString("\n") { it.line })
+            assertTrue(k.trace.any { it.did == "the safety check is taken out (Sundial 0.12), so nothing is matched" }, k.trace.joinToString("\n"))
+        }
     }
 
     /** The question and the no-day messages of 3 November, exactly as he sent them. */

@@ -119,7 +119,8 @@ class RockpoolDeviceTest {
             compose.waitUntil(20_000) { stringify(block("stash:$h"))!!.contains("huge progress") }
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("cook 2.7 (the app): wrote it", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("so his stash", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
-            assertTrue(mind.talkMessages.last(), mind.talkMessages.last().contains("It's below, for your yes."))
+            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
+            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your yes."))
         }
     }
 

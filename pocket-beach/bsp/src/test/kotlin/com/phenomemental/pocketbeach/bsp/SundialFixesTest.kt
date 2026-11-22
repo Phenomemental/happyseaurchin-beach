@@ -127,13 +127,6 @@ class SundialFixesTest {
         assertEquals(reflection to "", Talking.splitQuestion(reflection))
     }
 
-    // ── fix 2: the one danger check ──
-
-    @Test
-    fun theDangerCheckIsTheAppsOwn() {
-        assertFalse(Talking.unsafe(idChecks, Talking.SAFETY_WORDS), "his test message shows no danger")
-        assertTrue(Talking.unsafe("I don't feel safe tonight.", Talking.SAFETY_WORDS))
-    }
 }
 
 /** Sundial 0.10.1, fix 5: the captions on hold, clear of every line, dot and edge, however his days rest. */

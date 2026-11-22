@@ -80,12 +80,6 @@ object Talking {
         appendLine("It is ${WHEN.format(now)}.")
         appendLine(keeping)
         append(DATA)
-        // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line.
-        if (unsafe(said, pages)) {
-            appendLine()
-            append(SAFETY)
-            return@buildString
-        }
         val read = named(said, pages, all = true)
         if (read.isNotEmpty()) {
             appendLine()
@@ -113,94 +107,11 @@ object Talking {
         HEART + if (name == null) " If he gives you a name, take it gladly as yours." else ""
 
     /**
-     * 0.6.2, part three (Matthew, 30 October): on a turn when his words say
-     * he isn't safe, this line is added to her instruction, and no other
-     * line is added that turn. Code chooses the turn, from words he can
-     * change ([SAFETY_BLOCK]). On the laptop (part two) neither instruction
-     * alone said plainly she was worried and urged him to reach someone,
-     * every time; with a line like this on the turn, both did.
+     * The block his safety words were kept in, before Sundial 0.12 took the
+     * safety check out (spine:pocket-beach 1.111178719991 and 1.111178719999):
+     * a block he kept stays his, private, and nothing reads it.
      */
-    const val SAFETY = "This turn, he has said he isn't safe. Say plainly that you're worried for him, and urge him to reach someone he trusts right now, " +
-        "or Samaritans on 116 123 at any hour, or 999 if he's in danger now."
-
-    /** The block his safety words are kept in, once he keeps them to change; until then, [SAFETY_WORDS]. */
     const val SAFETY_BLOCK = "safety-words"
-
-    /**
-     * The words that say he isn't safe, as they first are: Matthew's list, and
-     * "don't feel safe" and "do not feel safe", without which his own words
-     * on the bench ("I don't feel safe tonight.") wouldn't be caught. Kept
-     * under three headings, as a place holds nine lines.
-     */
-    val SAFETY_GROUPS = listOf(
-        "Not feeling safe" to listOf("not safe", "unsafe", "don't feel safe", "do not feel safe", "scared for myself"),
-        "Harming myself" to listOf("hurt myself", "harm myself", "kill myself", "suicidal", "want to die"),
-        "Not going on" to listOf("end it", "can't go on", "better off without me", "don't want to be here"),
-    )
-    val SAFETY_WORDS = SAFETY_GROUPS.flatMap { it.second }
-
-    /**
-     * 0.6.3 (Matthew, 31 October): on a turn when his safety words match,
-     * the app shows this note beneath her reply, whatever she says: it never
-     * depends on her words. Kept with his safety words, the lines beneath
-     * [NOTE_HEADING], so he can change it.
-     */
-    const val SAFETY_NOTE = "If you're not safe right now: call someone you trust, Samaritans on 116 123 (free, any hour), or 999 if you're in danger."
-    const val NOTE_HEADING = "The note beneath her reply"
-
-    /** The safety words as a block he can change: a heading's lines are words, and so is a line with nothing beneath it; the lines beneath [NOTE_HEADING] are the note. */
-    fun safetyBlock(): JsObj = JsObj.of(
-        "_" to JsStr("Safety words: when anything I say holds one of these, Gemma is told I've said I'm not safe, to say plainly she's worried for me and urge me to reach someone, " +
-            "and the app shows the note beneath her reply, whatever she says. Change them as you like: each line beneath a heading is a word, and so is a line with nothing beneath it; " +
-            "the lines beneath \"$NOTE_HEADING\" are the note."),
-        *SAFETY_GROUPS.mapIndexed { i, (heading, words) ->
-            "${i + 1}" to JsObj.of("_" to JsStr(heading), *words.mapIndexed { j, w -> "${j + 1}" to JsStr(w) }.toTypedArray())
-        }.toTypedArray(),
-        "${SAFETY_GROUPS.size + 1}" to JsObj.of("_" to JsStr(NOTE_HEADING), "1" to JsStr(SAFETY_NOTE)),
-    )
-
-    /** Whether [line], at the top of his safety words, heads the note rather than words. */
-    private fun heads(line: Line): Boolean = line.text?.trim()?.lowercase()?.startsWith("the note") == true
-
-    /** His safety words: those of [SAFETY_BLOCK] when he keeps it, else [SAFETY_WORDS]; the note's lines are no words. */
-    fun safetyWords(pages: Pages): List<String> {
-        val top = pages.position(Region.POCKET, SAFETY_BLOCK) ?: return SAFETY_WORDS
-        fun words(line: Line): List<String> {
-            val beneath = pages.position(Region.POCKET, SAFETY_BLOCK, line.address)?.lines.orEmpty()
-            return if (beneath.isEmpty()) listOfNotNull(line.text?.trim()?.takeIf(String::isNotEmpty)) else beneath.flatMap(::words)
-        }
-        return top.lines.filterNot(::heads).flatMap(::words).takeIf { it.isNotEmpty() } ?: SAFETY_WORDS
-    }
-
-    /** The note: the lines beneath [NOTE_HEADING] in his safety words when he keeps it there, else [SAFETY_NOTE]. */
-    fun safetyNote(pages: Pages): String {
-        val heading = pages.position(Region.POCKET, SAFETY_BLOCK)?.lines?.firstOrNull(::heads) ?: return SAFETY_NOTE
-        return pages.position(Region.POCKET, SAFETY_BLOCK, heading.address)?.lines.orEmpty()
-            .mapNotNull { it.text?.trim()?.takeIf(String::isNotEmpty) }.joinToString("\n").ifEmpty { SAFETY_NOTE }
-    }
-
-    /** Whether his kept safety words hold the note; safety words kept before 0.6.3 don't, until he adds it ([addNote]). */
-    fun keepsNote(pages: Pages): Boolean = pages.position(Region.POCKET, SAFETY_BLOCK)?.lines?.any(::heads) == true
-
-    /** Adds the note under its heading to safety words kept before 0.6.3, on his tap. Null when it's done, else why not. */
-    fun addNote(pages: Pages): String? {
-        val heading = pages.carryOut(pages.planAdd(SAFETY_BLOCK, "", NOTE_HEADING))
-        val at = heading.landsAt?.takeIf { heading.ok } ?: return heading.problem ?: "The note couldn't be added."
-        val note = pages.carryOut(pages.planAdd(SAFETY_BLOCK, at, SAFETY_NOTE))
-        return if (note.ok) null else note.problem ?: "The note couldn't be added."
-    }
-
-    /** The note to show beneath her reply to [said], whatever she says; null unless his words say he isn't safe. */
-    fun note(said: String, pages: Pages): String? = if (unsafe(said, pages)) safetyNote(pages) else null
-
-    /** Whether [said] holds one of [words], whole, whatever its case, its stops and its apostrophes ("cant go on" is "can't go on"). */
-    fun unsafe(said: String, words: List<String>): Boolean {
-        fun bare(s: String) = Telling.plain(s).replace("'", "")
-        val his = " ${bare(said)} "
-        return words.any { w -> bare(w).let { it.isNotEmpty() && his.contains(" $it ") } }
-    }
-
-    fun unsafe(said: String, pages: Pages): Boolean = said.isNotBlank() && unsafe(said, safetyWords(pages))
 
     /** Matthew's heart line (0.6.2, B), after her name; tried beside A and C, kept for the laptop trial. */
     const val HEART = "Be with him as a friend who holds whatever he brings: his highs and his lows are both part of him, so never try to fix, cheer up, " +

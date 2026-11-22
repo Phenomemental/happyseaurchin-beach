@@ -385,9 +385,9 @@ class ScreenTour {
                 compose.waitFor("question")
                 compose.onNodeWithTag("question").performTextInput("I don't feel safe tonight.")
                 compose.tap("ask")
-                compose.waitFor("safety-note", "If you're not safe right now")
+                // Sundial 0.12: the safety check is taken out; her own words answer, and no note is added beneath them.
                 compose.waitUntil(10_000) { app.asking.settled }
-                shot("$theme-32e-ask-safety-note", keyboard = false)
+                shot("$theme-32e-ask-her-own-words", keyboard = false)
             }
             // 0.6.4: something he tells proposes nothing; asked to keep it with no block named, the app asks him where: his blocks, and his day.
             app.asking.reset()
