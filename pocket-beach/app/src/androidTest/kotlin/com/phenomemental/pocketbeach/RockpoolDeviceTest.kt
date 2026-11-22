@@ -33,10 +33,9 @@ import org.junit.runner.RunWith
 /**
  * Rockpool, pscale as procedure (spine:pocket-beach 1.111178714), on the
  * phone with a stand-in for the model: his cook and kernel brought into his
- * pocket at opening, his days moved out of telling; his message walked by his
- * cook, the trace in Details; a cue line he edits changing what the app
- * hears; a cook that can't be read running the shipped copy, and saying so;
- * his day told the beach's way; and the name and the mark.
+ * pocket at opening, his days moved out of telling; his day told the beach's
+ * way; and the name and the mark. Sundial 0.12's plain chat walks no recipe,
+ * so the checks of his message walked by his cook went with it.
  */
 @RunWith(AndroidJUnit4::class)
 class RockpoolDeviceTest {
@@ -101,61 +100,6 @@ class RockpoolDeviceTest {
             assertTrue(stringify(shell["3"])!!.contains(Cook.cookOf(h)))
             assertTrue(stringify(shell["3"])!!.contains(Days.aheadOf(h)))
             assertTrue(jsString(jsGet(shell[Hatch.WINDOW], "5")) == Days.aheadOf(h))
-        }
-    }
-
-    @Test
-    fun keepThatWalksHisCookAndTheTraceShowsInDetails() {
-        hatched()
-        app.showDetails = true
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("I've been making huge progress with my film making.")
-            compose.waitFor("say", timeoutMs = 20_000)
-            say("Keep that for me please")
-            // 0.9.1: no block named, so his stash, set out for his yes with no ring.
-            compose.waitFor("yes", timeoutMs = 20_000)
-            compose.tap("yes")
-            compose.waitUntil(20_000) { stringify(block("stash:$h"))!!.contains("huge progress") }
-            compose.waitUntil(10_000) { compose.onAllNodes(hasText("cook 2.7 (the app): wrote it", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
-            compose.waitUntil(10_000) { compose.onAllNodes(hasText("so his stash", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
-            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
-            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your yes."))
-        }
-    }
-
-    @Test
-    fun aCueLineHeEditsChangesWhatTheAppHears() {
-        hatched()
-        Cook.bringIn(h, app.pages, app.storage, app.procedures).forEach { check(app.pages.carryOut(it).ok) }
-        val post = jsString(jsGet(jsGet(block(Cook.cookOf(h)), "9"), "2"))
-        check(app.pages.carryOut(app.pages.planChange(Cook.cookOf(h), "9.2", post.replace("send … to my room, ", ""))).ok)
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Send a message to my room: back soon")
-            compose.waitFor("say", timeoutMs = 20_000)
-            compose.waitUntil(10_000) { app.asking.settled }
-            assertTrue("no post set out", compose.onAllNodes(hasTestTag("post")).fetchSemanticsNodes().isEmpty())
-            // Put back, as the shipped copy has it: the same words set out a post.
-            check(app.pages.carryOut(app.pages.planChange(Cook.cookOf(h), "9.2", post)).ok)
-            say("Send a message to my room: back soon")
-            compose.waitFor("post", timeoutMs = 20_000)
-            compose.waitFor("post-message", "back soon")
-            assertTrue(wire.sent.isEmpty())
-        }
-    }
-
-    @Test
-    fun aCookThatCantBeReadRunsTheShippedCopyAndSaysSo() {
-        hatched()
-        Cook.bringIn(h, app.pages, app.storage, app.procedures).forEach { check(app.pages.carryOut(it).ok) }
-        check(app.pages.carryOut(app.pages.planChange(Cook.cookOf(h), "3.4", "Set out something lovely for him, whatever he likes.")).ok)
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("top-bar")
-            say("Post this message to my room: \"Back on Tuesday\"")
-            compose.waitFor("cook-note", "Your cook couldn't be read at 3.4", timeoutMs = 20_000)
-            // The shipped copy ran: his words set out as a post.
-            compose.waitFor("post-message", "Back on Tuesday", timeoutMs = 20_000)
         }
     }
 

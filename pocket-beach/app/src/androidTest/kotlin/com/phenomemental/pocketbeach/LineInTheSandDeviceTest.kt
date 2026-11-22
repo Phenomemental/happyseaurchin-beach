@@ -1,6 +1,7 @@
 package com.phenomemental.pocketbeach
 
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -27,9 +28,9 @@ import org.junit.runner.RunWith
 
 /**
  * Sundial 0.10.3, THE LINE IN THE SAND (spine:pocket-beach 1.11117871992),
- * on the phone with a stand-in for her: the keep card shows each moment with
- * the places she marked in her reply, and she isn't asked again; his day and
- * his short answers take the routes cook 1.1.8.3 says; he takes a card off
+ * on the phone with a stand-in for her: Keep today keeps his day (Sundial
+ * 0.12: nothing read from her reply); his day and his short answers reach
+ * her as his words and the time alone; he takes a card off
  * his hand himself; and every yes, Keep yesterday's among them, has its own
  * entry in his history as it is written. Sundial 0.10.5: a new conversation
  * runs on her one engine, on the GPU, and no second engine is ever made.
@@ -77,23 +78,22 @@ class LineInTheSandDeviceTest {
     private val hisDay = "Took the dog out with Sam by the river this morning and the water was high after all the rain. " +
         "I felt calm for the first time in a while, which surprised me. Then I spent an hour on the membership form and made good progress with it."
 
+    /**
+     * Sundial 0.12, the plain chat: a places line she writes is never shown and nothing is read from it, so his
+     * moment waits unmarked; Keep today marks it on its own, as it does any moment, and his yes keeps his day.
+     */
     @Test
-    fun test7_theCardShowsHerPlacesForEachMomentAndSheIsNotAskedAgain() {
+    fun test7_keepTodayKeepsHisDayAndNothingIsReadFromHerReply() {
         Fresh.hatched()
         mind.talkScript += "You took the dog out with Sam by the river, and you felt calm. What did you notice on the way back?\n\nPlaces: what happened, what he felt"
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("dial")
             say(hisDay)
-            compose.waitUntil(20_000) { app.waiting.all.any { it.places.isNotEmpty() } }
-            assertEquals(listOf(listOf(1, 2)), app.waiting.all.map { it.places })
-            compose.waitUntil(20_000) { app.asking.settled }
+            compose.waitUntil(20_000) { app.asking.settled && app.waiting.all.isNotEmpty() }
+            assertEquals("nothing read from her reply", listOf(emptyList<Int>()), app.waiting.all.map { it.places })
+            assertTrue("her places line never shown", compose.onAllNodes(hasTestTag("say") and hasText("Places", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
             compose.tap("keep-today")
             compose.waitFor("keep-card", timeoutMs = 20_000)
-            compose.waitFor("keep-marked", "She's marked where each moment sits. Tap a colour only to change it.")
-            compose.waitUntil(5_000) {
-                compose.onAllNodes(hasTestTag("keep-moment-place:0:1") and hasContentDescription(", on", substring = true), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
-            }
-            assertTrue("her places came from her reply: she wasn't asked again", mind.sortAsks.none { it.first?.contains("for each of his moments") == true })
             val before = history().size
             compose.tap("day-yes")
             compose.waitFor("kept-shell", "A walk by the river", timeoutMs = 20_000)

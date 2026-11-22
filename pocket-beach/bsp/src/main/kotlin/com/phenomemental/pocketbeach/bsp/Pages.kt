@@ -17,6 +17,14 @@ class ShoreView(
 /** One line of a block: where it stands, what it says, its arrival stamp if it was appended, and how many lines stand one step beneath it. */
 class Line(val address: String, val text: String?, val stamp: String?, val beneath: Int)
 
+/** Sundial 0.12: one line of a block in pscale structure: its address ("" the opening), its depth, its words, and how many lines stand beneath it. */
+class OutlineLine(val address: String, val depth: Int, val text: String?, val beneath: Int)
+
+/** Sundial 0.12: an outline as plain text: the opening line, then each line indented by its depth, its address before it. */
+fun outlineAsText(lines: List<OutlineLine>): String = lines.joinToString("\n") { l ->
+    if (l.address.isEmpty()) l.text.orEmpty() else "  ".repeat(l.depth) + l.address + "  " + (l.text ?: "")
+}
+
 /** A summary the beach's convention says is owed: a line written at [at] that voices lines [over]. */
 class Owed(val at: String, val over: String)
 
@@ -171,6 +179,29 @@ class Pages(
             owed = emptyList(),
         )
     }
+
+    /**
+     * Sundial 0.12: a block in pscale structure, as the editor and the chat
+     * show it: its opening line, then every line beneath its parent, each with
+     * its address and depth, walked place by place as [position] reads them
+     * (so a wrapped block reads as it should). At most [most] lines.
+     */
+    fun outline(region: Region, name: String, most: Int = 600): List<OutlineLine>? {
+        val top = position(region, name) ?: return null
+        val out = mutableListOf(OutlineLine("", 0, top.text, top.lines.size))
+        fun walk(lines: List<Line>, depth: Int) {
+            for (l in lines) {
+                if (out.size >= most) return
+                out += OutlineLine(l.address, depth, l.text, l.beneath)
+                if (l.beneath > 0) position(region, name, l.address)?.let { walk(it.lines, depth + 1) }
+            }
+        }
+        walk(top.lines, 1)
+        return out
+    }
+
+    /** Sundial 0.12: a block as plain text in pscale structure, for her to read or for him to share: each line indented by depth, its address before it. */
+    fun outlineText(region: Region, name: String, most: Int = 600): String? = outline(region, name, most)?.let(::outlineAsText)
 
     // ── writes ──
 

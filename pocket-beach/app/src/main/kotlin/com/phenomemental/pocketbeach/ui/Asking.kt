@@ -8,6 +8,7 @@ import com.phenomemental.pocketbeach.PocketApp
 import com.phenomemental.pocketbeach.bsp.Acts
 import com.phenomemental.pocketbeach.bsp.Answer
 import com.phenomemental.pocketbeach.bsp.Asked
+import com.phenomemental.pocketbeach.bsp.Chats
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.Close
@@ -136,6 +137,9 @@ class Asking(private val app: PocketApp) {
      * comes after her reply ([checking]).
      */
     class Exchange(val question: String, val at: Long = System.currentTimeMillis()) {
+        /** Sundial 0.12: the files he added to this message, read in as text beneath his words; shown as chips on it. */
+        var files: List<Chats.Attached> = emptyList()
+            internal set
         /** Her reply, as shown: never a line playing her turn back. */
         var said by mutableStateOf("")
             internal set
@@ -629,6 +633,8 @@ class Asking(private val app: PocketApp) {
         history.lastOrNull()?.let { it.sortable = false; it.keepIn = null }
         yieldWrite()
         val e = Exchange(q)
+        e.files = attached.toList()
+        attached.clear()
         history += e
         live = ""
         e.answeredBy += MindJob.TALK
@@ -643,26 +649,11 @@ class Asking(private val app: PocketApp) {
             val h = withContext(Dispatchers.IO) { hatched() }
             // Sundial 0.10: his words and their instant wait for Keep today, before his cook walks them (spine:pocket-beach 1.111178719915).
             if (h != null) runCatching { app.waiting.add(q, e.at) }
-            // 0.8: her name is a line at her place in his shell.
-            // Rockpool: once he has hatched, his message runs his cook as his kernel names it; before, the gate as 0.8.1 has it.
-            // Sundial 0.10.1: every step timed, for the workings; what was readied as Ask opened, said as before his message.
+            // Sundial 0.12, the plain chat (spine:pocket-beach 1.111178719993): his message walks no recipe and sets out no card;
+            // the recipes and skills wait for 0.13. Her reply is all that follows his words.
             val readied = app.mind.steps?.take().orEmpty().map { "before his message, $it" }
-            val walkStarted = System.nanoTime()
-            var recipeNow: String? = null
-            val walk = if (h == null) null else withContext(Dispatchers.IO) {
-                runCatching {
-                    val loaded = Cook.load(h, app.storage, app.procedures)
-                    recipeNow = Cook.talkRecipe(loaded.parsed)
-                    e.cookNote = loaded.note
-                    Cook.Walk(loaded.parsed, AppWorld(e, h, earlier), q).start(loaded.kernel.message ?: "1")
-                }.onFailure { t -> failed("his cook", t) }.getOrNull()
-            }
-            walk?.let { w -> runCatching { serveHer(w, e) }.onFailure { t -> failed("her ring choice", t) }; e.walk = w; e.trace = w.trace.toList() }
-            val walkSteps = readied + listOfNotNull(walk?.let { "his cook walked" + (if (it.answer != null) " (${it.answer})" else "") + ": " + Steps.secs((System.nanoTime() - walkStarted) / 1_000_000) }) + app.mind.steps?.take().orEmpty()
-            val gate = if (walk != null) Result.success(Keeping.Way.Talk) else withContext(Dispatchers.IO) { runCatching { if (h != null) Keeping.way(q, earlier, app.pages, Hatch.shellOf(h), Hatch.HER) else Keeping.way(q, earlier, app.pages) } }
-            gate.exceptionOrNull()?.let { t -> failed("the gate", t) }
-            val way = gate.getOrDefault(Keeping.Way.Talk)
-            e.asked = if (walk != null) walk.answer != null && walk.answer != "TALK" else way !is Keeping.Way.Talk
+            val walkSteps = readied + app.mind.steps?.take().orEmpty()
+            e.asked = false
             // Her reply, streamed as she writes it.
             val talked = withContext(Dispatchers.IO) {
                 runCatching {
@@ -677,19 +668,17 @@ class Asking(private val app: PocketApp) {
                         val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
                         val first = history.size == 1
-                        // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
-                        e.appLine = if (walk != null) walk.handed.joinToString(" / ") { it.line }.ifEmpty { HerWindow.TALK_LINE }
-                            else if (h != null) HerWindow.appLine8(way, q) else HerWindow.appLine(way, q)
+                        // Sundial 0.12: no line of the app's stands in her turn.
+                        e.appLine = null
                         conversation.said += q
-                        if (walk != null) conversation.read += walk.reads.map { "his $it" }
-                        else runCatching { Talking.named(q, app.pages, all = true) }.getOrNull()?.let { names -> conversation.read += names.map { "his $it" } }
+                        conversation.read += e.files.map { "his ${it.name}" }
                         // Sundial 0.10.2: in her one conversation, only his new message and what is new with it; her recipe is in her instruction.
                         // Every one of his messages carries its own time, as the beach gives it; her conversation is never opened again for it.
                         val saidAt = java.time.Instant.ofEpochMilli(e.at).atZone(now.zone)
                         val last = lastMessageBefore(e.at)
                         e.stamp = HerWindow.stamp(saidAt, last)
                         // Sundial 0.12, Gemma released: her turn is the time and his words, and nothing added to shape how she answers.
-                        val message = HerWindow.releasedTurn(q, saidAt, last)
+                        val message = HerWindow.releasedTurn(Chats.withFiles(q, e.files), saidAt, last)
                         val echo = HerWindow.echoLines(message)
                         // Sundial 0.12: the echo filter is given only the app's own lines (the time it stamps on his turn); his words are hers to say.
                         val opening = ""
@@ -721,23 +710,6 @@ class Asking(private val app: PocketApp) {
                         if (e.copied.isNotEmpty() && h == null) stale += MindJob.TALK
                         e.jobMs[MindJob.TALK] = (System.nanoTime() - started) / 1_000_000
                         val whole = shown.of(reply, over = true)
-                        // Sundial 0.10.2, for the workings: her reply as she wrote it, her places line, and the shape the split found.
-                        if (walk != null) {
-                            val f = HerReply.free(reply, whole)
-                            e.raw = reply
-                            e.placesLine = f.placesLine
-                            e.shape = f.shape
-                            e.placed = when {
-                                f.placesLine == null -> null
-                                f.allSix -> "She named all six places: unreliable, counted as none."
-                                f.places.isEmpty() -> "She named no place."
-                                else -> "She named ${f.places.joinToString(", ") { com.phenomemental.pocketbeach.bsp.Mark.POOLS[it - 1].phrase }}."
-                            }
-                            // Sundial 0.10.3: her places for this moment are kept with it, so Keep today shows them already marked (1.111178719927);
-                            // only from a turn whose line asked her for them (his day's): on the laptop she wrote a places line on every turn.
-                            val asked = walk.handed.any { it.line.contains("Places:") }
-                            if (h != null && asked && f.places.isNotEmpty()) runCatching { app.waiting.place(e.at, f.places) }
-                        }
                         // A short reply shows whole at its end: its first words are shown then.
                         if (firstShown == null && whole.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
                         message to whole
@@ -772,40 +744,12 @@ class Asking(private val app: PocketApp) {
             live = ""
             // What she said, never her turn played back, is what she is given again: his words and hers.
             remember(MindJob.TALK, Talking.said(q), said.ifBlank { "…" })
-            // 0.6.1: his words could be a day: "Sort as my day" is offered under her reply. Nothing is sorted unless he asks.
-            // Sundial 0.10.1 (item 11): once he has hatched, Keep today is the one way his words become his day: no card after her reply.
-            e.sortable = if (h != null) false
-                else withContext(Dispatchers.IO) { runCatching { Landing.isTelling(q, Telling.cards(handNow()), Landing.names(app.pages)) }.getOrDefault(false) }
-            if (e.sortable) e.sortOffered = System.currentTimeMillis()
+            keepTalk()
+            e.sortable = false
             unseen += e
-            // The box is ready. 0.6.4, the gate: the writing check runs only when his words ask to keep, change, make a block or post;
-            // a name for her is one line on her shell, by code; asked to keep with no block of his named, the app asks him where.
+            // Sundial 0.12, the plain chat: nothing is set out beneath her reply; the box is ready.
             stage = Stage.Writing
-            if (walk != null && h != null) {
-                walked(e, walk, h)
-                runWrites()
-                return@launch
-            }
-            when (way) {
-                is Keeping.Way.Write -> {
-                    e.checking = true
-                    writes.addLast(e)
-                }
-                is Keeping.Way.Name ->
-                    if (h != null) byApp(e, listOf(Hatch.nameAction(h, app.pages, way.name)), "Her name couldn't be kept")
-                    else byApp(e, listOf(Acts.Action.Add(HelloWorld.SHELL, null, way.line)), "Her name couldn't be kept")
-                // 0.8.1: a post of his own words is set out by code, with no model call; with none, nothing is, and why shows beneath her reply.
-                is Keeping.Way.Post -> {
-                    val words = way.words
-                    if (words != null) postOut(e, words)
-                    else finish(e, null, "Nothing was set out: your words held no message of your own. Say what you'd like to post after a colon, or in quotes.", proposed = true)
-                }
-                // 0.8: "Keep that" with no block named is a write to his stash, set out for his yes.
-                is Keeping.Way.Where ->
-                    if (h != null) byApp(e, listOf(Acts.Action.Add(Hatch.stashOf(h), null, way.words)), "It couldn't be kept in your stash")
-                    else e.waiting = Stage.Where(way.words, hisBlocks())
-                Keeping.Way.Talk -> answered(e, talkOnly(e), emptyMap())
-            }
+            answered(e, talkOnly(e), emptyMap())
             runWrites()
         }
     }
@@ -1704,10 +1648,34 @@ class Asking(private val app: PocketApp) {
         }
     }
 
+    /** Sundial 0.12: the files he has added to his next message, shown as chips above the box. */
+    val attached = mutableStateListOf<Chats.Attached>()
+
+    /** Sundial 0.12: add a file to his next message, once by its name. */
+    fun attach(file: Chats.Attached) {
+        if (attached.none { it.name == file.name }) attached += file
+    }
+
+    /** Sundial 0.12: his kept conversations, newest first (the app's own files, never blocks). */
+    fun keptTalks(): List<Chats.Kept> = runCatching { Chats.all(java.io.File(app.filesDir, TALKS)) }.getOrDefault(emptyList())
+
+    /** Sundial 0.12: the conversation in hand, as kept and shared. */
+    fun talkInHand(): Chats.Kept? = history.filter { it.said.isNotBlank() }.takeIf { it.isNotEmpty() }?.let { ex ->
+        Chats.Kept(ex.first().at, ex.map { Chats.Said(it.question, it.files, it.said, it.at) })
+    }
+
+    /** Sundial 0.12: the conversation in hand kept inside the app after each reply, for the list of older ones. */
+    private fun keepTalk() {
+        val kept = talkInHand() ?: return
+        runCatching { Chats.keep(java.io.File(app.filesDir, TALKS), kept) }
+    }
+
     /** Forget the Ask in hand and the conversation without logging them, as the device tests begin. */
     fun reset() {
         job?.cancel()
         writer?.cancel()
+        // Sundial 0.12: the files waiting for his next message go with the Ask in hand.
+        attached.clear()
         writes.clear()
         writingNow = null
         yielded = false
@@ -1841,6 +1809,9 @@ class Asking(private val app: PocketApp) {
 
     /** What the companion is shown of the shell it wears: the shell put on as the play door puts it on, offline. */
     companion object {
+        /** Sundial 0.12: where his conversations are kept, inside the app. */
+        const val TALKS = "talks"
+
         /** 0.7: how many messages her kept conversation carries before it is opened afresh with the last six exchanges. */
         const val TURNS = 6
 

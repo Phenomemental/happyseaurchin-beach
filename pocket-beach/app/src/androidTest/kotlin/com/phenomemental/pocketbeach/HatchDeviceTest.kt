@@ -17,6 +17,7 @@ import com.phenomemental.pocketbeach.ui.Hatching
 import java.io.File
 import org.junit.After
 import org.junit.Assert.assertEquals
+import androidx.compose.ui.test.hasTestTag
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -29,8 +30,8 @@ import org.junit.runner.RunWith
 /**
  * 0.8, the hatch on the phone (spine:pocket-beach 1.1111787133), with a
  * stand-in for the model: born at the welcome, or his passport adopted from
- * a file; a whole copy saved first; her window the nine places of his shell;
- * "Keep that" set out for his stash; and the close's one history entry.
+ * a file; a whole copy saved first; Sundial 0.12: her window the time
+ * alone, nothing set out beneath her reply; and the close's one history entry.
  */
 @RunWith(AndroidJUnit4::class)
 class HatchDeviceTest {
@@ -93,7 +94,7 @@ class HatchDeviceTest {
     }
 
     @Test
-    fun hisPassportAdoptedFromAFileKeepsHisBlocksAndKeepThatGoesToHisStash() {
+    fun hisPassportAdoptedFromAFileKeepsHisBlocks() {
         Fresh.open().use {
             // A 0.7 pocket: her shell named, a block of his.
             HelloWorld.makeShell(app.pages, Talks.SHELL_RECIPE)
@@ -113,28 +114,19 @@ class HatchDeviceTest {
             assertTrue("his garden listed", stringify(shell["3"])!!.contains("\"garden\""))
             assertNotNull("her shell kept, in the hidden region", File(app.filesDir, "regions/app").listFiles()!!.firstOrNull { it.name.startsWith("pocket-companion") })
             assertTrue("his garden kept", app.pages.exists("garden"))
-            // Keep that, with no block named: set out for his stash, his yes.
+            // Sundial 0.12, the plain chat: his words talked with; nothing set out beneath her reply.
             answer("I've been making huge progress with my film making.")
             compose.waitFor("say")
             assertTrue(mind.talkInstruction, mind.talkInstruction.startsWith("It is "))
             answer("Keep that for me please")
-            // Rockpool 0.9.1: KEEP, from his cook: no block named, so his stash, for his yes.
-            compose.waitFor("yes", timeoutMs = 20_000)
-            compose.tap("yes")
-            compose.waitUntil(20_000) { stringify(block("stash:Phenomemental"))!!.contains("huge progress") }
-            // Sundial 0.12, Gemma released: the app's line is no longer handed her; her turn is the time and his words.
-            assertTrue(mind.talkMessages.last(), !mind.talkMessages.last().contains("It's below, for your yes.") && mind.talkMessages.last().endsWith(")\nKeep that for me please"))
-            // Sundial 0.10.3 (spine:pocket-beach 1.111178719929): his yes has its own history entry, written as it lands.
-            compose.waitUntil(20_000) { block("history:Phenomemental").has("1") }
-            val yes = block("history:Phenomemental")["1"] as JsObj
-            assertTrue(stringify(yes)!!, collectUnderscore(yes)!!.startsWith("On his yes: what was set out beneath her reply to “Keep that for me please”"))
-            assertTrue(stringify(yes)!!, stringify(yes["1"])!!.contains("stash:Phenomemental"))
-            // Leaving Ask closes the conversation: one history entry more, by the app.
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size >= 2 }
+            assertTrue("nothing set out", compose.onAllNodes(hasTestTag("yes"), useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+            assertFalse("nothing kept unasked", app.pages.exists("stash:Phenomemental") && stringify(block("stash:Phenomemental"))!!.contains("huge progress"))
+            // Leaving Ask closes the conversation: one history entry, by the app.
             compose.menu("menu-blocks")
-            compose.waitUntil(20_000) { block("history:Phenomemental").has("2") }
-            val entry = block("history:Phenomemental")["2"] as JsObj
+            compose.waitUntil(20_000) { block("history:Phenomemental").has("1") }
+            val entry = block("history:Phenomemental")["1"] as JsObj
             assertTrue(stringify(entry)!!, collectUnderscore(entry)!!.startsWith("Talked with him: 2 messages, from “I've been making huge progress"))
-            assertTrue(stringify(entry)!!, stringify(entry["2"])!!.contains("stash:Phenomemental"))
         }
     }
 }

@@ -145,7 +145,7 @@ fun AskScreen(model: Model, nav: Nav) {
     ChatFrame(
         model, nav, title = herName ?: "Your companion", wearing = wearing, details = details,
         onSave = if (asking.history.isNotEmpty()) ({ saveTo.launch(asking.fileName()) }) else null,
-        input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(asking, hatching.takesTheBox, keep = if (hatching.hatched != null) model else null) }),
+        input = if (!ready && !hatching.takesTheBox) null else ({ InputBar(model, asking, hatching.takesTheBox, keep = if (hatching.hatched != null) model else null) }),
         scroll = scroll,
     ) {
         // Sundial 0.10.1: the bring-up says one plain line, gone on a tap or a message; the full account is under Show the workings.
@@ -195,6 +195,11 @@ fun AskScreen(model: Model, nav: Nav) {
         // Sundial 0.10.1: under Show the workings, when she talks on the smaller model, said plainly, with the way to the larger.
         if (details && ready) SmallerModel(model)
 
+        // Sundial 0.12: his older conversations, and this one shared out as text; kept before the hatch as after, so listed either way.
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            TextLink("Your conversations", { nav.go(Screen.Talks) }, tag = "talks")
+            asking.talkInHand()?.let { t -> TextLink("Share this conversation", { shareText(context, com.phenomemental.pocketbeach.bsp.Chats.asText(t), "A conversation from Sundial") }, tag = "share-talk") }
+        }
         // The thread: each thing he said, her reply, and what waits on his answer beneath it.
         asking.history.forEach { e -> Turn(model, nav, e, latest = e === asking.history.lastOrNull(), details = details) }
         if (asking.benchRunning) Notice("The bench is running. Ask can be used once it's over.", tag = "ask-bench-running")
@@ -223,10 +228,14 @@ fun helpLine(model: Model): String =
  * stop square while her reply comes). It empties when he sends.
  */
 @Composable
-private fun InputBar(asking: Asking, welcome: Boolean = false, keep: Model? = null) {
+private fun InputBar(model: Model, asking: Asking, welcome: Boolean = false, keep: Model? = null) {
     val ink = LocalInk.current
     val voice = rememberVoice { words -> asking.question = if (asking.question.isBlank()) words else asking.question.trimEnd() + " " + words }
+    var attaching by remember { mutableStateOf(false) }
+    if (attaching) AttachSheet(model) { attaching = false }
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Sundial 0.12: the files he has added to his next message, each a chip he can take off.
+        if (!welcome) FileChips(asking.attached.toList(), remove = { asking.attached.remove(it) })
         if (voice.heard.isNotEmpty()) Text(voice.heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
         voice.note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("speech-note")) }
         Row(
@@ -243,6 +252,7 @@ private fun InputBar(asking: Asking, welcome: Boolean = false, keep: Model? = nu
                     modifier = Modifier.fillMaxWidth().testTag("question"),
                 )
             }
+            if (!welcome) RoundMark("Add a file", { attaching = true }, tag = "paperclip") { c -> drawClip(c) }
             RoundMark(if (voice.listening) "Listening…" else "Speak", { voice.tap() }, tag = "speak", lit = voice.listening) { c -> drawMic(c) }
             if (asking.stage is Asking.Stage.Thinking) RoundMark("Stop", { asking.stop() }, tag = "stop", strong = true) { c -> drawStop(c) }
             else RoundMark(if (welcome) "Answer" else "Send", { asking.ask() }, tag = "ask", enabled = asking.question.isNotBlank() && !asking.benchRunning, strong = true) { c -> drawSend(c) }
@@ -384,13 +394,17 @@ private fun Turn(model: Model, nav: Nav, e: Asking.Exchange, latest: Boolean, de
     val ink = LocalInk.current
     val asking = model.app.asking
     val thinking = latest && asking.stage is Asking.Stage.Thinking
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
+        FileChips(e.files, alignEnd = true)
         His(e.question)
         when {
             e.said.isNotEmpty() -> Text(replyShaped(e.parts, e.said), style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
             // Her words as she writes them.
             thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
         }
+        // Sundial 0.12: her reply shared out as text.
+        if (e.said.isNotBlank() && !thinking) TextLink("Share", { shareText(context, e.said, "From Sundial") }, tag = "share-reply")
         // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
         e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
         // Sundial 0.10.5: she ran on the CPU because the GPU couldn't take her: said plainly, with or without the workings.

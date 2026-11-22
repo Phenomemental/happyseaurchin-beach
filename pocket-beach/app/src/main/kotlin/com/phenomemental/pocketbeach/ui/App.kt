@@ -39,6 +39,10 @@ sealed interface Screen {
     data object Recipes : Screen
     /** Sundial 0.10.1: a kept day as its page (its title, lines, Tomorrow and its places line): from its shell, and from Your days. */
     data class Day(val address: String) : Screen
+    /** Sundial 0.12: his older conversations, listed. */
+    data object Talks : Screen
+    /** Sundial 0.12: one older conversation, begun at [startedMs]. */
+    data class Talk(val startedMs: Long) : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -68,6 +72,8 @@ class Nav(initial: List<Screen>) {
             Screen.Hand -> "hand"
             Screen.Recipes -> "recipes"
             is Screen.Day -> listOf("day", s.address).joinToString(SEP)
+            Screen.Talks -> "talks"
+            is Screen.Talk -> listOf("talk", s.startedMs.toString()).joinToString(SEP)
         }
 
         private fun decode(text: String): Screen? {
@@ -87,6 +93,8 @@ class Nav(initial: List<Screen>) {
                 "hand" -> Screen.Hand
                 "recipes" -> Screen.Recipes
                 "day" -> Screen.Day(p[1])
+                "talks" -> Screen.Talks
+                "talk" -> p.getOrNull(1)?.toLongOrNull()?.let { Screen.Talk(it) }
                 else -> null
             }
         }
@@ -158,6 +166,8 @@ fun PocketScreens(app: PocketApp) {
             Screen.Settings -> SettingsScreen(model, nav)
             Screen.Days -> DaysScreen(model, nav)
             is Screen.Day -> DayScreen(model, nav, s.address)
+            Screen.Talks -> TalksScreen(model, nav)
+            is Screen.Talk -> TalkScreen(model, nav, s.startedMs)
             Screen.Room -> RoomScreen(model, nav)
             Screen.Hand -> HandScreen(model, nav)
             Screen.Recipes -> RecipesScreen(model, nav)
@@ -166,7 +176,13 @@ fun PocketScreens(app: PocketApp) {
     }
     // A block shared in from another app is shown as soon as it arrives.
     LaunchedEffect(app.inbox) {
-        if (app.inbox != null && nav.top != Screen.Received) nav.go(Screen.Received)
+        // Sundial 0.12: text shared in lands in the chat as a file added to his next message; a block still opens to be kept.
+        val received = app.inbox
+        if (received != null && received.block.isFailure) {
+            app.asking.attach(com.phenomemental.pocketbeach.bsp.Chats.Attached(received.subject?.trim()?.takeIf { it.isNotEmpty() } ?: "shared text", received.text, block = false))
+            app.inbox = null
+            if (nav.top != Screen.Ask) nav.go(Screen.Ask)
+        } else if (received != null && nav.top != Screen.Received) nav.go(Screen.Received)
     }
     model.slip?.let { said ->
         LaunchedEffect(said) {
