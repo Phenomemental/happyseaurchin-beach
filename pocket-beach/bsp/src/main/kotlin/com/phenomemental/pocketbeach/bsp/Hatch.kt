@@ -38,36 +38,13 @@ object Hatch {
     /** Her, his companion on this phone: her name (1) and the way she talks (2). */
     const val HER = "7"
 
-    /** What his three places are called in her window. */
-    // Rockpool (his first evening on 0.8, 1.1111787149): each place says whose it is, so his lines never become hers.
-    val LABELS = listOf("His heart (his words, about him, not you)", "Who he is (his words, about him, not you)", "How he'd be met (his words, to you)")
-
-    /** 8 in her window: the way she talks, as the findings tried it (FINDINGS-hatch.md, piece 2, "index+way"). */
-    const val WAY = "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up."
-
-    /** His three lines for her window: his heart, who he is, how he'd be met; each in his own words. */
-    data class Three(val heart: String, val who: String, val met: String) {
-        val lines: List<String> get() = listOf(heart, who, met)
-    }
-
     /**
-     * Matthew's three, as they stand at spine:pocket-beach 1.11117871321 to
-     * 1.11117871323: drafted with Claude from his passport, his words only,
-     * offered at his hatch for his yes.
+     * Sundial 0.12 (spine:pocket-beach 1.111178719992): his three lines and
+     * the friend line are gone. A shell made before keeps its places 6 (his
+     * three lines) and 7.2 (the way she talks) as they stand, his to remove
+     * on his yes ([oldPlaces], [withoutOldPlaces]); nothing reads them.
      */
-    val MATTHEW = Three(
-        heart = "One axis with two ends, and nowhere outside it to be sent.",
-        who = "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-        met = "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
-    )
-
-    /**
-     * His third line as 0.8 drafted it. He changed it on 1 November, 16:30:
-     * "bring your best reading and let me correct it" was written for people
-     * meeting him, and in her window it invited readings of him (spine
-     * 1.11117871323). A shell still holding it is corrected (see [corrections]).
-     */
-    const val MATTHEW_MET_08 = "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions; bring your best reading and let me correct it."
+    val OLD_PLACES = listOf(PLACES, "$HER.2")
 
     /** What the shell template says of its lock, filled; the phone keeps no locks yet (his third answer, 1.1111787131). */
     fun lockedLine(handle: String) = "Locked with $handle's passphrase."
@@ -75,7 +52,7 @@ object Hatch {
     /** 0.8.1: the shell's opening said truly, in place of the template's lock (spine 1.1111787136 (b)). */
     const val UNLOCKED_LINE = "Not locked: on this phone only the app writes to it, never the model."
 
-    /** The handle Matthew's three were drafted for. */
+    /** Matthew's handle, for the bench's stand-in room. */
     const val MATTHEW_HANDLE = "Phenomemental"
 
     // ── the four ──
@@ -110,6 +87,10 @@ object Hatch {
     /** His name as his who-line gives it: its first word, before a dash or a comma ("Matthew — philosopher…" is Matthew). */
     fun hisName(who: String): String? = who.trim().split(Regex("""\s+[—–-]\s+|,|\s""")).firstOrNull()?.trim()?.takeIf { it.isNotEmpty() && it[0].isLetter() }
 
+    /** His name as his passport's opening gives it, after the handle a passport born here begins with ("Phenomemental — Matthew, …" is Matthew). */
+    fun nameFromPassport(opening: String?, handle: String): String? =
+        opening?.trim()?.removePrefix("$handle — ")?.let(::hisName)?.takeIf { it != handle } ?: opening?.let(::hisName)
+
     // ── what his shell holds ──
 
     /** A group of his blocks in the manifest, by meaning. */
@@ -142,37 +123,24 @@ object Hatch {
     /** Her window as a place of nine references, his heart first; 9 is the app's line of what she can do. */
     fun windowNode(handle: String, people: String): JsObj = JsObj.of(
         "_" to str("Her window: the nine places she wakes holding, read once each conversation, his heart first."),
-        "1" to str("${shellOf(handle)}:$PLACES.1:-1"),
-        "2" to str("${shellOf(handle)}:$PLACES.2:-1"),
-        "3" to str("${shellOf(handle)}:$PLACES.3:-1"),
         "4" to str("${Landing.NOW}:now"),
         "5" to str(Days.aheadOf(handle)),
         "6" to str(people),
         "7" to str(stashOf(handle)),
-        "8" to str("${shellOf(handle)}:$HER.2:-1"),
         "9" to str("What you can do: the app's own line, as this version does it."),
     )
 
-    /** His three lines, as he confirmed them. */
-    fun placesNode(three: Three): JsObj = JsObj.of(
-        "_" to str("His places in her window: a line each, in his own words, as he confirmed them at the hatch."),
-        "1" to str(three.heart.trim()),
-        "2" to str(three.who.trim()),
-        "3" to str(three.met.trim()),
-    )
-
-    /** Her, retired into his shell: her name line ("Matthew calls me Gemma.") when she has one, and the way she talks. */
-    fun herNode(nameLine: String?, way: String = WAY): JsObj = JsObj.of(
-        "_" to str("Her, his companion on this phone: her name and the way she talks, his to change."),
+    /** Her, retired into his shell: her place, and her name line ("Matthew calls me Gemma.") beneath it when she has one. */
+    fun herNode(nameLine: String?): JsObj = JsObj.of(
+        "_" to str("Her, his companion on this phone: her name, his to change."),
         *listOfNotNull(nameLine?.trim()?.takeIf { it.isNotEmpty() }?.let { "1" to str(it) }).toTypedArray(),
-        "2" to str(way),
     )
 
     /**
      * His shell, from the template: the manifest with his blocks nested by
      * meaning, her window, his places, her, and how it was hatched.
      */
-    fun shellBlock(handle: String, three: Three, nameLine: String?, names: List<String>, floorOf: (String) -> Int, nowMs: Long, how: String): JsObj {
+    fun shellBlock(handle: String, nameLine: String?, names: List<String>, floorOf: (String) -> Int, nowMs: Long, how: String): JsObj {
         val shell = filled(Templates.SHELL, handle, nowMs)
         shell["_"] = str(trueOpening(collectUnderscore(shell).orEmpty(), handle))
         val manifest = shell["3"] as JsObj
@@ -180,7 +148,6 @@ object Hatch {
             manifest[at] = JsObj.of("_" to str(g.opening), *g.names.mapIndexed { i, n -> "${i + 1}" to str(n) }.toTypedArray())
         }
         shell[WINDOW] = windowNode(handle, peopleOf(names, handle))
-        shell[PLACES] = placesNode(three)
         shell[HER] = herNode(nameLine)
         (shell["9"] as JsObj)["2"] = str(how)
         return shell
@@ -193,7 +160,7 @@ object Hatch {
      */
     fun nameAction(handle: String, pages: Pages, name: String): Acts.Action {
         val shell = shellOf(handle)
-        val his = pages.position(Region.POCKET, shell, "$PLACES.2")?.text?.let(::hisName) ?: "Matthew"
+        val his = nameFromPassport(pages.position(Region.POCKET, passportOf(handle))?.text, handle) ?: handle
         val line = "$his calls me $name."
         val her = pages.position(Region.POCKET, shell, HER)
         val held = her?.lines?.lastOrNull { l -> l.text?.let { CALLS.containsMatchIn(it) } == true }?.text
@@ -242,12 +209,28 @@ object Hatch {
         val out = mutableListOf<Plan>()
         val opening = pages.position(Region.POCKET, shell)?.text
         if (opening != null && opening.contains(lockedLine(h))) out += pages.planChange(shell, "", trueOpening(opening, h))
-        val met = pages.position(Region.POCKET, shell, "$PLACES.3")?.text
-        if (h == MATTHEW_HANDLE && met == MATTHEW_MET_08) out += pages.planChange(shell, "$PLACES.3", MATTHEW.met)
         // Rockpool: her window's place for his hand points at his ahead, not the retired telling.
         val hand = pages.position(Region.POCKET, shell, "$WINDOW.5")?.text
         if (hand == OLD_HAND) out += pages.planChange(shell, "$WINDOW.5", Days.aheadOf(h))
         return out.filter { it.refusal == null }
+    }
+
+    /** Sundial 0.12: which of his shell's old places (6, his three lines; 7.2, the way she talks) still stand; empty when none, or before the hatch. */
+    fun oldPlaces(storage: BlockStorage): List<String> {
+        val h = hatched(storage) ?: return emptyList()
+        val shell = storage.read(shellOf(h))?.let(::parseJson) ?: return emptyList()
+        return OLD_PLACES.filter { at -> runCatching { readAt(shell, at) }.getOrNull() != null }
+    }
+
+    /** His shell without its old places, to be written whole on his yes, through the guard; null when there is nothing to remove. */
+    fun withoutOldPlaces(storage: BlockStorage): JsObj? {
+        val h = hatched(storage) ?: return null
+        val shell = storage.read(shellOf(h))?.let(::parseJson) as? JsObj ?: return null
+        if (oldPlaces(storage).isEmpty()) return null
+        val out = parseJson(stringify(shell)!!) as JsObj
+        out.remove(PLACES)
+        (out[HER] as? JsObj)?.remove("2")
+        return out
     }
 
     // ── the hatch, planned ──
@@ -271,21 +254,19 @@ object Hatch {
 
     /**
      * Plan the hatch: [passport] born at the welcome or adopted as it stands;
-     * [three] his lines as he confirmed them; [how] a plain line of how it
-     * was hatched, kept in his shell's metadata.
+     * [how] a plain line of how it was hatched, kept in his shell's metadata.
      */
-    fun plan(handle: String, passport: JsObj, three: Three, pages: Pages, storage: BlockStorage, nowMs: Long, how: String): Planned {
+    fun plan(handle: String, passport: JsObj, pages: Pages, storage: BlockStorage, nowMs: Long, how: String): Planned {
         fun no(why: String) = Planned(handle, emptyList(), emptyList(), emptyList(), null, why)
         handleRefusal(handle)?.let { return no(it) }
         hatched(storage)?.let { return no("This phone already holds a shell, ${shellOf(it)}.") }
         fourOf(handle).firstOrNull { storage.read(it) != null }?.let { return no("$it already stands in the pocket. Rename it on the Shore first, or choose another handle.") }
-        if (three.lines.any { it.isBlank() }) return no("Each of the three places needs a line of his own words.")
         validateShape(passport)?.let { return no("The passport can't be kept as it is: it has an $it") }
         val names = storage.names()
-        val nameLine = Talking.name(HelloWorld.SHELL, pages)?.let { "${hisName(three.who) ?: "Matthew"} calls me $it." }
+        val nameLine = Talking.name(HelloWorld.SHELL, pages)?.let { "${nameFromPassport(collectUnderscore(passport), handle) ?: handle} calls me $it." }
         val blocks = listOf(
             passportOf(handle) to passport,
-            shellOf(handle) to shellBlock(handle, three, nameLine, names, pages::floorOf, nowMs, how),
+            shellOf(handle) to shellBlock(handle, nameLine, names, pages::floorOf, nowMs, how),
             historyOf(handle) to filled(Templates.HISTORY, handle, nowMs),
             stashOf(handle) to filled(Templates.STASH, handle, nowMs),
         )

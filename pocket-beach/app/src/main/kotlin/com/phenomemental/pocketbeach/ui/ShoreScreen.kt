@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.BlockSummary
 import com.phenomemental.pocketbeach.bsp.Copies
+import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.Plan
 import com.phenomemental.pocketbeach.bsp.Region
@@ -92,6 +93,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
         }
         Waiting(model)
         FolderOffer(model, nav)
+        OldPlaces(model)
         TextLink("Ask the companion", { nav.go(Screen.Ask) }, style = Type.body, tag = "ask-companion")
 
         val loaded = shore ?: return@Page
@@ -412,5 +414,55 @@ private fun RestoreDialog(copy: Copies.Copy, mine: Int, onCancel: () -> Unit, on
                 "and anything made or changed since the copy was saved will be lost. This can't be undone.",
             style = Type.small, color = ink.crimson,
         )
+    }
+}
+
+/**
+ * Sundial 0.12 (spine:pocket-beach 1.111178719992): a shell made before
+ * still holds his three lines (its place 6) and the friend line (7.2), which
+ * nothing reads now. Shown here, and removed only on his yes, written whole
+ * through the guard: held if his shell changed since this was shown.
+ */
+@Composable
+private fun OldPlaces(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    val scope = rememberCoroutineScope()
+    val places by produceState(emptyList<String>(), model.version) { value = withContext(Dispatchers.IO) { runCatching { Hatch.oldPlaces(app.storage) }.getOrDefault(emptyList()) } }
+    var asking by remember { mutableStateOf(false) }
+    var said by remember { mutableStateOf<String?>(null) }
+    if (places.isEmpty() && said == null) return
+    Column(Modifier.fillMaxWidth().testTag("old-places"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        said?.let { Text(it, style = Type.small, color = ink.soft, modifier = Modifier.testTag("old-places-said")) }
+        if (places.isEmpty()) return@Column
+        Text(
+            "Your shell still holds " + listOfNotNull(
+                "your three lines (its place ${Hatch.PLACES})".takeIf { Hatch.PLACES in places },
+                "the line on how she talks (${Hatch.HER}.2)".takeIf { "${Hatch.HER}.2" in places },
+            ).joinToString(" and ") + ". Nothing reads them since Sundial 0.12.",
+            style = Type.small, color = ink.soft,
+        )
+        if (!asking) TextLink("Remove them from your shell", { asking = true }, tag = "old-places-remove")
+        else Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Action("Yes, remove them", {
+                scope.launch {
+                    val done = withContext(Dispatchers.IO) {
+                        val h = Hatch.hatched(app.storage) ?: return@withContext null
+                        val seen = app.pages.seen(Hatch.shellOf(h))
+                        val whole = Hatch.withoutOldPlaces(app.storage) ?: return@withContext null
+                        app.pages.carryOut(app.pages.planWhole(Hatch.shellOf(h), whole), seen)
+                    }
+                    asking = false
+                    said = when {
+                        done == null -> "There was nothing to remove."
+                        done.ok -> "Removed from your shell."
+                        done.held -> "Your shell changed since this was shown, so nothing was written."
+                        else -> "They weren't removed: ${done.problem}"
+                    }
+                    model.changed()
+                }
+            }, Modifier.weight(1f), strong = true, tag = "old-places-yes")
+            Action("Not now", { asking = false }, Modifier.weight(1f), tag = "old-places-not-now")
+        }
     }
 }

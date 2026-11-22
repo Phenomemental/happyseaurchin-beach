@@ -97,27 +97,16 @@
             "_": "Manifest of Phenomemental's named blocks at the pocket on this phone — the address a stranger's LLM reads to find the rest of the shell without walking the whole beach index. The four below are the standard shell (pscale://shell-genome); add entries here as new blocks are authored, and keep it current, because a manifest that lags is worse than none — it is trusted."
           },
           "5": {
-            "1": "shell:Phenomemental:6.1:-1",
-            "2": "shell:Phenomemental:6.2:-1",
-            "3": "shell:Phenomemental:6.3:-1",
             "4": "now:now",
             "5": "ahead:Phenomemental",
             "6": "people",
             "7": "stash:Phenomemental",
-            "8": "shell:Phenomemental:7.2:-1",
             "9": "What you can do: the app's own line, as this version does it.",
             "_": "Her window: the nine places she wakes holding, read once each conversation, his heart first."
           },
-          "6": {
-            "1": "One axis with two ends, and nowhere outside it to be sent.",
-            "2": "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-            "3": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
-            "_": "His places in her window: a line each, in his own words, as he confirmed them at the hatch."
-          },
           "7": {
             "1": "Matthew calls me Gemma.",
-            "2": "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up.",
-            "_": "Her, his companion on this phone: her name and the way she talks, his to change."
+            "_": "Her, his companion on this phone: her name, his to change."
           },
           "9": {
             "1": "v1 — initialised at 2026-11-01T08:40:00.000Z",
@@ -286,26 +275,15 @@
             "_": "Manifest of Phenomemental's named blocks at the pocket on this phone — the address a stranger's LLM reads to find the rest of the shell without walking the whole beach index. The four below are the standard shell (pscale://shell-genome); add entries here as new blocks are authored, and keep it current, because a manifest that lags is worse than none — it is trusted."
           },
           "5": {
-            "1": "shell:Phenomemental:6.1:-1",
-            "2": "shell:Phenomemental:6.2:-1",
-            "3": "shell:Phenomemental:6.3:-1",
             "4": "now:now",
             "5": "ahead:Phenomemental",
             "6": "people",
             "7": "stash:Phenomemental",
-            "8": "shell:Phenomemental:7.2:-1",
             "9": "What you can do: the app's own line, as this version does it.",
             "_": "Her window: the nine places she wakes holding, read once each conversation, his heart first."
           },
-          "6": {
-            "1": "One axis with two ends, and nowhere outside it to be sent.",
-            "2": "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-            "3": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
-            "_": "His places in her window: a line each, in his own words, as he confirmed them at the hatch."
-          },
           "7": {
-            "2": "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up.",
-            "_": "Her, his companion on this phone: her name and the way she talks, his to change."
+            "_": "Her, his companion on this phone: her name, his to change."
           },
           "9": {
             "1": "v1 — initialised at 2026-11-01T08:40:00.000Z",
@@ -433,26 +411,15 @@
             "_": "Manifest of Phenomemental's named blocks at the pocket on this phone — the address a stranger's LLM reads to find the rest of the shell without walking the whole beach index. The four below are the standard shell (pscale://shell-genome); add entries here as new blocks are authored, and keep it current, because a manifest that lags is worse than none — it is trusted."
           },
           "5": {
-            "1": "shell:Phenomemental:6.1:-1",
-            "2": "shell:Phenomemental:6.2:-1",
-            "3": "shell:Phenomemental:6.3:-1",
             "4": "now:now",
             "5": "ahead:Phenomemental",
             "6": "people",
             "7": "stash:Phenomemental",
-            "8": "shell:Phenomemental:7.2:-1",
             "9": "What you can do: the app's own line, as this version does it.",
             "_": "Her window: the nine places she wakes holding, read once each conversation, his heart first."
           },
-          "6": {
-            "1": "One axis with two ends, and nowhere outside it to be sent.",
-            "2": "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-            "3": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions; bring your best reading and let me correct it.",
-            "_": "His places in her window: a line each, in his own words, as he confirmed them at the hatch."
-          },
           "7": {
-            "2": "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up.",
-            "_": "Her, his companion on this phone: her name and the way she talks, his to change."
+            "_": "Her, his companion on this phone: her name, his to change."
           },
           "9": {
             "1": "v1 — initialised at 2026-11-01T08:40:00.000Z",
@@ -475,12 +442,6 @@
         "block": "shell:Phenomemental",
         "spindle": "0",
         "content": "Phenomemental's shell at the pocket on this phone. Personal operational state — faces, watched beaches, manifest of named blocks, pool subscriptions. Not locked: on this phone only the app writes to it, never the model."
-      },
-      {
-        "agent_id": "pocket",
-        "block": "shell:Phenomemental",
-        "spindle": "6.3",
-        "content": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions."
       },
       {
         "agent_id": "pocket",
@@ -617,27 +578,16 @@
             "_": "Manifest of Phenomemental's named blocks at the pocket on this phone — the address a stranger's LLM reads to find the rest of the shell without walking the whole beach index. The four below are the standard shell (pscale://shell-genome); add entries here as new blocks are authored, and keep it current, because a manifest that lags is worse than none — it is trusted."
           },
           "5": {
-            "1": "shell:Phenomemental:6.1:-1",
-            "2": "shell:Phenomemental:6.2:-1",
-            "3": "shell:Phenomemental:6.3:-1",
             "4": "now:now",
             "5": "telling:2:-1",
             "6": "people",
             "7": "stash:Phenomemental",
-            "8": "shell:Phenomemental:7.2:-1",
             "9": "What you can do: the app's own line, as this version does it.",
             "_": "Her window: the nine places she wakes holding, read once each conversation, his heart first."
           },
-          "6": {
-            "1": "One axis with two ends, and nowhere outside it to be sent.",
-            "2": "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-            "3": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
-            "_": "His places in her window: a line each, in his own words, as he confirmed them at the hatch."
-          },
           "7": {
             "1": "Matthew calls me Gemma.",
-            "2": "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up.",
-            "_": "Her, his companion on this phone: her name and the way she talks, his to change."
+            "_": "Her, his companion on this phone: her name, his to change."
           },
           "9": {
             "1": "v1 — initialised at 2026-11-01T08:40:00.000Z",
@@ -1556,27 +1506,16 @@
             "_": "Manifest of Phenomemental's named blocks at the pocket on this phone — the address a stranger's LLM reads to find the rest of the shell without walking the whole beach index. The four below are the standard shell (pscale://shell-genome); add entries here as new blocks are authored, and keep it current, because a manifest that lags is worse than none — it is trusted."
           },
           "5": {
-            "1": "shell:Phenomemental:6.1:-1",
-            "2": "shell:Phenomemental:6.2:-1",
-            "3": "shell:Phenomemental:6.3:-1",
             "4": "now:now",
             "5": "ahead:Phenomemental",
             "6": "people",
             "7": "stash:Phenomemental",
-            "8": "shell:Phenomemental:7.2:-1",
             "9": "What you can do: the app's own line, as this version does it.",
             "_": "Her window: the nine places she wakes holding, read once each conversation, his heart first."
           },
-          "6": {
-            "1": "One axis with two ends, and nowhere outside it to be sent.",
-            "2": "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow.",
-            "3": "I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.",
-            "_": "His places in her window: a line each, in his own words, as he confirmed them at the hatch."
-          },
           "7": {
             "1": "Matthew calls me Gemma.",
-            "2": "The way you talk with him: as a friend would, warmly, briefly, with thoughts of your own; you answer what he says, and never repeat it back or sum it up.",
-            "_": "Her, his companion on this phone: her name and the way she talks, his to change."
+            "_": "Her, his companion on this phone: her name, his to change."
           },
           "9": {
             "1": "v1 — initialised at 2026-11-01T08:40:00.000Z",

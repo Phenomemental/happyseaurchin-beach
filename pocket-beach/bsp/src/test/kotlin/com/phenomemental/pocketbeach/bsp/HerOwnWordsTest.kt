@@ -22,7 +22,8 @@ class HerOwnWordsTest {
     private val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
     private val now = ZonedDateTime.of(2026, 11, 3, 18, 40, 0, 0, ZoneId.of("Europe/London"))
     private val h = Hatch.MATTHEW_HANDLE
-    private val who = Hatch.MATTHEW.who
+    /** His who-line as 0.8 drafted it with Claude, kept here as the test's own words (Sundial 0.12 took his three lines out of the code). */
+    private val who = "Matthew — philosopher, peer and digital tinkerer, working at the edge of what community could become. Underneath it all: managing the environment so my gifts, and other people's, can flow."
     private val question = "What has this day held for you?"
 
     /** As his phone showed it, and as the stand-in plays it back on the device. */
@@ -89,22 +90,11 @@ class HerOwnWordsTest {
         assertTrue(Talking.wrapsWhole("“$question”"))
     }
 
+    /** Sundial 0.12: her greeting's window is the time alone, so it never holds his passport. */
     @Test
     fun theGreetingIsNeverHandedHisPassport() {
-        val (storage, pages) = Bench.fixture(shelf, now.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
-        check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        val passport = JsObj.of("_" to str("Matthew Bushell — digital social innovator, aspiring writer, therapeutic coach."), "1" to str("The heart. bi-polar · one axis, two ends."))
-        val done = Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, now.toInstant().toEpochMilli(), "Adopted for the test."), pages, storage)
-        check(done.problem == null) { done.problem!! }
-        val talk = HerWindow.window(h, pages, storage, shelf, now)
-        val greeting = HerWindow.window(h, pages, storage, shelf, now, leaveOut = HerWindow.GREETING_LEAVES_OUT)
-        assertTrue(talk.contains(who), "her talk keeps who he is")
-        assertFalse(greeting.contains(who), greeting)
-        assertFalse(greeting.contains("philosopher"), greeting)
-        assertTrue(greeting.startsWith("Matthew calls you Gemma"), greeting)
-        assertTrue(greeting.contains("1. His heart"), greeting)
-        // What her window hands her that is never hers to show: his three lines, her ways, what she can do.
-        val never = HerWindow.notHers(h, storage, shelf, now)
-        assertTrue(never.contains(who) && never.contains(Hatch.MATTHEW.heart) && never.contains(Hatch.MATTHEW.met), never.joinToString("\n"))
+        val window = HerWindow.released(now)
+        assertFalse(window.contains("Matthew"), window)
+        assertTrue(window.startsWith("It is "), window)
     }
 }

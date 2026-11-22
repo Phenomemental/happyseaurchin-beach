@@ -67,7 +67,7 @@ class RockpoolDeviceTest {
         check(app.pages.carryOut(app.pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
         check(app.pages.carryOut(app.pages.planNewBlock("films")).ok)
         val passport = JsObj.of("_" to str("Matthew Bushell — digital social innovator."), "1" to str("The heart."))
-        val planned = Hatch.plan(h, passport, Hatch.MATTHEW, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
+        val planned = Hatch.plan(h, passport, app.pages, app.storage, System.currentTimeMillis(), "Adopted on this phone for the test.")
         Hatch.carryOut(planned, app.pages, app.storage).problem?.let { error("The hatch: $it") }
     }
 

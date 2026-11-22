@@ -45,7 +45,7 @@ class HatchGoldenTest {
             assertTrue(pages.carryOut(plan).ok, plan.block)
         }
         fun proposed(action: Acts.Action) = Acts.propose("", listOf(action), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs).proposal!!.writes.single().plan
-        val planned = Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone from passport-$h.json, read at ${isoString(nowMs)}.")
+        val planned = Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone from passport-$h.json, read at ${isoString(nowMs)}.")
         planned.plans.forEach(::go)
         if (named) {
             go(proposed(Acts.Action.Add(Hatch.stashOf(h), null, "I've been making huge progress with my film making and am eagerly awaiting my first pilot to be rendered.")))
@@ -62,7 +62,7 @@ class HatchGoldenTest {
     /** 0.8.1: a shell 0.8 hatched, corrected: its opening said truly, his third line as he changed it. */
     private fun corrected(): JsObj {
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
-        check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW.copy(met = Hatch.MATTHEW_MET_08), pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
+        check(Hatch.carryOut(Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
         val opening = collectUnderscore(parseJson(storage.read(Hatch.shellOf(h))!!))!!
         check(pages.carryOut(pages.planChange(Hatch.shellOf(h), "", opening.replace(Hatch.UNLOCKED_LINE, Hatch.lockedLine(h)))).ok)
         val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
@@ -71,7 +71,7 @@ class HatchGoldenTest {
             calls += parseJson(stringify(plan.call!!)!!)
             assertTrue(pages.carryOut(plan).ok)
         }
-        assertTrue(calls.size == 2)
+        assertTrue(calls.size == 1)
         calls += JsObj.of("agent_id" to str("pocket"), "block" to str(Hatch.shellOf(h)))
         return JsObj.of("name" to str("the hatch of 0.8, corrected"), "seed" to seed, "calls" to JsArr(calls))
     }
@@ -86,7 +86,7 @@ class HatchGoldenTest {
         val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../assets/procedures")))
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
+        check(Hatch.carryOut(Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
         check(pages.carryOut(pages.planChange(Hatch.shellOf(h), "${Hatch.WINDOW}.5", Hatch.OLD_HAND)).ok)
         val old = Telling.shape()
         (old["2"] as JsObj)["2"] = JsObj.of("_" to str("This week"), "1" to str("Cut the second film"))
@@ -122,7 +122,7 @@ class HatchGoldenTest {
         val procedures = Shelf(DirShelfSource(File(System.getProperty("pocket.procedures") ?: "../assets/procedures")))
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        check(Hatch.carryOut(Hatch.plan(h, passport, Hatch.MATTHEW, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
+        check(Hatch.carryOut(Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone."), pages, storage).problem == null)
         val past = parseJson(stringify(procedures.load("${Cook.PAST}${Cook.SHIPPED_COOK}"))!!) as JsObj
         (past["5"] as JsObj)["6"] = str("Hand her THE READING and THE PLACE with this line: “The app: name its places for him in a sentence or two, never their lines.”")
         (past["6"] as JsObj)["1"] = str("LIFT. Lift his telling from THE MESSAGE: after the colon first; else what he said before. Carry it as THE TELLING.")

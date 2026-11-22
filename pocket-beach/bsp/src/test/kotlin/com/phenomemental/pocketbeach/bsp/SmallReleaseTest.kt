@@ -33,21 +33,21 @@ class SmallReleaseTest {
         "8" to str("WRITING, EVERY TIME — ask me before placing, check where things go, write, then read it back. " + "Read it back. ".repeat(80)),
     )
 
-    private fun hatched(three: Hatch.Three = Hatch.MATTHEW, passport: JsObj = longPassport): Pair<MemoryStorage, Pages> {
+    private fun hatched(passport: JsObj = longPassport): Pair<MemoryStorage, Pages> {
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        val done = Hatch.carryOut(Hatch.plan(h, passport, three, pages, storage, nowMs, "Adopted on this phone from passport-$h.json."), pages, storage)
+        val done = Hatch.carryOut(Hatch.plan(h, passport, pages, storage, nowMs, "Adopted on this phone from passport-$h.json."), pages, storage)
         check(done.problem == null) { done.problem!! }
         return storage to pages
     }
 
     // ── (a) and (b): his third line, and the shell's opening said truly ──
 
+    /** Sundial 0.12: his three lines are gone from the code and from a new shell; her window holds none of them. */
     @Test
-    fun hisThirdLineIsAsHeChangedIt() {
-        assertEquals("I think in conversation, so speak to me in your own words, and come as yourself. Don't send me a volley of questions.", Hatch.MATTHEW.met)
+    fun hisThreeLinesAreGone() {
         val (storage, pages) = hatched()
-        assertTrue(HerWindow.window(h, pages, storage, shelf, now).contains("3. How he'd be met (his words, to you): “${Hatch.MATTHEW.met}”"))
+        assertFalse(HerWindow.window(h, pages, storage, shelf, now).contains("How he'd be met"))
         assertFalse(HerWindow.window(h, pages, storage, shelf, now).contains("bring your best reading"))
     }
 
@@ -62,22 +62,15 @@ class SmallReleaseTest {
 
     @Test
     fun aShellHatchedBy08IsCorrected() {
-        val (storage, pages) = hatched(three = Hatch.MATTHEW.copy(met = Hatch.MATTHEW_MET_08))
-        // As 0.8 left it: the template's lock in its opening.
+        val (storage, pages) = hatched()
+        // As 0.8 left it: the template's lock in its opening. (Sundial 0.12: his third line is no longer corrected; his three lines are gone.)
         check(pages.carryOut(pages.planChange("shell:$h", "", collectUnderscore(parseJson(storage.read("shell:$h")!!))!!.replace(Hatch.UNLOCKED_LINE, Hatch.lockedLine(h)))).ok)
         val plans = Hatch.corrections(pages, storage)
-        assertEquals(2, plans.size)
+        assertEquals(1, plans.size)
         plans.forEach { assertTrue(pages.carryOut(it).ok, it.refusal) }
         val shell = parseJson(storage.read("shell:$h")!!) as JsObj
         assertTrue(collectUnderscore(shell)!!.endsWith(Hatch.UNLOCKED_LINE))
-        assertEquals(str(Hatch.MATTHEW.met), (shell[Hatch.PLACES] as JsObj)["3"])
         assertEquals(emptyList(), Hatch.corrections(pages, storage), "once corrected, nothing more")
-    }
-
-    @Test
-    fun aLineHeChangedHimselfIsLeftAlone() {
-        val (storage, pages) = hatched(three = Hatch.MATTHEW.copy(met = "Plainly, please."))
-        assertEquals(emptyList(), Hatch.corrections(pages, storage))
     }
 
     // ── (d): "Read my passport" ──

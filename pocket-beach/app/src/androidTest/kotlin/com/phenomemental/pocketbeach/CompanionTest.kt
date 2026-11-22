@@ -487,8 +487,9 @@ class CompanionTest {
     /**
      * Ask closes and opens as the model and the shell come ready, and the two
      * run on other threads in either order (CI, twice): the close must never
-     * shut the conversation just opened, to be read again at the first ask.
-     * 0.6.1: that is the Write job's; hers is opened at each message.
+     * shut the conversation just opened. Sundial 0.12: before the hatch,
+     * nothing is opened or warmed as Ask opens (spine:pocket-beach
+     * 1.111178719992); hers opens with his message.
      */
     @Test
     fun askOpenedAsItClosesKeepsTheConversationForTheFirstAsk() {
@@ -501,13 +502,12 @@ class CompanionTest {
                 val before = mind.talkHistories.size
                 val writes = mind.histories.size
                 main { asking.reset(); asking.closed(); asking.opened() }
-                compose.waitUntil(5_000) { mind.histories.size == writes + 1 }
                 Thread.sleep(300)
+                assertEquals("nothing opened before the hatch as Ask opens (round ${it + 1})", writes, mind.histories.size)
                 assertEquals("hers isn't opened until he speaks (round ${it + 1})", before, mind.talkHistories.size)
-                main { asking.question = "Add to garden: compost."; asking.ask() }
+                main { asking.question = "Hello."; asking.ask() }
                 compose.waitUntil(5_000) { asking.settled }
                 assertEquals("one Talk conversation, for his message (round ${it + 1})", before + 1, mind.talkHistories.size)
-                assertEquals("one Write conversation, opened as Ask opened and kept for the first ask (round ${it + 1})", writes + 1, mind.histories.size)
             }
         }
     }
