@@ -92,9 +92,9 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
     /** Whether her engine is in memory now, made for [settings]. */
     override fun loaded(settings: JobSettings): Boolean = one.held?.key == key(settings)
 
-    override fun state(): ModelStore.State = store.state()
+    override fun state(): ModelState = store.state()
 
-    override fun state(model: String): ModelStore.State = stores(model).state()
+    override fun state(model: String): ModelState = stores(model).state()
 
     override suspend fun warm(settings: JobSettings): Long? = withContext(thread) {
         engine(key(settings)).second
@@ -105,7 +105,7 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
     /** Her engine for [key], made if it isn't (the one before let go first); how long making it took, if it had to be made. Called on [thread]. */
     private suspend fun engine(key: EngineKey): Pair<OneEngine.Loaded<Engine>, Long?> {
-        if (one.held?.key != key) check(stores(key.model).state() is ModelStore.State.Ready) { "${key.model} isn't on this phone yet: get it in Settings." }
+        if (one.held?.key != key) check(stores(key.model).state() is ModelState.Ready) { "${key.model} isn't on this phone yet: get it in Settings." }
         return one.engine(key).also { (l, ms) -> ms?.let { steps.add("${key.model} loaded on the ${l.processor}", it) } }
     }
 

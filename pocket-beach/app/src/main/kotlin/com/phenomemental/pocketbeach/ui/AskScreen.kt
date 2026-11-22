@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach.ui
 
+import com.phenomemental.pocketbeach.model.ModelState
 import android.content.ActivityNotFoundException
 import android.Manifest
 import android.content.Intent
@@ -92,15 +93,15 @@ fun AskScreen(model: Model, nav: Nav) {
     // 0.8: whether he has hatched; until he has, the app's own words ask how he comes in.
     val hatching = model.app.hatching
     LaunchedEffect(model.version) { withContext(Dispatchers.IO) { hatching.refresh() } }
-    val modelState by produceState<ModelStore.State?>(null) {
+    val modelState by produceState<ModelState?>(null) {
         while (true) {
             val s = withContext(Dispatchers.IO) { model.app.mind.state() }
             value = s
-            delay(if (s is ModelStore.State.Fetching) 1000 else 3000)
+            delay(if (s is ModelState.Fetching) 1000 else 3000)
         }
     }
     // The model stays loaded, and the conversation open, while Ask is.
-    val ready = modelState is ModelStore.State.Ready && (shell != null || hatching.hatched != null)
+    val ready = modelState is ModelState.Ready && (shell != null || hatching.hatched != null)
     // Sundial 0.10: the dial opened with nothing said today: her one question (kernel THE DIAL OPENED).
     LaunchedEffect(ready, hatching.hatched) { if (ready && hatching.hatched != null) asking.greet() }
     DisposableEffect(ready) {
@@ -802,7 +803,7 @@ private fun PostCard(message: PoolMessage, postedBefore: String?) {
 
 /** The model: offered only when the phone can run it, fetched once over Wi-Fi, checked before it is used. */
 @Composable
-private fun ModelPart(model: Model, state: ModelStore.State?) {
+private fun ModelPart(model: Model, state: ModelState?) {
     val ink = LocalInk.current
     val context = LocalContext.current
     val models = model.app.models
@@ -819,17 +820,17 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
     }
     val size = ModelStore.gb(ModelStore.SIZE)
     when (state) {
-        null, ModelStore.State.Ready -> {}
-        is ModelStore.State.TooLittleMemory -> Notice(
+        null, ModelState.Ready -> {}
+        is ModelState.TooLittleMemory -> Notice(
             "This phone has ${ModelStore.gb(state.has)} of memory. The companion's model needs a phone with 8 GB, so it isn't offered here. " +
                 "The hello world can still be done by hand, under About, Try a call by hand.",
             tag = "too-little-memory",
         )
-        is ModelStore.State.TooLittleRoom -> Notice(
+        is ModelState.TooLittleRoom -> Notice(
             "The companion's model needs ${ModelStore.gb(state.needs)} of room and this phone has ${ModelStore.gb(state.free)} free. Free some room, then come back.",
             tag = "too-little-room",
         )
-        ModelStore.State.Absent -> {
+        ModelState.Absent -> {
             Text(
                 "The companion is ${model.app.running(com.phenomemental.pocketbeach.model.Job.TALK).model}, a model that runs on this phone. It comes as one download of $size from Hugging Face, " +
                     "over Wi-Fi only, checked byte for byte before it is used. After that it needs no connection.",
@@ -837,7 +838,7 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
             )
             Action("Get the model, $size over Wi-Fi", { fetch() }, Modifier.fillMaxWidth(), tag = "get-model")
         }
-        is ModelStore.State.Fetching -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        is ModelState.Fetching -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Label("Fetching the model")
             Text(
                 "${ModelStore.gb(state.done)} of $size (${state.done * 100 / ModelStore.SIZE}%)" +
@@ -849,7 +850,7 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
             Text("It carries on while you're away from this screen, and shows in a notification.", style = Type.small, color = ink.soft)
             TextLink("Stop fetching", { act { models.stop() } }, tag = "stop-fetching")
         }
-        is ModelStore.State.Paused -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        is ModelState.Paused -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 "Paused at ${ModelStore.gb(state.done)} of $size. It carries on from there.",
                 style = Type.body, color = ink.ink, modifier = Modifier.testTag("paused"),
@@ -858,8 +859,8 @@ private fun ModelPart(model: Model, state: ModelStore.State?) {
             Action("Carry on", { fetch() }, Modifier.fillMaxWidth(), strong = true, tag = "carry-on")
             TextLink("Discard what has come, and begin again", { act { models.discard() } }, tag = "discard")
         }
-        ModelStore.State.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("checking"))
-        is ModelStore.State.Failed -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ModelState.Checking -> Text("Checking the download, byte for byte…", style = Type.aside, color = ink.soft, modifier = Modifier.testTag("checking"))
+        is ModelState.Failed -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Notice(state.why, tag = "model-failed")
             if (state.done > 0) Text("${ModelStore.gb(state.done)} of $size is kept, to carry on from.", style = Type.small, color = ink.soft)
             Action(

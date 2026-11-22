@@ -1,8 +1,10 @@
 package com.phenomemental.pocketbeach.model
 
-import android.content.SharedPreferences
-
 /**
+ * Sundial 0.12 (spine:pocket-beach 1.111178719996): the mind's contract is
+ * the core's, in plain Kotlin, so a laptop running the same core can swap in
+ * a larger model; the phone keeps only how the settings are stored (JobPrefs).
+ *
  * The jobs the companion does, each with Edge's settings of its own (0.5's
  * Stage 1, spine:pocket-beach 1.111171): model, processor, temperature,
  * top-k, top-p, context and longest reply. Jobs whose model, processor and
@@ -53,30 +55,6 @@ data class JobSettings(
             Job.WRITE -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 1024)
             // As the laptop ran Stage 4: the likeliest word, a word or two a piece (the rungs, asked once after, may run to 256).
             Job.SORT -> JobSettings(GEMMA_E2B, "GPU", 8192, temperature = 0.0, topK = 1, topP = 1.0, longestReply = 16)
-        }
-
-        /** [job]'s settings as kept in [prefs], each one its default where none is kept. */
-        fun read(prefs: SharedPreferences, job: Job): JobSettings {
-            val d = of(job)
-            val k = "job.${job.name}."
-            return JobSettings(
-                model = prefs.getString(k + "model", d.model)?.takeIf { it in MODELS } ?: d.model,
-                processor = prefs.getString(k + "processor", d.processor)?.takeIf { it in PROCESSORS } ?: d.processor,
-                context = prefs.getInt(k + "context", d.context).takeIf { it in CONTEXTS } ?: d.context,
-                temperature = prefs.getFloat(k + "temperature", d.temperature.toFloat()).toDouble().coerceIn(0.0, TEMPERATURE_MAX),
-                topK = prefs.getInt(k + "topK", d.topK).coerceIn(1, TOP_K_MAX),
-                topP = prefs.getFloat(k + "topP", d.topP.toFloat()).toDouble().coerceIn(0.05, 1.0),
-                longestReply = prefs.getInt(k + "longestReply", d.longestReply).takeIf { it in REPLIES } ?: d.longestReply,
-            ).let { s -> s.copy(temperature = round(s.temperature), topP = round(s.topP)) }
-        }
-
-        fun write(prefs: SharedPreferences, job: Job, s: JobSettings) {
-            val k = "job.${job.name}."
-            prefs.edit()
-                .putString(k + "model", s.model).putString(k + "processor", s.processor).putInt(k + "context", s.context)
-                .putFloat(k + "temperature", s.temperature.toFloat()).putInt(k + "topK", s.topK).putFloat(k + "topP", s.topP.toFloat())
-                .putInt(k + "longestReply", s.longestReply)
-                .apply()
         }
 
         /** To two places, as the settings step. */

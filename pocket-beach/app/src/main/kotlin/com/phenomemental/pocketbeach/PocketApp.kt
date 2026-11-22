@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach
 
+import com.phenomemental.pocketbeach.model.JobPrefs
 import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.res.AssetManager
@@ -244,7 +245,7 @@ class PocketApp : Application() {
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
 
-    private val jobs by lazy { mutableStateOf(Job.values().associateWith { JobSettings.read(prefs, it) }) }
+    private val jobs by lazy { mutableStateOf(Job.values().associateWith { JobPrefs.read(prefs, it) }) }
 
     /** Each job's settings (Settings): Edge's for talking, 0.4's for writing, until he changes them. */
     fun settings(job: Job): JobSettings = jobs.value.getValue(job)
@@ -270,7 +271,7 @@ class PocketApp : Application() {
 
     fun set(job: Job, s: JobSettings) {
         jobs.value = jobs.value + (job to s)
-        JobSettings.write(prefs, job, s)
+        JobPrefs.write(prefs, job, s)
     }
 
     private val details by lazy { mutableStateOf(prefs.getBoolean("showDetails", false)) }
