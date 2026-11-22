@@ -56,7 +56,7 @@ object Cook {
         object AsksHerLines : Verb()
         /** Sundial 0.10.3: the day check as its step's sentence states it, every number and clause read from it. */
         class TellsDay(val check: Landing.DayCheck) : Verb()
-        /** Sundial 0.10.1: whether [of]'s words say he may be in danger, by his safety words: the app's own check, never hers. */
+        /** Sundial 0.10.1's danger check; since 0.12 the step still reads in his cook, and always answers no (the safety check is taken out). */
         class Danger(val of: String) : Verb()
         class BlockStands(val name: String) : Verb()
         class Lift(val what: String, val sources: List<String>, val into: String) : Verb()
@@ -529,8 +529,6 @@ object Cook {
         fun kept(): List<Keep.KeptDay> = runCatching {
             Keep.days(storage.read(Days.NOW)?.let(::parseJson), storage.read(Days.p6Of(handle))?.let(::parseJson), keepDay)
         }.getOrDefault(emptyList())
-        /** Sundial 0.10.1: whether [words] say he may be in danger, by his safety words (Talking.unsafe), the one check the app makes. */
-        fun inDanger(words: String): Boolean = runCatching { Talking.unsafe(words, pages) }.getOrElse { Talking.unsafe(words, Talking.SAFETY_WORDS) }
         /** What he whispered at a place (pool order), each with its date and the question it answered: Sundial 0.11. */
         fun whispers(pool: Int): String? = null
         /** A place's three ways of listening, which was used last, and the questions asked there: Sundial 0.11. */
@@ -702,7 +700,8 @@ object Cook {
                 is Verb.TellsDay -> Landing.tellsDay(str("THE MESSAGE"), world.cards(), runCatching { Landing.names(world.pages) }.getOrDefault(emptySet()), v.check)
                     .let { yesNo(s, it, if (it) "his words tell of his day" else "his words don't tell of his day") }
                 // Sundial 0.10.1: the app's danger check, the same that shows the help line beneath her reply; she is never handed an "if" to judge.
-                is Verb.Danger -> world.inDanger(str(v.of)).let { yesNo(s, it, if (it) "his words say he may be in danger, by his safety words" else "his words hold none of his safety words") }
+                // Sundial 0.12 (spine:pocket-beach 1.111178719991, 1.111178719999): the safety check is taken out; the step reads, and answers no.
+                is Verb.Danger -> yesNo(s, false, "the safety check is taken out (Sundial 0.12), so nothing is matched")
                 is Verb.BlockStands -> world.pages.exists(str(v.name)).let { yesNo(s, it, if (it) "a block called ${str(v.name)} stands" else "no block called ${str(v.name)} stands") }
                 is Verb.Lift -> {
                     put(v.into, lift(v))

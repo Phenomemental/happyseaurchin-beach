@@ -142,9 +142,6 @@ class Asking(private val app: PocketApp) {
         /** How it ended, once it has; empty while it hasn't. */
         var note by mutableStateOf("")
             internal set
-        /** 0.6.3: the safety note shown beneath her reply when his safety words match, whatever she says; null otherwise. */
-        var safety by mutableStateOf<String?>(null)
-            internal set
         /** Her answer's time and chip, for Details and the log. */
         var time by mutableStateOf("")
             internal set
@@ -585,13 +582,9 @@ class Asking(private val app: PocketApp) {
                     windowDay = now.toLocalDate()
                     talkTurns = 0
                     val h = hatched()
-                    talkRecipe = h?.let { runCatching { Cook.talkRecipe(Cook.load(it, app.storage, app.procedures).parsed) }.getOrNull() }
-                    val window = if (h != null) HerWindow.opening(HerWindow.window(h, app.pages, app.storage, app.shelf, now), now, talkRecipe)
-                    else {
-                        runCatching { HerWindow.ensure(app.pages) }
-                        HerWindow.instruction(HelloWorld.SHELL, app.pages, app.storage, app.shelf, now)
-                    }
-                    app.mind.talker(window, context.getValue(job).toList(), settings = settings)
+                    // Sundial 0.12, Gemma released (spine:pocket-beach 1.111178719991): her window is the time alone, before the hatch and after;
+                    // no heart, no three lines, no recipe opens her conversation.
+                    app.mind.talker(HerWindow.released(now), context.getValue(job).toList(), settings = settings)
                 }
                 // 0.6.2: what the Write job needs, about 1,000 tokens; her name in its examples as her shell gives it.
                 MindJob.WRITE -> app.mind.talker(
@@ -634,7 +627,6 @@ class Asking(private val app: PocketApp) {
         history.lastOrNull()?.let { it.sortable = false; it.keepIn = null }
         yieldWrite()
         val e = Exchange(q)
-        e.safety = safetyNote(q)
         history += e
         live = ""
         e.answeredBy += MindJob.TALK
@@ -679,14 +671,11 @@ class Asking(private val app: PocketApp) {
                         // or when it nears its context; the model's change is talker's own (its settings).
                         if (windowDay != now.toLocalDate()) stale += MindJob.TALK
                         if (h == null && talkTurns >= TURNS) stale += MindJob.TALK
-                        if (h != null && recipeNow != talkRecipe) stale += MindJob.TALK
                         kept[MindJob.TALK]?.talker?.tokens()?.let { held -> if (held > app.running(MindJob.TALK).context * 3 / 4) stale += MindJob.TALK }
                         val t = talker(MindJob.TALK)
                         val before = t.pace.turns.size
                         val first = history.size == 1
                         // Her turn: the day and the time, what's changed since she last looked, how his last proposal ended, the app's line, his words.
-                        val seen = runCatching { copies.takeIf { it.isFile }?.readText() }.getOrNull()
-                        val changes = runCatching { HerWindow.changes(app.pages, app.storage, seen) }.getOrNull()
                         e.appLine = if (walk != null) walk.handed.joinToString(" / ") { it.line }.ifEmpty { HerWindow.TALK_LINE }
                             else if (h != null) HerWindow.appLine8(way, q) else HerWindow.appLine(way, q)
                         conversation.said += q
@@ -697,16 +686,14 @@ class Asking(private val app: PocketApp) {
                         val saidAt = java.time.Instant.ofEpochMilli(e.at).atZone(now.zone)
                         val last = lastMessageBefore(e.at)
                         e.stamp = HerWindow.stamp(saidAt, last)
-                        val message = if (walk != null) HerWindow.turnKept(q, app.pages, walk.handed, talkRecipe, e.told, saidAt, last)
-                            else HerWindow.turn(q, saidAt, app.pages, app.storage, e.appLine!!, changes, e.told, last)
+                        // Sundial 0.12, Gemma released: her turn is the time and his words, and nothing added to shape how she answers.
+                        val message = HerWindow.releasedTurn(q, saidAt, last)
                         val echo = HerWindow.echoLines(message)
-                        val opening = shellOpening()
+                        // Sundial 0.12: the echo filter is given only the app's own lines (the time it stamps on his turn); his words are hers to say.
+                        val opening = ""
                         val words = StringBuilder()
-                        // Sundial 0.10.1: once he has hatched, his cook asks her to give back his words in his own words: those are hers to say, never her turn played back.
-                        val hisWords = walk == null
-                        // Sundial 0.10.1 (item 10): never shown as hers: an app line, what her window hands her that is never hers
-                        // (his three lines, her ways, what she can do), a keep status, quote marks wrapping her line.
-                        val handed = if (h != null) runCatching { HerWindow.notHers(h, app.storage, app.shelf, now) }.getOrDefault(emptyList()) else emptyList()
+                        val hisWords = false
+                        val handed = emptyList<String>()
                         // Never shown: a line of hers that plays her turn back. Never taken out of view: a line once shown (Sundial 0.10.1).
                         val shown = Talking.Shown(q, opening, echo, hisWords, handed)
                         // Sundial 0.10.2: her reply written free, always, streamed as she writes it: no tool call (on his Pixel's E4B it came back
@@ -1260,10 +1247,11 @@ class Asking(private val app: PocketApp) {
                         // she is never handed his passport for it. On his Pixel on 3 November she copied that line out as her greeting.
                         val now = ZonedDateTime.now()
                         kept.remove(MindJob.TALK)?.let { runCatching { it.talker.close() } }
-                        val window = HerWindow.window(h, app.pages, app.storage, app.shelf, now, leaveOut = HerWindow.GREETING_LEAVES_OUT)
+                        // Sundial 0.12: her window the time alone, as in her conversation.
+                        val window = HerWindow.released(now)
                         val message = HerWindow.turnHanded("", now, app.pages, w.handed, lastMs = lastMessageBefore(now.toInstant().toEpochMilli()))
-                        // Never shown as hers: an app line, what she was handed (her window's own lines, his last day, the app's lines), "Kept.".
-                        val handed = HerWindow.notHers(h, app.storage, app.shelf, now) + w.handed.flatMap { listOf(it.line) + it.material }
+                        // Never shown as hers: the app's own lines (his last day, the greeting's line), "Kept.".
+                        val handed = w.handed.flatMap { listOf(it.line) + it.material }
                         val t = app.mind.talker(window, emptyList(), settings = app.running(MindJob.TALK))
                         try {
                             // Sundial 0.10.2: her greeting written free, as every reply of hers is: no tool call.
@@ -1765,7 +1753,6 @@ class Asking(private val app: PocketApp) {
             e.appLine?.let { appendLine("  The app's line to her: $it") }
             e.cookNote?.let { appendLine("  $it") }
             if (e.trace.isNotEmpty()) { appendLine("  His cook, step by step:"); e.trace.forEach { appendLine("    $it") } }
-            e.safety?.let { appendLine("  The safety note, shown beneath her reply: \"${it.replace("\n", " / ")}\"") }
             // Sundial 0.10.2: her reply as she wrote it, her places line, and the shape the split found.
             e.raw?.let { appendLine("  Her reply as she wrote it: \u201c${it.trim().replace("\n", " / ")}\u201d") }
             if (e.raw != null) appendLine("  " + (e.placesLine?.let { "Her places line, taken off before showing: \u201c$it\u201d" } ?: "No places line."))
@@ -1800,17 +1787,6 @@ class Asking(private val app: PocketApp) {
         is Stage.Written -> "the post, after the writes: " + landed(w.carried)
         else -> "it was being carried out."
     }.trimEnd()
-
-    /**
-     * 0.6.3: the note shown beneath her reply when his words hold one of his
-     * safety words; his own note when he keeps one. It never depends on her
-     * words; should his pocket not be read, the first words and note stand.
-     */
-    private fun safetyNote(said: String): String? = try {
-        Talking.note(said, app.pages)
-    } catch (e: Exception) {
-        if (Talking.unsafe(said, Talking.SAFETY_WORDS)) Talking.SAFETY_NOTE else null
-    }
 
     /** The name the conversation's file is offered under. */
     fun fileName(): String =
@@ -1856,7 +1832,7 @@ class Asking(private val app: PocketApp) {
         if (proposedHere) told = note
         scope.launch {
             // 0.6.4: the ask log only when he has turned it on.
-            if (app.keepAskLog) withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(e.question, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note + (if (e.safety != null) " The safety note was shown beneath her reply." else ""), time)) } }
+            if (app.keepAskLog) withContext(Dispatchers.IO) { runCatching { Asks.log(app.pages, Asks.entry(e.question, Asks.proposed(shown?.asked?.proposal, shown?.asked?.unasked), note, time)) } }
             changed()
         }
     }

@@ -42,7 +42,7 @@ class MoveTest {
         check(pages.carryOut(pages.planNewBlock("garden")).ok)
         check(pages.carryOut(pages.planAdd("garden", "", "plant the bulbs")).ok)
         check(pages.carryOut(pages.planNewBlock(Asks.LOG)).ok)
-        check(pages.carryOut(pages.planKeep(Talking.SAFETY_BLOCK, Talking.safetyBlock())).ok)
+        check(pages.carryOut(pages.planKeep(Talking.SAFETY_BLOCK, JsObj.of("_" to JsStr("Safety words, kept before Sundial 0.12."), "1" to JsObj.of("_" to JsStr("Not feeling safe"), "1" to JsStr("not safe"))))).ok)
         val planned = Hatch.plan(h, passport, Hatch.MATTHEW, pages, routed, now, "Hatched for the move's test.")
         check(planned.ok) { planned.refusal!! }
         check(Hatch.carryOut(planned, pages, routed).problem == null)

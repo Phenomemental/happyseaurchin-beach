@@ -96,7 +96,7 @@ class KeepingTest {
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
         assertIs<Keeping.Way.Talk>(Keeping.way("I'd like to call you Gemma", emptyList(), pages), "her shell already holds it")
         // The app's own blocks are never his to name for keeping.
-        check(pages.carryOut(pages.planKeep(Talking.SAFETY_BLOCK, Talking.safetyBlock())).ok)
+        check(pages.carryOut(pages.planKeep(Talking.SAFETY_BLOCK, JsObj.of("_" to JsStr("Safety words, kept before Sundial 0.12."), "1" to JsObj.of("_" to JsStr("Not feeling safe"), "1" to JsStr("not safe"))))).ok)
         assertEquals(emptyList(), Keeping.named("Keep this in safety-words: ok", pages))
     }
 
