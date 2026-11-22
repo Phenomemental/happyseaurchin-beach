@@ -168,6 +168,9 @@ fun ComposeTestRule.makeBlock(name: String) {
     onNodeWithTag("block-name").performTextInput(name)
     waitUntil(10_000) { onAllNodes(hasTestTag("make-block") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
     onNodeWithTag("make-block").performClick()
+    // Sundial 0.12: a new block opens in the editor; its walk is a tap away.
+    waitFor("outline-line:", "$name at pocket.")
+    tap("walk-block")
     waitFor("standing", "$name at pocket.")
 }
 

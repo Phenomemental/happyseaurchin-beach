@@ -88,6 +88,7 @@ class TappingTest {
                 .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, Intent().setData(Uri.fromFile(file))))
             ActivityScenario.launch(MainActivity::class.java).use {
                 compose.tap("block:long")
+                compose.tap("walk-block")
                 compose.waitFor("standing", "long at pocket.")
                 compose.tap("save-file")
                 compose.waitFor("slip", "Saved long as a file, whole.")
@@ -128,6 +129,8 @@ class TappingTest {
             compose.waitUntil(10_000) { compose.onAllNodes(hasTestTag("tidy:notes")).fetchSemanticsNodes().isEmpty() }
             compose.tap("tidy")
             compose.tap("block:allotment")
+            compose.waitFor("outline-line:", "garden at pocket.")
+            compose.tap("walk-block")
             compose.waitFor("standing", "garden at pocket.")
         }
     }

@@ -319,6 +319,95 @@ class Pages(
         return Plan(Kind.WHOLE, name, "", collectUnderscore(block) ?: "", c, "", false, null, stringify(after), nowMs, block, stringify(before))
     }
 
+    /**
+     * Sundial 0.12, the editor (spine:pocket-beach 1.111178719994): take the
+     * part at [address] out of [name], with every line beneath it. The block
+     * is worked out on a copy and written whole on his yes, only while it
+     * still stands as planned; the lines around keep their places.
+     */
+    fun planRemove(name: String, address: String): Plan {
+        val before = beach.loadBlock(name) as? JsObj ?: return refused(Kind.WHOLE, name, address, "", "There's no block called $name.")
+        val digits = partDigits(before, address) ?: return refused(Kind.WHOLE, name, address, "", "There's no part at $address to remove.")
+        val copy = deepCopy(before) as JsObj
+        takeOut(copy, digits) ?: return refused(Kind.WHOLE, name, address, "", "There's no part at $address to remove.")
+        return planWhole(name, copy)
+    }
+
+    /**
+     * Sundial 0.12, the editor: move the part at [from], with every line
+     * beneath it, to stand beneath the line at [to] ("" the opening line), at
+     * its next free place. Worked out on a copy and written whole on his yes.
+     */
+    fun planMove(name: String, from: String, to: String): Plan {
+        val before = beach.loadBlock(name) as? JsObj ?: return refused(Kind.WHOLE, name, from, "", "There's no block called $name.")
+        val floor = floorDepth(before)
+        val digits = partDigits(before, from) ?: return refused(Kind.WHOLE, name, from, "", "There's no part at $from to move.")
+        val target = if (to.isEmpty()) List(maxOf(0, floor - 1)) { '0' } else
+            try { parseSpindle(to, floor).digits } catch (_: InvalidAddressError) { return refused(Kind.WHOLE, name, from, "", "There's no line at $to.") }
+        if (to.isNotEmpty() && walk(before, target) == null) return refused(Kind.WHOLE, name, from, "", "There's no line at $to.")
+        if (target.size >= digits.size && target.subList(0, digits.size) == digits) return refused(Kind.WHOLE, name, from, "", "A part can't move beneath itself.")
+        if (target == digits.dropLast(1)) return refused(Kind.WHOLE, name, from, "", "It stands beneath that line already.")
+        val copy = deepCopy(before) as JsObj
+        val part = takeOut(copy, digits) ?: return refused(Kind.WHOLE, name, from, "", "There's no part at $from to move.")
+        val parentKeys = target.map { if (it == '0') "_" else it.toString() }
+        var node: JsObj = copy
+        for ((i, k) in parentKeys.withIndex()) {
+            val next = node[k]
+            node = when (next) {
+                is JsObj -> next
+                is JsStr -> JsObj.of("_" to next).also { node[k] = it }
+                else -> return refused(Kind.WHOLE, name, from, "", if (i == parentKeys.lastIndex) "There's no line at $to." else "There's no line at $to.")
+            }
+        }
+        val free = (1..9).firstOrNull { !node.has(it.toString()) } ?: return refused(Kind.WHOLE, name, from, "", FULL)
+        node[free.toString()] = part
+        return planWhole(name, copy)
+    }
+
+    /** Where a move from [from] to [to] lands, as an address, for the card he says yes to; null when it can't. */
+    fun moveLandsAt(name: String, from: String, to: String): String? {
+        val before = beach.loadBlock(name) as? JsObj ?: return null
+        val floor = floorDepth(before)
+        val target = if (to.isEmpty()) List(maxOf(0, floor - 1)) { '0' } else runCatching { parseSpindle(to, floor).digits }.getOrNull() ?: return null
+        val digits = partDigits(before, from) ?: return null
+        val after = deepCopy(before) as JsObj
+        takeOut(after, digits) ?: return null
+        val node = walk(after, target)
+        val free = (1..9).firstOrNull { !(node is JsObj && node.has(it.toString())) } ?: return null
+        return fullWidthAddress(target + free.toString()[0], floor)
+    }
+
+    /** How many lines stand beneath the part at [address] (not counting its own). */
+    fun linesBeneath(name: String, address: String): Int {
+        val before = beach.loadBlock(name) ?: return 0
+        val digits = partDigits(before, address) ?: return 0
+        return (voicesOf(walk(before, digits)).size - 1).coerceAtLeast(0)
+    }
+
+    /** The digits of a part he can take out or move: not the opening line, nor a block's own underscore chain. */
+    private fun partDigits(block: Js, address: String): List<Char>? {
+        if (address.isEmpty()) return null
+        val digits = try { parseSpindle(address, floorDepth(block)).digits } catch (_: InvalidAddressError) { return null }
+        if (digits.isEmpty() || digits.last() == '0') return null
+        return digits.takeIf { walk(block, it) != null }
+    }
+
+    /**
+     * Take the part at [digits] out of [block] in place and give it back. A
+     * line left with nothing beneath it is kept as a bare string, as the
+     * store keeps such a line.
+     */
+    private fun takeOut(block: JsObj, digits: List<Char>): Js? {
+        val keys = digits.map { if (it == '0') "_" else it.toString() }
+        val chain = mutableListOf<JsObj>(block)
+        for (k in keys.dropLast(1)) chain += (chain.last()[k] as? JsObj ?: return null)
+        val parent = chain.last()
+        val part = parent[keys.last()] ?: return null
+        parent.remove(keys.last())
+        if (chain.size > 1 && parent.keys().toList() == listOf("_") && parent["_"] is JsStr) chain[chain.size - 2][keys[keys.size - 2]] = parent["_"]!!
+        return part
+    }
+
     // ── naming and removing ──
 
     /** Why the pocket block [name] can't be renamed [typed], or null if it can. */

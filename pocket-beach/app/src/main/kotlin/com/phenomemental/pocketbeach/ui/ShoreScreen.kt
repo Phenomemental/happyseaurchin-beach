@@ -55,6 +55,13 @@ fun ShoreScreen(model: Model, nav: Nav) {
     var renaming by rememberSaveable { mutableStateOf<String?>(null) }
     var removing by rememberSaveable { mutableStateOf<String?>(null) }
     var restoring by remember { mutableStateOf<Copies.Copy?>(null) }
+    // Sundial 0.12: his blocks found by name or opening line; the text files in his folder beside them.
+    var search by rememberSaveable { mutableStateOf("") }
+    val texts by produceState(emptyList<java.io.File>(), model.version) {
+        value = withContext(Dispatchers.IO) {
+            if (model.app.inFolder && model.app.allFilesAccess()) runCatching { com.phenomemental.pocketbeach.bsp.Chats.textFiles(model.app.folderDir) }.getOrDefault(emptyList()) else emptyList()
+        }
+    }
 
     val saveTo = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -101,17 +108,23 @@ fun ShoreScreen(model: Model, nav: Nav) {
             Label("Your blocks", Modifier.weight(1f))
             TextLink("Make a new block", { naming = true }, tag = "new-block")
         }
-        val mine = loaded.mine
+        val all = loaded.mine
+        if (all.size > 1) PaperField(search, { search = it }, "Find a block by its name or its words", singleLine = true, tag = "pocket-search")
+        val mine = search.trim().takeIf { it.isNotEmpty() }?.let { q ->
+            all.filter { it.name.contains(q, ignoreCase = true) || it.opening?.contains(q, ignoreCase = true) == true }
+        } ?: all
         Sheet {
             when {
-                mine.isEmpty() -> Text(
-                    "Nothing here yet. Make a new block to begin: it asks only for a name.",
+                all.isEmpty() -> Text(
+                    "Nothing here yet. Make a new block to begin: its name, and its opening line.",
                     style = Type.aside, color = ink.soft, modifier = Modifier.padding(vertical = 10.dp),
                 )
+                mine.isEmpty() -> Text("No block's name or opening line has those words.", style = Type.aside, color = ink.soft, modifier = Modifier.padding(vertical = 10.dp).testTag("search-none"))
                 else -> mine.forEachIndexed { i, b ->
                     if (i > 0) Rule()
                     if (tidying) TidyRow(b, rename = { renaming = b.name }, remove = { removing = b.name })
-                    else BlockRow(b) { nav.go(Screen.Block(Region.POCKET, b.name, "")) }
+                    // Sundial 0.12: a block of his opens in the editor, in pscale structure.
+                    else BlockRow(b, file = if (model.app.inFolder) "${b.name}.json" else null) { nav.go(Screen.Editor(b.name)) }
                 }
             }
         }
@@ -122,6 +135,18 @@ fun ShoreScreen(model: Model, nav: Nav) {
         )
         // Sundial 0.11: the files in his folder Sundial can't read as blocks, left as they are.
         SetAsideFiles(loaded.setAside)
+        // Sundial 0.12: the text files in his folder, opened as plain text.
+        if (texts.isNotEmpty()) {
+            Label("Text files in your Sundial folder", Modifier.padding(top = 6.dp))
+            Sheet {
+                texts.forEachIndexed { i, f ->
+                    if (i > 0) Rule()
+                    Column(Modifier.fillMaxWidth().clickable { nav.go(Screen.TextFile(f.name)) }.padding(vertical = 12.dp).testTag("textfile:${f.name}")) {
+                        Text(f.name, style = Type.name, color = ink.ink)
+                    }
+                }
+            }
+        }
 
         Label("Teaching blocks", Modifier.padding(top = 6.dp))
         Sheet {
@@ -163,7 +188,7 @@ fun ShoreScreen(model: Model, nav: Nav) {
         naming = false
         if (name != null) {
             model.changed()
-            nav.go(Screen.Block(Region.POCKET, name, ""))
+            nav.go(Screen.Editor(name))
         }
     })
 
@@ -232,11 +257,13 @@ private fun CopyLine(lastSavedMs: Long?, due: Boolean, changed: Boolean, inFolde
 }
 
 @Composable
-private fun BlockRow(b: BlockSummary, onOpen: () -> Unit) {
+private fun BlockRow(b: BlockSummary, file: String? = null, onOpen: () -> Unit) {
     val ink = LocalInk.current
     Column(Modifier.fillMaxWidth().clickable(onClick = onOpen).padding(vertical = 12.dp).testTag("block:${b.name}")) {
         Text(b.name, style = Type.name, color = ink.ink)
         b.opening?.let { Text(it, style = Type.aside, color = ink.soft, maxLines = 2, overflow = TextOverflow.Ellipsis) }
+        // Sundial 0.12: in his folder, each block is a file of its own.
+        file?.let { Text(it, style = Type.small, color = ink.soft.copy(alpha = 0.6f), modifier = Modifier.testTag("block-file:${b.name}")) }
     }
 }
 
@@ -361,13 +388,18 @@ private fun NewBlockDialog(model: Model, onDone: (String?) -> Unit) {
     val ink = LocalInk.current
     val scope = rememberCoroutineScope()
     var name by rememberSaveable { mutableStateOf("") }
+    // Sundial 0.12: a new block starts as its opening line, his own; with none written, the beach's ("garden at pocket.").
+    var root by rememberSaveable { mutableStateOf("") }
     var plan by remember { mutableStateOf<Plan?>(null) }
     var problem by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(name) {
+    LaunchedEffect(name, root) {
         problem = null
         if (name.isBlank()) { plan = null; return@LaunchedEffect }
         delay(150)
-        plan = withContext(Dispatchers.IO) { model.pages.planNewBlock(name) }
+        plan = withContext(Dispatchers.IO) {
+            if (root.isBlank()) model.pages.planNewBlock(name)
+            else model.pages.planKeep(name, com.phenomemental.pocketbeach.bsp.JsObj.of("_" to com.phenomemental.pocketbeach.bsp.str(root.trim())))
+        }
     }
     PaperDialog(
         "A new block",
@@ -383,8 +415,9 @@ private fun NewBlockDialog(model: Model, onDone: (String?) -> Unit) {
             }, enabled = plan?.call != null, strong = true, tag = "make-block")
         },
     ) {
-        Text("Give it a name. Only the name: the block begins with one opening line, which you can change.", style = Type.small, color = ink.soft)
+        Text("Give it a name, and its opening line: what the block is about. The block begins as that one line.", style = Type.small, color = ink.soft)
         PaperField(name, { name = it }, "garden, letters, the year…", singleLine = true, focus = true, tag = "block-name")
+        PaperField(root, { root = it }, "Its opening line", minLines = 1, tag = "block-root")
         val p = plan
         when {
             problem != null -> Text(problem!!, style = Type.small, color = ink.crimson)
