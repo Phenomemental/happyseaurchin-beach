@@ -2309,3 +2309,179 @@ that isn't there), in one conversation, as section 9 ran them.
 - **Whether she makes things up** when she answers a block's question
   without walking, later in a conversation that has walked.
 - **The paperclip's header** on a block he adds.
+
+## 12. How best to support her to read and walk his blocks
+
+A trial on the laptop, 23 November, before the next build: first why on his
+phone (log of 19:21 to 19:59, Talk at a context of 16,384) she was offered
+the walker for strata on six turns and walked none, even at "Now read
+strata 3.4"; then four maps of a block, each with the walker offered, on
+questions that need a part below the opening lines. `trial/…/WalkMaps.kt`.
+Nothing was written to the beach.
+
+### 12a. The verdict
+
+- **On his phone she didn't walk because of the conversation, not the
+  tool and not the context.** In a fresh conversation his 19:59 turn walks
+  to 3.4 every time, at both contexts. In his conversation as his phone
+  held it (four turns before it naming strata, the opening lines read in
+  each time, and her answers from them), she walks nothing, at both
+  contexts, both seeds: having answered from the opening lines four times,
+  she carries on. 16,384 against 8,192 changed nothing.
+- **A map alone doesn't make her walk; telling her what the map is does.**
+  On questions that need a part below the opening lines and name no
+  address, she walked to the right part 0 times of 6 with the map as now
+  and 0 of 6 with a two-level map, but 3 of 6 when the walker's description
+  also says the lines beneath are only their first words and walking gives
+  the detail. Right answers over all fourteen questions: 7, 6, **10** and 9
+  (the last with a worked example in the description, which led her once
+  to the example's own shape, a wrong walk to 2.4).
+- **When his words carry an address, she walks it in a fresh
+  conversation: 24 of 24,** in every map. But **one walk in six (8 of 50) ended with
+  no reply at all**: she called the walker, was handed the place, and
+  wrote nothing more. On his phone that shows as "She couldn't finish her
+  reply."
+- **So the app should hand her map (c)** (12d), keep the walker offered,
+  and give a block once in a conversation (0.13.5); and two things the
+  trial points to beyond the maps: the app reading the address his words
+  name, as it reads the opening lines, so his conversation's habit can't
+  stop it; and never leaving him with an empty reply after a walk.
+
+### 12b. Part 1: his phone's turns
+
+His six turns from the log, word for word, with Sundial 0.13.3's turn as
+the app built it (strata's opening lines read in beside each turn naming
+it), her window the time at 19:21, his Talk settings (temperature 1.00,
+top-k 64, top-p 0.95), thinking off; Gemma 4 E4B on this machine's CPU,
+seeds 0 and 2. The file he added at 19:21 (`02-bsp-walker.md`) isn't on the
+laptop: a stand-in of about 2,000 characters, written from her summary of
+it, took its place, so the long conversation read 5,631 tokens where his
+read 5,930.
+
+| His turn | Strata read in | 8,192 | 16,384 | Her answer from 3.4 |
+|---|---|---|---|---|
+| 19:59, in his conversation as his phone held it | yes | no walk, no walk | no walk, no walk | none |
+| 19:59, fresh | yes | 3.4, 3.4 | 3.4, 3.4 | 2 of 4; the other 2 empty after the walk |
+| 19:59, fresh | no | 3.4, 3.4 | 3.4, 3.4 | 4 of 4 |
+| 19:42 ("…what gets added and never edited"), fresh | yes | no walk, no walk | no walk, no walk | none |
+| 19:42, fresh | no | the opening, the opening | the opening, the opening | none |
+
+- **The tool reaches her and her call is read:** fresh, she called it with
+  "3.4" as he wrote it every time, and the walk was handed back.
+- **The long conversation is what stops her.** Its turns had her answer
+  from the opening lines, and she followed her own lead.
+- **The context changed nothing:** every run gave the same walks at
+  8,192 and 16,384.
+- **Strata handed again on each turn** is why his conversation filled
+  (2,196, 3,174, 4,321, 5,135, 5,930 tokens read); 0.13.5 gives a block
+  once in a conversation.
+- **Without an address in his words** (19:42), the opening lines as now
+  don't lead her to 3.4: read in, she answers from part 3's opening line;
+  not read in, she walks strata's opening and stops there.
+
+### 12c. Part 2: four maps
+
+Each question in a fresh conversation, at his phone's context (16,384),
+his Talk settings, seeds 0 and 2, the map beside his words as the app
+reads a block in, and the walker offered for that block:
+
+- **(a)** as now: each part's opening line, with "(N beneath)";
+- **(b)** two levels: each part's opening line, and beneath it each of its
+  own parts by its address and first eight words, as the beach's bsp lists
+  "beneath";
+- **(c)** (b), and the walker's description adds: "The lines beneath each
+  part are only their first words: a part with more beneath it holds the
+  detail, and walking to its address gives it whole.";
+- **(d)** (c), and a worked example: "For example, to read what stands at
+  2.1 of a block named garden, call it with block "garden" and spindle
+  "2.1"."
+
+Strata as the app's shelf has it (the same text she quoted on his phone);
+his passport and wholeless from the beach, shortened for the trial: each
+part's opening kept, in full for the parts the questions need, so their
+answers stand where they do in his blocks.
+
+| Question | Needs | (a) | (b) | (c) | (d) |
+|---|---|---|---|---|---|
+| S1 "In strata, when many minds share one shell, what gets added and never edited, and why?" | 3.4 | 0 / 0 | 0 / 0 | **1 / 1** | 0 / 0 |
+| S2 "Read strata 3.4 and tell me what it says." | 3.4 | 2 / 2 | 2 / 1 | 2 / 2 | 2 / 2 |
+| S3 "Now read strata 3.4 and you'll get a better answer" (his 19:59) | 3.4 | 2 / 1 | 2 / 1 | 2 / 1 | 2 / 1 |
+| P5 "what does my passport tell you about how to work with me" | 5 | – / 2 | – / 2 | – / 2 | – / 2 |
+| P6 "…what does PUBLIC mean…?" | 6 | – / 2 | – / 2 | – / 2 | – / 2 |
+| W12 "…how did the day of my exams go after that night?" | 1.2 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| W2 "…how should the meaning seed be handed to a model?" | 2.2 | 0 / 0 | 0 / 0 | **2 / 2** | **2 / 2** |
+| **Right, of 14** | | **7** | **6** | **10** | **9** |
+| Tokens read (fresh, one turn) | | 873 to 1,300 | 1,311 to 1,741 | 1,250 to 1,585 | 1,222 to 1,803 |
+
+Each cell is walks to the part / right answers, of two seeds ("–" where
+the part's whole text is in every map, so no walk is needed).
+
+- **The question without an address is the test** (S1, W12, W2). With (a)
+  she answered from the opening lines or walked the block's opening, which
+  she already had; with (b) she walked the opening every time. With (c) she walked to 2.2 at both seeds and to 3.4 at
+  one: the description, not the map, sent her down.
+- **(b) alone did nothing:** the first words of each part were in front of
+  her, and she walked the opening anyway.
+- **(d)'s example didn't help and once misled her:** for W12 she walked to
+  2.4 at both seeds, the example's shape on the wrong part.
+- **W12 was never answered,** in any map. In the trial's copy the end of
+  wholeless 1, where the night before the exams is told, was cut short, so
+  nothing pointed to 1.2: the question was harder than in his block.
+- **Passport 5 and 6 need no walk:** they have nothing beneath them, so
+  their whole text is in every map. She answered from them in 8 of 8 in
+  every map (the one keyword miss, (d) at seed 2, read and judged right).
+- **Empty after the walk:** S3 at seed 2 walked 3.4 and wrote nothing, in
+  every map; S2 once with (b), S1 once with (c). With the turns of part 1,
+  8 of 50 walks.
+- **Time:** a turn with a walk is two rounds, so her first words come after
+  the walk: on this CPU 20 to 30 s, against 12 to 18 s with no walk. At
+  his Pixel's rates a walk adds about 4 s: writing the call (about 25
+  tokens), then reading the place handed back.
+
+### 12d. What the app should hand her
+
+1. **Map (c):** his block's opening line, each part's opening line, and
+   beneath each part its own parts by address and first words; and the
+   walker's description saying those lines are only first words, that a
+   part with more beneath holds the detail, and that walking to its
+   address gives it whole. No worked example.
+2. **Given once in a conversation** (0.13.5), so neither the map nor his
+   blocks fill her conversation turn on turn.
+3. **The address his words name, read by the app** as it reads the
+   opening lines: "Now read strata 3.4" has the app hand her 3.4 beside the
+   map, so a conversation that has stopped her walking can't stop the read.
+   The walker stays offered for the rest.
+4. **Never an empty reply after a walk:** when she writes nothing after
+   being handed a place, the app shows what was walked, plainly, or asks
+   her once more for her answer.
+5. **To try on his phone first:** (c) and (d), the best two here. That
+   needs a build with a switch between them in Settings, or one build of
+   each; nothing was built for it, as asked.
+
+### 12e. Her Talk context at 16,384 against 8,192
+
+The line in the sand on 0.13's code (`trial/…/Sand13.kt`, `-Pcontext`),
+seeds 0 and 2, at each context on this machine's CPU:
+
+| | 8,192 | 16,384 |
+|---|---:|---:|
+| Her replies, of 22 | the same 22 | the same 22, word for word |
+| Her first words shown, median | 5.3 s | 6.8 s |
+| Her first words shown, longest | 8.9 s | 9.5 s |
+| Writing (test 4's 266 tokens) | 9.5 a second | 6.1 a second |
+| Memory with the engine made | 772 MB | 1,015 MB |
+| Memory at its height | 3,613 MB | 3,945 MB |
+
+- **The larger context changes nothing she says** on the line in the
+  sand's short conversations: the same words at the same seed.
+- **It costs on the laptop's CPU:** about 1½ s more to her first words and
+  about a third slower writing, even in a short conversation, and about
+  330 MB more memory at its height.
+- **His Pixel 9 Pro holds it:** his phone ran Talk at 16,384 from 19:21 to
+  19:59 on 23 November, Gemma 4 E4B loaded on the GPU in 48 s, writing 6.2
+  to 7.5 tokens a second against about 7.9 at 8,192. The phone's own cost
+  was a little slower writing, and Write and Sort moved to the CPU while
+  Talk at 16,384 held the GPU (his log says so).
+- **What it buys** is room for a longer conversation before it fills. With
+  a block given once (0.13.5), 8,192 already holds far more of a
+  conversation than his of 23 November did.
