@@ -9,6 +9,8 @@ import com.phenomemental.pocketbeach.bsp.Acts
 import com.phenomemental.pocketbeach.bsp.Answer
 import com.phenomemental.pocketbeach.bsp.Asked
 import com.phenomemental.pocketbeach.bsp.Chats
+import com.phenomemental.pocketbeach.bsp.WalkTool
+import com.phenomemental.pocketbeach.bsp.Walking
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.Close
@@ -106,6 +108,11 @@ class Asking(private val app: PocketApp) {
     class Exchange(val question: String, val at: Long = System.currentTimeMillis()) {
         /** Sundial 0.12: the files he added to this message, read in as text beneath his words; shown as chips on it. */
         var files: List<Chats.Attached> = emptyList()
+            internal set
+        /** Sundial 0.13: the blocks his words named, the walker offered her on this turn only; and what she walked, for the chip on her reply. */
+        var named: List<String> = emptyList()
+            internal set
+        var walked: List<String> = emptyList()
             internal set
         /** Her reply, as shown: never a line playing her turn back. */
         var said by mutableStateOf("")
@@ -563,14 +570,24 @@ class Asking(private val app: PocketApp) {
                         val handed = emptyList<String>()
                         // Never shown: a line of hers that plays her turn back. Never taken out of view: a line once shown (Sundial 0.10.1).
                         val shown = Talking.Shown(q, opening, echo, hisWords, handed)
-                        // Sundial 0.10.2: her reply written free, always, streamed as she writes it: no tool call (on his Pixel's E4B it came back
-                        // as plain words, so every turn ran her twice). Her places line, if she gives one, is the app's to read and never shown.
-                        val reply = t.stream.say(message) { piece ->
-                            words.append(piece)
+                        // Sundial 0.10.2: her reply written free, streamed as she writes it. Her places line, if she gives one, is never shown.
+                        val piece: (String) -> Unit = { p ->
+                            words.append(p)
                             val now = shown.of(words.toString())
                             if (firstShown == null && now.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
                             live = now
                         }
+                        // Sundial 0.13 (spine:pocket-beach 1.1111787199994): when his words name a block of his, on this turn only she is
+                        // given the walker as one native tool, thinking off, its words naming the blocks his words named (the only blocks
+                        // it takes); the app walks what she asks and hands her readable text.
+                        e.named = runCatching { Walking.named(q, app.pages.shore().mine.map { it.name }, h) }.getOrDefault(emptyList())
+                        val walks = mutableListOf<Walking.Walked>()
+                        val reply = if (e.named.isEmpty()) t.stream.say(message, piece)
+                        else t.sayWithTool(message, WalkTool.forBlocks(e.named), onCpu = false, call = { c ->
+                            Walking.walk(app.pages, c.arguments, e.named, h).also { walks += it }.text
+                        }, piece = piece).reply
+                        e.walked = walks.map { it.said }
+                        conversation.read += walks.filter { it.found }.map { "his ${it.chip}" }
                         pace = t.pace.copy(if (first) t.pace.loadMs else null).also { p ->
                             p.turns.addAll(t.pace.turns.drop(before))
                             app.cpuWhy(MindJob.TALK)?.takeIf { Pace.GPU_FAILED !in p.notes }?.let { p.notes += "Talk ran on the CPU: $it." }
@@ -1067,6 +1084,7 @@ class Asking(private val app: PocketApp) {
             e.unfinished?.let { appendLine("  $it") }
             e.slower?.let { appendLine("  $it") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
+            if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: the walker offered; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
             e.proposal?.let { appendLine("  Proposed:"); appendLine(it.prependIndent("  ")) }

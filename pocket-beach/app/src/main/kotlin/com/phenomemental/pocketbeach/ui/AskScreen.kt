@@ -369,6 +369,11 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
             // Her words as she writes them.
             thinking && asking.live.isNotBlank() -> Text(asking.live, style = Type.body, color = ink.ink, modifier = Modifier.testTag("live"))
         }
+        // Sundial 0.13: what she walked to answer, a small chip on her reply.
+        if (e.walked.isNotEmpty() && !thinking) for (w in e.walked) Text(
+            "↳ $w", style = Type.small, color = ink.soft,
+            modifier = Modifier.background(ink.sheet, androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).padding(horizontal = 10.dp, vertical = 4.dp).testTag("walked-chip"),
+        )
         // Sundial 0.12: her reply shared out as text.
         if (e.said.isNotBlank() && !thinking) TextLink("Share", { shareText(context, e.said, "From Sundial") }, tag = "share-reply")
         // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
