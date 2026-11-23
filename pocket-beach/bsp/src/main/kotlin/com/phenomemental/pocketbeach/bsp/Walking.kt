@@ -3,8 +3,9 @@ package com.phenomemental.pocketbeach.bsp
 /**
  * Sundial 0.13, the walk offered when his words name a block
  * (spine:pocket-beach 1.1111787199994 and 1.1111787199995): which of his
- * blocks his words name; the walk she asks for; and what she is handed
- * back, readable text in the block's own structure, never JSON.
+ * blocks his words name; the walk she asks for, checked against the block
+ * before it is walked; and what she is handed back, readable text in the
+ * block's own structure, never JSON.
  */
 object Walking {
     /**
@@ -41,14 +42,20 @@ object Walking {
         /** What she walked: the block, and the address when she gave one. */
         val chip: String get() = block + (spindle?.let { " at $it" } ?: "")
 
-        /** The chip on her reply, in words: "walked membership at 2.2". */
-        val said: String get() = (if (found) "walked " else "looked for ") + chip
+        /** The chip on her reply, in words: "walked membership at 2.2", or for a walk the guard refused, "looked for 2.9 in membership". */
+        val said: String get() = if (found) "walked $chip" else "looked for ${spindle?.let { "$it in " }.orEmpty()}${block ?: "a block"}"
     }
 
-    /** Walk [arguments] (her call's, as the engine handed them) in [pages], his pocket, among the blocks his words [named]. */
+    /**
+     * Walk [arguments] (her call's, as the engine handed them) in [pages], his
+     * pocket, among the blocks his words [named]. The guard first: the block
+     * must be one he named, and the spindle a place that stands in it;
+     * otherwise nothing is walked and she is told plainly there is no such
+     * place, to answer without it.
+     */
     fun walk(pages: Pages, arguments: Map<String, Any?>, named: List<String>, handle: String?): Walked {
         val asked = arguments["block"]?.toString()
-        val block = resolve(asked, named, handle) ?: return Walked(asked, null, "He named ${named.joinToString()}; nothing else is walked.", false)
+        val block = resolve(asked, named, handle) ?: return Walked(asked, null, "There is no block called ${asked ?: "that"} among those he named (${named.joinToString()}). Answer him without it.", false)
         val spindle = when (val s = arguments["spindle"]) {
             null -> null
             is Number -> s.toString()
@@ -60,11 +67,12 @@ object Walking {
             else -> p.toString().trim().toIntOrNull()
         }
         if (spindle != null) {
-            val view = runCatching { pages.position(Region.POCKET, block, spindle) }.getOrNull()
-                ?: return Walked(block, spindle, "Nothing was found at $spindle in his block $block.", false)
+            val bad = spindle.count { it == '.' } > 1 || !spindle.all { it.isDigit() || it == '.' || it == ',' }
+            val view = if (bad) null else pages.position(Region.POCKET, block, spindle.replace(",", ""))
+            if (view == null || view.address.isEmpty()) return Walked(block, spindle, "There is no place $spindle in his block $block. Answer him without it.", false)
             return Walked(block, view.address, readable(block, view, attention, pages.floorOf(block), pages.position(Region.POCKET, block)?.text), true)
         }
-        val top = pages.position(Region.POCKET, block) ?: return Walked(block, null, "Nothing was found in his block $block.", false)
+        val top = pages.position(Region.POCKET, block) ?: return Walked(block, null, "There is no block called $block in his pocket. Answer him without it.", false)
         return Walked(block, null, "(His block $block: its opening line, then each part's opening line beneath it.)\n" + discOf(top), true)
     }
 

@@ -97,4 +97,48 @@ class WalkTurnDeviceTest {
             assertEquals(2, mind.talkMessages.size)
         }
     }
+
+    @Test
+    fun aPlaceThatIsntThereIsNotWalkedAndSheIsToldPlainly() {
+        Fresh.hatched()
+        membership()
+        mind.walkArgs = mapOf("block" to "membership", "spindle" to "2.9")
+        mind.talkScript += "There's no 2.9 in it; it has two ID checks."
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            say("What's at 2.9 in my membership block?")
+            compose.waitUntil(20_000) { app.asking.settled && mind.walkResults.isNotEmpty() }
+            assertEquals("There is no place 2.9 in his block membership. Answer him without it.", mind.walkResults.single())
+            compose.waitFor("say", "two ID checks")
+            compose.waitFor("walked-chip", "looked for 2.9 in membership")
+        }
+    }
+
+    @Test
+    fun whenTheWalkCheckFoundAddressesAlteredHerToolTurnsRunOnTheCpu() {
+        Fresh.hatched()
+        membership()
+        app.walkCheck = PocketApp.WalkChecked(17, 20, 3, System.currentTimeMillis(), "Gemma 4 E4B")
+        mind.walkArgs = mapOf("block" to "membership", "spindle" to "1")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            say("Read me the first step of my membership block.")
+            compose.waitUntil(20_000) { app.asking.settled && mind.toolTurns.isNotEmpty() }
+            assertEquals(listOf(true), mind.toolOnCpu.toList())
+            assertTrue(app.asking.transcript(), app.asking.transcript().contains("the walker offered on the CPU, as the walk check found addresses altered on the GPU"))
+            // A turn naming no block is untouched: her talk as it was, no tool.
+            say("Thanks.")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 2 }
+            assertEquals(1, mind.toolTurns.size)
+        }
+        // None altered (one call that never came isn't an altered address): on the GPU.
+        app.walkCheck = PocketApp.WalkChecked(19, 20, 0, System.currentTimeMillis(), "Gemma 4 E4B")
+        mind.toolOnCpu.clear()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            say("And the second step of my membership block?")
+            compose.waitUntil(20_000) { app.asking.settled && mind.toolOnCpu.isNotEmpty() }
+            assertEquals(listOf(false), mind.toolOnCpu.toList())
+        }
+    }
 }
