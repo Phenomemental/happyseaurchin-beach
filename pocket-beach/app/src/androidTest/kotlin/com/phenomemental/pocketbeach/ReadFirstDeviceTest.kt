@@ -118,4 +118,21 @@ class ReadFirstDeviceTest {
             assertEquals("a real walk: nothing to mark", 0, count("nothing-read"))
         }
     }
+
+    @Test
+    fun aReplyAnsweringFromAFileHeAddedIsNotMarked() {
+        // His phone, 19:21: "Read the attached. Learn it.", with a file added with the paperclip; her summary named the
+        // protocol ("BSP (Block-Spindle-Point)") and the mark fired, though she answered from the file he gave her.
+        Fresh.hatched()
+        mind.talkScript += "I have read and fully learned the content of His file 02-bsp-walker.md. The documentation describes the **BSP (Block-Spindle-Point)** protocol. Data received and understood."
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            app.asking.attach(com.phenomemental.pocketbeach.bsp.Chats.Attached("02-bsp-walker.md", "# The BSP walker\n\nBSP is a pure resolution algorithm for pscale JSON blocks.", block = false))
+            say("Read the attached. Learn it.")
+            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 1 }
+            compose.waitFor("say", "Block-Spindle-Point")
+            assertEquals("a file he added: nothing to mark", 0, count("nothing-read"))
+            assertFalse(app.asking.transcript(), app.asking.transcript().contains(NothingRead.SAID))
+        }
+    }
 }

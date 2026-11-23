@@ -5,12 +5,13 @@ package com.phenomemental.pocketbeach.bsp
  * revised 23 November): on his phone she wrote a pretend bsp call and an
  * invented passport as if read. A reply that writes a tool call, or says its
  * data was received, on a turn where nothing was read from his blocks (no
- * walk of hers, no read of the app's), is marked so, plainly. Nothing about
- * how she answers: her words stay as she wrote them.
+ * walk of hers, no read of the app's) and he added no file, is marked so,
+ * plainly. Nothing about how she answers: her words stay as she wrote them.
  */
 object NothingRead {
     private val SHAPES = listOf(
-        Regex("""\bbsp\s*\(""", RegexOption.IGNORE_CASE),
+        // A call's shape: bsp( and then a quote or an argument. "BSP (Block-Spindle-Point)" in her prose is no call (his phone, 19:21).
+        Regex("""\bbsp\s*\(\s*(["']|(agent_id|block|spindle|pscale_attention)\s*[=:])""", RegexOption.IGNORE_CASE),
         Regex("""\b(tool_code|tool_call|function_call|tool_response)\b""", RegexOption.IGNORE_CASE),
         Regex("""<\|?\s*(tool|function)""", RegexOption.IGNORE_CASE),
         Regex(""""name"\s*:\s*"bsp"""", RegexOption.IGNORE_CASE),

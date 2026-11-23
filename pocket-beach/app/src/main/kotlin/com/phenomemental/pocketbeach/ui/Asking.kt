@@ -622,7 +622,9 @@ class Asking(private val app: PocketApp) {
                         e.walked = walks.map { it.said }
                         // Sundial 0.13.3, plain machinery: a tool call written into her words, or "data received", with nothing read from his
                         // blocks on this turn, is marked so beneath her reply. Her words stay as she wrote them.
-                        e.nothingRead = walks.none { it.found } && e.read.isEmpty() && NothingRead.pretends(reply)
+                        // A file he added with the paperclip is something given her: a reply answering from it is never marked (his
+                        // phone, 19:21: "Read the attached", and the mark fired on her summary of the file).
+                        e.nothingRead = walks.none { it.found } && e.read.isEmpty() && e.files.isEmpty() && NothingRead.pretends(reply)
                         conversation.read += walks.filter { it.found }.map { "his ${it.chip}" }
                         pace = t.pace.copy(if (first) t.pace.loadMs else null).also { p ->
                             p.turns.addAll(t.pace.turns.drop(before))
