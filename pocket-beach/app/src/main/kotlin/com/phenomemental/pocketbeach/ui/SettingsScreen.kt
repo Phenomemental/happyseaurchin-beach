@@ -206,7 +206,9 @@ private fun Workings(model: Model) {
  * Sundial 0.12.1, the check on his phone (spine:pocket-beach 1.1111787199993):
  * twenty walk calls from her on the GPU, each asked for a known address, and
  * how many arrived intact. He reports the number; 0.13 walks on the CPU if
- * any arrived altered.
+ * any arrived altered. Sundial 0.13.1, widened: then the same short
+ * conversation on the GPU and on the CPU, side by side, so he sees whether
+ * her stutters are the GPU's; a reply that loops is cut and marked so.
  */
 @Composable
 private fun WalkCheckPart(model: Model) {
@@ -216,44 +218,86 @@ private fun WalkCheckPart(model: Model) {
     var running by remember { mutableStateOf<Int?>(null) }
     var outcomes by remember { mutableStateOf<List<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>>(emptyList()) }
     var problem by remember { mutableStateOf<String?>(null) }
+    var side by remember { mutableStateOf<String?>(null) }
+    var conversed by remember { mutableStateOf<List<Pair<String, com.phenomemental.pocketbeach.model.Mind.Conversed?>>>(emptyList()) }
+    val busy = running != null || side != null
     Column(Modifier.fillMaxWidth().testTag("walk-check-part"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
-        Text("Her walk on the GPU", style = Type.heading, color = ink.ink)
+        Text("Her on the GPU, checked", style = Type.heading, color = ink.ink)
         Text(
             "Twenty times, she is asked what's at a known address, and calls the walker with it on the phone's GPU. Nothing is walked or written: " +
-                "the check reads only whether each address arrived as she sent it. It takes about a minute.",
+                "the check reads only whether each address arrived as she sent it. Then the same short conversation, three messages, runs on the GPU " +
+                "and on the CPU, side by side, so you can see whether stutters (garbled dates, doubled letters, a word over and over) are the GPU's. " +
+                "It takes a few minutes.",
             style = Type.small, color = ink.soft,
         )
-        Action(running?.let { "Checking… $it of ${com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size}" } ?: "Check her walk", {
-            if (running != null) return@Action
-            problem = null
-            outcomes = emptyList()
-            running = 0
-            scope.launch {
-                val settings = app.running(com.phenomemental.pocketbeach.model.Job.TALK).copy(processor = "GPU")
-                val got = mutableListOf<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>()
-                runCatching {
-                    for (a in com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES) {
-                        val called = withContext(Dispatchers.IO) {
-                            app.mind.callTool(com.phenomemental.pocketbeach.bsp.WalkCheck.window(java.time.ZonedDateTime.now()), com.phenomemental.pocketbeach.bsp.WalkCheck.message(a), com.phenomemental.pocketbeach.bsp.WalkCheck.TOOL, settings)
+        Action(
+            running?.let { "Checking her walk… $it of ${com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size}" }
+                ?: side?.let { "Her conversation on the $it…" } ?: "Check her on this phone",
+            {
+                if (busy) return@Action
+                problem = null
+                outcomes = emptyList()
+                conversed = emptyList()
+                running = 0
+                scope.launch {
+                    val talk = app.running(com.phenomemental.pocketbeach.model.Job.TALK)
+                    val settings = talk.copy(processor = "GPU")
+                    val got = mutableListOf<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>()
+                    runCatching {
+                        for (a in com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES) {
+                            val called = withContext(Dispatchers.IO) {
+                                app.mind.callTool(com.phenomemental.pocketbeach.bsp.WalkCheck.window(java.time.ZonedDateTime.now()), com.phenomemental.pocketbeach.bsp.WalkCheck.message(a), com.phenomemental.pocketbeach.bsp.WalkCheck.TOOL, settings)
+                            }
+                            got += com.phenomemental.pocketbeach.bsp.WalkCheck.outcome(a, called?.arguments)
+                            running = got.size
+                            outcomes = got.toList()
                         }
-                        got += com.phenomemental.pocketbeach.bsp.WalkCheck.outcome(a, called?.arguments)
-                        running = got.size
-                        outcomes = got.toList()
+                    }.onFailure { problem = "The check stopped: ${it.message ?: it::class.simpleName}." }
+                    running = null
+                    if (got.size == com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size) {
+                        app.walkCheck = com.phenomemental.pocketbeach.PocketApp.WalkChecked(got.count { it.intact }, got.size, got.count { it.altered }, System.currentTimeMillis(), settings.model)
                     }
-                }.onFailure { problem = "The check stopped: ${it.message ?: it::class.simpleName}." }
-                running = null
-                if (got.size == com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size) {
-                    app.walkCheck = com.phenomemental.pocketbeach.PocketApp.WalkChecked(got.count { it.intact }, got.size, got.count { it.altered }, System.currentTimeMillis(), settings.model)
+                    // The same conversation, his Talk settings, on the GPU and then on the CPU.
+                    val now = java.time.ZonedDateTime.now()
+                    val handle = withContext(Dispatchers.IO) { app.asking.hatched() } ?: "Sundial"
+                    val messages = com.phenomemental.pocketbeach.bsp.SideBySide.messages(now, handle)
+                    for (processor in listOf("GPU", "CPU")) {
+                        side = processor
+                        val c = runCatching {
+                            withContext(Dispatchers.IO) {
+                                app.mind.converse(com.phenomemental.pocketbeach.bsp.SideBySide.window(now), messages, talk.copy(processor = processor), com.phenomemental.pocketbeach.bsp.SideBySide.LONGEST)
+                            }
+                        }.onFailure { problem = "Her conversation on the $processor stopped: ${it.message ?: it::class.simpleName}." }.getOrNull()
+                        conversed = conversed + (processor to c)
+                    }
+                    side = null
                 }
-            }
-        }, Modifier.fillMaxWidth(), enabled = running == null, tag = "walk-check")
+            },
+            Modifier.fillMaxWidth(), enabled = !busy, tag = "walk-check",
+        )
         problem?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("walk-check-problem")) }
         if (outcomes.isNotEmpty() && running == null) {
             Text(com.phenomemental.pocketbeach.bsp.WalkCheck.said(outcomes), style = Type.body, color = ink.ink, modifier = Modifier.testTag("walk-check-result"))
             for (o in outcomes.filter { !it.intact }) Text(o.said, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("walk-check-altered"))
-        } else app.walkCheck?.let { c ->
+        } else if (running == null) app.walkCheck?.let { c ->
             Text("Last checked ${Words.at(c.atMs)}, on ${c.model}: ${c.intact} of ${c.of} arrived intact.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("walk-check-last"))
+        }
+        if (conversed.isNotEmpty()) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            for ((processor, c) in conversed) Column(Modifier.weight(1f).testTag("side-${processor.lowercase()}"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("On the $processor", style = Type.name, color = ink.ink)
+                when {
+                    c == null -> Text("It couldn't run here.", style = Type.small, color = ink.crimson)
+                    else -> {
+                        if (c.processor != processor) Text("The $processor couldn't run her${c.whyNotGpu?.let { ": $it" } ?: ""}; this is the ${c.processor}.", style = Type.small, color = ink.crimson)
+                        for (reply in c.replies) {
+                            val loop = com.phenomemental.pocketbeach.bsp.Looping.of(reply)
+                            Text(loop?.let { com.phenomemental.pocketbeach.bsp.Looping.cut(reply, it) } ?: reply.trim(), style = Type.small, color = ink.ink)
+                            if (loop != null) Text("↺ It looped here: \"${loop.unit}\" ${loop.times} times running.", style = Type.small, color = ink.crimson, modifier = Modifier.testTag("side-looped"))
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -19,6 +19,23 @@ object JobPrefs {
         ).let { s -> s.copy(temperature = JobSettings.round(s.temperature), topP = JobSettings.round(s.topP)) }
     }
 
+    /** Kept once Talk's temperature has been set back to its default (Sundial 0.13.1). */
+    const val TALK_BACK_TO_DEFAULT = "job.TALK.temperatureBackToDefault"
+
+    /**
+     * Sundial 0.13.1 (spine:pocket-beach 1.1111787199993): Talk's temperature
+     * back to its default, 1.0, Edge's way, once. On his phone it was kept at
+     * 0.70 when she looped on 23 November. He can change it again in Settings.
+     * Whether it was changed.
+     */
+    fun talkTemperatureBackToDefault(prefs: SharedPreferences): Boolean {
+        if (prefs.getBoolean(TALK_BACK_TO_DEFAULT, false)) return false
+        val k = "job.${Job.TALK.name}.temperature"
+        val kept = prefs.contains(k) && prefs.getFloat(k, 0f).toDouble() != JobSettings.of(Job.TALK).temperature
+        prefs.edit().apply { if (kept) putFloat(k, JobSettings.of(Job.TALK).temperature.toFloat()) }.putBoolean(TALK_BACK_TO_DEFAULT, true).commit()
+        return kept
+    }
+
     fun write(prefs: SharedPreferences, job: Job, s: JobSettings) {
         val k = "job.${job.name}."
         prefs.edit()

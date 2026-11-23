@@ -11,6 +11,7 @@ import com.phenomemental.pocketbeach.bsp.Asked
 import com.phenomemental.pocketbeach.bsp.Chats
 import com.phenomemental.pocketbeach.bsp.WalkTool
 import com.phenomemental.pocketbeach.bsp.Walking
+import com.phenomemental.pocketbeach.bsp.Looping
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.Close
@@ -535,6 +536,9 @@ class Asking(private val app: PocketApp) {
             val started = System.nanoTime()
             var pace: Pace? = null
             var firstShown: Long? = null
+            // Sundial 0.13.1 (spine:pocket-beach 1.1111787199993): her turn as sent, and her words as shown up to a loop the app stopped.
+            var sent = ""
+            var looped: String? = null
             val h = withContext(Dispatchers.IO) { hatched() }
             // Sundial 0.10: his words and their instant wait for Keep today, before his cook walks them (spine:pocket-beach 1.111178719915).
             if (h != null) runCatching { app.waiting.add(q, e.at) }
@@ -565,6 +569,7 @@ class Asking(private val app: PocketApp) {
                         e.stamp = HerWindow.stamp(saidAt, last)
                         // Sundial 0.12, Gemma released: her turn is the time and his words, and nothing added to shape how she answers.
                         val message = HerWindow.releasedTurn(Chats.withFiles(q, e.files), saidAt, last)
+                        sent = message
                         val echo = HerWindow.echoLines(message)
                         // Sundial 0.12: the echo filter is given only the app's own lines (the time it stamps on his turn); his words are hers to say.
                         val opening = ""
@@ -575,10 +580,19 @@ class Asking(private val app: PocketApp) {
                         val shown = Talking.Shown(q, opening, echo, hisWords, handed)
                         // Sundial 0.10.2: her reply written free, streamed as she writes it. Her places line, if she gives one, is never shown.
                         val piece: (String) -> Unit = { p ->
-                            words.append(p)
-                            val now = shown.of(words.toString())
-                            if (firstShown == null && now.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
-                            live = now
+                            if (looped == null) {
+                                words.append(p)
+                                val now = shown.of(words.toString())
+                                if (firstShown == null && now.isNotBlank()) firstShown = (System.nanoTime() - started) / 1_000_000
+                                live = now
+                                // Sundial 0.13.1: plain machinery, nothing about how she answers. Her words fallen into one word or phrase
+                                // over and over: the app stops her, keeps what came before with the first time of it, and says so beneath.
+                                Looping.of(now)?.let { l ->
+                                    looped = Looping.cut(now, l)
+                                    live = looped!!
+                                    t.stop()
+                                }
+                            }
                         }
                         // Sundial 0.13 (spine:pocket-beach 1.1111787199994): when his words name a block of his, on this turn only she is
                         // given the walker as one native tool, thinking off, its words naming the blocks his words named (the only blocks
@@ -620,7 +634,9 @@ class Asking(private val app: PocketApp) {
             e.pace = pace
             e.slower = pace?.slower
             e.firstShown = firstShown
-            val (message, said) = talked.getOrElse { ex ->
+            val (message, said) = talked.map { (m, w) -> m to (looped ?: w) }.getOrElse { ex ->
+                // Sundial 0.13.1: stopped by the app for a loop, her words up to it are her reply.
+                looped?.let { return@getOrElse sent to it }
                 // Sundial 0.10.1: what she had shown stays in view, and a plain line says she couldn't finish: never a blank.
                 if (live.isNotBlank()) e.said = live
                 e.unfinished = UNFINISHED
@@ -632,6 +648,11 @@ class Asking(private val app: PocketApp) {
             // Sundial 0.10.1: never less than she showed while it came; and a reply with no words is said plainly, never a blank.
             e.said = said.ifBlank { live }
             if (e.said.isBlank()) e.unfinished = UNFINISHED
+            // Sundial 0.13.1: stopped part way, her conversation can't carry on from it: the next message opens it afresh.
+            if (looped != null) {
+                e.unfinished = Looping.STOPPED
+                stale += MindJob.TALK
+            }
             // Sundial 0.10.1: each step timed, then the whole from his message to her first words on screen.
             e.steps = walkSteps + app.mind.steps?.take().orEmpty() + listOfNotNull(
                 firstShown?.let { "her first words on screen, from his message: " + Steps.secs(it) },

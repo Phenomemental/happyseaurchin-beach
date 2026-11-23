@@ -62,6 +62,18 @@ interface Mind {
      */
     suspend fun callTool(instruction: String, message: String, toolJson: String, settings: JobSettings): Called? = null
 
+    /** What ran a short conversation (the processor, and why not the GPU when it was asked for and couldn't), and her replies in turn. */
+    class Conversed(val processor: String, val whyNotGpu: String?, val replies: List<String>)
+
+    /**
+     * Sundial 0.13.1: [messages] in turn in one conversation of their own,
+     * each reply whole and at most [longest] tokens, thinking off, drawn as
+     * [settings] say and on the processor they name. For the check that runs
+     * the same conversation on the GPU and on the CPU, side by side
+     * (spine:pocket-beach 1.1111787199993). Null where the mind can't.
+     */
+    suspend fun converse(instruction: String, messages: List<String>, settings: JobSettings, longest: Int): Conversed? = null
+
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 
