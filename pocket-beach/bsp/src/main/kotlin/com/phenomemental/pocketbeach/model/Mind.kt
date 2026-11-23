@@ -138,12 +138,12 @@ interface Mind {
          * Sundial 0.13 (spine:pocket-beach 1.1111787199994): one turn with one
          * native tool ([toolJson]) offered, thinking off: each call she makes
          * is handed to [call], whose text goes back to her, and her reply is
-         * the turn's. Run on the CPU when [onCpu] (his GPU check showed
-         * addresses altered). The turn joins her conversation as any other;
-         * the tool is offered on this turn only. A mind with no tools talks
-         * as on any turn.
+         * the turn's, on her own engine (Sundial 0.13.2: never switched to the
+         * CPU for it; the address guard holds instead). The turn joins her
+         * conversation as any other; the tool is offered on this turn only.
+         * A mind with no tools talks as on any turn.
          */
-        fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Called) -> String, piece: (String) -> Unit): ToolTurn =
+        fun sayWithTool(message: String, toolJson: String, call: (Called) -> String, piece: (String) -> Unit): ToolTurn =
             ToolTurn(stream.say(message, piece), emptyList())
     }
 

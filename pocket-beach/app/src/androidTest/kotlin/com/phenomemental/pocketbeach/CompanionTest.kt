@@ -135,9 +135,8 @@ class StandIn : Mind {
             override fun close() {}
 
             // Sundial 0.13: a turn with the walker offered: she calls it with [walkArgs] (none set: no call), then answers.
-            override fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {
+            override fun sayWithTool(message: String, toolJson: String, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {
                 toolTurns += message
-                toolOnCpu += onCpu
                 toolJsons += toolJson
                 val args = walkArgs ?: return Mind.ToolTurn(stream.say(message, piece), emptyList())
                 val c = Mind.Called("bsp", args, "")
@@ -210,9 +209,8 @@ class StandIn : Mind {
         return Mind.Called("bsp", mapOf("block" to "walk-check", "spindle" to (if (toolNumbers) address.toDouble() else address)), "")
     }
 
-    /** Sundial 0.13: the walk turns: each message the walker was offered on, whether on the CPU, her call's arguments, and what each call was answered with. */
+    /** Sundial 0.13: the walk turns: each message the walker was offered on, the tool as offered, her call's arguments, and what each call was answered with. */
     val toolTurns = java.util.concurrent.CopyOnWriteArrayList<String>()
-    val toolOnCpu = java.util.concurrent.CopyOnWriteArrayList<Boolean>()
     val toolJsons = java.util.concurrent.CopyOnWriteArrayList<String>()
     var walkArgs: Map<String, Any?>? = null
     val walkResults = java.util.concurrent.CopyOnWriteArrayList<String>()

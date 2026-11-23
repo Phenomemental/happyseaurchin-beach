@@ -205,10 +205,13 @@ private fun Workings(model: Model) {
 /**
  * Sundial 0.12.1, the check on his phone (spine:pocket-beach 1.1111787199993):
  * twenty walk calls from her on the GPU, each asked for a known address, and
- * how many arrived intact. He reports the number; 0.13 walks on the CPU if
- * any arrived altered. Sundial 0.13.1, widened: then the same short
- * conversation on the GPU and on the CPU, side by side, so he sees whether
- * her stutters are the GPU's; a reply that loops is cut and marked so.
+ * how many arrived intact. He reports the number; since 0.13.2 it moves
+ * nothing, her walks staying on the GPU. Sundial 0.13.1, widened: then the
+ * same short conversation on the GPU and on the CPU, side by side, so he
+ * sees whether her stutters are the GPU's; a reply that loops is cut and
+ * marked so. Sundial 0.13.2: the CPU's runs first and the GPU's last, and
+ * when the check ends, however it ends, her talk engine is loaded again, so
+ * his next message isn't left on the CPU's engine.
  */
 @Composable
 private fun WalkCheckPart(model: Model) {
@@ -241,37 +244,45 @@ private fun WalkCheckPart(model: Model) {
                 conversed = emptyList()
                 running = 0
                 scope.launch {
-                    val talk = app.running(com.phenomemental.pocketbeach.model.Job.TALK)
-                    val settings = talk.copy(processor = "GPU")
-                    val got = mutableListOf<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>()
-                    runCatching {
-                        for (a in com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES) {
-                            val called = withContext(Dispatchers.IO) {
-                                app.mind.callTool(com.phenomemental.pocketbeach.bsp.WalkCheck.window(java.time.ZonedDateTime.now()), com.phenomemental.pocketbeach.bsp.WalkCheck.message(a), com.phenomemental.pocketbeach.bsp.WalkCheck.TOOL, settings)
+                    try {
+                        val talk = app.running(com.phenomemental.pocketbeach.model.Job.TALK)
+                        val settings = talk.copy(processor = "GPU")
+                        val got = mutableListOf<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>()
+                        runCatching {
+                            for (a in com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES) {
+                                val called = withContext(Dispatchers.IO) {
+                                    app.mind.callTool(com.phenomemental.pocketbeach.bsp.WalkCheck.window(java.time.ZonedDateTime.now()), com.phenomemental.pocketbeach.bsp.WalkCheck.message(a), com.phenomemental.pocketbeach.bsp.WalkCheck.TOOL, settings)
+                                }
+                                got += com.phenomemental.pocketbeach.bsp.WalkCheck.outcome(a, called?.arguments)
+                                running = got.size
+                                outcomes = got.toList()
                             }
-                            got += com.phenomemental.pocketbeach.bsp.WalkCheck.outcome(a, called?.arguments)
-                            running = got.size
-                            outcomes = got.toList()
+                        }.onFailure { problem = "The check stopped: ${it.message ?: it::class.simpleName}." }
+                        running = null
+                        if (got.size == com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size) {
+                            app.walkCheck = com.phenomemental.pocketbeach.PocketApp.WalkChecked(got.count { it.intact }, got.size, got.count { it.altered }, System.currentTimeMillis(), settings.model)
                         }
-                    }.onFailure { problem = "The check stopped: ${it.message ?: it::class.simpleName}." }
-                    running = null
-                    if (got.size == com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size) {
-                        app.walkCheck = com.phenomemental.pocketbeach.PocketApp.WalkChecked(got.count { it.intact }, got.size, got.count { it.altered }, System.currentTimeMillis(), settings.model)
+                        // The same conversation, his Talk settings, on the CPU and then on the GPU, so the GPU's engine is the last made.
+                        val now = java.time.ZonedDateTime.now()
+                        val handle = withContext(Dispatchers.IO) { app.asking.hatched() } ?: "Sundial"
+                        val messages = com.phenomemental.pocketbeach.bsp.SideBySide.messages(now, handle)
+                        for (processor in listOf("CPU", "GPU")) {
+                            side = processor
+                            val c = runCatching {
+                                withContext(Dispatchers.IO) {
+                                    app.mind.converse(com.phenomemental.pocketbeach.bsp.SideBySide.window(now), messages, talk.copy(processor = processor), com.phenomemental.pocketbeach.bsp.SideBySide.LONGEST)
+                                }
+                            }.onFailure { problem = "Her conversation on the $processor stopped: ${it.message ?: it::class.simpleName}." }.getOrNull()
+                            conversed = conversed + (processor to c)
+                        }
+                    } finally {
+                        running = null
+                        side = null
+                        // Her talk engine back, as her talk runs (the GPU), whether the check finished, stopped, or he left Settings.
+                        withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) {
+                            runCatching { app.mind.warm(app.running(com.phenomemental.pocketbeach.model.Job.TALK)) }
+                        }
                     }
-                    // The same conversation, his Talk settings, on the GPU and then on the CPU.
-                    val now = java.time.ZonedDateTime.now()
-                    val handle = withContext(Dispatchers.IO) { app.asking.hatched() } ?: "Sundial"
-                    val messages = com.phenomemental.pocketbeach.bsp.SideBySide.messages(now, handle)
-                    for (processor in listOf("GPU", "CPU")) {
-                        side = processor
-                        val c = runCatching {
-                            withContext(Dispatchers.IO) {
-                                app.mind.converse(com.phenomemental.pocketbeach.bsp.SideBySide.window(now), messages, talk.copy(processor = processor), com.phenomemental.pocketbeach.bsp.SideBySide.LONGEST)
-                            }
-                        }.onFailure { problem = "Her conversation on the $processor stopped: ${it.message ?: it::class.simpleName}." }.getOrNull()
-                        conversed = conversed + (processor to c)
-                    }
-                    side = null
                 }
             },
             Modifier.fillMaxWidth(), enabled = !busy, tag = "walk-check",
@@ -284,7 +295,7 @@ private fun WalkCheckPart(model: Model) {
             Text("Last checked ${Words.at(c.atMs)}, on ${c.model}: ${c.intact} of ${c.of} arrived intact.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("walk-check-last"))
         }
         if (conversed.isNotEmpty()) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            for ((processor, c) in conversed) Column(Modifier.weight(1f).testTag("side-${processor.lowercase()}"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            for ((processor, c) in conversed.sortedBy { if (it.first == "GPU") 0 else 1 }) Column(Modifier.weight(1f).testTag("side-${processor.lowercase()}"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("On the $processor", style = Type.name, color = ink.ink)
                 when {
                     c == null -> Text("It couldn't run here.", style = Type.small, color = ink.crimson)
