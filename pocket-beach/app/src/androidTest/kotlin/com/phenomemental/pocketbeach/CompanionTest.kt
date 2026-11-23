@@ -217,6 +217,15 @@ class StandIn : Mind {
     var walkArgs: Map<String, Any?>? = null
     val walkResults = java.util.concurrent.CopyOnWriteArrayList<String>()
 
+    /** Sundial 0.13.1: the side-by-side check: the settings each conversation ran with; [sideLoops], the processor whose last reply loops. */
+    val conversedOn = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()
+    var sideLoops: String? = null
+    override suspend fun converse(instruction: String, messages: List<String>, settings: JobSettings, longest: Int): Mind.Conversed {
+        conversedOn += settings
+        val last = if (sideLoops == settings.processor) "The sea in November is " + "the ".repeat(20) else "Grey, wide and cold."
+        return Mind.Conversed(settings.processor, null, listOf("It is Monday 23 November 2026.", "Phenomemental.", last))
+    }
+
     /** Sundial 0.12.1: the settings each warm was asked for, in order. */
     val warmed = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()
     override suspend fun warm(settings: JobSettings): Long? { warmed += settings; return null }

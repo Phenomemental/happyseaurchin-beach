@@ -245,7 +245,10 @@ class PocketApp : Application() {
 
     private val prefs by lazy { getSharedPreferences("pocket", MODE_PRIVATE) }
 
-    private val jobs by lazy { mutableStateOf(Job.values().associateWith { JobPrefs.read(prefs, it) }) }
+    private val jobs by lazy {
+        JobPrefs.talkTemperatureBackToDefault(prefs)
+        mutableStateOf(Job.values().associateWith { JobPrefs.read(prefs, it) })
+    }
 
     /** Each job's settings (Settings): Edge's for talking, 0.4's for writing, until he changes them. */
     fun settings(job: Job): JobSettings = jobs.value.getValue(job)

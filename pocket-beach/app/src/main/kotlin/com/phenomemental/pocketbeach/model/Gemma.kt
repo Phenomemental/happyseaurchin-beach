@@ -429,6 +429,19 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
     }
 
+    override suspend fun converse(instruction: String, messages: List<String>, settings: JobSettings, longest: Int): Mind.Conversed? = withContext(thread) {
+        val (l, _) = engine(key(settings))
+        one.busy {
+            l.engine.createConversation(
+                ConversationConfig(
+                    systemInstruction = Contents.of(instruction),
+                    samplerConfig = sampler(settings), maxOutputToken = longest,
+                    thinkingConfig = ThinkingConfig(enableThinking = false),
+                ),
+            ).use { c -> Mind.Conversed(l.processor, l.whyNotGpu, messages.map { c.sendMessage(it).toString() }) }
+        }
+    }
+
     /** Sundial 0.10: the day's sheet through the tool call on E4B ("sheet": title, lines, tomorrow); else, or when it isn't whole, written free. */
     override suspend fun sheet(instruction: String, material: String, settings: JobSettings, tool: Boolean): com.phenomemental.pocketbeach.bsp.Mark.Sheet? {
         if (tool) {
