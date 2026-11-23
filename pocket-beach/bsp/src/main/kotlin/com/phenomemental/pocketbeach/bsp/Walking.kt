@@ -25,9 +25,14 @@ object Walking {
         }
         return names.filter { name ->
             val role = handle?.let { h -> name.removeSuffix(":$h").takeIf { it != name } }
+            // Sundial 0.13.3: Sundial's own day block, "now", is a word he says all the time; it is named only as "now block".
+            if (name in AS_BLOCK_ONLY) return@filter has("$name block")
             has(name) || (role != null && (has("my $role") || has("the $role") || has("$role block") || has("my ${role}s")))
         }.distinct()
     }
+
+    /** Blocks named only with the word "block" after them: Sundial's own day block, whose name is a word he uses all the time. */
+    val AS_BLOCK_ONLY: Set<String> = setOf(Days.NOW)
 
     /** The block her call names, among [named] (the blocks his words named): her own words for it matched as his are; null when it isn't one of them. */
     fun resolve(asked: String?, named: List<String>, handle: String?): String? {

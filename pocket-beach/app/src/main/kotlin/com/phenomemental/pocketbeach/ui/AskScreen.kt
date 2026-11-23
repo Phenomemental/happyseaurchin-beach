@@ -362,7 +362,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
     val thinking = latest && asking.stage is Asking.Stage.Thinking
     val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
-        FileChips(e.files, alignEnd = true)
+        // Sundial 0.13.3: the blocks his words named, read by the app before she answered, are chips beside his own files.
+        FileChips(e.files + e.read, alignEnd = true)
         His(e.question)
         when {
             e.said.isNotEmpty() -> Text(replyShaped(e.said), style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))
@@ -378,6 +379,8 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
         if (e.said.isNotBlank() && !thinking) TextLink("Share", { shareText(context, e.said, "From Sundial") }, tag = "share-reply")
         // Sundial 0.10.1: her reply didn't come, or was stopped: said plainly, never a blank.
         e.unfinished?.let { Text(it, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("unfinished")) }
+        // Sundial 0.13.3, plain machinery: a tool call written into her reply, or "data received", with nothing read from his blocks.
+        if (e.nothingRead && !thinking) Text(com.phenomemental.pocketbeach.bsp.NothingRead.SAID, style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("nothing-read"))
         // Sundial 0.10.5: she ran on the CPU because the GPU couldn't take her: said plainly, with or without the workings.
         e.slower?.let { Text(it, style = Type.aside, color = ink.crimson, modifier = Modifier.testTag("slower")) }
         if (thinking) {

@@ -76,8 +76,10 @@ fun FileChips(files: List<Chats.Attached>, remove: ((Chats.Attached) -> Unit)? =
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text((if (f.block) "▤ " else "▢ ") + f.name, style = Type.small, color = ink.ink)
+                // Sundial 0.13.3: a block his words named, read by Sundial before she answered: its opening lines.
+                if (f.byApp) Text("read by Sundial: its opening lines", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-read"))
                 // Too big for her window whole: she has its root and each part's opening line, and the chip says so.
-                if (f.block && !f.whole) Text("its opening lines only", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-partial"))
+                else if (f.block && !f.whole) Text("its opening lines only", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-partial"))
                 if (remove != null) Text("×", style = Type.body, color = ink.crimson, modifier = Modifier.clickable { remove(f) }.testTag("file-chip-remove"))
             }
         }
