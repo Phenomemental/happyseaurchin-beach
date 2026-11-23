@@ -4,6 +4,40 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13.1 is released (23 November): after she looped on his phone:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.1
+- **Install:** `sundial-v0.13.1.apk` over 0.13. His blocks stay where they
+  are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.1 (33), from main at `d201230` (PR #282), release run
+  328. APK SHA-256 `7d9717db…`.
+- **Tests:** 345 core (4 new), the app's own 21 and all 98 device tests
+  (3 new), on the PR's CI run and again in the release run.
+- **What it is:** spine:pocket-beach 1.1111787199993 as widened on 23
+  November, after she looped on his Pixel: dates as "2222 November 206",
+  doubled letters as "Phenomomomemental", then "the the the" until he
+  stopped her, Talk at temperature 0.70. 0.12.1 and 0.13 had shipped, so
+  it ships as 0.13.1 (#282).
+- **What it builds:**
+  1. **The check in Settings, one tap** ("Check her on this phone"): the
+     twenty walk calls on the GPU, then the same short conversation (the
+     date, his handle written back, a longer reply) on the GPU and on the
+     CPU with his Talk settings, side by side. A reply that loops is cut
+     and marked.
+  2. **Talk's temperature back to 1.0,** Edge's way, once: his phone kept
+     0.70. He can change it again in Settings.
+  3. **A looping reply stopped by the app:** the same word or phrase many
+     times running (one word 8 times, two words 6, a longer phrase 4).
+     Her words up to it stay, and a line beneath says Sundial stopped her
+     reply. Plain machinery, nothing about how she answers.
+- **Only his phone can confirm:**
+  - **what the check shows:** how many of twenty walk calls arrived
+    intact, and whether the GPU's column stutters where the CPU's
+    doesn't;
+  - her talk at temperature 1.0.
+
 **Sundial 0.13 is released (23 November): the walk, when his words name a block:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13
 - **Install:** `sundial-v0.13.apk` over 0.12.1. His blocks stay where they
