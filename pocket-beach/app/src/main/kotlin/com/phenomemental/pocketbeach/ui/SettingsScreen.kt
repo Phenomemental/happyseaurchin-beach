@@ -75,7 +75,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
         for (job in Job.values()) JobPart(job, app.settings(job), ready, app.cpuWhy(job), follows = if (app.followsTalk(job)) app.settings(Job.TALK).model else null) { app.set(job, it) }
 
         AskLog(model)
-        ReachTheBeach(model)
+        ReachTheBeach(model, nav)
         WalkCheckPart(model)
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
@@ -315,7 +315,7 @@ private fun WalkCheckPart(model: Model) {
 
 /** Sundial 0.12 (spine:pocket-beach 1.111178719995): whether the walker may read the beach's blocks, read only; off unless he turns it on. */
 @Composable
-private fun ReachTheBeach(model: Model) {
+private fun ReachTheBeach(model: Model, nav: Nav) {
     val ink = LocalInk.current
     Column(Modifier.fillMaxWidth().testTag("reach-part"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Rule()
@@ -333,6 +333,8 @@ private fun ReachTheBeach(model: Model) {
                 "A block you want is copied into your pocket on your yes. Off, nothing is asked of the beach.",
             style = Type.small, color = ink.soft,
         )
+        // Sundial 0.13.5: his blocks brought across, ticked and copied in on one yes.
+        if (model.app.reachBeach) TextLink("Bring my blocks across", { nav.go(Screen.BringAcross) }, tag = "to-bring-across")
     }
 }
 

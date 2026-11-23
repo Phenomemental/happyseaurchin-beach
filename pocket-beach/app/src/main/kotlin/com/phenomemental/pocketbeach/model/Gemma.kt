@@ -233,6 +233,7 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                 }
                 if (gpuFailures > 0 && at.processor == "CPU") pace.gpuFailed()
                 val c = used
+                lastTokens = runCatching { c.getTokenCount() }.getOrNull()
                 counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
                 first?.let { steps.add("her reply's first words", (it * 1000).toLong()) }
                 steps.add("her whole reply, written free" + (counted(c)?.let { t -> " (read ${t.read} tokens, wrote ${t.wrote})" } ?: ""), Steps.since(started))
@@ -248,6 +249,13 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
 
         /** Sundial 0.13.4: the conversation of a turn with the walker offered, while it runs, so he (or the loop stop) can stop it. */
         @Volatile private var toolConversation: Conversation? = null
+
+        /**
+         * Sundial 0.13.5: how many tokens her conversation held after her last reply, kept when the conversation is let go (as after
+         * every turn with the walker offered), so Ask still sees it filling and opens it afresh in time. Before, a walker turn left
+         * nothing to count, and each built her conversation again from every exchange, his blocks in each, until it was full.
+         */
+        @Volatile private var lastTokens: Int? = null
 
         /**
          * Sundial 0.13: one turn with the walker offered. Tools are set when a
@@ -319,6 +327,7 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                                 send = Message.tool(Contents.of(answers))
                             }
                             counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
+                            lastTokens = runCatching { c.getTokenCount() }.getOrNull()
                         } finally {
                             toolConversation = null
                         }
@@ -332,7 +341,7 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
             }
 
         /** Sundial 0.10.2: what her kept conversation holds now, in tokens; null when it was let go. */
-        override fun tokens(): Int? = kotlinx.coroutines.runBlocking(thread) { conversation?.let { c -> runCatching { c.getTokenCount() }.getOrNull() } }
+        override fun tokens(): Int? = kotlinx.coroutines.runBlocking(thread) { conversation?.let { c -> runCatching { c.getTokenCount() }.getOrNull() } ?: lastTokens }
 
         override fun close() {
             kotlinx.coroutines.runBlocking(thread) {

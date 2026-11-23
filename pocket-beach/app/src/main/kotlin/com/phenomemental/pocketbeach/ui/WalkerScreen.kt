@@ -129,29 +129,86 @@ fun WalkerScreen(model: Model, nav: Nav, screen: Screen.Walker) {
             }
             val r = read
             if (beach && r != null) {
-                if (!copying) TextLink("Copy this block into your pocket", { copying = true }, tag = "copy-block")
+                // Sundial 0.13.5: a block he already has is replaced, on his yes, after a whole copy of his pocket is saved.
+                val mine = remember(r.name, r.block, model.version) { app.pages.whole(r.name) }
+                if (!copying) TextLink(if (mine == null) "Copy this block into your pocket" else "Replace yours with this block", { copying = true }, tag = "copy-block")
                 else Column(Modifier.testTag("copy-card"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Copy ${r.name} from the beach into your pocket, whole, as a block of your own? Nothing is written to the beach.", style = Type.body, color = ink.ink)
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Action("Yes", {
-                            scope.launch {
-                                val done = withContext(Dispatchers.IO) {
-                                    val plan = app.pages.planKeep(r.name, r.block)
-                                    plan.refusal?.let { return@withContext it }
-                                    val d = app.pages.carryOut(plan)
-                                    if (d.ok) null else d.problem ?: "It didn't land as shown."
-                                }
-                                copying = false
-                                if (done == null) {
-                                    model.changed()
-                                    note = "Copied into your pocket as ${r.name}."
-                                } else note = "Nothing was copied: $done"
+                    when {
+                        mine != null && com.phenomemental.pocketbeach.bsp.deepEqual(mine, r.block) -> {
+                            Text("Your ${r.name} is already the same as the beach's: there's nothing to copy.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("copy-same"))
+                            Action("Close", { copying = false }, Modifier.fillMaxWidth(), tag = "copy-not-now")
+                        }
+                        mine != null -> {
+                            Text(
+                                "You already have a block called ${r.name}. Replace yours with the beach's, whole? A whole copy of your pocket is saved first, " +
+                                    "and Your pocket can put it back. Nothing is written to the beach.",
+                                style = Type.body, color = ink.ink, modifier = Modifier.testTag("copy-exists"),
+                            )
+                            // His shell: which places will change, before he says yes.
+                            if (r.name.startsWith("shell:")) {
+                                val changes = com.phenomemental.pocketbeach.bsp.BringAcross.changes(mine, r.block)
+                                Text(changesSaid(changes), style = Type.small, color = ink.crimson, modifier = Modifier.testTag("shell-changes"))
                             }
-                        }, Modifier.weight(1f), strong = true, tag = "copy-yes")
-                        Action("Not now", { copying = false }, Modifier.weight(1f), tag = "copy-not-now")
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Action("Replace mine with the beach's", {
+                                    scope.launch {
+                                        val done = withContext(Dispatchers.IO) {
+                                            val plan = app.pages.planWhole(r.name, r.block)
+                                            plan.refusal?.let { return@withContext it }
+                                            app.saveCopyBeforeTheBeach()
+                                            val d = app.pages.carryOut(plan)
+                                            if (d.ok) null else d.problem ?: "It didn't land as shown."
+                                        }
+                                        copying = false
+                                        if (done == null) {
+                                            model.changed()
+                                            note = "Replaced your ${r.name} with the beach's. A whole copy of your pocket was saved first: Your pocket can put it back."
+                                        } else note = "Nothing was replaced: $done"
+                                    }
+                                }, Modifier.weight(1f), strong = true, tag = "replace-yes")
+                                Action("Not now", { copying = false }, Modifier.weight(1f), tag = "copy-not-now")
+                            }
+                        }
+                        else -> {
+                            Text("Copy ${r.name} from the beach into your pocket, whole, as a block of your own? Nothing is written to the beach.", style = Type.body, color = ink.ink)
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Action("Yes", {
+                                    scope.launch {
+                                        val done = withContext(Dispatchers.IO) {
+                                            val plan = app.pages.planKeep(r.name, r.block)
+                                            plan.refusal?.let { return@withContext it }
+                                            val d = app.pages.carryOut(plan)
+                                            if (d.ok) null else d.problem ?: "It didn't land as shown."
+                                        }
+                                        copying = false
+                                        if (done == null) {
+                                            model.changed()
+                                            note = "Copied into your pocket as ${r.name}."
+                                        } else note = "Nothing was copied: $done"
+                                    }
+                                }, Modifier.weight(1f), strong = true, tag = "copy-yes")
+                                Action("Not now", { copying = false }, Modifier.weight(1f), tag = "copy-not-now")
+                            }
+                        }
                     }
                 }
             }
+            // Sundial 0.13.5: talk about this walk with her: what he sees, and the block's shape worked out by the app.
+            TextLink("Talk about this", {
+                val block = if (beach) read?.block else app.pages.whole(name.trim())
+                if (block == null) note = "It couldn't be read to talk about." else {
+                    app.asking.attach(com.phenomemental.pocketbeach.bsp.Chats.lookingAt(name.trim(), text, block))
+                    nav.toPlace(Screen.Ask)
+                }
+            }, tag = "walker-talk-about")
+            // Sundial 0.13.5: his blocks brought across in one go.
+            if (beach) TextLink("Bring my blocks across", { nav.go(Screen.BringAcross) }, tag = "walker-to-bring-across")
         }
     }
 }
+
+/** Sundial 0.13.5: the places of his shell that would change, in words: "These places of your shell will change: 1 changes, 3.3 is new, 6 goes." */
+internal fun changesSaid(changes: List<com.phenomemental.pocketbeach.bsp.BringAcross.Change>): String =
+    if (changes.isEmpty()) "No place of your shell would change."
+    else "These places of your shell will change: " + changes.take(12).joinToString(", ") { it.said } +
+        (if (changes.size > 12) ", and ${changes.size - 12} more." else ".")

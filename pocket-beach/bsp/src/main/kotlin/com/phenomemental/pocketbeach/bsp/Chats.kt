@@ -19,7 +19,7 @@ object Chats {
      * named, read by the app itself before she answers (its disc at pscale 0),
      * beside his words as the paperclip's are; its chip says Sundial read it.
      */
-    data class Attached(val name: String, val text: String, val block: Boolean, val whole: Boolean = true, val byApp: Boolean = false)
+    data class Attached(val name: String, val text: String, val block: Boolean, val whole: Boolean = true, val byApp: Boolean = false, val view: Boolean = false)
 
     /** One exchange: his words, the files with them, her reply, and when he sent it. */
     data class Said(val his: String, val files: List<Attached>, val hers: String, val atMs: Long)
@@ -43,6 +43,7 @@ object Chats {
             append("\n\n(")
             append(
                 when {
+                    f.view -> "What he is looking at: the block ${f.name}, then its shape, worked out by the app:"
                     f.byApp -> "His block ${f.name}, which his words named, read by the app: its opening line, then each part's opening line beneath it:"
                     f.block && f.whole -> "His block ${f.name}: its opening line, then each part beneath it:"
                     f.block -> "His block ${f.name}, too big to read whole here: its opening line, then each part's opening line beneath it:"
@@ -75,6 +76,14 @@ object Chats {
      */
     fun readByApp(pages: Pages, region: Region, name: String): Attached? =
         discText(pages, region, name)?.let { Attached(name, it, block = true, whole = false, byApp = true) }
+
+    /**
+     * Sundial 0.13.5, talk about this: what he is looking at ([view], as his
+     * screen shows the block [name]) with its shape worked out by the app
+     * (BlockShape), one file beside his next words.
+     */
+    fun lookingAt(name: String, view: String, block: Js): Attached =
+        Attached(name, view.trim() + "\n\n" + BlockShape.of(name, block), block = false, view = true)
 
     /** The most lines of a block read whole; a block with more is given as its opening lines. */
     const val OUTLINE_MOST = 600

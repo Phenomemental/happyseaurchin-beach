@@ -126,6 +126,9 @@ class Pages(
 
     fun exists(name: String): Boolean = beach.loadBlock(name) != null
 
+    /** Sundial 0.13.5: the block [name] whole, as the pocket holds it; null when there's none. */
+    fun whole(name: String): Js? = beach.loadBlock(name)
+
     /** The block [name] as it stands now, to carry with a write he is about to see (Sundial 0.11). */
     fun seen(name: String): Seen = Seen(storage.read(name))
 
