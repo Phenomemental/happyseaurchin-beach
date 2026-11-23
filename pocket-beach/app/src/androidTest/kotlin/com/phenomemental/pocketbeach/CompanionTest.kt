@@ -138,6 +138,17 @@ class StandIn : Mind {
             override fun sayWithTool(message: String, toolJson: String, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {
                 toolTurns += message
                 toolJsons += toolJson
+                // Sundial 0.13.4: a reply on a walker turn, half streamed, then held until [toolHold] is let go: her words show as they come.
+                toolHold?.let { hold ->
+                    toolHold = null
+                    talkMessages += message
+                    val reply = talkScript.removeFirstOrNull() ?: "I'm a stand-in, talking with the walker offered."
+                    val parts = reply.chunked(4)
+                    parts.take(parts.size / 2).forEach(piece)
+                    hold.await(10, java.util.concurrent.TimeUnit.SECONDS)
+                    parts.drop(parts.size / 2).forEach(piece)
+                    return Mind.ToolTurn(reply, emptyList())
+                }
                 val args = walkArgs ?: return Mind.ToolTurn(stream.say(message, piece), emptyList())
                 val c = Mind.Called("bsp", args, "")
                 val answered = call(c)
@@ -213,6 +224,7 @@ class StandIn : Mind {
     val toolTurns = java.util.concurrent.CopyOnWriteArrayList<String>()
     val toolJsons = java.util.concurrent.CopyOnWriteArrayList<String>()
     var walkArgs: Map<String, Any?>? = null
+    var toolHold: java.util.concurrent.CountDownLatch? = null
     val walkResults = java.util.concurrent.CopyOnWriteArrayList<String>()
 
     /** Sundial 0.13.1: the side-by-side check: the settings each conversation ran with; [sideLoops], the processor whose last reply loops. */
