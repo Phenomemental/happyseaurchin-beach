@@ -4,6 +4,46 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.12.1 is released (23 November): her talk mind at open, and the walk check:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.12.1
+- **Install:** `sundial-v0.12.1.apk` over 0.12. His blocks stay where they
+  are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.12.1 (31), from main at `7f7cd2d` (PR #275), release run
+  312. APK SHA-256 `4af5eb8e…`.
+- **Tests:** 337 core, the app's own 21 and all 91 device tests, on each
+  part's own CI run and again in the release run.
+  - **Core:** 25 fewer than 0.12 (362): the tests of the code removed
+    went with it; 3 new, for the walk check.
+  - **Device:** 4 more than 0.12 (87): her talk mind at open and before
+    the hatch, and the walk check as text and as numbers.
+- **What it is:** the plan of spine:pocket-beach 1.111178719999, parts 2
+  and 3, each its own PR merged once CI was green (#274, #275).
+- **What it builds:**
+  1. **The tidy-up** (#274).
+     - Her talk mind loads as Sundial opens, after the hatch: the model his
+       talk runs on, so his first reply is as quick as the rest. Before
+       the hatch, nothing loads.
+     - The conversation log's header says her window is the time alone.
+     - The paperclip's header names the block's shape in plain words: "its
+       opening line, then each part beneath it" (findings 9f, test 10).
+     - The code nothing reaches is removed, about 1,820 lines (findings
+       section 10). Nothing reached is touched; the "Keep this in …?" card
+       is still reached, and stays.
+  2. **Check her walk,** in Settings (#275): twenty walk calls from her on
+     the phone's GPU, each for a known address, and how many arrived
+     intact; each that didn't is listed. Nothing is walked or written. The
+     walker is named for its block, as 0.13 names his (findings section
+     11). The result is kept for 0.13, which walks on the CPU if any
+     address arrived altered.
+- **Only his phone can confirm:**
+  - **the walk check's number:** how many of twenty arrived intact on the
+    Pixel's GPU;
+  - his first reply after Sundial opens, now that her talk mind loads at
+    open.
+
 **Sundial 0.12 is released (22 November): back to the essence:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.12
 - **Install:** `sundial-v0.12.apk` over 0.11. His blocks stay where they
