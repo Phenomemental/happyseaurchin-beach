@@ -76,7 +76,9 @@ class WalkTurnDeviceTest {
             assertTrue("never JSON", !handed.contains("{") && !handed.contains("\"_\""))
             compose.waitFor("say", "log each one in the register")
             compose.waitFor("walked-chip", "walked membership at 2.2")
-            assertTrue(app.asking.transcript(), app.asking.transcript().contains("His words named membership: the walker offered; she walked membership at 2.2."))
+            // Sundial 0.13.3: the log says the app read it first, and what she walked.
+            assertTrue(app.asking.transcript(), app.asking.transcript().contains("His words named membership: read by the app, membership, its opening lines beside his words."))
+            assertTrue(app.asking.transcript(), app.asking.transcript().contains("The walker offered for membership; she walked membership at 2.2."))
         }
     }
 
