@@ -2101,3 +2101,211 @@ does two jobs it is split by its functions, and those splits are marked
   blocks would leave the runner to read them and the converters to carry
   their results.
 - Nothing is removed here: the audit is read only, as asked.
+
+## 11. Sundial 0.12.1 and 0.13: built, and the walk on the laptop
+
+The plan of spine:pocket-beach 1.111178719999, parts 1 to 9, read on 23
+November 2026: parts 2 and 3 are 0.12.1, parts 4 to 7 are 0.13. Each part
+was its own PR, merged once CI was green. Nothing was written to the beach.
+
+### 11a. What was built
+
+- **0.12.1, part 2: the tidy-up** (#274).
+  - **Her talk mind loads as Sundial opens,** once he has hatched: the
+    model his talk runs on (E4B if he chose it). Before the hatch nothing
+    loads. The chat now reads the state of the model his talk runs on,
+    not the smaller one's.
+  - **The log's header** says her window is the time alone.
+  - **The paperclip's header** names the block's shape in plain words:
+    "His block garden: its opening line, then each part beneath it" (9f,
+    test 10).
+  - **The code nothing reaches is removed,** as section 10 counted it:
+    about 1,820 lines of shipped code. Nothing reached was touched.
+- **0.12.1, part 3: the walk check** (#275), and version 0.12.1 (31).
+  - In Settings, "Check her walk" asks her twenty times what's at a known
+    address, with the walker as one native tool on the phone's GPU,
+    thinking off, and shows how many arrived intact, and each that didn't.
+  - Nothing is walked or written. The result is kept on the phone: how
+    many intact, how many altered (a call that never came isn't counted
+    altered), when, and on which model.
+- **0.13, part 4: the walk offered when his words name a block** (#276).
+  - His words are read against his blocks each turn: a block's whole name
+    as a word, and for a block of his own role its plain forms ("my
+    passport", "my shell", "the passport", "passport block").
+  - On that turn only she is given the walker, thinking off, its words
+    naming the blocks his words named (11c). The turn runs in a
+    conversation of its own with every exchange so far, as tools are set
+    when a conversation opens; her kept conversation opens again with
+    that turn in it.
+  - What she walks is handed back as readable text in the block's own
+    structure, never JSON. A chip on her reply names it ("↳ walked
+    membership at 2.2"); the log records the blocks named and the walks.
+- **0.13, part 5: the guard, and the CPU** (#277).
+  - Every spindle is checked against the block before the walk: in form
+    (one point at most, digits only, the comma walk allowed) and a place
+    that stands in it. Otherwise nothing is walked; she is told plainly
+    ("There is no place 2.9 in his block membership. Answer him without
+    it.") and the chip says what she looked for.
+  - When his walk check found any address altered, her tool turns run on
+    the CPU. Her talk otherwise is unchanged.
+- **0.13, part 6: the trial,** this section; the tests of parts 4 and 5
+  came with them. **Part 7: the release,** version 0.13 (32).
+
+### 11b. The code against the plan
+
+No difference that stopped the build. Four places where the plan's words
+were read one way, for Matthew to check:
+
+1. **"A block in his folder."** Sundial keeps his blocks in his folder or
+   in its own storage, whichever he chose (0.11). The walk is offered for
+   his blocks wherever they are kept: the blocks Your pocket lists. His
+   passport and shell are among them, so "my passport" and "my shell"
+   match.
+2. **"Keep this in …?" still shows** beneath her reply when he tells
+   (not asks) something naming one of his blocks: the one leftover card
+   of the chat (#274 kept it, as it is reached). In 0.13 the same words
+   are also offered the walker: test 1's "…an hour on the membership
+   form." both offers the walk and shows "Keep this in membership?".
+   Whether the card stays is his call.
+3. **A word that is also a block's name** offers the walk: "the membership
+   form" names his block membership. That is the cost of matching names;
+   the trial shows what she does with it (11d).
+4. **A walk turn's reply is not streamed.** The engine's tool turn comes
+   back whole (her call, the walk, then her answer), so on a walk turn her
+   first words show when her whole reply is ready. A turn naming no block
+   streams as before.
+
+### 11c. The walker's words: named for the block
+
+The first run of the trial on 0.13's code (23 November) found her never
+calling the walker: offered on all eight walk messages, she told him each
+time that she had no access to his blocks, as she does with no tool. A
+probe on the laptop (`trial/…/WalkProbe.kt`), each message in a fresh
+conversation, her window the time alone, read only whether her first
+answer was a call:
+
+| How the walker was described | Calls of 12 | What she sent |
+|---|---:|---|
+| "Walk one of his blocks…" (0.12.1 as first written), block required | 6 | Only when his words carried an address |
+| Section 9's bsp, word for word | 10 | An empty block (to list them) or "2.2" as the block's name, 4 times |
+| "The beach's bsp(), on his phone: read one of his blocks…" | 6 | Only with an address |
+| The same, block required | 6 | Only with an address |
+| **Named for the turn:** "Sundial holds his blocks on his phone, and his words named membership. Read it, …", the block an enum of those named | **12** | The right block every time, every address as he wrote it |
+| Two other wordings naming the block | 12 and 12 | The same, with a stray `pscale_attention` 0 on some |
+
+- **She doesn't believe she can read his blocks** unless the tool says
+  which of his she can read. Where his words carried an address, she
+  called; where they only named a block ("what's left on my membership
+  block", "what does my passport say"), she refused.
+- **So the walker is described for each turn,** naming the blocks his
+  words named, and they are the only blocks it takes. It is offered only
+  on such a turn anyway, so naming them costs nothing. The walk check in
+  Settings names its own block the same way, so it checks the tool 0.13
+  gives her. This went into part 3 before it was pushed.
+- The six messages: what's left on his membership block; what's at 2.2
+  in it; what he decided at 1.111178719993 in his decisions block; what
+  his passport says; what's in his shell; what's at 1.23456789 in his
+  walk-check block. Seeds 0 and 2.
+
+### 11d. The trial on 0.13's own code (part 6)
+
+Run on the laptop on 23 November with the build's own code
+(`trial/…/Sand13.kt`). Each turn went the way the app sends it:
+`Walking.named` read his words against his pocket's blocks; a turn naming
+none was her kept conversation, streamed, as 0.12; a turn naming one ran
+as `Gemma.sayWithTool` runs it, the walker named for those blocks, her
+calls walked by `Walking.walk`, the guard first, and handed back as
+readable text. The machine, model, settings, seeds and pocket were 9f's,
+with section 9's decisions block added.
+
+**The walk turns, beside the same turns with no tool.** Section 9's five
+messages, word for word, then "what does my passport say about me?",
+"what's in my shell?" and "what's at 2.9 in my membership block?" (a place
+that isn't there), in one conversation, as section 9 ran them.
+
+| | 0.13, seed 0 | 0.13, seed 2 | No tool, seeds 0 and 2 |
+|---|---|---|---|
+| W1 What's left on his membership block | **Right:** its three steps | **½:** its three steps, but "a sub-step" where there are two | Says she has no access |
+| W2 What it says about the ID checks | **½:** walked to 2; "two sub-steps", not what they are | **0:** "a sub-step beneath it" | No access |
+| W3 What's at 2.2 | **Right** | **Right** | No access |
+| W4 What he decided at 1.111178719993 | **Right** | **Right** | No access |
+| W6 What his passport says | **Right:** read back whole | **Right** | No access |
+| W7 What's in his shell | **Right:** a long summary of its parts | **Right:** the same | No access |
+| W8 What's at 2.9 (not there) | **Right:** "I do not see an item labeled 2.9", from W1's walk, no call | **0: made up**, "Sign and date the agreement", no call | No access |
+| **His blocks, of 7** | **6½** | **4½** | **0 and 0** |
+| W5 The whetstone (not his block: no tool either way) | "I don't have any information about a whetstone" | **Made up:** "Select one of the shapes and ensure the alignment is correct." | No information, at both seeds |
+
+- **Of fourteen turns naming his blocks, 11 right with 0.13; none
+  without.** She called the walker on twelve of the fourteen, with the
+  right block every time. Every spindle arrived as text, as he wrote it:
+  "2" twice, "2.2" twice, "1.111178719993" twice.
+- **She never walked unasked.** Of the line in the sand's turns, only
+  test 1 named a block ("…the membership form" named membership): the
+  walker was offered at both seeds and she didn't call it; she talked, as
+  0.12 does. With section 9's tool on every turn she walked 4 or 5 times
+  unasked.
+- **Where she didn't call, she answered from the conversation, and at
+  seed 2 she made it up.** W8 named his block and offered the walker; at
+  both seeds she answered from W1's walk instead of walking. Seed 0 was
+  right; seed 2 invented a line at 2.9. The guard never ran, because the
+  guard runs on her call. W5 named no block of his, so no tool was
+  offered; after five walks in the same conversation, seed 2 answered
+  with the whetstone's words made up. With no tool, she said at every
+  turn she couldn't see his blocks: no use to him, but never false.
+- **So her reply is no worse on the turns that name none of his blocks
+  and are not about a block** (the line in the sand, below), and much
+  better on the turns that name one; but **in a conversation that has
+  already walked, she can answer a block's question without walking, and
+  then she can make it up** (2 of 16 turns here). That is the one way 0.13
+  is worse than 0.12, and it needs his phone's run to say how often.
+- **W2, a part with lines beneath it:** she walked to 2 with no depth, so
+  she was handed the path to it and "(2 beneath)", as bsp() gives a walk;
+  she told him the count, not the checks. The plan has the walk read as
+  the beach's bsp reads it, so it is left so. Handing the lines one level
+  beneath a place she walks to would answer W2; for him to decide.
+- **The time:** a walk turn's reply comes whole, not streamed. On this
+  CPU her answer came after a median 11.4 s (seed 0) and 9.5 s (seed 2);
+  at his Pixel's rates about 9 s, the shell's long summary about 35 s.
+  With no tool her first words came after about 2½ s, then streamed.
+
+**The line in the sand on 0.13's code, against 9f (0.12's).**
+
+| Test | Seed 0 | Seed 2 | 9f, seeds 0 and 2 | Why |
+|---|---:|---:|---:|---|
+| 1 Your day | 0 | 0 | 0, 0 | "A productive morning!"; the walker offered, not called |
+| 2 Staying with him | 0 | 0 | 0, 0 | A reading of the form (kinetic and potential energy) |
+| 2 "The sound. the space." | ½ | ½ | ½, ½ | His words back, then sounds or readings of her own |
+| 2 "stiff but free" | 0 | 0 | 0, 0 | "A powerful contrast" / "wonderfully evocative" |
+| 3 What's in front of him | 0 | 0 | 0, 0 | A list of guesses, or asks where he is; no hand |
+| 4 Too much | 0 | 0 | 0, 0 | Advice: a sip of water, three breaths |
+| 5 Whitehead | ½ | 0 | ½, 0 | A lecture; seed 2 has him born in Cambridge |
+| 5 Boole | ½ | 0 | ½, 0 | Seed 0 asks what he means; seed 2 claims to know "his work on the middle point" |
+| 6 LERO | 0 | ½ | 0, 0 | Seed 0 makes one up ("Leave Enquiry and Report Operations"); seed 2 owns not knowing |
+| 6 explained | ½ | ½ | ½, ½ | Right in substance; seed 2 with "a very meaningful and important field" |
+| 8 said | 0 | 0 | 0, 0 | "A wonderful, restorative goal" / "a perfect plan", and a menu |
+| 8 next morning | ½ | ½ | ½, ½ | His line above her one question, in quote marks |
+| **Of 12** | **2½** | **2** | **2½, 1½** | **4½ of 24, against 4** |
+
+- **No worse.** Her talk on turns naming no block runs as 0.12's did; the
+  half more is seed 2 owning that she doesn't know what a LERO is.
+- **Test 7, Keep today:** as 9f: her places marked all seven moments, one
+  card, the sheet in the second person. A half.
+- **Test 10, with 0.12.1's paperclip header:** she no longer read
+  "pscale structure" into the block. Seed 0 read "His block membership"
+  as "block membership" ("implied by 'block membership'"). Both answered
+  with long reports under headings (76 s and 67 s on this CPU), as 9f.
+
+### 11e. What his phone must confirm
+
+- **The walk check's number** (Settings, Check her walk): how many of
+  twenty arrived intact on the Pixel's GPU. Below twenty with any altered,
+  0.13 runs her walks on the CPU.
+- **Her first reply's speed** after Sundial opens: her talk mind now
+  loads at open, so his first reply should be as quick as the rest.
+- **A walk turn:** naming one of his blocks ("what's at 2.2 in my
+  membership block?", "what does my passport say?"), the reply with its
+  chip beneath it, and how long it takes, as it isn't streamed.
+- **A turn naming none:** as 0.12, streamed.
+- **Whether she makes things up** when she answers a block's question
+  without walking, later in a conversation that has walked.
+- **The paperclip's header** on a block he adds.
