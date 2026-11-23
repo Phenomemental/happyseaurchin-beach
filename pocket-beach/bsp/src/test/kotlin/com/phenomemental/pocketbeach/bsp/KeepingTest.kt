@@ -153,14 +153,6 @@ class KeepingTest {
         assertEquals("garden", Talks.keepIn("The garden needs netting before June.", pages))
     }
 
-    @Test
-    fun hisDayIsWrittenOnceThoughSortedTwice() {
-        val six = mapOf(Telling.DAY[0] to listOf("Rang the garage first thing"))
-        val (once, _) = Landing.withDay(null, Landing.dayAddress(nowMs), "Rang the garage first thing.", six)
-        val (twice, _) = Landing.withDay(once, Landing.dayAddress(nowMs), "Rang the garage first thing.", six)
-        assertEquals(stringify(once), stringify(twice))
-    }
-
     /** 0.6.4: the bench's Keep asks, judged by the principles; a change to her shell's opening line fails every ask. */
     @Test
     fun theBenchsKeepAsksJudgeByThePrinciples() {

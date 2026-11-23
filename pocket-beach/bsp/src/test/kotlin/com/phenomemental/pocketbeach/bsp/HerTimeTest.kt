@@ -1,6 +1,5 @@
 package com.phenomemental.pocketbeach.bsp
 
-import java.io.File
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.test.Test
@@ -18,22 +17,19 @@ import kotlin.test.assertTrue
  * is more than an hour. The conversation is never opened again for it.
  */
 class HerTimeTest {
-    private val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
     private val london = ZoneId.of("Europe/London")
     private val morning = ZonedDateTime.of(2026, 11, 9, 8, 10, 0, 0, london)
     private val evening = ZonedDateTime.of(2026, 11, 9, 19, 30, 0, 0, london)
 
     @Test
     fun aConversationOpenedInTheMorningCarriesTheEveningsTimeOnTheEveningTurn() {
-        val (_, pages) = Bench.fixture(shelf, morning.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
-        val recipe = "The app: nothing is being kept or set out from this."
         // Opened in the morning, with his first message.
-        val opening = HerWindow.opening("Her window.", morning, recipe)
+        val opening = HerWindow.released(morning)
         assertTrue(opening.contains("It is Monday 9 November 2026, 08:10 as this conversation opens."), opening)
-        val first = HerWindow.turnKept("I walked Haven this morning", pages, listOf(Cook.Handed(recipe)), recipe, now = morning)
+        val first = HerWindow.releasedTurn("I walked Haven this morning", morning)
         assertEquals("(It is Monday 9 November 2026, 08:10, morning.)", first.lines().first())
         // The same conversation, still open, in the evening: the evening's time, its part of the day, and how long since his last message.
-        val later = HerWindow.turnKept("stiff but free", pages, listOf(Cook.Handed(recipe)), recipe, now = evening, lastMs = morning.toInstant().toEpochMilli())
+        val later = HerWindow.releasedTurn("stiff but free", evening, morning.toInstant().toEpochMilli())
         assertEquals("(It is Monday 9 November 2026, 19:30, evening. His last message was 11 hours and 20 minutes ago.)", later.lines().first())
         assertFalse(later.contains("08:10"), "never the morning's time on the evening turn")
         assertFalse(later.contains("morning."), later)

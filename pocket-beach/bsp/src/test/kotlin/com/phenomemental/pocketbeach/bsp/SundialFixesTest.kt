@@ -39,13 +39,6 @@ class SundialFixesTest {
         assertEquals(question, Talking.unechoed(played, idChecks, opening, listOf("The app: nothing is being kept or set out from this."), hisWords = false))
     }
 
-    @Test
-    fun theTestMessageIsNewsOfACardOnHisHandAsOnHisPhone() {
-        // Why "Sort as my day" came beneath it: his hand held the membership agreement from his 10:03 telling.
-        assertTrue(Landing.isTelling(idChecks, mapOf("3.1" to "and need to update a membership agreement and print it out")))
-        assertFalse(Landing.isTelling(idChecks, emptyMap()), "two sentences, thirty-one words: no day on its own")
-    }
-
     // ── fix 3: never taken out of view ──
 
     private fun streamed(reply: String, shown: Talking.Shown): List<String> {
@@ -118,13 +111,6 @@ class SundialFixesTest {
         assertEquals("no whole tool call came back", HerReply.said(asked, none.attempts.single()))
         // Part two missing: not whole either.
         assertNull(HerReply.inParts(asked, { mapOf("THE REFLECTION" to reflection, "THE QUESTION" to "") }).parts)
-    }
-
-    @Test
-    fun herWordsStayPlainWhenTheQuestionCantBeReadFromThem() {
-        assertEquals(reflection to question, Talking.splitQuestion("$reflection $question"))
-        assertEquals(question to "", Talking.splitQuestion(question), "a lone question: plain, as she said it")
-        assertEquals(reflection to "", Talking.splitQuestion(reflection))
     }
 
 }

@@ -151,7 +151,7 @@ fun TodayDial(model: Model, nav: Nav) {
         Text(g?.question ?: ownQuestion(model, tick), style = if (g?.question != null) Type.body.copy(fontSize = Type.heading.fontSize) else Type.heading.copy(fontStyle = FontStyle.Italic), color = ink.ink, modifier = Modifier.testTag(if (g?.question != null) "greet-question" else "own-question"))
     }
 
-    // Sundial 0.10.1 (item 11): the one keep card, from his tap of Keep today or his words asking for it, brought into view as it is set out.
+    // Sundial 0.10.1 (item 11): the one keep card, from his tap of Keep today, brought into view as it is set out.
     val cardInView = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
     LaunchedEffect(card?.walk) { if (card != null) { delay(300); runCatching { cardInView.bringIntoView() } } }
     card?.let { k ->
@@ -188,14 +188,10 @@ fun KeepTodayButton(model: Model, enabled: Boolean) {
  * in italic, and what comes before it part one; with no closing question,
  * plain words (HerReply.split).
  */
-fun replyShaped(parts: Map<String, String>?, said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
-    // Sundial 0.10.1 (item 10): checked once more as it is shown, whatever way it came: no app line, no keep status, no quote marks wrapping it.
-    val hers = { t: String -> com.phenomemental.pocketbeach.bsp.Talking.hers(t) }
-    // Sundial 0.10.1: ANSWER, her answer as she gave it, plain.
-    parts?.get("THE ANSWER")?.let(hers)?.takeIf { it.isNotBlank() }?.let { append(it.trim()); return@buildAnnotatedString }
-    val whole = parts?.filterKeys { it != com.phenomemental.pocketbeach.bsp.HerReply.PLACES }?.mapValues { hers(it.value) }?.takeIf { p -> p.isNotEmpty() && p.values.all { it.isNotBlank() } }
+fun replyShaped(said: String): androidx.compose.ui.text.AnnotatedString = buildAnnotatedString {
+    // Sundial 0.10.1 (item 10): checked once more as it is shown: no app line, no keep status, no quote marks wrapping it.
     // Sundial 0.10.2: of what is shown, a closing sentence ending in "?" is her question, in italic, and what comes before it part one; no closing question, plain words.
-    val (reflection, question) = if (whole != null) (whole["THE REFLECTION"].orEmpty() to whole["THE QUESTION"].orEmpty()) else com.phenomemental.pocketbeach.bsp.HerReply.split(hers(said))
+    val (reflection, question) = com.phenomemental.pocketbeach.bsp.HerReply.split(com.phenomemental.pocketbeach.bsp.Talking.hers(said))
     if (reflection.isNotBlank()) append(reflection.trim())
     if (question.isNotBlank()) {
         if (reflection.isNotBlank()) append("\n")

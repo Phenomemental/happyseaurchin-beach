@@ -38,7 +38,7 @@ class HatchTest {
         val routed = RoutedStorage(mem, hidden, Hidden::routes, openNow = false)
         val pages = Pages(routed, shelf, PocketBsp(routed, shelf) { nowMs }) { nowMs }
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        HerWindow.ensure(pages)
+        Before012.ensure(pages)
         check(pages.carryOut(pages.planNewBlock(Asks.LOG)).ok)
         return Triple(routed, pages, hidden)
     }
@@ -157,8 +157,6 @@ class HatchTest {
         val (storage, pages, _) = pocket()
         hatch(storage, pages)
         assertEquals("It is Sunday 1 November 2026, 08:40 as this conversation opens.", HerWindow.released(now))
-        val w = HerWindow.window(h, pages, storage, shelf, now)
-        for (gone in listOf("His heart", "Who he is", "How he'd be met", "as a friend would")) assertFalse(w.contains(gone), "no “$gone” in a new shell's window")
     }
 
     /** Sundial 0.12 (1.111178719992): a shell made before keeps its three lines and the friend line until he removes them on his yes. */
@@ -184,40 +182,20 @@ class HatchTest {
     }
 
     @Test
-    fun herWindowCarriesHisDayHandPeopleAndWhatHeKeeps() {
+    fun hisPeopleBlockIsNamedAtHisShellsWindow() {
         val (storage, pages, _) = pocket()
-        var clock: JsObj = Landing.emptyClock()
-        var node: JsObj = clock
-        for (d in Landing.dayAddress(nowMs).take(8)) {
-            val key = if (d == '0') "_" else "$d"
-            node = (node[key] as? JsObj) ?: JsObj().also { node[key] = it }
-        }
-        node["_"] = JsStr("")
-        node["4"] = JsStr("Ring Jo about the music for the pilot")
-        check(pages.carryOut(pages.planWhole(Landing.NOW, clock)).ok)
         check(pages.carryOut(pages.planNewBlock("people")).ok)
         check(pages.carryOut(pages.planAdd("people", "", "David: happyseaurchin on the beach")).ok)
         hatch(storage, pages)
         assertEquals("people", (block(storage, "shell:$h")[Hatch.WINDOW] as JsObj)["6"]?.let { (it as JsStr).value })
-        check(pages.carryOut(pages.planAdd("stash:$h", "", "I've been making huge progress with my film making.")).ok)
-        val w = HerWindow.window(h, pages, storage, shelf, now)
-        assertTrue(w.contains("\n4. Today on his clock: morning, “Ring Jo about the music for the pilot”."), w)
-        assertTrue(w.contains("\n6. His people: “David: happyseaurchin on the beach”."), w)
-        assertTrue(w.contains("\n7. What he keeps: “I've been making huge progress with my film making.”."), w)
-        assertFalse(w.contains("\n5. "), "no hand yet: the place is left out")
     }
 
     @Test
-    fun keepThatIsAWriteToHisStashAndTheAppSaysItIsBelow() {
+    fun keepThatIsAWriteToHisStash() {
         val (storage, pages, _) = pocket()
         hatch(storage, pages)
         val way = Keeping.way("Keep that for me please", listOf("I've been making huge progress with my film making."), pages, Hatch.shellOf(h), Hatch.HER)
         assertTrue(way is Keeping.Way.Where)
-        val line = HerWindow.appLine8(way, "Keep that for me please")
-        assertEquals(HerWindow.WRITE_LINE, line, "Keep that's line is the write line")
-        assertTrue(line.contains("Begin your reply with these words: \u201cIt's below, for your yes.\u201d"), line)
-        assertEquals(HerWindow.WRITE_JOB_LINE, HerWindow.appLine8(Keeping.way("Make a block called films: fast ways", emptyList(), pages, Hatch.shellOf(h), Hatch.HER), "Make a block called films: fast ways"))
-        assertEquals(HerWindow.LINES_LINE, HerWindow.appLine8(Keeping.way("Change your opening line to: I'm Gemma", emptyList(), pages, Hatch.shellOf(h), Hatch.HER), "Change your opening line to: I'm Gemma"))
         val plan = Acts.propose("", listOf(Acts.Action.Add(Hatch.stashOf(h), null, (way as Keeping.Way.Where).words)), storage, shelf, HelloWorld.SHELL_OPENING, HelloWorld.seal(), nowMs)
         assertTrue(plan.proposal?.asks == true, plan.problem ?: plan.proposal?.refusal)
     }
@@ -242,7 +220,6 @@ class HatchTest {
         assertTrue(Keeping.way("I'd like to call you Gemma", emptyList(), pages, Hatch.shellOf(h), Hatch.HER) is Keeping.Way.Talk)
         val robin = Keeping.way("I'd like to call you Robin", emptyList(), pages, Hatch.shellOf(h), Hatch.HER)
         assertTrue(robin is Keeping.Way.Name)
-        assertTrue(HerWindow.appLine8(robin, "I'd like to call you Robin").contains("(“Robin it is.”), then talk with him."))
     }
 
     @Test

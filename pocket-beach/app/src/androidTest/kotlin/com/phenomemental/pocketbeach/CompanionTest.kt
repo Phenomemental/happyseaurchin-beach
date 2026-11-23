@@ -185,6 +185,10 @@ class StandIn : Mind {
         return lines.replace(" / ", "\n").replace(HelloWorld.SECRET_SLOT, secret)
     }
     override fun state(): ModelState = ModelState.Ready
+
+    /** Sundial 0.12.1: the settings each warm was asked for, in order. */
+    val warmed = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()
+    override suspend fun warm(settings: JobSettings): Long? { warmed += settings; return null }
     override val loaded = true
     override val processor = "stand-in"
     override suspend fun chat(instruction: String): Mind.Chat {

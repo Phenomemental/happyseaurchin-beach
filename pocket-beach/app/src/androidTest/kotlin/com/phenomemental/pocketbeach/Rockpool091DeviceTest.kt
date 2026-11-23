@@ -13,7 +13,6 @@ import com.phenomemental.pocketbeach.bsp.Days
 import com.phenomemental.pocketbeach.bsp.Hatch
 import com.phenomemental.pocketbeach.bsp.HelloWorld
 import com.phenomemental.pocketbeach.bsp.JsObj
-import com.phenomemental.pocketbeach.bsp.Landing
 import com.phenomemental.pocketbeach.bsp.jsGet
 import com.phenomemental.pocketbeach.bsp.Talks
 import com.phenomemental.pocketbeach.bsp.parseJson
@@ -184,7 +183,7 @@ class Rockpool091DeviceTest {
         hatched()
         val today = LocalDate.now()
         // His now as 0.8.1 began it: the clock's floor-10 form, its opening "on the clock", today's line on it.
-        val (clock, _) = Landing.withDay(null, Days.dayAddress(today), "Walked the dog with Sam.", emptyMap())
+        val (clock, _) = Before012.withDay(null, Days.dayAddress(today), "Walked the dog with Sam.", emptyMap())
         check(app.pages.carryOut(app.pages.planWhole(Days.NOW, clock)).ok)
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.menu("menu-blocks")

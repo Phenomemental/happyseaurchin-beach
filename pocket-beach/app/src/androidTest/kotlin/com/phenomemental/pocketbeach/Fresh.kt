@@ -29,9 +29,9 @@ object Fresh {
         val a = app.asking
         val stage = a.stage
         val note = a.history.lastOrNull()?.note?.takeIf { it.isNotEmpty() }?.let { ": $it" }.orEmpty() +
-            a.history.lastOrNull()?.waiting?.let { " (waiting: ${it::class.simpleName})" }.orEmpty() + (if (a.checking) " (the Write job looking)" else "")
+            a.history.lastOrNull()?.waiting?.let { " (waiting: ${it::class.simpleName})" }.orEmpty()
         val bench = app.benching.stage.let { b -> b::class.simpleName + ((b as? com.phenomemental.pocketbeach.ui.Benching.Stage.Failed)?.why?.let { ": $it" }.orEmpty()) }
-        return "Ask: ${stage::class.simpleName}$note;${a.failure?.let { " FAILURE $it;" }.orEmpty()} checking ${a.checking}, sorting ${a.sorting}, its lock ${if (a.lockedForTests) "held" else "free"}; " +
+        return "Ask: ${stage::class.simpleName}$note; its lock ${if (a.lockedForTests) "held" else "free"}; " +
             "the last exchange: ${a.history.lastOrNull()?.let { "${it.question.take(60)} / ${it.note}" }}. The bench: $bench."
     }
 

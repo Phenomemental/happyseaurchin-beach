@@ -41,8 +41,8 @@ object Chats {
             append("\n\n(")
             append(
                 when {
-                    f.block && f.whole -> "His block ${f.name}, in pscale structure:"
-                    f.block -> "His block ${f.name}, too big to read whole here: its opening line and each part's opening line, in pscale structure:"
+                    f.block && f.whole -> "His block ${f.name}: its opening line, then each part beneath it:"
+                    f.block -> "His block ${f.name}, too big to read whole here: its opening line, then each part's opening line beneath it:"
                     else -> "His file ${f.name}:"
                 },
             )
