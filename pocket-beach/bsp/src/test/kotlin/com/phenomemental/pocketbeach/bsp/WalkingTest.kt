@@ -8,8 +8,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Sundial 0.13, the walk (spine:pocket-beach 1.1111787199994): the blocks
- * his words name, and what she is handed, readable text, never JSON.
+ * Sundial 0.13, the walk (spine:pocket-beach 1.1111787199994 and
+ * 1.1111787199995): the blocks his words name, the guard before a walk, and
+ * what she is handed, readable text, never JSON.
  */
 class WalkingTest {
     private val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
@@ -80,5 +81,22 @@ class WalkingTest {
         val atA1 = { p: Int -> Walking.walk(pages, mapOf("block" to "plan", "spindle" to "1.1", "pscale_attention" to p), listOf("plan"), h).text }
         assertFalse(atA1(-1).contains("A1a"), "pscale -1 is 1.1's own: the place, not beneath it")
         assertTrue(atA1(-2).contains("1.11  A1a"), atA1(-2))
+    }
+
+    @Test
+    fun theGuardWalksNoPlaceThatIsntThere() {
+        val pages = pocket()
+        val named = listOf("membership")
+        for (s in listOf("7", "2.9", "2.2.1", "2._", "abc")) {
+            val w = Walking.walk(pages, mapOf("block" to "membership", "spindle" to s), named, h)
+            assertFalse(w.found, s)
+            assertEquals("There is no place $s in his block membership. Answer him without it.", w.text)
+            assertEquals("looked for $s in membership", w.said)
+        }
+        val other = Walking.walk(pages, mapOf("block" to "history", "spindle" to "1"), named, h)
+        assertFalse(other.found)
+        assertTrue(other.text.startsWith("There is no block called history among those he named"), other.text)
+        // A number sent as JSON is read as the address it was, and checked like any other.
+        assertTrue(Walking.walk(pages, mapOf("block" to "membership", "spindle" to 2.2), named, h).found)
     }
 }

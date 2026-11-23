@@ -114,6 +114,9 @@ class Asking(private val app: PocketApp) {
             internal set
         var walked: List<String> = emptyList()
             internal set
+        /** Sundial 0.13: this turn's walk ran on the CPU, as his walk check found addresses altered on the GPU. */
+        var walkOnCpu = false
+            internal set
         /** Her reply, as shown: never a line playing her turn back. */
         var said by mutableStateOf("")
             internal set
@@ -579,11 +582,14 @@ class Asking(private val app: PocketApp) {
                         }
                         // Sundial 0.13 (spine:pocket-beach 1.1111787199994): when his words name a block of his, on this turn only she is
                         // given the walker as one native tool, thinking off, its words naming the blocks his words named (the only blocks
-                        // it takes); the app walks what she asks and hands her readable text.
+                        // it takes); the app walks what she asks and hands her readable text. Every address she sends is checked against
+                        // the block before it is walked (1.1111787199995); and when his walk check in Settings found addresses altered on
+                        // the GPU, her tool turns run on the CPU.
                         e.named = runCatching { Walking.named(q, app.pages.shore().mine.map { it.name }, h) }.getOrDefault(emptyList())
+                        e.walkOnCpu = e.named.isNotEmpty() && (app.walkCheck?.altered ?: 0) > 0
                         val walks = mutableListOf<Walking.Walked>()
                         val reply = if (e.named.isEmpty()) t.stream.say(message, piece)
-                        else t.sayWithTool(message, WalkTool.forBlocks(e.named), onCpu = false, call = { c ->
+                        else t.sayWithTool(message, WalkTool.forBlocks(e.named), onCpu = e.walkOnCpu, call = { c ->
                             Walking.walk(app.pages, c.arguments, e.named, h).also { walks += it }.text
                         }, piece = piece).reply
                         e.walked = walks.map { it.said }
@@ -1084,7 +1090,7 @@ class Asking(private val app: PocketApp) {
             e.unfinished?.let { appendLine("  $it") }
             e.slower?.let { appendLine("  $it") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
-            if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: the walker offered; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
+            if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: the walker offered" + (if (e.walkOnCpu) " on the CPU, as the walk check found addresses altered on the GPU" else "") + "; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
             e.proposal?.let { appendLine("  Proposed:"); appendLine(it.prependIndent("  ")) }
