@@ -15,6 +15,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val app = application as PocketApp
         if (savedInstanceState == null) receive(intent)
+        // Sundial 0.12.1: her talk mind loads as Sundial opens, after the hatch, so his first reply is as quick as the rest.
+        if (savedInstanceState == null) app.asking.sundialOpened()
         setContent { PocketTheme { PocketScreens(app) } }
     }
 

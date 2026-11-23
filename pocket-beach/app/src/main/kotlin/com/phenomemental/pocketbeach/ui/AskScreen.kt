@@ -89,7 +89,8 @@ fun AskScreen(model: Model, nav: Nav) {
     LaunchedEffect(model.version) { withContext(Dispatchers.IO) { hatching.refresh() } }
     val modelState by produceState<ModelState?>(null) {
         while (true) {
-            val s = withContext(Dispatchers.IO) { model.app.mind.state() }
+            // Sundial 0.12.1: the state of the model his talk runs on (E4B, if he chose it), not the smaller one's.
+            val s = withContext(Dispatchers.IO) { model.app.mind.state(model.app.running(com.phenomemental.pocketbeach.model.Job.TALK).model) }
             value = s
             delay(if (s is ModelState.Fetching) 1000 else 3000)
         }

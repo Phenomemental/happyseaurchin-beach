@@ -24,7 +24,7 @@ class ChatsTest {
             Chats.Attached("notes.txt", "Bring the seeds.", block = false),
         ))
         assertEquals(
-            "What do you make of these?\n\n(His block garden, in pscale structure:)\nThe garden, through the year.\n  1  Autumn: plant the bulbs\n\n(His file notes.txt:)\nBring the seeds.",
+            "What do you make of these?\n\n(His block garden: its opening line, then each part beneath it:)\nThe garden, through the year.\n  1  Autumn: plant the bulbs\n\n(His file notes.txt:)\nBring the seeds.",
             turn,
         )
         assertEquals("Just my words.", Chats.withFiles("Just my words.", emptyList()))
@@ -71,7 +71,7 @@ class ChatsTest {
         assertEquals("The book, chapter by chapter.\n" + (1..9).joinToString("\n") { "  $it  Chapter $it  (9 beneath)" }, read.text)
         assertTrue(!read.text.contains("Scene"))
         val turn = Chats.withFiles("What do you make of it?", listOf(read))
-        assertTrue(turn.contains("(His block book, too big to read whole here: its opening line and each part's opening line, in pscale structure:)"), turn)
+        assertTrue(turn.contains("(His block book, too big to read whole here: its opening line, then each part's opening line beneath it:)"), turn)
         // A small block is read whole.
         check(pages.carryOut(pages.planKeep("orchard", JsObj.of("_" to str("The orchard."), "1" to str("Prune the apples")))).ok)
         assertTrue(Chats.blockFile(pages, Region.POCKET, "orchard")!!.whole)

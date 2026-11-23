@@ -362,7 +362,27 @@ class Asking(private val app: PocketApp) {
     /** How many times Ask has been opened: a close asked for before the latest opening lets nothing go. */
     @Volatile private var openings = 0
 
-    /** Ask is open: load her model now, while Matthew writes. */
+    /**
+     * Sundial 0.12.1 (spine:pocket-beach 1.1111787199992): Sundial has opened.
+     * Once he has hatched, her talk mind is loaded now, the model his talk
+     * runs on, so his first reply is as quick as the rest; before the hatch
+     * nothing is loaded. Called as the app's window is made.
+     */
+    fun sundialOpened() {
+        if (benchRunning) return
+        scope.launch(Dispatchers.IO) {
+            runCatching {
+                talking.withLock {
+                    if (hatched() == null) return@withLock
+                    val settings = app.running(MindJob.TALK)
+                    if (app.mind.state(settings.model) !is com.phenomemental.pocketbeach.model.ModelState.Ready) return@withLock
+                    app.mind.warm(settings)
+                }
+            }
+        }
+    }
+
+    /** Ask is open: load her model now, while Matthew writes (already loaded when Sundial opened, after the hatch). */
     fun opened() {
         openings++
         if (benchRunning) return
@@ -450,9 +470,7 @@ class Asking(private val app: PocketApp) {
                 // Sundial 0.12: only her conversation is kept here; the bench asks the Write and Sort jobs its own way.
                 MindJob.SORT, MindJob.WRITE -> error("Only her conversation is kept in Ask.")
                 // 0.6.1: the date, the time and her shell in her instruction, opened afresh for each message; the earlier exchanges his words and hers.
-                // 0.6.2, part three: when his words say he isn't safe, the safety line is the turn's only line; how his last proposal ended waits.
-                // 0.7: her window, read once an Ask; the day, the time, what's changed and the app's line ride in each turn.
-                // 0.8: once he has hatched, her window is the nine places of his shell; the conversation before it closes into his history.
+                // 0.8: the conversation before hers closes into his history.
                 MindJob.TALK -> {
                     closeConversation()
                     val now = ZonedDateTime.now()
@@ -1038,7 +1056,7 @@ class Asking(private val app: PocketApp) {
         fun at(ms: Long) = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneId.systemDefault())
         appendLine("Sundial: a conversation in Today, ${day.format(at(history.firstOrNull()?.at ?: System.currentTimeMillis()))}")
         val h = hatched()
-        if (h != null) appendLine("Wearing ${Hatch.shellOf(h)}: her window is its nine places.") else appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
+        if (h != null) appendLine("Wearing ${Hatch.shellOf(h)}: her window is the time alone.") else appendLine("Wearing ${HelloWorld.SHELL}: \"${shellOpening()}\"")
         for (j in MindJob.values()) appendLine("${j.title}: " + settingsLine(app.running(j)) + app.cpuWhy(j)?.let { " On the CPU: $it." }.orEmpty())
         for (e in history) {
             appendLine()
