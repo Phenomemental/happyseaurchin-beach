@@ -143,17 +143,18 @@ class WalkTurnDeviceTest {
         membership()
         val hold = java.util.concurrent.CountDownLatch(1)
         mind.toolHold = hold
-        mind.talkScript += "Here is what I make of your membership block, one step at a time."
+        // Her words share none of his, so the filter on a line playing his words back has nothing to hold.
+        mind.talkScript += "Three steps stand in it, and the second has two checks beneath."
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("dial")
             say("What do you make of my membership block?")
             // Half her reply, shown while the turn is still going.
-            compose.waitFor("live", "Here is what I make of")
+            compose.waitFor("live", "Three steps stand in")
             assertTrue("still writing", app.asking.stage is com.phenomemental.pocketbeach.ui.Asking.Stage.Thinking)
             assertEquals("the walker offered on this turn", 1, mind.toolTurns.size)
             hold.countDown()
             compose.waitUntil(20_000) { app.asking.settled }
-            compose.waitFor("say", "one step at a time.")
+            compose.waitFor("say", "two checks beneath.")
         }
     }
 }
