@@ -243,7 +243,11 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         override fun stop() {
             stopping = true
             runCatching { conversation?.cancelProcess() }
+            runCatching { toolConversation?.cancelProcess() }
         }
+
+        /** Sundial 0.13.4: the conversation of a turn with the walker offered, while it runs, so he (or the loop stop) can stop it. */
+        @Volatile private var toolConversation: Conversation? = null
 
         /**
          * Sundial 0.13: one turn with the walker offered. Tools are set when a
@@ -267,7 +271,17 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                     override fun execute(p0: String): String = "unused"
                 }
                 val calls = mutableListOf<Pair<Mind.Called, String>>()
-                val reply = one.busy {
+                // Sundial 0.13.4: streamed. The engine hands a call it takes as one piece with the call and no words (the laptop's
+                // probe), so her words are shown as they come once their opening shows they aren't a call written out as text
+                // (HeldForACall); before, the whole reply was held back, and on his phone 781 tokens showed nothing for 107 s.
+                val whole = StringBuilder()
+                var first: Double? = null
+                val shown: (String) -> Unit = { p ->
+                    if (first == null && p.isNotBlank()) first = (System.nanoTime() - started) / 1e9
+                    whole.append(p)
+                    piece(p)
+                }
+                one.busy {
                     l.engine.createConversation(
                         ConversationConfig(
                             systemInstruction = Contents.of(instruction),
@@ -277,24 +291,42 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
                             thinkingConfig = ThinkingConfig(enableThinking = false),
                         ),
                     ).use { c ->
-                        var m = c.sendMessage(message)
-                        var rounds = 0
-                        while (m.toolCalls.isNotEmpty() && rounds < 3) {
-                            rounds++
-                            val answers = m.toolCalls.map { tc ->
-                                val called = Mind.Called(tc.name, tc.arguments, m.toString())
-                                val text = call(called)
-                                calls += called to text
-                                com.google.ai.edge.litertlm.Content.ToolResponse(tc.name, text)
+                        toolConversation = c
+                        try {
+                            var send: Message = Message.user(Contents.of(message))
+                            var rounds = 0
+                            while (true) {
+                                val got = mutableListOf<com.google.ai.edge.litertlm.ToolCall>()
+                                // A later round's words begin a paragraph of their own after what was shown before.
+                                var opened = whole.isEmpty()
+                                val held = com.phenomemental.pocketbeach.bsp.HeldForACall { p ->
+                                    if (!opened) { opened = true; shown("\n\n") }
+                                    shown(p)
+                                }
+                                c.sendMessageAsync(send).collect { m ->
+                                    got += m.toolCalls
+                                    m.toString().takeIf { it.isNotEmpty() }?.let(held::feed)
+                                }
+                                held.end(called = got.isNotEmpty())
+                                if (got.isEmpty() || rounds >= 3) break
+                                rounds++
+                                val answers = got.map { tc ->
+                                    val called = Mind.Called(tc.name, tc.arguments, "")
+                                    val text = call(called)
+                                    calls += called to text
+                                    com.google.ai.edge.litertlm.Content.ToolResponse(tc.name, text)
+                                }
+                                send = Message.tool(Contents.of(answers))
                             }
-                            m = c.sendMessage(Message.tool(Contents.of(answers)))
+                            counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, first)) }
+                        } finally {
+                            toolConversation = null
                         }
-                        counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, null)) }
-                        m.toString()
                     }
                 }
-                steps.add("her reply with the walker offered, on the ${l.processor}, ${calls.size} walk${if (calls.size == 1) "" else "s"}", Steps.since(started))
-                piece(reply)
+                first?.let { steps.add("her reply's first words", (it * 1000).toLong()) }
+                steps.add("her reply with the walker offered, streamed, on the ${l.processor}, ${calls.size} walk${if (calls.size == 1) "" else "s"}", Steps.since(started))
+                val reply = whole.toString()
                 done += message to reply
                 Mind.ToolTurn(reply, calls)
             }

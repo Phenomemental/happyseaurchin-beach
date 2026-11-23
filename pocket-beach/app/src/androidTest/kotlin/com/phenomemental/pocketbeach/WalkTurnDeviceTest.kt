@@ -135,4 +135,25 @@ class WalkTurnDeviceTest {
             compose.waitFor("walked-chip", "looked for 2.9 in membership")
         }
     }
+
+    @Test
+    fun onAWalkerTurnHerWordsShowAsTheyCome() {
+        // Sundial 0.13.4: on his phone a walker turn showed nothing for 107 seconds while she wrote 781 tokens and walked nothing.
+        Fresh.hatched()
+        membership()
+        val hold = java.util.concurrent.CountDownLatch(1)
+        mind.toolHold = hold
+        mind.talkScript += "Here is what I make of your membership block, one step at a time."
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            say("What do you make of my membership block?")
+            // Half her reply, shown while the turn is still going.
+            compose.waitFor("live", "Here is what I make of")
+            assertTrue("still writing", app.asking.stage is com.phenomemental.pocketbeach.ui.Asking.Stage.Thinking)
+            assertEquals("the walker offered on this turn", 1, mind.toolTurns.size)
+            hold.countDown()
+            compose.waitUntil(20_000) { app.asking.settled }
+            compose.waitFor("say", "one step at a time.")
+        }
+    }
 }
