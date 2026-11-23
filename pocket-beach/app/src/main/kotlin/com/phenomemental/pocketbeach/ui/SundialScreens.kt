@@ -70,8 +70,8 @@ import java.util.Locale
  * The three lines at the top of every screen open Your places, in Sundial's
  * own form (a name with its line beneath, as drawPlaces makes them); Your
  * days, the strandline and, held, where they have come to rest; Your room, a
- * box and Post; Your hand; Your recipes. And the keep card, shared by Keep
- * today on the dial and "Sort as my day" beneath her reply.
+ * box and Post; Your hand; Your recipes. And the keep card Keep today sets
+ * out on the dial.
  */
 
 private val DAY_SAID = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.UK)

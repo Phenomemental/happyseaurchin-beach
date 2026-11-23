@@ -19,6 +19,17 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
+sourceSets {
+    main {
+        kotlin {
+            // Trials of core code Sundial 0.12's lean removed (Trial and WindowDry run them): kept as the record of their trials, each building at its own commit.
+            listOf(
+                "Echo", "Eight", "EightDry", "Friend", "FreeReading", "Greeting", "Kept", "Sand", "Seven", "SevenDry", "Shapes", "ToolCall", "Trial", "Window", "WindowDry",
+            ).forEach { exclude("**/trial/$it.kt") }
+        }
+    }
+}
+
 dependencies {
     implementation(project(":bsp"))
     // -PlitertlmVersion=… tries another release of the engine on the laptop first.

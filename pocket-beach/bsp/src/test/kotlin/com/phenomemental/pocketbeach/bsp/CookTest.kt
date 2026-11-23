@@ -57,6 +57,13 @@ class CookTest {
 
     /** 0.9.1: every line his cook hands her says to speak to him as you (spine:pocket-beach 1.111178715 b). */
     private val you = " Speak to him as you, never by his name."
+    /** The lines the shipped cook hands her for a write set out, a write the writing check looks at, and her own lines. */
+    private val writeLine = "The app: the app sets out what he asked beneath your reply, for his yes. Nothing is kept, made or changed until he says yes, so never say it is. " +
+        "Begin your reply with these words: “It's below, for your yes.” Then a sentence or two about what he said."
+    private val writeJobLine = "The app: after your reply, the app looks at what he asked and sets out what it can beneath it, for his yes, or says why not. " +
+        "Nothing is kept, made or changed until he says yes, so never say it is, or that it is set out. Talk with him about what he said, in a sentence or two."
+    private val linesLine = "The app: your lines are in his shell, his to change himself on the Write screen, so nothing is set out and nothing changes now. " +
+        "Begin your reply with these words: “That's yours to change.” Then a sentence or two with him, and don't take it on as said."
     private val postLine = "The app: the app sets out his own words beneath your reply, as he wrote them, as a message to his own room on the beach, for his tap; nothing is sent until he taps, so never say it is sent, and never write his message out again in your reply: it stands beneath. Begin your reply with these words: “It's below, for your tap.” Then a sentence or two." + you
 
     /** His 10:03 telling of 2 November, exactly as he dictated it (spine:pocket-beach 1.1111787151 to 3; sent by him on 2 November). */
@@ -167,7 +174,7 @@ class CookTest {
         val w = World(storage, pages, before = listOf(first))
         val k = walk(w, "Keep that for me please")
         assertTrue(k.trace.none { it.reader == Cook.Reader.SHE }, "no ring: his stash, as 0.8.1 kept it")
-        assertEquals(HerWindow.WRITE_LINE + you, k.handed.single().line)
+        assertEquals(writeLine + you, k.handed.single().line)
         val card = (k.waiting as Cook.Wait.Him).card as Cook.Card.Keep
         assertEquals(Cook.Card.Keep(Hatch.stashOf(h), first), card)
         k.yes()
@@ -186,8 +193,6 @@ class CookTest {
         val k = walk(World(storage, pages, big = false, before = before), "Keep that in my stash or in films")
         val ring = (k.waiting as Cook.Wait.Him).card as Cook.Card.Ring
         assertEquals(listOf(Hatch.stashOf(h), "films"), ring.places)
-        k.hisChoice("films")
-        assertEquals(Cook.Card.Keep("films", "Remember the wifi code is otter-42"), (k.waiting as Cook.Wait.Him).card)
         // With none named, on E2B too: his stash, no ring.
         val none = walk(World(storage, pages, big = false, before = before), "Keep that for me please")
         assertEquals(Cook.Card.Keep(Hatch.stashOf(h), "Remember the wifi code is otter-42"), (none.waiting as Cook.Wait.Him).card)
@@ -240,7 +245,7 @@ class CookTest {
         val (storage, pages) = hatched()
         val k = walk(World(storage, pages), "Make a block called sailing: knots I'm learning")
         assertEquals(Cook.Card.New("sailing", "knots I'm learning"), (k.waiting as Cook.Wait.Him).card)
-        assertEquals(HerWindow.WRITE_LINE + you, k.handed.single().line)
+        assertEquals(writeLine + you, k.handed.single().line)
         k.yes()
         assertTrue(pages.exists("sailing"))
     }
@@ -305,11 +310,11 @@ class CookTest {
     fun herLinesAreHisToChangeAndHisOwnGoToTheWritingCheck() {
         val (storage, pages) = hatched()
         val lines = walk(World(storage, pages), "Change your opening line to: I'm Gemma")
-        assertEquals(HerWindow.LINES_LINE + you, lines.handed.single().line)
+        assertEquals(linesLine + you, lines.handed.single().line)
         assertFalse(lines.writingCheck)
         val his = walk(World(storage, pages), "Change the bulbs line in garden to: plant the tulips")
         assertTrue(his.writingCheck)
-        assertEquals(HerWindow.WRITE_JOB_LINE + you, his.handed.single().line)
+        assertEquals(writeJobLine + you, his.handed.single().line)
     }
 
     // ── Sundial 0.10.1: the danger line handed only on the app's danger check ──
@@ -437,15 +442,6 @@ class CookTest {
     }
 
     @Test
-    fun herRecipeIsTheLineTalkHandsHerFirst() {
-        val parsed = Cook.parse(procedures.load(Cook.SHIPPED_COOK))
-        val recipe = Cook.talkRecipe(parsed)!!
-        assertTrue(recipe.startsWith("The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something"), recipe)
-        // The same line his walk hands her first: put in her instruction once, taken out of every turn.
-        assertEquals(recipe, talked(idChecks).handed.first().line)
-    }
-
-    @Test
     fun hisOwnTalkLineIsKeptWhenTalkIsBroughtUpTo0101() {
         val (storage, pages) = hatched()
         val his = parseJson(stringify(cook010)!!) as JsObj
@@ -505,7 +501,7 @@ class CookTest {
         (old["2"] as JsObj)["2"] = JsObj.of("_" to str("This week"), "1" to str("Cut the second film"))
         (old["3"] as JsObj)["2"] = JsObj.of("_" to str("This month"), "1" to str("Get the pilot out"))
         check(pages.carryOut(pages.planWhole(Landing.TELLING, old)).ok)
-        val (clock, _) = Landing.withDay(null, Landing.dayAddress(nowMs), "Walked the dog.", mapOf("1.1" to listOf("Walked the dog."), "1.2" to listOf("Calm")))
+        val (clock, _) = Before012.withDay(null, Before012.dayAddress(nowMs), "Walked the dog.", mapOf("1.1" to listOf("Walked the dog."), "1.2" to listOf("Calm")))
         check(pages.carryOut(pages.planWhole(Landing.NOW, clock)).ok)
         assertTrue(Days.toMove(storage))
         val moved = Days.moveOut(h, storage, nowMs)!!

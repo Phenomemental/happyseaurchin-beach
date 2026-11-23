@@ -353,7 +353,6 @@ class LineInTheSandTest {
         val loaded = Cook.load(h, storage, procedures)
         // Sundial 0.10.4: one step that can't be read never throws out the rest of his cook.
         assertTrue(loaded.own && loaded.refusal == null, loaded.note ?: "")
-        assertEquals("The app: just talk with me, warmly. Speak to him as you, never by his name.", Cook.talkRecipe(loaded.parsed), "his TALK line runs")
         val said = loaded.note!!
         assertTrue(said.startsWith("Your cook couldn't be read at 6.1.6.1: outside its quotes it reads “Chop THE WORDS into its bits"), said)
         assertTrue(said.contains("where the app's form reads “Cut THE WORDS into its pieces"), said)
@@ -398,9 +397,8 @@ class LineInTheSandTest {
             assertTrue(ups.flatMap { it.first.yours }.none { it.offer }, "nothing offered over his lines")
             val loaded = Cook.load(h, storage, procedures)
             assertTrue(loaded.own && loaded.note == null, loaded.note ?: "")
-            // What she is handed: his TALK line as her recipe, his no-day line for a short answer, his SHEET wording at Keep today.
-            assertEquals(Regex("“(.+)”").find(talk)!!.groupValues[1], Cook.talkRecipe(loaded.parsed))
-            val k = Cook.Walk(loaded.parsed, World(storage, pages, hisHand), "stiff but free").start("1")
+            // What she is handed: his no-day line for a short answer, his SHEET wording at Keep today.
+            val k =Cook.Walk(loaded.parsed, World(storage, pages, hisHand), "stiff but free").start("1")
             assertTrue(k.handed.any { it.line == Regex("“(.+)”").find(noDay)!!.groupValues[1] }, k.handed.joinToString("\n") { it.line })
             val w = World(storage, pages)
             w.moments += Keep.Moment("I walked Haven this morning", nowMs, listOf(1))
@@ -413,25 +411,11 @@ class LineInTheSandTest {
     fun test9_hisStepIsReadInTheAppsFormEvenBeforeItIsBroughtUp() {
         // His cook as his phone held it after 0.10.3: his SHEET step without its last sentence, not yet brought up.
         val (storage, pages) = hatched()
-        val (his, talk, _) = hisCook(shippedCook)
+        val (his, _, _) = hisCook(shippedCook)
         check(pages.carryOut(pages.planWhole(Cook.cookOf(h), his)).ok)
         val loaded = Cook.load(h, storage, procedures)
         assertTrue(loaded.own && loaded.refusal == null, loaded.note ?: "")
-        assertEquals(Regex("“(.+)”").find(talk)!!.groupValues[1], Cook.talkRecipe(loaded.parsed), "his TALK line runs: one step of his never throws out the rest")
         assertTrue(loaded.note!!.startsWith("Your cook at 6.1.5: the words around your quoted line weren't the app's form"), loaded.note)
-    }
-
-    // ── 9, the time: every turn carries its own (9 November) ──
-
-    @Test
-    fun test9_aConversationOpenedInTheMorningCarriesTheEveningsTimeOnTheEveningTurn() {
-        val (_, pages) = hatched()
-        val morning = now.withHour(8).withMinute(10)
-        val evening = now.withHour(19).withMinute(30)
-        val recipe = "The app: nothing is being kept or set out from this."
-        assertTrue(HerWindow.opening("Her window.", morning, recipe).contains("08:10 as this conversation opens"))
-        val turn = HerWindow.turnKept("stiff but free", pages, listOf(Cook.Handed(recipe)), recipe, now = evening, lastMs = morning.toInstant().toEpochMilli())
-        assertEquals("(It is Wednesday 4 November 2026, 19:30, evening. His last message was 11 hours and 20 minutes ago.)", turn.lines().first())
     }
 
     // ── 3, what's in front of him: today's line only from his now at today ──
@@ -451,21 +435,6 @@ class LineInTheSandTest {
         assertEquals(java.time.LocalDate.of(2026, 11, 2), Days.staleDay(ahead, "2.1", today))
         assertNull(Days.staleDay(ahead, "2.2", today), "today's card is today's")
         assertNull(Days.staleDay(ahead, "3.1", today), "a card of the week is the week's")
-        val clock = Landing.emptyClock(Days.NOW_OPENING)
-        Keep.dayLine(clock, today, Mark.write(Mark.Sheet("Admin day", listOf("I worked on the membership form."), "")), nowMs)
-        check(pages.carryOut(pages.planWhole(Days.NOW, clock)).ok)
-        val hand = HerWindow.hand(storage, now)!!
-        assertTrue(hand.contains("Today: “I'm going to finish the membership form”"), hand)
-        assertTrue(hand.contains("From earlier days, not today's: “I need to reply to Jo” (from Tuesday 3 November); “These are the things I need to get done around the membership work and the LERO proposal.” (from Monday 2 November)"), hand)
-        assertFalse(hand.contains("First the agreement"), "a long card shortened to its first sentence")
-        assertTrue(hand.contains("This week: “I need to do the ID checks”"), "a card of the week is the week's, whatever its day")
-        // Today's line is only what his now holds at today.
-        val todays = HerWindow.today(storage, now)!!
-        assertTrue(todays.contains("Admin day"), todays)
-        assertFalse(todays.contains("These are the things"), todays)
-        val window = HerWindow.window(h, pages, storage, shelf, now)
-        val place4 = window.lines().firstOrNull { it.startsWith("4. ") }.orEmpty()
-        assertFalse(place4.contains("These are the things"), window)
     }
 
     private fun jsGetPath(v: Js?, vararg keys: String): Js? = keys.fold(v) { n, k -> jsGet(n, k) }

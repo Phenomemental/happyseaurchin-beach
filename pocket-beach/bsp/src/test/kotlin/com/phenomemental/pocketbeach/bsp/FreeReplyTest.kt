@@ -1,8 +1,5 @@
 package com.phenomemental.pocketbeach.bsp
 
-import java.io.File
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -105,19 +102,5 @@ class FreeReplyTest {
         val hers = "How did you get on with \"evaluate sundial\" today?"
         assertEquals(hers, Talking.oneQuestion(hers, clock, listOf(line, material)))
         assertNull(Talking.oneQuestion("How did you get on with ringing Jo today?", clock, listOf(line, material)), "her example, played back whole")
-    }
-
-    @Test
-    fun herTurnInHerKeptConversationIsHisNewMessageAndWhatIsNewWithIt() {
-        val shelf = Shelf(DirShelfSource(File(System.getProperty("pocket.shelf") ?: "../shelf")))
-        val now = ZonedDateTime.of(2026, 11, 3, 20, 10, 0, 0, ZoneId.of("Europe/London"))
-        val (_, pages) = Bench.fixture(shelf, now.toInstant().toEpochMilli(), Talks.SHELL_RECIPE)
-        val recipe = "The app: nothing is being kept or set out from this. Your reply has two parts, unless he asks you something."
-        val noDay = "The app: his words hold no day yet; if you reflect, ask what's on today."
-        val turn = HerWindow.turnKept(glum, pages, listOf(Cook.Handed(recipe), Cook.Handed(noDay)), recipe)
-        assertEquals("($noDay)\n$glum", turn, "never her recipe again, never the time")
-        val opening = HerWindow.opening("1. His heart (his words, about him, not you): “The heart.”", now, recipe)
-        assertTrue(opening.contains("It is Tuesday 3 November 2026, 20:10 as this conversation opens."), opening)
-        assertTrue(opening.endsWith(recipe), "her recipe in her instruction, once")
     }
 }

@@ -41,7 +41,7 @@ class ClockTest {
     fun hisNowStandsAtTodayAndADayHeWritesLandsAtItsDate() {
         val shelf = Shelf(DirShelfSource(java.io.File(System.getProperty("pocket.shelf") ?: "../shelf")))
         val (_, pages) = Bench.fixture(shelf, 1793620000000L, Talks.SHELL_RECIPE)
-        val (clock, _) = Landing.withDay(null, Days.dayAddress(today), "Walked the dog.", emptyMap())
+        val (clock, _) = Before012.withDay(null, Days.dayAddress(today), "Walked the dog.", emptyMap())
         check(pages.carryOut(pages.planWhole(Days.NOW, clock)).ok)
         assertEquals("Walked the dog.", pages.position(Region.POCKET, Days.NOW, Clock.dayOf(today))!!.text)
         val tomorrow = Clock.dayOf(today.plusDays(1))

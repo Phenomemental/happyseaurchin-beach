@@ -36,7 +36,7 @@ class HatchGoldenTest {
     private fun case(name: String, named: Boolean): JsObj {
         val (storage, pages) = Bench.fixture(shelf, nowMs, Talks.SHELL_RECIPE)
         if (named) check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
-        HerWindow.ensure(pages)
+        Before012.ensure(pages)
         val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
         val calls = mutableListOf<Js?>()
         fun go(plan: Plan) {
@@ -91,7 +91,7 @@ class HatchGoldenTest {
         val old = Telling.shape()
         (old["2"] as JsObj)["2"] = JsObj.of("_" to str("This week"), "1" to str("Cut the second film"))
         check(pages.carryOut(pages.planWhole(Landing.TELLING, old)).ok)
-        check(pages.carryOut(pages.planWhole(Landing.NOW, Landing.withDay(null, Landing.dayAddress(nowMs), "Walked the dog with Sam.", mapOf("1.1" to listOf("Walked the dog with Sam."), "1.2" to listOf("Calm"))).first)).ok)
+        check(pages.carryOut(pages.planWhole(Landing.NOW, Before012.withDay(null, Before012.dayAddress(nowMs), "Walked the dog with Sam.", mapOf("1.1" to listOf("Walked the dog with Sam."), "1.2" to listOf("Calm"))).first)).ok)
         val seed = JsArr(storage.names().sorted().map<String, Js?> { n -> JsObj.of("block" to str(n), "content" to parseJson(storage.read(n)!!)) }.toMutableList())
         val calls = mutableListOf<Js?>()
         fun go(plan: Plan) {

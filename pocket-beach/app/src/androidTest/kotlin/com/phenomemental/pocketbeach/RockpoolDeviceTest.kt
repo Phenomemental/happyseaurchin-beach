@@ -85,7 +85,7 @@ class RockpoolDeviceTest {
         val old = Telling.shape()
         (old["2"] as JsObj)["2"] = JsObj.of("_" to str("This week"), "1" to str("Cut the second film"))
         check(app.pages.carryOut(app.pages.planWhole(Landing.TELLING, old)).ok)
-        check(app.pages.carryOut(app.pages.planWhole(Landing.NOW, Landing.withDay(null, Landing.dayAddress(System.currentTimeMillis()), "Walked the dog.", mapOf("1.2" to listOf("Calm"))).first)).ok)
+        check(app.pages.carryOut(app.pages.planWhole(Landing.NOW, Before012.withDay(null, Before012.dayAddress(System.currentTimeMillis()), "Walked the dog.", mapOf("1.2" to listOf("Calm"))).first)).ok)
         check(app.pages.carryOut(app.pages.planChange(Hatch.shellOf(h), "${Hatch.WINDOW}.5", Hatch.OLD_HAND)).ok)
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("corrected", "your cook and kernel are in your pocket", timeoutMs = 20_000)

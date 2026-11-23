@@ -1,7 +1,6 @@
 package com.phenomemental.pocketbeach.bsp
 
 import java.io.File
-import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -44,54 +43,16 @@ class HisWordsTest {
         assertEquals(listOf("Good morning."), Talking.copied("Good morning.\nHow are you?", "Good morning", HelloWorld.SHELL_OPENING), "his few words alone on a line are")
     }
 
+    /** 0.6.2: her name from her shell. */
     @Test
-    fun herTimeAndShellAreInHerInstructionAndHisTurnIsHisWordsAlone() {
+    fun herNameComesFromHerShell() {
         val (_, pages) = Bench.fixture(shelf, 1_793_178_000_000L)
-        val now = java.time.ZonedDateTime.of(2026, 10, 29, 17, 37, 0, 0, java.time.ZoneId.of("Europe/London"))
-        val i = Talking.instruction061(HelloWorld.SHELL, pages, now)
-        assertContains(i, "It is Thursday 29 October 2026, 17:37. You wear the shell ${HelloWorld.SHELL}; it says \"${HelloWorld.SHELL_OPENING}\"")
-        assertFalse(i.contains("Each of his messages comes with"), "0.6's line that had her open with the date and her shell")
-        assertFalse(i.contains("Hello world:"), "the hello world line is the Write job's")
-        assertFalse(i.contains("The blocks in the pocket"), "the pocket set out had her answer about her blocks, not him")
-        assertFalse(i.contains("What the app read for you"), "his words name no block")
         assertEquals(ask, Talking.said(ask))
-        // A block his words name is read for her.
-        val named = Talking.instruction061(HelloWorld.SHELL, pages, now, "What's in my garden block?")
-        assertContains(named, "What the app read for you, of the blocks his words name:")
-        assertContains(named, "garden")
-        assertContains(Talking.instruction061(HelloWorld.SHELL, pages, now, "What blocks do I have?"), "The blocks in the pocket", message = "asked about his blocks, she is shown them")
-    }
-
-    /** 0.6.2: her name from her shell, the heart line, the time; of the pocket only what his words ask for. */
-    @Test
-    fun herInstructionTakesHerNameFromHerShellAndThePocketOnlyWhenAsked() {
-        val (_, pages) = Bench.fixture(shelf, 1_793_178_000_000L)
-        val now = java.time.ZonedDateTime.of(2026, 10, 29, 17, 37, 0, 0, java.time.ZoneId.of("Europe/London"))
-        val unnamed = Talking.instruction(HelloWorld.SHELL, pages, now)
-        assertTrue(unnamed.startsWith("You are Matthew's companion on his phone. Talk with him as a friend would"), unnamed.take(80))
-        assertContains(unnamed, "If he gives you a name, take it gladly as yours.")
-        assertContains(unnamed, "It is Thursday 29 October 2026, 17:37.")
-        assertContains(unnamed, "Ask him something now and then, when you're truly curious, not every time.")
-        // 0.6.3: C changed is hers: "Meet what matters most", and the keeping line in place of 0.6.2's.
-        assertContains(unnamed, "never repeat it back or sum it up. Meet what matters most in what he says, not only what he asks for. Whatever he brings")
-        assertContains(unnamed, Talking.KEEPING)
-        assertContains(unnamed, "a few words are enough (\"It's below, for your yes.\")")
-        assertFalse(unnamed.contains(Talking.NO_WRITE), "0.6.2's line on writing is gone")
-        for (gone in listOf("You wear the shell", "Speak to what he has just said", "an app on Matthew's phone", "The blocks in the pocket", "What the app read for you")) assertFalse(unnamed.contains(gone), gone)
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me Gemma.")).ok)
         assertEquals("Gemma", Talking.name(HelloWorld.SHELL, pages))
-        val named = Talking.instruction(HelloWorld.SHELL, pages, now)
-        assertTrue(named.startsWith("Matthew calls you Gemma: that is your name, just Gemma. You are his companion on his phone. Talk with him"), named.take(80))
-        assertEquals(1, Regex("If he gives you a name").findAll(named).count(), "C ends taking the name he gives, once")
         // A later name is the one she goes by; a name cut short is none.
         check(pages.carryOut(pages.planAdd(HelloWorld.SHELL, "", "Matthew calls me…")).ok)
         assertEquals("Gemma", Talking.name(HelloWorld.SHELL, pages))
-        // His words name one block: that block only, not the pocket set out.
-        val garden = Talking.instruction(HelloWorld.SHELL, pages, now, "What's in my garden block?")
-        assertContains(garden, "What the app read for you, of the blocks his words name:")
-        assertContains(garden, "pocket/garden")
-        assertFalse(garden.contains("The blocks in the pocket"), "his words name one block: that block only")
-        assertContains(Talking.instruction(HelloWorld.SHELL, pages, now, "What blocks do I have?"), "The blocks in the pocket", message = "asked about his blocks, she is shown them")
     }
 
     /** Sundial 0.12 (spine:pocket-beach 1.111178719991, 1.111178719999): the safety check is taken out; nothing matches his words and adds a line. */
@@ -100,9 +61,6 @@ class HisWordsTest {
         val (_, pages) = Bench.fixture(shelf, 1_793_178_000_000L)
         val now = java.time.ZonedDateTime.of(2026, 10, 30, 22, 10, 0, 0, java.time.ZoneId.of("Europe/London"))
         val said = "I don't feel safe tonight, not even in my garden block."
-        val instruction = Talking.instruction(HelloWorld.SHELL, pages, now, said)
-        assertFalse(instruction.contains("116 123"), instruction.takeLast(160))
-        assertFalse(instruction.contains("worried for him"))
         val turn = HerWindow.releasedTurn(said, now)
         assertTrue(turn.startsWith("(It is Friday 30 October 2026, 22:10"), turn)
         assertTrue(turn.endsWith(")\n$said"), turn)
@@ -174,7 +132,6 @@ class HisWordsTest {
             assertTrue(counted >= 3, "under three words: “$piece”")
             assertTrue(Telling.foundIn(piece, said), "not his words: “$piece”")
         }
-        assertFalse(Landing.isTelling(ask, emptyMap(), setOf("gemma")), "his message is one run of his words, not a day")
     }
 
     @Test
@@ -214,9 +171,9 @@ class HisWordsTest {
         assertTrue(rungs.all { Telling.foundIn(it.words, Telling.WRITTEN) })
     }
 
-    /** Every line a proposal shows is his words; his own corrections are the one exception. */
+    /** Every line the sort keeps is his words. */
     @Test
-    fun everyLineShownIsHisWordsOrHisCorrection() {
+    fun everyLineKeptIsHisWords() {
         val placed = Telling.placed(
             """
             1.1: the car wouldn't start again this morning
@@ -226,26 +183,8 @@ class HisWordsTest {
             3.2: Jo's birthday is on the twelfth
             """.trimIndent(),
         )
-        val sorting = Landing.sorting(Telling.WRITTEN, placed)
-        for (line in sorting.lines.filter { it.place != null }) assertTrue(Telling.foundIn(line.words, Telling.WRITTEN), "not his words: ${line.place} “${line.words}”")
-        assertEquals(3, sorting.invented.size, "her own words are left out, the rung's among them")
-        val corrected = Landing.sorting(ask, Telling.placed("1.3: a tool that I can just waffle on to torque and speak")).lines.first().correctedTo("a tool that I can just waffle on to talk and speak")
-        assertTrue(corrected.corrected)
-        assertFalse(Telling.foundIn(corrected.words, ask), "his correction isn't what the phone heard")
-    }
-
-    @Test
-    fun hisCorrectionOfAMisheardWordLandsAsHisWords() {
-        val storage = MemoryStorage()
-        val nowMs = Instant.parse("2026-10-29T17:37:00Z").toEpochMilli()
-        val pages = Pages(storage, shelf, PocketBsp(storage, shelf) { nowMs }) { nowMs }
-        val heard = "one of the main things that I'm trying to produce is a tool that I can just waffle on to torque and speak"
-        val line = Landing.Line("1.3", null, heard).correctedTo(heard.replace("torque", "talk"))
-        val landed = Landing.landed(listOf(line), ask, nowMs) { n -> storage.read(n)?.let(::parseJson) }
-        for (p in Landing.plans(landed, pages)) assertTrue(pages.carryOut(p).ok)
-        val day = pages.position(Region.POCKET, Landing.NOW, Landing.dayAddress(nowMs))!!.text!!
-        assertContains(day, "waffle on to talk and speak")
-        assertFalse(day.contains("torque"), "the day's line carries his correction")
-        assertContains(storage.read(Landing.NOW)!!, "waffle on to talk and speak")
+        val checked = Telling.check(Telling.WRITTEN, placed)
+        for (p in checked.kept) assertTrue(Telling.foundIn(p.words, Telling.WRITTEN), "not his words: ${p.place} “${p.words}”")
+        assertEquals(3, checked.invented.size, "her own words are left out, the rung's among them")
     }
 }

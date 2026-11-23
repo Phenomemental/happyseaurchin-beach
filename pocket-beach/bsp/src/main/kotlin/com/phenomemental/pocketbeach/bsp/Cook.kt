@@ -1128,16 +1128,6 @@ object Cook {
         private fun hisLine(day: java.time.LocalDate): String? =
             world.storage.read(Days.NOW)?.let { runCatching { parseJson(it) }.getOrNull() }?.let { Keep.hisOwnLine(it, day) }
 
-        /** His tap on the ring he was given: the place he chose. */
-        fun hisChoice(place: String): Walk {
-            val s = current ?: error("nothing waits")
-            waiting = null
-            val into = (s.verb as? Verb.ChooseRing)?.into ?: "THE PLACE"
-            put(into, place)
-            note(s, "he chose", into)
-            return go()
-        }
-
         /** His yes, or his tap: the walk goes on from the step after the one that waited. */
         fun yes(): Walk {
             waiting = null
@@ -1586,23 +1576,6 @@ object Cook {
         return Up(name, block, false, merged.takeIf { !deepEqual(it, mine) }, took, added, removed, yours)
     }
 
-    /**
-     * Sundial 0.10.2: her recipe for talk, the line TALK hands her first, as
-     * his cook gives it: read once as her one conversation opens and put in
-     * her instruction, never handed again each turn. Null when his cook has
-     * no TALK, or TALK's first step hands her no line of its own.
-     */
-    fun talkRecipe(parsed: Parsed): String? {
-        fun find(steps: List<Step>): Step? {
-            for (s in steps) {
-                if (s.label?.trim()?.trimEnd('.')?.uppercase() == "TALK") return s
-                find(s.kids)?.let { return it }
-            }
-            return null
-        }
-        val talk = parsed.procedures.values.firstNotNullOfOrNull { find(it.steps) } ?: return null
-        return (talk.kids.firstOrNull()?.verb as? Verb.Hand)?.takeIf { it.with.isEmpty() }?.line
-    }
 
     /** The block his old cook 6 is kept in once cook 6 becomes Sundial's ways: the hidden region holds it. */
     const val RETIRED_COOK_6 = "retired-cook-6"
