@@ -51,6 +51,9 @@ interface Mind {
     /** Sundial 0.12.1: one tool call of hers, its [arguments] exactly as the engine handed them (a number stays a number, text stays text), and what she wrote with it. */
     class Called(val name: String, val arguments: Map<String, Any?>, val text: String)
 
+    /** Sundial 0.13: a turn with a tool offered: her reply, and each call she made with the text it was answered with. */
+    class ToolTurn(val reply: String, val calls: List<Pair<Called, String>>)
+
     /**
      * Sundial 0.12.1: one message in a conversation of its own, with one
      * native tool ([toolJson], its OpenAPI description), thinking off: the
@@ -118,6 +121,18 @@ interface Mind {
          * can't say. Ask opens it afresh as it nears its context.
          */
         fun tokens(): Int? = null
+
+        /**
+         * Sundial 0.13 (spine:pocket-beach 1.1111787199994): one turn with one
+         * native tool ([toolJson]) offered, thinking off: each call she makes
+         * is handed to [call], whose text goes back to her, and her reply is
+         * the turn's. Run on the CPU when [onCpu] (his GPU check showed
+         * addresses altered). The turn joins her conversation as any other;
+         * the tool is offered on this turn only. A mind with no tools talks
+         * as on any turn.
+         */
+        fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Called) -> String, piece: (String) -> Unit): ToolTurn =
+            ToolTurn(stream.say(message, piece), emptyList())
     }
 
     companion object {

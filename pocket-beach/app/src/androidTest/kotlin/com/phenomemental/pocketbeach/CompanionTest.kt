@@ -133,6 +133,21 @@ class StandIn : Mind {
             override val pace = paced
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
+
+            // Sundial 0.13: a turn with the walker offered: she calls it with [walkArgs] (none set: no call), then answers.
+            override fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {
+                toolTurns += message
+                toolOnCpu += onCpu
+                toolJsons += toolJson
+                val args = walkArgs ?: return Mind.ToolTurn(stream.say(message, piece), emptyList())
+                val c = Mind.Called("bsp", args, "")
+                val answered = call(c)
+                walkResults += answered
+                talkMessages += message
+                val reply = talkScript.removeFirstOrNull() ?: "I walked it."
+                reply.chunked(4).forEach(piece)
+                return Mind.ToolTurn(reply, listOf(c to answered))
+            }
         }
     }
 
@@ -194,6 +209,13 @@ class StandIn : Mind {
         val address = Regex("""at (\S+) in my""").find(message)?.groupValues?.get(1) ?: return null
         return Mind.Called("bsp", mapOf("block" to "walk-check", "spindle" to (if (toolNumbers) address.toDouble() else address)), "")
     }
+
+    /** Sundial 0.13: the walk turns: each message the walker was offered on, whether on the CPU, her call's arguments, and what each call was answered with. */
+    val toolTurns = java.util.concurrent.CopyOnWriteArrayList<String>()
+    val toolOnCpu = java.util.concurrent.CopyOnWriteArrayList<Boolean>()
+    val toolJsons = java.util.concurrent.CopyOnWriteArrayList<String>()
+    var walkArgs: Map<String, Any?>? = null
+    val walkResults = java.util.concurrent.CopyOnWriteArrayList<String>()
 
     /** Sundial 0.12.1: the settings each warm was asked for, in order. */
     val warmed = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()

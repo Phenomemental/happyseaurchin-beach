@@ -245,6 +245,58 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
             runCatching { conversation?.cancelProcess() }
         }
 
+        /**
+         * Sundial 0.13: one turn with the walker offered. Tools are set when a
+         * conversation opens, so the turn runs in a conversation of its own
+         * with every exchange so far and the tool, thinking off; her kept
+         * conversation is let go, and opens again with this turn in it at his
+         * next message. On the CPU when [onCpu].
+         */
+        override fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn =
+            kotlinx.coroutines.runBlocking(thread) {
+                stopping = false
+                val started = System.nanoTime()
+                letGo()
+                val (l, _) = engine(if (onCpu) key.copy(processor = "CPU") else key)
+                at = l
+                pace.ranOn(l.processor, l.whyNotGpu)
+                val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
+                    override fun getToolDescriptionJsonString() = toolJson
+                    override fun execute(p0: String): String = "unused"
+                }
+                val calls = mutableListOf<Pair<Mind.Called, String>>()
+                val reply = one.busy {
+                    l.engine.createConversation(
+                        ConversationConfig(
+                            systemInstruction = Contents.of(instruction),
+                            initialMessages = (history + done).flatMap { (asked, said) -> listOf(Message.user(asked), Message.model(said)) },
+                            tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
+                            samplerConfig = sampler(settings), maxOutputToken = settings.longestReply,
+                            thinkingConfig = ThinkingConfig(enableThinking = false),
+                        ),
+                    ).use { c ->
+                        var m = c.sendMessage(message)
+                        var rounds = 0
+                        while (m.toolCalls.isNotEmpty() && rounds < 3) {
+                            rounds++
+                            val answers = m.toolCalls.map { tc ->
+                                val called = Mind.Called(tc.name, tc.arguments, m.toString())
+                                val text = call(called)
+                                calls += called to text
+                                com.google.ai.edge.litertlm.Content.ToolResponse(tc.name, text)
+                            }
+                            m = c.sendMessage(Message.tool(Contents.of(answers)))
+                        }
+                        counted(c)?.let { t -> pace.turns.add(Pace.Turn(t.read, t.readPerSecond, t.wrote, t.writePerSecond, null)) }
+                        m.toString()
+                    }
+                }
+                steps.add("her reply with the walker offered, on the ${l.processor}, ${calls.size} walk${if (calls.size == 1) "" else "s"}", Steps.since(started))
+                piece(reply)
+                done += message to reply
+                Mind.ToolTurn(reply, calls)
+            }
+
         /** Sundial 0.10.2: what her kept conversation holds now, in tokens; null when it was let go. */
         override fun tokens(): Int? = kotlinx.coroutines.runBlocking(thread) { conversation?.let { c -> runCatching { c.getTokenCount() }.getOrNull() } }
 
