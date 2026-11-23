@@ -48,6 +48,17 @@ interface Mind {
     suspend fun sheet(instruction: String, material: String, settings: JobSettings, tool: Boolean): com.phenomemental.pocketbeach.bsp.Mark.Sheet? =
         sheetOf(ask("$instruction Write it in plain lines: the title first, then two to four lines, then “Tomorrow: …” if he voiced one, and nothing else.", material, settings).text)
 
+    /** Sundial 0.12.1: one tool call of hers, its [arguments] exactly as the engine handed them (a number stays a number, text stays text), and what she wrote with it. */
+    class Called(val name: String, val arguments: Map<String, Any?>, val text: String)
+
+    /**
+     * Sundial 0.12.1: one message in a conversation of its own, with one
+     * native tool ([toolJson], its OpenAPI description), thinking off: the
+     * first call she makes, or null when she makes none. For the walk check
+     * on his phone (spine:pocket-beach 1.1111787199993).
+     */
+    suspend fun callTool(instruction: String, message: String, toolJson: String, settings: JobSettings): Called? = null
+
     /** Whether it is in memory now (asking it first loads it). */
     val loaded: Boolean
 

@@ -294,6 +294,31 @@ class PocketApp : Application() {
             prefs.edit().putBoolean("reachBeach", on).apply()
         }
 
+    /**
+     * Sundial 0.12.1: the walk check's last result on this phone: how many of
+     * how many arrived intact, how many arrived altered (as a number, or
+     * changed; a call that never came isn't counted), when, and on which model.
+     */
+    class WalkChecked(val intact: Int, val of: Int, val altered: Int, val atMs: Long, val model: String) {
+        /** Every address arrived as sent. */
+        val allIntact: Boolean get() = intact == of
+    }
+
+    private val walkChecked by lazy {
+        mutableStateOf(prefs.getInt("walkCheckOf", 0).takeIf { it > 0 }?.let { WalkChecked(prefs.getInt("walkCheckIntact", 0), it, prefs.getInt("walkCheckAltered", 0), prefs.getLong("walkCheckAt", 0), prefs.getString("walkCheckModel", "") ?: "") })
+    }
+
+    /** Sundial 0.12.1 (spine:pocket-beach 1.1111787199993): the walk check's last result, or null before he has run it. */
+    var walkCheck: WalkChecked?
+        get() = walkChecked.value
+        set(c) {
+            walkChecked.value = c
+            prefs.edit().apply {
+                if (c == null) remove("walkCheckOf").remove("walkCheckIntact").remove("walkCheckAltered").remove("walkCheckAt").remove("walkCheckModel")
+                else putInt("walkCheckOf", c.of).putInt("walkCheckIntact", c.intact).putInt("walkCheckAltered", c.altered).putLong("walkCheckAt", c.atMs).putString("walkCheckModel", c.model)
+            }.apply()
+        }
+
     private val askLog by lazy { mutableStateOf(prefs.getBoolean("keepAskLog", false)) }
 
     /** 0.6.4: whether each exchange in Ask is kept in the ask log; off unless he turns it on in Settings. */
