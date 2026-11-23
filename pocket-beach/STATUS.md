@@ -4,6 +4,61 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13 is released (23 November): the walk, when his words name a block:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13
+- **Install:** `sundial-v0.13.apk` over 0.12.1. His blocks stay where they
+  are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13 (32), from main at `7a03f4b` (PR #280), release run
+  323. APK SHA-256 `84c6ba18…`.
+- **Tests:** 341 core, the app's own 21 and all 95 device tests, on each
+  part's own CI run and again in the release run. Part 7's first emulator
+  run lost one folder test to a write left by the test before (a shell
+  already in the pocket as it hatched); the re-run passed, as did the
+  release run.
+  - **Core:** 4 more than 0.12.1 (337): the name matching, her call
+    resolved, the readable result, the guard.
+  - **Device:** 4 more than 0.12.1 (91): the walk turn and its chip, a
+    turn naming none, a place that isn't there, and the CPU after a check
+    that found addresses altered.
+- **What it is:** the plan of spine:pocket-beach 1.111178719999, parts 4
+  to 7, each its own PR merged once CI was green (#276, #277, #279, #280).
+- **What it builds:**
+  1. **The walk offered when his words name a block** (#276).
+     - His words are read against his blocks: a block's name, or a plain
+       form, "my passport", "my shell".
+     - On that turn only she is given the walker, thinking off, its words
+       naming the blocks his words named, the only blocks it takes.
+     - What she walks is handed back as readable text, never JSON. A chip
+       on her reply names it: "↳ walked membership at 2.2".
+     - A walk turn's reply comes whole, not streamed. A turn naming no
+       block streams as before.
+  2. **The guard, and the CPU** (#277).
+     - Every address she sends is checked against the block first. A
+       place that isn't there isn't walked; she is told plainly, and the
+       chip says what she looked for.
+     - When his walk check (0.12.1) found any address altered on the GPU,
+       her walk turns run on the CPU.
+  3. **The trial on the laptop** (#279, findings section 11).
+     - Turns naming his blocks: 11 of 14 right with 0.13, none without.
+     - The line in the sand on 0.13's code: 4½ of 24, against 0.12's 4.
+     - She never walked unasked.
+     - **Where she answered a block's question without walking,** later in
+       a conversation that had walked, she made it up twice in 16 turns
+       (a line at 2.9 that isn't there; the whetstone's words). With no
+       tool she never did.
+     - Described for any of his blocks, she never called the walker; named
+       for the block, every time. So it is named for each turn.
+- **Only his phone can confirm:**
+  - **the walk check's number** in Settings (0.12.1): below 20 with any
+    altered, her walks run on the CPU;
+  - a walk turn: "what's at 2.2 in my membership block?", "what does my
+    passport say?", the chip, and how long the reply takes;
+  - whether she makes things up when she answers a block's question
+    without walking.
+
 **Sundial 0.12.1 is released (23 November): her talk mind at open, and the walk check:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.12.1
 - **Install:** `sundial-v0.12.1.apk` over 0.12. His blocks stay where they
