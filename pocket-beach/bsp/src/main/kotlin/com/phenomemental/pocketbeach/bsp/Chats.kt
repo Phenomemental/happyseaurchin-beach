@@ -15,9 +15,11 @@ object Chats {
      * as JSON (spine:pocket-beach 1.111178719993, revised 22 November): it is
      * readable text, its root line and parts indented; [whole] is false when it
      * was too big for her window, so she has its root and each part's opening
-     * line, and the chip says so.
+     * line, and the chip says so. Sundial 0.13.3: [byApp], a block his words
+     * named, read by the app itself before she answers (its disc at pscale 0),
+     * beside his words as the paperclip's are; its chip says Sundial read it.
      */
-    data class Attached(val name: String, val text: String, val block: Boolean, val whole: Boolean = true)
+    data class Attached(val name: String, val text: String, val block: Boolean, val whole: Boolean = true, val byApp: Boolean = false)
 
     /** One exchange: his words, the files with them, her reply, and when he sent it. */
     data class Said(val his: String, val files: List<Attached>, val hers: String, val atMs: Long)
@@ -41,6 +43,7 @@ object Chats {
             append("\n\n(")
             append(
                 when {
+                    f.byApp -> "His block ${f.name}, which his words named, read by the app: its opening line, then each part's opening line beneath it:"
                     f.block && f.whole -> "His block ${f.name}: its opening line, then each part beneath it:"
                     f.block -> "His block ${f.name}, too big to read whole here: its opening line, then each part's opening line beneath it:"
                     else -> "His file ${f.name}:"
@@ -63,6 +66,15 @@ object Chats {
         if (whole.length <= most && lines.size < OUTLINE_MOST) return Attached(name, whole, block = true)
         return Attached(name, discText(pages, region, name) ?: return null, block = true, whole = false)
     }
+
+    /**
+     * Sundial 0.13.3 (spine:pocket-beach 1.1111787199994, revised 23
+     * November): a block his words named, read by the app before she answers:
+     * its root and each part's opening line, the disc at pscale 0. Null when
+     * there is no such block.
+     */
+    fun readByApp(pages: Pages, region: Region, name: String): Attached? =
+        discText(pages, region, name)?.let { Attached(name, it, block = true, whole = false, byApp = true) }
 
     /** The most lines of a block read whole; a block with more is given as its opening lines. */
     const val OUTLINE_MOST = 600

@@ -12,6 +12,7 @@ import com.phenomemental.pocketbeach.bsp.Chats
 import com.phenomemental.pocketbeach.bsp.WalkTool
 import com.phenomemental.pocketbeach.bsp.Walking
 import com.phenomemental.pocketbeach.bsp.Looping
+import com.phenomemental.pocketbeach.bsp.NothingRead
 import com.phenomemental.pocketbeach.bsp.Asks
 import com.phenomemental.pocketbeach.bsp.Carried
 import com.phenomemental.pocketbeach.bsp.Close
@@ -114,6 +115,17 @@ class Asking(private val app: PocketApp) {
         var named: List<String> = emptyList()
             internal set
         var walked: List<String> = emptyList()
+            internal set
+        /**
+         * Sundial 0.13.3: the blocks his words named, read by the app before she answered (each its disc at pscale 0) and handed her
+         * beside his words, shown as chips on his message; the blocks the walker was offered for (named on this turn and the turn before);
+         * and whether her reply wrote a tool call or "data received" with nothing read from his blocks, marked so beneath it.
+         */
+        var read: List<Chats.Attached> = emptyList()
+            internal set
+        var offered: List<String> = emptyList()
+            internal set
+        var nothingRead by mutableStateOf(false)
             internal set
         /** Her reply, as shown: never a line playing her turn back. */
         var said by mutableStateOf("")
@@ -564,8 +576,15 @@ class Asking(private val app: PocketApp) {
                         val saidAt = java.time.Instant.ofEpochMilli(e.at).atZone(now.zone)
                         val last = lastMessageBefore(e.at)
                         e.stamp = HerWindow.stamp(saidAt, last)
+                        // Sundial 0.13 (spine:pocket-beach 1.1111787199994): the blocks of his his words name. Sundial 0.13.3: the app reads each
+                        // first, its root and each part's opening line, and hands it her beside his words as the paperclip does; the walker is
+                        // offered for the blocks named on this turn and the turn before, so she can go deeper where she chooses.
+                        e.named = runCatching { Walking.named(q, app.pages.shore().mine.map { it.name }, h) }.getOrDefault(emptyList())
+                        e.read = e.named.mapNotNull { n -> runCatching { Chats.readByApp(app.pages, Region.POCKET, n) }.getOrNull() }
+                        conversation.read += e.read.map { "his ${it.name}, its opening lines, read by the app" }
+                        e.offered = (e.named + history.dropLast(1).lastOrNull()?.named.orEmpty()).distinct()
                         // Sundial 0.12, Gemma released: her turn is the time and his words, and nothing added to shape how she answers.
-                        val message = HerWindow.releasedTurn(Chats.withFiles(q, e.files), saidAt, last)
+                        val message = HerWindow.releasedTurn(Chats.withFiles(q, e.files + e.read), saidAt, last)
                         sent = message
                         val echo = HerWindow.echoLines(message)
                         // Sundial 0.12: the echo filter is given only the app's own lines (the time it stamps on his turn); his words are hers to say.
@@ -591,18 +610,19 @@ class Asking(private val app: PocketApp) {
                                 }
                             }
                         }
-                        // Sundial 0.13 (spine:pocket-beach 1.1111787199994): when his words name a block of his, on this turn only she is
-                        // given the walker as one native tool, thinking off, its words naming the blocks his words named (the only blocks
-                        // it takes); the app walks what she asks and hands her readable text. Every address she sends is checked against
-                        // the block before it is walked (1.1111787199995). Sundial 0.13.2: her walks stay on her own engine, the GPU,
+                        // Sundial 0.13: she is given the walker as one native tool, thinking off, its words naming the blocks it is offered for
+                        // (the only blocks it takes); the app walks what she asks and hands her readable text. Every address she sends is checked
+                        // against the block before it is walked (1.1111787199995). Sundial 0.13.2: her walks stay on her own engine, the GPU,
                         // whatever the walk check found; an address not in the block is not walked, and she is told so.
-                        e.named = runCatching { Walking.named(q, app.pages.shore().mine.map { it.name }, h) }.getOrDefault(emptyList())
                         val walks = mutableListOf<Walking.Walked>()
-                        val reply = if (e.named.isEmpty()) t.stream.say(message, piece)
-                        else t.sayWithTool(message, WalkTool.forBlocks(e.named), call = { c ->
-                            Walking.walk(app.pages, c.arguments, e.named, h).also { walks += it }.text
+                        val reply = if (e.offered.isEmpty()) t.stream.say(message, piece)
+                        else t.sayWithTool(message, WalkTool.forBlocks(e.offered), call = { c ->
+                            Walking.walk(app.pages, c.arguments, e.offered, h).also { walks += it }.text
                         }, piece = piece).reply
                         e.walked = walks.map { it.said }
+                        // Sundial 0.13.3, plain machinery: a tool call written into her words, or "data received", with nothing read from his
+                        // blocks on this turn, is marked so beneath her reply. Her words stay as she wrote them.
+                        e.nothingRead = walks.none { it.found } && e.read.isEmpty() && NothingRead.pretends(reply)
                         conversation.read += walks.filter { it.found }.map { "his ${it.chip}" }
                         pace = t.pace.copy(if (first) t.pace.loadMs else null).also { p ->
                             p.turns.addAll(t.pace.turns.drop(before))
@@ -1107,7 +1127,9 @@ class Asking(private val app: PocketApp) {
             e.unfinished?.let { appendLine("  $it") }
             e.slower?.let { appendLine("  $it") }
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
-            if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: the walker offered; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
+            if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: read by the app, " + e.read.joinToString { it.name }.ifEmpty { "nothing" } + ", its opening lines beside his words.")
+            if (e.offered.isNotEmpty()) appendLine("  The walker offered for ${e.offered.joinToString()}" + (e.offered.filter { it !in e.named }.takeIf { it.isNotEmpty() }?.let { " (${it.joinToString()} named the turn before)" } ?: "") + "; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
+            if (e.nothingRead) appendLine("  ${NothingRead.SAID} (Her reply wrote a tool call, or said data was received.)")
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")
             e.proposal?.let { appendLine("  Proposed:"); appendLine(it.prependIndent("  ")) }
