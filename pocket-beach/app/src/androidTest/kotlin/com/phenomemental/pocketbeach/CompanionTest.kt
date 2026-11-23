@@ -186,6 +186,15 @@ class StandIn : Mind {
     }
     override fun state(): ModelState = ModelState.Ready
 
+    /** Sundial 0.12.1: the walk check's calls: each address she is asked for comes back as text, or, with [toolNumbers], as a JSON number (as the GPU report had it). */
+    var toolNumbers = false
+    val toolSettings = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()
+    override suspend fun callTool(instruction: String, message: String, toolJson: String, settings: JobSettings): Mind.Called? {
+        toolSettings += settings
+        val address = Regex("""at (\S+) in my""").find(message)?.groupValues?.get(1) ?: return null
+        return Mind.Called("bsp", mapOf("block" to "walk-check", "spindle" to (if (toolNumbers) address.toDouble() else address)), "")
+    }
+
     /** Sundial 0.12.1: the settings each warm was asked for, in order. */
     val warmed = java.util.concurrent.CopyOnWriteArrayList<JobSettings>()
     override suspend fun warm(settings: JobSettings): Long? { warmed += settings; return null }

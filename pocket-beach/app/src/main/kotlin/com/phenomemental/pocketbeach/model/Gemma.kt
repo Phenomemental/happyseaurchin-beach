@@ -353,6 +353,30 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
         }
     }
 
+    /** Sundial 0.12.1: one tool call through the engine, its arguments as the engine handed them; null when she made none. */
+    override suspend fun callTool(instruction: String, message: String, toolJson: String, settings: JobSettings): Mind.Called? = withContext(thread) {
+        val (l, _) = engine(key(settings))
+        val tool = object : com.google.ai.edge.litertlm.OpenApiTool {
+            override fun getToolDescriptionJsonString() = toolJson
+            override fun execute(p0: String): String = "unused"
+        }
+        one.busy {
+            runCatching {
+                l.engine.createConversation(
+                    ConversationConfig(
+                        systemInstruction = Contents.of(instruction),
+                        tools = listOf(com.google.ai.edge.litertlm.tool(tool)), automaticToolCalling = false,
+                        samplerConfig = sampler(settings), maxOutputToken = 120,
+                        thinkingConfig = ThinkingConfig(enableThinking = false),
+                    ),
+                ).use { c ->
+                    val m = c.sendMessage(message)
+                    m.toolCalls.firstOrNull()?.let { Mind.Called(it.name, it.arguments, m.toString()) }
+                }
+            }.onFailure { Log.w("Gemma", "Her tool call failed.", it) }.getOrNull()
+        }
+    }
+
     /** Sundial 0.10: the day's sheet through the tool call on E4B ("sheet": title, lines, tomorrow); else, or when it isn't whole, written free. */
     override suspend fun sheet(instruction: String, material: String, settings: JobSettings, tool: Boolean): com.phenomemental.pocketbeach.bsp.Mark.Sheet? {
         if (tool) {

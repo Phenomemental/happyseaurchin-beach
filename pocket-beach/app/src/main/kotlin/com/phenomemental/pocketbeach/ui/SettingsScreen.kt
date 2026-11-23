@@ -76,6 +76,7 @@ fun SettingsScreen(model: Model, nav: Nav) {
 
         AskLog(model)
         ReachTheBeach(model)
+        WalkCheckPart(model)
         Rule()
         TextLink("Run the bench", { nav.go(Screen.Bench) }, tag = "settings-bench")
         Text("The bench asks fixed things on a scratch pocket and keeps what she said and how fast, to set beside Edge.", style = Type.small, color = ink.soft)
@@ -200,6 +201,62 @@ private fun Workings(model: Model) {
     }
 }
 
+
+/**
+ * Sundial 0.12.1, the check on his phone (spine:pocket-beach 1.1111787199993):
+ * twenty walk calls from her on the GPU, each asked for a known address, and
+ * how many arrived intact. He reports the number; 0.13 walks on the CPU if
+ * any arrived altered.
+ */
+@Composable
+private fun WalkCheckPart(model: Model) {
+    val ink = LocalInk.current
+    val app = model.app
+    val scope = rememberCoroutineScope()
+    var running by remember { mutableStateOf<Int?>(null) }
+    var outcomes by remember { mutableStateOf<List<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>>(emptyList()) }
+    var problem by remember { mutableStateOf<String?>(null) }
+    Column(Modifier.fillMaxWidth().testTag("walk-check-part"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Rule()
+        Text("Her walk on the GPU", style = Type.heading, color = ink.ink)
+        Text(
+            "Twenty times, she is asked what's at a known address, and calls the walker with it on the phone's GPU. Nothing is walked or written: " +
+                "the check reads only whether each address arrived as she sent it. It takes about a minute.",
+            style = Type.small, color = ink.soft,
+        )
+        Action(running?.let { "Checking… $it of ${com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size}" } ?: "Check her walk", {
+            if (running != null) return@Action
+            problem = null
+            outcomes = emptyList()
+            running = 0
+            scope.launch {
+                val settings = app.running(com.phenomemental.pocketbeach.model.Job.TALK).copy(processor = "GPU")
+                val got = mutableListOf<com.phenomemental.pocketbeach.bsp.WalkCheck.Outcome>()
+                runCatching {
+                    for (a in com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES) {
+                        val called = withContext(Dispatchers.IO) {
+                            app.mind.callTool(com.phenomemental.pocketbeach.bsp.WalkCheck.window(java.time.ZonedDateTime.now()), com.phenomemental.pocketbeach.bsp.WalkCheck.message(a), com.phenomemental.pocketbeach.bsp.WalkCheck.TOOL, settings)
+                        }
+                        got += com.phenomemental.pocketbeach.bsp.WalkCheck.outcome(a, called?.arguments)
+                        running = got.size
+                        outcomes = got.toList()
+                    }
+                }.onFailure { problem = "The check stopped: ${it.message ?: it::class.simpleName}." }
+                running = null
+                if (got.size == com.phenomemental.pocketbeach.bsp.WalkCheck.ADDRESSES.size) {
+                    app.walkCheck = com.phenomemental.pocketbeach.PocketApp.WalkChecked(got.count { it.intact }, got.size, got.count { it.altered }, System.currentTimeMillis(), settings.model)
+                }
+            }
+        }, Modifier.fillMaxWidth(), enabled = running == null, tag = "walk-check")
+        problem?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("walk-check-problem")) }
+        if (outcomes.isNotEmpty() && running == null) {
+            Text(com.phenomemental.pocketbeach.bsp.WalkCheck.said(outcomes), style = Type.body, color = ink.ink, modifier = Modifier.testTag("walk-check-result"))
+            for (o in outcomes.filter { !it.intact }) Text(o.said, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("walk-check-altered"))
+        } else app.walkCheck?.let { c ->
+            Text("Last checked ${Words.at(c.atMs)}, on ${c.model}: ${c.intact} of ${c.of} arrived intact.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("walk-check-last"))
+        }
+    }
+}
 
 /** Sundial 0.12 (spine:pocket-beach 1.111178719995): whether the walker may read the beach's blocks, read only; off unless he turns it on. */
 @Composable
