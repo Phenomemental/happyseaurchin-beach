@@ -4,6 +4,71 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13.3 is released (23 November): a block his words name is read first:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.3
+- **Install:** `sundial-v0.13.3.apk` over 0.13.2. His blocks stay where
+  they are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.3 (35), from main at `ee492f9` (PR #285), release run
+  337. APK SHA-256 `86d17f11…`.
+- **Tests:** 348 core (3 new), the app's own 21 and all 100 device tests
+  (2 new), on the PR's CI run and again in the release run.
+- **What it is:** spine:pocket-beach 1.1111787199994, revised 23 November
+  15:05, after his phone at 14:58: offered the walker for his passport,
+  she asked his leave and walked nothing; on his next words ("do what you
+  think is best") no block was named, no walker was offered, and she
+  wrote a pretend bsp call and an invented passport as if read. Plain
+  machinery, nothing shaping how she answers.
+- **What it builds:**
+  1. **A block his words name is read first** by the app: its root and
+     each part's opening line (the disc at pscale 0), handed her beside
+     his words as the paperclip does. A chip on his message: "read by
+     Sundial: its opening lines".
+  2. **The walker on that turn and the next,** for the blocks named on
+     either.
+  3. **A pretend read marked:** a reply that writes a tool call or "data
+     received", on a turn where nothing was read from his blocks, gets a
+     plain line beneath it: "Nothing was read from your blocks in this
+     reply."
+  4. **"now" named only as "now block":** Sundial's own day block, whose
+     name is a word he says all the time, no longer offers the walker or
+     is read when he says "now".
+- **Only his phone can confirm:**
+  - his two turns again: "what does my passport tell you about how to
+    work with me", then "do what you think is best";
+  - how long a turn takes with a block read in beside his words.
+
+**Sundial 0.13.2 is released (23 November): two fixes from his phone:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.2
+- **Install:** `sundial-v0.13.2.apk` over 0.13.1. His blocks stay where
+  they are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.2 (34), from main at `f2174c9` (PR #284), release run
+  333. APK SHA-256 `c9836850…`.
+- **Tests:** 345 core, the app's own 21 and all 98 device tests, on the
+  PR's CI run and again in the release run. The test of walks on the CPU
+  became the test of walks staying on the GPU with the guard.
+- **What it fixes:**
+  1. **The check ends on her talk engine.** After "Check her on this
+     phone" she was left on the CPU's engine, and his next message stalled
+     for over four minutes. The check's conversation now runs on the CPU
+     first and the GPU last, and when the check ends, however it ends, her
+     talk engine is loaded again.
+  2. **Her walks stay on the GPU.** Walking on the CPU after the check
+     found one address altered (19 of 20) swapped engines mid-conversation
+     and was too slow on his Pixel. The switch is taken out. The address
+     guard holds: an address not in the block isn't walked and she is told
+     so; the chip naming what she walked, or looked for, stays. The
+     check's result is still shown for him to report; it moves nothing.
+- **Only his phone can confirm:**
+  - his first message after the check comes as quickly as before it;
+  - a walk turn's speed, on the GPU, after a check that found an address
+    altered.
+
 **Sundial 0.13.1 is released (23 November): after she looped on his phone:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.1
 - **Install:** `sundial-v0.13.1.apk` over 0.13. His blocks stay where they
