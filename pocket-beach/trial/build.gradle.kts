@@ -46,6 +46,8 @@ tasks.named<JavaExec>("run") {
     // One cache for the engine's prepared weights (about 0.8 GB), reused run to run.
     findProperty("engineCache")?.let { systemProperty("pocket.cache", it.toString()) }
     findProperty("only")?.let { systemProperty("pocket.only", it.toString()) }
+    // Sundial 0.13.5: her Talk context for a trial, in tokens (8192 unless given).
+    findProperty("context")?.let { systemProperty("pocket.context", it.toString()) }
     // Another version's procedures (assets/procedures as it shipped), for a trial of what that version asked.
     findProperty("procedures")?.let { systemProperty("pocket.procedures", it.toString()) }
     workingDir = rootProject.projectDir

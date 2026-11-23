@@ -49,6 +49,8 @@ sealed interface Screen {
     data class TextFile(val name: String) : Screen
     /** Sundial 0.12: the walker, a block walked as the beach's bsp() walks it, his own or (with Reach the beach on) the beach's. */
     data class Walker(val beach: Boolean, val block: String) : Screen
+    /** Sundial 0.13.5: his blocks brought across from the beach, ticked and copied in on one yes. */
+    data object BringAcross : Screen
 }
 
 /** The way back: a stack of pages, kept across a turn of the phone. */
@@ -83,6 +85,7 @@ class Nav(initial: List<Screen>) {
             is Screen.Editor -> listOf("editor", s.name).joinToString(SEP)
             is Screen.TextFile -> listOf("textfile", s.name).joinToString(SEP)
             is Screen.Walker -> listOf("walker", if (s.beach) "beach" else "pocket", s.block).joinToString(SEP)
+            Screen.BringAcross -> "bring"
         }
 
         private fun decode(text: String): Screen? {
@@ -107,6 +110,7 @@ class Nav(initial: List<Screen>) {
                 "editor" -> p.getOrNull(1)?.let { Screen.Editor(it) }
                 "textfile" -> p.getOrNull(1)?.let { Screen.TextFile(it) }
                 "walker" -> Screen.Walker(p.getOrNull(1) == "beach", p.getOrNull(2).orEmpty())
+                "bring" -> Screen.BringAcross
                 else -> null
             }
         }
@@ -183,6 +187,7 @@ fun PocketScreens(app: PocketApp) {
             is Screen.Editor -> EditorScreen(model, nav, s.name)
             is Screen.TextFile -> TextFileScreen(model, nav, s.name)
             is Screen.Walker -> WalkerScreen(model, nav, s)
+            Screen.BringAcross -> BringAcrossScreen(model, nav)
             Screen.Room -> RoomScreen(model, nav)
             Screen.Hand -> HandScreen(model, nav)
             Screen.Recipes -> RecipesScreen(model, nav)

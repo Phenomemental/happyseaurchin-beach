@@ -35,6 +35,8 @@ class WalkerDeviceTest {
     private val app get() = Fresh.app
     private val wire = NowhereWire()
     private val asked = mutableListOf<String>()
+    /** Sundial 0.13.5: his shell as the beach has it, unlike the one his hatch made. */
+    private val beachShell = JsObj.of("_" to str("Phenomemental's shell on the beach."), "1" to str("Faces."), "3" to JsObj.of("_" to str("Manifest."), "1" to str("passport")))
     private val demo = JsObj.of("_" to str("A demo spine."), "1" to str("The first decision."), "2" to JsObj.of("_" to str("The second."), "1" to str("Its reason.")))
 
     @Before
@@ -45,6 +47,7 @@ class WalkerDeviceTest {
             when (url) {
                 Reach.indexUrl() -> WireReply(200, """{"_":"URL surface.","blocks":["lighthouse","spine:demo"]}""")
                 Reach.blockUrl("spine:demo") -> WireReply(200, stringify(demo)!!)
+                Reach.blockUrl("shell:Phenomemental") -> WireReply(200, stringify(beachShell)!!)
                 else -> WireReply(404, "{}")
             }
         }
@@ -116,11 +119,57 @@ class WalkerDeviceTest {
             compose.tap("copy-yes")
             compose.waitFor("walk-note", "Copied into your pocket as spine:demo.")
             assertTrue("copied whole", com.phenomemental.pocketbeach.bsp.deepEqual(demo, com.phenomemental.pocketbeach.bsp.parseJson(app.storage.read("spine:demo")!!)))
-            // A name already in his pocket is refused, and named.
+            // Sundial 0.13.5: his is now the same as the beach's: said so, and nothing to copy.
             compose.tap("copy-block")
-            compose.tap("copy-yes")
-            compose.waitFor("walk-note", "There's already a block called spine:demo.")
+            compose.waitFor("copy-same", "Your spine:demo is already the same as the beach's")
             assertTrue("nothing written to the beach", wire.sent.isEmpty())
+        }
+    }
+
+    private fun walkTheBeach(name: String) {
+        app.reachBeach = true
+        compose.tap("open-walker")
+        compose.tap("walk-beach")
+        walk(name)
+    }
+
+    @Test
+    fun aBlockHeHasIsReplacedByTheBeachsOnHisYesAfterAWholeCopyIsSaved() {
+        Fresh.clear()
+        check(app.pages.carryOut(app.pages.planKeep("spine:demo", JsObj.of("_" to str("My own demo.")))).ok)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            walkTheBeach("spine:demo")
+            compose.waitFor("walk-out", "The second.")
+            compose.tap("copy-block")
+            compose.waitFor("copy-exists", "You already have a block called spine:demo. Replace yours with the beach's, whole?")
+            assertTrue("nothing replaced before his yes", app.beachCopies().isEmpty())
+            compose.tap("replace-yes")
+            compose.waitFor("walk-note", "Replaced your spine:demo with the beach's.")
+            assertTrue("replaced whole", com.phenomemental.pocketbeach.bsp.deepEqual(demo, app.pages.whole("spine:demo")!!))
+            assertEquals("a whole copy saved first", 1, app.beachCopies().size)
+            assertTrue("the copy holds his own", app.beachCopies().single().readText().contains("My own demo."))
+            assertTrue("nothing written to the beach", wire.sent.isEmpty())
+            // Your pocket offers the copy back.
+            compose.tap("back")
+            compose.waitFor("restore-before-beach")
+        }
+    }
+
+    @Test
+    fun forHisShellTheCardFirstSaysWhichPlacesWillChange() {
+        Fresh.hatched()
+        ActivityScenario.launch(MainActivity::class.java).use {
+            // Hatched, Sundial opens on the dial: Your pocket is in the menu.
+            compose.waitFor("dial")
+            compose.menu("menu-blocks")
+            walkTheBeach("shell:Phenomemental")
+            compose.waitFor("walk-out", "Phenomemental's shell on the beach.")
+            compose.tap("copy-block")
+            compose.waitFor("shell-changes", "These places of your shell will change:")
+            compose.waitFor("shell-changes", "the opening line changes")
+            compose.tap("replace-yes")
+            compose.waitFor("walk-note", "Replaced your shell:Phenomemental with the beach's.")
+            assertTrue(com.phenomemental.pocketbeach.bsp.deepEqual(beachShell, app.pages.whole("shell:Phenomemental")!!))
         }
     }
 }

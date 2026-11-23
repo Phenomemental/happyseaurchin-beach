@@ -180,6 +180,15 @@ fun ShoreScreen(model: Model, nav: Nav) {
                     }
                 }, tag = "restore-before-hatch")
             }
+            // Sundial 0.13.5: the whole copy saved before blocks came from the beach in place of his, or beside them.
+            model.app.beachCopies().firstOrNull()?.let { before ->
+                TextLink("Restore the copy saved before blocks came from the beach", {
+                    scope.launch {
+                        val read = withContext(Dispatchers.IO) { runCatching { Copies.read(before.readText(Charsets.UTF_8)) } }
+                        read.onSuccess { restoring = it }.onFailure { model.say(Screen.Shore, it.message ?: "That copy couldn't be read.") }
+                    }
+                }, tag = "restore-before-beach")
+            }
             TextLink("Restore a copy", { openCopy.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }, tag = "restore-copy")
             TextLink("Settings", { nav.go(Screen.Settings) }, tag = "settings")
             TextLink("About", { nav.go(Screen.About) }, tag = "about")

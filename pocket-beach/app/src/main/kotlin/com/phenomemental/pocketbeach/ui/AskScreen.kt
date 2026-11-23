@@ -1,5 +1,6 @@
 package com.phenomemental.pocketbeach.ui
 
+import com.phenomemental.pocketbeach.bsp.Chats
 import com.phenomemental.pocketbeach.model.ModelState
 import android.content.ActivityNotFoundException
 import android.Manifest
@@ -223,6 +224,28 @@ fun helpLine(model: Model): String =
  * that grows with his words, the microphone and a send arrow inside it (a
  * stop square while her reply comes). It empties when he sends.
  */
+/**
+ * Sundial 0.13.5: how full her conversation is, as a share of her context.
+ * Past about four fifths, said plainly: her replies slow and can break down
+ * as it fills; a new chat is offered.
+ */
+@Composable
+private fun Fullness(asking: Asking, f: Float) {
+    val ink = LocalInk.current
+    val pct = (f * 100).toInt().coerceIn(0, 100)
+    if (f < Asking.NEARLY_FULL) {
+        Text("This conversation is $pct% full.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("fullness"))
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("fullness-nearly")) {
+        Text(
+            "This conversation is $pct% full. As it fills, her replies slow and can break down. A new chat starts her afresh.",
+            style = Type.small, color = ink.crimson, modifier = Modifier.testTag("fullness"),
+        )
+        TextLink("Start a new chat", { asking.newConversation() }, tag = "fullness-new-chat")
+    }
+}
+
 @Composable
 private fun InputBar(model: Model, asking: Asking, welcome: Boolean = false, keep: Model? = null) {
     val ink = LocalInk.current
@@ -230,6 +253,8 @@ private fun InputBar(model: Model, asking: Asking, welcome: Boolean = false, kee
     var attaching by remember { mutableStateOf(false) }
     if (attaching) AttachSheet(model) { attaching = false }
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Sundial 0.13.5: how full her conversation is; nearly full, said plainly, with a new chat offered.
+        if (!welcome) asking.fullness?.let { f -> Fullness(asking, f) }
         // Sundial 0.12: the files he has added to his next message, each a chip he can take off.
         if (!welcome) FileChips(asking.attached.toList(), remove = { asking.attached.remove(it) })
         if (voice.heard.isNotEmpty()) Text(voice.heard, style = Type.aside, color = ink.soft, modifier = Modifier.testTag("speech-heard"))
@@ -363,7 +388,9 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
     val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
         // Sundial 0.13.3: the blocks his words named, read by the app before she answered, are chips beside his own files.
-        FileChips(e.files + e.read, alignEnd = true)
+        // Sundial 0.13.5: a block given her earlier in this conversation says so on its chip, and wasn't given again.
+        val namedBefore = e.givenBefore.filter { n -> e.files.none { it.name == n } }.map { Chats.Attached(it, "", block = true) }
+        FileChips(e.files + e.read + namedBefore, alignEnd = true, givenBefore = e.givenBefore.toSet())
         His(e.question)
         when {
             e.said.isNotEmpty() -> Text(replyShaped(e.said), style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))

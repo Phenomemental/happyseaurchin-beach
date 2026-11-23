@@ -170,6 +170,27 @@ class PocketApp : Application() {
     /** Sundial 0.12: the walker's read of the beach, a GET only, made only while Reach the beach is on. */
     @Volatile var reader: com.phenomemental.pocketbeach.bsp.BeachReader = com.phenomemental.pocketbeach.bsp.BeachReader { HttpsWire.get(it) }
 
+    /**
+     * Sundial 0.13.5: the whole pocket, saved before blocks come from the
+     * beach in place of his or beside them: the app's own file, never a
+     * block. Your pocket offers the newest back.
+     */
+    fun saveCopyBeforeTheBeach(): java.io.File {
+        val dir = java.io.File(filesDir, BEACH_COPIES).apply { mkdirs() }
+        val file = java.io.File(dir, "before-the-beach-${com.phenomemental.pocketbeach.bsp.isoString(System.currentTimeMillis()).replace(":", "-")}.json")
+        file.writeText(pages.saveCopy(waiting.text()), Charsets.UTF_8)
+        return file
+    }
+
+    companion object {
+        /** Sundial 0.13.5: where the copies saved before blocks came from the beach are kept, in the app's own files. */
+        const val BEACH_COPIES = "copies-before-the-beach"
+    }
+
+    /** The copies saved before blocks came from the beach, newest first. */
+    fun beachCopies(): List<java.io.File> =
+        (java.io.File(filesDir, BEACH_COPIES).listFiles() ?: emptyArray()).filter { it.isFile && it.name.endsWith(".json") }.sortedByDescending { it.name }
+
     /** What has been posted already, and where it landed. */
     val posts by lazy { Posts(this) }
 

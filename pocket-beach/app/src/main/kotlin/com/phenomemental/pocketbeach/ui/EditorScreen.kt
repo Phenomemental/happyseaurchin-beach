@@ -105,6 +105,22 @@ fun EditorScreen(model: Model, nav: Nav, name: String) {
             "Tap a line to change its words. Adding, moving or removing a part is set out first, and written only when you say yes.",
             style = Type.small, color = ink.soft,
         )
+        // Sundial 0.13.5: talk about this block with her: what he sees, and its shape worked out by the app, beside his next words.
+        TextLink("Talk about this", {
+            scope.launch {
+                val file = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val block = pages.whole(name) ?: return@runCatching null
+                        val view = com.phenomemental.pocketbeach.bsp.Chats.blockFile(pages, Region.POCKET, name)?.text ?: return@runCatching null
+                        com.phenomemental.pocketbeach.bsp.Chats.lookingAt(name, view, block)
+                    }.getOrNull()
+                }
+                if (file == null) note = "It couldn't be read to talk about." else {
+                    model.app.asking.attach(file)
+                    nav.toPlace(Screen.Ask)
+                }
+            }
+        }, tag = "talk-about-this")
         note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("editor-note")) }
         if (doing == Doing.MOVE) {
             val from = at

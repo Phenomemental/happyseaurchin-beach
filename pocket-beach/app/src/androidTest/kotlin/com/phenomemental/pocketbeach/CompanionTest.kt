@@ -133,6 +133,7 @@ class StandIn : Mind {
             override val pace = paced
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
+            override fun tokens(): Int? = heldTokens
 
             // Sundial 0.13: a turn with the walker offered: she calls it with [walkArgs] (none set: no call), then answers.
             override fun sayWithTool(message: String, toolJson: String, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {
@@ -225,6 +226,9 @@ class StandIn : Mind {
     val toolJsons = java.util.concurrent.CopyOnWriteArrayList<String>()
     var walkArgs: Map<String, Any?>? = null
     var toolHold: java.util.concurrent.CountDownLatch? = null
+
+    /** Sundial 0.13.5: how many tokens her conversation holds, as the engine would say after each reply. */
+    var heldTokens: Int? = null
     val walkResults = java.util.concurrent.CopyOnWriteArrayList<String>()
 
     /** Sundial 0.13.1: the side-by-side check: the settings each conversation ran with; [sideLoops], the processor whose last reply loops. */

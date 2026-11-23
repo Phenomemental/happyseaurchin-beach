@@ -127,6 +127,7 @@ private class Talker13(val engine: Engine, val window: String, val seed: Int, va
         done += turn to raw.toString()
         val read = b?.lastPrefillTokenCount ?: 0
         val wrote = b?.lastDecodeTokenCount ?: 0
+        firstShown?.let { firsts13 += it }
         return Said13(raw.toString(), shown.of(raw.toString(), over = true), firstShown ?: whole, whole, read, wrote, runCatching { c.getTokenCount() }.getOrNull(), named, emptyList(), 0, pixelWhole13(read, wrote), pixelFirst13(read), false)
     }
 
@@ -291,10 +292,14 @@ fun main(args: Array<String>) {
     fun shownFor(said: String, turn: String) = Talking.Shown(said, "", HerWindow.echoLines(turn), false, emptyList())
 
     ExperimentalFlags.enableBenchmark = true
-    val engine = Engine(EngineConfig(modelPath = model, backend = Backend.CPU(), maxNumTokens = 8192, cacheDir = System.getProperty("pocket.cache") ?: Files.createTempDirectory("s13").toString()))
+    // Sundial 0.13.5: her Talk context, 8,192 unless a trial gives another; and the memory the process holds, from /proc.
+    val context = System.getProperty("pocket.context")?.toInt() ?: 8192
+    val memoryAtStart = memory13()
+    val engine = Engine(EngineConfig(modelPath = model, backend = Backend.CPU(), maxNumTokens = context, cacheDir = System.getProperty("pocket.cache") ?: Files.createTempDirectory("s13").toString()))
     val loadStarted = System.nanoTime()
     engine.initialize()
-    r.append("Engine made in ${g13((System.nanoTime() - loadStarted) / 1e9)} s.\n\n")
+    r.append("A context of $context. Engine made in ${g13((System.nanoTime() - loadStarted) / 1e9)} s. Memory: ${memoryAtStart} as the program began; ${memory13()} with the engine made.\n\n")
+    firsts13.clear()
     engine.use { e ->
         if (what == "all" || what == "walks") for (seed in seeds) {
             for (withTool in listOf(true, false)) {
@@ -428,5 +433,17 @@ fun main(args: Array<String>) {
             println("D seed $seed: tomorrow “$tomorrow”; question “$question”")
         }
     }
+    val sorted = firsts13.sorted()
+    if (sorted.isNotEmpty()) r.append("## Time to first word and memory\n\nA context of $context. Her first words shown, laptop, ${sorted.size} streamed replies: median ${g13(sorted[sorted.size / 2])} s, longest ${g13(sorted.last())} s. Memory at the end: ${memory13()}.\n")
     out.writeText(r.toString())
 }
+
+/** Sundial 0.13.5: every streamed reply's first words shown, in seconds, for the run's summary. */
+private val firsts13 = mutableListOf<Double>()
+
+/** The process's memory now and at its height, from /proc/self/status. */
+private fun memory13(): String = runCatching {
+    val st = java.io.File("/proc/self/status").readLines()
+    fun kb(k: String) = st.firstOrNull { it.startsWith("$k:") }?.substringAfter(":")?.trim()?.removeSuffix(" kB")?.trim()?.toLong()?.div(1024)
+    "resident ${kb("VmRSS")} MB, at most ${kb("VmHWM")} MB"
+}.getOrDefault("unknown")

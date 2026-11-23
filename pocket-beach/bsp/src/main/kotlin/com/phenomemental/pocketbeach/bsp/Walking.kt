@@ -43,12 +43,16 @@ object Walking {
     }
 
     /** What the walk she asked for came to: the block, the address, and what she is handed. */
-    class Walked(val block: String?, val spindle: String?, val text: String, val found: Boolean) {
+    class Walked(val block: String?, val spindle: String?, val text: String, val found: Boolean, val again: Boolean = false) {
         /** What she walked: the block, and the address when she gave one. */
         val chip: String get() = block + (spindle?.let { " at $it" } ?: "")
 
         /** The chip on her reply, in words: "walked membership at 2.2", or for a walk the guard refused, "looked for 2.9 in membership". */
-        val said: String get() = if (found) "walked $chip" else "looked for ${spindle?.let { "$it in " }.orEmpty()}${block ?: "a block"}"
+        val said: String get() = when {
+            again -> "given earlier: $chip"
+            found -> "walked $chip"
+            else -> "looked for ${spindle?.let { "$it in " }.orEmpty()}${block ?: "a block"}"
+        }
     }
 
     /**
@@ -80,6 +84,17 @@ object Walking {
         val top = pages.position(Region.POCKET, block) ?: return Walked(block, null, "There is no block called $block in his pocket. Answer him without it.", false)
         return Walked(block, null, "(His block $block: its opening line, then each part's opening line beneath it.)\n" + discOf(top), true)
     }
+
+    /**
+     * Sundial 0.13.5: [w], a walk of a block or a place in it given her earlier
+     * in this conversation, not handed her again: she is told plainly it is
+     * above.
+     */
+    fun again(w: Walked): Walked = Walked(
+        w.block, w.spindle,
+        "His block ${w.block}${w.spindle?.let { " at $it" }.orEmpty()} was given you earlier in this conversation; it is above. Answer from it, or walk to another of its places.",
+        found = false, again = true,
+    )
 
     /**
      * A place walked to, as readable text: the path from the opening line down
