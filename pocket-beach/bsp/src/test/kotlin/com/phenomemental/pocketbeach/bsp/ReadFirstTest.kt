@@ -57,5 +57,10 @@ class ReadFirstTest {
         assertFalse(NothingRead.pretends("Your passport says to keep things short, one thing at a time."))
         assertFalse(NothingRead.pretends("I haven't read your passport yet. Shall I?"))
         assertFalse(NothingRead.pretends("The data you gave me was received with thanks."))
+        // His phone, 19:21: her summary of the file he attached named the protocol, and the mark fired.
+        assertFalse(NothingRead.pretends("The documentation describes the **BSP (Block-Spindle-Point)** protocol, a hierarchical addressing system."))
+        assertFalse(NothingRead.pretends("BSP (Block Spindle Point) walks a block"))
+        assertTrue(NothingRead.pretends("bsp( block = \"strata\", spindle = \"3.4\" )"))
+        assertTrue(NothingRead.pretends("BSP(\"strata\")"))
     }
 }
