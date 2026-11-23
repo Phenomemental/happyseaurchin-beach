@@ -61,10 +61,12 @@ class LoopAndSideBySideDeviceTest {
             compose.menu("menu-settings")
             compose.tap("walk-check")
             compose.waitFor("walk-check-result", "20 of 20 arrived intact.", timeoutMs = 20_000)
-            compose.waitUntil(20_000) { count("side-cpu") == 1 }
-            assertEquals("the GPU, then the CPU", listOf("GPU", "CPU"), mind.conversedOn.map { it.processor })
+            compose.waitUntil(20_000) { count("side-cpu") == 1 && count("side-gpu") == 1 }
+            assertEquals("the CPU, then the GPU, the GPU's engine the last made", listOf("CPU", "GPU"), mind.conversedOn.map { it.processor })
+            // Sundial 0.13.2: when the check ends, her talk engine is loaded again, as her talk runs.
+            compose.waitUntil(10_000) { mind.warmed.lastOrNull() == app.running(Job.TALK) }
+            assertEquals("GPU", mind.warmed.last().processor)
             assertTrue("his Talk settings, its default temperature", mind.conversedOn.all { it.temperature == 1.0 })
-            assertEquals(1, count("side-gpu"))
             // The GPU's last reply looped: cut where it began, and marked; the CPU's didn't.
             compose.waitFor("side-looped", "\"the\" 20 times running")
             assertEquals(1, count("side-looped"))

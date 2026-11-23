@@ -250,14 +250,16 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
          * conversation opens, so the turn runs in a conversation of its own
          * with every exchange so far and the tool, thinking off; her kept
          * conversation is let go, and opens again with this turn in it at his
-         * next message. On the CPU when [onCpu].
+         * next message. On her own engine: Sundial 0.13.2 took out the switch
+         * to the CPU, which swapped engines mid-conversation and was too slow
+         * on his Pixel.
          */
-        override fun sayWithTool(message: String, toolJson: String, onCpu: Boolean, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn =
+        override fun sayWithTool(message: String, toolJson: String, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn =
             kotlinx.coroutines.runBlocking(thread) {
                 stopping = false
                 val started = System.nanoTime()
                 letGo()
-                val (l, _) = engine(if (onCpu) key.copy(processor = "CPU") else key)
+                val (l, _) = engine(key)
                 at = l
                 pace.ranOn(l.processor, l.whyNotGpu)
                 val tool = object : com.google.ai.edge.litertlm.OpenApiTool {

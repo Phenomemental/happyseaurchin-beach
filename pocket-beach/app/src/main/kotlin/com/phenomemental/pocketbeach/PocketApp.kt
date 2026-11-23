@@ -301,6 +301,8 @@ class PocketApp : Application() {
      * Sundial 0.12.1: the walk check's last result on this phone: how many of
      * how many arrived intact, how many arrived altered (as a number, or
      * changed; a call that never came isn't counted), when, and on which model.
+     * Shown in Settings for him to report; since 0.13.2 it moves nothing: her
+     * walks stay on the GPU, and the address guard holds.
      */
     class WalkChecked(val intact: Int, val of: Int, val altered: Int, val atMs: Long, val model: String) {
         /** Every address arrived as sent. */

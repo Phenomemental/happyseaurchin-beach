@@ -11,6 +11,7 @@ import com.phenomemental.pocketbeach.bsp.str
 import com.phenomemental.pocketbeach.net.HttpsWire
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -69,7 +70,6 @@ class WalkTurnDeviceTest {
             say("What's at 2.2 in my membership block?")
             compose.waitUntil(20_000) { app.asking.settled && mind.toolTurns.isNotEmpty() }
             assertEquals("offered on this turn", 1, mind.toolTurns.size)
-            assertEquals("on the GPU, as her talk runs", listOf(false), mind.toolOnCpu.toList())
             assertTrue("the walker named for the block his words named", mind.toolJsons.single().contains("his words named membership. Read it,") && mind.toolJsons.single().contains("\"enum\":[\"membership\"]"))
             val handed = mind.walkResults.single()
             assertTrue(handed, handed.contains("(His block membership, walked to 2.2") && handed.contains("    2.2  Log each one in the register"))
@@ -115,30 +115,22 @@ class WalkTurnDeviceTest {
     }
 
     @Test
-    fun whenTheWalkCheckFoundAddressesAlteredHerToolTurnsRunOnTheCpu() {
+    fun whenTheCheckFoundAnAddressAlteredHerWalksStayOnTheGpuAndTheGuardHolds() {
+        // Sundial 0.13.2: 19 of 20 on his Pixel, one altered. Her walk isn't moved to the CPU (it swapped engines mid-conversation and
+        // was too slow); an address not in the block isn't walked, she is told so, and the chip shows where she looked.
         Fresh.hatched()
         membership()
-        app.walkCheck = PocketApp.WalkChecked(17, 20, 3, System.currentTimeMillis(), "Gemma 4 E4B")
-        mind.walkArgs = mapOf("block" to "membership", "spindle" to "1")
+        app.walkCheck = PocketApp.WalkChecked(19, 20, 1, System.currentTimeMillis(), "Gemma 4 E4B")
+        mind.walkArgs = mapOf("block" to "membership", "spindle" to "2.9")
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitFor("dial")
-            say("Read me the first step of my membership block.")
-            compose.waitUntil(20_000) { app.asking.settled && mind.toolTurns.isNotEmpty() }
-            assertEquals(listOf(true), mind.toolOnCpu.toList())
-            assertTrue(app.asking.transcript(), app.asking.transcript().contains("the walker offered on the CPU, as the walk check found addresses altered on the GPU"))
-            // A turn naming no block is untouched: her talk as it was, no tool.
-            say("Thanks.")
-            compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.size == 2 }
+            say("What's at 2.9 in my membership block?")
+            compose.waitUntil(20_000) { app.asking.settled && mind.walkResults.isNotEmpty() }
             assertEquals(1, mind.toolTurns.size)
-        }
-        // None altered (one call that never came isn't an altered address): on the GPU.
-        app.walkCheck = PocketApp.WalkChecked(19, 20, 0, System.currentTimeMillis(), "Gemma 4 E4B")
-        mind.toolOnCpu.clear()
-        ActivityScenario.launch(MainActivity::class.java).use {
-            compose.waitFor("dial")
-            say("And the second step of my membership block?")
-            compose.waitUntil(20_000) { app.asking.settled && mind.toolOnCpu.isNotEmpty() }
-            assertEquals(listOf(false), mind.toolOnCpu.toList())
+            assertTrue("no engine on the CPU asked for", mind.warmed.none { it.processor == "CPU" })
+            assertFalse(app.asking.transcript(), app.asking.transcript().contains("on the CPU"))
+            assertEquals("There is no place 2.9 in his block membership. Answer him without it.", mind.walkResults.single())
+            compose.waitFor("walked-chip", "looked for 2.9 in membership")
         }
     }
 }
