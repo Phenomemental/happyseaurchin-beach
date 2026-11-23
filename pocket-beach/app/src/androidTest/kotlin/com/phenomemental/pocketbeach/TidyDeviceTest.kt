@@ -56,6 +56,10 @@ class TidyDeviceTest {
     @Test
     fun beforeTheHatchNothingLoads() {
         Fresh.clear()
+        // A warm the test before set going (Ask opening as it closed) can land after it ended, on this test's stand-in, though it ran
+        // while that pocket was hatched. Let it land, then watch this launch alone.
+        Thread.sleep(1500)
+        mind.warmed.clear()
         ActivityScenario.launch(MainActivity::class.java).use {
             compose.waitForIdle()
             Thread.sleep(1500)
