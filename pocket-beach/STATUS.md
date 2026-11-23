@@ -4,6 +4,34 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13.4 is released (23 November): her words stream on a walker turn:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.4
+- **Install:** `sundial-v0.13.4.apk` over 0.13.3. His blocks stay where
+  they are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.4 (36), from main at `92dc79b` (PR #287), release run
+  344. APK SHA-256 `e821bfdf…`.
+- **Tests:** 352 core (4 new), the app's own 21 and all 101 device tests
+  (1 new), on the PR's CI run and again in the release run. The new
+  device test failed twice on the way, both times the test's own fault:
+  it paused before her first sentence was whole, and a sentence still
+  coming is shown once twelve of its words have come (so a copy of his
+  words is caught first). It now pauses after her first whole sentence.
+- **What it fixes:** on his phone a turn where the walker was offered
+  showed nothing for 107 seconds: she wrote 781 tokens and walked nothing,
+  and the app held her whole reply back in case it was a tool call.
+  - The walker turn now streams. The engine hands a call it takes as one
+    piece with no words (the laptop's probe), so her words are shown as
+    they come once their opening shows she is writing words.
+  - Held back only while a call is still possible: a call written out as
+    text, at most a word or two. A call written out as text is held to the
+    end of her reply and shown then (0.13.3 marks it).
+  - A walker turn can now be stopped, by him or by the loop stop.
+- **Only his phone can confirm:** her first words on a walker turn come
+  as quickly as on any other.
+
 **Sundial 0.13.3 is released (23 November): a block his words name is read first:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.3
 - **Install:** `sundial-v0.13.3.apk` over 0.13.2. His blocks stay where
