@@ -4,6 +4,47 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13.5 is released (24 November): a block given once, how full she is, replace and bring across, talk about this:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.5
+- **Install:** `sundial-v0.13.5.apk` over 0.13.4. His blocks stay where
+  they are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.5 (37), from main at `9110a19` (PR #291), release run
+  353. APK SHA-256 `67d57645…`.
+- **Tests:** 356 core (4 new), the app's own 21 and all 111 device tests
+  (9 new), on the PR's CI run and again in the release run.
+- **What it builds:**
+  1. **A block given her once in a conversation,** whether named, walked
+     or added with the paperclip; told her plainly if she walks it again;
+     given again in a new chat. On his phone each turn naming his
+     passport had handed it again until her conversation held 7,904 of
+     8,192 tokens and her replies broke down.
+  2. **How full the conversation is,** beneath it; past four fifths said
+     plainly, with a new chat offered. Her conversation is opened afresh
+     at three quarters again after walker turns, which had left nothing to
+     count.
+  3. **Replace mine with the beach's:** a beach block he already has is
+     replaced whole on his yes, after a whole copy of his pocket is saved;
+     for his shell the card first names the places that will change.
+  4. **Bring my blocks across** (Settings and the walker, with Reach the
+     beach on): the beach's blocks, his first, ticked and copied in on one
+     yes after one saved copy; what came across and anything refused, with
+     why. Your pocket offers the saved copy back.
+  5. **Talk about this** (the editor and the walker): what he is looking at
+     and the block's shape worked out by the app, handed her beside his
+     next words.
+- **Her Talk context at 16,384** (findings 12e): the same words as at
+  8,192 on the line in the sand; on the laptop about 1½ s more to her
+  first words and about 330 MB more memory; his Pixel ran it on 23
+  November, writing 6.2 to 7.5 tokens a second against about 7.9.
+- **Only his phone can confirm:**
+  - a long conversation naming one block often: given once, the fullness
+    line, and her replies holding up;
+  - bring across over his connection, with his own blocks;
+  - talk about this on a block he knows.
+
 **Sundial 0.13.4 is released (23 November): her words stream on a walker turn:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.4
 - **Install:** `sundial-v0.13.4.apk` over 0.13.3. His blocks stay where
