@@ -10,6 +10,8 @@ import com.phenomemental.pocketbeach.bsp.JsObj
 import com.phenomemental.pocketbeach.bsp.str
 import com.phenomemental.pocketbeach.net.HttpsWire
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -64,12 +66,45 @@ class TalkAboutThisDeviceTest {
             compose.tap("block:orchard")
             compose.waitFor("outline-line:1.1", "pick the apples")
             compose.tap("talk-about-this")
-            compose.waitFor("file-chip-view", "what you were looking at, and its shape")
+            compose.waitFor("file-chip-view", "its top lines and its shape")
             send("What do you see in it?")
             val turn = mind.talkMessages.last()
-            assertTrue(turn, turn.contains("What do you see in it?\n\n(What he is looking at: the block orchard, then its shape, worked out by the app:)\nThe orchard, through the year."))
+            // Sundial 0.13.6: its top lines as bsp() reads them, never the whole block; the detail is hers to walk.
+            assertTrue(
+                turn,
+                turn.contains(
+                    "What do you see in it?\n\n(His block orchard, which he is looking at, as bsp() reads it: the start of its opening line and of each part's, " +
+                        "and how many lines stand beneath each part; then its shape, worked out by the app:)\nThe orchard, through the year.\n  1  Autumn  (1 beneath)\n  2  Winter: prune the pears",
+                ),
+            )
+            assertFalse(turn, turn.contains("pick the apples"))
+            assertEquals("what she was handed let go after the turn", 1, mind.forgotten.size)
             assertTrue(turn, turn.contains("(The shape of his block orchard, worked out by the app:)\nIt goes 2 levels deep beneath its opening line, with 3 parts in all."))
             assertTrue(turn, turn.contains("It has grown most at 1: 1 part beneath it, 1 level deep."))
+        }
+    }
+
+    /**
+     * 0.13.6, from his phone on 28 November: a block with a long name squeezed
+     * the chip's words into a column a letter or two wide. Now the words stand
+     * beneath the name, as a line of words.
+     */
+    @Test
+    fun aLongNameLeavesTheChipsWordsReadable() {
+        Fresh.hatched()
+        val long = "soft-llm-conversations-kept-through-the-year:Phenomemental"
+        check(app.pages.carryOut(app.pages.planKeep(long, JsObj.of("_" to str("Conversations with soft LLMs."), "1" to str("The first one.")))).ok)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            compose.menu("menu-blocks")
+            compose.tap("block:$long")
+            compose.waitFor("outline-line:1", "The first one.")
+            compose.tap("talk-about-this")
+            compose.waitFor("file-chip-view", "its top lines and its shape")
+            val name = compose.onNodeWithTag("file-chip-name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val words = compose.onNodeWithTag("file-chip-view", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue("the words stand beneath the name: $name, $words", words.top >= name.bottom - 1f)
+            assertTrue("a line of words, not a column of letters: $words", words.width > words.height * 4)
         }
     }
 
@@ -86,10 +121,10 @@ class TalkAboutThisDeviceTest {
             compose.tap("walk-go")
             compose.waitFor("walk-out", "[disc @ pscale 0")
             compose.tap("walker-talk-about")
-            compose.waitFor("file-chip-view")
+            compose.waitFor("file-chip-view", "your walk of it, and its shape")
             send("What patterns do you see?")
             val turn = mind.talkMessages.last()
-            assertTrue(turn, turn.contains("(What he is looking at: the block orchard, then its shape, worked out by the app:)\n[disc @ pscale 0"))
+            assertTrue(turn, turn.contains("(What he is looking at: his walk of the block orchard, then its shape, worked out by the app:)\n[disc @ pscale 0"))
             assertTrue(turn, turn.contains("(The shape of his block orchard, worked out by the app:)"))
         }
     }

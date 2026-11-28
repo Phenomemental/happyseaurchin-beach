@@ -66,25 +66,30 @@ fun DrawScope.drawClip(color: Color) {
 
 /** The files on a message, each a chip with its name; with [remove], each can be taken off before he sends. */
 @Composable
-fun FileChips(files: List<Chats.Attached>, remove: ((Chats.Attached) -> Unit)? = null, alignEnd: Boolean = false, givenBefore: Set<String> = emptySet()) {
+fun FileChips(files: List<Chats.Attached>, remove: ((Chats.Attached) -> Unit)? = null, alignEnd: Boolean = false) {
     if (files.isEmpty()) return
     val ink = LocalInk.current
     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (alignEnd) Arrangement.End else Arrangement.Start) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start) {
             for (f in files) Row(
-                Modifier.widthIn(max = 300.dp).background(ink.sheet, RoundedCornerShape(12.dp)).padding(horizontal = 10.dp, vertical = 5.dp).testTag("file-chip"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Modifier.widthIn(max = 320.dp).background(ink.sheet, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 6.dp).testTag("file-chip"),
+                verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text((if (f.block) "▤ " else "▢ ") + f.name, style = Type.small, color = ink.ink)
-                // Sundial 0.13.5: a block given her earlier in this conversation, not given again.
-                if (f.block && f.name in givenBefore) Text("given earlier in this chat", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-given"))
-                // Sundial 0.13.5: what he was looking at, with its shape.
-                else if (f.view) Text("what you were looking at, and its shape", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-view"))
-                // Sundial 0.13.3: a block his words named, read by Sundial before she answered: its opening lines.
-                else if (f.byApp) Text("read by Sundial: its opening lines", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-read"))
-                // Too big for her window whole: she has its root and each part's opening line, and the chip says so.
-                else if (f.block && !f.whole) Text("its opening lines only", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-partial"))
-                if (remove != null) Text("×", style = Type.body, color = ink.crimson, modifier = Modifier.clickable { remove(f) }.testTag("file-chip-remove"))
+                // Sundial 0.13.6: the name, then what was given beneath it, each on its own line and as wide as the chip,
+                // so a long name doesn't squeeze the words beside it into a column of letters.
+                Column(Modifier.weight(1f, fill = false), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text((if (f.block) "▤ " else "▢ ") + f.name, style = Type.small, color = ink.ink, modifier = Modifier.testTag("file-chip-name"))
+                    // Sundial 0.13.5: talk about this, with its shape; Sundial 0.13.6: from the editor, its top lines as bsp() reads them.
+                    if (f.view) Text(if (f.walked) "your walk of it, and its shape" else "its top lines and its shape", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-view"))
+                    // Sundial 0.13.3: a block his words named, read by Sundial before she answered. Sundial 0.13.6: its top lines, as bsp() reads them.
+                    else if (f.byApp) Text("read by Sundial: its top lines", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-read"))
+                    // Too big for her window whole: she has its root and each part's opening line, and the chip says so.
+                    else if (f.block && !f.whole) Text("its opening lines only", style = Type.small, color = ink.soft, modifier = Modifier.testTag("file-chip-partial"))
+                }
+                if (remove != null) Text(
+                    "×", style = Type.body, color = ink.crimson,
+                    modifier = Modifier.clickable { remove(f) }.padding(horizontal = 4.dp).testTag("file-chip-remove"),
+                )
             }
         }
     }

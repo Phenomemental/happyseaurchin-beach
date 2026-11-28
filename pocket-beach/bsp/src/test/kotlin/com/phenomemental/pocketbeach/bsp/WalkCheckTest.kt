@@ -43,7 +43,8 @@ class WalkCheckTest {
         val tool = parseJson(WalkTool.forBlocks(listOf("membership", "passport:Phenomemental"))) as JsObj
         assertEquals("bsp", (tool["name"] as JsStr).value)
         assertEquals(
-            "Sundial holds his blocks on his phone, and his words named membership and passport:Phenomemental. Read one, as the beach's bsp() reads a block: no address for its opening line and each part's, or an address for the line there.",
+            "Sundial holds his blocks on his phone, and his words named membership and passport:Phenomemental. Read one, as the beach's bsp() reads a block: no address for its opening line and each part's, or an address for the line there. " +
+                "Each line of a block's top is only the start of that part: a part with lines beneath it holds the detail, and walking to its address gives it whole.",
             (tool["description"] as JsStr).value,
         )
         val props = ((tool["parameters"] as JsObj)["properties"] as JsObj)

@@ -73,7 +73,7 @@ class WalkingTest {
         )
         val disc = Walking.walk(pages, mapOf("block" to "membership"), named, h)
         assertEquals("membership", disc.chip)
-        assertTrue(disc.text.startsWith("(His block membership: its opening line, then each part's opening line beneath it.)\nThe membership form, step by step.\n  1  Agree the categories with David\n  2  ID checks  (2 beneath)"), disc.text)
+        assertTrue(disc.text.startsWith("(His block membership, as bsp() reads it: the start of its opening line and of each part's, and how many lines stand beneath each part.)\nThe membership form, step by step.\n  1  Agree the categories with David\n  2  ID checks  (2 beneath)"), disc.text)
         for (w in listOf(point, deeper, disc)) assertFalse(w.text.contains("{") || w.text.contains("\"_\""), w.text)
         // Deeper is as bsp() reads it: a pscale below the address's own. At 2.2's parent 2 (pscale 0), 0 is the place itself.
         assertFalse(Walking.walk(pages, mapOf("block" to "membership", "spindle" to "2", "pscale_attention" to 0), named, h).text.contains("2.1"))

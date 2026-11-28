@@ -145,6 +145,16 @@ interface Mind {
          */
         fun sayWithTool(message: String, toolJson: String, call: (Called) -> String, piece: (String) -> Unit): ToolTurn =
             ToolTurn(stream.say(message, piece), emptyList())
+
+        /**
+         * Sundial 0.13.6: what was handed her with the last message (his
+         * blocks' top lines, a walk, a file) is hers for that turn only. The
+         * turn stays in her conversation as [said], his words alone, with her
+         * reply, and her conversation opens again from that at his next
+         * message, so what she was handed never piles up turn on turn. A
+         * mind that keeps nothing between turns has nothing to let go.
+         */
+        fun forgetHanded(said: String) {}
     }
 
     companion object {

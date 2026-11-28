@@ -21,6 +21,41 @@ class BringAcrossTest {
     }
 
     @Test
+    fun theListShowsHisAndOnlyWhatHisSearchFindsOfTheRest() {
+        // The beach as it stood on 28 November: thousands of blocks, eighty his.
+        val rest = (1..2_540).map { "block-$it" } + listOf("lighthouse", "spine:pocket-beach")
+        val his = (1..78).map { "notes-$it:Phenomemental" } + listOf("passport:Phenomemental", "shell:Phenomemental")
+        val beach = (rest + his).sorted()
+
+        val opened = BringAcross.shown(beach, h, "", emptySet())
+        assertEquals(80, opened.his.size)
+        assertEquals(emptyList(), opened.rest, "none of the rest until he searches")
+        assertEquals(2_542, opened.restCount)
+
+        val light = BringAcross.shown(beach, h, " light", emptySet())
+        assertEquals(listOf("lighthouse"), light.rest)
+        assertEquals(emptyList(), light.his, "his search narrows his too")
+        assertEquals(0, light.more)
+
+        val many = BringAcross.shown(beach, h, "block-", emptySet())
+        assertEquals(BringAcross.REST_AT_ONCE, many.rest.size)
+        assertEquals(2_540 - BringAcross.REST_AT_ONCE, many.more)
+
+        // What he ticked stays shown whatever he searches next.
+        val ticked = setOf("lighthouse", "passport:Phenomemental")
+        val after = BringAcross.shown(beach, h, "spine", ticked)
+        assertEquals(listOf("lighthouse", "spine:pocket-beach"), after.rest)
+        assertEquals(listOf("passport:Phenomemental"), after.his)
+
+        // With no handle known, nothing is his: the rest wait for his search.
+        val unknown = BringAcross.shown(beach, null, "", emptySet())
+        assertEquals(emptyList(), unknown.his)
+        assertEquals(emptyList(), unknown.rest)
+        assertEquals(2_622, unknown.restCount)
+        assertEquals(listOf("passport:Phenomemental"), BringAcross.shown(beach, null, "passport:Phen", emptySet()).rest)
+    }
+
+    @Test
     fun thePlacesThatWouldChangeAreNamed() {
         val mine = JsObj.of("_" to str("My shell."), "1" to str("Faces."), "3" to JsObj.of("_" to str("Manifest."), "1" to str("passport"), "2" to str("history")), "6" to str("Old place."))
         val theirs = JsObj.of("_" to str("My shell."), "1" to str("Faces, renamed."), "3" to JsObj.of("_" to str("Manifest."), "1" to str("passport"), "2" to str("history"), "3" to str("lists")), "7" to JsObj.of("_" to str("New."), "1" to str("Under it.")))

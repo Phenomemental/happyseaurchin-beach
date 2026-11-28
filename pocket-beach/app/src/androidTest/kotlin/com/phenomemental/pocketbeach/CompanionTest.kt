@@ -90,6 +90,8 @@ class StandIn : Mind {
     val writeSettings = mutableListOf<JobSettings>()
     /** Every message the Talk job was given, and how many the Write job was, and its last. */
     val talkMessages = mutableListOf<String>()
+    /** Sundial 0.13.6: each time Ask let go of what she was handed on a turn, the words that turn was kept as. */
+    val forgotten = mutableListOf<String>()
     var writeMessages = 0
     var writeMessage = ""
 
@@ -134,6 +136,7 @@ class StandIn : Mind {
             override fun stop() { holding?.let { stopped = true; it.countDown() } }
             override fun close() {}
             override fun tokens(): Int? = heldTokens
+            override fun forgetHanded(said: String) { forgotten += said }
 
             // Sundial 0.13: a turn with the walker offered: she calls it with [walkArgs] (none set: no call), then answers.
             override fun sayWithTool(message: String, toolJson: String, call: (Mind.Called) -> String, piece: (String) -> Unit): Mind.ToolTurn {

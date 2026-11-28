@@ -127,8 +127,8 @@ class Asking(private val app: PocketApp) {
             internal set
         var nothingRead by mutableStateOf(false)
             internal set
-        /** Sundial 0.13.5: the blocks his words named, or he added, that were given her earlier in this conversation, and so not again. */
-        var givenBefore: List<String> = emptyList()
+        /** Sundial 0.13.6: what she was handed on this turn was let go after it, her conversation keeping his words and her reply. */
+        var letGo: Boolean = false
             internal set
         /** Her reply, as shown: never a line playing her turn back. */
         var said by mutableStateOf("")
@@ -211,11 +211,6 @@ class Asking(private val app: PocketApp) {
         val said = mutableListOf<String>()
         val read = mutableListOf("her window")
         val written = mutableListOf<String>()
-        /**
-         * Sundial 0.13.5: what of his blocks has been given her in this conversation (a block read by the app or added with the
-         * paperclip, by its name; a place she walked to, by its name and what she was handed), so none is given her again in it.
-         */
-        val given = mutableSetOf<String>()
     }
     private var conversation = Conversation()
 
@@ -588,13 +583,13 @@ class Asking(private val app: PocketApp) {
                         // first, its root and each part's opening line, and hands it her beside his words as the paperclip does; the walker is
                         // offered for the blocks named on this turn and the turn before, so she can go deeper where she chooses.
                         e.named = runCatching { Walking.named(q, app.pages.shore().mine.map { it.name }, h) }.getOrDefault(emptyList())
-                        // Sundial 0.13.5: a block already given her in this conversation is never given again in it, whether named, walked
-                        // or added with the paperclip: on his phone each turn naming his passport handed it her again until her conversation
-                        // held 7,904 of 8,192 tokens and her replies broke down.
-                        e.givenBefore = (e.named + e.files.filter { it.block }.map { it.name }).filter { it in conversation.given }.distinct()
-                        e.read = e.named.filter { it !in conversation.given }.mapNotNull { n -> runCatching { Chats.readByApp(app.pages, Region.POCKET, n) }.getOrNull() }
-                        val files = e.files.filter { !(it.block && it.name in conversation.given) }
-                        conversation.given += e.read.map { it.name } + files.filter { it.block || it.view }.map { it.name }
+                        // Sundial 0.13.6: what she is handed is hers for this turn only (her conversation lets it go after), so a block his
+                        // words name is handed her each turn they name it: its top lines as bsp() reads them, a few hundred tokens. What she
+                        // was handed on this turn isn't handed again within it, as a walk of the same top.
+                        val given = mutableSetOf<String>()
+                        e.read = e.named.mapNotNull { n -> runCatching { Chats.readByApp(app.pages, Region.POCKET, n) }.getOrNull() }
+                        val files = e.files
+                        given += e.read.map { it.name } + files.filter { it.block || it.view }.map { it.name }
                         conversation.read += e.read.map { "his ${it.name}, its opening lines, read by the app" }
                         e.offered = (e.named + history.dropLast(1).lastOrNull()?.named.orEmpty()).distinct()
                         // Sundial 0.12, Gemma released: her turn is the time and his words, and nothing added to shape how she answers.
@@ -632,10 +627,10 @@ class Asking(private val app: PocketApp) {
                         val reply = if (e.offered.isEmpty()) t.stream.say(message, piece)
                         else t.sayWithTool(message, WalkTool.forBlocks(e.offered), call = { c ->
                             val w = Walking.walk(app.pages, c.arguments, e.offered, h)
-                            // Sundial 0.13.5: a block, or a place in it, given her earlier in this conversation isn't handed her again.
+                            // Sundial 0.13.5: a block, or a place in it, already handed her on this turn isn't handed her again.
                             val key = if (w.spindle == null) w.block.orEmpty() else w.block + "\n" + w.text
-                            val again = w.found && (key in conversation.given || (w.spindle == null && w.block in conversation.given))
-                            val handed = if (again) Walking.again(w) else w.also { if (it.found) conversation.given += key }
+                            val again = w.found && (key in given || (w.spindle == null && w.block in given))
+                            val handed = if (again) Walking.again(w) else w.also { if (it.found) given += key }
                             walks += handed
                             handed.text
                         }, piece = piece).reply
@@ -643,6 +638,12 @@ class Asking(private val app: PocketApp) {
                         // Sundial 0.13.5: how full her conversation is now, shown beneath it.
                         held = t.tokens()
                         contextSize = app.running(MindJob.TALK).context
+                        // Sundial 0.13.6: what she was handed on this turn is let go: the turn stays in her conversation as his words and
+                        // her reply. If she needs a block again, his words name it again or she walks it.
+                        if (e.read.isNotEmpty() || files.isNotEmpty() || walks.any { it.found }) {
+                            t.forgetHanded(Talking.said(q))
+                            e.letGo = true
+                        }
                         // Sundial 0.13.3, plain machinery: a tool call written into her words, or "data received", with nothing read from his
                         // blocks on this turn, is marked so beneath her reply. Her words stay as she wrote them.
                         // A file he added with the paperclip is something given her: a reply answering from it is never marked (his
@@ -1167,7 +1168,8 @@ class Asking(private val app: PocketApp) {
             if (e.copied.isNotEmpty()) appendLine("  Left out of her reply, as her turn played back: " + e.copied.joinToString(" / "))
             if (e.named.isNotEmpty()) appendLine("  His words named ${e.named.joinToString()}: read by the app, " + e.read.joinToString { it.name }.ifEmpty { "nothing" } + ", its opening lines beside his words.")
             if (e.offered.isNotEmpty()) appendLine("  The walker offered for ${e.offered.joinToString()}" + (e.offered.filter { it !in e.named }.takeIf { it.isNotEmpty() }?.let { " (${it.joinToString()} named the turn before)" } ?: "") + "; she " + (e.walked.joinToString("; ").ifEmpty { "walked nothing" }) + ".")
-            if (e.givenBefore.isNotEmpty()) appendLine("  Given her earlier in this conversation, so not again: ${e.givenBefore.joinToString()}.")
+            if (e.files.isNotEmpty()) appendLine("  He added: " + e.files.joinToString { f -> f.name + if (f.view) " (" + (if (f.walked) "his walk of it" else "its top lines") + ", and its shape)" else "" } + ".")
+            if (e.letGo) appendLine("  What she was handed on this turn was let go after it: her conversation keeps his words and her reply.")
             if (e.nothingRead) appendLine("  ${NothingRead.SAID} (Her reply wrote a tool call, or said data was received.)")
             if (e.jobs.isNotEmpty()) appendLine("  Answered by: ${e.jobs}")
             if (e.time.isNotEmpty()) appendLine("  Times: ${e.time}")

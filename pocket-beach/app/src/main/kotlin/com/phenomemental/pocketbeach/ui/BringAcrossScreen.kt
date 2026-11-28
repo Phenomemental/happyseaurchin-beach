@@ -4,8 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
@@ -34,6 +36,10 @@ import kotlinx.coroutines.withContext
  * card, new or in place of his, and copied in on one yes, after one whole
  * copy of his pocket is saved. What came across, and anything refused with
  * why, is said beneath. Nothing is written to the beach.
+ *
+ * 0.13.6: the beach holds thousands of blocks, so the list shows his, and of
+ * the rest only what his search finds; "Bring N across" stands at the foot of
+ * the screen, always in reach; the card and the report stand at the top.
  */
 
 @Composable
@@ -41,6 +47,7 @@ fun BringAcrossScreen(model: Model, nav: Nav) {
     val ink = LocalInk.current
     val app = model.app
     val scope = rememberCoroutineScope()
+    val scroll = rememberScrollState()
     var names by remember { mutableStateOf<List<String>?>(null) }
     var handle by remember { mutableStateOf<String?>(null) }
     var ticked by remember { mutableStateOf(setOf<String>()) }
@@ -49,8 +56,35 @@ fun BringAcrossScreen(model: Model, nav: Nav) {
     var busy by remember { mutableStateOf(false) }
     var setOut by remember { mutableStateOf<List<BringAcross.Read>?>(null) }
     var report by remember { mutableStateOf<BringAcross.Report?>(null) }
+    val all = names
+    // The card and the report stand at the top: brought into view as they come.
+    LaunchedEffect(setOut != null, report) { if (setOut != null || report != null) scroll.animateScrollTo(0) }
 
-    Page(onBack = { nav.back() }, top = { Text("Bring my blocks across", style = Type.name, color = ink.ink) }) {
+    val bring = {
+        busy = true
+        report = null
+        scope.launch {
+            // Read only: each ticked block asked of the beach, before anything is set out.
+            val order = all.orEmpty()
+            setOut = withContext(Dispatchers.IO) { ticked.toList().sortedBy { order.indexOf(it) }.map { n -> readFromBeach(app, n) } }
+            busy = false
+        }
+        Unit
+    }
+
+    // Always in reach, however long the list: the foot of the screen doesn't scroll.
+    val foot: @Composable RowScope.() -> Unit = {
+        Action(
+            if (busy) "Reading the beach…" else "Bring ${ticked.size} across", bring, Modifier.weight(1f),
+            enabled = ticked.isNotEmpty() && !busy, strong = true, tag = "bring-go",
+        )
+    }
+    Page(
+        onBack = { nav.back() },
+        top = { Text("Bring my blocks across", style = Type.name, color = ink.ink) },
+        scroll = scroll,
+        bottom = foot.takeIf { app.reachBeach && all != null && setOut == null },
+    ) {
         if (!app.reachBeach) {
             Text("Reach the beach is off. Turn it on in Settings to bring your blocks across from the beach, read only.", style = Type.body, color = ink.ink, modifier = Modifier.testTag("bring-off"))
             TextLink("Settings", { nav.go(Screen.Settings) }, tag = "bring-to-settings")
@@ -64,50 +98,75 @@ fun BringAcrossScreen(model: Model, nav: Nav) {
             val listed = index?.takeIf { it.status in 200..299 }?.let { Reach.names(it.text) }.orEmpty()
             if (listed.isEmpty()) note = "The beach's list of blocks couldn't be read." else names = BringAcross.ordered(listed, h)
         }
+        val reads = setOut
+        if (reads != null) {
+            // The one card, alone on the screen until he answers.
+            BringCard(model, reads, onNo = { setOut = null }, onDone = { r -> setOut = null; ticked = emptySet(); report = r })
+            return@Page
+        }
+        report?.let { r -> BringReport(r) }
         Text(
-            "The beach's blocks, yours first. Tick the ones to bring into your pocket: each comes across whole, as a new block or in place of yours. " +
+            "Tick the blocks to bring into your pocket: each comes across whole, as a new block or in place of yours. " +
                 "A whole copy of your pocket is saved first, and Your pocket can put it back. Nothing is written to the beach.",
             style = Type.small, color = ink.soft,
         )
         note?.let { Text(it, style = Type.small, color = ink.crimson, modifier = Modifier.testTag("bring-note")) }
-        val all = names
         if (all == null && note == null) Text("Reading the beach's list…", style = Type.small, color = ink.soft)
         if (all != null) {
             PaperField(find, { find = it }, "Find a block", singleLine = true, tag = "bring-find")
-            val q = find.trim()
-            val shown = all.filter { q.isEmpty() || it.contains(q, ignoreCase = true) || it in ticked }
-            var heading: Boolean? = null
+            val h = handle
+            val shown = remember(all, h, find, ticked) { BringAcross.shown(all, h, find, ticked) }
+            val yours = remember(all, h) { all.filter { BringAcross.isHis(it, h) } }
+            val toggle = { n: String -> ticked = if (n in ticked) ticked - n else ticked + n; report = null }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                for (n in shown) {
-                    val his = BringAcross.isHis(n, handle)
-                    if (heading != his) {
-                        heading = his
-                        Text(if (his) "Yours" else "The rest of the beach", style = Type.heading, color = ink.ink, modifier = Modifier.padding(top = 8.dp))
+                if (h == null) {
+                    Text(
+                        "Your handle isn't known on this phone, so your blocks aren't picked out: find them by name.",
+                        style = Type.small, color = ink.soft, modifier = Modifier.testTag("bring-no-handle"),
+                    )
+                } else {
+                    Text("Yours (${counted(yours.size)})", style = Type.heading, color = ink.ink, modifier = Modifier.padding(top = 8.dp).testTag("bring-yours"))
+                    if (yours.isEmpty()) Text("None of the beach's blocks is named with $h.", style = Type.small, color = ink.soft)
+                    else {
+                        val allTicked = ticked.containsAll(yours)
+                        TextLink(if (allTicked) "Untick all yours" else "Tick all yours", {
+                            ticked = if (allTicked) ticked - yours.toSet() else ticked + yours
+                            report = null
+                        }, tag = "bring-tick-yours")
                     }
-                    val toggle = { ticked = if (n in ticked) ticked - n else ticked + n; report = null }
-                    Row(Modifier.fillMaxWidth().clickable { toggle() }.testTag("bring-row:$n"), verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = n in ticked, onCheckedChange = { toggle() }, colors = CheckboxDefaults.colors(checkedColor = ink.crimson), modifier = Modifier.testTag("tick:$n"))
-                        Column(Modifier.weight(1f)) {
-                            Text(n, style = Type.body, color = ink.ink)
-                            if (app.pages.exists(n)) Text("You have one: it would be replaced.", style = Type.small, color = ink.soft)
-                        }
-                    }
+                    for (n in shown.his) BringRow(n, n in ticked, app.pages.exists(n)) { toggle(n) }
+                }
+                Text(
+                    "The rest of the beach (${counted(shown.restCount)})", style = Type.heading, color = ink.ink,
+                    modifier = Modifier.padding(top = 12.dp).testTag("bring-rest"),
+                )
+                for (n in shown.rest) BringRow(n, n in ticked, app.pages.exists(n)) { toggle(n) }
+                val q = find.trim()
+                when {
+                    q.isEmpty() -> Text("Type in Find a block to look among them.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("bring-rest-hidden"))
+                    shown.rest.none { it.contains(q, ignoreCase = true) } -> Text("None of the rest of the beach matches \u201c$q\u201d.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("bring-none"))
+                    shown.more > 0 -> Text("And ${counted(shown.more)} more: type more of the name.", style = Type.small, color = ink.soft, modifier = Modifier.testTag("bring-more"))
                 }
             }
-            Action(if (busy) "Reading the beach…" else "Bring ${ticked.size} across", {
-                busy = true
-                report = null
-                scope.launch {
-                    // Read only: each ticked block asked of the beach, before anything is set out.
-                    setOut = withContext(Dispatchers.IO) { ticked.toList().sortedBy { all.indexOf(it) }.map { n -> readFromBeach(app, n) } }
-                    busy = false
-                }
-            }, Modifier.fillMaxWidth(), enabled = ticked.isNotEmpty() && !busy && setOut == null, strong = true, tag = "bring-go")
         }
-        setOut?.let { reads -> BringCard(model, reads, onNo = { setOut = null }, onDone = { r -> setOut = null; ticked = emptySet(); report = r }) }
-        report?.let { r -> BringReport(r) }
     }
 }
+
+/** One block of the beach with its tick box, and whether he has one of that name. */
+@Composable
+private fun BringRow(name: String, ticked: Boolean, his: Boolean, toggle: () -> Unit) {
+    val ink = LocalInk.current
+    Row(Modifier.fillMaxWidth().clickable { toggle() }.testTag("bring-row:$name"), verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked = ticked, onCheckedChange = { toggle() }, colors = CheckboxDefaults.colors(checkedColor = ink.crimson), modifier = Modifier.testTag("tick:$name"))
+        Column(Modifier.weight(1f)) {
+            Text(name, style = Type.body, color = ink.ink)
+            if (his) Text("You have one: it would be replaced.", style = Type.small, color = ink.soft)
+        }
+    }
+}
+
+/** A count as he reads it: 2,542. */
+private fun counted(n: Int): String = String.format(java.util.Locale.ROOT, "%,d", n)
 
 /** One block read from the beach, read only: the block, or why it couldn't be. */
 private fun readFromBeach(app: com.phenomemental.pocketbeach.PocketApp, name: String): BringAcross.Read = runCatching {

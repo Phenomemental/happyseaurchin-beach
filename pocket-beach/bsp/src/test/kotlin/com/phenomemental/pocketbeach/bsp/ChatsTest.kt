@@ -71,7 +71,7 @@ class ChatsTest {
         assertEquals("The book, chapter by chapter.\n" + (1..9).joinToString("\n") { "  $it  Chapter $it  (9 beneath)" }, read.text)
         assertTrue(!read.text.contains("Scene"))
         val turn = Chats.withFiles("What do you make of it?", listOf(read))
-        assertTrue(turn.contains("(His block book, too big to read whole here: its opening line, then each part's opening line beneath it:)"), turn)
+        assertTrue(turn.contains("(His block book, too big to read whole here, as bsp() reads it: the start of its opening line and of each part's, and how many lines stand beneath each part:)"), turn)
         // A small block is read whole.
         check(pages.carryOut(pages.planKeep("orchard", JsObj.of("_" to str("The orchard."), "1" to str("Prune the apples")))).ok)
         assertTrue(Chats.blockFile(pages, Region.POCKET, "orchard")!!.whole)
@@ -82,6 +82,33 @@ class ChatsTest {
     }
 
     /** A block chosen from elsewhere, a JSON file, is never handed her as JSON: readable text, as his own blocks are. */
+    /**
+     * Sundial 0.13.6: a block's top lines as bsp() reads them. In his blocks an
+     * opening line is often a paragraph, and the app gave each whole: his
+     * passport's top came to about 1,500 tokens against bsp's 400.
+     */
+    @Test
+    fun topLinesAreCutWhereBspCutsThem() {
+        val (_, pages) = Bench.fixture(shelf, nowMs)
+        val long = "IF YOU ARE AN AI WORKING WITH ME — " + "you're here to help me do with my information what must be done. ".repeat(8)
+        val block = JsObj.of(
+            "_" to str("Matthew — " + "a long opening line about who he is. ".repeat(12)),
+            "1" to str("Short."),
+            "2" to JsObj.of("_" to str(long), "1" to str("Beneath it, the detail.")),
+        )
+        check(pages.carryOut(pages.planKeep("passport:Phenomemental", block)).ok)
+        val top = Chats.discText(pages, Region.POCKET, "passport:Phenomemental")!!.lines()
+        val bsp = Reach.walk(shelf, "passport:Phenomemental", block, null, null).lines()
+        val ours = top[2].substringAfter("2  ").substringBefore("  (1 beneath)")
+        val theirs = bsp.first { "[2]" in it }.substringAfter("]: ").substringBefore(" · ")
+        assertEquals(theirs, ours, "the same cut as bsp()'s own disc")
+        assertTrue(ours.endsWith("...") && ours.length == 153, ours)
+        assertTrue(top[0].endsWith("...") && top[0].length == 153, top[0])
+        assertEquals("  1  Short.", top[1])
+        assertTrue(top.none { "Beneath it, the detail." in it }, "the detail stays beneath, for a walk")
+        assertTrue(top.joinToString("\n").length < 400, "a few hundred characters, however long his lines: $top")
+    }
+
     @Test
     fun aBlockChosenFromElsewhereIsReadableTextNeverJson() {
         val json = stringify(JsObj.of("_" to str("Letters I mean to write."), "1" to JsObj.of("_" to str("To Jo"), "1" to str("say thank you first"))))!!

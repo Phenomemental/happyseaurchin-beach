@@ -102,7 +102,7 @@ class ChatDeviceTest {
             say("What do you make of it?")
             compose.waitUntil(20_000) { app.asking.settled && mind.talkMessages.isNotEmpty() }
             val turn = mind.talkMessages.last()
-            assertTrue(turn, turn.contains("(His block book, too big to read whole here: its opening line, then each part's opening line beneath it:)\nThe book, chapter by chapter.\n  1  Chapter 1  (9 beneath)"))
+            assertTrue(turn, turn.contains("(His block book, too big to read whole here, as bsp() reads it: the start of its opening line and of each part's, and how many lines stand beneath each part:)\nThe book, chapter by chapter.\n  1  Chapter 1  (9 beneath)"))
             assertTrue("no scene, and never JSON", !turn.contains("Scene") && !turn.contains("{"))
             compose.waitFor("file-chip-partial", "its opening lines only")
         }
