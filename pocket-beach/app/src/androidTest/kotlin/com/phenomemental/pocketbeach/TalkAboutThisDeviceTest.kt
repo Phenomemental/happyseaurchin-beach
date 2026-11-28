@@ -73,6 +73,30 @@ class TalkAboutThisDeviceTest {
         }
     }
 
+    /**
+     * 0.13.6, from his phone on 28 November: a block with a long name squeezed
+     * the chip's words into a column a letter or two wide. Now the words stand
+     * beneath the name, as a line of words.
+     */
+    @Test
+    fun aLongNameLeavesTheChipsWordsReadable() {
+        Fresh.hatched()
+        val long = "soft-llm-conversations-kept-through-the-year:Phenomemental"
+        check(app.pages.carryOut(app.pages.planKeep(long, JsObj.of("_" to str("Conversations with soft LLMs."), "1" to str("The first one.")))).ok)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            compose.waitFor("dial")
+            compose.menu("menu-blocks")
+            compose.tap("block:$long")
+            compose.waitFor("outline-line:1", "The first one.")
+            compose.tap("talk-about-this")
+            compose.waitFor("file-chip-view", "what you were looking at, and its shape")
+            val name = compose.onNodeWithTag("file-chip-name", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            val words = compose.onNodeWithTag("file-chip-view", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            assertTrue("the words stand beneath the name: $name, $words", words.top >= name.bottom - 1f)
+            assertTrue("a line of words, not a column of letters: $words", words.width > words.height * 4)
+        }
+    }
+
     @Test
     fun fromTheWalkerSheIsHandedTheWalkAndTheShape() {
         Fresh.hatched()
