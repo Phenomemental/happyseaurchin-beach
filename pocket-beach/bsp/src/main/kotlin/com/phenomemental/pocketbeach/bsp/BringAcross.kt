@@ -19,6 +19,29 @@ object BringAcross {
         return his + rest
     }
 
+    /** How many of the rest of the beach a search lists at once (0.13.6). */
+    const val REST_AT_ONCE = 30
+
+    /**
+     * What the list shows (0.13.6): his blocks, and of the rest of the beach
+     * only those his search finds. [rest] holds at most [REST_AT_ONCE] of the
+     * rest with [more] left out, and [restCount] says how many the rest are.
+     * A ticked block always shows.
+     */
+    class Shown(val his: List<String>, val rest: List<String>, val more: Int, val restCount: Int)
+
+    /** The beach's [names] as the list shows them, for his [handle], his search [find] and those [ticked]. */
+    fun shown(names: List<String>, handle: String?, find: String, ticked: Set<String>): Shown {
+        val q = find.trim()
+        val (his, rest) = ordered(names, handle).partition { isHis(it, handle) }
+        fun found(n: String) = q.isNotEmpty() && n.contains(q, ignoreCase = true)
+        val hisShown = his.filter { q.isEmpty() || found(it) || it in ticked }
+        val matches = rest.filter { found(it) }
+        val listed = matches.take(REST_AT_ONCE)
+        val restShown = rest.filter { it in listed || it in ticked }
+        return Shown(hisShown, restShown, matches.size - listed.size, rest.size)
+    }
+
     /** A place where his block and the beach's differ: [kind] "changes", "is new" or "goes". */
     class Change(val address: String, val kind: String) {
         /** In words, for the card: "3.4 changes", "the opening line changes". */
