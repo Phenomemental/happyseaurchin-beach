@@ -389,8 +389,7 @@ private fun Turn(model: Model, e: Asking.Exchange, latest: Boolean, details: Boo
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.testTag("turn")) {
         // Sundial 0.13.3: the blocks his words named, read by the app before she answered, are chips beside his own files.
         // Sundial 0.13.5: a block given her earlier in this conversation says so on its chip, and wasn't given again.
-        val namedBefore = e.givenBefore.filter { n -> e.files.none { it.name == n } }.map { Chats.Attached(it, "", block = true) }
-        FileChips(e.files + e.read + namedBefore, alignEnd = true, givenBefore = e.givenBefore.toSet())
+        FileChips(e.files + e.read, alignEnd = true)
         His(e.question)
         when {
             e.said.isNotEmpty() -> Text(replyShaped(e.said), style = Type.body, color = ink.ink, modifier = Modifier.testTag("say"))

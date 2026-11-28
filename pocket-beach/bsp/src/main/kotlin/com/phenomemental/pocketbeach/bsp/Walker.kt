@@ -594,6 +594,9 @@ private fun walkOrCreate(block: Js, digits: List<Char>): Js {
 
 private fun truncate(s: String, max: Int): String = if (s.length > max) jsSlice(s, max) + "..." else s
 
+/** Sundial 0.13.6: a line cut as bsp() cuts each line of a disc, to its first 150 characters, so the app's own readings of a block match the beach's. */
+internal fun bspCut(s: String): String = truncate(s, 150)
+
 private fun floorOf(r: ReadResult): Int? {
     r.floor?.let { return it }
     for (e in (r.pathWalk ?: emptyList()) + (r.walkEntries ?: emptyList()) + (r.descent ?: emptyList())) {

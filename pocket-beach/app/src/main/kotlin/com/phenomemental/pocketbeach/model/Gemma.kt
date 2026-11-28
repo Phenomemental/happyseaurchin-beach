@@ -241,6 +241,21 @@ class Gemma(private val stores: (String) -> ModelStore, private val cacheDir: St
             }
         }
 
+        /**
+         * Sundial 0.13.6: the last turn kept as his words alone and her reply, and her kept conversation let go, so it opens
+         * again from that at his next message (as a walker turn's always did). Her conversation held every block handed her,
+         * turn on turn: on his phone on 28 November four blocks' lines came to about 9,700 of its 10,900 tokens, and past about
+         * 4,000 her words broke down.
+         */
+        override fun forgetHanded(said: String) {
+            kotlinx.coroutines.runBlocking(thread) {
+                if (done.isNotEmpty()) done[done.lastIndex] = said to done.last().second
+                letGo()
+                // What it held with them is no measure of what it holds without: counted afresh when it opens again.
+                lastTokens = null
+            }
+        }
+
         override fun stop() {
             stopping = true
             runCatching { conversation?.cancelProcess() }

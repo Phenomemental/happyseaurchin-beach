@@ -22,7 +22,9 @@ object WalkTool {
         require(blocks.isNotEmpty()) { "the walker is offered only for blocks his words named" }
         fun q(s: String) = stringify(str(s))!!
         val about = "Sundial holds his blocks on his phone, and his words named ${blocks.joinToString(" and ")}. Read ${if (blocks.size == 1) "it" else "one"}, " +
-            "as the beach's bsp() reads a block: no address for its opening line and each part's, or an address for the line there."
+            "as the beach's bsp() reads a block: no address for its opening line and each part's, or an address for the line there. " +
+            // Sundial 0.13.6, from the walk trial (findings 12): told what the top lines are, she walked down to the part she needed.
+            "Each line of a block's top is only the start of that part: a part with lines beneath it holds the detail, and walking to its address gives it whole."
         return """{"name":"$NAME","description":${q(about)},"parameters":{"type":"object","properties":{""" +
             """"block":{"type":"string","enum":[${blocks.joinToString(",") { q(it) }}],"description":"The block his words named"},""" +
             """"spindle":{"type":"string","description":"An address, such as 1 or 2.3; omit for the block's opening"},""" +

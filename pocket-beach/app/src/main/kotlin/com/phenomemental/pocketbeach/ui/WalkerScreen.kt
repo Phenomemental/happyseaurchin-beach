@@ -197,7 +197,7 @@ fun WalkerScreen(model: Model, nav: Nav, screen: Screen.Walker) {
             TextLink("Talk about this", {
                 val block = if (beach) read?.block else app.pages.whole(name.trim())
                 if (block == null) note = "It couldn't be read to talk about." else {
-                    app.asking.attach(com.phenomemental.pocketbeach.bsp.Chats.lookingAt(name.trim(), text, block))
+                    app.asking.attach(com.phenomemental.pocketbeach.bsp.Chats.lookingAt(name.trim(), text, block, walked = true))
                     nav.toPlace(Screen.Ask)
                 }
             }, tag = "walker-talk-about")

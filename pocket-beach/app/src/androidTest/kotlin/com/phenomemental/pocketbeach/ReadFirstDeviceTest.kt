@@ -70,7 +70,7 @@ class ReadFirstDeviceTest {
                 first,
                 first.contains(
                     "what does my passport tell you about how to work with me\n\n" +
-                        "(His block passport:Phenomemental, which his words named, read by the app: its opening line, then each part's opening line beneath it:)\n" +
+                        "(His block passport:Phenomemental, which his words named, as bsp() reads it: the start of its opening line and of each part's, and how many lines stand beneath each part:)\n" +
                         "Matthew Bushell — digital social innovator.\n  1  The heart.",
                 ),
             )

@@ -29,7 +29,7 @@ class ReadFirstTest {
         val turn = Chats.withFiles("what does my passport tell you about how to work with me", listOf(read))
         assertEquals(
             "what does my passport tell you about how to work with me\n\n" +
-                "(His block passport:$h, which his words named, read by the app: its opening line, then each part's opening line beneath it:)\n" +
+                "(His block passport:$h, which his words named, as bsp() reads it: the start of its opening line and of each part's, and how many lines stand beneath each part:)\n" +
                 "Matthew Bushell — digital social innovator.\n  1  The heart.  (1 beneath)\n  2  How to work with me: short sentences, one thing at a time.",
             turn,
         )

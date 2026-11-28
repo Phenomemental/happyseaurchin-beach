@@ -18,8 +18,14 @@ object Chats {
      * line, and the chip says so. Sundial 0.13.3: [byApp], a block his words
      * named, read by the app itself before she answers (its disc at pscale 0),
      * beside his words as the paperclip's are; its chip says Sundial read it.
+     * Sundial 0.13.5: [view], talk about this; Sundial 0.13.6: [walked], from
+     * the walker (what the walk printed), else from the editor (the block's
+     * top lines as bsp() reads them).
      */
-    data class Attached(val name: String, val text: String, val block: Boolean, val whole: Boolean = true, val byApp: Boolean = false, val view: Boolean = false)
+    data class Attached(
+        val name: String, val text: String, val block: Boolean, val whole: Boolean = true, val byApp: Boolean = false,
+        val view: Boolean = false, val walked: Boolean = false,
+    )
 
     /** One exchange: his words, the files with them, her reply, and when he sent it. */
     data class Said(val his: String, val files: List<Attached>, val hers: String, val atMs: Long)
@@ -43,10 +49,11 @@ object Chats {
             append("\n\n(")
             append(
                 when {
-                    f.view -> "What he is looking at: the block ${f.name}, then its shape, worked out by the app:"
-                    f.byApp -> "His block ${f.name}, which his words named, read by the app: its opening line, then each part's opening line beneath it:"
+                    f.view && f.walked -> "What he is looking at: his walk of the block ${f.name}, then its shape, worked out by the app:"
+                    f.view -> "His block ${f.name}, which he is looking at, as bsp() reads it: $TOP_LINES; then its shape, worked out by the app:"
+                    f.byApp -> "His block ${f.name}, which his words named, as bsp() reads it: $TOP_LINES:"
                     f.block && f.whole -> "His block ${f.name}: its opening line, then each part beneath it:"
-                    f.block -> "His block ${f.name}, too big to read whole here: its opening line, then each part's opening line beneath it:"
+                    f.block -> "His block ${f.name}, too big to read whole here, as bsp() reads it: $TOP_LINES:"
                     else -> "His file ${f.name}:"
                 },
             )
@@ -74,6 +81,9 @@ object Chats {
      * its root and each part's opening line, the disc at pscale 0. Null when
      * there is no such block.
      */
+    /** What a block's top lines are, in words, wherever she is handed them (Sundial 0.13.6). */
+    const val TOP_LINES = "the start of its opening line and of each part's, and how many lines stand beneath each part"
+
     fun readByApp(pages: Pages, region: Region, name: String): Attached? =
         discText(pages, region, name)?.let { Attached(name, it, block = true, whole = false, byApp = true) }
 
@@ -82,21 +92,29 @@ object Chats {
      * screen shows the block [name]) with its shape worked out by the app
      * (BlockShape), one file beside his next words.
      */
-    fun lookingAt(name: String, view: String, block: Js): Attached =
-        Attached(name, view.trim() + "\n\n" + BlockShape.of(name, block), block = false, view = true)
+    fun lookingAt(name: String, view: String, block: Js, walked: Boolean = false): Attached =
+        Attached(name, view.trim() + "\n\n" + BlockShape.of(name, block), block = false, view = true, walked = walked)
 
     /** The most lines of a block read whole; a block with more is given as its opening lines. */
     const val OUTLINE_MOST = 600
 
-    /** A block's root and each part's opening line, the disc at pscale 0, as readable text: how many lines stand beneath each part said beside it. */
-    fun discText(pages: Pages, region: Region, name: String): String? {
-        val top = pages.position(region, name) ?: return null
-        return buildString {
-            append(top.text ?: "(no opening line)")
-            for (l in top.lines) {
-                append("\n  ${l.address}  ${l.text ?: "(nothing written here)"}")
-                if (l.beneath > 0) append("  (${l.beneath} beneath)")
-            }
+    /**
+     * A block's top lines, the disc at pscale 0 as bsp() reads it, as readable
+     * text: its opening line and each part's, each cut as bsp() cuts it to its
+     * first 150 characters, and how many lines stand beneath each part.
+     * Sundial 0.13.6: before, each line was given whole, and in his blocks an
+     * opening line is often a paragraph: his passport's top came to about
+     * 1,500 tokens against bsp's 400, and four blocks filled her conversation
+     * past where her words broke down.
+     */
+    fun discText(pages: Pages, region: Region, name: String): String? = pages.position(region, name)?.let(::topLines)
+
+    /** [top]'s opening line and each part's, cut as bsp() cuts them, with how many lines stand beneath each part. */
+    fun topLines(top: PositionView): String = buildString {
+        append(top.text?.let(::bspCut) ?: "(no opening line)")
+        for (l in top.lines) {
+            append("\n  ${l.address}  ${l.text?.let(::bspCut) ?: "(nothing written here)"}")
+            if (l.beneath > 0) append("  (${l.beneath} beneath)")
         }
     }
 

@@ -111,7 +111,8 @@ fun EditorScreen(model: Model, nav: Nav, name: String) {
                 val file = withContext(Dispatchers.IO) {
                     runCatching {
                         val block = pages.whole(name) ?: return@runCatching null
-                        val view = com.phenomemental.pocketbeach.bsp.Chats.blockFile(pages, Region.POCKET, name)?.text ?: return@runCatching null
+                        // Sundial 0.13.6: its top lines as bsp() reads them, never the whole block: she walks for more.
+                        val view = com.phenomemental.pocketbeach.bsp.Chats.discText(pages, Region.POCKET, name) ?: return@runCatching null
                         com.phenomemental.pocketbeach.bsp.Chats.lookingAt(name, view, block)
                     }.getOrNull()
                 }
