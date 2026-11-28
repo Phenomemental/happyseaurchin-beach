@@ -4,6 +4,49 @@ Current state only. Newest first.
 
 ## Now
 
+**Sundial 0.13.6 is released (28 November): her top lines as bsp() reads them, each handed for its turn; bring across in reach; a readable chip:**
+https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.6
+- **Install:** `sundial-v0.13.6.apk` over 0.13.5. His blocks stay where
+  they are. No procedure changes.
+- **Signed** with the same key (certificate SHA-256 `217887a6…`), package
+  `com.phenomemental.pocketbeach`, checked on the downloaded APK. The
+  seven procedures it carries are byte for byte main's.
+- **Version** 0.13.6 (38), from main at `22205dd` (PR #293), release run
+  360 (its device tests run twice: the folder test that has failed
+  before on a pocket left standing, then all 112). APK SHA-256 `22b773af…`.
+- **Tests:** 358 core (2 new), the app's own 21 and all 112 device tests
+  (1 new, 3 rewritten), on the PR's CI run and again in the release run.
+- **Why:** on his phone on 28 November her words broke down past about
+  4,000 tokens, as on the 23rd; by 07:23 her conversation held about
+  10,900 tokens, about 9,700 of them blocks' lines, each kept turn on turn.
+- **What it builds:**
+  1. **Top lines as bsp() reads them:** a block his words name is handed
+     her as bsp()'s disc, each opening line cut to its first 150
+     characters, with how many lines stand beneath each part (his
+     passport's top: about 400 tokens, against 1,500 with each line
+     whole). The walker's disc and a block too big for the paperclip read
+     the same.
+  2. **Talk about this** from the editor: the block's top lines and its
+     shape, never the whole block; from the walker, the walk and its shape.
+  3. **What she is handed is hers for its turn:** her conversation then
+     keeps his words and her reply; a block named again is handed again.
+     This replaces 0.13.5's given once in a conversation.
+  4. **The walker's description says what the top lines are:** only the
+     start of each part, the detail beneath, a walk giving it whole
+     (findings 12).
+  5. **Bring my blocks across in reach:** his blocks listed with Tick all
+     yours, the rest of the beach by search, "Bring N across" fixed at the
+     foot of the screen, the card and the report at the top.
+  6. **The file chip readable:** the name above, what was given beneath,
+     however long the name.
+  7. **The ask log** says what he added, and when what she was handed was
+     let go.
+- **Only his phone can confirm:**
+  - the conversation of the 28th again: the fullness line staying low,
+    her words holding past where they broke, and whether she walks more;
+  - Talk about this on a block he knows, in a fresh chat;
+  - bring across with his own blocks.
+
 **Sundial 0.13.5 is released (24 November): a block given once, how full she is, replace and bring across, talk about this:**
 https://github.com/Phenomemental/happyseaurchin-beach/releases/tag/sundial-v0.13.5
 - **Install:** `sundial-v0.13.5.apk` over 0.13.4. His blocks stay where
